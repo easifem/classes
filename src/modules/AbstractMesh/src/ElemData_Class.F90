@@ -16,7 +16,7 @@
 !
 
 MODULE ElemData_Class
-USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE Display_Method, ONLY: Display
 USE ReferenceElement_Method, ONLY: ElementName
 IMPLICIT NONE
@@ -28,6 +28,11 @@ PUBLIC :: TypeElem
 PUBLIC :: ElemDataDeallocate
 PUBLIC :: ElemDataSet
 PUBLIC :: ElemData_Pointer
+PUBLIC :: ElemData_Deallocate
+PUBLIC :: ElemData_Display
+PUBLIC :: ElemData_lt
+PUBLIC :: ElemData_eq
+PUBLIC :: ElemData_SetID
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -37,6 +42,10 @@ INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
 END INTERFACE Display
+
+INTERFACE ElemDataDeallocate
+  MODULE PROCEDURE ElemData_Deallocate
+END INTERFACE ElemDataDeallocate
 
 !----------------------------------------------------------------------------
 !                                                                 ElemData_
@@ -169,7 +178,7 @@ END FUNCTION ElemData_ElemType2String
 !                                                         ElemDataDeallocate
 !----------------------------------------------------------------------------
 
-SUBROUTINE ElemDataDeallocate(obj)
+SUBROUTINE ElemData_Deallocate(obj)
   TYPE(ElemData_), INTENT(INOUT) :: obj
   obj%globalElemNum = 0
   obj%localElemNum = 0
@@ -177,7 +186,7 @@ SUBROUTINE ElemDataDeallocate(obj)
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
-END SUBROUTINE ElemDataDeallocate
+END SUBROUTINE ElemData_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                           ElemDataInitiate
@@ -202,12 +211,44 @@ SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------
-!                                                   ElemData_Pointer
+!                                                          ElemData_Pointer
 !----------------------------------------------------------------------------
 
 FUNCTION ElemData_Pointer() RESULT(ans)
   CLASS(ElemData_), POINTER :: ans
   ALLOCATE (ElemData_ :: ans)
 END FUNCTION ElemData_Pointer
+
+!----------------------------------------------------------------------------
+!                                                               ElemData_lt
+!----------------------------------------------------------------------------
+
+FUNCTION ElemData_lt(obj, obj2) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  TYPE(ElemData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%globalElemNum .GT. obj2%globalElemNum
+END FUNCTION ElemData_lt
+
+!----------------------------------------------------------------------------
+!                                                               ElemData_eq
+!----------------------------------------------------------------------------
+
+FUNCTION ElemData_eq(obj, obj2) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  TYPE(ElemData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%globalElemNum .EQ. obj2%globalElemNum
+END FUNCTION ElemData_eq
+
+!----------------------------------------------------------------------------
+!                                                         ElemData_SetID
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemData_SetID(obj, id)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: id
+  obj%localElemNum = id
+END SUBROUTINE ElemData_SetID
 
 END MODULE ElemData_Class

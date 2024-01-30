@@ -1,5 +1,4 @@
-# This program is a part of EASIFEM library Copyright (C) 2020-2021  Vikas
-# Sharma, Ph.D
+# This program is a part of EASIFEM library Copyright (C) Vikas Sharma, Ph.D
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +15,4 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/AbstractMesh_Class.F90
-          ${src_path}/NodeData_Class.F90
-          ${src_path}/NodeDataList_Class.F90
-          ${src_path}/NodeDataBinaryTree_Class.F90
-          ${src_path}/ElemData_Class.F90
-          ${src_path}/ElemDataList_Class.F90
-          ${src_path}/ElemDataBinaryTree_Class.F90
-          ${src_path}/FacetData_Class.F90
-          ${src_path}/ElementShapeFunctionData_Class.F90)
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/IntIntDict_Class.F90)

@@ -44,3 +44,6 @@ DOMAIN_CLASS_EXCEPTION.txt
 log.txt
 Amat.txt
 *Pmat.txt
+
+settings.json
+.vscode/
