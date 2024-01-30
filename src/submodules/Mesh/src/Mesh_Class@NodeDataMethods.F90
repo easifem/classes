@@ -101,7 +101,7 @@ INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
 INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
   & indx(:)
 LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
-CHARACTER(LEN=*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes"
 
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
 
