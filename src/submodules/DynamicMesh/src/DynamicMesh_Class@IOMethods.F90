@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(DynamicMesh_Class) IOMethods
+USE GlobalData, ONLY: Point1
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
 IMPLICIT NONE
 CONTAINS
 
@@ -25,13 +27,13 @@ CONTAINS
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+CHARACTER(:), ALLOCATABLE :: dsetname
+INTEGER(I4B) :: ii, xidim, elemType, jj, tsize1, tsize2
+LOGICAL(LGT) :: isok
+CLASS(ElemData_), POINTER :: elemdata_ptr
+CLASS(NodeData_), POINTER :: nodedata_ptr
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
-CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy, jj, xidim, elemType
-LOGICAL(LGT) :: isok, abool
-CLASS(ElemData_), POINTER :: value_ptr
-TYPE(ElemDataListIterator_) :: iter
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -43,165 +45,84 @@ CALL obj%DEALLOCATE()
 dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
 
-CALL read_scalar("xidim", xidim)
-CALL read_scalar("elemType", elemType)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=xidim, group=dsetname,  &
+  & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname,  &
+  & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
 ! INFO:
 ! obj%tElements is read in AbstractMeshImport
 IF (obj%tElements .EQ. 0) RETURN
 
-CALL read_int_vector("elemNumber", elemNumber)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
+  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
-ASSOCIATE (elementDataList => obj%elementDataList)
+CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
+  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
+  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
+
+isok = (elemType .EQ. Point1) .OR. (elemType .EQ. 0)
+
+ASSOCIATE (elementDataList => obj%elementDataList,  &
+  & nodeDataBinaryTree => obj%nodeDataBinaryTree)
+
   CALL elementDataList%Initiate()
+  CALL nodeDataBinaryTree%Initiate()
 
   DO ii = 1, obj%tElements
-    ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
-    ! obj%elementData(ii)%localElemNum = ii
-    value_ptr => ElemData_Pointer()
-    CALL ElemDataSet(obj=value_ptr, globalElemNum=elemNumber(ii),  &
-      & localElemNum=ii)
-    CALL elementDataList%Add(value_ptr)
+    ! elementData(ii)%globalElemNum = elemNumber(ii)
+    ! elementData(ii)%localElemNum = ii
+    ! elementData(ii)%globalNodes = connectivity(:, ii)
+
+    elemdata_ptr => ElemData_Pointer()
+    CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
+      & localElemNum=ii, globalNodes=connectivity(:, ii))
+    CALL elementDataList%Add(elemdata_ptr)
+
+    DO jj = 1, SIZE(connectivity, 1)
+
+      nodedata_ptr => NodeData_Pointer()
+      CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii))
+
+      tsize1 = nodeDataBinaryTree%SIZE()
+      CALL nodeDataBinaryTree%Insert(nodedata_ptr)
+      tsize2 = nodeDataBinaryTree%SIZE()
+
+      IF (tsize1 .EQ. tsize2) THEN
+        CALL NodeData_Deallocate(nodedata_ptr)
+        DEALLOCATE (nodedata_ptr)
+      END IF
+
+    END DO
+
   END DO
+
+  CALL nodeDataBinaryTree%SetID()
+  obj%tNodes = nodeDataBinaryTree%SIZE()
 
 END ASSOCIATE
 
-! isok = hdf5%pathExists(TRIM(dsetname)//"/connectivity")
-! IF (.NOT. isok) THEN
-!   CALL e%RaiseError(modName//'::'//myName//" - "// &
-!     & '[INTERNAL ERROR]:: '//dsetname//'/connectivity path does not exists')
-!   RETURN
-! END IF
+IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
+IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
 
-! CALL hdf5%READ(TRIM(dsetname)//"/connectivity", connectivity)
-! isok = (obj%elemType .EQ. Point1) .OR. (obj%elemType .EQ. 0)
-! IF (isok) THEN
-!   obj%tNodes = 1
-!   IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
-!   ALLOCATE (obj%nodeData(obj%tNodes))
-!   obj%nodeData(1)%globalNodeNum = 1
-!   obj%nodeData(1)%localNodeNum = 1
-!   obj%nodeData(1)%nodeType = BOUNDARY_NODE
-! ELSE
-!   obj%maxNptrs = MAXVAL(connectivity)
-!   obj%minNptrs = MINVAL(connectivity)
-!   CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
-!
-!   DO CONCURRENT(ii=1:obj%tElements)
-!     obj%elementData(ii)%globalNodes = connectivity(:, ii)
-!     obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
-!   END DO
-!
-!   obj%tNodes = COUNT(obj%local_Nptrs .NE. 0)
-!   IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
-!   ALLOCATE (obj%nodeData(obj%tNodes))
-!   dummy = 0
-!
-!   DO ii = 1, obj%maxNptrs
-!     IF (obj%local_Nptrs(ii) .NE. 0) THEN
-!       dummy = dummy + 1
-!       obj%nodeData(dummy)%globalNodeNum = obj%local_Nptrs(ii)
-!       obj%nodeData(dummy)%localNodeNum = dummy
-!       obj%nodeData(dummy)%nodeType = BOUNDARY_NODE
-!       ! The above step is unusual, but we know the position of
-!       ! internal nptrs, so later we will set the
-!       ! those nodes as INTERNAL_NODE, in this way we can
-!       ! identify the boundary nodes
-!       obj%local_Nptrs(ii) = dummy
-!     END IF
-!   END DO
-!
-! END IF
-!
-! !> reading internalNptrs, nodeData%globalNodeNumber,
-! !> nodeData%localNodeNumber, nodeData%nodeType
-! !> mark INTERNAL_NODE
-!
-! isok = hdf5%pathExists(TRIM(dsetname)//"/intNodeNumber")
-! IF (.NOT. isok) THEN
-!   CALL e%RaiseError(modName//'::'//myName//" - "// &
-!     & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
-!     & '/intNodeNumber path does not exists')
-!   RETURN
-! END IF
-!
-! CALL hdf5%READ(TRIM(dsetname)//"/intNodeNumber", internalNptrs)
-! abool = obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0
-! IF (abool) THEN
-!   obj%nodeData(1)%globalNodeNum = internalNptrs(1)
-!   obj%nodeData(1)%nodeType = INTERNAL_NODE
-! ELSE
-!   DO ii = 1, SIZE(internalNptrs)
-!     jj = obj%GetLocalNodeNumber(internalNptrs(ii))
-!     obj%nodeData(jj)%globalNodeNum = internalNptrs(ii)
-!     obj%nodeData(jj)%nodeType = INTERNAL_NODE
-!   END DO
-! END IF
-!
-! isok = obj%tElements .GT. 0
-! abool = obj%xidim .GT. 0
-! IF (isok) THEN
-!   obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
-!     & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
-!
-!   IF (abool) obj%facetElements = FacetElements(obj%refelem)
-!
-! END IF
-!
-! IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-! IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-! IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
-!
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-CONTAINS
-
-SUBROUTINE read_scalar(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  CLASS(*), INTENT(INOUT) :: VALUE
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-
-  SELECT TYPE (VALUE)
-  TYPE is (INTEGER(I4B))
-    CALL hdf5%READ(astr, VALUE)
-
-  TYPE is (REAL(DFP))
-
-    CALL hdf5%READ(astr, VALUE)
-  END SELECT
-END SUBROUTINE read_scalar
-
-SUBROUTINE read_int_vector(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-
-  ! internal variables
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-  CALL hdf5%READ(astr, VALUE)
-END SUBROUTINE read_int_vector
-
 END PROCEDURE obj_Import
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
+CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
+CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
+END PROCEDURE obj_Display
 
 END SUBMODULE IOMethods

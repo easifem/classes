@@ -18,6 +18,7 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B
 USE Display_Method, ONLY: Display
+USE ReferenceElement_Method, ONLY: ElementName
 IMPLICIT NONE
 PRIVATE
 
@@ -55,6 +56,9 @@ TYPE :: ElemData_
     !! it will be called the boundary element
     !! INTERNAL_ELEMENT: If the element does not contain the boundary node
     !! then it will be called the internal element
+  INTEGER(I4B) :: name = 0
+    !! This is name of the element
+    !! It can be Triangle, Triangle3, Triangle6, etc.
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
@@ -115,17 +119,9 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   CALL Display(TRIM(msg), unitno=unitno)
   CALL Display(obj%globalElemNum, msg="globalElemNum: ", unitno=unitno)
   CALL Display(obj%localElemNum, msg="localElemNum: ", unitno=unitno)
-
-  SELECT CASE (obj%elementType)
-  CASE (INTERNAL_ELEMENT)
-    CALL Display("elementType=INTERNAL_ELEMENT", unitno=unitno)
-  CASE (BOUNDARY_ELEMENT)
-    CALL Display("elementType=BOUNDARY_ELEMENT", unitno=unitno)
-  CASE (DOMAIN_BOUNDARY_ELEMENT)
-    CALL Display("elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
-  CASE (GHOST_ELEMENT)
-    CALL Display("elementType=GHOST_ELEMENT", unitno=unitno)
-  END SELECT
+  CALL Display(ElemData_ElemType2String(obj%elementType), "elementType: ",  &
+    & unitno=unitno)
+  CALL Display(ElementName(obj%name), "elementName: ", unitno=unitno)
 
   ! globalNodes
   IF (ALLOCATED(obj%globalNodes)) THEN
@@ -142,6 +138,32 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     CALL Display(obj%boundaryData, msg="boundaryData: ", unitno=unitno)
   END IF
 END SUBROUTINE ElemData_Display
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_ElemType2String
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  convert elementType to name
+
+FUNCTION ElemData_ElemType2String(elementType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: elementType
+  CHARACTER(:), ALLOCATABLE :: ans
+
+  SELECT CASE (elementType)
+  CASE (INTERNAL_ELEMENT)
+    ans = "INTERNAL_ELEMENT"
+  CASE (BOUNDARY_ELEMENT)
+    ans = "BOUNDARY_ELEMENT"
+  CASE (DOMAIN_BOUNDARY_ELEMENT)
+    ans = "DOMAIN_BOUNDARY_ELEMENT"
+  CASE (GHOST_ELEMENT)
+    ans = "GHOST_ELEMENT"
+  CASE DEFAULT
+    ans = "NONE"
+  END SELECT
+END FUNCTION ElemData_ElemType2String
 
 !----------------------------------------------------------------------------
 !                                                         ElemDataDeallocate

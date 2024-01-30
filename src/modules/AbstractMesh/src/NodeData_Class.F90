@@ -16,14 +16,20 @@
 !
 
 MODULE NodeData_Class
-USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: NodeData_
 PUBLIC :: TypeNode
+PUBLIC :: NodeDataSet
+PUBLIC :: NodeData_Pointer
 PUBLIC :: NodeData_Display
+PUBLIC :: NodeData_Deallocate
+PUBLIC :: NodeData_lt
+PUBLIC :: NodeData_eq
+PUBLIC :: NodeData_SetID
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
@@ -78,7 +84,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
+! date: 2024-01-29
 ! summary: Display a single instance of NodeData_
 
 SUBROUTINE NodeData_Display(obj, msg, unitno)
@@ -86,7 +92,7 @@ SUBROUTINE NodeData_Display(obj, msg, unitno)
   CHARACTER(*), INTENT(IN) :: msg
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
 
-  CALL Display(TRIM(msg), unitno=unitno)
+  CALL Display(msg, unitno=unitno)
   CALL Display(obj%globalNodeNum, msg="globalNodeNum: ", unitno=unitno)
   CALL Display(obj%localNodeNum, msg="localNodeNum: ", unitno=unitno)
 
@@ -119,5 +125,106 @@ SUBROUTINE NodeData_Display(obj, msg, unitno)
     CALL Display(obj%globalElements, msg="globalElements: ", unitno=unitno)
   END IF
 END SUBROUTINE NodeData_Display
+
+!----------------------------------------------------------------------------
+!                                                       NodeData_Deallocate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Deallocate data
+
+SUBROUTINE NodeData_Deallocate(obj)
+  TYPE(NodeData_), INTENT(INOUT) :: obj
+  obj%globalNodeNum = 0
+  obj%localNodeNum = 0
+  obj%nodeType = INTERNAL_NODE
+  IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
+  IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
+  IF (ALLOCATED(obj%extraGlobalNodes)) DEALLOCATE (obj%extraGlobalNodes)
+END SUBROUTINE NodeData_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                              NodeData_lt
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  lessar than operator
+
+FUNCTION NodeData_lt(obj, obj2) RESULT(ans)
+  TYPE(NodeData_), INTENT(IN) :: obj
+  TYPE(NodeData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%globalNodeNum .LT. obj2%globalNodeNum
+END FUNCTION NodeData_lt
+
+!----------------------------------------------------------------------------
+!                                                              NodeData_eq
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  equality operator
+
+FUNCTION NodeData_eq(obj, obj2) RESULT(ans)
+  TYPE(NodeData_), INTENT(IN) :: obj
+  TYPE(NodeData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%globalNodeNum .EQ. obj2%globalNodeNum
+END FUNCTION NodeData_eq
+
+!----------------------------------------------------------------------------
+!                                                                  SetID
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Set the local node number
+
+SUBROUTINE NodeData_SetID(obj, id)
+  TYPE(NodeData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: id
+  obj%localNodeNum = id
+END SUBROUTINE NodeData_SetID
+
+!----------------------------------------------------------------------------
+!                                                         NodeData_Pointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Returns pointer to NodeData_
+
+FUNCTION NodeData_Pointer() RESULT(ans)
+  CLASS(NodeData_), POINTER :: ans
+  ALLOCATE (NodeData_ :: ans)
+END FUNCTION NodeData_Pointer
+
+!----------------------------------------------------------------------------
+!                                                               NodeDataSet
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Set node data
+
+SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum,  &
+  & nodeType, globalNodes, globalElements, extraGlobalNodes)
+  TYPE(NodeData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodeNum
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: localNodeNum
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodeType
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: extraGlobalNodes(:)
+
+  IF (PRESENT(globalNodeNum)) obj%globalNodeNum = globalNodeNum
+  IF (PRESENT(localNodeNum)) obj%localNodeNum = localNodeNum
+  IF (PRESENT(nodeType)) obj%nodeType = nodeType
+  IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
+  IF (PRESENT(globalElements)) obj%globalElements = globalElements
+  IF (PRESENT(extraGlobalNodes)) obj%extraGlobalNodes = extraGlobalNodes
+END SUBROUTINE NodeDataSet
 
 END MODULE NodeData_Class
