@@ -25,6 +25,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE ElemData_Class
 USE ElemDataList_Class
 USE NodeData_Class
+USE NodeDataList_Class
 USE NodeDataBinaryTree_Class
 USE AbstractMesh_Class
 
@@ -51,6 +52,9 @@ TYPE, EXTENDS(AbstractMesh_) :: DynamicMesh_
   !! element data
   TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
   !! node data
+  TYPE(NodeDataList_) :: nodeDataList
+  !! NodeData list
+
 CONTAINS
   PRIVATE
 
@@ -65,6 +69,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+    !! Display the content
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => obj_DisplayNodeData
+    !! Display node data
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => obj_DisplayElementData
+    !! Display element data
 
   ! SET:
   ! @NodeDataMethods
@@ -137,7 +146,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -153,6 +162,38 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
     !! unit number of ouput file
   END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 DisplayNodeData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-29
+! summary: Displays the Node data
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayNodeData(obj, msg, unitno)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_DisplayNodeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayElementData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-29
+! summary: Displays the element data
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayElementData(obj, msg, unitno)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_DisplayElementData
 END INTERFACE
 
 !----------------------------------------------------------------------------

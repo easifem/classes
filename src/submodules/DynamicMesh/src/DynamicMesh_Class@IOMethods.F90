@@ -19,6 +19,7 @@ SUBMODULE(DynamicMesh_Class) IOMethods
 USE GlobalData, ONLY: Point1
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
 USE ReallocateUtility
+USE Display_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -68,88 +69,88 @@ CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
 
 isok = (elemType .EQ. Point1) .OR. (elemType .EQ. 0)
 
-ASSOCIATE (elementDataList => obj%elementDataList,  &
-  & nodeDataBinaryTree => obj%nodeDataBinaryTree)
+IF (isok) RETURN
 
-  CALL elementDataList%Initiate()
-  CALL nodeDataBinaryTree%Initiate()
+CALL obj%elementDataList%Initiate()
+CALL obj%nodeDataBinaryTree%Initiate()
+CALL obj%nodeDataList%Initiate()
 
-  DO ii = 1, obj%tElements
+DO ii = 1, obj%tElements
 
-    elemdata_ptr => ElemData_Pointer()
-    CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
-      & localElemNum=ii, globalNodes=connectivity(:, ii))
-    CALL elementDataList%Add(elemdata_ptr)
+  elemdata_ptr => ElemData_Pointer()
+  CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
+    & localElemNum=ii, globalNodes=connectivity(:, ii))
+  CALL obj%elementDataList%Add(elemdata_ptr)
 
-    DO jj = 1, SIZE(connectivity, 1)
+  DO jj = 1, SIZE(connectivity, 1)
 
-      nodedata_ptr => NodeData_Pointer()
-      CALL NodeDataSet(obj=nodedata_ptr,  &
-        & globalNodeNum=connectivity(jj, ii),  &
-        & nodeType=TypeNode%boundary)
-      ! TypeNode is defined in NodeData_Class
-      ! The above step is unusual, but we know the position of
-      ! internal nptrs, so later we will set the
-      ! those nodes as INTERNAL_NODE, in this way we can
-      ! identify the boundary nodes
+    nodedata_ptr => NodeData_Pointer()
+    CALL NodeDataSet(obj=nodedata_ptr,  &
+      & globalNodeNum=connectivity(jj, ii),  &
+      & nodeType=TypeNode%boundary)
+    ! TypeNode is defined in NodeData_Class
+    ! The above step is unusual, but we know the position of
+    ! internal nptrs, so later we will set the
+    ! those nodes as INTERNAL_NODE, in this way we can
+    ! identify the boundary nodes
 
-      tsize1 = nodeDataBinaryTree%SIZE()
-      CALL nodeDataBinaryTree%Insert(nodedata_ptr)
-      tsize2 = nodeDataBinaryTree%SIZE()
+    tsize1 = obj%nodeDataBinaryTree%SIZE()
+    CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
+    tsize2 = obj%nodeDataBinaryTree%SIZE()
 
-      IF (tsize1 .EQ. tsize2) THEN
-        CALL NodeData_Deallocate(nodedata_ptr)
-        ! NOTE:
+    IF (tsize1 .EQ. tsize2) THEN
+      CALL NodeData_Deallocate(nodedata_ptr)
+      ! NOTE:
         !! We have not added nodedata_ptr,
         !! We know this because tsize1 == tsize2so
         !! so we should remove this memory
         !! this step is necessary for avoiding the memory leak
-        DEALLOCATE (nodedata_ptr)
-      END IF
-
-    END DO
+      DEALLOCATE (nodedata_ptr)
+    ELSE
+      CALL obj%nodeDataList%Add(nodedata_ptr)
+    END IF
 
   END DO
 
-  CALL nodeDataBinaryTree%SetID()
+END DO
+
+CALL obj%nodeDataBinaryTree%SetID()
   !! This method will set the local node number in the binarytree
 
-  obj%tNodes = nodeDataBinaryTree%SIZE()
+obj%tNodes = obj%nodeDataBinaryTree%SIZE()
   !! This method returns the total number of nodes in mesh
 
-  nodedata_ptr => nodeDataBinaryTree%GetMinPointer()
-  obj%minNptrs = nodedata_ptr%globalNodeNum
+nodedata_ptr => obj%nodeDataBinaryTree%GetMinPointer()
+obj%minNptrs = nodedata_ptr%globalNodeNum
 
-  nodedata_ptr => nodeDataBinaryTree%GetMaxPointer()
-  obj%maxNptrs = nodedata_ptr%globalNodeNum
+nodedata_ptr => obj%nodeDataBinaryTree%GetMaxPointer()
+obj%maxNptrs = nodedata_ptr%globalNodeNum
 
-  nodedata_ptr => NULL()
-  CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
+nodedata_ptr => NULL()
+CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
 
-  DO CONCURRENT(ii=1:obj%tElements)
-    obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
-  END DO
+DO CONCURRENT(ii=1:obj%tElements)
+  obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
+END DO
 
-  ! TODO: Parallel
-  DO ii = 1, obj%maxNptrs
-    IF (obj%local_Nptrs(ii) .NE. 0) THEN
-      nodedata%globalNodeNum = ii
-      nodedata_ptr => nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-      obj%local_Nptrs(ii) = nodedata_ptr%localNodeNum
-    END IF
-  END DO
+! TODO: Parallel
+DO ii = 1, obj%maxNptrs
+  IF (obj%local_Nptrs(ii) .NE. 0) THEN
+    nodedata%globalNodeNum = ii
+    nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+    obj%local_Nptrs(ii) = nodedata_ptr%localNodeNum
+  END IF
+END DO
 
-  ! TODO: Parallel
-  DO ii = 1, SIZE(internalNptrs)
-    jj = internalNptrs(ii)
-    CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
-    nodedata_ptr => nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-    CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
-  END DO
+! TODO: Parallel
+DO ii = 1, SIZE(internalNptrs)
+  jj = internalNptrs(ii)
+  CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+  nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+  CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
+END DO
 
-  nodedata_ptr => NULL()
-
-END ASSOCIATE
+nodedata_ptr => NULL()
 
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
@@ -170,6 +171,25 @@ MODULE PROCEDURE obj_Display
 CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
 CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
+CALL obj%nodeDataList%Display("nodeDataList: ", unitno=unitno)
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                            DisplayNodeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayNodeData
+CALL obj%nodeDataList%Display("nodeDataList: ", unitno=unitno)
+CALL BlankLines(nol=2, unitno=unitno)
+CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
+END PROCEDURE obj_DisplayNodeData
+
+!----------------------------------------------------------------------------
+!                                                         DisplayElementData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayElementData
+CALL obj%elementDataList%Display("elementData: ", unitno=unitno)
+END PROCEDURE obj_DisplayElementData
 
 END SUBMODULE IOMethods
