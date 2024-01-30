@@ -114,6 +114,11 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
     !! returns the local element number of global element number iel.
 
+  INTEGER(I4B), ALLOCATABLE :: local_Nptrs(:)
+    !! Returns local node number from a global node number
+    !! Its length is from 1 to maxNptrs
+    !! Helpul in finding if a global node is present inside the mesh or not
+
 END TYPE AbstractMesh_
 
 !----------------------------------------------------------------------------
