@@ -18,6 +18,7 @@
 SUBMODULE(DynamicMesh_Class) NodeDataMethods
 USE IntList_Class
 USE Display_Method
+USE ReallocateUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -27,16 +28,39 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, globalElemNum, jj, localNodeNum, globalNodeNum,  &
+  & tNodes, tsize
 TYPE(ElemDataListIterator_) :: elemdata_iter, elemdata_end
 CLASS(ElemData_), POINTER :: elemdata_ptr
-! TYPE(NodeData_) :: nodedata
-! TYPE(NodeData_), POINTER :: nodedata_ptr
-INTEGER(I4B) :: ii, globalElemNum, jj, localNodeNum, globalNodeNum, tNodes
 TYPE(IntList_), ALLOCATABLE :: node_to_elem_list_vec(:)
+TYPE(IntListIterator_) :: intList_iter
+TYPE(NodeDataListIterator_) :: nodeDataList_iter, nodeDataList_end
+TYPE(NodeData_), POINTER :: nodedata_ptr
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
+
+#ifdef DEBUG_VER
+
+IF (obj%isNodeToElementsInitiated) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'isNodeToElementsInitiated is True, Nothing to do.')
+  RETURN
+END IF
+
+#else
+
+IF (obj%isNodeToElementsInitiated) RETURN
+
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+obj%isNodeToElementsInitiated = .TRUE.
 
 elemdata_iter = obj%elementDataList%Begin()
 elemdata_end = obj%elementDataList%END()
-ii = 0
 
 tNodes = obj%GetTotalNodes()
 ALLOCATE (node_to_elem_list_vec(tNodes))
@@ -46,7 +70,6 @@ DO ii = 1, tNodes
 END DO
 
 DO WHILE (elemdata_iter .NE. elemdata_end)
-
   elemdata_ptr => elemdata_iter%VALUE
   isok = ASSOCIATED(elemdata_ptr)
   IF (.NOT. isok) CYCLE

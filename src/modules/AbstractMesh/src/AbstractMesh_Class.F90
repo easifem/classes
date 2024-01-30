@@ -691,7 +691,7 @@ END INTERFACE AbstractMeshDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayNodeData(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayNodeData
@@ -707,7 +707,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayElementData(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayElementData
@@ -723,7 +723,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayInternalFacetData(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayInternalFacetData
@@ -739,7 +739,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayBoundaryFacetData(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayBoundaryFacetData
@@ -755,7 +755,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayFacetElements(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayFacetElements
