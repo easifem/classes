@@ -22,14 +22,20 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: ElemData_
-PUBLIC :: ElemData_Display
+PUBLIC :: Display
 PUBLIC :: TypeElem
 PUBLIC :: ElemDataDeallocate
+PUBLIC :: ElemDataSet
+PUBLIC :: ElemData_Pointer
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
+
+INTERFACE Display
+  MODULE PROCEDURE ElemData_Display
+END INTERFACE Display
 
 !----------------------------------------------------------------------------
 !                                                                 ElemData_
@@ -40,9 +46,9 @@ INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 ! summary: Data type for storing element data
 
 TYPE :: ElemData_
-  INTEGER(I4B) :: globalElemNum = 0
+  INTEGER(I4B) :: globalElemNum = 0_I4B
     !! global element number
-  INTEGER(I4B) :: localElemNum = 0
+  INTEGER(I4B) :: localElemNum = 0_I4B
     !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
     !! BOUNDARY_ELEMENT: If the element contqains the boundary node
@@ -150,5 +156,36 @@ SUBROUTINE ElemDataDeallocate(obj)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
 END SUBROUTINE ElemDataDeallocate
+
+!----------------------------------------------------------------------------
+!                                                           ElemDataInitiate
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
+  & elementType, globalNodes, globalElements, boundaryData)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElemNum
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: localElemNum
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: boundaryData(:)
+
+  IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
+  IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
+  IF (PRESENT(elementType)) obj%elementType = elementType
+  IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
+  IF (PRESENT(globalElements)) obj%globalElements = globalElements
+  IF (PRESENT(boundaryData)) obj%boundaryData = boundaryData
+END SUBROUTINE ElemDataSet
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_Pointer
+!----------------------------------------------------------------------------
+
+FUNCTION ElemData_Pointer() RESULT(ans)
+  CLASS(ElemData_), POINTER :: ans
+  ALLOCATE (ElemData_ :: ans)
+END FUNCTION ElemData_Pointer
 
 END MODULE ElemData_Class

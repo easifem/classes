@@ -23,5 +23,8 @@
 #define FTL_INSTANTIATE_TEMPLATE
 
 MODULE ElementList_Class
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE Display_Method
+USE ElementFactory
 #include "../../ftlMacros/ftlList.inc"
 END MODULE ElementList_Class
