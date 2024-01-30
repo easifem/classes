@@ -42,45 +42,12 @@ END IF
 END PROCEDURE obj_GetMaxNNE
 
 !----------------------------------------------------------------------------
-!                                                                      SIZE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_size
-ans = obj%tElements
-END PROCEDURE obj_size
-
-!----------------------------------------------------------------------------
-!                                                                GetElemNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetElemNum
-INTEGER(I4B) :: ii
-! main
-CALL Reallocate(ans, obj%GetTotalElements())
-DO ii = 1, SIZE(ans)
-  ans(ii) = obj%GetGlobalElemNumber(localElement=ii)
-END DO
-END PROCEDURE obj_GetElemNum
-
-!----------------------------------------------------------------------------
 !                                                          GetRefElemPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRefElemPointer
 ans => obj%refelem
 END PROCEDURE obj_GetRefElemPointer
-
-!----------------------------------------------------------------------------
-!                                                         GetBoundingEntity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetBoundingEntity
-IF (ALLOCATED(obj%boundingEntity)) THEN
-  ans = obj%boundingEntity
-ELSE
-  ALLOCATE (ans(0))
-END IF
-END PROCEDURE obj_GetBoundingEntity
 
 !----------------------------------------------------------------------------
 !                                                               GetNptrs
@@ -141,74 +108,6 @@ END IF
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
-!                                                           isNodePresent
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isNodePresent
-ans = .TRUE.
-IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
-  ans = .FALSE.
-ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
-  ans = .FALSE.
-END IF
-END PROCEDURE obj_isNodePresent
-
-!----------------------------------------------------------------------------
-!                                                           isAnyNodePresent
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isAnyNodePresent
-LOGICAL(LGT), ALLOCATABLE :: cond(:)
-INTEGER(I4B) :: ii, n
-!
-n = SIZE(globalNode)
-ALLOCATE (cond(n))
-!
-DO ii = 1, n
-  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
-END DO
-!
-ans = ANY(cond)
-!
-IF (ALLOCATED(cond)) DEALLOCATE (cond)
-!
-END PROCEDURE obj_isAnyNodePresent
-
-!----------------------------------------------------------------------------
-!                                                           isAllNodePresent
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isAllNodePresent
-LOGICAL(LGT), ALLOCATABLE :: cond(:)
-INTEGER(I4B) :: ii, n
-!
-n = SIZE(globalNode)
-ALLOCATE (cond(n))
-!
-DO ii = 1, n
-  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
-END DO
-!
-ans = ALL(cond)
-IF (ALLOCATED(cond)) DEALLOCATE (cond)
-!
-END PROCEDURE obj_isAllNodePresent
-
-!----------------------------------------------------------------------------
-!                                                           isElementPresent
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isElementPresent
-IF (GlobalElement .GT. obj%maxElemNum &
-  & .OR. GlobalElement .LT. obj%minElemNum &
-  & .OR. obj%local_elemNumber(GlobalElement) .EQ. 0) THEN
-  ans = .FALSE.
-ELSE
-  ans = .TRUE.
-END IF
-END PROCEDURE obj_isElementPresent
-
-!----------------------------------------------------------------------------
 !                                                         isBoundaryElement
 !----------------------------------------------------------------------------
 
@@ -241,39 +140,15 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
-!
+
 IF (obj%boundaryFacetData(facetElement)%elementType  &
   & .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-!
+
 END PROCEDURE obj_isDomainFacetElement
-
-!----------------------------------------------------------------------------
-!                                                     GetTotalInternalNodes
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalInternalNodes
-ans = obj%tIntNodes
-END PROCEDURE obj_GetTotalInternalNodes
-
-!----------------------------------------------------------------------------
-!                                                       GetTotalNodes
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalNodes
-ans = obj%tNodes
-END PROCEDURE obj_GetTotalNodes
-
-!----------------------------------------------------------------------------
-!                                                   GetTotalBoundaryNodes
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalBoundaryNodes
-ans = obj%tNodes - obj%tIntNodes
-END PROCEDURE obj_GetTotalBoundaryNodes
 
 !----------------------------------------------------------------------------
 !                                                 GetTotalBoundaryElements
@@ -282,49 +157,6 @@ END PROCEDURE obj_GetTotalBoundaryNodes
 MODULE PROCEDURE obj_GetTotalBoundaryElements
 ans = COUNT(obj%elementData(:)%elementType == BOUNDARY_ELEMENT)
 END PROCEDURE obj_GetTotalBoundaryElements
-
-!----------------------------------------------------------------------------
-!                                                            GetBoundingBox
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetBoundingBox1
-REAL(DFP) :: lim(6)
-lim(1) = obj%minX
-lim(2) = obj%maxX
-lim(3) = obj%minY
-lim(4) = obj%maxY
-lim(5) = obj%minZ
-lim(6) = obj%maxZ
-CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
-END PROCEDURE obj_GetBoundingBox1
-
-!----------------------------------------------------------------------------
-!                                                             GetBoundingBox
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetBoundingBox2
-INTEGER(I4B) :: nsd
-REAL(DFP) :: lim(6)
-!> main
-lim = 0.0_DFP
-nsd = SIZE(nodes, 1)
-IF (PRESENT(local_nptrs)) THEN
-  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd,  &
-    & local_nptrs(obj%GetNptrs())),  &
-    & dim=2)
-  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd,  &
-    & local_nptrs(obj%GetNptrs())),  &
-    & dim=2)
-ELSE
-  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, &
-    & obj%GetNptrs()), &
-    & dim=2)
-  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, &
-    & obj%GetNptrs()), &
-    & dim=2)
-END IF
-CALL Initiate(obj=ans, nsd=nsd, lim=lim)
-END PROCEDURE obj_GetBoundingBox2
 
 !----------------------------------------------------------------------------
 !                                                            GetConnectivity
@@ -350,41 +182,6 @@ END DO
 END PROCEDURE obj_GetNodeConnectivity
 
 !----------------------------------------------------------------------------
-!                                                         GetLocalNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalNodeNumber1
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(GlobalNode)
-  ans(ii) = obj_GetLocalNodeNumber2(obj, GlobalNode(ii))
-END DO
-END PROCEDURE obj_GetLocalNodeNumber1
-
-!----------------------------------------------------------------------------
-!                                                        GetLocalNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalNodeNumber2
-IF (GlobalNode .LT. obj%MinNptrs &
-  & .OR. GlobalNode .GT. obj%maxNptrs) THEN
-  ans = 0
-ELSE
-  ans = obj%Local_Nptrs(GlobalNode)
-END IF
-END PROCEDURE obj_GetLocalNodeNumber2
-
-!----------------------------------------------------------------------------
-!                                                        GetGlobalNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalNodeNumber1
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(LocalNode)
-  ans(ii) = obj_GetGlobalNodeNumber2(obj, LocalNode(ii))
-END DO
-END PROCEDURE obj_GetGlobalNodeNumber1
-
-!----------------------------------------------------------------------------
 !                                                         GetGlobalNodeNumber
 !----------------------------------------------------------------------------
 
@@ -402,17 +199,6 @@ END PROCEDURE obj_GetGlobalNodeNumber2
 !                                                        GetGlobalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetGlobalElemNumber1
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(localElement)
-  ans(ii) = obj_GetGlobalElemNumber2(obj, localElement(ii))
-END DO
-END PROCEDURE obj_GetGlobalElemNumber1
-
-!----------------------------------------------------------------------------
-!                                                        GetGlobalElemNumber
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_GetGlobalElemNumber2
 IF (localElement .EQ. 0) THEN
   ans = 0
@@ -422,30 +208,6 @@ ELSE
   ans = 0
 END IF
 END PROCEDURE obj_GetGlobalElemNumber2
-
-!----------------------------------------------------------------------------
-!                                                         GetLocalElemNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemNumber1
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(GlobalElement)
-  ans(ii) = obj_GetLocalElemNumber2(obj, GlobalElement(ii))
-END DO
-END PROCEDURE obj_GetLocalElemNumber1
-
-!----------------------------------------------------------------------------
-!                                                         GetLocalElemNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemNumber2
-IF (GlobalElement .LT. obj%MinElemNum &
-  & .OR. GlobalElement .GT. obj%maxElemNum) THEN
-  ans = 0
-ELSE
-  ans = obj%local_elemNumber(GlobalElement)
-END IF
-END PROCEDURE obj_GetLocalElemNumber2
 
 !----------------------------------------------------------------------------
 !                                                          GetNodeToElements
@@ -462,36 +224,10 @@ END IF
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
-!                                                          GetNodeToElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNodeToElements2
-TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: ivec(:)
-INTEGER(I4B) :: ii
-!> main
-DO ii = 1, SIZE(GlobalNode)
-  ivec = obj%GetNodeToElements(GlobalNode=GlobalNode(ii))
-  IF (ALLOCATED(ivec)) THEN
-    IF (SIZE(ivec) .NE. 0) THEN
-      CALL append(intvec, ivec)
-    END IF
-  END IF
-END DO
-CALL RemoveDuplicates(intvec)
-ans = intvec
-CALL DEALLOCATE (intvec)
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-END PROCEDURE obj_GetNodeToElements2
-
-!----------------------------------------------------------------------------
 !                                                            GetNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodes1
-!
-! Define internal variable
-!
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), extranptrs(:)
 INTEGER(I4B) :: i, j
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodes1()"
@@ -500,15 +236,15 @@ i = obj%GetLocalNodeNumber(GlobalNode=GlobalNode)
 
 ! check
 IF (obj%isExtraNodeToNodesInitiated) THEN
-  !
+
   IF (i .EQ. 0) THEN
     ALLOCATE (ans(0))
   ELSE
     IF (IncludeSelf) THEN
-      !
+
       nptrs = obj%nodeData(i)%globalNodes
       i = SIZE(nptrs)
-      !
+
       IF (ALLOCATED(obj%nodeData(i)%extraGlobalNodes)) THEN
         extranptrs = obj%nodeData(i)%extraGlobalNodes
         j = SIZE(extranptrs)
@@ -529,9 +265,9 @@ IF (obj%isExtraNodeToNodesInitiated) THEN
         & obj%nodeData(i)%extraGlobalNodes)
     END IF
   END IF
-  !
+
 ELSE
-  !
+
   IF (i .EQ. 0) THEN
     ALLOCATE (ans(0))
   ELSE
@@ -545,37 +281,13 @@ ELSE
       ans = obj%nodeData(i)%globalNodes
     END IF
   END IF
-  !
+
 END IF
-!
-!
-!
+
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(extranptrs)) DEALLOCATE (extranptrs)
-!
+
 END PROCEDURE obj_GetNodeToNodes1
-
-!----------------------------------------------------------------------------
-!                                                            GetNodeToNodes
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNodeToNodes2
-TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: ivec(:)
-INTEGER(I4B) :: ii
-!> main
-DO ii = 1, SIZE(GlobalNode)
-  ivec = obj%GetNodeToNodes(GlobalNode=GlobalNode(ii), &
-    & IncludeSelf=IncludeSelf)
-  IF (ALLOCATED(ivec)) THEN
-    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
-  END IF
-END DO
-CALL RemoveDuplicates(intvec)
-ans = intvec
-CALL DEALLOCATE (intvec)
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-END PROCEDURE obj_GetNodeToNodes2
 
 !----------------------------------------------------------------------------
 !                                                       GetElementToElements
@@ -585,11 +297,11 @@ MODULE PROCEDURE obj_GetElementToElements
 LOGICAL(LGT) :: onlyElem
 INTEGER(I4B), ALLOCATABLE :: Indx(:)
 INTEGER(I4B) :: iel
-!
+
 onlyElem = .FALSE.
 IF (PRESENT(onlyElements)) onlyElem = onlyElements
 iel = obj%GetLocalElemNumber(globalElement)
-!
+
 IF (ALLOCATED(obj%elementData(iel)%globalElements)) THEN
   IF (onlyElem) THEN
     Indx = obj%elementData(iel)%globalElements
@@ -612,14 +324,14 @@ END PROCEDURE obj_GetElementToElements
 
 MODULE PROCEDURE obj_GetBoundaryElementData
 INTEGER(I4B) :: iel
-!
+
 IF (obj%isBoundaryElement(globalElement)) THEN
   iel = obj%GetLocalElemNumber(globalElement)
   ans = obj%elementData(iel)%boundaryData
 ELSE
   ALLOCATE (ans(0))
 END IF
-!
+
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
@@ -647,51 +359,13 @@ ans = obj%xidim
 END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
-!                                                                GetMaterial
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMaterial
-LOGICAL(LGT) :: isok
-ans = 0
-
-isok = ALLOCATED(obj%material)
-IF (.NOT. isok) RETURN
-isok = medium .LE. SIZE(obj%material)
-IF (.NOT. isok) RETURN
-
-ans = obj%material(medium)
-END PROCEDURE obj_GetMaterial
-
-!----------------------------------------------------------------------------
-!                                                         GetTotalMaterial
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalMaterial
-IF (ALLOCATED(obj%material)) THEN
-  ans = SIZE(obj%material)
-ELSE
-  ans = 0
-END IF
-END PROCEDURE obj_GetTotalMaterial
-
-!----------------------------------------------------------------------------
-!                                                      GetTotalFacetElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalFacetElements
-ans = obj%GetTotalInternalFacetElements() &
-  & + obj%GetTotalBoundaryFacetElements()
-END PROCEDURE obj_GetTotalFacetElements
-
-!----------------------------------------------------------------------------
 !                                              GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
+ans = 0
 IF (ALLOCATED(obj%internalFacetData)) THEN
   ans = SIZE(obj%internalFacetData)
-ELSE
-  ans = 0
 END IF
 END PROCEDURE obj_GetTotalInternalFacetElements
 
@@ -700,10 +374,9 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
+ans = 0
 IF (ALLOCATED(obj%boundaryFacetData)) THEN
   ans = SIZE(obj%boundaryFacetData)
-ELSE
-  ans = 0
 END IF
 END PROCEDURE obj_GetTotalBoundaryFacetElements
 
@@ -822,69 +495,25 @@ END PROCEDURE obj_GetFacetElementType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetQuery
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
-IF (PRESENT(isNodeToElementsInitiated)) isNodeToElementsInitiated =  &
-& obj%isNodeToElementsInitiated
-IF (PRESENT(isNodeToNodesInitiated)) isNodeToNodesInitiated =  &
-  & obj%isNodeToNodesInitiated
-IF (PRESENT(isExtraNodeToNodesInitiated)) isExtraNodeToNodesInitiated =  &
-  & obj%isExtraNodeToNodesInitiated
-IF (PRESENT(isElementToElementsInitiated)) isElementToElementsInitiated =  &
-  & obj%isElementToElementsInitiated
-IF (PRESENT(isBoundaryDataInitiated)) isBoundaryDataInitiated = &
-  & obj%isBoundaryDataInitiated
-IF (PRESENT(isFacetDataInitiated)) isFacetDataInitiated =  &
-  & obj%isFacetDataInitiated
-IF (PRESENT(uid)) uid = obj%uid
+CALL AbstractMeshGetQuery(obj=obj, &
+    & isInitiated=isInitiated,  &
+    & isNodeToElementsInitiated=isNodeToElementsInitiated,  &
+    & isNodeToNodesInitiated=isNodeToNodesInitiated, &
+    & isExtraNodeToNodesInitiated=isExtraNodeToNodesInitiated, &
+    & isElementToElementsInitiated=isElementToElementsInitiated, &
+    & isBoundaryDataInitiated=isBoundaryDataInitiated,  &
+    & isFacetDataInitiated=isFacetDataInitiated, uid=uid, &
+    & xidim=xidim, elemType=elemType, nsd=nsd, maxNptrs=maxNptrs, &
+    & minNptrs=minNptrs, maxElemNum=maxElemNum, minElemNum=minElemNum,  &
+    & tNodes=tNodes, tIntNodes=tIntNodes, tElements=tElements, &
+    & minX=minX, minY=minY, minZ=minZ, maxX=maxX, maxY=maxY, maxZ=maxZ, &
+    & x=x, y=y, z=z, tElements_topology_wise=tElements_topology_wise,  &
+    & tElemTopologies=tElemTopologies,  &
+    & elemTopologies=elemTopologies)
+
 IF (PRESENT(xidim)) xidim = obj%xidim
 IF (PRESENT(elemType)) elemType = obj%elemType
-IF (PRESENT(nsd)) nsd = obj%nsd
-IF (PRESENT(maxNptrs)) maxNptrs = obj%maxNptrs
-IF (PRESENT(minNptrs)) minNptrs = obj%minNptrs
-IF (PRESENT(maxElemNum)) maxElemNum = obj%maxElemNum
-IF (PRESENT(minElemNum)) minElemNum = obj%minElemNum
-IF (PRESENT(tNodes)) tNodes = obj%tNodes
-IF (PRESENT(tIntNodes)) tIntNodes = obj%tIntNodes
-IF (PRESENT(tElements)) tElements = obj%tElements
-IF (PRESENT(minX)) minX = obj%minX
-IF (PRESENT(minY)) minY = obj%minY
-IF (PRESENT(minZ)) minZ = obj%minZ
-IF (PRESENT(maxX)) maxX = obj%maxX
-IF (PRESENT(maxY)) maxY = obj%maxY
-IF (PRESENT(maxZ)) maxZ = obj%maxZ
 END PROCEDURE obj_GetQuery
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMinElemNumber
-ans = obj%minElemNum
-END PROCEDURE obj_GetMinElemNumber
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMaxElemNumber
-ans = obj%maxElemNum
-END PROCEDURE obj_GetMaxElemNumber
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMinNodeNumber
-ans = obj%minNptrs
-END PROCEDURE obj_GetMinNodeNumber
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMaxNodeNumber
-ans = obj%maxNptrs
-END PROCEDURE obj_GetMaxNodeNumber
 
 !----------------------------------------------------------------------------
 !
