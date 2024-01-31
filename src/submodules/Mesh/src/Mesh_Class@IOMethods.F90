@@ -51,18 +51,13 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
-  & internalNptrs(:)
 CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy, jj
-LOGICAL(LGT) :: isok, abool
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
-
-CALL obj%DEALLOCATE()
 
 dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
@@ -73,89 +68,13 @@ CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname,  &
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
-IF (obj%tElements .NE. 0) THEN
-  ALLOCATE (obj%elementData(obj%tElements))
-END IF
+obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
+  & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
 
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
-  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
-  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
-  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
-
-DO CONCURRENT(ii=1:obj%tElements)
-  obj%elementData(ii)%globalElemNum = elemNumber(ii)
-  obj%elementData(ii)%localElemNum = ii
-END DO
-
-isok = (obj%elemType .EQ. Point1) .OR. (obj%elemType .EQ. 0)
-
+isok = obj%xidim .GT. 0
 IF (isok) THEN
-  obj%tNodes = 1
-  ALLOCATE (obj%nodeData(obj%tNodes))
-  obj%nodeData(1)%localNodeNum = 1
-  obj%nodeData(1)%globalNodeNum = internalNptrs(1)
-  obj%nodeData(1)%nodeType = INTERNAL_NODE
-
-  IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-  IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-  IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
-#endif
-
-  RETURN
+  obj%facetElements = FacetElements(obj%refelem)
 END IF
-
-obj%maxNptrs = MAXVAL(connectivity)
-obj%minNptrs = MINVAL(connectivity)
-CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
-
-DO CONCURRENT(ii=1:obj%tElements)
-  obj%elementData(ii)%globalNodes = connectivity(:, ii)
-  obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
-END DO
-
-obj%tNodes = COUNT(obj%local_Nptrs .NE. 0)
-ALLOCATE (obj%nodeData(obj%tNodes))
-dummy = 0
-
-DO ii = 1, obj%maxNptrs
-  IF (obj%local_Nptrs(ii) .NE. 0) THEN
-    dummy = dummy + 1
-    obj%nodeData(dummy)%globalNodeNum = obj%local_Nptrs(ii)
-    obj%nodeData(dummy)%localNodeNum = dummy
-    obj%nodeData(dummy)%nodeType = BOUNDARY_NODE
-    ! The above step is unusual, but we know the position of
-    ! internal nptrs, so later we will set the
-    ! those nodes as INTERNAL_NODE, in this way we can
-    ! identify the boundary nodes
-    obj%local_Nptrs(ii) = dummy
-  END IF
-END DO
-
-DO ii = 1, SIZE(internalNptrs)
-  jj = obj%GetLocalNodeNumber(internalNptrs(ii))
-  obj%nodeData(jj)%globalNodeNum = internalNptrs(ii)
-  obj%nodeData(jj)%nodeType = INTERNAL_NODE
-END DO
-
-isok = obj%tElements .GT. 0
-abool = obj%xidim .GT. 0
-IF (isok) THEN
-  obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
-    & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
-  IF (abool) obj%facetElements = FacetElements(obj%refelem)
-END IF
-
-IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
