@@ -88,6 +88,11 @@ IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
 IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
+
+CALL obj%elementDataList%DEALLOCATE()
+CALL obj%elementDataBinaryTree%DEALLOCATE()
+CALL obj%nodeDataList%DEALLOCATE()
+CALL obj%nodeDataBinaryTree%DEALLOCATE()
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -104,5 +109,57 @@ IF (obj%tNodes .LE. 0_I4B) THEN
   ans = .TRUE.
 END IF
 END PROCEDURE obj_isEmpty
+
+!----------------------------------------------------------------------------
+!                                           InitiateDynamicDataStructure
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateDynamicDataStructure
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+INTEGER(I4B) :: ii
+TYPE(ElemData_), POINTER :: elemdata_ptr
+TYPE(NodeData_), POINTER :: nodedata_ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
+  RETURN
+END IF
+
+IF (obj%tElements .EQ. 0) RETURN
+
+CALL obj%elementDataList%Initiate()
+CALL obj%elementDataBinaryTree%Initiate()
+CALL obj%nodeDataList%Initiate()
+CALL obj%nodeDataBinaryTree%Initiate()
+
+DO ii = 1, obj%tElements
+  elemdata_ptr => ElemData_Pointer()
+  CALL ElemData_Copy(elemdata_ptr, obj%elementData(ii))
+  CALL obj%elementDataList%Add(elemdata_ptr)
+  CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
+END DO
+
+DO ii = 1, obj%tNodes
+  nodedata_ptr => NodeData_Pointer()
+  CALL NodeData_Copy(nodedata_ptr, obj%nodeData(ii))
+  CALL obj%nodeDataList%Add(nodedata_ptr)
+  CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
+END DO
+
+elemdata_ptr => NULL()
+nodedata_ptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_InitiateDynamicDataStructure
 
 END SUBMODULE ConstructorMethods
