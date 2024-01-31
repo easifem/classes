@@ -27,6 +27,7 @@ USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
   & ElemData_Display => Display
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
   & InternalFacetData_Display, BoundaryFacetData_Display
+USE CPUTime_Class, ONLY: CPUTime_
 IMPLICIT NONE
 
 PRIVATE
@@ -47,6 +48,9 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 ! summary:  Abstract class for mesh
 
 TYPE, ABSTRACT :: AbstractMesh_
+  LOGICAL(LGT) :: showTime = .FALSE.
+    !! If true, then we show the time taken by various mesh operations
+    !! This is for checking the performance of a subclass
   LOGICAL(LGT) :: readFromFile = .TRUE.
     !! True if the mesh is read from a file
   LOGICAL(LGT) :: isInitiated = .FALSE.
@@ -198,9 +202,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
     & obj_DisplayBoundaryFacetData
     !! Display mesh facet data
-    !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & obj_DisplayFacetElements
+    !! Display facet element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
+    & obj_DisplayMeshInfo
+    !! Display mesh statistics
 
   ! SET:
   ! @NodeDataMethods
@@ -454,6 +461,9 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
+  !! Set showTime option
 
   PROCEDURE, PASS(obj) :: SetBoundingBox1 => obj_setBoundingBox1
   !! Set the bounding box of the mesh
@@ -759,6 +769,22 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               DisplayMeshInfo@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Display mesh statistics
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayMeshInfo(obj, msg, unitno)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_DisplayMeshInfo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2066,7 +2092,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  SetBoundingBox@setMethods
+!                                                   SetShowTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Set the showTime
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetShowTime(obj, VALUE)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetShowTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  SetBoundingBox@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2081,7 +2122,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  SetBoundingBox@setMethods
+!                                                  SetBoundingBox@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2206,7 +2247,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetMaterial@setMethods
+!                                                     SetMaterial@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2221,7 +2262,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetMaterial@setMethods
+!                                                     SetMaterial@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2237,7 +2278,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            SetFacetElementType@setMethods
+!                                            SetFacetElementType@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2255,7 +2296,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetQuality@setMethods
+!                                                   SetQuality@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
