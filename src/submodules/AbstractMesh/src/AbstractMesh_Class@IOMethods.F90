@@ -18,7 +18,7 @@
 SUBMODULE(AbstractMesh_Class) IOMethods
 USE Display_Method
 USE ReallocateUtility
-USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
 IMPLICIT NONE
 CONTAINS
 
@@ -150,7 +150,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
 INTEGER(I4B) :: ii, dummy
 LOGICAL(LGT) :: isok
-INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:)
+INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
+  & internalNptrs(:)
+LOGICAL(LGT), ALLOCATABLE :: mask(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -190,84 +192,108 @@ END IF
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname,  &
   & fieldname="uid", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
   & fieldname="nsd", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tIntNodes, group=dsetname,  &
   & fieldname="tIntNodes", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname,  &
   & fieldname="tElements", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minX, group=dsetname,  &
   & fieldname="minX", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minY, group=dsetname,  &
   & fieldname="minY", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minZ, group=dsetname,  &
   & fieldname="minZ", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxX, group=dsetname,  &
   & fieldname="maxX", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxY, group=dsetname,  &
   & fieldname="maxY", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxZ, group=dsetname,  &
   & fieldname="maxZ", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%x, group=dsetname,  &
   & fieldname="x", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%y, group=dsetname,  &
   & fieldname="y", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname,  &
   & fieldname="z", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
   & fieldname="physicalTag", myname=myname, modname=modname, check=.TRUE.)
+
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
   & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
-IF (ALLOCATED(elemNumber) .AND. SIZE(elemNumber) .NE. 0) THEN
+CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
+  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
+  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
+  & fieldname="boundingEntity", myname=myname, modname=modname, check=.TRUE.)
+
+isok = .FALSE.
+IF (ALLOCATED(elemNumber)) THEN
+  isok = SIZE(elemNumber) .NE. 0
+END IF
+
+IF (isok) THEN
   obj%maxElemNum = MAXVAL(elemNumber)
   obj%minElemNum = MINVAL(elemNumber)
-ELSE
-  obj%maxElemNum = 0
-  obj%minElemNum = 0
+  obj%maxNptrs = MAXVAL(connectivity)
+  obj%minNptrs = MINVAL(connectivity)
 END IF
 
 CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
+CALL Reallocate(obj%local_nptrs, obj%maxNptrs)
+CALL Reallocate(mask, obj%maxNptrs)
+ALLOCATE (obj%elementData(obj%tElements))
+
+mask = .FALSE.
+mask(internalNptrs) = .TRUE.
 
 DO CONCURRENT(ii=1:obj%tElements)
   obj%local_elemNumber(elemNumber(ii)) = ii
-END DO
-
-isok = hdf5%pathExists(dsetname//"/connectivity")
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//dsetname//'/connectivity path does not exists')
-  RETURN
-END IF
-
-CALL hdf5%READ(dsetname//"/connectivity", connectivity)
-obj%maxNptrs = MAXVAL(connectivity)
-obj%minNptrs = MINVAL(connectivity)
-CALL Reallocate(obj%local_nptrs, obj%maxNptrs)
-
-DO CONCURRENT(ii=1:obj%tElements)
+  obj%elementData(ii)%globalElemNum = elemNumber(ii)
+  obj%elementData(ii)%localElemNum = ii
+  obj%elementData(ii)%globalNodes = connectivity(:, ii)
   obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
 END DO
 
 obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
 dummy = 0
-
 DO ii = 1, obj%maxNptrs
   IF (obj%local_nptrs(ii) .NE. 0) THEN
     dummy = dummy + 1
+    obj%nodeData(dummy)%globalNodeNum = obj%local_Nptrs(ii)
+    obj%nodeData(dummy)%localNodeNum = dummy
+
+    IF (mask(ii)) THEN
+      obj%nodeData(dummy)%nodeType = INTERNAL_NODE
+    ELSE
+      obj%nodeData(dummy)%nodeType = BOUNDARY_NODE
+    END IF
+
     obj%local_nptrs(ii) = dummy
   END IF
 END DO
 
-!> reading boundingEntity
-! CALL Display('reading boundingEntity', stdout)
-isok = hdf5%pathExists(dsetname//"/boundingEntity")
-IF (isok) THEN
-  CALL hdf5%READ(dsetname//"/boundingEntity", obj%boundingEntity)
-END IF
-
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
+IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
+IF (ALLOCATED(mask)) DEALLOCATE (mask)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
