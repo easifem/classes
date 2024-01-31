@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(AbstractMesh_Class) IOMethods
+USE GlobalData, ONLY: stdout
 USE Display_Method
 USE ReallocateUtility
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
@@ -35,6 +36,8 @@ CALL Display(obj%isInitiated, "Mesh object initiated: ", &
   & unitno=unitno)
 
 IF (.NOT. obj%isInitiated) RETURN
+
+CALL Display(obj%showTime, "showTime: ", unitno=unitno)
 
 CALL Display(obj%readFromFile, "readFromFile: ", unitno=unitno)
 
@@ -153,11 +156,14 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
 LOGICAL(LGT), ALLOCATABLE :: mask(:)
+TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
+
+CALL obj%DEALLOCATE()
 
 dsetname = TRIM(group)
 
@@ -188,6 +194,12 @@ IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR]:: '//dsetname//' path does not exists')
   RETURN
+END IF
+
+IF (obj%showTime) THEN
+  CALL Display("Showing Time States of Importing Mesh", unitno=stdout)
+  CALL EqualLine(unitno=stdout)
+  CALL TypeCPUTime%SetStartTime()
 END IF
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname,  &
@@ -232,6 +244,18 @@ CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname,  &
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
   & fieldname="physicalTag", myname=myname, modname=modname, check=.TRUE.)
 
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
+  & fieldname="boundingEntity", myname=myname, modname=modname, check=.TRUE.)
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in importing scalar data: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
   & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
@@ -241,28 +265,66 @@ CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
   & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
 
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
-  & fieldname="boundingEntity", myname=myname, modname=modname, check=.TRUE.)
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in importing elemNumber, connectivity, intNodeNumber: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
 
 isok = .FALSE.
 IF (ALLOCATED(elemNumber)) THEN
   isok = SIZE(elemNumber) .NE. 0
 END IF
 
-IF (isok) THEN
-  obj%maxElemNum = MAXVAL(elemNumber)
-  obj%minElemNum = MINVAL(elemNumber)
-  obj%maxNptrs = MAXVAL(connectivity)
-  obj%minNptrs = MINVAL(connectivity)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: either elemNumber not ALLOCATED '//  &
+    & 'or size of elemNumber is zero')
+  RETURN
 END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+obj%maxElemNum = MAXVAL(elemNumber)
+obj%minElemNum = MINVAL(elemNumber)
+obj%maxNptrs = MAXVAL(connectivity)
+obj%minNptrs = MINVAL(connectivity)
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in setting max and min: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 CALL Reallocate(obj%local_nptrs, obj%maxNptrs)
-CALL Reallocate(mask, obj%maxNptrs)
 ALLOCATE (obj%elementData(obj%tElements))
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in alloc local_elemNumber, local_nptrs, elementData: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+CALL Reallocate(mask, obj%maxNptrs)
 mask = .FALSE.
 mask(internalNptrs) = .TRUE.
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in making mask: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 DO CONCURRENT(ii=1:obj%tElements)
   obj%local_elemNumber(elemNumber(ii)) = ii
@@ -272,7 +334,27 @@ DO CONCURRENT(ii=1:obj%tElements)
   obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
 END DO
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in making elementData: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
+ALLOCATE (obj%nodeData(obj%tNodes))
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in allocating nodeData: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 dummy = 0
 DO ii = 1, obj%maxNptrs
   IF (obj%local_nptrs(ii) .NE. 0) THEN
@@ -289,6 +371,14 @@ DO ii = 1, obj%maxNptrs
     obj%local_nptrs(ii) = dummy
   END IF
 END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time in making nodeData: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL EqualLine(unitno=stdout)
+END IF
 
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
@@ -421,5 +511,17 @@ CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetElements()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_DisplayFacetElements
+
+!----------------------------------------------------------------------------
+!                                                           DisplayMeshInfo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayMeshInfo
+CALL Display(msg, unitno=unitno)
+CALL EqualLine(unitno=unitno)
+CALL Display(obj%GetTotalNodes(), "total nodes: ", unitno=unitno)
+CALL Display(obj%GetTotalElements(), "total elements: ", unitno=unitno)
+CALL EqualLine(unitno=unitno)
+END PROCEDURE obj_DisplayMeshInfo
 
 END SUBMODULE IOMethods

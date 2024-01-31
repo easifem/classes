@@ -42,6 +42,8 @@ CALL e%RaiseInformation(modName//"::"//myName//" - "// &
   & "[START] Import()")
 #endif
 
+CALL obj%DEALLOCATE()
+
 IF (obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[INTERNAL ERROR] :: AbstractBC_::obj is already initiated'//  &
