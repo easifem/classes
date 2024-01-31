@@ -245,7 +245,13 @@ CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
   & fieldname="physicalTag", myname=myname, modname=modname, check=.TRUE.)
 
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
-  & fieldname="boundingEntity", myname=myname, modname=modname, check=.TRUE.)
+  & fieldname="boundingEntity", myname=myname, modname=modname, check=.FALSE.)
+
+! If boundingEntity is not initiated then we initiate it with size=0
+! Bounding entity will not be initiated for point type
+IF (.NOT. ALLOCATED(obj%boundingEntity)) THEN
+  CALL Reallocate(obj%boundingEntity, 0)
+END IF
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
