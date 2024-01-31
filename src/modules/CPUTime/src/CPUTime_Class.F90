@@ -19,6 +19,7 @@ MODULE CPUTime_Class
 USE GlobalData, ONLY: DFP, I4B
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
+!$ USE OMP_LIB
 IMPLICIT NONE
 PRIVATE
 
@@ -38,11 +39,14 @@ CHARACTER(*), PARAMETER :: myprefix = "CPUTime"
 TYPE :: CPUTime_
   REAL(DFP) :: t1
   REAL(DFP) :: t2
+!$ REAL(DFP) :: wt1
+!$ REAL(DFP) :: wt2
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: SetStartTime => obj_SetStartTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetEndTime => obj_SetEndTime
   PROCEDURE, PUBLIC, PASS(obj) :: GetTime => obj_GetTime
+!$ PROCEDURE, PUBLIC, PASS(obj) :: GetWTime => obj_GetWTime
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: GetStringForKernelLog =>  &
     & obj_GetStringForKernelLog
@@ -108,6 +112,17 @@ INTERFACE
     REAL(DFP) :: ans
   END FUNCTION obj_GetTime
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             getWTime@Methods
+!----------------------------------------------------------------------------
+
+!$ INTERFACE
+!$ MODULE FUNCTION obj_GetWTime(obj) RESULT(ans)
+!$  CLASS(CPUTime_), INTENT(IN) :: obj
+!$  REAL(DFP) :: ans
+!$ END FUNCTION obj_GetWTime
+!$ END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                               Display

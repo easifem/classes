@@ -43,6 +43,7 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_SetStartTime
 CALL CPU_TIME(obj%t1)
+!$ obj%wt1 = omp_get_wtime()
 END PROCEDURE obj_SetStartTime
 
 !----------------------------------------------------------------------------
@@ -51,6 +52,7 @@ END PROCEDURE obj_SetStartTime
 
 MODULE PROCEDURE obj_SetEndTime
 CALL CPU_TIME(obj%t2)
+!$ obj%wt2 = omp_get_wtime()
 END PROCEDURE obj_SetEndTime
 
 !----------------------------------------------------------------------------
@@ -62,6 +64,14 @@ ans = obj%t2 - obj%t1
 END PROCEDURE obj_GetTime
 
 !----------------------------------------------------------------------------
+!                                                                  GetWTime
+!----------------------------------------------------------------------------
+
+!$ MODULE PROCEDURE obj_GetWTime
+!$ ans = obj%wt2 - obj%wt1
+!$ END PROCEDURE obj_GetWTime
+
+!----------------------------------------------------------------------------
 !                                                                  Display
 !----------------------------------------------------------------------------
 
@@ -70,6 +80,9 @@ CALL Display(msg, unitno=unitno)
 CALL Display(obj%t1, "t1: ", unitno=unitno)
 CALL Display(obj%t2, "t2: ", unitno=unitno)
 CALL Display(obj%t2 - obj%t1, "t: ", unitno=unitno)
+!$ CALL Display(obj%wt1, "wt1: ", unitno=unitno)
+!$ CALL Display(obj%wt2, "wt2: ", unitno=unitno)
+!$ CALL Display(obj%wt2 - obj%wt1, "wt: ", unitno=unitno)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -78,12 +91,14 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_GetStringForKernelLog
 ! internal variables
-REAL(DFP) :: t
+REAL(DFP) :: t, wt
 t = obj%GetTime()
-ans = tostring(currentTimeStep)//", "  &
-    & //tostring(currentTime)//", "  &
-    & //'"'//methodName//'"'//", " &
+!$ wt = obj%GetWTime()
+ans = tostring(currentTimeStep)//","  &
+    & //tostring(currentTime)//","  &
+    & //'"'//methodName//'"'//"," &
     & //tostring(t)
+!$ ans = ans//","//tostring(wt)
 END PROCEDURE obj_GetStringForKernelLog
 
 END SUBMODULE Methods
