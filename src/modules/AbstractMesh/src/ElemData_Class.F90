@@ -33,6 +33,7 @@ PUBLIC :: ElemData_Display
 PUBLIC :: ElemData_lt
 PUBLIC :: ElemData_eq
 PUBLIC :: ElemData_SetID
+PUBLIC :: ElemData_Copy
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -111,6 +112,29 @@ TYPE(ElemDataType_), PARAMETER :: TypeElem = ElemDataType_()
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                     Copy
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-01-31
+! summary:  Copy
+
+SUBROUTINE ElemData_Copy(obj1, obj2)
+  TYPE(ElemData_), INTENT(INOUT) :: obj1
+  TYPE(ElemData_), INTENT(IN) :: obj2
+
+  obj1%globalElemNum = obj2%globalElemNum
+  obj1%localElemNum = obj2%localElemNum
+  obj1%elementType = obj2%elementType
+  obj1%name = obj2%name
+  IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
+  IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
+    & = obj2%globalElements
+  IF (ALLOCATED(obj2%boundaryData)) obj1%boundaryData &
+    & = obj2%boundaryData
+END SUBROUTINE ElemData_Copy
 
 !----------------------------------------------------------------------------
 !

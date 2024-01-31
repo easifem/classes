@@ -31,6 +31,7 @@ PUBLIC :: NodeData_Deallocate
 PUBLIC :: NodeData_lt
 PUBLIC :: NodeData_eq
 PUBLIC :: NodeData_SetID
+PUBLIC :: NodeData_Copy
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
@@ -83,6 +84,29 @@ TYPE(NodeDataType_), PARAMETER :: TypeNode = NodeDataType_()
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                     Copy
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-01-31
+! summary:  Copy
+
+SUBROUTINE NodeData_Copy(obj1, obj2)
+  TYPE(NodeData_), INTENT(INOUT) :: obj1
+  TYPE(NodeData_), INTENT(IN) :: obj2
+
+  obj1%globalNodeNum = obj2%globalNodeNum
+  obj1%localNodeNum = obj2%localNodeNum
+  obj1%nodeType = obj2%nodeType
+  IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
+  IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
+    & = obj2%globalElements
+  IF (ALLOCATED(obj2%extraGlobalNodes)) obj1%extraGlobalNodes  &
+    & = obj2%extraGlobalNodes
+
+END SUBROUTINE NodeData_Copy
 
 !----------------------------------------------------------------------------
 !
