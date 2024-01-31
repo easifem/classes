@@ -81,13 +81,15 @@ SUBROUTINE HDF5ReadIntMatrix(hdf5, VALUE, group, fieldname, myname,  &
 
   astr = group//"/"//fieldname
   isok0 = hdf5%pathExists(astr)
+  IF (isok0) THEN
+    CALL hdf5%READ(astr, VALUE)
+  END IF
+
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
-
-  CALL hdf5%READ(astr, VALUE)
 
   astr = ""
 END SUBROUTINE HDF5ReadIntMatrix
@@ -111,13 +113,16 @@ SUBROUTINE HDF5ReadRealMatrix(hdf5, VALUE, group, fieldname, myname,  &
 
   astr = group//"/"//fieldname
   isok0 = hdf5%pathExists(astr)
+
+  IF (isok0) THEN
+    CALL hdf5%READ(astr, VALUE)
+  END IF
+
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
-
-  CALL hdf5%READ(astr, VALUE)
 
   astr = ""
 END SUBROUTINE HDF5ReadRealMatrix
@@ -141,13 +146,16 @@ SUBROUTINE HDF5ReadRealVector(hdf5, VALUE, group, fieldname, myname,  &
 
   astr = group//"/"//fieldname
   isok0 = hdf5%pathExists(astr)
+
+  IF (isok0) THEN
+    CALL hdf5%READ(astr, VALUE)
+  END IF
+
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
-
-  CALL hdf5%READ(astr, VALUE)
 
   astr = ""
 END SUBROUTINE HDF5ReadRealVector
@@ -171,13 +179,16 @@ SUBROUTINE HDF5ReadIntVector(hdf5, VALUE, group, fieldname, myname,  &
 
   astr = group//"/"//fieldname
   isok0 = hdf5%pathExists(astr)
+
+  IF (isok0) THEN
+    CALL hdf5%READ(astr, VALUE)
+  END IF
+
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
-
-  CALL hdf5%READ(astr, VALUE)
 
   astr = ""
 
@@ -202,21 +213,24 @@ SUBROUTINE HDF5ReadScalar(hdf5, VALUE, group, fieldname, myname, modname,  &
 
   astr = group//"/"//fieldname
   isok0 = hdf5%pathExists(astr)
+
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
 
-  SELECT TYPE (VALUE)
+  IF (isok0) THEN
+    SELECT TYPE (VALUE)
 
-  TYPE is (INTEGER(I4B))
-    CALL hdf5%READ(astr, VALUE)
+    TYPE is (INTEGER(I4B))
+      CALL hdf5%READ(astr, VALUE)
 
-  TYPE is (REAL(DFP))
-    CALL hdf5%READ(astr, VALUE)
+    TYPE is (REAL(DFP))
+      CALL hdf5%READ(astr, VALUE)
 
-  END SELECT
+    END SELECT
+  END IF
 
   astr = ""
 

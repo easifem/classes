@@ -43,32 +43,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-
-dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
+IF (obj%tElements .EQ. 0) RETURN
+! obj%tElements is read in AbstractMeshImport
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=xidim, group=dsetname,  &
   & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
-
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
-! INFO:
-! obj%tElements is read in AbstractMeshImport
-IF (obj%tElements .EQ. 0) RETURN
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
-  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
-  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
-  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
-
 isok = (elemType .EQ. Point1) .OR. (elemType .EQ. 0)
-
 IF (isok) RETURN
 
 CALL obj%elementDataList%Initiate()
@@ -76,91 +60,89 @@ CALL obj%nodeDataBinaryTree%Initiate()
 CALL obj%nodeDataList%Initiate()
 CALL obj%elementDataBinaryTree%Initiate()
 
-DO ii = 1, obj%tElements
+! DO ii = 1, obj%tElements
 
-  elemdata_ptr => ElemData_Pointer()
-  CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
-    & localElemNum=ii, globalNodes=connectivity(:, ii))
-  CALL obj%elementDataList%Add(elemdata_ptr)
-  CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
+! elemdata_ptr => obj%elementData(ii)
 
-  DO jj = 1, SIZE(connectivity, 1)
+! CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
+!   & localElemNum=ii, globalNodes=connectivity(:, ii))
+!
+! CALL obj%elementDataList%Add(elemdata_ptr)
+! CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
 
-    nodedata_ptr => NodeData_Pointer()
-    CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii),  &
-      & nodeType=TypeNode%boundary)
-    ! TypeNode is defined in NodeData_Class
-    ! The above step is unusual, but we know the position of
-    ! internal nptrs, so later we will set the
-    ! those nodes as INTERNAL_NODE, in this way we can
-    ! identify the boundary nodes
+! DO jj = 1, SIZE(connectivity, 1)
+!
+!   nodedata_ptr => NodeData_Pointer()
+!   CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii),  &
+!     & nodeType=TypeNode%boundary)
+!   ! TypeNode is defined in NodeData_Class
+!   ! The above step is unusual, but we know the position of
+!   ! internal nptrs, so later we will set the
+!   ! those nodes as INTERNAL_NODE, in this way we can
+!   ! identify the boundary nodes
+!
+!   tsize1 = obj%nodeDataBinaryTree%SIZE()
+!   CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
+!   tsize2 = obj%nodeDataBinaryTree%SIZE()
+!
+!   IF (tsize1 .EQ. tsize2) THEN
+!     CALL NodeData_Deallocate(nodedata_ptr)
+!     ! NOTE:
+!       !! We have not added nodedata_ptr,
+!       !! We know this because tsize1 == tsize2so
+!       !! so we should remove this memory
+!       !! this step is necessary for avoiding the memory leak
+!     DEALLOCATE (nodedata_ptr)
+!   ELSE
+!     CALL obj%nodeDataList%Add(nodedata_ptr)
+!   END IF
+!
+! END DO
 
-    tsize1 = obj%nodeDataBinaryTree%SIZE()
-    CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
-    tsize2 = obj%nodeDataBinaryTree%SIZE()
+! END DO
 
-    IF (tsize1 .EQ. tsize2) THEN
-      CALL NodeData_Deallocate(nodedata_ptr)
-      ! NOTE:
-        !! We have not added nodedata_ptr,
-        !! We know this because tsize1 == tsize2so
-        !! so we should remove this memory
-        !! this step is necessary for avoiding the memory leak
-      DEALLOCATE (nodedata_ptr)
-    ELSE
-      CALL obj%nodeDataList%Add(nodedata_ptr)
-    END IF
-
-  END DO
-
-END DO
-
-CALL obj%nodeDataBinaryTree%SetID()
-  !! This method will set the local node number in the binarytree
-
-CALL obj%elementDataBinaryTree%SetID()
-  !! This method will set the local element number in the binarytree
-
-obj%tNodes = obj%nodeDataBinaryTree%SIZE()
-  !! This method returns the total number of nodes in mesh
-
-nodedata_ptr => obj%nodeDataBinaryTree%GetMinPointer()
-obj%minNptrs = nodedata_ptr%globalNodeNum
-
-nodedata_ptr => obj%nodeDataBinaryTree%GetMaxPointer()
-obj%maxNptrs = nodedata_ptr%globalNodeNum
+! CALL obj%nodeDataBinaryTree%SetID()
+!   !! This method will set the local node number in the binarytree
+!
+! CALL obj%elementDataBinaryTree%SetID()
+!   !! This method will set the local element number in the binarytree
+!
+! obj%tNodes = obj%nodeDataBinaryTree%SIZE()
+!   !! This method returns the total number of nodes in mesh
+!
+! nodedata_ptr => obj%nodeDataBinaryTree%GetMinPointer()
+! obj%minNptrs = nodedata_ptr%globalNodeNum
+!
+! nodedata_ptr => obj%nodeDataBinaryTree%GetMaxPointer()
+! obj%maxNptrs = nodedata_ptr%globalNodeNum
+!
+! nodedata_ptr => NULL()
+! CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
+!
+! DO CONCURRENT(ii=1:obj%tElements)
+!   obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
+! END DO
+!
+! ! TODO: Parallel
+! DO ii = 1, obj%maxNptrs
+!   IF (obj%local_Nptrs(ii) .NE. 0) THEN
+!     nodedata%globalNodeNum = ii
+!     nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+!     obj%local_Nptrs(ii) = nodedata_ptr%localNodeNum
+!   END IF
+! END DO
+!
+! ! TODO: Parallel
+! DO ii = 1, SIZE(internalNptrs)
+!   ! jj = internalNptrs(ii)
+!   ! CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+!   nodedata%globalNodeNum = internalNptrs(ii)
+!   nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+!   nodedata_ptr%nodeType = TypeNode%internal
+!   ! CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
+! END DO
 
 nodedata_ptr => NULL()
-CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
-
-DO CONCURRENT(ii=1:obj%tElements)
-  obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
-END DO
-
-! TODO: Parallel
-DO ii = 1, obj%maxNptrs
-  IF (obj%local_Nptrs(ii) .NE. 0) THEN
-    nodedata%globalNodeNum = ii
-    nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-    obj%local_Nptrs(ii) = nodedata_ptr%localNodeNum
-  END IF
-END DO
-
-! TODO: Parallel
-DO ii = 1, SIZE(internalNptrs)
-  ! jj = internalNptrs(ii)
-  ! CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
-  nodedata%globalNodeNum = internalNptrs(ii)
-  nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-  nodedata_ptr%nodeType = TypeNode%internal
-  ! CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
-END DO
-
-nodedata_ptr => NULL()
-
-IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
