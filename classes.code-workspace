@@ -1,13 +1,14 @@
 {
+
 	"folders": [
 		{
 			"path": "."
 		}
 	],
+
 	"settings": {
 		"cmake.installPrefix": "/home/easifem/.easifem/classes",
 		"cmake.configureOnEdit": false,
-		"fortran-ls.autocompletePrefix": false,
-		"fortran-ls.displayVerWarning": false
 	}
+
 }

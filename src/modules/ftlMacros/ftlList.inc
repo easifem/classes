@@ -15,15 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 !
-! This program is taken from Fortran Template Library. https://github.com/SCM-NV/ftl/tree/master
+! This program is taken from Fortran Template Library.
+! https://github.com/SCM-NV/ftl/tree/master
 !
 ! Copyright (c) 2016, 2017  Robert Rüger
 !
 ! This file is part of of the Fortran Template Library.
 !
-! The Fortran Template Library is free software: you can redistribute it and/or
+! The Fortran Template Library is free software: you can redistribute it
+! and/or
 ! modify it under the terms of the GNU Lesser General Public License as
-! published by the Free Software Foundation, either version 3 of the License, or
+! published by the Free Software Foundation,
+! either version 3 of the License, or
 ! (at your option) any later version.
 !
 ! The Fortran Template Library is distributed in the hope that it will be
@@ -31,8 +34,10 @@
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
 ! General Public License for more details.
 !
-! You should have received a copy of the GNU Lesser General Public License along
-! with the Fortran Template Library.  If not, see <http://www.gnu.org/licenses/>.
+! You should have received a copy of the GNU Lesser General Public
+! License along
+! with the Fortran Template Library.  If not, see
+! <http://www.gnu.org/licenses/>.
 
 
 
@@ -52,28 +57,62 @@
 #include "./ftlMacros.inc"
 
 #ifdef FTL_TEMPLATE_TYPE_IS_DERIVED
+
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
+
 #define FTL_TEMPLATE_TYPE_WRAP CLASS(FTL_TEMPLATE_TYPE)
 #else
 #define FTL_TEMPLATE_TYPE_WRAP TYPE(FTL_TEMPLATE_TYPE)
 #endif
+
 #else
+
 #define FTL_TEMPLATE_TYPE_WRAP FTL_TEMPLATE_TYPE
+
 #endif
 
-#ifdef USE_CMAKE
-#else
-! Name of the MODULE will be ftlListInt_Class, ftlListString_Class, ...
-MODULE CAT3(FTL_TEMPLATE_TYPE_NAME,List,_Classs)
-#endif
-USE BaseType
-USE BaseMethod
-! If derived type then where it is defined
-#ifdef FTL_TEMPLATE_TYPE_MODULE
-USE FTL_TEMPLATE_TYPE_MODULE
-#endif
 IMPLICIT NONE
 PRIVATE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE OPERATOR( .EQ. )
+  MODULE PROCEDURE EqualOther
+END INTERFACE
+
+PUBLIC :: OPERATOR( .EQ. )
+
+INTERFACE OPERATOR( .NE. )
+  MODULE PROCEDURE UnequalOther
+END INTERFACE
+
+PUBLIC :: OPERATOR( .NE. )
+
+INTERFACE Size
+  MODULE PROCEDURE obj_Size
+END INTERFACE
+
+PUBLIC :: Size
+
+INTERFACE ftlSwap
+  MODULE PROCEDURE SwapList
+END INTERFACE
+
+PUBLIC :: ftlSwap
+
+INTERFACE ftlMove
+  MODULE PROCEDURE ftlMoveList
+END INTERFACE
+
+PUBLIC :: ftlMove
+
+INTERFACE Display
+  MODULE PROCEDURE obj_Display_Iterator, obj_Display
+END INTERFACE Display
+
+PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !                                                                 ListNode_
@@ -97,13 +136,15 @@ TYPE, EXTENDS(ListNode_) :: DataNode_
   FTL_TEMPLATE_TYPE_WRAP :: data
 #endif
 
-END TYPE
+END TYPE DataNode_
 
 !----------------------------------------------------------------------------
 !                                       CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)
 !----------------------------------------------------------------------------
 
-!! example ftlListInt_
+!> author: Vikas Sharma, Ph. D.
+! date: 	22-01-24
+! summary: 	FTLList
 
 TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)
   PRIVATE
@@ -114,47 +155,72 @@ TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)
 
   CONTAINS
     PRIVATE
-    GENERIC, PUBLIC :: New => NewDefault, NewCopyOther, NewFill, NewFromArray, NewFromIteratorPair
-    GENERIC, PUBLIC :: Initiate => NewDefault, NewCopyOther, NewFill, NewFromArray, NewFromIteratorPair
-    GENERIC, PUBLIC :: ASSIGNMENT(=) => AssignOther, AssignArray
-    GENERIC, PUBLIC :: Insert => InsertSingle, InsertFill, InsertArray, InsertIteratorPair
-    GENERIC, PUBLIC :: Add => PushBack
-    GENERIC, PUBLIC :: Append => PushBack
-    GENERIC, PUBLIC :: Deallocate => Delete
-    GENERIC, PUBLIC :: Erase => EraseSingle, EraseIteratorPair
 
-    PROCEDURE, PASS( obj ) :: NewDefault
-    PROCEDURE, PASS( obj ) :: NewCopyOther
-    PROCEDURE, PASS( obj ) :: NewFill
-    PROCEDURE, PASS( obj ) :: NewFromArray
-    PROCEDURE, PASS( obj ) :: NewFromIteratorPair
+    PROCEDURE, PASS( obj ) :: obj_Initiate1
+    !! Empty constructor
+    PROCEDURE, PASS( obj ) :: obj_Initiate2
+    !! Construction by copying
+    PROCEDURE, PASS( obj ) :: obj_Initiate3
+    !! Construct by specifying the size and set all values
+    !! to a given scalar data value
+    PROCEDURE, PASS( obj ) :: obj_Initiate4
+    !! Construction by an array
+    !! Convert an array to Linked list
+    PROCEDURE, PASS( obj ) :: obj_Initiate5
+    !! Construction by using an iterator
+    GENERIC, PUBLIC :: Initiate => obj_Initiate1, obj_Initiate2, &
+      & obj_Initiate3, obj_Initiate4, obj_Initiate5
+    !! Generic method for construction
 
     PROCEDURE, PASS( obj ) :: FixValuePtrs
-    PROCEDURE, PUBLIC, PASS( obj ) :: PushBack
-    PROCEDURE, PUBLIC, PASS( obj ) :: PushFront
-    PROCEDURE, PUBLIC, PASS( obj ) :: PopFront
-    PROCEDURE, PUBLIC, PASS( obj ) :: PopBack
+    !! It is a private routine, which is called after push and pop
 
-    PROCEDURE, PUBLIC, PASS( obj ) :: Delete => Delete_obj
-    PROCEDURE, PUBLIC, PASS( obj ) :: Size => SizeList
-    PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => Empty
+    PROCEDURE, PUBLIC, PASS( obj ) :: PushBack => obj_PushBack
+    !! Append an entry to the list at the tail
+    GENERIC, PUBLIC :: Add => PushBack
+    GENERIC, PUBLIC :: Append => PushBack
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: PushFront => obj_PushFront
+    !! Append an entry to the list at the head
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: PopFront => obj_PopFront
+    !! Pop the head
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: PopBack => obj_PopBack
+    !! Pop the back
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => obj_Deallocate
+    !! Deallocate the list
+    PROCEDURE, PUBLIC, PASS( obj ) :: Size => obj_Size
+    !! Returns the size of list
+    PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => obj_isEmpty
+    !! Returns true if the list is empty
+
     FINAL :: Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: Begin => BeginList
-    PROCEDURE, PUBLIC, PASS( obj ) :: End => EndList
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: Begin => obj_Begin
+    PROCEDURE, PUBLIC, PASS( obj ) :: End => obj_End
 
     PROCEDURE, PASS( obj ) :: AssignOther
+    !! list1  = list2
     PROCEDURE, PASS( obj ) :: AssignArray
+    !! list = array
+    GENERIC, PUBLIC :: ASSIGNMENT(=) => AssignOther, AssignArray
 
     PROCEDURE, PASS( obj ) :: InsertSingle
     PROCEDURE, PASS( obj ) :: InsertFill
     PROCEDURE, PASS( obj ) :: InsertArray
     PROCEDURE, PASS( obj ) :: InsertIteratorPair
+    GENERIC, PUBLIC :: Insert => InsertSingle, InsertFill, InsertArray,  &
+      & InsertIteratorPair
 
     PROCEDURE, PASS( obj ) :: EraseSingle
     PROCEDURE, PASS( obj ) :: EraseIteratorPair
+    GENERIC, PUBLIC :: Erase => EraseSingle, EraseIteratorPair
 
     PROCEDURE, PASS( obj ), PUBLIC :: Resize
     PROCEDURE, PASS( obj ), PUBLIC :: Clear
+    PROCEDURE, PUBLIC, PASS( obj ) :: Display => obj_Display
 
 END TYPE
 
@@ -169,47 +235,13 @@ TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)
 
   CONTAINS
   PRIVATE
-  PROCEDURE :: NewItDefault
-  PROCEDURE :: NewItCopyOther
-  GENERIC, PUBLIC :: New => NewItDefault, NewItCopyOther
+  PROCEDURE :: obj_iter_Initiate1
+  PROCEDURE :: obj_iter_Initiate2
+  GENERIC, PUBLIC :: Initiate => obj_iter_Initiate1, obj_iter_Initiate2
   PROCEDURE, PUBLIC :: Inc
   PROCEDURE, PUBLIC :: Dec
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => obj_Display_Iterator
 END TYPE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE OPERATOR( .EQ. )
-  MODULE PROCEDURE EqualOther
-END INTERFACE
-PUBLIC :: OPERATOR( .EQ. )
-
-INTERFACE OPERATOR( .NE. )
-  MODULE PROCEDURE UnequalOther
-END INTERFACE
-PUBLIC :: OPERATOR( .NE. )
-
-INTERFACE Size
-  MODULE PROCEDURE SizeList
-END INTERFACE
-PUBLIC :: Size
-
-INTERFACE ftlSwap
-  MODULE PROCEDURE SwapList
-END INTERFACE
-PUBLIC :: ftlSwap
-
-INTERFACE ftlMove
-  MODULE PROCEDURE ftlMoveList
-END INTERFACE
-PUBLIC :: ftlMove
-
-INTERFACE Display
-  MODULE PROCEDURE Display_Iterator, Display_obj
-END INTERFACE Display
-
-PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !
@@ -221,25 +253,33 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewDefault( obj )
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-01-22
+! summary: 	Empty constructor
+
+SUBROUTINE obj_Initiate1( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
-  CALL obj%Delete()
+  CALL obj%Deallocate()
   obj%sentinel%next => obj%sentinel
   obj%sentinel%prev => obj%sentinel
-END SUBROUTINE
+END SUBROUTINE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE NewCopyOther(obj, other)
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Construct by copy
+
+IMPURE ELEMENTAL SUBROUTINE obj_Initiate2(obj, other)
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT ) :: obj
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(IN) :: other
 
   ! Internal variable
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)) :: it, iend
 
-  CALL obj%New()
+  CALL obj%Initiate()
   it = other%Begin()
   iend = other%End()
   DO WHILE( it .NE. iend )
@@ -252,7 +292,11 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFill( obj, n, val )
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-01-22
+! summary: Construct by giving size and set all values to val
+
+SUBROUTINE obj_Initiate3( obj, n, val )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP , TARGET, OPTIONAL, INTENT( IN ) :: val
@@ -260,13 +304,14 @@ SUBROUTINE NewFill( obj, n, val )
   ! Internal variables
   INTEGER( I4B ) :: i
 
-  CALL obj%New()
+  CALL obj%Initiate()
+
   IF( PRESENT( val ) ) THEN
     DO i = 1, n
       CALL obj%Add(val)
     END DO
   ELSE
-    STOP 'TODO: Implement ftlList%NewFill without val'
+    STOP 'TODO: Implement ftlList%obj_Initiate3 without val'
   END IF
 END SUBROUTINE
 
@@ -274,14 +319,20 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFromArray(obj, array)
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Construct by array
+
+SUBROUTINE obj_Initiate4(obj, array)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   FTL_TEMPLATE_TYPE_WRAP , TARGET, INTENT( IN ) :: array(:)
 
   ! Internal variable
   INTEGER( I4B ) :: i, n
 
-  CALL obj%New(); n = SIZE( array )
+  CALL obj%Initiate()
+  n = SIZE( array )
+
   DO i = 1, n
     CALL obj%Add(array(i))
   END DO
@@ -291,18 +342,26 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFromIteratorPair( obj, first, last )
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Construction by iterator
+
+SUBROUTINE obj_Initiate5( obj, first, last )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT( IN ) :: first
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT( IN ) :: last
 
-  CALL obj%New()
+  CALL obj%Initiate()
   CALL obj%Insert( obj%Begin(), first, last )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Insert node after (This is private)
 
 SUBROUTINE InsertNodeAfter(afternode, val)
   CLASS( ListNode_ ), POINTER, INTENT( INOUT ) :: afternode
@@ -311,19 +370,18 @@ SUBROUTINE InsertNodeAfter(afternode, val)
   ! Define internal variable
   CLASS( ListNode_ ), POINTER :: oldnext, newnext
 
-
   oldnext => afternode%next
   ALLOCATE(DataNode_::afternode%next)
   newnext => afternode%next
   newnext%prev => afternode
   newnext%next => oldnext
   oldnext%prev => newnext
+
   IF( PRESENT( val ) )THEN
     SELECT TYPE( newnext )
     TYPE IS( DataNode_ ) ! always true
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
-    ! newnext%data => val
-    newnext%data => Factory(Val)
+    newnext%data => val
 #else
     newnext%data = val
 #endif
@@ -335,28 +393,39 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Private
+
 SUBROUTINE FixValuePtrs( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
 
   IF( obj%psize == 0 ) THEN
     NULLIFY( obj%front, obj%back )
-  ELSE
-    SELECT TYPE( first => obj%sentinel%next )
-      TYPE IS( DataNode_ )
-      obj%front => first%data
-    END SELECT
-    SELECT TYPE( last => obj%sentinel%prev )
-      TYPE IS( DataNode_ )
-      obj%back => last%data
-    END SELECT
+    RETURN
   END IF
+
+  SELECT TYPE( first => obj%sentinel%next )
+    TYPE IS( DataNode_ )
+    obj%front => first%data
+  END SELECT
+
+  SELECT TYPE( last => obj%sentinel%prev )
+    TYPE IS( DataNode_ )
+    obj%back => last%data
+  END SELECT
+
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE PushBack( obj, val )
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Push back (append)
+
+SUBROUTINE obj_PushBack( obj, val )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   FTL_TEMPLATE_TYPE_WRAP , INTENT( IN ) :: val
 
@@ -369,19 +438,27 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE PushFront( obj, val )
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Prepend
+
+SUBROUTINE obj_PushFront( obj, val )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ), TARGET :: obj
   FTL_TEMPLATE_TYPE_WRAP , TARGET, INTENT( IN ) :: val
 
   CALL InsertNodeBefore( obj%sentinel%next, val )
   obj%psize = obj%psize + 1
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE obj_PushFront
 
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 	2024-01-22
+! summary: 	Private
 
 SUBROUTINE UnlinkNode( node )
   CLASS( ListNode_ ), INTENT( INOUT ) :: node
@@ -393,8 +470,13 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-FUNCTION PopFront( obj ) RESULT( ans )
+!> author: Vikas Sharma, Ph. D.
+! date: 	2023-01-22
+! summary: 	Pop from front
+
+FUNCTION obj_PopFront( obj ) RESULT( ans )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
+
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
   FTL_TEMPLATE_TYPE_WRAP, POINTER :: ans
 #else
@@ -407,28 +489,33 @@ FUNCTION PopFront( obj ) RESULT( ans )
   oldfirst => obj%sentinel%next
 
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
-  ans => Factory(obj%front)
-  ! ans => obj%front
+  ! ans => Factory(obj%front)
+  ans => obj%front
+
 #else
+
 #ifdef FTL_TEMPLATE_TYPE_PROVIDES_FTLMOVE
   CALL ftlMove( obj%front, ans )
 #else
   ans = obj%front
 #endif
+
 #endif
 
   obj%psize = obj%psize - 1
   CALL UnlinkNode( oldfirst )
   DEALLOCATE( oldfirst )
   CALL obj%FixValuePtrs()
-END FUNCTION
+
+END FUNCTION obj_PopFront
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION PopBack(obj) RESULT( ans )
+FUNCTION obj_PopBack(obj) RESULT( ans )
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT ), TARGET :: obj
+
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
   FTL_TEMPLATE_TYPE_WRAP, POINTER :: ans
 #else
@@ -440,64 +527,79 @@ FUNCTION PopBack(obj) RESULT( ans )
   oldlast => obj%sentinel%prev
 
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
-  ans => Factory(obj%back)
-  ! ans => obj%back
+  ! ans => Factory(obj%back)
+  ans => obj%back
 #else
+
 #ifdef FTL_TEMPLATE_TYPE_PROVIDES_FTLMOVE
   CALL ftlMove( obj%back, ans )
 #else
   ans = obj%back
 #endif
+
 #endif
 
   obj%psize = obj%psize - 1
   CALL UnlinkNode(oldlast)
   DEALLOCATE(oldlast)
   CALL obj%FixValuePtrs()
-END FUNCTION
+END FUNCTION obj_PopBack
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE Delete_obj( obj )
+IMPURE ELEMENTAL SUBROUTINE obj_Deallocate( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
 
   ! Internal variables
   CLASS( ListNode_ ), POINTER :: walker, deletor
 
   walker => obj%sentinel%next
+
   DO WHILE( ASSOCIATED( walker ) .AND. .NOT. ASSOCIATED(walker,obj%sentinel) )
     deletor => walker
     walker => walker%next
+
+    deletor%prev => null()
+    deletor%next => null()
+
+#ifdef FTL_TEMPLATE_TYPE_IS_CLASS
+    SELECT TYPE( deletor )
+    TYPE IS( DataNode_ )
+      deletor%data => null()
+    END SELECT
+#endif
+
     DEALLOCATE(deletor)
   END DO
+
   obj%psize = 0
   NULLIFY( obj%sentinel%prev )
   NULLIFY( obj%sentinel%next )
   NULLIFY( obj%front )
   NULLIFY( obj%back )
-END SUBROUTINE
+END SUBROUTINE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION SizeList( obj ) RESULT( Size )
+PURE FUNCTION obj_Size( obj ) RESULT( Size )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: Size
   Size = obj%psize
-END FUNCTION
+END FUNCTION obj_Size
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION Empty(obj) RESULT( ans )
+PURE FUNCTION obj_isEmpty(obj) RESULT( ans )
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(in) :: obj
   LOGICAL( LGT ) :: ans
-  ans = (obj%psize == 0)
-END FUNCTION
+  ans = (obj%psize .eq. 0)
+END FUNCTION obj_isEmpty
 
 !----------------------------------------------------------------------------
 !
@@ -505,14 +607,14 @@ END FUNCTION
 
 IMPURE ELEMENTAL SUBROUTINE Finalizer( obj )
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
-  CALL obj%Delete()
-END SUBROUTINE
+  CALL obj%Deallocate()
+END SUBROUTINE Finalizer
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION BeginList( obj ) RESULT( Begin )
+FUNCTION obj_Begin( obj ) RESULT( Begin )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ), TARGET :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: Begin
 
@@ -521,24 +623,22 @@ FUNCTION BeginList( obj ) RESULT( Begin )
     TYPE IS ( DataNode_ )
     Begin%value => node%data
   END SELECT
-END FUNCTION
+END FUNCTION obj_Begin
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION EndList( obj ) result( End )
+FUNCTION obj_End( obj ) result( End )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ), TARGET :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: End
   End%node => obj%sentinel
-END FUNCTION
+END FUNCTION obj_End
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-! TODO: implement using existing list nodes instead of copy construction
-!
 IMPURE ELEMENTAL SUBROUTINE AssignOther(obj, other)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ) :: other
@@ -547,7 +647,7 @@ IMPURE ELEMENTAL SUBROUTINE AssignOther(obj, other)
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: it
   INTEGER( I4B ) :: i, n
 
-  CALL obj%New()
+  CALL obj%Initiate()
   i = 1; n = other%Size()
   it = other%Begin()
   DO WHILE( i .LE. n )
@@ -564,7 +664,7 @@ END SUBROUTINE
 SUBROUTINE AssignArray(obj, array)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   FTL_TEMPLATE_TYPE_WRAP , TARGET, INTENT( IN ) :: array(:)
-  CALL obj%New(array)
+  CALL obj%Initiate(array)
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -576,7 +676,7 @@ SUBROUTINE InsertSingle( obj, position, val )
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: position
   FTL_TEMPLATE_TYPE_WRAP, TARGET, INTENT( IN ) :: val
 
-  call obj%InsertFill( position, 1, val )
+  CALL obj%InsertFill( position, 1, val )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -599,15 +699,16 @@ SUBROUTINE InsertNodeBefore(beforenode, val)
   IF( PRESENT( val ) )THEN
     SELECT TYPE ( newprev )
       TYPE IS( DataNode_ )
+
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
-      newprev%data => Factory(val)
-      ! newprev%data => val
+      newprev%data => val
 #else
       newprev%data = val
 #endif
+
     END SELECT
   ENDIF
-END SUBROUTINE
+END SUBROUTINE InsertNodeBefore
 
 !----------------------------------------------------------------------------
 !
@@ -626,7 +727,8 @@ SUBROUTINE InsertFill( obj, position, n, val )
   END DO
   obj%psize = obj%psize + n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+
+END SUBROUTINE InsertFill
 
 !----------------------------------------------------------------------------
 !
@@ -645,7 +747,7 @@ SUBROUTINE InsertArray( obj, position, array )
   END DO
   obj%psize = obj%psize + n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE InsertArray
 
 !----------------------------------------------------------------------------
 !
@@ -667,7 +769,7 @@ SUBROUTINE InsertIteratorPair( obj, position, first, last )
     CALL it%Inc()
   END DO
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE InsertIteratorPair
 
 !----------------------------------------------------------------------------
 !
@@ -681,7 +783,7 @@ SUBROUTINE EraseSingle( obj, position )
   DEALLOCATE(position%node)
   obj%psize = obj%psize - 1
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE EraseSingle
 
 !----------------------------------------------------------------------------
 !
@@ -702,7 +804,7 @@ SUBROUTINE EraseIteratorPair( obj, first, last )
       CALL obj%EraseSingle(deletor)
     END DO
   END ASSOCIATE
-END SUBROUTINE
+END SUBROUTINE EraseIteratorPair
 
 !----------------------------------------------------------------------------
 !
@@ -710,7 +812,8 @@ END SUBROUTINE
 
 SUBROUTINE SwapList( obj, other )
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ), TARGET :: obj
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ), TARGET :: other
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ), TARGET ::  &
+  & other
 
   ! Define internal variables
   INTEGER( I4B ) :: tmpSize
@@ -731,7 +834,7 @@ SUBROUTINE SwapList( obj, other )
   ! fix front/back pointers for both lists
   CALL obj%FixValuePtrs()
   CALL other%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE SwapList
 
 !----------------------------------------------------------------------------
 !
@@ -741,13 +844,15 @@ SUBROUTINE Resize( obj, n, val )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   INTEGER( I4B ) , INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP , TARGET, INTENT( IN ), OPTIONAL :: val
-  !
+
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: it
   INTEGER( I4B ) :: i
-  !
+
   IF (n == obj%psize) THEN
     RETURN
-  ELSE IF (n < obj%psize) THEN
+  END IF
+
+  IF (n < obj%psize) THEN
     it = obj%Begin()
     DO i = 2, n
       CALL it%Inc()
@@ -759,10 +864,10 @@ SUBROUTINE Resize( obj, n, val )
       CALL InsertNodeAfter(obj%sentinel%prev, val)
     END DO
   END IF
-  !
+
   obj%psize = n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE Resize
 
 !----------------------------------------------------------------------------
 !
@@ -770,8 +875,8 @@ END SUBROUTINE
 
 SUBROUTINE Clear( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
-  CALL obj%New()
-END SUBROUTINE
+  CALL obj%Initiate()
+END SUBROUTINE Clear
 
 !----------------------------------------------------------------------------
 !
@@ -791,23 +896,23 @@ SUBROUTINE ftlMoveList( src, dest )
   NULLIFY(src%front)
   NULLIFY(src%back)
   src%psize = 0
-END SUBROUTINE
+END SUBROUTINE ftlMoveList
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewItDefault(self)
+SUBROUTINE obj_iter_Initiate1(self)
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(INOUT ) :: self
   NULLIFY( self%node )
   NULLIFY( self%value )
-END SUBROUTINE
+END SUBROUTINE obj_iter_Initiate1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewItCopyOther( obj, other )
+SUBROUTINE obj_iter_Initiate2( obj, other )
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT( OUT ) :: obj
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT( IN ) :: other
 
@@ -816,7 +921,7 @@ SUBROUTINE NewItCopyOther( obj, other )
     TYPE IS( DataNode_ )
     obj%value => node%data
   END SELECT
-END SUBROUTINE
+END SUBROUTINE obj_iter_Initiate2
 
 !----------------------------------------------------------------------------
 !
@@ -842,7 +947,7 @@ RECURSIVE SUBROUTINE Inc(obj, n)
       obj%value => node%data
     END SELECT
   END IF
-END SUBROUTINE
+END SUBROUTINE Inc
 
 !----------------------------------------------------------------------------
 !
@@ -869,7 +974,7 @@ RECURSIVE SUBROUTINE Dec(obj, n)
       obj%value => node%data
     END SELECT
   END IF
-END SUBROUTINE
+END SUBROUTINE Dec
 
 !----------------------------------------------------------------------------
 !
@@ -880,7 +985,7 @@ PURE FUNCTION EqualOther( obj, other ) RESULT( ans )
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(in) :: other
   LOGICAL( LGT ) :: ans
   ans = ASSOCIATED( obj%node,other%node )
-END FUNCTION
+END FUNCTION EqualOther
 
 !----------------------------------------------------------------------------
 !
@@ -891,59 +996,53 @@ PURE FUNCTION UnequalOther( obj, other ) RESULT( ans )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( IN ) :: other
   LOGICAL( LGT ) :: ans
   ans = .NOT. ASSOCIATED( obj%node,other%node )
-END FUNCTION
+END FUNCTION UnequalOther
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE  Display_Iterator( obj, Msg, UnitNo )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+SUBROUTINE  obj_Display_Iterator( obj, msg, unitno )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( INOUT ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
   IF( ASSOCIATED( obj%value ) ) THEN
-    CALL Display( obj%value, Msg, UnitNo )
+    CALL Display( obj%value, msg, unitno=unitno)
   END IF
-END SUBROUTINE
+END SUBROUTINE obj_Display_Iterator
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE  Display_obj( obj, Msg, UnitNo )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+SUBROUTINE  obj_Display( obj, msg, unitno )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 
   ! Define internal variables
-  INTEGER( I4B ) :: i, ii
+  INTEGER( I4B ) :: ii
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: it, last
 
-  i = Input(stdout, UnitNo )
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( i, "(A)" ) "#" // TRIM( Msg )
-  END IF
-
-  IF( obj%isEmpty() ) THEN
-    WRITE( i, "(A)" ) "List is Empty"
-    RETURN
-  END IF
+  CALL Display(msg, unitno=unitno)
+  CALL Display(obj%isEmpty(), "Is List Empty: ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
+  IF( obj%isEmpty() ) RETURN
 
   it = obj%Begin()
   last = obj%End()
   ii = 0
   DO WHILE( it .NE. last )
     ii = ii + 1
-    CALL Display( it, "("// TRIM(Str(ii, no_sign=.true.)) // "):", i )
+    CALL Display( it, msg // "("// tostring(ii) // "):", &
+      & unitno=unitno )
+    CALL BlankLines(nol=1, unitno=unitno)
     CALL it%inc()
   END DO
-END SUBROUTINE
-
-
-
+END SUBROUTINE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-END MODULE
+
 #endif

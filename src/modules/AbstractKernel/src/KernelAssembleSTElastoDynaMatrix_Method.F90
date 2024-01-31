@@ -51,8 +51,8 @@ CONTAINS
 
 SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
   & stiffMat, massDensity, youngsModulus, shearModulus, dampCoeff_alpha, &
-  & dampCoeff_beta, dom, cellFE, linCellFE, &
-  & spaceElemSD, linSpaceElemSD, reset, mt, ct, kt)
+  & dampCoeff_beta, dom, cellFE, geoCellFE, &
+  & spaceElemSD, geoSpaceElemSD, reset, mt, ct, kt)
 
   CLASS(AbstractMatrixField_), INTENT(INOUT) :: tanmat
   CLASS(MatrixField_), INTENT(INOUT) :: massMat
@@ -65,9 +65,9 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: dampCoeff_beta(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: mt(:, :)
   REAL(DFP), INTENT(IN) :: ct(:, :)
@@ -77,7 +77,7 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSTElastoDynaMatrix1()"
   INTEGER(I4B) :: id, tmesh, nsd, nns, iel, nnt, indx6(6), nsd_nns,  &
   & nsd_nns_nnt
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   TYPE(FEVariable_) :: muVar, youngsVar, alphaVar, betaVar, rhoVar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -130,10 +130,10 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.NNE.refelem)
@@ -212,7 +212,7 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+        & geoElemSD=geoElemSD)
 
       Amat = MassMatrix(test=elemsd, trial=elemsd, opt=nsd,  &
         & rho=rhoVar, rhorank=TypeFEVariableScalar)
@@ -248,7 +248,7 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix1(tanmat, massMat, dampMat, &
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
   CALL DEALLOCATE (youngsVar)
   CALL DEALLOCATE (muVar)
   CALL DEALLOCATE (rhoVar)
@@ -267,7 +267,7 @@ END SUBROUTINE KernelAssembleSTElastoDynaMatrix1
 
 SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
   & stiffMat, massDensity, Cijkl, dampCoeff_alpha, dampCoeff_beta, dom,  &
-  & cellFE, linCellFE, spaceElemSD, linSpaceElemSD, reset,  &
+  & cellFE, geoCellFE, spaceElemSD, geoSpaceElemSD, reset,  &
   & mt, ct, kt)
 
   CLASS(AbstractMatrixField_), INTENT(INOUT) :: tanmat
@@ -280,9 +280,9 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: dampCoeff_beta(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: mt(:, :)
   REAL(DFP), INTENT(IN) :: ct(:, :)
@@ -292,7 +292,7 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleElastoDynaMatrix2()"
   INTEGER(I4B) :: id, tmesh, nsd, telems, nns, tdof, iel, nsd_nns,  &
   & nsd_nns_nnt, indx6(6), nnt
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   TYPE(FEVariable_) :: CijklVar, alphaVar, betaVar, rhoVar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -348,10 +348,10 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
     telems = meshptr%GetTotalElements()
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.NNE.refelem)
@@ -420,8 +420,8 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,   &
-        & geoElemSD=linElemSD)
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+        & geoElemSD=geoElemSD)
 
       Amat = MassMatrix(test=elemsd, trial=elemsd, opt=tdof,  &
         & rho=rhoVar, rhorank=TypeFEVariableScalar)
@@ -453,7 +453,7 @@ SUBROUTINE KernelAssembleSTElastoDynaMatrix2(tanmat, massMat, dampMat,  &
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
   CALL DEALLOCATE (CijklVar)
   CALL DEALLOCATE (rhoVar)
   CALL DEALLOCATE (alphaVar)

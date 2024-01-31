@@ -15,15 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#define FTL_TEMPLATE_TYPE_MODULE ElementFactory
 #define FTL_TEMPLATE_TYPE Element_
 #define FTL_TEMPLATE_TYPE_IS_DERIVED
 #define FTL_TEMPLATE_TYPE_IS_CLASS
 #define FTL_TEMPLATE_TYPE_NAME Element
 #define FTL_INSTANTIATE_TEMPLATE
-#define FTL_TEMPLATE_TYPE_MODULE ElementFactory
 
-#ifdef USE_CMAKE
 MODULE ElementList_Class
-#endif
-
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE Display_Method
+USE ElementFactory
 #include "../../ftlMacros/ftlList.inc"
+END MODULE ElementList_Class

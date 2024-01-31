@@ -35,6 +35,13 @@ USE tomlf, ONLY: toml_table
 USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
+
+PUBLIC :: Domain_
+PUBLIC :: DomainPointer_
+PUBLIC :: DomainDeallocate
+PUBLIC :: Domain_Pointer
+PUBLIC :: DomainSetSparsity
+
 CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 !----------------------------------------------------------------------------
@@ -323,33 +330,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
     & Domain_SetMeshFacetElement
 
-  ! SET:
-  ! @ShapedataMethods
-  PROCEDURE, PASS(obj) :: InitiateElemSD1 => Domain_InitiateElemSD1
-  PROCEDURE, PASS(obj) :: InitiateElemSD2 => Domain_InitiateElemSD2
-  PROCEDURE, PASS(obj) :: InitiateElemSD3 => Domain_InitiateElemSD3
-  PROCEDURE, PASS(obj) :: InitiateElemSD4 => Domain_InitiateElemSD4
-  GENERIC, PUBLIC :: InitiateElemSD => &
-    & InitiateElemSD1, &
-    & InitiateElemSD2, &
-    & InitiateElemSD3, &
-    & InitiateElemSD4
-  !! Initiating local shape data for mesh
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD1 => Domain_InitiateFacetElemSD1
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD2 => Domain_InitiateFacetElemSD2
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD3 => Domain_InitiateFacetElemSD3
-  GENERIC, PUBLIC :: InitiateFacetElemSD => &
-    & InitiateFacetElemSD1, &
-    & InitiateFacetElemSD2, &
-    & InitiateFacetElemSD3
-  !! Initiating local shape data for mesh
 END TYPE Domain_
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-PUBLIC :: Domain_
 
 !----------------------------------------------------------------------------
 !                                                             DomainPointer
@@ -358,8 +339,6 @@ PUBLIC :: Domain_
 TYPE :: DomainPointer_
   CLASS(Domain_), POINTER :: ptr => NULL()
 END TYPE DomainPointer_
-
-PUBLIC :: DomainPointer_
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -389,7 +368,7 @@ END INTERFACE
 ! summary: Initiate an instance of MeshFacetData
 
 INTERFACE
-  MODULE PURE SUBROUTINE MeshFacetData_Initiate(obj, n)
+  MODULE SUBROUTINE MeshFacetData_Initiate(obj, n)
     CLASS(MeshFacetData_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
   END SUBROUTINE MeshFacetData_Initiate
@@ -404,7 +383,7 @@ END INTERFACE
 ! summary: Returns true if MeshFacetData initiated
 
 INTERFACE
-  MODULE PURE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
+  MODULE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION MeshFacetData_isInitiated
@@ -419,7 +398,7 @@ END INTERFACE
 ! summary: Returns the size of MeshFacetData
 
 INTERFACE
-  MODULE PURE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
+  MODULE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION MeshFacetData_Size
@@ -433,18 +412,12 @@ END INTERFACE
 ! date: 18 June 2021
 ! summary: Deallocate data stored in Domain object
 
-INTERFACE
+INTERFACE DomainDeallocate
   MODULE SUBROUTINE Domain_Deallocate(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
     !! Domain object
   END SUBROUTINE Domain_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE Domain_Deallocate
-END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
+END INTERFACE DomainDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -461,28 +434,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  Domain@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 19 June 2021
-! summary: Domain methods
-
-INTERFACE
-  MODULE FUNCTION Domain_Constructor1(hdf5, group) RESULT(Ans)
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_) :: ans
-  END FUNCTION Domain_Constructor1
-END INTERFACE
-
-INTERFACE Domain
-  MODULE PROCEDURE Domain_Constructor1
-END INTERFACE Domain
-
-! PUBLIC :: Domain
-
-!----------------------------------------------------------------------------
 !                                          Domain_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -490,19 +441,13 @@ END INTERFACE Domain
 ! date: 19 June 2021
 ! summary: This function returns pointer to a newly constructed Domain obj
 
-INTERFACE
+INTERFACE Domain_Pointer
   MODULE FUNCTION Domain_Constructor_1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), POINTER :: ans
   END FUNCTION Domain_Constructor_1
-END INTERFACE
-
-INTERFACE Domain_Pointer
-  MODULE PROCEDURE Domain_Constructor_1
 END INTERFACE Domain_Pointer
-
-PUBLIC :: Domain_Pointer
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -1189,7 +1134,7 @@ END INTERFACE
 ! summary: This routine returns the number of spatial dimensions
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetNSD(obj) RESULT(Ans)
+  MODULE FUNCTION Domain_GetNSD(obj) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION Domain_GetNSD
@@ -1220,7 +1165,7 @@ END INTERFACE
 ! summary: Returns bounding box
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetBoundingBox(obj) RESULT(Ans)
+  MODULE FUNCTION Domain_GetBoundingBox(obj) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     TYPE(BoundingBox_) :: ans
   END FUNCTION Domain_GetBoundingBox
@@ -1235,7 +1180,7 @@ END INTERFACE
 ! summary: returns size of meshFacetData
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetTotalMeshFacetData(obj, imeshFacetData) &
+  MODULE FUNCTION Domain_GetTotalMeshFacetData(obj, imeshFacetData) &
     & RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
@@ -1333,18 +1278,12 @@ END INTERFACE
 ! date: 12 Oct 2021
 ! summary: Set sparsity in [[CSRMatrix_]] from [[Domain_]]
 
-INTERFACE
+INTERFACE DomainSetSparsity
   MODULE SUBROUTINE Domain_SetSparsity2(domains, mat)
     CLASS(DomainPointer_), INTENT(IN) :: domains(:)
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
   END SUBROUTINE Domain_SetSparsity2
-END INTERFACE
-
-INTERFACE DomainSetSparsity
-  MODULE PROCEDURE Domain_SetSparsity2
 END INTERFACE DomainSetSparsity
-
-PUBLIC :: DomainSetSparsity
 
 !----------------------------------------------------------------------------
 !                                               setTotalMaterial@setMethods
@@ -1400,229 +1339,6 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE Domain_SetNodeCoord1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateElemSD1(obj, &
-    & dim, &
-    & orderSpace, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
-    !! order for each mesh
-    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-  END SUBROUTINE Domain_InitiateElemSD1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateElemSD2(obj, &
-    & dim, &
-    & orderSpace, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime, &
-    & tvec)
-    !!
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
-    !! order for each mesh
-    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-    INTEGER(I4B), INTENT(IN) :: orderTime
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE Domain_InitiateElemSD2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateElemSD3(obj, &
-    & dim, &
-    & orderSpace, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime)
-    !!
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
-    !! order for each mesh
-    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-    INTEGER(I4B), INTENT(IN) :: orderTime
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-  END SUBROUTINE Domain_InitiateElemSD3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateElemSD4(obj, dim, tvec)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE Domain_InitiateElemSD4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       InitiateFacetElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateFacetElemSD1(obj, &
-    & dim, &
-    & orderSpace, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
-    !! order for each mesh
-    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-  END SUBROUTINE Domain_InitiateFacetElemSD1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 May 2022
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateFacetElemSD2(obj, &
-    & dim, &
-    & orderSpace,  &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime, &
-    & tvec)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
-      !! integrand order in space
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature type for space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity type of base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpol type of base in space
-    INTEGER(I4B), INTENT(IN) :: orderTime
-      !! integrand order in time
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-      !! linear time element
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-      !! time element
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-      !! quadrature type of base in time
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-      !! continuity type of base in time
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-      !! interpol type of base in time
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE Domain_InitiateFacetElemSD2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE Domain_InitiateFacetElemSD3(obj, dim, tvec)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE Domain_InitiateFacetElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1824,7 +1540,6 @@ INTERFACE
     REAL(DFP), INTENT(OUT) :: min_measures(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-
   END SUBROUTINE Domain_SetQuality
 END INTERFACE
 

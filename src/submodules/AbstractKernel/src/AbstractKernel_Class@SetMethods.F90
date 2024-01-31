@@ -57,7 +57,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set()"
 TYPE(BoundingBox_) :: bbox
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -144,7 +143,6 @@ MODULE PROCEDURE obj_SetMeshData
 CHARACTER(*), PARAMETER :: myName = "obj_SetMeshData()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -193,7 +191,6 @@ CLASS(Mesh_), POINTER :: amesh
 CLASS(Domain_), POINTER :: dom
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -239,7 +236,6 @@ INTEGER(I4B) :: tsize, ii, nsd
 LOGICAL(LGT) :: problem
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -254,10 +250,10 @@ CALL Reallocate(order, tsize)
 elemType = obj%dom%GetElemType(dim=nsd)
 order = obj%dom%GetOrder(dim=nsd)
 
-problem = (ALLOCATED(obj%cellFE) .OR. ALLOCATED(obj%linCellFE))
+problem = (ALLOCATED(obj%cellFE) .OR. ALLOCATED(obj%geoCellFE))
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractKernel_::obj%cellFE or obj%linCellFE '//  &
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%cellFE or obj%geoCellFE '//  &
     & 'already allocated.')
   RETURN
 END IF
@@ -267,11 +263,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] Setting Cell Finite Element.')
 #endif DEBUG_VER
 
-ALLOCATE (obj%cellFE(tsize), obj%linCellFE(tsize))
+ALLOCATE (obj%cellFE(tsize), obj%geoCellFE(tsize))
 
 DO ii = 1, tsize
   ALLOCATE (FiniteElement_ :: obj%cellFE(ii)%ptr)
-  ALLOCATE (FiniteElement_ :: obj%linCellFE(ii)%ptr)
+  ALLOCATE (FiniteElement_ :: obj%geoCellFE(ii)%ptr)
 
   CALL obj%cellFE(ii)%ptr%InitiateLagrangeFE( &
     & nsd=nsd,  &
@@ -285,10 +281,10 @@ DO ii = 1, tsize
     & beta=obj%betaForSpace,  &
     & lambda=obj%lambdaForSpace)
 
-  CALL obj%linCellFE(ii)%ptr%InitiateLagrangeFE( &
+  CALL obj%geoCellFE(ii)%ptr%InitiateLagrangeFE( &
     & nsd=nsd,  &
     & elemType=elemType(ii),  &
-    & order=1_I4B,  &
+    & order=order(ii),  &
     & baseContinuity=obj%baseContinuityForSpace%chars(),  &
     & baseInterpolation=obj%baseInterpolationForSpace%chars(),  &
     & ipType=obj%ipTypeForSpace,  &
@@ -314,20 +310,20 @@ IF (nsd .GE. 2) THEN
   order = obj%dom%GetOrder(dim=nsd - 1)
   tsize = SIZE(elemType)
 
-  problem = ALLOCATED(obj%facetFE) .OR. ALLOCATED(obj%linFacetFE)
+  problem = ALLOCATED(obj%facetFE) .OR. ALLOCATED(obj%geoFacetFE)
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE '//  &
-    & 'or obj%linFacetFE already allocated.')
+    & 'or obj%geoFacetFE already allocated.')
     RETURN
   END IF
 
-  ALLOCATE (obj%facetFE(tsize), obj%linFacetFE(tsize))
+  ALLOCATE (obj%facetFE(tsize), obj%geoFacetFE(tsize))
 
   DO ii = 1, tsize
 
     ALLOCATE (FiniteElement_ :: obj%facetFE(ii)%ptr)
-    ALLOCATE (FiniteElement_ :: obj%linFacetFE(ii)%ptr)
+    ALLOCATE (FiniteElement_ :: obj%geoFacetFE(ii)%ptr)
 
     CALL obj%facetFE(ii)%ptr%InitiateLagrangeFE( &
       & nsd=nsd,  &
@@ -341,10 +337,10 @@ IF (nsd .GE. 2) THEN
       & beta=obj%betaForSpace,  &
       & lambda=obj%lambdaForSpace)
 
-    CALL obj%linFacetFE(ii)%ptr%InitiateLagrangeFE( &
+    CALL obj%geoFacetFE(ii)%ptr%InitiateLagrangeFE( &
       & nsd=nsd,  &
       & elemType=elemType(ii),  &
-      & order=1_I4B,  &
+      & order=order(ii),  &
       & baseContinuity=obj%baseContinuityForSpace%chars(),  &
       & baseInterpolation=obj%baseInterpolationForSpace%chars(),  &
       & ipType=obj%ipTypeForSpace,  &
@@ -371,19 +367,19 @@ IF (nsd .GE. 3) THEN
   order = obj%dom%GetOrder(dim=nsd - 2)
   tsize = SIZE(elemType)
 
-  IF (ALLOCATED(obj%edgeFE) .OR. ALLOCATED(obj%linEdgeFE)) THEN
+  IF (ALLOCATED(obj%edgeFE) .OR. ALLOCATED(obj%geoEdgeFE)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: AbstractKernel_::obj%edgeFE '//  &
-      & 'or obj%linEdgeFE already allocated.')
+      & 'or obj%geoEdgeFE already allocated.')
     RETURN
   END IF
 
   ! CALL DEALLOCATE (obj%edgeFE)
-  ALLOCATE (obj%edgeFE(tsize), obj%linEdgeFE(tsize))
+  ALLOCATE (obj%edgeFE(tsize), obj%geoEdgeFE(tsize))
 
   DO ii = 1, tsize
     ALLOCATE (FiniteElement_ :: obj%edgeFE(ii)%ptr)
-    ALLOCATE (FiniteElement_ :: obj%linEdgeFE(ii)%ptr)
+    ALLOCATE (FiniteElement_ :: obj%geoEdgeFE(ii)%ptr)
 
     CALL obj%edgeFE(ii)%ptr%InitiateLagrangeFE( &
       & nsd=nsd,  &
@@ -397,10 +393,10 @@ IF (nsd .GE. 3) THEN
       & beta=obj%betaForSpace,  &
       & lambda=obj%lambdaForSpace)
 
-    CALL obj%linEdgeFE(ii)%ptr%InitiateLagrangeFE( &
+    CALL obj%geoEdgeFE(ii)%ptr%InitiateLagrangeFE( &
       & nsd=nsd,  &
       & elemType=elemType(ii),  &
-      & order=1_I4B,  &
+      & order=order(ii),  &
       & baseContinuity=obj%baseContinuityForSpace%chars(),  &
       & baseInterpolation=obj%baseInterpolationForSpace%chars(),  &
       & ipType=obj%ipTypeForSpace,  &
@@ -434,10 +430,10 @@ IF (obj%nnt .GT. 1_I4B) THEN
     & beta=obj%betaForTime,  &
     & lambda=obj%lambdaForTime)
 
-  CALL obj%linTimeFE%InitiateLagrangeFE( &
+  CALL obj%geoTimeFE%InitiateLagrangeFE( &
     & nsd=nsd,  &
     & elemType=Line2,  &
-    & order=1_I4B,  &
+    & order=obj%nnt - 1_I4B,  &
     & baseContinuity=obj%baseContinuityForTime%chars(),  &
     & baseInterpolation=obj%baseInterpolationForTime%chars(),  &
     & ipType=obj%ipTypeForTime,  &
@@ -485,7 +481,6 @@ LOGICAL(LGT) :: isok
 CLASS(FiniteElement_), POINTER :: fe
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -527,33 +522,37 @@ NULLIFY (fe)
 !                                                                   facetFE
 !----------------------------------------------------------------------------
 
-isok = ALLOCATED(obj%facetFE)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%facetFE not allocated')
-  RETURN
+IF (obj%nsd .GE. 2_I4B) THEN
+
+  isok = ALLOCATED(obj%facetFE)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: AbstractKernel_::obj%facetFE not allocated')
+    RETURN
+  END IF
+
+  tCell = SIZE(obj%facetFE)
+  fe => NULL()
+
+  isok = ALLOCATED(obj%quadratureForSpace_facet)
+  IF (.NOT. isok) THEN
+    ALLOCATE (obj%quadratureForSpace_facet(tCell))
+  END IF
+
+  DO ii = 1, tCell
+    fe => obj%facetFE(ii)%ptr
+    CALL fe%GetParam(order=order)
+    order = order * 2
+    CALL fe%GetQuadraturePoints( &
+      & quad=obj%quadratureForSpace_facet(ii), &
+      & quadratureType=[obj%quadTypeForSpace],  &
+      & order=[order],  &
+      & alpha=[obj%alphaForSpace],  &
+      & beta=[obj%betaForSpace],  &
+      & lambda=[obj%lambdaForSpace])
+  END DO
+
 END IF
-
-tCell = SIZE(obj%facetFE)
-fe => NULL()
-
-isok = ALLOCATED(obj%quadratureForSpace_facet)
-IF (.NOT. isok) THEN
-  ALLOCATE (obj%quadratureForSpace_facet(tCell))
-END IF
-
-DO ii = 1, tCell
-  fe => obj%facetFE(ii)%ptr
-  CALL fe%GetParam(order=order)
-  order = order * 2
-  CALL fe%GetQuadraturePoints( &
-    & quad=obj%quadratureForSpace_facet(ii), &
-    & quadratureType=[obj%quadTypeForSpace],  &
-    & order=[order],  &
-    & alpha=[obj%alphaForSpace],  &
-    & beta=[obj%betaForSpace],  &
-    & lambda=[obj%lambdaForSpace])
-END DO
 
 NULLIFY (fe)
 
@@ -578,7 +577,6 @@ MODULE PROCEDURE obj_SetQuadPointsInTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInTime()"
 INTEGER(I4B) :: order
 TYPE(CPUTime_) :: TypeCPUTime
-
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
@@ -616,7 +614,7 @@ END PROCEDURE obj_SetQuadPointsInTime
 !                                               SetLocalElemShapeDataInSpace
 !----------------------------------------------------------------------------
 
-! This routine Sets the local shape data in space (linSpaceElemSD and
+! This routine Sets the local shape data in space (geoSpaceElemSD and
 ! spaceElemSD) for the mesh.
 ! The quadrature points should be initiated before calling this routine.
 MODULE PROCEDURE obj_SetLocalElemShapeDataInSpace
@@ -625,7 +623,6 @@ INTEGER(I4B) :: ii, tCell
 CLASS(FiniteElement_), POINTER :: fe
 LOGICAL(LGT) :: isok, problem
 TYPE(CPUTime_) :: TypeCPUTime
-
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
@@ -658,13 +655,13 @@ IF (problem) THEN
   RETURN
 END IF
 
-IF (ALLOCATED(obj%linSpaceElemSD)) THEN
+IF (ALLOCATED(obj%geoSpaceElemSD)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] :: AbstractKernel_::obj%linSpaceElemSD already allocated')
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%geoSpaceElemSD already allocated')
   RETURN
 END IF
 
-ALLOCATE (obj%spaceElemSD(tCell), obj%linSpaceElemSD(tCell))
+ALLOCATE (obj%spaceElemSD(tCell), obj%geoSpaceElemSD(tCell))
 
 DO ii = 1, tCell
   fe => obj%cellFE(ii)%ptr
@@ -672,10 +669,10 @@ DO ii = 1, tCell
     & quad=obj%quadratureForSpace(ii), &
     & elemsd=obj%spaceElemSD(ii))
 
-  fe => obj%linCellFE(ii)%ptr
+  fe => obj%geoCellFE(ii)%ptr
   CALL fe%GetLocalElemShapeData( &
     & quad=obj%quadratureForSpace(ii), &
-    & elemsd=obj%linSpaceElemSD(ii))
+    & elemsd=obj%geoSpaceElemSD(ii))
 END DO
 
 NULLIFY (fe)
@@ -684,52 +681,56 @@ NULLIFY (fe)
 !                                                                   facetFE
 !----------------------------------------------------------------------------
 
-isok = ALLOCATED(obj%facetFE)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE not allocated')
-  RETURN
+IF (obj%nsd .GE. 2_I4B) THEN
+
+  isok = ALLOCATED(obj%facetFE)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE not allocated')
+    RETURN
+  END IF
+
+  isok = ALLOCATED(obj%quadratureForSpace_facet)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%quadratureForSpace_facet'// &
+    & ' not allocated.')
+    RETURN
+  END IF
+
+  tCell = SIZE(obj%facetFE)
+  fe => NULL()
+
+  problem = ALLOCATED(obj%spaceElemSD_facet)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%spaceElemSD_facet'//  &
+    & ' already allocated')
+    RETURN
+  END IF
+
+  IF (ALLOCATED(obj%geoSpaceElemSD_facet)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%geoSpaceElemSD_facet '//  &
+    & ' already allocated')
+    RETURN
+  END IF
+
+  ALLOCATE (obj%spaceElemSD_facet(tCell), obj%geoSpaceElemSD_facet(tCell))
+
+  DO ii = 1, tCell
+    fe => obj%facetFE(ii)%ptr
+    CALL fe%GetLocalElemShapeData( &
+      & quad=obj%quadratureForSpace_facet(ii), &
+      & elemsd=obj%spaceElemSD_facet(ii))
+
+    fe => obj%geoFacetFE(ii)%ptr
+    CALL fe%GetLocalElemShapeData( &
+      & quad=obj%quadratureForSpace_facet(ii), &
+      & elemsd=obj%geoSpaceElemSD_facet(ii))
+  END DO
+
 END IF
-
-isok = ALLOCATED(obj%quadratureForSpace_facet)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] :: AbstractKernel_::obj%quadratureForSpace_facet'// &
-  & ' not allocated.')
-  RETURN
-END IF
-
-tCell = SIZE(obj%facetFE)
-fe => NULL()
-
-problem = ALLOCATED(obj%spaceElemSD_facet)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] :: AbstractKernel_::obj%spaceElemSD_facet'//  &
-  & ' already allocated')
-  RETURN
-END IF
-
-IF (ALLOCATED(obj%linSpaceElemSD_facet)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] :: AbstractKernel_::obj%linSpaceElemSD_facet '//  &
-  & ' already allocated')
-  RETURN
-END IF
-
-ALLOCATE (obj%spaceElemSD_facet(tCell), obj%linSpaceElemSD_facet(tCell))
-
-DO ii = 1, tCell
-  fe => obj%facetFE(ii)%ptr
-  CALL fe%GetLocalElemShapeData( &
-    & quad=obj%quadratureForSpace_facet(ii), &
-    & elemsd=obj%spaceElemSD_facet(ii))
-
-  fe => obj%linFacetFE(ii)%ptr
-  CALL fe%GetLocalElemShapeData( &
-    & quad=obj%quadratureForSpace_facet(ii), &
-    & elemsd=obj%linSpaceElemSD_facet(ii))
-END DO
 
 NULLIFY (fe)
 
@@ -750,13 +751,12 @@ END PROCEDURE obj_SetLocalElemShapeDataInSpace
 !                                               SetLocalElemShapeDataInTime
 !----------------------------------------------------------------------------
 
-! This routine Sets the local shape data in time (linTimeElemSD and
+! This routine Sets the local shape data in time (geoTimeElemSD and
 ! timeElemSD) for the mesh.
 ! The quadrature points should be initiated before calling this routine.
 MODULE PROCEDURE obj_SetLocalElemShapeDataInTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInTime()"
 TYPE(CPUTime_) :: TypeCPUTime
-
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
@@ -769,9 +769,9 @@ CALL obj%timeFE%GetLocalElemShapeData( &
   & quad=obj%quadratureForTime, &
   & elemsd=obj%timeElemSD)
 
-CALL obj%linTimeFE%GetLocalElemShapeData( &
+CALL obj%geoTimeFE%GetLocalElemShapeData( &
   & quad=obj%quadratureForTime, &
-  & elemsd=obj%linTimeElemSD)
+  & elemsd=obj%geoTimeElemSD)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

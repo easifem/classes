@@ -72,14 +72,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
 # FE
 include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 
-# IntList
-include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
+# BinaryTree
+include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
 
-# RealList
-include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
+# HashTable
+include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
 
-# StringList
-include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
+# LinkList
+include(${CMAKE_CURRENT_LIST_DIR}/LinkList/CMakeLists.txt)
 
 # ElementList
 include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
@@ -87,8 +87,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
 # ElementPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
 
+# AbstractMesh
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
+
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
+
+# DynamicMesh
+include(${CMAKE_CURRENT_LIST_DIR}/DynamicMesh/CMakeLists.txt)
 
 # MeshPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)

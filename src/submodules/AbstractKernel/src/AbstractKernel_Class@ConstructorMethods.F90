@@ -504,6 +504,7 @@ IF (obj%showTime) THEN
   CALL obj%showTimeFile%OPEN()
   temp_str = ""
   temp_str = "currentTimeStep,currentTime,method,cpu-time"
+!$ temp_str = temp_str//",wtime"
   CALL obj%showTimeFile%WRITE(val=temp_str)
 END IF
 
@@ -564,7 +565,7 @@ obj%quadTypeForTime = 0_I4B
 obj%linsol => NULL()
 obj%tanmat => NULL()
 CALL DEALLOCATE (obj%refTimeElem)
-CALL DEALLOCATE (obj%refLinTimeElem)
+CALL DEALLOCATE (obj%refGeoTimeElem)
 obj%dom => NULL()
 IF (ALLOCATED(obj%domains)) THEN
   DO ii = 1, SIZE(obj%domains)
@@ -590,13 +591,13 @@ END IF
 CALL DEALLOCATE (obj%quadratureForTime)
 
 CALL FiniteElementDeallocate(obj%cellFE)
-CALL FiniteElementDeallocate(obj%linCellFE)
+CALL FiniteElementDeallocate(obj%geoCellFE)
 CALL FiniteElementDeallocate(obj%facetFE)
-CALL FiniteElementDeallocate(obj%linFacetFE)
+CALL FiniteElementDeallocate(obj%geoFacetFE)
 CALL FiniteElementDeallocate(obj%edgeFE)
-CALL FiniteElementDeallocate(obj%linEdgeFE)
+CALL FiniteElementDeallocate(obj%geoEdgeFE)
 CALL obj%timeFE%DEALLOCATE()
-CALL obj%linTimeFE%DEALLOCATE()
+CALL obj%geoTimeFE%DEALLOCATE()
 
 obj%ipTypeForSpace = 0
 obj%ipTypeForTime = 0
@@ -609,14 +610,14 @@ obj%alphaForTime = 0
 obj%betaForTime = 0
 obj%lambdaForTime = 0
 
-CALL DEALLOCATE (obj%linTimeElemSD)
+CALL DEALLOCATE (obj%geoTimeElemSD)
 CALL DEALLOCATE (obj%timeElemSD)
 
-IF (ALLOCATED(obj%linSpaceElemSD)) THEN
-  DO ii = 1, SIZE(obj%linSpaceElemSD)
-    CALL DEALLOCATE (obj%linSpaceElemSD(ii))
+IF (ALLOCATED(obj%geoSpaceElemSD)) THEN
+  DO ii = 1, SIZE(obj%geoSpaceElemSD)
+    CALL DEALLOCATE (obj%geoSpaceElemSD(ii))
   END DO
-  DEALLOCATE (obj%linSpaceElemSD)
+  DEALLOCATE (obj%geoSpaceElemSD)
 END IF
 
 IF (ALLOCATED(obj%spaceElemSD)) THEN
@@ -626,11 +627,11 @@ IF (ALLOCATED(obj%spaceElemSD)) THEN
   DEALLOCATE (obj%spaceElemSD)
 END IF
 
-IF (ALLOCATED(obj%linSpaceElemSD_facet)) THEN
-  DO ii = 1, SIZE(obj%linSpaceElemSD_facet)
-    CALL DEALLOCATE (obj%linSpaceElemSD_facet(ii))
+IF (ALLOCATED(obj%geoSpaceElemSD_facet)) THEN
+  DO ii = 1, SIZE(obj%geoSpaceElemSD_facet)
+    CALL DEALLOCATE (obj%geoSpaceElemSD_facet(ii))
   END DO
-  DEALLOCATE (obj%linSpaceElemSD_facet)
+  DEALLOCATE (obj%geoSpaceElemSD_facet)
 END IF
 
 IF (ALLOCATED(obj%spaceElemSD_facet)) THEN
