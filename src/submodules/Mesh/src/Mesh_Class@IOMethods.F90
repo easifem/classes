@@ -21,7 +21,12 @@ USE ReallocateUtility
 USE ReferenceElement_Method
 USE InputUtility
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector,  &
-& HDF5ReadMatrix
+  & HDF5ReadMatrix
+
+USE NodeData_Class, ONLY: NodeData_Display
+USE ElemData_Class, ONLY: ElemData_Display
+USE FacetData_Class, ONLY: BoundaryFacetData_Display,  &
+& InternalFacetData_Display
 IMPLICIT NONE
 CONTAINS
 
@@ -36,13 +41,10 @@ CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 
 CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 CALL Display(obj%elemType, "elemType: ", unitno=unitno)
-
 abool = ASSOCIATED(obj%refElem)
 CALL Display(abool, "refElem ASSOCIATED: ", unitno=unitno)
-
 abool = ALLOCATED(obj%facetElements)
 CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
-
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -162,88 +164,6 @@ IF (ALLOCATED(localNptrs)) DEALLOCATE (localNptrs)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
-!                                                        DisplayElementData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayElementData
-INTEGER(I4B) :: ii, telements
-
-CALL Display(msg, unitno=unitno)
-telements = obj%GetTotalElements()
-
-DO ii = 1, telements
-  CALL elemData_Display(obj=obj%elementData(ii),  &
-    & msg="elementData("//tostring(ii)//"): ", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END DO
-
-END PROCEDURE obj_DisplayElementData
-
-!----------------------------------------------------------------------------
-!                                                            DisplayNodeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayNodeData
-INTEGER(I4B) :: ii, tNodes
-tNodes = obj%GetTotalNodes()
-CALL Display(msg, unitno=unitno)
-DO ii = 1, tNodes
-  CALL nodeData_Display(obj%nodeData(ii),  &
-    & msg="nodeData("//tostring(ii)//"): ", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END DO
-END PROCEDURE obj_DisplayNodeData
-
-!----------------------------------------------------------------------------
-!                                                  DisplayInternalFacetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayInternalFacetData
-INTEGER(I4B) :: ii, n
-LOGICAL(LGT) :: abool
-
-CALL Display(msg, unitno=unitno)
-abool = ALLOCATED(obj%internalFacetData)
-IF (abool) THEN; n = SIZE(obj%internalFacetData); ELSE; n = 0; END IF
-
-CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
-
-DO ii = 1, n
-
-  CALL InternalFacetData_Display(obj=obj%internalFacetData(ii),  &
-    & msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
-
-  CALL BlankLines(nol=1, unitno=unitno)
-
-END DO
-END PROCEDURE obj_DisplayInternalFacetData
-
-!----------------------------------------------------------------------------
-!                                                   DisplayBoundaryFacetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayBoundaryFacetData
-INTEGER(I4B) :: ii, n
-LOGICAL(LGT) :: abool
-
-abool = ALLOCATED(obj%boundaryFacetData)
-IF (abool) THEN; n = SIZE(obj%boundaryFacetData); ELSE; n = 0; END IF
-
-CALL Display(msg, unitno=unitno)
-CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
-
-DO ii = 1, n
-
-  CALL BoundaryFacetData_Display(obj=obj%boundaryFacetData(ii),  &
-    & msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
-
-  CALL BlankLines(nol=1, unitno=unitno)
-
-END DO
-
-END PROCEDURE obj_DisplayBoundaryFacetData
-
-!----------------------------------------------------------------------------
 !                                                      DisplayFacetElements
 !----------------------------------------------------------------------------
 
@@ -265,7 +185,6 @@ DO ii = 1, n
   CALL BlankLines(nol=1, unitno=unitno)
 
 END DO
-
 END PROCEDURE obj_DisplayFacetElements
 
 END SUBMODULE IOMethods
