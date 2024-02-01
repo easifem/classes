@@ -20,14 +20,14 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE Files, ONLY: HDF5File_, VTKFile_
 USE BaseType, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
-USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
-  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
-USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
-  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem,  &
-  & ElemData_Display => Display
-USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
-  & InternalFacetData_Display, BoundaryFacetData_Display
 USE CPUTime_Class, ONLY: CPUTime_
+USE ElemData_Class
+USE ElemDataBinaryTree_Class
+USE ElemDataList_Class
+USE NodeData_Class
+USE NodeDataList_Class
+USE NodeDataBinaryTree_Class
+USE FacetData_Class
 IMPLICIT NONE
 
 PRIVATE
@@ -165,6 +165,15 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! Domain Facet Data
     !! INFO: This data is initiated by InitiateFacetElements method
 
+  TYPE(ElemDataList_) :: elementDataList
+  !! ElemData list
+  TYPE(ElemDataBinaryTree_) :: elementDataBinaryTree
+  !! ElemData binary tree
+  TYPE(NodeDataList_) :: nodeDataList
+  !! NodeData list
+  TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
+  !! NodeData binary tree
+
 CONTAINS
   PRIVATE
 
@@ -176,7 +185,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
     !! Deallocate memory occupied by the mesh instance
   PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => obj_isEmpty
-  !! Returns true if the mesh is empty.
+    !! Returns true if the mesh is empty.
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDynamicDataStructure =>  &
+  & obj_InitiateDynamicDataStructure
+    !! Initiate DynamicDataStructure of mesh from static data
 
   ! IO:
   ! @IOMethods
@@ -517,7 +529,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    Deallocate@Constructor
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -531,14 +543,32 @@ INTERFACE AbstractMeshDeallocate
 END INTERFACE AbstractMeshDeallocate
 
 !----------------------------------------------------------------------------
-!                                                         isEmpty@Constructor
+!                                                 isEmpty@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Returns true if the mesh is empty
 
 INTERFACE
   MODULE FUNCTION obj_isEmpty(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isEmpty
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                           InitiateDynamicDataStructure@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Initiate dynamic data structure from static data structure
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateDynamicDataStructure(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateDynamicDataStructure
 END INTERFACE
 
 !----------------------------------------------------------------------------

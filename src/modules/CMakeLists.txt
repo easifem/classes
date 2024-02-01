@@ -93,9 +93,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 
-# DynamicMesh
-include(${CMAKE_CURRENT_LIST_DIR}/DynamicMesh/CMakeLists.txt)
-
 # MeshPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
 
