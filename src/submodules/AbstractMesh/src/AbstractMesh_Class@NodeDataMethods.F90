@@ -93,9 +93,15 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
-INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
+INTEGER(I4B) :: iel, iLocalNode, iGlobalNode, ii, jj, telem, local_iel,  &
+& nodewise_size, global_iel, tnode, globalNode, self_globalNode
 TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B), PARAMETER :: chunk_size = 64
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 IF (obj%isNodeToNodesInitiated) THEN
   CALL e%raiseWarning(modName//"::"//myName//" - "// &
@@ -109,17 +115,31 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 obj%isNodeToNodesInitiated = .TRUE.
 
-DO iLocalNode = 1, obj%tNodes
-  iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
-  NearElements = obj%GetNodeToElements(iGlobalNode)
+DO ii = 1, obj%tNodes
+  nodewise_size = 0
+  telem = SIZE(obj%nodeData(ii)%globalElements)
+  self_globalNode = obj%nodeData(ii)%globalNodeNum
 
-  DO iel = 1, SIZE(NearElements)
-    globalNodes = obj%GetConnectivity(NearElements(iel))
-    globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
-    CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
+  DO iel = 1, telem
+    global_iel = obj%nodeData(ii)%globalElements(iel)
+    local_iel = obj%local_elemNumber(global_iel)
+    tnode = SIZE(obj%elementData(local_iel)%globalNodes)
+
+    DO jj = 1, tnode
+      globalNode = obj%elementData(local_iel)%globalNodes(jj)
+      IF (globalNode .EQ. self_globalNode) CYCLE
+      CALL Expand(vec=obj%nodeData(ii)%globalNodes,  &
+        & n=nodewise_size, chunk_size=chunk_size,  &
+        & val=globalNode)
+    END DO
+
   END DO
 
-  CALL RemoveDuplicates(obj%nodeData(iLocalNode)%globalNodes)
+  CALL Expand(vec=obj%nodeData(ii)%globalNodes,  &
+    & n=nodewise_size, chunk_size=chunk_size, finished=.TRUE.)
+
+  CALL RemoveDuplicates(obj%nodeData(ii)%globalNodes)
+
 END DO
 
 IF (obj%showTime) THEN
@@ -129,8 +149,11 @@ IF (obj%showTime) THEN
     & tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
-IF (ALLOCATED(globalNodes)) DEALLOCATE (globalNodes)
-IF (ALLOCATED(NearElements)) DEALLOCATE (NearElements)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------

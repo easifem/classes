@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(Mesh_Class) NodeDataMethods
-USE BaseMethod
+USE IntegerUtility
 IMPLICIT NONE
 CONTAINS
 
