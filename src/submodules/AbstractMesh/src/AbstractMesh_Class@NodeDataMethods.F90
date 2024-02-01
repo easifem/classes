@@ -29,8 +29,9 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
 INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum,  &
-  & globalNodeNum
+  & globalNodeNum, nodewise_size(obj%tNodes)
 TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B), PARAMETER :: chunk_size = 32
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -47,6 +48,8 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 obj%isNodeToElementsInitiated = .TRUE.
 
+nodewise_size = 0
+
 DO ii = 1, obj%tElements
   globalElemNum = obj%elementData(ii)%globalElemNum
 
@@ -56,11 +59,17 @@ DO ii = 1, obj%tElements
     globalNodeNum = obj%elementData(ii)%globalNodes(jj)
     localNodeNum = obj%local_nptrs(globalNodeNum)
 
-    CALL Append(obj%nodeData(localNodeNum)%globalElements, &
-      & globalElemNum)
-
+    CALL Expand(vec=obj%nodeData(localNodeNum)%globalElements, &
+      & n=nodewise_size(localNodeNum), chunk_size=chunk_size,  &
+      & val=globalElemNum)
   END DO
 
+END DO
+
+! Now we have to fix the size of `nodeData%globalElements`
+DO ii = 1, obj%tNodes
+  CALL Expand(vec=obj%nodeData(ii)%globalElements, &
+    & n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
 END DO
 
 IF (obj%showTime) THEN
