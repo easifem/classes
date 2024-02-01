@@ -20,20 +20,18 @@
 
 MODULE Mesh_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE VTKFile_Class
 USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
-  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
+  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode
 USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
-  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem,  &
-  & ElemData_Display => Display
-USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
-  & InternalFacetData_Display, BoundaryFacetData_Display
-USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate,  &
+  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem
+USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_
+USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate, &
   & AbstractMeshDisplay, AbstractMeshGetQuery, AbstractMeshImport
 
 IMPLICIT NONE
@@ -95,27 +93,11 @@ CONTAINS
     !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
     !! Display the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
-    & obj_DisplayNodeData
-  !! Display node data
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
-    & obj_DisplayElementData
-    !! Display element data
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
-    & obj_DisplayInternalFacetData
-    !! Display internal facet data
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
-    & obj_DisplayBoundaryFacetData
-    !! Display mesh facet data
-    !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & obj_DisplayFacetElements
 
   ! SET:
   ! @NodeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-    & obj_InitiateNodeToElements
-  !! Initiate node to node data
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
     & obj_InitiateNodetoNodes
   !! Initiate Node to nodes mapping
@@ -441,70 +423,6 @@ INTERFACE MeshDisplay
     !! unit number of ouput file
   END SUBROUTINE obj_Display
 END INTERFACE MeshDisplay
-
-!----------------------------------------------------------------------------
-!                                              DisplayNodeData@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Displays the Node data
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayNodeData(obj, msg, unitno)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayNodeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              DisplayElementData@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Displays the element data
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayElementData(obj, msg, unitno)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayElementData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              DisplayFacetData@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Displays the element data
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayInternalFacetData(obj, msg, unitno)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayInternalFacetData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        DisplayBoundaryFacetData@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Displays the element data
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayBoundaryFacetData(obj, msg, unitno)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayBoundaryFacetData
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              DisplayFacetElements@IOMethods
@@ -1186,39 +1104,6 @@ INTERFACE
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
   END SUBROUTINE obj_GetQuery
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     InitiateNodeToElements@NodeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: generate Elements surrounding a node mapping
-!
-!# Introduction
-!
-! - This subroutine generates elements surrounding a node mapping, in other
-! words it generates node to element
-! - Element numbers returned by this routine are global element number.
-! - This mapping is stored inside `obj%nodeData` array
-! - For a local node number `ii`, `obj%nodeData(ii)%globalElements(:)`
-! contains the global element numbers.
-!
-!@note
-! Always use method called `GetNodeToElements()` to access this information.
-! This methods requires global Node number
-!@endnote
-!
-!@warning
-! Always use the mapping between global node number and local node number to
-! avoid segmentation fault
-!@endwarning
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateNodeToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------

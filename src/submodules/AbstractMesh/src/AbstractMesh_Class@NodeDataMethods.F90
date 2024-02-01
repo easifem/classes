@@ -16,6 +16,9 @@
 !
 
 SUBMODULE(AbstractMesh_Class) NodeDataMethods
+USE Display_Method
+USE GlobalData, ONLY: stdout
+USE AppendUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -25,8 +28,53 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum,  &
+  & globalNodeNum
+TYPE(CPUTime_) :: TypeCPUTime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isNodeToElementsInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: NodeToElements is already initiated.")
+  RETURN
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+obj%isNodeToElementsInitiated = .TRUE.
+
+DO ii = 1, obj%tElements
+  globalElemNum = obj%elementData(ii)%globalElemNum
+
+  nn = SIZE(obj%elementData(ii)%globalNodes)
+
+  DO jj = 1, nn
+    globalNodeNum = obj%elementData(ii)%globalNodes(jj)
+    localNodeNum = obj%local_nptrs(globalNodeNum)
+
+    CALL Append(obj%nodeData(localNodeNum)%globalElements, &
+      & globalElemNum)
+
+  END DO
+
+END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time : "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateNodeToElements
 
 !----------------------------------------------------------------------------

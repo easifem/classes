@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ConstructorMethods
+USE Display_Method
+USE GlobalData, ONLY: stdout
 IMPLICIT NONE
 CONTAINS
 
@@ -115,10 +117,11 @@ END PROCEDURE obj_isEmpty
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateDynamicDataStructure
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateDynamicDataStructure()"
 INTEGER(I4B) :: ii
 TYPE(ElemData_), POINTER :: elemdata_ptr
 TYPE(NodeData_), POINTER :: nodedata_ptr
+TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -138,6 +141,13 @@ CALL obj%elementDataBinaryTree%Initiate()
 CALL obj%nodeDataList%Initiate()
 CALL obj%nodeDataBinaryTree%Initiate()
 
+IF (obj%showTime) THEN
+  CALL Display("Showing Time States of InitiateDynamicDataStructure",  &
+    & unitno=stdout)
+  CALL EqualLine(unitno=stdout)
+  CALL TypeCPUTime%SetStartTime()
+END IF
+
 DO ii = 1, obj%tElements
   elemdata_ptr => ElemData_Pointer()
   CALL ElemData_Copy(elemdata_ptr, obj%elementData(ii))
@@ -145,12 +155,29 @@ DO ii = 1, obj%tElements
   CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
 END DO
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time for making elementDataList: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 DO ii = 1, obj%tNodes
   nodedata_ptr => NodeData_Pointer()
   CALL NodeData_Copy(nodedata_ptr, obj%nodeData(ii))
   CALL obj%nodeDataList%Add(nodedata_ptr)
   CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
 END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time for making nodeDataList: "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL EqualLine(unitno=stdout)
+END IF
 
 elemdata_ptr => NULL()
 nodedata_ptr => NULL()

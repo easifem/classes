@@ -21,36 +21,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    InitiateNodeToElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateNodeToElements
-! Define internal  variables
-INTEGER(I4B) :: ii, jj, globalElemNum
-INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-
-IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-IF (obj%isNodeToElementsInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "NodeToElements information is already initiated. If you want to &
-    & Reinitiate it then deallocate nodeData, first!!")
-  RETURN
-END IF
-
-obj%isNodeToElementsInitiated = .TRUE.
-DO ii = 1, obj%tElements
-  globalElemNum = obj%getGlobalElemNumber(ii)
-  local_nptrs = obj%getLocalNodeNumber(obj%getConnectivity(globalElemNum))
-  DO jj = 1, SIZE(local_nptrs)
-    CALL Append(obj%nodeData(local_nptrs(jj))%globalElements, &
-      & globalElemNum)
-  END DO
-END DO
-IF (ALLOCATED(local_nptrs)) DEALLOCATE (local_nptrs)
-END PROCEDURE obj_InitiateNodeToElements
-
-!----------------------------------------------------------------------------
 !                                                        InitiateNodeToNodes
 !----------------------------------------------------------------------------
 

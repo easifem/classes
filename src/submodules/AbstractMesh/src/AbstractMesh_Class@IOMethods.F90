@@ -473,9 +473,16 @@ END PROCEDURE obj_ExportToVTK
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayElementData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, telements
+
+CALL Display(msg, unitno=unitno)
+telements = obj%GetTotalElements()
+
+DO ii = 1, telements
+  CALL elemData_Display(obj=obj%elementData(ii),  &
+    & msg="elementData("//tostring(ii)//"): ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
+END DO
 END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
@@ -483,9 +490,14 @@ END PROCEDURE obj_DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayNodeData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayNodeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, tNodes
+tNodes = obj%GetTotalNodes()
+CALL Display(msg, unitno=unitno)
+DO ii = 1, tNodes
+  CALL nodeData_Display(obj%nodeData(ii),  &
+    & msg="nodeData("//tostring(ii)//"): ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
+END DO
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
@@ -493,9 +505,24 @@ END PROCEDURE obj_DisplayNodeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayInternalFacetData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayInternalFacetData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: abool
+
+CALL Display(msg, unitno=unitno)
+
+abool = ALLOCATED(obj%internalFacetData)
+IF (abool) THEN; n = SIZE(obj%internalFacetData); ELSE; n = 0; END IF
+
+CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
+
+DO ii = 1, n
+
+  CALL InternalFacetData_Display(obj=obj%internalFacetData(ii),  &
+    & msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL BlankLines(nol=1, unitno=unitno)
+
+END DO
 END PROCEDURE obj_DisplayInternalFacetData
 
 !----------------------------------------------------------------------------
@@ -503,9 +530,23 @@ END PROCEDURE obj_DisplayInternalFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayBoundaryFacetData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayBoundaryFacetData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: abool
+
+abool = ALLOCATED(obj%boundaryFacetData)
+IF (abool) THEN; n = SIZE(obj%boundaryFacetData); ELSE; n = 0; END IF
+
+CALL Display(msg, unitno=unitno)
+CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
+
+DO ii = 1, n
+
+  CALL BoundaryFacetData_Display(obj=obj%boundaryFacetData(ii),  &
+    & msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL BlankLines(nol=1, unitno=unitno)
+
+END DO
 END PROCEDURE obj_DisplayBoundaryFacetData
 
 !----------------------------------------------------------------------------
