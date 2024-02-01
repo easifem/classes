@@ -98,9 +98,6 @@ CONTAINS
 
   ! SET:
   ! @NodeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-    & obj_InitiateNodetoNodes
-  !! Initiate Node to nodes mapping
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     & obj_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping
@@ -1104,34 +1101,6 @@ INTERFACE
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
   END SUBROUTINE obj_GetQuery
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         InitiateNodeToNode@NodeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: Initiate node to node connectivity data
-!
-!# Introduction
-!
-!- This routine generate the node to nodes mapping
-!- In other words, it generates info of node-numbers in mesh
-! surrounding a node number
-!- This mapping is stored inside `obj%nodeData%globalNodeNum`
-!- For a local node number i, obj%nodeData(i)%globalNodeNum denotes the
-! global node data surrounding the local node number.
-!- This list does not include self node.
-!- This methods needs node-to-elements data, therefore if this data
-! is not Initiated, then this method calls `InitiateNodeToElements()`
-!
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateNodetoNodes(obj)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! mesh data
-  END SUBROUTINE obj_InitiateNodetoNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
