@@ -45,6 +45,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
 # VTKFile
 include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 
+# PVDFile
+include(${CMAKE_CURRENT_LIST_DIR}/PVDFile/CMakeLists.txt)
+
 # Toml
 include(${CMAKE_CURRENT_LIST_DIR}/Toml/CMakeLists.txt)
 
