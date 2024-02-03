@@ -104,6 +104,9 @@ TYPE, EXTENDS(AbstractAlgoParam_) :: SDAlgoParam_
   !! acc(4) coefficient of solution
   LOGICAL(LGT) :: acc_zero(4) = .TRUE.
 
+  REAL(DFP) :: alpha = 0.0_DFP
+  !! only in case of HHT-alpha method it can be less than 0.0
+
 CONTAINS
   PRIVATE
 
@@ -111,6 +114,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
   PROCEDURE, PUBLIC, PASS(obj) :: NewmarkBeta => obj_NewmarkBeta
+  PROCEDURE, PUBLIC, PASS(obj) :: HHTAlpha => obj_HHTAlpha
+  PROCEDURE, PUBLIC, PASS(obj) :: Collocation => obj_Collocation
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Houbolt => obj_Houbolt
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
@@ -174,6 +180,116 @@ SUBROUTINE obj_NewmarkBeta(obj, beta, gamma)
 END SUBROUTINE obj_NewmarkBeta
 
 !----------------------------------------------------------------------------
+!                                                               HHTAlpha
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_HHTAlpha(obj, alpha, beta, gamma)
+  CLASS(SDAlgoParam_), INTENT(INOUT) :: obj
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+  !! Default -0.30
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+  !! Default is (1-alpha)**2/4
+  REAL(DFP), OPTIONAL, INTENT(IN) :: gamma
+  !! Default is (1-2alpha)/2
+
+  ! internal varibales
+  REAL(DFP) :: alpha0, beta0, gamma0, areal
+
+  CALL obj%DEALLOCATE()
+
+  alpha0 = Input(default=-0.30_DFP, option=alpha)
+  areal = (1.0_DFP - alpha0)**2 * 0.25_DFP
+  beta0 = Input(default=areal, option=beta)
+  areal = (1.0_DFP - 2.0_DFP * alpha0) * 0.50_DFP
+  gamma0 = Input(default=areal, option=gamma)
+
+  obj%alpha = alpha0
+
+  CALL obj%NewmarkBeta(beta=beta0, gamma=gamma0)
+
+  obj%tanmat(2) = obj%tanmat(2) * (1.0_DFP + alpha0)
+  obj%tanmat(3) = obj%tanmat(3) * (1.0_DFP + alpha0)
+
+  obj%rhs_u1(2) = obj%rhs_u1(2) * (1.0_DFP + alpha0)
+  obj%rhs_u1(3) = alpha0 * beta0
+
+  obj%rhs_v1(2) = obj%rhs_v1(2) * (1.0_DFP + alpha0)  &
+                  & + alpha0 * beta0
+
+  obj%rhs_a1(2) = obj%rhs_a1(2) * (1.0_DFP + alpha0)
+
+  CALL obj%MakeZeros()
+
+END SUBROUTINE obj_HHTAlpha
+
+!----------------------------------------------------------------------------
+!                                                               Collocation
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Collocation(obj, beta, gamma, theta)
+  CLASS(SDAlgoParam_), INTENT(INOUT) :: obj
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+  !! Default is 1/6
+  REAL(DFP), OPTIONAL, INTENT(IN) :: gamma
+  !! Default is 0.50
+  REAL(DFP), OPTIONAL, INTENT(IN) :: theta
+  !! Default is 1.4 (Wilson theta)
+
+  ! internal varibales
+  REAL(DFP) :: theta0, beta0, gamma0, areal
+
+  CALL obj%DEALLOCATE()
+
+  beta0 = Input(default=1.0_DFP / 6.0_DFP, option=beta)
+  gamma0 = Input(default=0.50_DFP, option=gamma)
+  theta0 = Input(default=1.4_DFP, option=theta)
+
+  CALL obj%NewmarkBeta(beta=beta0, gamma=gamma0)
+
+  obj%tanmat(2) = obj%tanmat(2) * theta0
+  obj%tanmat(3) = obj%tanmat(3) * theta0**2
+
+  obj%rhs_f2 = obj%rhs_f2 * theta0
+
+  obj%rhs_u1(2) = obj%rhs_u1(2) * theta0
+
+  obj%rhs_v1(1) = obj%rhs_v1(1) * theta0
+  obj%rhs_v1(2) = obj%rhs_v1(2) * theta0**2
+
+  obj%rhs_a1(1) = obj%rhs_a1(2) * theta0**2
+  obj%rhs_a1(2) = obj%rhs_a1(2) * theta0**3
+
+  obj%dis(1) = 1.0_DFP - 1.0_DFP / theta0**3
+  obj%dis(2) = 1.0_DFP - 1.0_DFP / theta0**2
+  obj%dis(3) = (1.0_DFP - 1.0_DFP / theta0) * 0.50_DFP
+  obj%dis(4) = 1.0_DFP / theta0**3
+
+  obj%vel(1) = obj%vel(1) / theta0**3
+  obj%vel(2) = 1.0_DFP - gamma0 / (theta0**2 * beta0)
+  obj%vel(3) = 1.0_DFP - gamma0 / (2.0_DFP * theta0 * beta0)
+  obj%vel(4) = obj%vel(4) / theta0**3
+
+  obj%acc(1) = obj%acc(1) / theta0**3
+  obj%acc(2) = obj%acc(2) / theta0**2
+  obj%acc(3) = 1.0_DFP - 1.0_DFP / (2.0_DFP * theta0 * beta0)
+  obj%acc(4) = obj%acc(4) / theta0**3
+
+  CALL obj%MakeZeros()
+
+END SUBROUTINE obj_Collocation
+
+!----------------------------------------------------------------------------
+!                                                                 Houbolt
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Houbolt(obj)
+  CLASS(SDAlgoParam_), INTENT(INOUT) :: obj
+  CHARACTER(*), PARAMETER :: myName = "Houbolt"
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[WIP] not implemented yet')
+END SUBROUTINE obj_Houbolt
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -230,6 +346,9 @@ SUBROUTINE obj_Display(obj, msg, unitno)
   CALL Display(obj%rhs_f2_zero, "rhs_f2_zero: ", unitno=unitno)
 
   CALL BlankLines(unitno=unitno)
+  CALL Display(obj%alpha, "alpha: ", unitno=unitno, advance="NO")
+
+  CALL BlankLines(unitno=unitno)
   CALL Display(obj%dis, "dis: ", unitno=unitno, advance="NO")
   CALL Display(obj%dis_zero, "dis_zero: ", unitno=unitno)
 
@@ -274,6 +393,8 @@ SUBROUTINE obj_Deallocate(obj)
   obj%vel_zero = .TRUE.
   obj%acc_zero = .TRUE.
 
+  obj%alpha = 0.0_DFP
+
 END SUBROUTINE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -287,7 +408,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
   TYPE(toml_table), POINTER :: node, node2
   INTEGER(I4B) :: origin, stat
-  REAL(DFP) :: beta, gamma
+  REAL(DFP) :: alpha, beta, gamma, theta, areal
   CHARACTER(:), ALLOCATABLE :: str1, algorithm
   LOGICAL(LGT) :: problem
 
@@ -330,6 +451,48 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
     END IF
     CALL obj%NewmarkBeta(beta=beta, gamma=gamma)
 
+  CASE ("HHTALPHA")
+
+    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      alpha = -0.30_DFP
+      beta = (1.0_DFP - alpha)**2 * 0.25_DFP
+      gamma = (1.0_DFP - 2.0_DFP * alpha) * 0.50_DFP
+    ELSE
+      CALL toml_get(node, "alpha", alpha, -0.30_DFP,   &
+        & origin=origin, stat=stat)
+      areal = (1.0_DFP - alpha)**2 * 0.25_DFP
+      CALL toml_get(node, "beta", beta, areal,   &
+        & origin=origin, stat=stat)
+      areal = (1.0_DFP - 2.0_DFP * alpha) * 0.50_DFP
+      CALL toml_get(node, "gamma", gamma, areal,   &
+        & origin=origin, stat=stat)
+    END IF
+
+    CALL obj%HHTAlpha(alpha=alpha, beta=beta, gamma=gamma)
+
+  CASE ("COLLOCATION")
+
+    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      beta = 1.0_DFP / 6.0_DFP
+      gamma = 0.50_DFP
+      theta = 1.4_DFP
+    ELSE
+      CALL toml_get(node, "beta", beta, 1.0_DFP / 6.0_DFP,   &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "gamma", gamma, 0.50_DFP,   &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "theta", theta, 1.4_DFP,   &
+        & origin=origin, stat=stat)
+    END IF
+
+    CALL obj%Collocation(beta=beta, gamma=gamma, theta=theta)
+
   CASE DEFAULT
     node => NULL()
     CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
@@ -361,6 +524,10 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
 
     IF (.NOT. ASSOCIATED(node2)) THEN
       obj%rhs_u1 = 0.0_DFP
+      obj%rhs_v1 = 0.0_DFP
+      obj%rhs_a1 = 0.0_DFP
+      obj%rhs_f1 = 0.0_DFP
+      obj%rhs_f2 = 0.0_DFP
     ELSE
 
       CALL toml_get(node2, "MU", obj%rhs_u1(1), 0.0_DFP, origin=origin, &
@@ -396,6 +563,9 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
       CALL toml_get(node2, "F2", obj%rhs_f2, 0.0_DFP, origin=origin, &
         & stat=stat)
     END IF
+
+    CALL toml_get(node, "alpha", obj%alpha, 0.0_DFP, origin=origin, &
+      & stat=stat)
 
     CALL toml_get(node, "dis", node2, origin=origin, requested=.FALSE., &
       & stat=stat)
