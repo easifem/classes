@@ -15,10 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
+USE ReallocateUtility
+USE IntegerUtility
+USE AppendUtility
+USE BoundingBox_Method
 USE BaseType, ONLY: IntVector_
 USE IntVector_Method
-USE ReallocateUtility
-USE BoundingBox_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -81,10 +83,10 @@ END PROCEDURE obj_GetBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii
+DO CONCURRENT(ii=1:SIZE(ans))
+  ans(ii) = obj%nodeData(ii)%globalNodeNum
+END DO
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
@@ -92,10 +94,15 @@ END PROCEDURE obj_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInternalNptrs
-CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, dummy
+! ALLOCATE (ans(obj%GetTotalInternalNodes()))
+dummy = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+    dummy = dummy + 1
+    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+  END IF
+END DO
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -103,10 +110,14 @@ END PROCEDURE obj_GetInternalNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryNptrs
-CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryNptrs()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, dummy
+dummy = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. BOUNDARY_NODE) THEN
+    dummy = dummy + 1
+    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+  END IF
+END DO
 END PROCEDURE obj_GetBoundaryNptrs
 
 !----------------------------------------------------------------------------
@@ -114,10 +125,9 @@ END PROCEDURE obj_GetBoundaryNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryNode
-CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryNode()"
-ans = .FALSE.
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: localnode
+localnode = obj%GetLocalNodeNumber(GlobalNode)
+ans = obj%nodeData(localnode)%nodeType .NE. INTERNAL_NODE
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
@@ -199,10 +209,9 @@ END PROCEDURE obj_isElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryElement
-CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryElement()"
-ans = .FALSE.
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement)
+ans = obj%elementData(iel)%elementType .LE. BOUNDARY_ELEMENT
 END PROCEDURE obj_isBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -210,10 +219,9 @@ END PROCEDURE obj_isBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainBoundaryElement
-CHARACTER(*), PARAMETER :: myName = "obj_isDomainBoundaryElement()"
-ans = .FALSE.
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement)
+ans = obj%elementData(iel)%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
 END PROCEDURE obj_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -221,10 +229,8 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
-CHARACTER(*), PARAMETER :: myName = "obj_isDomainFacetElement()"
-ans = .FALSE.
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+ans = obj%boundaryFacetData(facetElement)%elementType  &
+  & .EQ. DOMAIN_BOUNDARY_ELEMENT
 END PROCEDURE obj_isDomainFacetElement
 
 !----------------------------------------------------------------------------
@@ -256,10 +262,7 @@ END PROCEDURE obj_GetTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryElements
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryElements()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+ans = COUNT(obj%elementData(:)%elementType == BOUNDARY_ELEMENT)
 END PROCEDURE obj_GetTotalBoundaryElements
 
 !----------------------------------------------------------------------------
@@ -310,10 +313,23 @@ END PROCEDURE obj_GetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: ii
+ii = obj%GetLocalElemNumber(globalElement)
+
+#ifdef DEBUG_VER
+problem = (ii .EQ. 0) .OR. (ii .GT. obj%tElements)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: problem in getting localElement number')
+END IF
+#endif
+
+ans = obj%elementData(ii)%globalNodes
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -321,9 +337,30 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeConnectivity
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeConnectivity()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: iel, telem, ii, nn
+
+telem = obj%GetTotalElements()
+
+#ifdef DEBUG_VER
+problem = (SIZE(VALUE, 2) .LT. telem) .OR. (SIZE(VALUE, 1) .LT. obj%maxNNE)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: The size of value is not correct.')
+END IF
+#endif
+
+DO iel = 1, telem
+  nn = SIZE(obj%elementData(iel)%globalNodes)
+  DO ii = 1, nn
+    VALUE(ii, iel) = obj%elementData(iel)%globalNodes(ii)
+  END DO
+END DO
+
 END PROCEDURE obj_GetNodeConnectivity
 
 !----------------------------------------------------------------------------
@@ -342,15 +379,16 @@ END PROCEDURE obj_GetLocalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
-LOGICAL(LGT) :: abool
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
+LOGICAL(LGT) :: problem
 
-abool = globalNode .LT. obj%MinNptrs &
-  & .OR. globalNode .GT. obj%maxNptrs
-
-IF (abool) THEN
-  ans = 0
-  RETURN
+problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalNode is out of bound.')
 END IF
+#endif
 
 ans = obj%local_nptrs(globalNode)
 END PROCEDURE obj_GetLocalNodeNumber2
@@ -371,10 +409,19 @@ END PROCEDURE obj_GetGlobalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+problem = (localNode .EQ. 0) .OR. (localNode .GT. obj%tNodes)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: localNode is out of bound.')
+END IF
+#endif
+
+ans = obj%nodeData(localNode)%globalNodeNum
 END PROCEDURE obj_GetGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -393,10 +440,18 @@ END PROCEDURE obj_GetGlobalElemNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemNumber2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+problem = (localElement .EQ. 0) .OR. (LocalElement .GT. obj%tElements)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: localElement is out of bound.')
+END IF
+#endif
+
+ans = obj%elementData(localElement)%globalElemNum
 END PROCEDURE obj_GetGlobalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -416,13 +471,16 @@ END PROCEDURE obj_GetLocalElemNumber1
 
 MODULE PROCEDURE obj_GetLocalElemNumber2
 #ifdef DEBUG_VER
-LOGICAL(LGT) :: abool
-abool = globalElement .LT. obj%MinElemNum &
-  & .OR. globalElement .GT. obj%maxElemNum
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemNumber2()"
+LOGICAL(LGT) :: problem
 
-IF (abool) THEN
+problem = (globalElement .LT. obj%MinElemNum)  &
+  & .OR. (globalElement .GT. obj%maxElemNum)
+
+IF (problem) THEN
   ans = 0
-  RETURN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement is not present.')
 END IF
 #endif
 
@@ -434,10 +492,22 @@ END PROCEDURE obj_GetLocalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+problem = .NOT. obj%isNodePresent(globalNode)
+IF (problem) THEN
+  ALLOCATE (ans(0))
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalNode is not present')
+END IF
+#endif
+
+ii = obj%GetLocalNodeNumber(globalNode)
+ans = obj%nodeData(ii)%globalElements
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -445,24 +515,28 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
-TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: ivec(:)
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, jj, kk, n, lnode(SIZE(globalNode)),  &
+  & nn(SIZE(globalNode) + 1)
 
-DO ii = 1, SIZE(globalNode)
-  ivec = obj%GetNodeToElements(globalNode=globalNode(ii))
-  IF (ALLOCATED(ivec)) THEN
-    IF (SIZE(ivec) .NE. 0) THEN
-      CALL Append(intvec, ivec)
-    END IF
-  END IF
+nn(1) = 1
+n = SIZE(globalNode)
+
+DO ii = 1, n
+  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii))
+  nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%globalElements)
 END DO
 
-CALL RemoveDuplicates(intvec)
-ans = intvec
+CALL Reallocate(ans, nn(n + 1) - 1)
 
-CALL DEALLOCATE (intvec)
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+DO ii = 1, n
+  kk = 0
+  DO jj = nn(ii), nn(ii + 1) - 1
+    kk = kk + 1
+    ans(jj) = obj%nodeData(lnode(ii))%globalElements(kk)
+  END DO
+END DO
+
+CALL RemoveDuplicates(ans)
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
@@ -470,10 +544,52 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodes1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodes1()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+#endif
+INTEGER(I4B) :: i
+
+i = obj%GetLocalNodeNumber(GlobalNode=GlobalNode)
+
+#ifdef DEBUG_VER
+problem = (i .EQ. 0) .OR. (i .GT. obj%tNodes)
+IF (problem) THEN
+  ALLOCATE (ans(0))
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalNode is out of bound.')
+  RETURN
+END IF
+
+IF (obj%isExtraNodeToNodesInitiated) THEN
+  problem = .NOT. ALLOCATED(obj%nodeData(i)%extraGlobalNodes)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: extraGlobalNodes is not ALLOCATED.')
+  END IF
+END IF
+#endif
+
+! check
+IF (obj%isExtraNodeToNodesInitiated .AND. IncludeSelf) THEN
+  CALL Append(ans, [globalNode], obj%nodeData(i)%globalNodes,  &
+    & obj%nodeData(i)%extraGlobalNodes)
+  RETURN
+END IF
+
+IF (obj%isExtraNodeToNodesInitiated .AND. (.NOT. IncludeSelf)) THEN
+  CALL Append(ans, obj%nodeData(i)%globalNodes,  &
+    & obj%nodeData(i)%extraGlobalNodes)
+  RETURN
+END IF
+
+IF (IncludeSelf) THEN
+  CALL Append(ans, [globalNode], obj%nodeData(i)%globalNodes)
+  RETURN
+END IF
+
+ans = obj%nodeData(i)%globalNodes
+
 END PROCEDURE obj_GetNodeToNodes1
 
 !----------------------------------------------------------------------------
@@ -483,22 +599,29 @@ END PROCEDURE obj_GetNodeToNodes1
 MODULE PROCEDURE obj_GetNodeToNodes2
 TYPE(IntVector_) :: intvec
 INTEGER(I4B), ALLOCATABLE :: ivec(:)
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, jj, kk, n, lnode(SIZE(globalNode)),  &
+  & nn(SIZE(globalNode) + 1)
 
-DO ii = 1, SIZE(globalNode)
-  ivec = obj%GetNodeToNodes(globalNode=globalNode(ii), &
-    & IncludeSelf=IncludeSelf)
-  IF (ALLOCATED(ivec)) THEN
-    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
-  END IF
+nn(1) = 1
+n = SIZE(globalNode)
+
+DO ii = 1, n
+  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii))
+  nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%globalNodes)
 END DO
 
-CALL RemoveDuplicates(intvec)
+CALL Reallocate(ans, nn(n + 1) - 1)
 
-ans = intvec
+DO ii = 1, n
+  kk = 0
+  DO jj = nn(ii), nn(ii + 1) - 1
+    kk = kk + 1
+    ans(jj) = obj%nodeData(lnode(ii))%globalNodes(kk)
+  END DO
+END DO
 
-CALL DEALLOCATE (intvec)
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+CALL RemoveDuplicates(ans)
+
 END PROCEDURE obj_GetNodeToNodes2
 
 !----------------------------------------------------------------------------

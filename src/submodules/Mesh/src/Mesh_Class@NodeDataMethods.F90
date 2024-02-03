@@ -17,6 +17,7 @@
 
 SUBMODULE(Mesh_Class) NodeDataMethods
 USE IntegerUtility
+USE AppendUtility
 IMPLICIT NONE
 CONTAINS
 

@@ -76,6 +76,8 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! total element topologies, name of element topologies are stored in
     !! elemTopologies(1:tElemTopologies)
     !! this info is computed in a postprocessing step
+  INTEGER(I4B) :: maxNNE = 0
+    !! maximum number of nodes in element
   INTEGER(I4B) :: nsd = 0
     !! number of spatial dimension of the mesh
   INTEGER(I4B) :: maxNptrs = 0
@@ -905,7 +907,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B) :: ans(obj%tNodes)
   END FUNCTION obj_GetNptrs
 END INTERFACE
 
@@ -920,7 +922,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetInternalNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B) :: ans(obj%tIntNodes)
   END FUNCTION obj_GetInternalNptrs
 END INTERFACE
 
@@ -935,7 +937,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetBoundaryNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B) :: ans(obj%tNodes - obj%tIntNodes)
   END FUNCTION obj_GetBoundaryNptrs
 END INTERFACE
 
