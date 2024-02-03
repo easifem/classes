@@ -28,4 +28,5 @@ USE HDF5File_Class
 USE HDF5File_Method
 USE XMLFile_Class
 USE VTKFile_Class
+USE PVDFile_Class
 END MODULE Files
