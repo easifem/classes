@@ -79,7 +79,7 @@ TYPE, EXTENDS(AbstractAlgoParam_) :: SDAlgoParam_
 
   REAL(DFP) :: dis(4) = 0.0_DFP
   !! dis coefficient for velocity update
-  !! displacement = vel(1)*u / dt + vel(2) * v + vel(3) * a *dt + vel(4)*sol/dt
+  !! displacement = dis(1)*u+dis(2)*v*dt+dis(3)*a*dt*dt+dis(4)*sol
   !! dis(1) coefficient of displacement
   !! dis(2) coefficient of velocity
   !! dis(3) coefficient of acceleration
@@ -165,6 +165,8 @@ SUBROUTINE obj_NewmarkBeta(obj, beta, gamma)
   obj%rhs_a1(1) = -(beta0 - 0.5_DFP)
   obj%rhs_a1(2) = -(beta0 - gamma0 * 0.5_DFP)
 
+  obj%dis(4) = 1.0_DFP
+
   obj%vel(1) = -gamma0 * beta_inv
   obj%vel(2) = 1.0_DFP - gamma0 * beta_inv
   obj%vel(3) = 1.0_DFP - gamma0 * beta_inv * 0.5_DFP
@@ -249,14 +251,14 @@ SUBROUTINE obj_Collocation(obj, beta, gamma, theta)
   obj%tanmat(2) = obj%tanmat(2) * theta0
   obj%tanmat(3) = obj%tanmat(3) * theta0**2
 
-  obj%rhs_f2 = obj%rhs_f2 * theta0
+  obj%rhs_f2 = obj%rhs_f2 * theta0**2
 
   obj%rhs_u1(2) = obj%rhs_u1(2) * theta0
 
   obj%rhs_v1(1) = obj%rhs_v1(1) * theta0
   obj%rhs_v1(2) = obj%rhs_v1(2) * theta0**2
 
-  obj%rhs_a1(1) = obj%rhs_a1(2) * theta0**2
+  obj%rhs_a1(1) = obj%rhs_a1(1) * theta0**2
   obj%rhs_a1(2) = obj%rhs_a1(2) * theta0**3
 
   obj%dis(1) = 1.0_DFP - 1.0_DFP / theta0**3
