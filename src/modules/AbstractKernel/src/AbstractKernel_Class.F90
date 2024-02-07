@@ -159,6 +159,9 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(String) :: outputPath
   !! Path to put output files
   !! Default is results
+  LOGICAL(LGT) :: unifyVTK = .FALSE.
+  !! if it is true all data are exported into one vtu file
+  !! in WriteData method
   INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
   !! Spatial coordinate system type. It can take following values
   !! `KERNEL_CARTESIAN` for Cartesian coordinates
@@ -774,7 +777,8 @@ INTERFACE
     & rtoleranceForDisplacement, atoleranceForDisplacement,  &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials, outputPath, tPointSource, showTime)
+    & tOverlappedMaterials, outputPath, tPointSource, showTime,  &
+    & unifyVTK)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -916,6 +920,8 @@ INTERFACE
     !! total number of point sources, size of nbcPointSource
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: showTime
     !! Show time of each steps
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: unifyVTK
+    !! unified write data to vtk file
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 

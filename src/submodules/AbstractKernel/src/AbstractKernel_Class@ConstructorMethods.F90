@@ -246,6 +246,9 @@ CALL Set(param, .TRUE., prefix, "isIncompressible",  &
 CALL Set(param, .TRUE., prefix, "showTime",  &
   & Input(option=showTime, default=.FALSE.))
 
+CALL Set(param, .TRUE., prefix, "unifyVTK",  &
+  & Input(option=unifyVTK, default=.FALSE.))
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -508,6 +511,8 @@ IF (obj%showTime) THEN
   CALL obj%showTimeFile%WRITE(val=temp_str)
 END IF
 
+CALL GetValue(param, prefix, "unifyVTK", obj%unifyVTK)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -530,6 +535,7 @@ INTEGER(I4B) :: ii, jj
 
 obj%tOverlappedMaterials = 0
 obj%outputPath = ""
+obj%unifyVTK = .FALSE.
 obj%tanmatProp = ""
 obj%problemType = 0
 obj%IsInitiated = .FALSE.
