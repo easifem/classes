@@ -69,8 +69,10 @@ TYPE :: ElemData_
   INTEGER(I4B) :: name = 0
     !! This is name of the element
     !! It can be Triangle, Triangle3, Triangle6, etc.
+    !! Quadrangle,
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
+    !! Vertex connectivity
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
