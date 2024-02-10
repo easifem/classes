@@ -149,6 +149,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! solid material id
   INTEGER(I4B) :: algorithm = 0
   !! algorithm
+  INTEGER(I4B) :: vtkOutputFreq = 0
+  !! frequency of output with WriteData_vtk
   TYPE(String) :: name
   !! This is the name of the kernel. It can be anything you want.
   TYPE(String) :: engine
@@ -777,14 +779,14 @@ INTERFACE
     & baseInterpolationForSpace, baseContinuityForSpace, &
     & quadratureTypeForSpace, ipTypeForSpace, &
     & basisTypeForSpace, alphaForSpace, &
-    & betaForSpace, lambdaForSpace, &
-    & baseInterpolationForTime, baseContinuityForTime, &
-    & quadratureTypeForTime, ipTypeForTime, &
+    & betaForSpace, lambdaForSpace, baseInterpolationForTime,  &
+    & baseContinuityForTime, quadratureTypeForTime, ipTypeForTime,  &
     & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
     & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
-    & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
-    & tSolidMaterials, algorithm, isIsotropic, isIncompressible,  &
-    & rtoleranceForDisplacement, atoleranceForDisplacement,  &
+    & isSymNitsche, nitscheAlpha,  &
+    & materialInterfaces, isConstantMatProp, tSolidMaterials,  &
+    & algorithm, vtkOutputFreq, isIsotropic, isIncompressible,  &
+    & rtoleranceForDisplacement, atoleranceForDisplacement, &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
     & tOverlappedMaterials, outputPath, tPointSource, showTime,  &
@@ -904,6 +906,8 @@ INTERFACE
     !! It is true if the material properties are constant
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: algorithm
     !! algorithm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: vtkOutputFreq
+    !! frequency of output with WriteData_vtk
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropic
     !! It is true if the material is isotropic
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIncompressible
