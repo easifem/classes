@@ -252,6 +252,9 @@ CALL Set(param, .TRUE., prefix, "unifyVTK",  &
 CALL Set(param, .TRUE., prefix, "createPVD",  &
   & Input(option=createPVD, default=.FALSE.))
 
+CALL Set(param, TypeIntI4B, prefix, "vtkOutputFreq",  &
+ & Input(option=vtkOutputFreq, default=1))
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -523,6 +526,12 @@ IF (obj%createPVD) THEN
   CALL obj%pvdFile%InitiatePVDFile(filename=temp_str)
 END IF
 
+CALL GetValue(param, prefix, "vtkOutputFreq", obj%vtkOutputFreq)
+
+IF (obj%vtkOutputFreq .LT. 0) THEN
+  obj%vtkOutputFreq = 1
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -547,6 +556,7 @@ obj%tOverlappedMaterials = 0
 obj%outputPath = ""
 obj%unifyVTK = .FALSE.
 obj%createPVD = .FALSE.
+obj%vtkOutputFreq = 0
 obj%tanmatProp = ""
 obj%problemType = 0
 obj%IsInitiated = .FALSE.

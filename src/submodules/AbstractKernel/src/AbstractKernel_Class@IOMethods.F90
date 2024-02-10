@@ -49,6 +49,7 @@ CALL Display(obj%tOverlappedMaterials,  &
 CALL Display(obj%tSolidMaterials, "tSolidMaterials: ", unitNo=unitNo)
 CALL Display(obj%SOLID_MATERIAL_ID, "SOLID_MATERIAL_ID: ", unitNo=unitNo)
 CALL Display(obj%algorithm, "algorithm: ", unitNo=unitNo)
+CALL Display(obj%vtkOutputFreq, "vtkOutputFreq: ", unitNo=unitNo)
 CALL Display(obj%name, "name: ", unitno=unitno)
 CALL Display(obj%engine, "engine: ", unitno=unitno)
 CALL Display(obj%tanmatProp, "tanmatProp: ", unitno=unitno)
@@ -458,6 +459,9 @@ IF (problem) THEN
    & "[INTERNAL ERROR] :: AbstractKernel_::obj is not initiated")
   RETURN
 END IF
+
+problem = MOD(obj%currentTimeStep, obj%vtkOutputFreq) .NE. 0
+IF (problem) RETURN
 
 DO ii = 1, 3; anfptr(ii)%ptr => NULL(); END DO
 
