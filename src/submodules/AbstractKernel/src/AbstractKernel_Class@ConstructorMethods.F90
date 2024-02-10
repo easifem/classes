@@ -249,6 +249,9 @@ CALL Set(param, .TRUE., prefix, "showTime",  &
 CALL Set(param, .TRUE., prefix, "unifyVTK",  &
   & Input(option=unifyVTK, default=.FALSE.))
 
+CALL Set(param, .TRUE., prefix, "createPVD",  &
+  & Input(option=createPVD, default=.FALSE.))
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -513,6 +516,13 @@ END IF
 
 CALL GetValue(param, prefix, "unifyVTK", obj%unifyVTK)
 
+CALL GetValue(param, prefix, "createPVD", obj%createPVD)
+
+IF (obj%createPVD) THEN
+  temp_str = obj%outputPath//prefix//"_results.pvd"
+  CALL obj%pvdFile%InitiatePVDFile(filename=temp_str)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -536,6 +546,7 @@ INTEGER(I4B) :: ii, jj
 obj%tOverlappedMaterials = 0
 obj%outputPath = ""
 obj%unifyVTK = .FALSE.
+obj%createPVD = .FALSE.
 obj%tanmatProp = ""
 obj%problemType = 0
 obj%IsInitiated = .FALSE.
@@ -761,6 +772,8 @@ NULLIFY (obj%bodySourceFunc)
 
 obj%showTime = .FALSE.
 CALL obj%showTimeFile%DEALLOCATE()
+
+CALL obj%pvdFile%DEALLOCATE()
 
 END PROCEDURE obj_Deallocate
 
