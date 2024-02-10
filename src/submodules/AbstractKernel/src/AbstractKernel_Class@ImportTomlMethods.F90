@@ -49,7 +49,7 @@ INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC, &
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
 LOGICAL(LGT) :: isConstantMatProp, isIsotropic, isIncompressible,  &
-  & isSymNitsche, problem, showTime, unifyVTK
+  & isSymNitsche, problem, showTime, unifyVTK, createPVD
 REAL(DFP) :: nitscheAlpha, rtoleranceForDisplacement,  &
   & atoleranceForDisplacement, rtoleranceForVelocity,  &
   & atoleranceForVelocity, rtoleranceForResidual, atoleranceForResidual,  &
@@ -111,6 +111,10 @@ CALL toml_get(table, "outputPath",   &
 
 CALL toml_get(table, "unifyVTK",   &
   & unifyVTK, .FALSE., &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "createPVD",   &
+  & createPVD, .FALSE., &
   & origin=origin, stat=stat)
 
 CALL toml_get(table, "problemType", problemType%raw,  &
@@ -362,6 +366,7 @@ CALL SetAbstractKernelParam( &
   & tanmatProp=tanmatProp%chars(),  &
   & outputPath=outputPath%chars(),  &
   & unifyVTK=unifyVTK, &
+  & createPVD=createPVD, &
   & tOverlappedMaterials=tOverlappedMaterials,  &
   & showTime=showTime)
 

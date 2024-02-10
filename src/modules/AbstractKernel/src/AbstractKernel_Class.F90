@@ -45,6 +45,7 @@ USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
 USE Field
 USE TxtFile_Class
+USE PVDFile_Class
 USE KernelUtility
 USE UserFunction_Class
 
@@ -100,6 +101,8 @@ END TYPE AbstractAlgoParam_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 April 2022
+!> author: Shion Shimizu
+! update:  2024-02-10
 ! summary: Abstract class for kernel
 
 TYPE, ABSTRACT :: AbstractKernel_
@@ -161,7 +164,12 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Default is results
   LOGICAL(LGT) :: unifyVTK = .FALSE.
   !! if it is true all data are exported into one vtu file
-  !! in WriteData method
+  !! in WriteData_vtk method
+  LOGICAL(LGT) :: createPVD = .FALSE.
+  !! if true paraview data file is created
+  !! in WriteData_vtk method
+  TYPE(PVDFile_) :: pvdFile
+  !! instance of pvd file class
   INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
   !! Spatial coordinate system type. It can take following values
   !! `KERNEL_CARTESIAN` for Cartesian coordinates
@@ -756,6 +764,8 @@ END TYPE AbstractKernelPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Aug 2021
+!> author: Shion Shimizu
+! update: 2024-02-10
 ! summary: Set kernel parameters
 
 INTERFACE
@@ -778,7 +788,7 @@ INTERFACE
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
     & tOverlappedMaterials, outputPath, tPointSource, showTime,  &
-    & unifyVTK)
+    & unifyVTK, createPVD)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -922,6 +932,8 @@ INTERFACE
     !! Show time of each steps
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: unifyVTK
     !! unified write data to vtk file
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: createPVD
+    !! create the paraview data file
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
