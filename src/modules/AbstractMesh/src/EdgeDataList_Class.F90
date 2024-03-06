@@ -15,7 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE BinaryTrees
-USE IntTreeData_Class
-USE IntBinaryTree_Class
-END MODULE BinaryTrees
+#define FTL_TEMPLATE_TYPE EdgeData_
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_IS_CLASS
+#define FTL_TEMPLATE_TYPE_NAME EdgeData
+#define FTL_INSTANTIATE_TEMPLATE
+
+MODULE EdgeDataList_Class
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE Display_Method
+USE EdgeData_Class
+#include "../../ftlMacros/ftlList.inc"
+END MODULE EdgeDataList_Class
