@@ -151,7 +151,7 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy, maxNNE
+INTEGER(I4B) :: ii, dummy, maxNNE, elemType
 LOGICAL(LGT) :: isok
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
@@ -247,6 +247,9 @@ CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
   & fieldname="boundingEntity", myname=myname, modname=modname, check=.FALSE.)
 
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname,  &
+  & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
+
 ! If boundingEntity is not initiated then we initiate it with size=0
 ! Bounding entity will not be initiated for point type
 IF (.NOT. ALLOCATED(obj%boundingEntity)) THEN
@@ -337,10 +340,12 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 DO CONCURRENT(ii=1:obj%tElements)
   obj%local_elemNumber(elemNumber(ii)) = ii
-  obj%elementData(ii)%globalElemNum = elemNumber(ii)
-  obj%elementData(ii)%localElemNum = ii
-  obj%elementData(ii)%globalNodes = connectivity(:, ii)
   obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
+  CALL ElemDataSet(obj=obj%elementData(ii), globalElemNum=elemNumber(ii),  &
+    & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType)
+  ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
+  ! obj%elementData(ii)%localElemNum = ii
+  ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
 END DO
 
 IF (obj%showTime) THEN
