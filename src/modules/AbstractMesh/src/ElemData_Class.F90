@@ -16,7 +16,7 @@
 !
 
 MODULE ElemData_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
 USE ReferenceElement_Method, ONLY: ElementName
 IMPLICIT NONE
@@ -57,6 +57,8 @@ END INTERFACE ElemDataDeallocate
 ! summary: Data type for storing element data
 
 TYPE :: ElemData_
+  LOGICAL(LGT) :: isActive = .TRUE.
+    !! Is element in active stage
   INTEGER(I4B) :: globalElemNum = 0_I4B
     !! global element number
     !! cell connectivity number
@@ -76,8 +78,12 @@ TYPE :: ElemData_
     !! Vertex connectivity
   INTEGER(I4B), ALLOCATABLE :: globalEdges(:)
     !! Edge connectivity
+  INTEGER(INT8), ALLOCATABLE :: edgeOrient(:)
+    !! Orientation of edge
   INTEGER(I4B), ALLOCATABLE :: globalFaces(:)
     !! Face connectivity
+  INTEGER(INT8), ALLOCATABLE :: faceOrient(:, :)
+    !! Orientation of face
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
@@ -136,6 +142,7 @@ SUBROUTINE ElemData_Copy(obj1, obj2)
   TYPE(ElemData_), INTENT(INOUT) :: obj1
   TYPE(ElemData_), INTENT(IN) :: obj2
 
+  obj1%isActive = obj2%isActive
   obj1%globalElemNum = obj2%globalElemNum
   obj1%localElemNum = obj2%localElemNum
   obj1%elementType = obj2%elementType
@@ -166,6 +173,7 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
 
   CALL Display(TRIM(msg), unitno=unitno)
+  CALL Display(obj%isActive, msg="isActive: ", unitno=unitno)
   CALL Display(obj%globalElemNum, msg="globalElemNum: ", unitno=unitno)
   CALL Display(obj%localElemNum, msg="localElemNum: ", unitno=unitno)
   CALL Display(ElemData_ElemType2String(obj%elementType), "elementType: ",  &
@@ -180,6 +188,10 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   ! globalEdges
   IF (ALLOCATED(obj%globalEdges)) THEN
     CALL Display(obj%globalEdges, msg="globalEdges: ", unitno=unitno)
+  END IF
+
+  IF (ALLOCATED(obj%edgeOrient)) THEN
+    CALL Display(obj%edgeOrient, msg="edgeOrient: ", unitno=unitno)
   END IF
 
   ! globalFaces
@@ -230,6 +242,7 @@ END FUNCTION ElemData_ElemType2String
 
 SUBROUTINE ElemData_Deallocate(obj)
   TYPE(ElemData_), INTENT(INOUT) :: obj
+  obj%isActive = .TRUE.
   obj%globalElemNum = 0
   obj%localElemNum = 0
   obj%elementType = INTERNAL_ELEMENT
@@ -246,28 +259,40 @@ END SUBROUTINE ElemData_Deallocate
 
 PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
-  & globalFaces, name)
+  & globalFaces, name, isActive)
   TYPE(ElemData_), INTENT(INOUT) :: obj
+  !! element data object
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElemNum
+  !! global element number
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: localElemNum
+  !! local element number
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
+  !! element type: internal element, boundary element, etc.
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
+  !! vertex connectivity
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
+  !! element to element mapping
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: boundaryData(:)
+  !! boundary data
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalEdges(:)
+  !! edge connectivity
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalFaces(:)
+  !! gace connectivity
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
   !! Type of element, triangle, triangle3, Quadrangle4, etc
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isActive
+  !! is element active
 
   IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
   IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
   IF (PRESENT(elementType)) obj%elementType = elementType
-  IF (PRESENT(name)) obj%name = name
   IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
   IF (PRESENT(globalElements)) obj%globalElements = globalElements
   IF (PRESENT(boundaryData)) obj%boundaryData = boundaryData
   IF (PRESENT(globalEdges)) obj%globalEdges = globalEdges
   IF (PRESENT(globalFaces)) obj%globalFaces = globalFaces
+  IF (PRESENT(name)) obj%name = name
+  IF (PRESENT(isActive)) obj%isActive = isActive
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------

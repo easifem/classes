@@ -248,6 +248,11 @@ CONTAINS
   !! Initiate the boundary data
 
   ! SET:
+  ! @EdgeDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
+    & obj_InitiateEdgeConnectivity
+
+  ! SET:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     & obj_InitiateFacetElements
@@ -2088,6 +2093,21 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE obj_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateEdgeConnectivity@EdgeDataMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  Initiate edge data in elemData
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateEdgeConnectivity(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateEdgeConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

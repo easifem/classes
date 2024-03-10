@@ -342,7 +342,8 @@ DO CONCURRENT(ii=1:obj%tElements)
   obj%local_elemNumber(elemNumber(ii)) = ii
   obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
   CALL ElemDataSet(obj=obj%elementData(ii), globalElemNum=elemNumber(ii),  &
-    & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType)
+    & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType,  &
+    & isActive=.TRUE.)
   ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
   ! obj%elementData(ii)%localElemNum = ii
   ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
