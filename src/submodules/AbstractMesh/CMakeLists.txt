@@ -25,4 +25,6 @@ target_sources(
           ${src_path}/AbstractMesh_Class@ElementDataMethods.F90
           ${src_path}/AbstractMesh_Class@BoundaryDataMethods.F90
           ${src_path}/AbstractMesh_Class@FacetDataMethods.F90
-          ${src_path}/AbstractMesh_Class@SetMethods.F90)
+          ${src_path}/AbstractMesh_Class@SetMethods.F90
+          ${src_path}/AbstractMesh_Class@FaceDataMethods.F90
+          ${src_path}/AbstractMesh_Class@EdgeDataMethods.F90)

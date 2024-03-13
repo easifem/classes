@@ -92,6 +92,10 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! total number of nodes present inside the mesh
   INTEGER(I4B) :: tIntNodes = 0
     !! total number of internal nodes inside the mesh
+  INTEGER(I4B) :: tEdges = 0
+    !! total number of internal nodes inside the mesh
+  INTEGER(I4B) :: tFaces = 0
+    !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tElements = 0
     !! total number of elements present inside the mesh
     !! It is the size of elemNumber vector
@@ -251,6 +255,11 @@ CONTAINS
   ! @EdgeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
     & obj_InitiateEdgeConnectivity
+
+  ! SET:
+  ! @FaceDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
+    & obj_InitiateFaceConnectivity
 
   ! SET:
   ! @FacetDataMethods
@@ -2108,6 +2117,21 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE obj_InitiateEdgeConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateFaceConnectivity@FaceDataMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  Initiate edge data in elemData
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFaceConnectivity(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateFaceConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

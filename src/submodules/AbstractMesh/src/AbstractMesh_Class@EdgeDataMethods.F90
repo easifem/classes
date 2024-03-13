@@ -17,7 +17,7 @@
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_EDGES,  &
-& GetEdgeConnectivity, REFELEM_MAX_POINTS, RefElemGetGeoParam
+& REFELEM_MAX_POINTS, RefElemGetGeoParam
 USE ReallocateUtility, ONLY: Reallocate
 USE EdgeData_Class
 USE EdgeDataBinaryTree_Class
@@ -82,6 +82,8 @@ DO iel = 1, tElements
     tsize1 = edgeTree%SIZE()
     CALL edgeTree%Insert(edgePtr)
     tsize2 = edgeTree%SIZE()
+
+    obj%tEdges = tsize2
 
     IF (edge(1) .GT. edge(2)) THEN
       obj%elementData(iel)%edgeOrient(iedge) = -1_INT8

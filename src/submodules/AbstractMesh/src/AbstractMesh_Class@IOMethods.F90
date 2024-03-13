@@ -80,6 +80,8 @@ CALL Display(obj%maxElemNum, "maxElemNum: ", unitno=unitno)
 CALL Display(obj%minElemNum, "minElemNum: ", unitno=unitno)
 
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
+CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
+CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 
 CALL Display(obj%tIntNodes, "tIntNodes: ", unitno=unitno)
 
