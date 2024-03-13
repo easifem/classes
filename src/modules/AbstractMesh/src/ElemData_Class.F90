@@ -18,7 +18,11 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: ElementName
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
+  & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
+USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
+& FaceShapeMetaData_Quadrangle
+USE SortUtility
 IMPLICIT NONE
 PRIVATE
 
@@ -34,6 +38,7 @@ PUBLIC :: ElemData_lt
 PUBLIC :: ElemData_eq
 PUBLIC :: ElemData_SetID
 PUBLIC :: ElemData_Copy
+PUBLIC :: ElemData_GetGlobalFaceCon
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -199,6 +204,10 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     CALL Display(obj%globalFaces, msg="globalFaces: ", unitno=unitno)
   END IF
 
+  IF (ALLOCATED(obj%faceOrient)) THEN
+    CALL Display(obj%faceOrient, msg="faceOrient: ", unitno=unitno)
+  END IF
+
   ! globalElements
   IF (ALLOCATED(obj%globalElements)) THEN
     CALL Display(obj%globalElements, msg="globalElements: ", unitno=unitno)
@@ -335,5 +344,43 @@ SUBROUTINE ElemData_SetID(obj, id)
   INTEGER(I4B), INTENT(IN) :: id
   obj%localElemNum = id
 END SUBROUTINE ElemData_SetID
+
+!----------------------------------------------------------------------------
+!                                                 ElemData_GetGlobalFaceCon
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-12
+! summary:  Returns the vertex connectivity of global face of elements
+
+SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: globalFaceCon(:, :)
+  INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
+
+  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, REFELEM_MAX_FACES),  &
+    & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
+    & iface, face_temp(4), aint
+
+  CALL RefElemGetGeoParam(elemType=obj%name,  &
+    & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces0,  &
+    & faceOpt=1_I4B, faceElemType=faceElemType,  &
+    & tFaceNodes=tFaceNodes)
+
+  DO iface = 1, tFaces
+    aint = tFaceNodes(iface)
+    face_temp(1:aint) = obj%globalNodes(localFaces0(1:aint, iface))
+
+    CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint),  &
+      & sorted_face=globalFaceCon(1:aint, iface),  &
+      & localFaces=localFaceCon(1:aint, iface))
+
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalFaceCon
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE ElemData_Class
