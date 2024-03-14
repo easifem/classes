@@ -157,6 +157,16 @@ TYPE :: Domain_
     !! meshList( 1 ) list of meshes of line entities
     !! meshList( 2 ) list of meshes of surface entities
     !! meshList( 3 ) list of meshes of volume entities
+
+  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListVolume(:)
+    !! meshListVolume list of meshes of volume entities
+  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListSurface(:)
+    !! meshListSurface list of meshes of surface entities
+  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListCurve(:)
+    !! meshListCurve list of meshes of line entities
+  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListPoint(:)
+    !! meshListPoint list of meshes of point entities
+
   TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData(:)
   !! Mesh facet data
   TYPE(CSRSparsity_) :: meshMap
