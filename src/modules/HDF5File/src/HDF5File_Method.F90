@@ -229,6 +229,12 @@ SUBROUTINE HDF5ReadScalar(hdf5, VALUE, group, fieldname, myname, modname,  &
     TYPE is (REAL(DFP))
       CALL hdf5%READ(astr, VALUE)
 
+    TYPE IS (String)
+      CALL hdf5%READ(astr, VALUE)
+
+    TYPE IS (CHARACTER(LEN=*))
+      CALL hdf5%READ(astr, VALUE)
+
     END SELECT
   END IF
 
