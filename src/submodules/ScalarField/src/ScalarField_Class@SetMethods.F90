@@ -369,8 +369,8 @@ MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
 INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
-REAL(DFP), ALLOCATABLE :: xij(:, :)
-REAL(DFP) :: args(4), VALUE
+REAL(DFP), ALLOCATABLE :: xij(:, :), args(:)
+REAL(DFP) :: VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
 CLASS(Domain_), POINTER :: dom
 
@@ -382,11 +382,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 istimes = PRESENT(times)
 problem = .FALSE.
 
-args = 0.0_DFP
 IF (istimes) THEN
+  ALLOCATE (args(4))
+  args = 0.0_DFP
   ttime = SIZE(times)
   args(4) = times(1)
   problem = ttime .NE. 1_I4B
+ELSE
+  ALLOCATE (args(3))
+  args = 0.0_DFP
 END IF
 
 IF (problem) THEN
