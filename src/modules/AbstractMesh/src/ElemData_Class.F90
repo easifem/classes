@@ -21,7 +21,7 @@ USE Display_Method, ONLY: Display
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
   & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
-& FaceShapeMetaData_Quadrangle
+  & FaceShapeMetaData_Quadrangle
 USE SortUtility
 IMPLICIT NONE
 PRIVATE
@@ -44,6 +44,8 @@ INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
+
+INTEGER(I4B), PARAMETER :: MAX_NUM_OVERLAPPED_CONTINNUM = 4
 
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
@@ -78,6 +80,20 @@ TYPE :: ElemData_
     !! This is name of the element
     !! It can be Triangle, Triangle3, Triangle6, etc.
     !! Quadrangle,
+  INTEGER(I4B) :: meshID = 0
+    !! ID of mesh to which the element belong
+    !! This is a gmsh concept
+  INTEGER(INT8) :: material(MAX_NUM_OVERLAPPED_CONTINNUM) = 0
+    !! materials mapped to the mesh
+    !! material(1) is the material-id (type of material) of medium 1
+    !! material(2) is the material-id (type of material) of medium 2
+    !!
+    !! ...
+    !!
+    !! For example, soil is a porous medium with n = 1,
+    !! fluid is a medium with n =2
+    !! then material(1) denotes the type of soil => clay, sand, silt
+    !! and material(2) denotes the type of fluid => water, oil, air
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
     !! Vertex connectivity
@@ -255,9 +271,14 @@ SUBROUTINE ElemData_Deallocate(obj)
   obj%globalElemNum = 0
   obj%localElemNum = 0
   obj%elementType = INTERNAL_ELEMENT
+  obj%name = 0
+  obj%meshID = 0
+  obj%material = 0
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
   IF (ALLOCATED(obj%globalEdges)) DEALLOCATE (obj%globalEdges)
+  IF (ALLOCATED(obj%edgeOrient)) DEALLOCATE (obj%edgeOrient)
   IF (ALLOCATED(obj%globalFaces)) DEALLOCATE (obj%globalFaces)
+  IF (ALLOCATED(obj%faceOrient)) DEALLOCATE (obj%faceOrient)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
 END SUBROUTINE ElemData_Deallocate
@@ -268,7 +289,10 @@ END SUBROUTINE ElemData_Deallocate
 
 PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
-  & globalFaces, name, isActive)
+  & globalFaces, name, isActive, meshID)
+  ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
+  ! obj%elementData(ii)%localElemNum = ii
+  ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
   TYPE(ElemData_), INTENT(INOUT) :: obj
   !! element data object
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElemNum
@@ -291,6 +315,7 @@ PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   !! Type of element, triangle, triangle3, Quadrangle4, etc
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isActive
   !! is element active
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID
 
   IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
   IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
@@ -302,6 +327,7 @@ PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   IF (PRESENT(globalFaces)) obj%globalFaces = globalFaces
   IF (PRESENT(name)) obj%name = name
   IF (PRESENT(isActive)) obj%isActive = isActive
+  IF (PRESENT(meshID)) obj%meshID = meshID
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------
@@ -374,7 +400,6 @@ SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
     CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint),  &
       & sorted_face=globalFaceCon(1:aint, iface),  &
       & localFaces=localFaceCon(1:aint, iface))
-
   END DO
 
 END SUBROUTINE ElemData_GetGlobalFaceCon

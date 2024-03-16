@@ -214,7 +214,7 @@ CONTAINS
     !! Returns the total nodes in a dimension
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
     & Domain_tNodes1, Domain_tNodes2
-!! Generic method for getting total nodes
+  !! Generic method for getting total nodes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => Domain_GetTotalElements
   !! returns the total number of Elements in domain, mesh, or part of mesh
   PROCEDURE, PASS(obj) :: &
