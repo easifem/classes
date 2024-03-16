@@ -31,8 +31,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Initiate
-CHARACTER(*), PARAMETER :: myName = "Domain_Initiate()"
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Domain_Initiate()"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
@@ -89,6 +89,7 @@ END PROCEDURE MeshFacetData_Size
 
 MODULE PROCEDURE Domain_Deallocate
 CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate()"
+
 obj%isInitiated = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
@@ -108,12 +109,12 @@ obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
 CALL DEALLOCATE (obj%meshmap)
 IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
-! BUG
-CALL e%RaiseDebug(modName//'::'//myName//'-'// &
-  & 'There should be better way to deallocate obj%meshList...')
-IF (ALLOCATED(obj%meshList)) THEN
-  DEALLOCATE (obj%meshList)
-END IF
+
+CALL meshPointerDeallocate(obj%meshVolume)
+CALL meshPointerDeallocate(obj%meshSurface)
+CALL meshPointerDeallocate(obj%meshCurve)
+CALL meshPointerDeallocate(obj%meshPoint)
+
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
 IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
 IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)

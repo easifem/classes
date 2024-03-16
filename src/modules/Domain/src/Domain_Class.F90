@@ -152,20 +152,15 @@ TYPE :: Domain_
     !! local_nptrs are required to access the nodeCoord
   INTEGER(I4B), ALLOCATABLE, PUBLIC :: global_nptrs(:)
     !! global nptrs
-  TYPE(MeshPointerVector_), ALLOCATABLE :: meshList(:)
-    !! meshList( 0 ) list of meshes of point entities
-    !! meshList( 1 ) list of meshes of line entities
-    !! meshList( 2 ) list of meshes of surface entities
-    !! meshList( 3 ) list of meshes of volume entities
 
-  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListVolume(:)
-    !! meshListVolume list of meshes of volume entities
-  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListSurface(:)
-    !! meshListSurface list of meshes of surface entities
-  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListCurve(:)
-    !! meshListCurve list of meshes of line entities
-  TYPE(MeshPointerVector_), ALLOCATABLE :: meshListPoint(:)
-    !! meshListPoint list of meshes of point entities
+  TYPE(MeshPointer_), ALLOCATABLE :: meshVolume(:)
+    !! meshVolume list of meshes of volume entities
+  TYPE(MeshPointer_), ALLOCATABLE :: meshSurface(:)
+    !! meshSurface list of meshes of surface entities
+  TYPE(MeshPointer_), ALLOCATABLE :: meshCurve(:)
+    !! meshCurve list of meshes of curve entities
+  TYPE(MeshPointer_), ALLOCATABLE :: meshPoint(:)
+    !! meshPoint list of meshes of point entities
 
   TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData(:)
   !! Mesh facet data
@@ -217,12 +212,9 @@ CONTAINS
     !! Returns the total nodes in domain
   PROCEDURE, PASS(obj) :: Domain_tNodes2
     !! Returns the total nodes in a dimension
-  PROCEDURE, PASS(obj) :: Domain_tNodes3
-    !! REturns the total nodes in a given mesh
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
-    & Domain_tNodes1,  &
-    & Domain_tNodes2,  &
-    & Domain_tNodes3
+    & Domain_tNodes1, Domain_tNodes2
+!! Generic method for getting total nodes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => Domain_GetTotalElements
   !! returns the total number of Elements in domain, mesh, or part of mesh
   PROCEDURE, PASS(obj) :: &
@@ -597,9 +589,17 @@ END INTERFACE
 ! summary: Returns true if the element number is present inside the domain
 
 INTERFACE
-  MODULE FUNCTION Domain_IsElementPresent(obj, globalElement) RESULT(Ans)
+  MODULE FUNCTION Domain_IsElementPresent(obj, globalElement, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! If dim is not present, then search is performed in all meshes
     LOGICAL(LGT) :: ans
   END FUNCTION Domain_IsElementPresent
 END INTERFACE
@@ -614,10 +614,19 @@ END INTERFACE
 ! summary: Returns the connectivity vector of a given element number
 
 INTERFACE
-  MODULE FUNCTION Domain_GetConnectivity(obj, globalElement) RESULT(Ans)
+  MODULE FUNCTION Domain_GetConnectivity(obj, globalElement, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! If dim is not present, then search is performed in all meshes
     INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! vertex connectivity
   END FUNCTION Domain_GetConnectivity
 END INTERFACE
 
@@ -673,12 +682,18 @@ END INTERFACE
 ! - `dim=2` denotes mesh of surface entities
 ! - `dim=3` denotes mesh of volume entities
 ! - `entityNum` should not be out of bound
+!
+! Note: Both `dim` and `entityNum` should be present or absent.
+! This is because two entities of same dimension can have common nodes
+! which this routine cannot predict.
 
 INTERFACE
   MODULE FUNCTION Domain_GetTotalNodes(obj, dim, entityNum) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of the mesh entity
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
     INTEGER(I4B) :: ans
   END FUNCTION Domain_GetTotalNodes
 END INTERFACE
@@ -710,38 +725,10 @@ INTERFACE
   MODULE FUNCTION Domain_tNodes1(obj, opt) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: opt(2)
+    !! opt(1) is dim
+    !! opt(2) is entityNum
     INTEGER(I4B) :: ans
   END FUNCTION Domain_tNodes1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         tNodes@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: Returns the total number of nodes in the domain
-!
-!# Introduction
-!
-! This function returns the total number of nodes in a given mesh entity
-! The mesh entity is given by its ID and its dimension.
-!
-! This function is used for defining an operator
-! [[OPERATOR(.tNodes.)]]
-!
-!
-! - `dim=0` denotes mesh of point entities
-! - `dim=1` denotes mesh of curve entities
-! - `dim=2` denotes mesh of surface entities
-! - `dim=3` denotes mesh of volume entities
-
-INTERFACE
-  MODULE FUNCTION Domain_tNodes2(obj, dim) RESULT(Ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B) :: ans
-  END FUNCTION Domain_tNodes2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -753,10 +740,10 @@ END INTERFACE
 ! summary: Returns the total number of nodes in the domain
 
 INTERFACE
-  MODULE FUNCTION Domain_tNodes3(obj) RESULT(Ans)
+  MODULE FUNCTION Domain_tNodes2(obj) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION Domain_tNodes3
+  END FUNCTION Domain_tNodes2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -790,7 +777,9 @@ INTERFACE
   MODULE FUNCTION Domain_GetTotalElements(obj, dim, entityNum) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entities
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! mesh entity number
     INTEGER(I4B) :: ans
   END FUNCTION Domain_GetTotalElements
 END INTERFACE
@@ -953,7 +942,9 @@ INTERFACE
   MODULE FUNCTION Domain_GetMeshPointer1(obj, dim, entityNum) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of mesh entity
     INTEGER(I4B), INTENT(IN) :: entityNum
+    !! entity number
     CLASS(Mesh_), POINTER :: ans
   END FUNCTION Domain_GetMeshPointer1
 END INTERFACE
