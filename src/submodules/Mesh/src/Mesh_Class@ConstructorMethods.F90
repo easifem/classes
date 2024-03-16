@@ -38,7 +38,7 @@ CALL ans%Initiate(hdf5=hdf5, group=group)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
-!                                                            Deallocate
+!                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
@@ -57,5 +57,33 @@ END IF
 
 obj%refelem => NULL()
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                      meshPointerDeallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshPointerDeallocate
+CLASS(Mesh_), POINTER :: meshObj
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+meshObj => NULL()
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+
+  DO ii = 1, tsize
+
+    meshObj => obj(ii)%ptr
+    isok = ASSOCIATED(meshObj)
+    IF (isok) THEN
+      CALL meshobj%DEALLOCATE()
+      meshObj => NULL()
+    END IF
+
+  END DO
+
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE meshPointerDeallocate
 
 END SUBMODULE ConstructorMethods

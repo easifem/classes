@@ -47,6 +47,7 @@ PUBLIC :: Mesh_
 PUBLIC :: MeshPointer_
 PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
+PUBLIC :: meshPointerDeallocate
 PUBLIC :: MeshDisplay
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
@@ -91,7 +92,7 @@ CONTAINS
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
     !! Export mesh to a VTKfile
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
     !! Display the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & obj_DisplayFacetElements
@@ -170,7 +171,7 @@ END TYPE Mesh_
 !                                                                     Mesh_
 !----------------------------------------------------------------------------
 
-! TYPE( Mesh_ ), PARAMETER, PUBLIC :: TypeMesh = Mesh_( )
+! TYPE(Mesh_), PARAMETER, PUBLIC :: TypeMesh = Mesh_( )
 
 !----------------------------------------------------------------------------
 !
@@ -181,7 +182,7 @@ END TYPE Mesh_
 ! summary: Userdefine datatype which contains the pointer to a mesh
 
 TYPE :: MeshPointer_
-  TYPE(Mesh_), POINTER :: Ptr => NULL()
+  TYPE(Mesh_), POINTER :: ptr => NULL()
 END TYPE MeshPointer_
 
 !----------------------------------------------------------------------------
@@ -211,7 +212,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    Deallocate@Constructor
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -223,6 +224,21 @@ INTERFACE DEALLOCATE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(Mesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 March 2021
+! update: 2024-01-27
+! summary: Free up the memory stored in [[obj_]]
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE meshPointerDeallocate(obj)
+    TYPE(MeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE meshPointerDeallocate
 END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
@@ -489,7 +505,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetQuery@GetMethods
+!                                                       GetQuery@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -661,7 +677,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                      SetSparsity@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -704,16 +720,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                     SetSparsity@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
 ! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-!
-!# Introduction
-!
-! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity3(obj, colMesh, nodeToNode, mat, &
@@ -732,16 +744,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                     SetSparsity@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
 ! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-!
-!# Introduction
-!
-! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
@@ -774,7 +782,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 14 April 2022
+! date: 2022-04-14
 ! summary: Set the facet element type of a given cell number
 
 INTERFACE
