@@ -24,43 +24,6 @@ CONTAINS
 !                                                        InitiateNodeToNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_InitiateNodetoNodes
-! Define internal  variables
-INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
-INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-
-IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-
-IF (obj%isNodeToNodesInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "Node to node information is already initiated. If you want to &
-    & Reinitiate it then deallocate nodeData, first!!")
-  RETURN
-END IF
-
-IF (.NOT. obj%isNodeToElementsInitiated) &
-  & CALL obj%InitiateNodeToElements()
-
-obj%isNodeToNodesInitiated = .TRUE.
-DO iLocalNode = 1, obj%tNodes
-  iGlobalNode = obj%getGlobalNodeNumber(iLocalNode)
-  NearElements = obj%getNodeToElements(iGlobalNode)
-  DO iel = 1, SIZE(NearElements)
-    globalNodes = obj%getConnectivity(NearElements(iel))
-    globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
-    CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
-  END DO
-  CALL RemoveDuplicates(obj%nodeData(iLocalNode)%globalNodes)
-END DO
-IF (ALLOCATED(globalNodes)) DEALLOCATE (globalNodes)
-IF (ALLOCATED(NearElements)) DEALLOCATE (NearElements)
-END PROCEDURE obj_InitiateNodetoNodes
-
-!----------------------------------------------------------------------------
-!                                                        InitiateNodeToNodes
-!----------------------------------------------------------------------------
-
 !! nodeToNodes
 !! nodeToElements
 !! elementToElements

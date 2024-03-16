@@ -17,6 +17,7 @@
 
 SUBMODULE(AbstractMesh_Class) NodeDataMethods
 USE Display_Method
+USE IntegerUtility
 USE GlobalData, ONLY: stdout
 USE AppendUtility
 IMPLICIT NONE
@@ -40,7 +41,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (obj%isNodeToElementsInitiated) THEN
   CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: NodeToElements is already initiated.")
+    & "NodeToElements is already initiated.")
   RETURN
 END IF
 
@@ -92,8 +93,44 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
+INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "Node to node information is already initiated.")
+  RETURN
+END IF
+
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+obj%isNodeToNodesInitiated = .TRUE.
+
+DO iLocalNode = 1, obj%tNodes
+  iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+  NearElements = obj%GetNodeToElements(iGlobalNode)
+
+  DO iel = 1, SIZE(NearElements)
+    globalNodes = obj%GetConnectivity(NearElements(iel))
+    globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
+    CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
+  END DO
+
+  CALL RemoveDuplicates(obj%nodeData(iLocalNode)%globalNodes)
+END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time : "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+IF (ALLOCATED(globalNodes)) DEALLOCATE (globalNodes)
+IF (ALLOCATED(NearElements)) DEALLOCATE (NearElements)
 END PROCEDURE obj_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------
