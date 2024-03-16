@@ -18,9 +18,5 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/IntTreeData_Class.F90
-          ${src_path}/IntBinaryTree_Class.F90
-          ${src_path}/EdgeTreeData_Class.F90
-          ${src_path}/EdgeBinaryTree_Class.F90
-          ${src_path}/EdgeBinaryTreeUtility.F90
+  PRIVATE ${src_path}/IntTreeData_Class.F90 ${src_path}/IntBinaryTree_Class.F90
           ${src_path}/BinaryTrees.F90)

@@ -22,16 +22,16 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: NodeData_
-PUBLIC :: TypeNode
-PUBLIC :: NodeDataSet
 PUBLIC :: NodeData_Pointer
 PUBLIC :: NodeData_Display
-PUBLIC :: Display
 PUBLIC :: NodeData_Deallocate
 PUBLIC :: NodeData_lt
 PUBLIC :: NodeData_eq
 PUBLIC :: NodeData_SetID
 PUBLIC :: NodeData_Copy
+PUBLIC :: TypeNode
+PUBLIC :: NodeDataSet
+PUBLIC :: Display
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
@@ -255,5 +255,9 @@ SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum,  &
   IF (PRESENT(globalElements)) obj%globalElements = globalElements
   IF (PRESENT(extraGlobalNodes)) obj%extraGlobalNodes = extraGlobalNodes
 END SUBROUTINE NodeDataSet
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE NodeData_Class
