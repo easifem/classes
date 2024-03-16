@@ -93,10 +93,11 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-INTEGER(I4B) :: iel, iLocalNode, iGlobalNode, ii, jj, telem, local_iel,  &
-& nodewise_size, global_iel, tnode, globalNode, self_globalNode
+INTEGER(I4B) :: iel, ii, jj, kk, ll, nodewise_size(obj%tNodes), tnode
 TYPE(CPUTime_) :: TypeCPUTime
 INTEGER(I4B), PARAMETER :: chunk_size = 64
+LOGICAL(LGT) :: found(obj%tNodes)
+INTEGER(I4B) :: temp(128 * 2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -114,32 +115,63 @@ IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 obj%isNodeToNodesInitiated = .TRUE.
+found = .FALSE.
 
-DO ii = 1, obj%tNodes
-  nodewise_size = 0
-  telem = SIZE(obj%nodeData(ii)%globalElements)
-  self_globalNode = obj%nodeData(ii)%globalNodeNum
+DO iel = 1, obj%tElements
+  tnode = SIZE(obj%elementData(iel)%globalNodes)
 
-  DO iel = 1, telem
-    global_iel = obj%nodeData(ii)%globalElements(iel)
-    local_iel = obj%local_elemNumber(global_iel)
-    tnode = SIZE(obj%elementData(local_iel)%globalNodes)
+  !! globalNodes
+  temp(1:tnode) = obj%elementData(iel)%globalNodes
+  !! localNodes
+  temp(tnode + 1:2 * tnode) =  &
+    & obj%local_nptrs(obj%elementData(iel)%globalNodes)
 
-    DO jj = 1, tnode
-      globalNode = obj%elementData(local_iel)%globalNodes(jj)
-      IF (globalNode .EQ. self_globalNode) CYCLE
-      CALL Expand(vec=obj%nodeData(ii)%globalNodes,  &
-        & n=nodewise_size, chunk_size=chunk_size,  &
-        & val=globalNode)
+  DO ii = 1, tnode
+    kk = temp(tnode + ii)
+    DO jj = ii + 1, tnode
+
+      ll = temp(tnode + jj)
+
+      IF (found(kk)) THEN
+
+        IF (.NOT. found(ll)) THEN
+          CALL Expand(vec=obj%nodeData(kk)%globalNodes,  &
+            & n=nodewise_size(kk), chunk_size=chunk_size,  &
+            & val=temp(jj))
+        END IF
+
+      ELSE
+        CALL Expand(vec=obj%nodeData(kk)%globalNodes,  &
+          & n=nodewise_size(kk), chunk_size=chunk_size,  &
+          & val=temp(jj))
+        found(kk) = .TRUE.
+      END IF
+
+      IF (found(ll)) THEN
+
+        IF (.NOT. found(kk)) THEN
+          CALL Expand(vec=obj%nodeData(ll)%globalNodes,  &
+            & n=nodewise_size(ll), chunk_size=chunk_size,  &
+            & val=temp(ii))
+        END IF
+
+        found(ll) = .TRUE.
+
+      ELSE
+        CALL Expand(vec=obj%nodeData(ll)%globalNodes,  &
+          & n=nodewise_size(ll), chunk_size=chunk_size,  &
+          & val=temp(ii))
+      END IF
     END DO
 
   END DO
 
+END DO
+
+DO ii = 1, obj%tNodes
   CALL Expand(vec=obj%nodeData(ii)%globalNodes,  &
-    & n=nodewise_size, chunk_size=chunk_size, finished=.TRUE.)
-
-  CALL RemoveDuplicates(obj%nodeData(ii)%globalNodes)
-
+    & n=nodewise_size(ii), chunk_size=chunk_size,  &
+    & finished=.TRUE.)
 END DO
 
 IF (obj%showTime) THEN

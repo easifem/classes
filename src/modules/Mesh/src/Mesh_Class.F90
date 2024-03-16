@@ -131,102 +131,67 @@ CONTAINS
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
-  !! Returns the node number of mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
-    & obj_GetInternalNptrs
-  !! Returns a vector of internal node numbers
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryNptrs => &
-    & obj_GetBoundaryNptrs
-  !! Returns a vector of boundary node numbers
-
-  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryNode => &
-    & obj_isBoundaryNode
-  !! Returns true if a given global node number is a boundary node
-
-  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryElement => &
-    & obj_isBoundaryElement
-  !! Returns true if a given global element number is a boundary element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: isDomainBoundaryElement => &
-    & obj_isDomainBoundaryElement
-  !! Returns true if a given global element number is a boundary element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: isDomainFacetElement => &
-    & obj_isDomainFacetElement
-  !! Returns true if a given global element number is a boundary element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
-    & obj_GetTotalBoundaryElements
-  !! Returns the total number of boundary element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => &
-    & obj_GetConnectivity
-  !! Returns  node numbers in an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
-    & obj_GetNodeConnectivity
-  !! Returns the node connectivity of the mesh elements
-
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
-  !! Returns the global node number of a local node number
-
-  PROCEDURE, PASS(obj) :: GetGlobalElemNumber2 => obj_GetGlobalElemNumber2
-
-  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
-
-  PROCEDURE, PASS(obj) :: GetNodeToNodes1 => obj_GetNodeToNodes1
-  !! Returns global node number connected to a given global node
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElementToElements => &
     & obj_GetElementToElements
   !! Returns local element number connected to a given local
   !! element number, it also gives information about the local
   !! facet number
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryElementData => &
     & obj_GetBoundaryElementData
   !! Returns boundary element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryFacetElements => &
     & obj_GetTotalBoundaryFacetElements
   !! Returns the total number of boundary facet elements
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalFacetElements => &
     & obj_GetTotalInternalFacetElements
   !! Returns the total number of internal facet elements
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
     & obj_GetMasterCellNumber
   !! Returns the master cell number of a facet element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetSlaveCellNumber => &
     & obj_GetSlaveCellNumber
   !! Returns the slave cell number of a facet element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellNumber => &
     & obj_GetCellNumber
   !! Returns the master and slave cell number of a facet element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => &
     & obj_GetLocalFacetID
   !! Return the local facet id, so that we can Get reference element of
   !! the facet element
+
   PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
   !! Return the node nubmers in the facet element
+
   PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
   !! Return the node nubmers in the facet element of a cellElement
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
     & obj_GetFacetElementType
   !! Returns the facet element type of a given cell element number
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
     & obj_GetOrder
   !! Returns the order ofthe element of mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
     & obj_GetNSD
   !! Return the NSD
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
     & obj_GetXidimension
   !! Return the NSD
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
   !! Please use GetParam instead of GetQuery.
   !! They are the same. But I like the name GetParam
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetQuery
   !! Get parameter of mesh
 
@@ -484,167 +449,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetNptrs@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 June 2021
-! summary: Returns the vector of global node numbers
-
-INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNptrs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                GetInternalNptrs@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 June 2021
-! summary: Returns the vector of global node numbers of internal nodes
-
-INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetInternalNptrs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                GetBoundaryNptrs@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 June 2021
-! summary: Returns the vector of global node numbers of boundary nodes
-
-INTERFACE
-  MODULE FUNCTION obj_GetBoundaryNptrs(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetBoundaryNptrs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 isBoundaryNode@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: This function returns true if given global node is a boundary node
-
-INTERFACE
-  MODULE FUNCTION obj_isBoundaryNode(obj, globalNode) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_isBoundaryNode
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               isBoundaryElement@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 June 2021
-! summary: Returns true if an global element number is a boundary element
-!
-!# Introduction
-! This routine returns true if a global element number is a boundary element.
-! A boundary element is one which contains a boundary node.
-
-INTERFACE
-  MODULE FUNCTION obj_isBoundaryElement(obj, globalElement) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_isBoundaryElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        isDomainBoundaryElement@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 June 2021
-! summary: Returns true if an global element number is domain boundary element
-!
-!# Introduction
-! This routine returns true if a global element number is domain
-! boundary element.
-! A boundary element is one which contains a boundary node.
-! A domain boundary element is a boundary element with
-! no connection with the other mesh.
-
-INTERFACE
-  MODULE FUNCTION obj_isDomainBoundaryElement(obj, globalElement) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_isDomainBoundaryElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        isDomainFacetElement@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 June 2021
-! summary: Returns true if an global element number is domain boundary element
-!
-!# Introduction
-! This routine returns true if a global element number is domain
-! boundary element.
-! A boundary element is one which contains a boundary node.
-! A domain boundary element is a boundary element with
-! no connection with the other mesh.
-
-INTERFACE
-  MODULE FUNCTION obj_isDomainFacetElement(obj, facetElement) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_isDomainFacetElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  GetTotalBoundaryElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 July 2021
-! summary: returns total number of boundary elements
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalBoundaryElements(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalBoundaryElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: This routine returns global node numbers in a given global elem
-
-INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetConnectivity
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                             GetNodeConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
@@ -660,98 +464,6 @@ INTERFACE
     !! in the mesh, the number of rows equal to the maximum number of
     !! nodes in the elements of mesh
   END SUBROUTINE obj_GetNodeConnectivity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalNptrs@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: This routine returns the Global node number from a local node number
-
-INTERFACE
-  MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: localNode
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetGlobalNodeNumber2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetGlobalElemNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: This routine returns the Global node number from a local node number
-
-INTERFACE
-  MODULE FUNCTION obj_GetGlobalElemNumber2(obj, LocalElement) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: LocalElement
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetGlobalElemNumber2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetNodeToElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: Returns element numbers connected to the a global node
-!
-!# Introduction
-!
-! This function returns the global element numbers which are
-! connected to the global node number `GlobalNode`
-!
-!@note
-! If the node number `globalNode` is not present inside the mesh then
-! the returned vector of integer has size 0
-!@endnote
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    !! mesh data
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    !! global node number
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! A vector of local element number
-  END FUNCTION obj_GetNodeToElements1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetNodeToNodes@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary:         Returns the node surrounding a node
-!
-!# Introduction
-! This fucntion returns the vector of node numbers which surrounds a given
-! node number `globalNode`.
-! - If `IncludeSelf` is true then, in the returned vector of integer,
-! node number globalNode is also present
-!- If `IncludeSelf` is false then, in the returned vector of integer,
-! node number `globalNode` is not present
-!
-!@note
-!  If the node number `globalNode` is not present in the mesh then the
-! returned vector of integer has zero length
-!@endnote
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, IncludeSelf) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    LOGICAL(LGT), INTENT(IN) :: IncludeSelf
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNodeToNodes1
 END INTERFACE
 
 !----------------------------------------------------------------------------

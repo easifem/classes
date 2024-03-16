@@ -151,7 +151,7 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy
+INTEGER(I4B) :: ii, dummy, maxNNE
 LOGICAL(LGT) :: isok
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
@@ -268,6 +268,8 @@ CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
 CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
   & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
 
+obj%maxNNE = SIZE(connectivity, 1)
+
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
   & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
 
@@ -296,6 +298,7 @@ obj%maxElemNum = MAXVAL(elemNumber)
 obj%minElemNum = MINVAL(elemNumber)
 obj%maxNptrs = MAXVAL(connectivity)
 obj%minNptrs = MINVAL(connectivity)
+obj%maxNNE = 0
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
