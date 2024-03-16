@@ -93,11 +93,12 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-INTEGER(I4B) :: iel, ii, jj, kk, ll, nodewise_size(obj%tNodes), tnode
-TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
+  & local_elem_num, tnode, ii, global_node_num, local_node_num
 INTEGER(I4B), PARAMETER :: chunk_size = 64
-LOGICAL(LGT) :: found(obj%tNodes)
+LOGICAL(LGT) :: found(obj%tNodes), skip
 INTEGER(I4B) :: temp(128 * 2)
+TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -115,63 +116,38 @@ IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 obj%isNodeToNodesInitiated = .TRUE.
-found = .FALSE.
 
-DO iel = 1, obj%tElements
-  tnode = SIZE(obj%elementData(iel)%globalNodes)
+DO inode = 1, obj%tNodes
+  nodewise_size = 0
+  found = .FALSE.
+  telem = SIZE(obj%nodeData(inode)%globalElements)
 
-  !! globalNodes
-  temp(1:tnode) = obj%elementData(iel)%globalNodes
-  !! localNodes
-  temp(tnode + 1:2 * tnode) =  &
-    & obj%local_nptrs(obj%elementData(iel)%globalNodes)
+  DO iel = 1, telem
+    global_elem_num = obj%nodeData(inode)%globalElements(iel)
+    local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
-  DO ii = 1, tnode
-    kk = temp(tnode + ii)
-    DO jj = ii + 1, tnode
+    tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
+    DO ii = 1, tnode
 
-      ll = temp(tnode + jj)
+      global_node_num = obj%elementData(local_elem_num)%globalNodes(ii)
+      local_node_num = obj%GetLocalNodeNumber(global_node_num)
 
-      IF (found(kk)) THEN
-
-        IF (.NOT. found(ll)) THEN
-          CALL Expand(vec=obj%nodeData(kk)%globalNodes,  &
-            & n=nodewise_size(kk), chunk_size=chunk_size,  &
-            & val=temp(jj))
-        END IF
-
-      ELSE
-        CALL Expand(vec=obj%nodeData(kk)%globalNodes,  &
-          & n=nodewise_size(kk), chunk_size=chunk_size,  &
-          & val=temp(jj))
-        found(kk) = .TRUE.
+      skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
+      IF (.NOT. skip) THEN
+        CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+          & n=nodewise_size, chunk_size=chunk_size, &
+          & val=global_node_num)
+        found(local_node_num) = .TRUE.
       END IF
 
-      IF (found(ll)) THEN
-
-        IF (.NOT. found(kk)) THEN
-          CALL Expand(vec=obj%nodeData(ll)%globalNodes,  &
-            & n=nodewise_size(ll), chunk_size=chunk_size,  &
-            & val=temp(ii))
-        END IF
-
-        found(ll) = .TRUE.
-
-      ELSE
-        CALL Expand(vec=obj%nodeData(ll)%globalNodes,  &
-          & n=nodewise_size(ll), chunk_size=chunk_size,  &
-          & val=temp(ii))
-      END IF
     END DO
 
   END DO
 
-END DO
-
-DO ii = 1, obj%tNodes
-  CALL Expand(vec=obj%nodeData(ii)%globalNodes,  &
-    & n=nodewise_size(ii), chunk_size=chunk_size,  &
+  CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+    & n=nodewise_size, chunk_size=chunk_size, &
     & finished=.TRUE.)
+
 END DO
 
 IF (obj%showTime) THEN
