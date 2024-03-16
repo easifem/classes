@@ -59,6 +59,7 @@ END INTERFACE ElemDataDeallocate
 TYPE :: ElemData_
   INTEGER(I4B) :: globalElemNum = 0_I4B
     !! global element number
+    !! cell connectivity number
   INTEGER(I4B) :: localElemNum = 0_I4B
     !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
@@ -73,6 +74,10 @@ TYPE :: ElemData_
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
     !! Vertex connectivity
+  INTEGER(I4B), ALLOCATABLE :: globalEdges(:)
+    !! Edge connectivity
+  INTEGER(I4B), ALLOCATABLE :: globalFaces(:)
+    !! Face connectivity
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
@@ -99,6 +104,10 @@ END TYPE ElemData_
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  List of element data type
 
 TYPE ElemDataType_
   INTEGER(I4B) :: internal = INTERNAL_ELEMENT
@@ -131,7 +140,11 @@ SUBROUTINE ElemData_Copy(obj1, obj2)
   obj1%localElemNum = obj2%localElemNum
   obj1%elementType = obj2%elementType
   obj1%name = obj2%name
+
   IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
+  IF (ALLOCATED(obj2%globalEdges)) obj1%globalEdges = obj2%globalEdges
+  IF (ALLOCATED(obj2%globalFaces)) obj1%globalFaces = obj2%globalFaces
+
   IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
     & = obj2%globalElements
   IF (ALLOCATED(obj2%boundaryData)) obj1%boundaryData&
@@ -162,6 +175,16 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   ! globalNodes
   IF (ALLOCATED(obj%globalNodes)) THEN
     CALL Display(obj%globalNodes, msg="globalNodes: ", unitno=unitno)
+  END IF
+
+  ! globalEdges
+  IF (ALLOCATED(obj%globalEdges)) THEN
+    CALL Display(obj%globalEdges, msg="globalEdges: ", unitno=unitno)
+  END IF
+
+  ! globalFaces
+  IF (ALLOCATED(obj%globalFaces)) THEN
+    CALL Display(obj%globalFaces, msg="globalFaces: ", unitno=unitno)
   END IF
 
   ! globalElements
@@ -211,6 +234,8 @@ SUBROUTINE ElemData_Deallocate(obj)
   obj%localElemNum = 0
   obj%elementType = INTERNAL_ELEMENT
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
+  IF (ALLOCATED(obj%globalEdges)) DEALLOCATE (obj%globalEdges)
+  IF (ALLOCATED(obj%globalFaces)) DEALLOCATE (obj%globalFaces)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
 END SUBROUTINE ElemData_Deallocate
@@ -219,8 +244,9 @@ END SUBROUTINE ElemData_Deallocate
 !                                                           ElemDataInitiate
 !----------------------------------------------------------------------------
 
-SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
-  & elementType, globalNodes, globalElements, boundaryData)
+PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
+  & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
+  & globalFaces, name)
   TYPE(ElemData_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElemNum
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: localElemNum
@@ -228,13 +254,20 @@ SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: boundaryData(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalEdges(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalFaces(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
+  !! Type of element, triangle, triangle3, Quadrangle4, etc
 
   IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
   IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
   IF (PRESENT(elementType)) obj%elementType = elementType
+  IF (PRESENT(name)) obj%name = name
   IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
   IF (PRESENT(globalElements)) obj%globalElements = globalElements
   IF (PRESENT(boundaryData)) obj%boundaryData = boundaryData
+  IF (PRESENT(globalEdges)) obj%globalEdges = globalEdges
+  IF (PRESENT(globalFaces)) obj%globalFaces = globalFaces
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------
