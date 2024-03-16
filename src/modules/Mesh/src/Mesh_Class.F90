@@ -131,62 +131,18 @@ CONTAINS
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElementToElements => &
-    & obj_GetElementToElements
-  !! Returns local element number connected to a given local
-  !! element number, it also gives information about the local
-  !! facet number
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryElementData => &
-    & obj_GetBoundaryElementData
-  !! Returns boundary element data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryFacetElements => &
-    & obj_GetTotalBoundaryFacetElements
-  !! Returns the total number of boundary facet elements
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalFacetElements => &
-    & obj_GetTotalInternalFacetElements
-  !! Returns the total number of internal facet elements
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
-    & obj_GetMasterCellNumber
-  !! Returns the master cell number of a facet element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSlaveCellNumber => &
-    & obj_GetSlaveCellNumber
-  !! Returns the slave cell number of a facet element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetCellNumber => &
-    & obj_GetCellNumber
-  !! Returns the master and slave cell number of a facet element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => &
-    & obj_GetLocalFacetID
-  !! Return the local facet id, so that we can Get reference element of
-  !! the facet element
-
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
-  !! Return the node nubmers in the facet element
-
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
-  !! Return the node nubmers in the facet element of a cellElement
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
-    & obj_GetFacetElementType
-  !! Returns the facet element type of a given cell element number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
     & obj_GetOrder
   !! Returns the order ofthe element of mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
-    & obj_GetNSD
-  !! Return the NSD
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
     & obj_GetXidimension
   !! Return the NSD
+
+  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
+  !! Return the node nubmers in the facet element
+  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
+  !! Return the node nubmers in the facet element of a cellElement
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
   !! Please use GetParam instead of GetQuery.
@@ -197,7 +153,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
   PROCEDURE, PASS(obj) :: SetSparsity2 => obj_setSparsity2
   PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
@@ -449,105 +404,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetNodeConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: This routine returns global node numbers in a given global elem
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: VALUE(:, :)
-    !! The number of columns are equal to the total number of elements
-    !! in the mesh, the number of rows equal to the maximum number of
-    !! nodes in the elements of mesh
-  END SUBROUTINE obj_GetNodeConnectivity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetElementToElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Returns element to element connectivity information
-!
-!# Introduction
-! This routine returns element to element connectivity information
-! for a given global element number `globalElement`
-!
-! If `OnlyElements` is absent or it is Set to FALSE then, this routine
-! returns the **full information** about elements surrounding the global
-! element `globalElement`. In this case,
-!
-! - Each Row of `ans` denotes the element to which `globalElement` is
-! connected to
-! - Column-1 of `ans` denotes global element number of the neighbour
-! - Column-2 denotes the local face number of element `globalElement`
-! - Column-3 denotes the local face number of global element given by
-! the column number 1 (same row)
-!
-! If `OnlyElements` is present and it is TRUE then, this routine returns
-! only the global element numbers surrouding
-! the given element `globalElement`
-!
-
-INTERFACE
-  MODULE FUNCTION obj_GetElementToElements(obj, globalElement, &
-    & onlyElements) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    !! mesh data
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! Global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyElements
-    !! If onlyElements is absent or it is FALSE then full information
-    !! about the elements connected to element iel is given
-    !! If onlyElements is present and it is TRUE then only the
-    !! information about the elements connected to element iel is given
-    INTEGER(I4B), ALLOCATABLE :: ans(:, :)
-    !! list of elements surrounding elements
-  END FUNCTION obj_GetElementToElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetBoundaryElementData@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 July 2021
-! summary: This routine returns the boundary element data
-!
-!# Introduction
-!
-! If the given element number is a boundary element, then this routine
-! returns the boundry element data.
-! It contains the local index of facet element which is a boundary.
-!
-! For example:
-! - If `iel` is a boundary element, then boudnaryData contains
-! the local facet number of iel which concides with the mesh boundary.
-! - If an element contains the boundary node then it is considered
-! as a boundary element.
-! - It may happen that a boundary element has no boundary face, in which case
-! boundaryData will have zero size
-!
-!@note
-! If a given globalElement is not a boundary element, then the returned
-! array has zero size.
-!@endnote
-
-INTERFACE
-  MODULE FUNCTION obj_GetBoundaryElementData(obj, globalElement) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetBoundaryElementData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                        GetOrder@GetMethods
 !----------------------------------------------------------------------------
 
@@ -564,26 +420,11 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNSD@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 6 April 2022
-! summary: Returns the spatial dimension of the mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetNSD
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                  GetXidimension@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 6 April 2022
+! date: 2024-01-27
 ! summary: Returns the xidimension of the mesh
 
 INTERFACE
@@ -594,131 +435,11 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   GetTotalInternalFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Returns the total number of internal facets element in mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalInternalFacetElements(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalInternalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   GetTotalBoundaryFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalBoundaryFacetElements(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalBoundaryFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetMasterCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the master cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the master cell number of a given facet element
-! - The facetElement is the local facet element
-! - The master cell number is the global element number
-
-INTERFACE
-  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement, &
-    & elementType)&
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetMasterCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetSlaveCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the slave cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the slave cell number of a given facet element
-! - The facetElement is the local facet element
-! - The slave cell number is the global element number
-
-INTERFACE
-  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, &
-    & elementType) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetSlaveCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the  cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the  cell number of a given facet element
-! - The facetElement is the local facet element
-! - The  cell number is the global element number
-! - ans(1)  contains the master-cell number
-! - ans(2)  contains the slave cell number
-
-INTERFACE
-  MODULE FUNCTION obj_GetCellNumber(obj, facetElement, &
-    & elementType) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    INTEGER(I4B) :: ans(2)
-  END FUNCTION obj_GetCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                GetLocalFacetID@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the local facet id
-
-INTERFACE
-  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, &
-    & elementType, isMaster) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    LOGICAL(LGT), INTENT(IN) :: isMaster
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetLocalFacetID
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                           GetFacetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
+! date: 2024-01-27
 ! summary: Returns the connectivity of a facet element
 !
 !# Introduction
@@ -748,7 +469,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 14 April 2022
+! date: 2024-01-27
 ! summary: Returns the connectivity of a facet element of a cellElement
 !
 !# Introduction
@@ -765,23 +486,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: iface
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetFacetConnectivity2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetFacetElementType@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 April 2022
-! summary: Returns the facet element type of the cell element number
-
-INTERFACE
-  MODULE FUNCTION obj_GetFacetElementType(obj, globalElement) &
-    & RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -813,6 +517,24 @@ INTERFACE
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
   END SUBROUTINE obj_GetQuery
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetNodeConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 June 2021
+! summary: This routine returns global node numbers in a given global elem
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: VALUE(:, :)
+    !! The number of columns are equal to the total number of elements
+    !! in the mesh, the number of rows equal to the maximum number of
+    !! nodes in the elements of mesh
+  END SUBROUTINE obj_GetNodeConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

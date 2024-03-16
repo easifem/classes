@@ -50,65 +50,12 @@ ans => obj%refelem
 END PROCEDURE obj_GetRefElemPointer
 
 !----------------------------------------------------------------------------
-!                                                       GetElementToElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetElementToElements
-LOGICAL(LGT) :: onlyElem
-INTEGER(I4B), ALLOCATABLE :: Indx(:)
-INTEGER(I4B) :: iel
-
-onlyElem = .FALSE.
-IF (PRESENT(onlyElements)) onlyElem = onlyElements
-iel = obj%GetLocalElemNumber(globalElement)
-
-IF (ALLOCATED(obj%elementData(iel)%globalElements)) THEN
-  IF (onlyElem) THEN
-    Indx = obj%elementData(iel)%globalElements
-    ALLOCATE (ans(SIZE(Indx) / 3, 1))
-    ans(:, 1) = Indx(1 :: 3)
-    DEALLOCATE (Indx)
-  ELSE
-    Indx = obj%elementData(iel)%globalElements
-    ans = TRANSPOSE(RESHAPE(Indx, [3, SIZE(Indx) / 3]))
-  END IF
-ELSE
-  ALLOCATE (ans(0, 0))
-END IF
-
-END PROCEDURE obj_GetElementToElements
-
-!----------------------------------------------------------------------------
-!                                                     GetBoundaryElementData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetBoundaryElementData
-INTEGER(I4B) :: iel
-
-IF (obj%isBoundaryElement(globalElement)) THEN
-  iel = obj%GetLocalElemNumber(globalElement)
-  ans = obj%elementData(iel)%boundaryData
-ELSE
-  ALLOCATE (ans(0))
-END IF
-
-END PROCEDURE obj_GetBoundaryElementData
-
-!----------------------------------------------------------------------------
 !                                                                  GetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrder
 ans = obj%refelem%order
 END PROCEDURE obj_GetOrder
-
-!----------------------------------------------------------------------------
-!                                                                     GetNSD
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNSD
-ans = obj%NSD
-END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
 !                                                            GetXidimension
@@ -119,92 +66,13 @@ ans = obj%xidim
 END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
-!                                              GetTotalInternalFacetElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalInternalFacetElements
-ans = 0
-IF (ALLOCATED(obj%internalFacetData)) THEN
-  ans = SIZE(obj%internalFacetData)
-END IF
-END PROCEDURE obj_GetTotalInternalFacetElements
-
-!----------------------------------------------------------------------------
-!                                              GetTotalBoundaryFacetElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
-ans = 0
-IF (ALLOCATED(obj%boundaryFacetData)) THEN
-  ans = SIZE(obj%boundaryFacetData)
-END IF
-END PROCEDURE obj_GetTotalBoundaryFacetElements
-
-!----------------------------------------------------------------------------
-!                                                       GetMasterCellNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMasterCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans = obj%internalFacetData(facetElement)%masterCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = obj%boundaryFacetData(facetElement)%masterCellNumber
-END SELECT
-END PROCEDURE obj_GetMasterCellNumber
-
-!----------------------------------------------------------------------------
-!                                                         GetSlaveCellNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetSlaveCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans = obj%internalFacetData(facetElement)%slaveCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = 0
-END SELECT
-END PROCEDURE obj_GetSlaveCellNumber
-
-!----------------------------------------------------------------------------
-!                                                              GetCellNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans(1) = obj%internalFacetData(facetElement)%masterCellNumber
-  ans(2) = obj%internalFacetData(facetElement)%slaveCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans(1) = obj%boundaryFacetData(facetElement)%masterCellNumber
-  ans(2) = 0
-END SELECT
-END PROCEDURE obj_GetCellNumber
-
-!----------------------------------------------------------------------------
-!                                                           GetLocalFacetID
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalFacetID
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  IF (isMaster) THEN
-    ans = obj%internalFacetData(facetElement)%masterLocalFacetID
-  ELSE
-    ans = obj%internalFacetData(facetElement)%slaveLocalFacetID
-  END IF
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = obj%boundaryFacetData(facetElement)%masterLocalFacetID
-END SELECT
-END PROCEDURE obj_GetLocalFacetID
-
-!----------------------------------------------------------------------------
 !                                                       GetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity1
 INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
 INTEGER(I4B) :: localFaceID, cellNum
+
 SELECT CASE (elementType)
 CASE (INTERNAL_ELEMENT)
   IF (isMaster) THEN
@@ -214,16 +82,19 @@ CASE (INTERNAL_ELEMENT)
     cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
     localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
   END IF
+
 CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
   cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
   localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
 END SELECT
+
 IF (cellNum .NE. 0) THEN
   cellNptrs = obj%GetConnectivity(globalElement=cellNum)
   ans = cellNptrs(GetConnectivity(obj%facetElements(localFaceID)))
 ELSE
   ALLOCATE (ans(0))
 END IF
+
 IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
 END PROCEDURE obj_GetFacetConnectivity1
 
@@ -239,16 +110,6 @@ ans = nptrs(indx)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 END PROCEDURE obj_GetFacetConnectivity2
-
-!----------------------------------------------------------------------------
-!                                                        GetFacetElementType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetElementType
-INTEGER(I4B) :: iel
-iel = obj%GetLocalElemNumber(globalElement=globalElement)
-ans = obj%facetElementType(:, iel)
-END PROCEDURE obj_GetFacetElementType
 
 !----------------------------------------------------------------------------
 !

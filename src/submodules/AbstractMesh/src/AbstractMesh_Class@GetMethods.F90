@@ -19,8 +19,7 @@ USE ReallocateUtility
 USE IntegerUtility
 USE AppendUtility
 USE BoundingBox_Method
-USE BaseType, ONLY: IntVector_
-USE IntVector_Method
+USE InputUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -73,9 +72,9 @@ END PROCEDURE obj_GetElemNum
 MODULE PROCEDURE obj_GetBoundingEntity
 IF (ALLOCATED(obj%boundingEntity)) THEN
   ans = obj%boundingEntity
-  RETURN
+ELSE
+  ALLOCATE (ans(0))
 END IF
-ALLOCATE (ans(0))
 END PROCEDURE obj_GetBoundingEntity
 
 !----------------------------------------------------------------------------
@@ -597,8 +596,6 @@ END PROCEDURE obj_GetNodeToNodes1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodes2
-TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: ivec(:)
 INTEGER(I4B) :: ii, jj, kk, n, lnode(SIZE(globalNode)),  &
   & nn(SIZE(globalNode) + 1)
 
@@ -629,10 +626,46 @@ END PROCEDURE obj_GetNodeToNodes2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElementToElements
+LOGICAL(LGT) :: onlyElem
+INTEGER(I4B) :: iel, tsize
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements()"
-CALL Reallocate(ans, 0, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement)
+
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%elementData(iel)%globalElements)
+
+IF (problem) THEN
+  CALL Reallocate(ans, 0, 0)
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElements not found!')
+  RETURN
+END IF
+#endif
+
+onlyElem = Input(option=onlyElements, default=.FALSE.)
+
+ASSOCIATE (indx => obj%elementData(iel)%globalElements)
+
+  tsize = SIZE(indx)
+
+  IF (onlyElem) THEN
+
+    ALLOCATE (ans(tsize / 3, 1))
+    ans(:, 1) = indx(1 :: 3)
+
+  ELSE
+
+    ALLOCATE (ans(tsize / 3, 3))
+    ans = TRANSPOSE(RESHAPE(indx, [3, tsize / 3]))
+  END IF
+
+END ASSOCIATE
+
 END PROCEDURE obj_GetElementToElements
 
 !----------------------------------------------------------------------------
@@ -640,10 +673,25 @@ END PROCEDURE obj_GetElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryElementData
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryElementData()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+problem = .NOT. obj%isBoundaryElement(globalElement)
+
+IF (problem) THEN
+  ALLOCATE (ans(0))
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Element is not boundary element.')
+  RETURN
+END IF
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement)
+ans = obj%elementData(iel)%boundaryData
+
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
@@ -720,10 +768,10 @@ END PROCEDURE obj_GetTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInternalFacetElements()"
 ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+IF (ALLOCATED(obj%internalFacetData)) THEN
+  ans = SIZE(obj%internalFacetData)
+END IF
 END PROCEDURE obj_GetTotalInternalFacetElements
 
 !----------------------------------------------------------------------------
@@ -731,10 +779,10 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryFacetElements()"
 ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+IF (ALLOCATED(obj%boundaryFacetData)) THEN
+  ans = SIZE(obj%boundaryFacetData)
+END IF
 END PROCEDURE obj_GetTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -742,10 +790,12 @@ END PROCEDURE obj_GetTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMasterCellNumber
-CHARACTER(*), PARAMETER :: myName = "obj_GetMasterCellNumber()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans = obj%internalFacetData(facetElement)%masterCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = obj%boundaryFacetData(facetElement)%masterCellNumber
+END SELECT
 END PROCEDURE obj_GetMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -753,10 +803,12 @@ END PROCEDURE obj_GetMasterCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSlaveCellNumber
-CHARACTER(*), PARAMETER :: myName = "obj_GetSlaveCellNumber()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans = obj%internalFacetData(facetElement)%slaveCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = 0
+END SELECT
 END PROCEDURE obj_GetSlaveCellNumber
 
 !----------------------------------------------------------------------------
@@ -764,10 +816,14 @@ END PROCEDURE obj_GetSlaveCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellNumber
-CHARACTER(*), PARAMETER :: myName = "obj_GetCellNumber()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans(1) = obj%internalFacetData(facetElement)%masterCellNumber
+  ans(2) = obj%internalFacetData(facetElement)%slaveCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans(1) = obj%boundaryFacetData(facetElement)%masterCellNumber
+  ans(2) = 0
+END SELECT
 END PROCEDURE obj_GetCellNumber
 
 !----------------------------------------------------------------------------
@@ -775,19 +831,25 @@ END PROCEDURE obj_GetCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalFacetID
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetID()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  IF (isMaster) THEN
+    ans = obj%internalFacetData(facetElement)%masterLocalFacetID
+  ELSE
+    ans = obj%internalFacetData(facetElement)%slaveLocalFacetID
+  END IF
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = obj%boundaryFacetData(facetElement)%masterLocalFacetID
+END SELECT
 END PROCEDURE obj_GetLocalFacetID
 
 !----------------------------------------------------------------------------
-!                                                       GetFacetConnectivity
+!                                                      GetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity1
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity1()"
-CALL Reallocate(ans, 0)
+ALLOCATE (ans(0))
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetFacetConnectivity1
@@ -798,7 +860,6 @@ END PROCEDURE obj_GetFacetConnectivity1
 
 MODULE PROCEDURE obj_GetFacetConnectivity2
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
-CALL Reallocate(ans, 0)
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetFacetConnectivity2
@@ -808,10 +869,9 @@ END PROCEDURE obj_GetFacetConnectivity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetElementType
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetElementType()"
-CALL Reallocate(ans, 0)
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement=globalElement)
+ans = obj%facetElementType(:, iel)
 END PROCEDURE obj_GetFacetElementType
 
 !----------------------------------------------------------------------------
