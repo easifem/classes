@@ -69,6 +69,7 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! FacetData
   INTEGER(I4B) :: uid = 0
     !! Unique id of the mesh
+    !! In case of Mesh_ it is entityNumber of the mesh
   INTEGER(I4B) :: tElements_topology_wise(8) = 0
     !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
     !! pyramid (it is calculated in the postprocessing step)
@@ -530,17 +531,21 @@ END TYPE AbstractMesh_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Allocate the size of the mesh
+! date: 2024-03-18
+! summary: Read the mesh from the HDF5File_ see import method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group, dim, entities)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! Mesh file in hdf5 file format
-    CHARACTER(*), INTENT(IN) :: group
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: group
     !! location in HDF5 file
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entities(:)
+    !! entity number
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -611,12 +616,25 @@ END INTERFACE
 ! This routine allocate obj%nodeData
 ! This routine Set localNodeNum and globalNodeNum data inside the
 ! nodeData
+!
+!
+! If group is present then the mesh from that group is read
+!
+! If dim is present then all entities of that dimension is read
+!
+! If (dim, entities) are present then we construct groups
+! based on dim and entities and make a mesh
 
 INTERFACE AbstractMeshImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dim, entities)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: group
+    !! Group name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entities(:)
+    !! entityNum
   END SUBROUTINE obj_Import
 END INTERFACE AbstractMeshImport
 

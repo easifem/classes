@@ -267,10 +267,12 @@ END INTERFACE DEALLOCATE
 ! nodeData
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dim, entities)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: group
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entities(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

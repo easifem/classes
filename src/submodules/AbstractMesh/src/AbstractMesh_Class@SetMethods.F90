@@ -124,9 +124,10 @@ END PROCEDURE obj_SetMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
-CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: localElem
+localElem = obj%GetLocalElemNumber(globalElement=globalElement)
+obj%facetElementType(iface, localElem) = facetElementType
+obj%elementData(localElem)%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------

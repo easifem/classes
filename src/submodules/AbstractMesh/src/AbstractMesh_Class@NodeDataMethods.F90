@@ -169,9 +169,77 @@ END PROCEDURE obj_InitiateNodetoNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateExtraNodetoNodes
+! Define internal  variables
+INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
+INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
+  & indx(:)
+LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+! problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
+! IF (problem) RETURN
+
+problem = obj%isExtraNodeToNodesInitiated
+IF (problem) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Node to node information is already initiated")
+  RETURN
+END IF
+
+IF (.NOT. obj%isNodeToNodesInitiated) &
+  & CALL obj%InitiateNodeToNodes()
+
+IF (.NOT. obj%isNodeToElementsInitiated) &
+  & CALL obj%InitiateNodeToElements()
+
+IF (.NOT. obj%isElementToElementsInitiated) &
+  & CALL obj%InitiateElementToElements()
+
+DO iLocalNode = 1, obj%tNodes
+  iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+  n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
+  n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
+
+  DO iel = 1, SIZE(n2e)
+    e2e = obj%GetElementToElements(globalElement=n2e(iel), &
+      & onlyElements=.TRUE.)
+
+    mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
+
+    DO iel2 = 1, SIZE(mask_elem)
+
+      IF (mask_elem(iel2)) THEN
+
+        indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
+        mask_nptrs = .NOT. (indx.ISIN.n2n)
+        CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
+          & indx, mask_nptrs)
+
+      END IF
+
+    END DO
+
+    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%extraGlobalNodes)
+
+  END DO
+
+END DO
+
+obj%isExtraNodeToNodesInitiated = .TRUE.
+
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
+IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
+
 END PROCEDURE obj_InitiateExtraNodetoNodes
 
 !----------------------------------------------------------------------------
