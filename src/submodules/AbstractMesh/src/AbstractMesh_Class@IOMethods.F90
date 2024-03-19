@@ -19,10 +19,12 @@ SUBMODULE(AbstractMesh_Class) IOMethods
 USE GlobalData, ONLY: stdout
 USE Display_Method
 USE ReallocateUtility
-USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
+! USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
+USE HDF5File_Method, ONLY: HDF5GetEntities
 USE AbstractMeshUtility, ONLY: MeshImportFromGroup, MeshImportFromDim
 USE ArangeUtility
 USE InputUtility
+USE ReferenceElement_Method, ONLY: ElementName
 IMPLICIT NONE
 CONTAINS
 
@@ -32,6 +34,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: abool
+INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
 
@@ -61,16 +64,33 @@ CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ",  &
 
 CALL Display(obj%uid, "uid: ", unitno=unitno)
 
-CALL Display(obj%tElements_topology_wise, "tElements Topology wise: ",  &
+CALL Display("Total elements (topology wise)", unitno=unitno)
+CALL EqualLine(unitno=unitno)
+CALL Display(obj%tElements_topology_wise(1), "point: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(2), "line: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(3), "triangle: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(4), "quadrangle: ",&
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(5), "tetrahedron: ",&
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(6), "hexahedron: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(7), "prism: ",  &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(8), "pyramid: ",  &
+  & unitno=unitno)
+CALL BlankLines(unitno=unitno)
+
+CALL Display(obj%tElemTopologies, "Total topologies: ",  &
   & unitno=unitno)
 
-CALL Display(obj%tElemTopologies, "total Element Topoglies in Mesh: ",  &
-  & unitno=unitno)
-
-IF (obj%tElemTopologies .GT. 0) THEN
-  CALL Display(obj%elemTopologies(1:obj%tElemTopologies),  &
-    & "element Topologies in mesh: ", unitno=unitno)
-END IF
+DO ii = 1, obj%tElemTopologies
+  CALL Display("  Topologies("//tostring(ii)//"): "//  &
+    & ElementName(obj%elemTopologies(ii)), unitno=unitno)
+END DO
 
 CALL Display(obj%nsd, "nsd: ", unitno=unitno)
 
@@ -443,7 +463,8 @@ ELSEIF (cases(2)) THEN
   CALL MeshImportFromDim(obj, hdf5, group0, dim, entities, SIZE(entities))
 
 ELSEIF (cases(3)) THEN
-  CALL obj_Import_GetEntities(hdf5, group0, dim, tEntities)
+  CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim,  &
+    & tEntities=tEntities, myName=myName, modName=modName)
   entities0 = arange(1_I4B, tEntities)
   CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
 
@@ -462,49 +483,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                               obj_Import_GetEntities
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_Import_GetEntities(hdf5, group, dim, tEntities)
-  CLASS(HDF5File_), INTENT(INOUT) :: hdf5
-  CHARACTER(*), INTENT(IN) :: group
-  INTEGER(I4B), INTENT(IN) :: dim
-  INTEGER(I4B), INTENT(OUT) :: tEntities
-
-  CHARACTER(*), PARAMETER :: myName = "obj_Import_GetEntities()"
-
-  SELECT CASE (dim)
-
-  CASE (0)
-    ! numPointEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numPointEntities",  &
-      & myName=myName, modName=modName)
-
-  CASE (1)
-    ! numCurveEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numCurveEntities",  &
-      & myName=myName, modName=modName)
-
-  CASE (2)
-    ! numSurfaceEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numSurfaceEntities",  &
-      & myName=myName, modName=modName)
-
-  CASE (3)
-    ! numVolumeEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numVolumeEntities",  &
-      & myName=myName, modName=modName)
-
-  CASE default
-  END SELECT
-
-END SUBROUTINE obj_Import_GetEntities
 
 !----------------------------------------------------------------------------
 !                                                              GetNodeCoord
