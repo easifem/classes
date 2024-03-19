@@ -163,14 +163,6 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber,  &
 
   dsetname = TRIM(group)
 
-  CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
-    & fieldname="physicalTag", myname=myname, modName=modName, check=.FALSE.)
-
-  ! If physicalTag is not initiated then we initiate it with size=0
-  IF (.NOT. ALLOCATED(obj%physicalTag)) THEN
-    CALL Reallocate(obj%physicalTag, 0)
-  END IF
-
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
     & fieldname="boundingEntity", myname=myname, modName=modName,  &
     & check=.FALSE.)
