@@ -515,7 +515,7 @@ INTERFACE
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
     & xidim, elemType, nsd, maxNptrs, minNptrs, &
-    & maxElemNum, minElemNum, tNodes, tIntNodes, tElements, &
+    & maxElemNum, minElemNum, tNodes, tElements, &
     & minX, minY, minZ, maxX, maxY, maxZ, &
     & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
     CLASS(Mesh_), INTENT(IN) :: obj
@@ -526,7 +526,7 @@ INTERFACE
 
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, &
       & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, tIntNodes, &
+      & maxElemNum, minElemNum, tNodes, &
       & tElements, tElements_topology_wise(8), tElemTopologies,  &
       & elemTopologies(8)
 

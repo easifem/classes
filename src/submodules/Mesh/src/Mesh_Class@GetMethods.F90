@@ -126,7 +126,7 @@ CALL AbstractMeshGetQuery(obj=obj, &
     & isFacetDataInitiated=isFacetDataInitiated, uid=uid, &
     & xidim=xidim, elemType=elemType, nsd=nsd, maxNptrs=maxNptrs, &
     & minNptrs=minNptrs, maxElemNum=maxElemNum, minElemNum=minElemNum,  &
-    & tNodes=tNodes, tIntNodes=tIntNodes, tElements=tElements, &
+    & tNodes=tNodes, tElements=tElements, &
     & minX=minX, minY=minY, minZ=minZ, maxX=maxX, maxY=maxY, maxZ=maxZ, &
     & x=x, y=y, z=z, tElements_topology_wise=tElements_topology_wise,  &
     & tElemTopologies=tElemTopologies,  &

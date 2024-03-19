@@ -88,7 +88,7 @@ END PROCEDURE MeshFacetData_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Deallocate
-CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate()"
+! CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate()"
 
 obj%isInitiated = .FALSE.
 obj%engine = ''
