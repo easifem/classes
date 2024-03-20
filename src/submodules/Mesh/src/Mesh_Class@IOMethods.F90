@@ -39,7 +39,6 @@ LOGICAL(LGT) :: abool
 
 CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 
-CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 CALL Display(obj%elemType, "elemType: ", unitno=unitno)
 abool = ASSOCIATED(obj%refElem)
 CALL Display(abool, "refElem ASSOCIATED: ", unitno=unitno)
@@ -63,9 +62,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname,  &
-  & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)

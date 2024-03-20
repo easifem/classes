@@ -135,7 +135,7 @@ LOGICAL(LGT) :: isVar
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START] InitiateFacetToCellData()')
 
-CALL cellMesh%GetQuery(isNodeToElementsInitiated=isVar)
+CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
 
 IF (.NOT. isVar) THEN
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -204,7 +204,7 @@ DO icellMesh = 1, tCellMesh
   meshptr => masterDomain%getMeshPointer(dim=dim_facet + 1, &
     & entityNum=icellMesh)
 
-  CALL meshptr%GetQuery(isNodeToElementsInitiated=isVar)
+  CALL meshptr%GetParam(isNodeToElementsInitiated=isVar)
 
   IF (.NOT. isVar) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -271,7 +271,7 @@ ELSE
   tfacet = SIZE(cellMesh%facetElements)
 END IF
 
-CALL cellMesh%GetQuery(isNodeToElementsInitiated=isVar)
+CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
 
 IF (.NOT. isVar) THEN
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -432,7 +432,7 @@ DO icellMesh = 1, tCellMesh
     tfacet = SIZE(cellMesh%facetElements)
   END IF
 
-  CALL cellMesh%GetQuery(isNodeToElementsInitiated=isVar)
+  CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
 
   IF (.NOT. isVar) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &

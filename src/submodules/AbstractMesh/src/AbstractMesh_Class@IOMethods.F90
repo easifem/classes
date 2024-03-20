@@ -93,6 +93,7 @@ DO ii = 1, obj%tElemTopologies
 END DO
 
 CALL Display(obj%nsd, "nsd: ", unitno=unitno)
+CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 
 CALL Display(obj%maxNptrs, "maxNptrs: ", unitno=unitno)
 

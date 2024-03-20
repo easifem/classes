@@ -97,7 +97,6 @@ INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
   & local_elem_num, tnode, ii, global_node_num, local_node_num
 INTEGER(I4B), PARAMETER :: chunk_size = 64
 LOGICAL(LGT) :: found(obj%tNodes), skip
-INTEGER(I4B) :: temp(128 * 2)
 TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(BetterMesh_Class) FacetDataMethods
+SUBMODULE(FEMesh_Class) FacetDataMethods
 ! USE BaseMethod
 IMPLICIT NONE
 CONTAINS

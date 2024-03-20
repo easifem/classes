@@ -28,10 +28,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNNE
-CHARACTER(*), PARAMETER :: myName = "obj_GetNNE()"
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement)
 ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%elementData(iel)%globalNodes)
+IF (isok) ans = SIZE(obj%elementData(iel)%globalNodes)
+
+#else
+
+ans = SIZE(obj%elementData(iel)%globalNodes)
+
+#endif
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
@@ -39,10 +54,7 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNNE
-CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNNE()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+ans = obj%maxNNE
 END PROCEDURE obj_GetMaxNNE
 
 !----------------------------------------------------------------------------
@@ -714,7 +726,7 @@ MODULE PROCEDURE obj_GetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
 ans = 0
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+  & '[WIP ERROR] :: This routine is not available')
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
@@ -730,10 +742,7 @@ END PROCEDURE obj_GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetXidimension
-CHARACTER(*), PARAMETER :: myName = "obj_GetXidimension()"
-ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+ans = obj%xidim
 END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
@@ -860,10 +869,35 @@ END PROCEDURE obj_GetLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity1
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity1()"
-ALLOCATE (ans(0))
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
+INTEGER(I4B) :: localFaceID, cellNum
+
+SELECT CASE (elementType)
+
+CASE (INTERNAL_ELEMENT)
+
+  IF (isMaster) THEN
+    cellNum = obj%internalFacetData(facetElement)%masterCellNumber
+    localFaceID = obj%internalFacetData(facetElement)%masterLocalFacetID
+  ELSE
+    cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
+    localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
+  END IF
+
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+
+  cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
+  localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
+
+END SELECT
+
+IF (cellNum .NE. 0) THEN
+  ans = obj%GetFacetConnectivity(iface=localFaceID, globalElement=cellNum)
+ELSE
+  ALLOCATE (ans(0))
+END IF
+
+IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
 END PROCEDURE obj_GetFacetConnectivity1
 
 !----------------------------------------------------------------------------
@@ -874,6 +908,12 @@ MODULE PROCEDURE obj_GetFacetConnectivity2
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
+! INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
+! nptrs = obj%GetConnectivity(globalElement=globalElement)
+! indx = GetConnectivity(obj%facetElements(iface))
+! ans = nptrs(indx)
+! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+! IF (ALLOCATED(indx)) DEALLOCATE (indx)
 END PROCEDURE obj_GetFacetConnectivity2
 
 !----------------------------------------------------------------------------
@@ -890,7 +930,7 @@ END PROCEDURE obj_GetFacetElementType
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetQuery
+MODULE PROCEDURE obj_GetParam
 IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
 
 IF (PRESENT(isNodeToElementsInitiated)) isNodeToElementsInitiated =  &
@@ -945,7 +985,7 @@ IF (PRESENT(maxX)) maxX = obj%maxX
 IF (PRESENT(maxY)) maxY = obj%maxY
 
 IF (PRESENT(maxZ)) maxZ = obj%maxZ
-END PROCEDURE obj_GetQuery
+END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !

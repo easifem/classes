@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(BetterMesh_Class) ConstructorMethods
+SUBMODULE(FEMesh_Class) ConstructorMethods
 IMPLICIT NONE
 CONTAINS
 
@@ -32,15 +32,15 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (BetterMesh_ :: ans)
+ALLOCATE (FEMesh_ :: ans)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
-!                                               BetterMeshPointerDeallocate
+!                                               FEMeshPointerDeallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE BetterMeshPointerDeallocate
-CLASS(BetterMesh_), POINTER :: meshObj
+MODULE PROCEDURE FEMeshPointerDeallocate
+CLASS(FEMesh_), POINTER :: meshObj
 INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
 
@@ -61,6 +61,6 @@ IF (ALLOCATED(obj)) THEN
 
   DEALLOCATE (obj)
 END IF
-END PROCEDURE BetterMeshPointerDeallocate
+END PROCEDURE FEMeshPointerDeallocate
 
 END SUBMODULE ConstructorMethods

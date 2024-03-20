@@ -31,8 +31,7 @@ USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
 USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
   & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_
-USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate, &
-  & AbstractMeshDisplay, AbstractMeshGetQuery, AbstractMeshImport
+USE AbstractMesh_Class
 
 IMPLICIT NONE
 PRIVATE
@@ -63,9 +62,6 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 !{!pages/docs-api/Mesh/Mesh_.md!}
 
 TYPE, EXTENDS(AbstractMesh_) :: Mesh_
-  INTEGER(I4B) :: xidim = 0
-    !! xidimension of elements present inside the mesh
-
   INTEGER(I4B) :: elemType = 0
     !! type of element present inside the mesh
 
@@ -122,12 +118,6 @@ CONTAINS
 
   !  GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
-  !! Get number of nodes in an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNNE => obj_GetMaxNNE
-  !! Get maximum number of nodes in an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
@@ -136,20 +126,12 @@ CONTAINS
     & obj_GetOrder
   !! Returns the order ofthe element of mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
-    & obj_GetXidimension
-  !! Return the NSD
-
   PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
   !! Return the node nubmers in the facet element
   PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
   !! Return the node nubmers in the facet element of a cellElement
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
-  !! Please use GetParam instead of GetQuery.
-  !! They are the same. But I like the name GetParam
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
   ! SET:
@@ -375,37 +357,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNNE@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-25
-! summary:  Get number of nodes in element
-
-INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetNNE
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         GetNNE@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-25
-! summary:  Get number of nodes in element
-
-INTERFACE
-  MODULE FUNCTION obj_GetMaxNNE(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetMaxNNE
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               GetRefElemPointer@GetMethods
 !----------------------------------------------------------------------------
 
@@ -434,21 +385,6 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetXidimension@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the xidimension of the mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetXidimension(obj) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetXidimension
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -510,7 +446,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuery(obj, &
+  MODULE SUBROUTINE obj_GetParam(obj, &
     & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
@@ -533,25 +469,7 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, &
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
-  END SUBROUTINE obj_GetQuery
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetNodeConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: This routine returns global node numbers in a given global elem
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: VALUE(:, :)
-    !! The number of columns are equal to the total number of elements
-    !! in the mesh, the number of rows equal to the maximum number of
-    !! nodes in the elements of mesh
-  END SUBROUTINE obj_GetNodeConnectivity
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

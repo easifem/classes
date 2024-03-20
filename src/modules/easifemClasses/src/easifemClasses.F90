@@ -52,7 +52,7 @@ USE FacetData_Class
 
 USE AbstractMesh_Class
 USE Mesh_Class
-USE BetterMesh_Class
+USE FEMesh_Class
 USE MeshPointerVector_Class
 
 USE Domain_Class

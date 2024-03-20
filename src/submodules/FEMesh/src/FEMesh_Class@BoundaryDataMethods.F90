@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(BetterMesh_Class) BoundaryDataMethods
+SUBMODULE(FEMesh_Class) BoundaryDataMethods
 ! USE BaseMethod
 IMPLICIT NONE
 CONTAINS

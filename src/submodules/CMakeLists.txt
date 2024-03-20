@@ -63,6 +63,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 # AbstractMesh
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 
+# FEMesh
+include(${CMAKE_CURRENT_LIST_DIR}/FEMesh/CMakeLists.txt)
+
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 

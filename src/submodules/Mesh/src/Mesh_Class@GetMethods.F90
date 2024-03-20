@@ -20,28 +20,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  GetNNE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNNE
-ans = 0
-IF (ASSOCIATED(obj%refelem)) THEN
-  ans = .NNE.obj%refelem
-END IF
-END PROCEDURE obj_GetNNE
-
-!----------------------------------------------------------------------------
-!                                                                  GetMaxNNE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMaxNNE
-ans = 0
-IF (ASSOCIATED(obj%refelem)) THEN
-  ans = .NNE.obj%refelem
-END IF
-END PROCEDURE obj_GetMaxNNE
-
-!----------------------------------------------------------------------------
 !                                                          GetRefElemPointer
 !----------------------------------------------------------------------------
 
@@ -56,14 +34,6 @@ END PROCEDURE obj_GetRefElemPointer
 MODULE PROCEDURE obj_GetOrder
 ans = obj%refelem%order
 END PROCEDURE obj_GetOrder
-
-!----------------------------------------------------------------------------
-!                                                            GetXidimension
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetXidimension
-ans = obj%xidim
-END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
 !                                                       GetFacetConnectivity
@@ -115,8 +85,8 @@ END PROCEDURE obj_GetFacetConnectivity2
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetQuery
-CALL AbstractMeshGetQuery(obj=obj, &
+MODULE PROCEDURE obj_GetParam
+CALL AbstractMeshGetParam(obj=obj, &
     & isInitiated=isInitiated,  &
     & isNodeToElementsInitiated=isNodeToElementsInitiated,  &
     & isNodeToNodesInitiated=isNodeToNodesInitiated, &
@@ -134,7 +104,7 @@ CALL AbstractMeshGetQuery(obj=obj, &
 
 IF (PRESENT(xidim)) xidim = obj%xidim
 IF (PRESENT(elemType)) elemType = obj%elemType
-END PROCEDURE obj_GetQuery
+END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !

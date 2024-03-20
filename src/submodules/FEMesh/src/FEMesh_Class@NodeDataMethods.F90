@@ -15,5 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(BetterMesh_Class) IOMethods
-! END SUBMODULE IOMethods
+! SUBMODULE(FEMesh_Class) NodeDataMethods
+! END SUBMODULE NodeDataMethods

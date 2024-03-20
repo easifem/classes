@@ -13,7 +13,8 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-! SUBMODULE(BetterMesh_Class) NodeDataMethods
-! END SUBMODULE NodeDataMethods
+! SUBMODULE(FEMesh_Class) GetMethods
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE GetMethods

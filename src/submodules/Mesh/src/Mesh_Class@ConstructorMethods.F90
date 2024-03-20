@@ -45,7 +45,6 @@ MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii
 
 CALL AbstractMeshDeallocate(obj)
-obj%xidim = 0
 obj%elemType = 0
 
 IF (ALLOCATED(obj%facetElements)) THEN
