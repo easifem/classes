@@ -74,7 +74,7 @@ DO iel = 1, tElements
 
   DO iedge = 1, tEdges
 
-    edge = nptrs(localEdges(:, iedge))
+    edge = nptrs(localEdges(1:2, iedge))
     sorted_edge = SORT(edge)
 
     edgePtr => EdgeData_Pointer(sorted_edge)
