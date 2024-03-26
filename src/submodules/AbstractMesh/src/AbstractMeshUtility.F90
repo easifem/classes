@@ -123,8 +123,8 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh)
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
         temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
-        temp1(2 + (jj - 1) * 3) = face2elem(3, aint)
-        temp1(3 + (jj - 1) * 3) = face2elem(4, aint)
+        temp1(2 + (jj - 1) * 3) = face2elem(4, aint)
+        temp1(3 + (jj - 1) * 3) = face2elem(3, aint)
 
       ELSE
         cint = face2elem(2, aint)
@@ -238,8 +238,8 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
         temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
-        temp1(2 + (jj - 1) * 3) = edge2elem(3, aint)
-        temp1(3 + (jj - 1) * 3) = edge2elem(4, aint)
+        temp1(2 + (jj - 1) * 3) = edge2elem(4, aint)
+        temp1(3 + (jj - 1) * 3) = edge2elem(3, aint)
 
       ELSE
         cint = edge2elem(2, aint)
