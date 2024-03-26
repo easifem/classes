@@ -153,7 +153,7 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy, maxNNE, elemType
+INTEGER(I4B) :: ii, dummy, maxNNE, elemType, meshID
 LOGICAL(LGT) :: isok
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
@@ -204,8 +204,9 @@ IF (obj%showTime) THEN
   CALL TypeCPUTime%SetStartTime()
 END IF
 
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname,  &
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=meshID, group=dsetname,  &
   & fieldname="uid", myname=myname, modname=modname, check=.TRUE.)
+obj%uid = meshID
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
   & fieldname="nsd", myname=myname, modname=modname, check=.TRUE.)
@@ -345,10 +346,7 @@ DO CONCURRENT(ii=1:obj%tElements)
   obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
   CALL ElemDataSet(obj=obj%elementData(ii), globalElemNum=elemNumber(ii),  &
     & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType,  &
-    & isActive=.TRUE.)
-  ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
-  ! obj%elementData(ii)%localElemNum = ii
-  ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
+    & isActive=.TRUE., meshID=meshID)
 END DO
 
 IF (obj%showTime) THEN

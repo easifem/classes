@@ -300,7 +300,6 @@ END INTERFACE
 ! date: 18 Sept 2021
 ! summary: Export mesh to a VTK file
 !
-!
 !# Introduction
 !
 ! - If `filename` is present then call [[VTKFile_:InitiateVTKFile]] method
