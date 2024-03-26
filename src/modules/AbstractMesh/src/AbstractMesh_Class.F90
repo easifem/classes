@@ -91,8 +91,6 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! minimum element number present inside the mesh
   INTEGER(I4B) :: tNodes = 0
     !! total number of nodes present inside the mesh
-  INTEGER(I4B) :: tIntNodes = 0
-    !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tEdges = 0
     !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tFaces = 0
@@ -951,7 +949,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetInternalNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans(obj%tIntNodes)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetInternalNptrs
 END INTERFACE
 
@@ -966,7 +964,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetBoundaryNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans(obj%tNodes - obj%tIntNodes)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetBoundaryNptrs
 END INTERFACE
 
@@ -1903,7 +1901,7 @@ INTERFACE AbstractMeshGetQuery
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
     & xidim, elemType, nsd, maxNptrs, minNptrs, &
-    & maxElemNum, minElemNum, tNodes, tIntNodes, tElements, &
+    & maxElemNum, minElemNum, tNodes, tElements, &
     & minX, minY, minZ, maxX, maxY, maxZ, &
     & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
@@ -1914,7 +1912,7 @@ INTERFACE AbstractMeshGetQuery
 
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, &
       & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, tIntNodes, &
+      & maxElemNum, minElemNum, tNodes, &
       & tElements, tElements_topology_wise(8), tElemTopologies,  &
       & elemTopologies(8)
 

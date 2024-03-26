@@ -108,9 +108,6 @@ SUBROUTINE MeshImportScalar(obj, hdf5, group)
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
     & fieldname="nsd", myname=myname, modName=modName, check=.TRUE.)
 
-  CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tIntNodes, group=dsetname,  &
-    & fieldname="tIntNodes", myname=myname, modName=modName, check=.TRUE.)
-
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname,  &
     & fieldname="tElements", myname=myname, modName=modName, check=.TRUE.)
 
@@ -461,7 +458,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   CHARACTER(*), PARAMETER :: myName = "MeshImportFromDim()"
   INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
     & temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
-  INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), tIntNodes(tEntities),  &
+  INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), &
     & nsd(tEntities), uid(tEntities), elemType(tEntities), nne(tEntities),  &
     & aint, bint, maxBoundingEntities
   ! TYPE(CPUTime_) :: TypeCPUTime
@@ -498,7 +495,6 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
     uid(ii) = obj%uid
     nsd(ii) = obj%nsd
-    tIntNodes(ii) = obj%tIntNodes
     tElements(ii) = obj%tElements
     min_xyz(1, ii) = obj%minX
     min_xyz(2, ii) = obj%minY

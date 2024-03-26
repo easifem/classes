@@ -94,7 +94,8 @@ END PROCEDURE obj_GetNptrs
 
 MODULE PROCEDURE obj_GetInternalNptrs
 INTEGER(I4B) :: ii, dummy
-! ALLOCATE (ans(obj%GetTotalInternalNodes()))
+dummy = obj%GetTotalInternalNodes()
+ALLOCATE (ans(dummy))
 dummy = 0
 DO ii = 1, obj%tNodes
   IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
@@ -110,6 +111,9 @@ END PROCEDURE obj_GetInternalNptrs
 
 MODULE PROCEDURE obj_GetBoundaryNptrs
 INTEGER(I4B) :: ii, dummy
+
+dummy = obj%GetTotalBoundaryNodes()
+CALL Reallocate(ans, dummy)
 dummy = 0
 DO ii = 1, obj%tNodes
   IF (obj%nodeData(ii)%nodeType .EQ. BOUNDARY_NODE) THEN
@@ -237,7 +241,13 @@ END PROCEDURE obj_isDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalNodes
-ans = obj%tIntNodes
+INTEGER(I4B) :: ii
+ans = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+    ans = ans + 1
+  END IF
+END DO
 END PROCEDURE obj_GetTotalInternalNodes
 
 !----------------------------------------------------------------------------
@@ -253,7 +263,9 @@ END PROCEDURE obj_GetTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryNodes
-ans = obj%tNodes - obj%tIntNodes
+INTEGER(I4B) :: tIntNodes
+tIntNodes = obj%GetTotalInternalNodes()
+ans = obj%tNodes - tIntNodes
 END PROCEDURE obj_GetTotalBoundaryNodes
 
 !----------------------------------------------------------------------------
@@ -919,8 +931,6 @@ IF (PRESENT(maxElemNum)) maxElemNum = obj%maxElemNum
 IF (PRESENT(minElemNum)) minElemNum = obj%minElemNum
 
 IF (PRESENT(tNodes)) tNodes = obj%tNodes
-
-IF (PRESENT(tIntNodes)) tIntNodes = obj%tIntNodes
 
 IF (PRESENT(tElements)) tElements = obj%tElements
 

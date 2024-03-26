@@ -70,7 +70,6 @@ obj%minElemNum = 0
 obj%tNodes = 0
 obj%tFaces = 0
 obj%tEdges = 0
-obj%tIntNodes = 0
 obj%tElements = 0
 obj%minX = 0.0_DFP
 obj%maxX = 0.0_DFP
