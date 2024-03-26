@@ -333,6 +333,45 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
 END SUBROUTINE MeshImportNodeData
 
 !----------------------------------------------------------------------------
+!                                                        MeshImportNodeData
+!----------------------------------------------------------------------------
+
+SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
+  CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: connectivity(:, :)
+
+  ! Internal veriables
+  INTEGER(I4B) :: ii, jj, aint, dummy
+
+  aint = SIZE(connectivity, 1)
+  CALL Reallocate(obj%local_nptrs, obj%maxNptrs)
+
+  DO ii = 1, obj%tElements
+    DO jj = 1, aint
+      dummy = connectivity(jj, ii)
+      IF (dummy .NE. 0) THEN
+        obj%local_nptrs(dummy) = dummy
+      END IF
+    END DO
+  END DO
+
+  obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
+  ALLOCATE (obj%nodeData(obj%tNodes))
+
+  dummy = 0
+  DO ii = 1, obj%maxNptrs
+    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE
+
+    dummy = dummy + 1
+    obj%nodeData(dummy)%globalNodeNum = obj%local_nptrs(ii)
+    obj%nodeData(dummy)%localNodeNum = dummy
+    obj%nodeData(dummy)%nodeType = INTERNAL_NODE
+    obj%local_nptrs(ii) = dummy
+  END DO
+
+END SUBROUTINE MeshImportNodeDataFromDim
+
+!----------------------------------------------------------------------------
 !                                                   MeshImportFromGroup
 !----------------------------------------------------------------------------
 
@@ -429,10 +468,10 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "MeshImportFromDim()"
   INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
-    & internalNptrs(:), temp_int_2d(:, :), temp_int_1d(:)
-  INTEGER(I4B) :: ii, tElements(tEntities), tIntNodes(tEntities),  &
+    & temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
+  INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), tIntNodes(tEntities),  &
     & nsd(tEntities), uid(tEntities), elemType(tEntities), nne(tEntities),  &
-    & aint, bint
+    & aint, bint, maxBoundingEntities
   ! TYPE(CPUTime_) :: TypeCPUTime
   CHARACTER(:), ALLOCATABLE :: dsetname, prefix
   REAL(DFP), DIMENSION(3, tEntities) :: xyz, min_xyz, max_xyz
@@ -447,6 +486,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   SELECT CASE (dim)
   CASE (0_I4B)
     prefix = group//"/pointEntities_"
+    maxBoundingEntities = 0_I4B
   CASE (1_I4B)
     prefix = group//"/curveEntities_"
   CASE (2_I4B)
@@ -478,6 +518,19 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     xyz(2, ii) = obj%y
     xyz(3, ii) = obj%z
 
+    aint = GetElementIndex(elemType(ii))
+    obj%tElements_topology_wise(aint) = obj%tElements_topology_wise(aint) +  &
+      & tElements(ii)
+
+  END DO
+
+  DO ii = 1, SIZE(obj%tElements_topology_wise)
+    aint = obj%tElements_topology_wise(ii)
+    IF (aint .GT. 0) THEN
+      obj%tElemTopologies = obj%tElemTopologies + 1
+      obj%elemTopologies(obj%tElemTopologies) =  &
+        & ReferenceElementInfo%elemTopologyName(ii)
+    END IF
   END DO
 
   obj%maxNNE = MAXVAL(nne)
@@ -485,6 +538,15 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   CALL Reallocate(connectivity, obj%maxNNE, obj%tElements)
   CALL Reallocate(elemNumber, obj%tElements)
+
+  IF (dim .GT. 0) THEN
+    CALL HDF5GetEntities(hdf5=hdf5, group=group, dim=dim - 1,  &
+      & tEntities=maxBoundingEntities, myName=myName, modName=modName)
+  ELSE
+    maxBoundingEntities = 0
+  END IF
+
+  CALL Reallocate(boundingEntity, maxBoundingEntities)
 
   aint = 0
   bint = 0
@@ -496,6 +558,26 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     connectivity(1:nne(ii), aint:bint) =  &
       & temp_int_2d(1:nne(ii), 1:tElements(ii))
     elemNumber(aint:bint) = temp_int_1d(1:tElements(ii))
+
+    DO jj = 1, SIZE(obj%boundingEntity)
+      kk = ABS(obj%boundingEntity(jj))
+      boundingEntity(kk) = boundingEntity(kk) + obj%boundingEntity(jj)
+    END DO
+  END DO
+
+  aint = 0
+  DO ii = 1, SIZE(boundingEntity)
+    IF (boundingEntity(ii) .NE. 0) aint = aint + 1
+  END DO
+
+  CALL Reallocate(obj%boundingEntity, aint)
+
+  aint = 0
+  DO ii = 1, SIZE(boundingEntity)
+    IF (boundingEntity(ii) .NE. 0) THEN
+      aint = aint + 1
+      obj%boundingEntity(aint) = boundingEntity(ii)
+    END IF
   END DO
 
   obj%maxElemNum = MAXVAL(elemNumber)
@@ -521,11 +603,13 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
       & nne=nne(ii))
   END DO
 
-  ! CALL MeshImportNodeData(obj, connectivity, internalNptrs)
-  !
-  ! IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-  ! IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-  ! IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
+  CALL MeshImportNodeDataFromDim(obj, connectivity)
+
+  IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
+  IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
+  IF (ALLOCATED(temp_int_2d)) DEALLOCATE (temp_int_2d)
+  IF (ALLOCATED(temp_int_1d)) DEALLOCATE (temp_int_1d)
+  IF (ALLOCATED(boundingEntity)) DEALLOCATE (boundingEntity)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
