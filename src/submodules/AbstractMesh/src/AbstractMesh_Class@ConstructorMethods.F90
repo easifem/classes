@@ -81,7 +81,6 @@ obj%maxZ = 0.0_DFP
 obj%X = 0.0_DFP
 obj%Y = 0.0_DFP
 obj%Z = 0.0_DFP
-IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
 IF (ALLOCATED(obj%material)) DEALLOCATE (obj%material)
 IF (ALLOCATED(obj%boundingEntity)) DEALLOCATE (obj%boundingEntity)
 IF (ALLOCATED(obj%local_elemNumber)) DEALLOCATE (obj%local_elemNumber)

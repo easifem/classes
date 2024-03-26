@@ -128,12 +128,6 @@ CALL Display(obj%Y, "Y: ", unitno=unitno)
 
 CALL Display(obj%Z, "Z: ", unitno=unitno)
 
-abool = ALLOCATED(obj%physicalTag)
-CALL Display(abool, "physicalTag ALLOCATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL Display(obj%physicalTag, "physicalTag: ", unitno=unitno)
-END IF
-
 abool = ALLOCATED(obj%material)
 CALL Display(abool, "materialALLOCATED: ", unitno=unitno)
 IF (abool) THEN

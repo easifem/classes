@@ -118,9 +118,6 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! y coordinate of centroid
   REAL(DFP) :: z = 0.0
     !! z coordinate of centroid
-  INTEGER(I4B), ALLOCATABLE :: physicalTag(:)
-    !! Physical entities associated with the current entity (mesh)
-    !! physical tags can be thought of as the material numbers
   INTEGER(I4B), ALLOCATABLE :: material(:)
     !! materials mapped to the mesh
     !! material(1) is the material id of medium 1
