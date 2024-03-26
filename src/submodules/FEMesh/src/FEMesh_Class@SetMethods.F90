@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(BetterMesh_Class) SetMethods
+SUBMODULE(FEMesh_Class) SetMethods
 ! USE BaseMethod
 ! USE MeshUtility
 IMPLICIT NONE
@@ -36,7 +36,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 problem = .NOT. obj%isInitiated
 IF (problem) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: BetterMesh_::obj is not initiated.")
+    & "[INTERNAL ERROR] :: FEMesh_::obj is not initiated.")
   RETURN
 END IF
 

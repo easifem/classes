@@ -18,21 +18,17 @@
 ! date: 2024-03-17
 ! summary: `Mesh_Class` module contains data type for handling the mesh.
 
-MODULE BetterMesh_Class
+MODULE FEMesh_Class
 USE GlobalData
 USE Basetype
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-USE HDF5File_Class
-USE VTKFile_Class
 USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
   & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode
 USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
   & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_
-USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate, &
-  & AbstractMeshDisplay, AbstractMeshGetQuery, AbstractMeshImport
+USE AbstractMesh_Class
 
 IMPLICIT NONE
 PRIVATE
@@ -43,25 +39,25 @@ PUBLIC :: INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE,  &
 PUBLIC :: INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT,  &
   & GHOST_ELEMENT, TypeElem
 
-PUBLIC :: BetterMesh_
-PUBLIC :: BetterMeshPointer_
-PUBLIC :: BetterMesh_Pointer
+PUBLIC :: FEMesh_
+PUBLIC :: FEMeshPointer_
+PUBLIC :: FEMesh_Pointer
 PUBLIC :: DEALLOCATE
-PUBLIC :: BetterMeshPointerDeallocate
+PUBLIC :: FEMeshPointerDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "BetterMesh_Class"
+CHARACTER(*), PARAMETER :: modName = "FEMesh_Class"
 
 !----------------------------------------------------------------------------
-!                                                              BetterMesh_
+!                                                              FEMesh_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
 ! summary: This datatype contains the meta data of a mesh
 !
-!{!pages/docs-api/BetterMesh/BetterMesh_.md!}
+!{!pages/docs-api/FEMesh/FEMesh_.md!}
 
-TYPE, EXTENDS(AbstractMesh_) :: BetterMesh_
+TYPE, EXTENDS(AbstractMesh_) :: FEMesh_
 CONTAINS
   PRIVATE
 
@@ -76,23 +72,7 @@ CONTAINS
 
   !  GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
-    !! Get number of nodes in an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNNE => obj_GetMaxNNE
-    !! Get maximum number of nodes in an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
-    !! Returns the order ofthe element of mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => obj_GetXidimension
-    !! Return the Xidimension of an element
-
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
-    !! Return the node nubmers in the facet element
-
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
-    !! Return the node nubmers in the facet element of a cellElement
+  ! NA
 
   ! SET:
   ! @NodeDataMethods
@@ -125,7 +105,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
     !! Set mesh quality
 
-END TYPE BetterMesh_
+END TYPE FEMesh_
 
 !----------------------------------------------------------------------------
 !
@@ -135,23 +115,23 @@ END TYPE BetterMesh_
 ! date: 2024-03-17
 ! summary: Userdefine datatype which contains the pointer to a mesh
 
-TYPE :: BetterMeshPointer_
-  TYPE(BetterMesh_), POINTER :: ptr => NULL()
-END TYPE BetterMeshPointer_
+TYPE :: FEMeshPointer_
+  TYPE(FEMesh_), POINTER :: ptr => NULL()
+END TYPE FEMeshPointer_
 
 !----------------------------------------------------------------------------
-!                                     BetterMesh_Pointer@ConstructorMethods
+!                                     FEMesh_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
 ! summary: This function returns a pointer to an instance of obj_ object
 
-INTERFACE BetterMesh_Pointer
+INTERFACE FEMesh_Pointer
   MODULE FUNCTION obj_Constructor_1() RESULT(ans)
-    CLASS(BetterMesh_), POINTER :: ans
+    CLASS(FEMesh_), POINTER :: ans
   END FUNCTION obj_Constructor_1
-END INTERFACE BetterMesh_Pointer
+END INTERFACE FEMesh_Pointer
 
 !----------------------------------------------------------------------------
 !
@@ -163,7 +143,7 @@ END INTERFACE BetterMesh_Pointer
 
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
-    TYPE(BetterMesh_), INTENT(INOUT) :: obj
+    TYPE(FEMesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -176,159 +156,10 @@ END INTERFACE
 ! summary: Free up the memory stored in [[obj_]]
 
 INTERFACE DEALLOCATE
-  MODULE SUBROUTINE BetterMeshPointerDeallocate(obj)
-    TYPE(BetterMeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  END SUBROUTINE BetterMeshPointerDeallocate
+  MODULE SUBROUTINE FEMeshPointerDeallocate(obj)
+    TYPE(FEMeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE FEMeshPointerDeallocate
 END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                                                         GetNNE@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-25
-! summary:  Get number of nodes in element
-
-INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetNNE
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         GetNNE@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-25
-! summary:  Get number of nodes in element
-
-INTERFACE
-  MODULE FUNCTION obj_GetMaxNNE(obj) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetMaxNNE
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetRefElemPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: Returns the pointer to the reference element
-
-INTERFACE
-  MODULE FUNCTION obj_GetRefElemPointer(obj) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    CLASS(ReferenceElement_), POINTER :: ans
-  END FUNCTION obj_GetRefElemPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetOrder@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-08
-! update: 2021-12-08
-! summary: Returns the order of reference element
-
-INTERFACE
-  MODULE FUNCTION obj_GetOrder(obj) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetXidimension@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the xidimension of the mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetXidimension(obj) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetXidimension
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the connectivity of a facet element
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element
-! - facetElement is local facet element number
-
-INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
-    & elementType, isMaster) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    LOGICAL(LGT), INTENT(IN) :: isMaster
-      !! if isMaster is true then connectivity of facet in master-cell
-      !! is returned, otherwise connectivity of facet in slave-cell
-      !! is returned. This is only applicable for internal facet element
-      !! because for domain facet we do not have slave-cell.
-      !! Currently, we do not support slave-cell for meshFacet because
-      !! the slave of meshFacet lives in different instance of obj_
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the connectivity of a facet element of a cellElement
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element of a cellElement
-! - globalElement is global element number of cell number
-! - iface is the local face number in globalElement
-
-INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
-    & iface) RESULT(ans)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), INTENT(IN) :: iface
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetNodeConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-03-17
-! summary: This routine returns global node numbers in a given global elem
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
-    CLASS(BetterMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: VALUE(:, :)
-    !! The number of columns are equal to the total number of elements
-    !! in the mesh, the number of rows equal to the maximum number of
-    !! nodes in the elements of mesh
-  END SUBROUTINE obj_GetNodeConnectivity
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                               InitiateElementToElements@ElementDataMethods
@@ -357,7 +188,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateElementToElements(obj)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE obj_InitiateElementToElements
 END INTERFACE
@@ -386,7 +217,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE obj_InitiateBoundaryData
 END INTERFACE
@@ -420,7 +251,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFacetElements(obj)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateFacetElements
 END INTERFACE
 
@@ -439,7 +270,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity1(obj, mat, localNodeNumber, lbound, &
     & ubound)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! [[CSRMatrix_]] object
@@ -460,7 +291,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity2(obj, mat)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! Mesh_ class
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! CSRMatrix object
@@ -478,7 +309,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity3(obj, colMesh, nodeToNode, mat, &
     & ivar, jvar)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
     !! [[Mesh_]] class
@@ -503,7 +334,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
   & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
     !! [[Mesh_]] class
@@ -536,7 +367,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
     & min_measures, nodeCoord, local_nptrs)
-    CLASS(BetterMesh_), INTENT(INOUT) :: obj
+    CLASS(FEMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: measures(:)
     REAL(DFP), INTENT(OUT) :: max_measures(:)
     REAL(DFP), INTENT(OUT) :: min_measures(:)
@@ -549,4 +380,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE BetterMesh_Class
+END MODULE FEMesh_Class

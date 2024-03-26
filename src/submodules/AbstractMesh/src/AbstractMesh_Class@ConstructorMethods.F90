@@ -62,6 +62,7 @@ obj%tElements_topology_wise = 0
 obj%tElemTopologies = 0
 obj%elemTopologies = 0
 obj%nsd = 0
+obj%xidim = 0
 obj%maxNNE = 0
 obj%maxNptrs = 0
 obj%minNptrs = 0

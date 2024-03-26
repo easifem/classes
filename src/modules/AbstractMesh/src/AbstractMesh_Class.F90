@@ -34,7 +34,7 @@ PRIVATE
 PUBLIC :: AbstractMesh_
 PUBLIC :: AbstractMeshDeallocate
 PUBLIC :: AbstractMeshDisplay
-PUBLIC :: AbstractMeshGetQuery
+PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
@@ -81,6 +81,12 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! maximum number of nodes in element
   INTEGER(I4B) :: nsd = 0
     !! number of spatial dimension of the mesh
+  INTEGER(I4B) :: xidim = 0
+    !! xidimension of elements present inside the mesh
+    !! for point xidim = 0
+    !! for line/curve xidim = 1
+    !! for surface xidim = 2
+    !! for volume xidim = 3
   INTEGER(I4B) :: maxNptrs = 0
     !! largest node number present inside the mesh
   INTEGER(I4B) :: minNptrs = 0
@@ -467,11 +473,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! returns the total material
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
-  !! Please use GetParam instead of GetQuery.
-  !! They are the same. But I like the name GetParam
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
@@ -1251,6 +1253,11 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
 ! summary: This routine returns global node numbers in a given global elem
+!
+!# Introduction
+!
+! This routine returns the global node numbers (Vertex) connectivity
+! of all elements of the mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
@@ -1468,9 +1475,9 @@ END INTERFACE
 !# Introduction
 ! This fucntion returns the vector of node numbers which surrounds a given
 ! node number `globalNode`.
-! - If `IncludeSelf` is true then, in the returned vector of integer,
+! - If `includeSelf` is true then, in the returned vector of integer,
 ! node number globalNode is also present
-!- If `IncludeSelf` is false then, in the returned vector of integer,
+!- If `includeSelf` is false then, in the returned vector of integer,
 ! node number `globalNode` is not present
 !
 !@note
@@ -1479,11 +1486,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, includeSelf) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    LOGICAL(LGT), INTENT(IN) :: IncludeSelf
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes1
 END INTERFACE
@@ -1500,9 +1507,9 @@ END INTERFACE
 !
 ! This function returns the vector of node numbers which surrounds a given
 ! node number `globalNode`.
-! - If `IncludeSelf` is true then, in the returned vector of integer,
+! - If `includeSelf` is true then, in the returned vector of integer,
 ! node number globalNode is also present
-!- If `IncludeSelf` is false then, in the returned vector of integer,
+!- If `includeSelf` is false then, in the returned vector of integer,
 ! node number `globalNode` is not present
 !
 !@note
@@ -1511,11 +1518,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, includeSelf) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    LOGICAL(LGT), INTENT(IN) :: IncludeSelf
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes2
 END INTERFACE
@@ -1895,8 +1902,8 @@ END INTERFACE
 !                                                     GetQuery@GetMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractMeshGetQuery
-  MODULE SUBROUTINE obj_GetQuery(obj, &
+INTERFACE AbstractMeshGetParam
+  MODULE SUBROUTINE obj_GetParam(obj, &
     & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
@@ -1919,8 +1926,8 @@ INTERFACE AbstractMeshGetQuery
     REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, &
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
-  END SUBROUTINE obj_GetQuery
-END INTERFACE AbstractMeshGetQuery
+  END SUBROUTINE obj_GetParam
+END INTERFACE AbstractMeshGetParam
 
 !----------------------------------------------------------------------------
 !                                                GetMinElemNumber@GetMethods

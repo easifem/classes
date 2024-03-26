@@ -222,7 +222,7 @@ DO ii = 1, tsize
 
   masterMesh => obj%GetMeshPointer(dim=obj%nsd, entityNum=ii)
 
-  CALL masterMesh%GetQuery(isBoundaryDataInitiated=isVar)
+  CALL masterMesh%GetParam(isBoundaryDataInitiated=isVar)
 
   IF (.NOT. isVar) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -297,7 +297,7 @@ DO ii = 1, tsize
 
   masterMesh => obj%GetMeshPointer(dim=obj%nsd, entityNum=ii)
 
-  CALL masterMesh%GetQuery(isFacetDataInitiated=isVar)
+  CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
 
   IF (.NOT. isVar) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -387,7 +387,7 @@ DO ii = 1, tsize
   masterMesh => obj%GetMeshPointer(dim=obj%nsd, entityNum=ii)
   tDomFacet = masterMesh%GetTotalBoundaryFacetElements()
 
-  CALL masterMesh%GetQuery(isFacetDataInitiated=isVar)
+  CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
 
   IF (.NOT. isVar) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &

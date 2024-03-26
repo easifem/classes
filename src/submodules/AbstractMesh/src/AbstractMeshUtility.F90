@@ -27,6 +27,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE NodeData_Class
 USE ElemData_Class
 USE ReferenceElement_Method
+USE AssertUtility
 ! USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_
 ! USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate, &
 !   & AbstractMeshDisplay, AbstractMeshGetQuery, AbstractMeshImport
@@ -107,6 +108,9 @@ SUBROUTINE MeshImportScalar(obj, hdf5, group)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
     & fieldname="nsd", myname=myname, modName=modName, check=.TRUE.)
+
+  CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname,  &
+    & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname,  &
     & fieldname="tElements", myname=myname, modName=modName, check=.TRUE.)
@@ -460,10 +464,11 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     & temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
   INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), &
     & nsd(tEntities), uid(tEntities), elemType(tEntities), nne(tEntities),  &
-    & aint, bint, maxBoundingEntities
+    & aint, bint, maxBoundingEntities, xidim(tEntities)
   ! TYPE(CPUTime_) :: TypeCPUTime
   CHARACTER(:), ALLOCATABLE :: dsetname, prefix
   REAL(DFP), DIMENSION(3, tEntities) :: xyz, min_xyz, max_xyz
+  TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -471,6 +476,12 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 #endif
 
   CALL obj%DEALLOCATE()
+
+  IF (obj%showTime) THEN
+    CALL Display("Showing Time States of Importing Mesh", unitno=stdout)
+    CALL EqualLine(unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
 
   SELECT CASE (dim)
   CASE (0_I4B)
@@ -495,6 +506,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
     uid(ii) = obj%uid
     nsd(ii) = obj%nsd
+    xidim(ii) = obj%xidim
     tElements(ii) = obj%tElements
     min_xyz(1, ii) = obj%minX
     min_xyz(2, ii) = obj%minY
@@ -511,6 +523,28 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
       & tElements(ii)
 
   END DO
+
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time in importing scalar data [MeshImportScalar] : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
+
+#ifdef DEBUG_VER
+  CALL Assert(nn=nsd,  &
+    & msg="[INTERNAL ERROR] :: nsd of all entities is not the same.",  &
+    & file=__FILE__,  &
+    & line=__LINE__,  &
+    & routine=myName)
+
+  CALL Assert(nn=xidim,  &
+    & msg="[INTERNAL ERROR] :: xidim of all entities is not the same.",  &
+    & file=__FILE__,  &
+    & line=__LINE__,  &
+    & routine=myName)
+#endif
 
   DO ii = 1, SIZE(obj%tElements_topology_wise)
     aint = obj%tElements_topology_wise(ii)
@@ -573,6 +607,14 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   obj%maxNptrs = MAXVAL(connectivity)
   obj%minNptrs = MINVAL(connectivity)
 
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time in importing vector data [MeshImportVector] : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
+
   ALLOCATE (obj%elementData(obj%tElements))
   CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 
@@ -591,7 +633,23 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
       & nne=nne(ii))
   END DO
 
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time in importing element data [MeshImportElementData] : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
+
   CALL MeshImportNodeDataFromDim(obj, connectivity)
+
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time in importing node data [MeshImportNodeData] : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
 
   IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
   IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
