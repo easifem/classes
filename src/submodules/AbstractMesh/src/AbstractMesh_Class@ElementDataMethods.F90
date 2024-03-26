@@ -16,6 +16,11 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
+USE ReallocateUtility
+USE Display_Method
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES
+USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
+  & InitiateElementToElements2D
 IMPLICIT NONE
 CONTAINS
 
@@ -25,8 +30,41 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateElementToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%elementData)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+  RETURN
+END IF
+#endif
+
+SELECT CASE (obj%xidim)
+CASE (1_I4B)
+CASE (2_I4B)
+  CALL InitiateElementToElements2D(elementData=obj%elementData,  &
+    & tEdgeInMesh=obj%tEdges)
+CASE (3_I4B)
+  CALL InitiateElementToElements3D(elementData=obj%elementData,  &
+    & tFaceInMesh=obj%tFaces)
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found.')
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------

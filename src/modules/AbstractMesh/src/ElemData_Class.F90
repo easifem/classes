@@ -226,7 +226,8 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
 
   ! globalElements
   IF (ALLOCATED(obj%globalElements)) THEN
-    CALL Display(obj%globalElements, msg="globalElements: ", unitno=unitno)
+    CALL Display(obj%globalElements, msg="globalElements: ", &
+    & unitno=unitno, full=.TRUE.)
   END IF
 
   ! boundaryData

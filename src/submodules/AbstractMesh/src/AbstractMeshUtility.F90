@@ -37,10 +37,236 @@ PRIVATE
 
 PUBLIC :: MeshImportFromGroup
 PUBLIC :: MeshImportFromDim
+PUBLIC :: InitiateElementToElements3D
+PUBLIC :: InitiateElementToElements2D
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility"
 
 CONTAINS
+
+SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh)
+  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+  INTEGER(I4B), INTENT(IN) :: tFaceInMesh
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+  LOGICAL(LGT) :: problem, isok1, isok2
+  INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
+    & temp1(3 * REFELEM_MAX_FACES), cint
+  INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
+  LOGICAL(LGT), ALLOCATABLE :: amask(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  problem = tFaceInMesh .EQ. 0
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Total number of faces are zero.')
+    RETURN
+  END IF
+#endif
+
+  telems = SIZE(elementData)
+
+  CALL Reallocate(face2elem, 4, tFaceInMesh)
+  CALL Reallocate(amask, tFaceInMesh)
+  amask = .FALSE.
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+#ifdef DEBUG_VER
+    problem = .NOT. ALLOCATED(elementData(iel)%globalFaces)
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
+        & " does not have globalFaces data allocated.")
+      RETURN
+    END IF
+#endif
+
+    tfaces = SIZE(elementData(iel)%globalFaces)
+    DO ii = 1, tfaces
+      aint = ABS(elementData(iel)%globalFaces(ii))
+      IF (amask(aint)) THEN
+        face2elem(2, aint) = iel
+        face2elem(4, aint) = ii
+        amask(aint) = .FALSE.
+      ELSE
+        face2elem(1, aint) = iel
+        face2elem(3, aint) = ii
+        amask(aint) = .TRUE.
+      END IF
+    END DO
+
+  END DO
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+    tfaces = SIZE(elementData(iel)%globalFaces)
+    jj = 0; temp1 = 0
+    DO ii = 1, tfaces
+      aint = ABS(elementData(iel)%globalFaces(ii))
+      bint = face2elem(1, aint)
+      isok1 = bint .NE. iel
+      isok2 = bint .NE. 0
+
+      IF (isok1 .AND. isok2) THEN
+        jj = jj + 1
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(2 + (jj - 1) * 3) = face2elem(3, aint)
+        temp1(3 + (jj - 1) * 3) = face2elem(4, aint)
+
+      ELSE
+        cint = face2elem(2, aint)
+        IF (cint .NE. 0) THEN
+          jj = jj + 1
+          temp1(1 + (jj - 1) * 3) =  &
+            & elementData(cint)%globalElemNum
+          temp1(2 + (jj - 1) * 3) = face2elem(3, aint)
+          temp1(3 + (jj - 1) * 3) = face2elem(4, aint)
+        END IF
+      END IF
+    END DO
+
+    aint = jj * 3
+    CALL Reallocate(elementData(iel)%globalElements, aint)
+    elementData(iel)%globalElements = temp1(1:aint)
+
+  END DO
+
+  IF (ALLOCATED(face2elem)) DEALLOCATE (face2elem)
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+END SUBROUTINE InitiateElementToElements3D
+
+!----------------------------------------------------------------------------
+!                                                InitiateElementToElements2D
+!----------------------------------------------------------------------------
+
+SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
+  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+  INTEGER(I4B), INTENT(IN) :: tEdgeInMesh
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements2D()"
+  LOGICAL(LGT) :: problem, isok1, isok2
+  INTEGER(I4B) :: telems, iel, aint, bint, tedges, ii, jj, temp1(3 * 4), &
+    & cint
+  INTEGER(I4B), ALLOCATABLE :: edge2elem(:, :)
+  LOGICAL(LGT), ALLOCATABLE :: amask(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  problem = tEdgeInMesh .EQ. 0
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Total number of faces are zero.')
+    RETURN
+  END IF
+#endif
+
+  telems = SIZE(elementData)
+
+  CALL Reallocate(edge2elem, 4, tEdgeInMesh)
+  CALL Reallocate(amask, tEdgeInMesh)
+  amask = .FALSE.
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+#ifdef DEBUG_VER
+    problem = .NOT. ALLOCATED(elementData(iel)%globalEdges)
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
+        & " does not have globalEdges data allocated.")
+      RETURN
+    END IF
+#endif
+
+    tedges = SIZE(elementData(iel)%globalEdges)
+    DO ii = 1, tedges
+      aint = ABS(elementData(iel)%globalEdges(ii))
+      IF (amask(aint)) THEN
+        edge2elem(2, aint) = iel
+        edge2elem(4, aint) = ii
+        amask(aint) = .FALSE.
+      ELSE
+        edge2elem(1, aint) = iel
+        edge2elem(3, aint) = ii
+        amask(aint) = .TRUE.
+      END IF
+    END DO
+
+  END DO
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+    tedges = SIZE(elementData(iel)%globalEdges)
+    jj = 0
+    temp1 = 0
+    DO ii = 1, tedges
+      aint = ABS(elementData(iel)%globalEdges(ii))
+      bint = edge2elem(1, aint)
+      isok1 = bint .NE. iel
+      isok2 = bint .NE. 0
+
+      IF (isok1 .AND. isok2) THEN
+        jj = jj + 1
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(2 + (jj - 1) * 3) = edge2elem(3, aint)
+        temp1(3 + (jj - 1) * 3) = edge2elem(4, aint)
+
+      ELSE
+        cint = edge2elem(2, aint)
+        IF (cint .NE. 0) THEN
+          jj = jj + 1
+          temp1(1 + (jj - 1) * 3) = elementData(cint)%globalElemNum
+          temp1(2 + (jj - 1) * 3) = edge2elem(3, aint)
+          temp1(3 + (jj - 1) * 3) = edge2elem(4, aint)
+        END IF
+      END IF
+    END DO
+
+    aint = jj * 3
+    CALL Reallocate(elementData(iel)%globalElements, aint)
+    elementData(iel)%globalElements = temp1(1:aint)
+
+  END DO
+
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
+  IF (ALLOCATED(edge2elem)) DEALLOCATE (edge2elem)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+END SUBROUTINE InitiateElementToElements2D
 
 !----------------------------------------------------------------------------
 !                                                     MeshImportCheckError

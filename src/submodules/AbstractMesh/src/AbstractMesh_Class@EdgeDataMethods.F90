@@ -17,7 +17,7 @@
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_EDGES,  &
-& REFELEM_MAX_POINTS, RefElemGetGeoParam
+  & REFELEM_MAX_POINTS, RefElemGetGeoParam
 USE ReallocateUtility, ONLY: Reallocate
 USE EdgeData_Class
 USE EdgeDataBinaryTree_Class

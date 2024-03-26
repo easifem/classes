@@ -29,7 +29,7 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateElementToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
 INTEGER(I4B) :: i, j, r, iel1, tFace, iFace1, NNS1, pt1, &
-  & iel2, iFace2, NNS2, localElem1
+  & iel2, iFace2, NNS2, localElem1, temp4(4)
 INTEGER(I4B), ALLOCATABLE :: global_nptrs1(:),   &
   & global_nptrsFace1(:), n2e1(:), global_nptrs2(:), &
   & global_nptrsFace2(:), intvec_temp_1(:), intvec_temp_2(:)
@@ -58,7 +58,11 @@ END IF
 
 isok = ALLOCATED(obj%facetElements)
 IF (.NOT. isok) THEN
-  obj%facetElements = FacetElements(obj%refelem)
+  IF (obj%xidim .GT. 0) THEN
+    temp4 = TotalEntities(obj%refelem%name)
+    ALLOCATE (obj%facetElements(temp4(obj%xidim)))
+    CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
+  END IF
 END IF
 
 tFace = SIZE(obj%facetElements)

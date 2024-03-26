@@ -54,6 +54,7 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: temp4(4)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -71,7 +72,9 @@ obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
 
 isok = obj%xidim .GT. 0
 IF (isok) THEN
-  obj%facetElements = FacetElements(obj%refelem)
+  temp4 = TotalEntities(obj%elemType)
+  ALLOCATE (obj%facetElements(temp4(obj%xidim)))
+  CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
 END IF
 
 #ifdef DEBUG_VER

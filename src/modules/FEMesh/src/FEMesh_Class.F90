@@ -80,9 +80,7 @@ CONTAINS
 
   ! SET:
   ! @ElementDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-    & obj_InitiateElementToElements
-    !! Initiate element to elements mapping
+  ! NA
 
   ! SET:
   ! @BoundaryDataMethods
@@ -160,38 +158,6 @@ INTERFACE DEALLOCATE
     TYPE(FEMeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE FEMeshPointerDeallocate
 END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                               InitiateElementToElements@ElementDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-03-17
-! summary: Initiate element to element data
-!
-!# Introduction
-!
-!- This routine creates the element surrounding a given element data
-!- Before calling this routine make sure the `refelem` in mesh is allocated.
-!- By using `refelem`, this routine forms the FacetElements.
-!- This routine needs `nodeToElements` information, therefore, if
-! `nodeToElements` is not Initiated then it calls `initiateNodeToelements`
-! method
-!- This method forms the following data:
-!- `obj%elementData(ielem)%globalElements`
-!- It also identifies those elements which are boundary element of mesh, and
-!- Set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those elem
-!- Note that at this point boundary element are those which has at least
-! one orphan face.
-!- Note that at this point these boundary element can be interface element
-! between two mesh, or domain-boundary element.
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateElementToElements(obj)
-    CLASS(FEMesh_), INTENT(INOUT) :: obj
-    !! mesh data
-  END SUBROUTINE obj_InitiateElementToElements
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                  InitiateBoundaryData@BoundaryDataMethods

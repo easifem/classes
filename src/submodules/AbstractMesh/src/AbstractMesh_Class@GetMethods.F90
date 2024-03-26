@@ -20,6 +20,7 @@ USE IntegerUtility
 USE AppendUtility
 USE BoundingBox_Method
 USE InputUtility
+USE Display_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -666,7 +667,8 @@ problem = .NOT. ALLOCATED(obj%elementData(iel)%globalElements)
 IF (problem) THEN
   CALL Reallocate(ans, 0, 0)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalElements not found!')
+    & '[INTERNAL ERROR] :: globalElements not found! '//  &
+    & 'local element number = '//tostring(iel))
   RETURN
 END IF
 #endif

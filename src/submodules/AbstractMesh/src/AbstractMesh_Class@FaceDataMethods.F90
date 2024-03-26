@@ -67,9 +67,9 @@ DO iel = 1, tElements
   problem = .NOT. obj%elementData(iel)%isActive
   IF (problem) CYCLE
   elemType = obj%elementData(iel)%name
-  CALL RefElemGetGeoParam(elemType=elemType,  &
-    & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces,  &
-    & faceOpt=1_I4B, faceElemType=faceElemType,  &
+  CALL RefElemGetGeoParam(elemType=elemType, &
+    & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces, &
+    & faceOpt=1_I4B, faceElemType=faceElemType, &
     & tFaceNodes=tFaceNodes)
 
   CALL Reallocate(obj%elementData(iel)%globalFaces, tFaces)
