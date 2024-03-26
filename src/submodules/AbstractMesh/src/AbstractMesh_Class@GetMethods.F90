@@ -21,7 +21,21 @@ USE AppendUtility
 USE BoundingBox_Method
 USE InputUtility
 USE Display_Method
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
+  & GetEdgeConnectivity,  &
+  & GetFaceConnectivity,  &
+  & ElementOrder, &
+  & TotalEntities, &
+  & RefElemGetGeoParam
+
 IMPLICIT NONE
+
+#ifdef MAX_NODES_IN_ELEM
+INTEGER(I4B), PARAMETER :: MaxNodesInElement = MAX_NODES_IN_ELEM
+#else
+INTEGER(I4B), PARAMETER :: MaxNodesInElement = 125
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -907,15 +921,56 @@ END PROCEDURE obj_GetFacetConnectivity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity2
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-! INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
-! nptrs = obj%GetConnectivity(globalElement=globalElement)
-! indx = GetConnectivity(obj%facetElements(iface))
-! ans = nptrs(indx)
-! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-! IF (ALLOCATED(indx)) DEALLOCATE (indx)
+! CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
+INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
+  & con(MaxNodesInElement, REFELEM_MAX_FACES), &
+  & ii, tFaceNodes(REFELEM_MAX_FACES)
+
+iel = obj%GetLocalElemNumber(globalElement)
+
+SELECT CASE (obj%xidim)
+
+CASE (1_I4B)
+  CALL Reallocate(ans, 1)
+  IF (iface .EQ. 1) THEN
+    ans(1) = obj%elementData(iel)%globalNodes(1)
+  ELSE
+    ans(1) = obj%elementData(iel)%globalNodes(2)
+  END IF
+
+CASE (2_I4B)
+
+  elemType = obj%elementData(iel)%name
+  order = ElementOrder(elemType)
+
+  CALL Reallocate(ans, order + 1)
+  CALL GetEdgeConnectivity(elemType=elemType, con=con, order=order, &
+    & opt=1_I4B)
+
+  DO ii = 1, order + 1
+    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
+  END DO
+
+CASE (3_I4B)
+
+  elemType = obj%elementData(iel)%name
+  temp4 = TotalEntities(elemType)
+  order = ElementOrder(elemType)
+
+  CALL RefElemGetGeoParam(elemType=elemType,  &
+    & faceCon=con,  &
+    & faceOpt=1_I4B, &
+    & order=order, &
+    & tFaceNodes=tFaceNodes)
+
+  CALL Reallocate(ans, tFaceNodes(iface))
+
+  DO ii = 1, SIZE(ans)
+    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
+  END DO
+
+END SELECT
+
 END PROCEDURE obj_GetFacetConnectivity2
 
 !----------------------------------------------------------------------------
