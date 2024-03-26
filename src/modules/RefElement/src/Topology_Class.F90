@@ -206,11 +206,11 @@ END INTERFACE
 ! summary: Returns the facet topology of the given element type
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetFacetTopology(elemType, nptrs) RESULT(ans)
+  MODULE PURE SUBROUTINE obj_GetFacetTopology(elemType, nptrs, ans)
     INTEGER(I4B), INTENT(IN) :: elemType
     INTEGER(I4B), INTENT(IN) :: nptrs(:)
-    TYPE(Topology_), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetTopology
+    TYPE(Topology_), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE obj_GetFacetTopology
 END INTERFACE
 
 INTERFACE GetFacetTopology
