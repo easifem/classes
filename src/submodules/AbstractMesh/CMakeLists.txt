@@ -18,7 +18,9 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/AbstractMesh_Class@ConstructorMethods.F90
+  PRIVATE 
+          ${src_path}/AbstractMeshUtility.F90
+          ${src_path}/AbstractMesh_Class@ConstructorMethods.F90
           ${src_path}/AbstractMesh_Class@IOMethods.F90
           ${src_path}/AbstractMesh_Class@GetMethods.F90
           ${src_path}/AbstractMesh_Class@NodeDataMethods.F90

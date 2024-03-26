@@ -33,7 +33,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-CALL obj%IMPORT(hdf5=hdf5, group=group)
+CALL obj%IMPORT(hdf5=hdf5, group=group, dim=dim, entities=entities)
 
 obj%readFromFile = .TRUE.
 obj%isInitiated = .TRUE.
