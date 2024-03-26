@@ -63,12 +63,12 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! Node to nodes mapping
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
     !! Element to elements mapping
-  LOGICAL( LGT ) :: isEdgeConnectivityInitiated = .FALSE.
-    !! This is set to true when edge connectivity is initiated 
-    !! See InitiateEdgeConnectivity method 
-  LOGICAL( LGT ) :: isFaceConnectivityInitiated = .FALSE.
-    !! This is set to true when face connectivity is initiated 
-    !! See InitiateFaceConnectivity method 
+  LOGICAL(LGT) :: isEdgeConnectivityInitiated = .FALSE.
+    !! This is set to true when edge connectivity is initiated
+    !! See InitiateEdgeConnectivity method
+  LOGICAL(LGT) :: isFaceConnectivityInitiated = .FALSE.
+    !! This is set to true when face connectivity is initiated
+    !! See InitiateFaceConnectivity method
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
     !! Boundary data
   LOGICAL(LGT) :: isFacetDataInitiated = .FALSE.

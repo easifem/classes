@@ -179,7 +179,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
   problem = tEdgeInMesh .EQ. 0
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Total number of faces are zero.')
+      & '[INTERNAL ERROR] :: Total number of edges are zero.')
     RETURN
   END IF
 #endif
