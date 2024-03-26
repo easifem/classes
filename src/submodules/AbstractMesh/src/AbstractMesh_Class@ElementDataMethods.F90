@@ -37,22 +37,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-#ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
-  RETURN
-END IF
-#endif
 
 SELECT CASE (obj%xidim)
 CASE (1_I4B)
 CASE (2_I4B)
+  IF (problem) THEN
+    CALL obj%InitiateEdgeConnectivity()
+  END IF
   CALL InitiateElementToElements2D(elementData=obj%elementData,  &
     & tEdgeInMesh=obj%tEdges)
 CASE (3_I4B)
+  IF (problem) THEN
+    CALL obj%InitiateFaceConnectivity()
+  END IF
   CALL InitiateElementToElements3D(elementData=obj%elementData,  &
     & tFaceInMesh=obj%tFaces)
 CASE default
