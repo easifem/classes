@@ -54,6 +54,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+problem = obj%isFaceConnectivityInitiated
+IF (problem) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractMesh_::obj face connectivity is already initiated.')
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
 
@@ -67,6 +74,8 @@ END IF
 tElements = obj%GetTotalElements()
 
 CALL faceTree%Initiate()
+
+obj%isFaceConnectivityInitiated = .TRUE.
 
 DO iel = 1, tElements
 
