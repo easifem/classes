@@ -39,6 +39,7 @@ PUBLIC :: MeshImportFromGroup
 PUBLIC :: MeshImportFromDim
 PUBLIC :: InitiateElementToElements3D
 PUBLIC :: InitiateElementToElements2D
+PUBLIC :: InitiateElementToElements1D
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility"
 
@@ -267,6 +268,134 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
 #endif
 
 END SUBROUTINE InitiateElementToElements2D
+
+!----------------------------------------------------------------------------
+!                                               InitiateElementToElements1D
+!----------------------------------------------------------------------------
+
+SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
+  & showTime, local_nptrs)
+  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+  INTEGER(I4B), INTENT(IN) :: tNodesInMesh
+  LOGICAL(LGT), INTENT(IN) :: showTime
+  INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
+
+!   ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements1D()"
+  LOGICAL(LGT) :: problem, isok1, isok2
+  INTEGER(I4B) :: telems, iel, aint, bint, tNodes, ii, jj, temp1(3 * 2), &
+    & cint
+  INTEGER(I4B), ALLOCATABLE :: node2elem(:, :)
+  LOGICAL(LGT), ALLOCATABLE :: amask(:)
+  TYPE(CPUTime_) :: TypeCPUTime
+
+  IF (showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  problem = tNodesInMesh .EQ. 0
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Total number of nodes are zero.')
+    RETURN
+  END IF
+#endif
+
+  telems = SIZE(elementData)
+
+  CALL Reallocate(node2elem, 4, tNodesInMesh)
+  CALL Reallocate(amask, tNodesInMesh)
+  amask = .FALSE.
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+#ifdef DEBUG_VER
+    problem = .NOT. ALLOCATED(elementData(iel)%globalNodes)
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
+        & " does not have globalNodes data allocated.")
+      RETURN
+    END IF
+#endif
+
+    DO ii = 1, 2
+      aint = elementData(iel)%globalNodes(ii)
+      aint = local_nptrs(aint)
+      IF (amask(aint)) THEN
+        node2elem(2, aint) = iel
+        node2elem(4, aint) = ii
+        amask(aint) = .FALSE.
+      ELSE
+        node2elem(1, aint) = iel
+        node2elem(3, aint) = ii
+        amask(aint) = .TRUE.
+      END IF
+    END DO
+
+  END DO
+
+  DO iel = 1, telems
+
+    problem = .NOT. elementData(iel)%isActive
+    IF (problem) CYCLE
+
+    tNodes = SIZE(elementData(iel)%globalNodes)
+    jj = 0
+    temp1 = 0
+    DO ii = 1, 2
+      aint = elementData(iel)%globalNodes(ii)
+      aint = local_nptrs(aint)
+      bint = node2elem(1, aint)
+      isok1 = bint .NE. iel
+      isok2 = bint .NE. 0
+
+      IF (isok1 .AND. isok2) THEN
+        jj = jj + 1
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(2 + (jj - 1) * 3) = node2elem(4, aint)
+        temp1(3 + (jj - 1) * 3) = node2elem(3, aint)
+
+      ELSE
+        cint = node2elem(2, aint)
+        IF (cint .NE. 0) THEN
+          jj = jj + 1
+          temp1(1 + (jj - 1) * 3) = elementData(cint)%globalElemNum
+          temp1(2 + (jj - 1) * 3) = node2elem(3, aint)
+          temp1(3 + (jj - 1) * 3) = node2elem(4, aint)
+        END IF
+      END IF
+    END DO
+
+    aint = jj * 3
+    CALL Reallocate(elementData(iel)%globalElements, aint)
+    elementData(iel)%globalElements = temp1(1:aint)
+
+  END DO
+
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
+  IF (ALLOCATED(node2elem)) DEALLOCATE (node2elem)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+  IF (showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
+
+END SUBROUTINE InitiateElementToElements1D
 
 !----------------------------------------------------------------------------
 !                                                     MeshImportCheckError
