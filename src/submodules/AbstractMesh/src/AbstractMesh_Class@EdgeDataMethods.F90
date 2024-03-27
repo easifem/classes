@@ -35,7 +35,7 @@ MODULE PROCEDURE obj_InitiateEdgeConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
 INTEGER(I4B) :: tElements, iel, elemType, tEdges,  &
   & localEdges(MaxOrder_Line + 1, REFELEM_MAX_EDGES), &
-  & edge(2), sorted_edge(2), nptrs(125), &
+  & edge(2), sorted_edge(2), &
   & tNodes, tsize1, tsize2, iedge
 LOGICAL(LGT) :: problem
 TYPE(EdgeDataBinaryTree_) :: edgeTree
@@ -72,11 +72,9 @@ DO iel = 1, tElements
   CALL Reallocate(obj%elementData(iel)%globalEdges, tEdges)
   CALL Reallocate(obj%elementData(iel)%edgeOrient, tEdges)
 
-  nptrs(1:tNodes) = obj%elementData(iel)%globalNodes
-
   DO iedge = 1, tEdges
 
-    edge = nptrs(localEdges(1:2, iedge))
+    edge = obj%elementData(iel)%globalNodes(localEdges(1:2, iedge))
     sorted_edge = SORT(edge)
 
     edgePtr => EdgeData_Pointer(sorted_edge)
