@@ -174,9 +174,10 @@ END SUBROUTINE InitiateElementToElements3D
 !                                                InitiateElementToElements2D
 !----------------------------------------------------------------------------
 
-SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
+SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
   TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tEdgeInMesh
+  LOGICAL(LGT), INTENT(IN) :: showTime
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements2D()"
@@ -185,6 +186,9 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
     & cint
   INTEGER(I4B), ALLOCATABLE :: edge2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
+  TYPE(CPUTime_) :: TypeCPUTime
+
+  IF (showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -281,6 +285,13 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[END] ')
 #endif
+
+  IF (showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
 END SUBROUTINE InitiateElementToElements2D
 
