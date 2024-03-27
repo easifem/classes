@@ -45,17 +45,25 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility"
 
 CONTAINS
 
-SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh)
+!----------------------------------------------------------------------------
+!                                               InitiateElementToElements3D
+!----------------------------------------------------------------------------
+
+SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
   TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tFaceInMesh
+  LOGICAL(LGT), INTENT(IN) :: showTime
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements3D()"
   LOGICAL(LGT) :: problem, isok1, isok2
   INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
     & temp1(3 * REFELEM_MAX_FACES), cint
   INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
+  TYPE(CPUTime_) :: TypeCPUTime
+
+  IF (showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -152,6 +160,13 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[END] ')
 #endif
+
+  IF (showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName//  &
+      & " : time : "//  &
+      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
 END SUBROUTINE InitiateElementToElements3D
 
