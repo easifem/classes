@@ -47,6 +47,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+problem = obj%isEdgeConnectivityInitiated
+IF (problem) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractMesh_::obj edge connectivity already initiated,')
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
 
@@ -60,6 +67,8 @@ END IF
 tElements = obj%GetTotalElements()
 
 CALL edgeTree%Initiate()
+
+obj%isEdgeConnectivityInitiated = .TRUE.
 
 DO iel = 1, tElements
   problem = .NOT. obj%elementData(iel)%isActive
