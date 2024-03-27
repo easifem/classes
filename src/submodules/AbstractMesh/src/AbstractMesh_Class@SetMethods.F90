@@ -120,9 +120,57 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
-CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: i, j, tNodes
+INTEGER(I4B), ALLOCATABLE :: n2n(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+tsize = obj%GetTotalElements()
+problem = tsize .EQ. 0_I4B
+IF (problem) THEN
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+  RETURN
+END IF
+
+! check
+problem = .NOT. obj%isNodeToNodesInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
+  RETURN
+END IF
+#endif
+
+tNodes = obj%GetTotalNodes()
+
+DO i = 1, tNodes
+  j = obj%GetGlobalNodeNumber(localNode=i)
+  n2n = obj%GetNodeToNodes(globalNode=j, includeSelf=.TRUE.)
+  CALL SetSparsity(obj=mat, row=j, col=n2n)
+END DO
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
