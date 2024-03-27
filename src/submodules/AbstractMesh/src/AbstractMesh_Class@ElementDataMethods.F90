@@ -20,7 +20,8 @@ USE ReallocateUtility
 USE Display_Method
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
-  & InitiateElementToElements2D
+  & InitiateElementToElements2D, &
+  & InitiateElementToElements1D
 IMPLICIT NONE
 CONTAINS
 
@@ -50,14 +51,22 @@ END IF
 SELECT CASE (obj%xidim)
 CASE (1_I4B)
 
+  CALL InitiateElementToElements1D( &
+    & elementData=obj%elementData,  &
+    & tNodesInMesh=obj%tNodes, &
+    & showTime=obj%showTime, &
+    & local_nptrs=obj%local_nptrs)
+
 CASE (2_I4B)
 
   problem = .NOT. obj%isEdgeConnectivityInitiated
   IF (problem) THEN
     CALL obj%InitiateEdgeConnectivity()
   END IF
-  CALL InitiateElementToElements2D(elementData=obj%elementData,  &
-    & tEdgeInMesh=obj%tEdges)
+  CALL InitiateElementToElements2D( &
+    & elementData=obj%elementData,  &
+    & tEdgeInMesh=obj%tEdges, &
+    & showTime=obj%showTime)
 
 CASE (3_I4B)
 
@@ -66,7 +75,7 @@ CASE (3_I4B)
     CALL obj%InitiateFaceConnectivity()
   END IF
   CALL InitiateElementToElements3D(elementData=obj%elementData,  &
-    & tFaceInMesh=obj%tFaces)
+    & tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
 CASE default
   CALL e%RaiseError(modName//'::'//myName//' - '// &
