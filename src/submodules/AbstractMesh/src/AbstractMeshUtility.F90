@@ -455,7 +455,7 @@ SUBROUTINE MeshImportCheckError(hdf5, group)
   IF (.NOT. isok) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
       & '[INTERNAL ERROR]:: '//dsetname//  &
-      & ' is not a group; it should be a group which contains the meshEntity')
+  & ' is not a group; it should be a group which contains the meshEntity')
     RETURN
   END IF
 
@@ -546,8 +546,8 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber,  &
   dsetname = TRIM(group)
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
-    & fieldname="boundingEntity", myname=myname, modName=modName,  &
-    & check=.FALSE.)
+             & fieldname="boundingEntity", myname=myname, modName=modName,  &
+                                                             & check=.FALSE.)
 
   ! If boundingEntity is not initiated then we initiate it with size=0
   ! Bounding entity will not be initiated for point type
@@ -556,7 +556,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber,  &
   END IF
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
-    & fieldname="elemNumber", myname=myname, modName=modName, check=.TRUE.)
+   & fieldname="elemNumber", myname=myname, modName=modName, check=.TRUE.)
 
   isok = .FALSE.
   IF (ALLOCATED(elemNumber)) THEN
@@ -571,13 +571,13 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber,  &
   END IF
 
   CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
-    & fieldname="connectivity", myname=myname, modName=modName, check=.TRUE.)
+ & fieldname="connectivity", myname=myname, modName=modName, check=.TRUE.)
 
   obj%maxNNE = SIZE(connectivity, 1)
 
   IF (PRESENT(internalNptrs)) THEN
     CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
-    & fieldname="intNodeNumber", myname=myname, modName=modName, check=.TRUE.)
+& fieldname="intNodeNumber", myname=myname, modName=modName, check=.TRUE.)
   END IF
 
   obj%maxElemNum = MAXVAL(elemNumber)
@@ -618,8 +618,8 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
   DO CONCURRENT(ii=1:obj%tElements)
     obj%local_elemNumber(elemNumber(ii)) = ii
     CALL ElemDataSet(obj=obj%elementData(ii), globalElemNum=elemNumber(ii),  &
-      & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType,  &
-      & isActive=.TRUE., meshID=meshID)
+         & localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType,  &
+                                             & isActive=.TRUE., meshID=meshID)
   END DO
 
 END SUBROUTINE MeshImportElementData
@@ -801,7 +801,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
-      & " : time in importing element data [MeshImportElementData] : "//  &
+     & " : time in importing element data [MeshImportElementData] : "//  &
       & tostring(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
@@ -844,7 +844,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
     & temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
   INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), &
-    & nsd(tEntities), uid(tEntities), elemType(tEntities), nne(tEntities),  &
+ & nsd(tEntities), uid(tEntities), elemType(tEntities), nne(tEntities),  &
     & aint, bint, maxBoundingEntities, xidim(tEntities)
   ! TYPE(CPUTime_) :: TypeCPUTime
   CHARACTER(:), ALLOCATABLE :: dsetname, prefix
@@ -881,7 +881,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL MeshImportCheckError(hdf5, dsetname)
     CALL MeshImportScalar(obj, hdf5, dsetname)
     CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType(ii), group=dsetname,  &
-      & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
+     & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
     nne(ii) = GetTotalNodes(elemType(ii))
 
@@ -901,7 +901,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
     aint = GetElementIndex(elemType(ii))
     obj%tElements_topology_wise(aint) = obj%tElements_topology_wise(aint) +  &
-      & tElements(ii)
+                                                               & tElements(ii)
 
   END DO
 
@@ -1017,7 +1017,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
-      & " : time in importing element data [MeshImportElementData] : "//  &
+     & " : time in importing element data [MeshImportElementData] : "//  &
       & tostring(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
