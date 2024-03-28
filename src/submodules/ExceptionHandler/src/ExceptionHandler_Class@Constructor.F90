@@ -64,7 +64,7 @@ IF (prefix%nmatchstr(":") .GT. 0) THEN
   nn = SIZE(substr)
   DO ii = 2, nn - 1
     prefix = prefix//substr(ii)//"::"
-  end do
+  END DO
   prefix = prefix//substr(nn)
   DEALLOCATE (substr)
 END IF
@@ -74,7 +74,7 @@ IF (prefix%nmatchstr("-") .GT. 0) THEN
   myname = substr(1)
   DO ii = 2, nn - 1
     msg = msg//substr(ii)//"-"
-  end do
+  END DO
   msg = msg//substr(nn)
   DEALLOCATE (substr)
 END IF
