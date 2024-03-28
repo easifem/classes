@@ -197,8 +197,10 @@ ELSEIF (cases(2)) THEN
 ELSEIF (cases(3)) THEN
   CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim,  &
     & tEntities=tEntities, myName=myName, modName=modName)
-  entities0 = arange(1_I4B, tEntities)
-  CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+  IF (tEntities .GT. 0_I4B) THEN
+    entities0 = arange(1_I4B, tEntities)
+    CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+  END IF
 
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
