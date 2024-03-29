@@ -48,6 +48,27 @@ CASE (3)
   ans = obj%meshVolume%IsNodePresent(globalNode)
 END SELECT
 END PROCEDURE obj_IsNodePresent
+
+!----------------------------------------------------------------------------
+!                                                          isElementPresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElementPresent
+INTEGER(I4B) :: dim0
+
+dim0 = Input(default=obj%nsd, option=dim)
+SELECT CASE (dim0)
+CASE (3)
+  ans = obj%meshVolume%IsElementPresent(globalElement=globalElement)
+CASE (2)
+  ans = obj%meshSurface%IsElementPresent(globalElement=globalElement)
+CASE (1)
+  ans = obj%meshCurve%IsElementPresent(globalElement=globalElement)
+CASE (0)
+  ans = obj%meshPoint%IsElementPresent(globalElement=globalElement)
+END SELECT
+
+END PROCEDURE obj_IsElementPresent
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
