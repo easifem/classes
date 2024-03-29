@@ -1119,10 +1119,11 @@ END INTERFACE
 ! A boundary element is one which contains a boundary node.
 
 INTERFACE
-  MODULE FUNCTION obj_isBoundaryElement(obj, globalElement) &
+  MODULE FUNCTION obj_isBoundaryElement(obj, globalElement, islocal) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isBoundaryElement
 END INTERFACE
