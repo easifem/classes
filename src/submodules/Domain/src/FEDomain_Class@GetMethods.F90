@@ -382,6 +382,18 @@ localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
 nsd = SIZE(nodeCoord, 1)
 nodeCoord = obj%nodeCoord(1:nsd, localNode)
 END PROCEDURE obj_GetNodeCoord2
+
+!----------------------------------------------------------------------------
+!                                                        getNodeCoordPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoordPointer
+ans => obj%nodeCoord
+END PROCEDURE obj_GetNodeCoordPointer
+
+!----------------------------------------------------------------------------
+!                                                                   GetNptrs
+!----------------------------------------------------------------------------
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
