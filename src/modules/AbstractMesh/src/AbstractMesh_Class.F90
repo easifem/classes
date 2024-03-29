@@ -1326,8 +1326,10 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode) RESULT(ans)
+ MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans(SIZE(globalNode))
   END FUNCTION obj_GetLocalNodeNumber1
 END INTERFACE
@@ -1341,9 +1343,11 @@ END INTERFACE
 ! summary: This routine returns the local node number from a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal)  &
+    & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetLocalNodeNumber2
 END INTERFACE

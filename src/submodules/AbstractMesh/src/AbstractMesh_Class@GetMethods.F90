@@ -454,9 +454,11 @@ END PROCEDURE obj_GetNodeConnectivity
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
 INTEGER(I4B) :: ii
+
 DO ii = 1, SIZE(globalNode)
-  ans(ii) = obj%GetLocalNodeNumber(globalNode(ii))
+  ans(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
 END DO
+
 END PROCEDURE obj_GetLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -467,15 +469,26 @@ MODULE PROCEDURE obj_GetLocalNodeNumber2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
 LOGICAL(LGT) :: problem
-
-problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode is out of bound.')
-END IF
 #endif
 
-ans = obj%local_nptrs(globalNode)
+LOGICAL(LGT) :: islocal0
+islocal0 = Input(option=islocal, default=.FALSE.)
+
+IF (islocal0) THEN
+  ans = globalNode
+ELSE
+
+#ifdef DEBUG_VER
+  problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: globalNode is out of bound.')
+  END IF
+#endif
+
+  ans = obj%local_nptrs(globalNode)
+END IF
+
 END PROCEDURE obj_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
