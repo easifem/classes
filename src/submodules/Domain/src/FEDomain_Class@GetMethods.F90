@@ -331,6 +331,26 @@ END IF
 
 ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer1
+SELECT CASE (dim)
+CASE (0)
+  ans => obj%meshPoint
+CASE (1)
+  ans => obj%meshCurve
+CASE (2)
+  ans => obj%meshSurface
+CASE (3)
+  ans => obj%meshVolume
+END SELECT
+
+END PROCEDURE obj_GetMeshPointer1
+
+!----------------------------------------------------------------------------
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
