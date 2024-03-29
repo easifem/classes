@@ -98,4 +98,73 @@ CALL Display(obj%meshMap%isInitiated, "meshMap Initiated: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 
+!----------------------------------------------------------------------------
+!                                                          DisplaDomainInfo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayDomainInfo
+LOGICAL(LGT) :: abool
+
+CALL Display(obj%isInitiated, "FEDomain_::obj Initiated: ", unitno=unitno)
+IF (.NOT. obj%isInitiated) RETURN
+
+CALL EqualLine(unitno=unitno)
+CALL Display("engine: "//obj%engine, unitno=unitno)
+CALL Display("version: "//tostring(obj%version), unitno=unitno)
+CALL Display("nsd: "//tostring(obj%nsd), unitno=unitno)
+CALL Display("minNptrs: "//tostring(obj%minNptrs), unitno=unitno)
+CALL Display("maxNptrs: "//tostring(obj%maxNptrs), unitno=unitno)
+CALL Display("minElemNum: "//tostring(obj%minElemNum), unitno=unitno)
+CALL Display("maxElemNum: "//tostring(obj%maxElemNum), unitno=unitno)
+
+CALL Display("tNodes: "//tostring(obj%tNodes), unitno=unitno)
+
+CALL Display("tEntitiesForNodes: "//tostring(obj%tEntitiesForNodes), &
+  & unitno=unitno)
+
+CALL Display("tEntitiesForElements: "//tostring(obj%tEntitiesForElements), &
+  & unitno=unitno)
+
+CALL Display("tElements: "//tostring(obj%tElements), unitno=unitno)
+
+CALL Display("Total mesh of volume: "//tostring(obj%tEntities(3)),  &
+  & unitno=unitno)
+
+CALL Display("Total mesh of surface: "//tostring(obj%tEntities(2)), &
+  & unitno=unitno)
+
+CALL Display("Total mesh of curve: "//tostring(obj%tEntities(1)), &
+  & unitno=unitno)
+
+CALL Display("Total mesh of point: "//tostring(obj%tEntities(0)), &
+  & unitno=unitno)
+
+SELECT CASE (obj%nsd)
+CASE (3)
+  abool = ASSOCIATED(obj%meshVolume)
+  CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL obj%meshVolume%DisplayMeshInfo("Volume Mesh Info:", unitno=unitno)
+  END IF
+CASE (2)
+  abool = ASSOCIATED(obj%meshSurface)
+  CALL Display(abool, "meshSurface ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL obj%meshSurface%DisplayMeshInfo("Surface Mesh Info:", unitno=unitno)
+  END IF
+CASE (1)
+  abool = ASSOCIATED(obj%meshCurve)
+  CALL Display(abool, "meshCurve ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL obj%meshCurve%DisplayMeshInfo("Curve Mesh Info:", unitno=unitno)
+  END IF
+CASE (0)
+  abool = ASSOCIATED(obj%meshPoint)
+  CALL Display(abool, "meshPoint ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL obj%meshPoint%DisplayMeshInfo("Point Mesh Info:", unitno=unitno)
+  END IF
+END SELECT
+
+END PROCEDURE obj_DisplayDomainInfo
 END SUBMODULE IOMethods
