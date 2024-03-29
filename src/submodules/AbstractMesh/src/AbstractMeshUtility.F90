@@ -56,9 +56,9 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements3D()"
-  LOGICAL(LGT) :: problem, isok1, isok2
+  LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
-    & temp1(3 * REFELEM_MAX_FACES), cint
+    & temp1(3 * REFELEM_MAX_FACES), cint, bndyflag(REFELEM_MAX_FACES)
   INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
   TYPE(CPUTime_) :: TypeCPUTime
@@ -122,12 +122,16 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
     IF (problem) CYCLE
 
     tfaces = SIZE(elementData(iel)%globalFaces)
-    jj = 0; temp1 = 0
+    jj = 0
+    temp1 = 0
+    bndyflag = 0
     DO ii = 1, tfaces
       aint = ABS(elementData(iel)%globalFaces(ii))
       bint = face2elem(1, aint)
       isok1 = bint .NE. iel
       isok2 = bint .NE. 0
+
+      IF (amask(aint)) bndyflag(ii) = 1_I4B
 
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
@@ -150,6 +154,23 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
     elementData(iel)%globalElements = temp1(1:aint)
+
+    aint = tfaces - jj
+    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    isbndy = jj .NE. tfaces
+
+    IF (isbndy) THEN
+      elementData(iel)%elementType = TypeElem%domainBoundary
+      jj = 0
+      DO ii = 1, tfaces
+        IF (bndyflag(ii) .NE. 0) THEN
+          jj = jj + 1
+          elementData(iel)%boundaryData(jj) = ii
+        END IF
+      END DO
+    ELSE
+      elementData(iel)%elementType = TypeElem%internal
+    END IF
 
   END DO
 
