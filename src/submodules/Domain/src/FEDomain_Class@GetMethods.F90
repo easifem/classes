@@ -26,6 +26,28 @@ USE F95_BLAS, ONLY: Copy
 IMPLICIT NONE
 CONTAINS
 
+!----------------------------------------------------------------------------
+!                                                             IsNodePresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsNodePresent
+ans = .TRUE.
+IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
+  ans = .FALSE.
+  RETURN
+END IF
+
+SELECT CASE (obj%nsd)
+CASE (0)
+  ans = obj%meshPoint%IsNodePresent(globalNode)
+CASE (1)
+  ans = obj%meshCurve%IsNodePresent(globalNode)
+CASE (2)
+  ans = obj%meshSurface%IsNodePresent(globalNode)
+CASE (3)
+  ans = obj%meshVolume%IsNodePresent(globalNode)
+END SELECT
+END PROCEDURE obj_IsNodePresent
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
