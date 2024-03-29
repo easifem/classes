@@ -349,9 +349,9 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
 !   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements1D()"
-  LOGICAL(LGT) :: problem, isok1, isok2
+  LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tNodes, ii, jj, temp1(3 * 2), &
-    & cint
+    & cint, bndyflag(2)
   INTEGER(I4B), ALLOCATABLE :: node2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
   TYPE(CPUTime_) :: TypeCPUTime
@@ -417,12 +417,15 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
     tNodes = SIZE(elementData(iel)%globalNodes)
     jj = 0
     temp1 = 0
+    bndyflag = 0
     DO ii = 1, 2
       aint = elementData(iel)%globalNodes(ii)
       aint = local_nptrs(aint)
       bint = node2elem(1, aint)
       isok1 = bint .NE. iel
       isok2 = bint .NE. 0
+
+      IF (amask(aint)) bndyflag(ii) = 1_I4B
 
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
@@ -444,6 +447,23 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
     elementData(iel)%globalElements = temp1(1:aint)
+
+    aint = tNodes - jj
+    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    isbndy = jj .NE. tNodes
+
+    IF (isbndy) THEN
+      elementData(iel)%elementType = TypeElem%domainBoundary
+      jj = 0
+      DO ii = 1, tNodes
+        IF (bndyflag(ii) .NE. 0) THEN
+          jj = jj + 1
+          elementData(iel)%boundaryData(jj) = ii
+        END IF
+      END DO
+    ELSE
+      elementData(iel)%elementType = TypeElem%internal
+    END IF
 
   END DO
 
