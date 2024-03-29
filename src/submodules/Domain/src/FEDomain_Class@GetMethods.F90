@@ -441,6 +441,85 @@ CASE (0)
   ans = obj%meshPoint%GetInternalNptrs()
 END SELECT
 END PROCEDURE obj_GetInternalNptrs
+
+!----------------------------------------------------------------------------
+!                                                                     getNSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNSD
+ans = obj%nsd
+END PROCEDURE obj_GetNSD
+
+!----------------------------------------------------------------------------
+!                                                             getBoundingBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBoundingBox
+REAL(DFP) :: lim(6)
+INTEGER(I4B) :: nsd
+!> main
+lim = 0.0_DFP
+nsd = SIZE(obj%nodeCoord, 1)
+lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
+lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
+CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
+END PROCEDURE obj_GetBoundingBox
+
+!----------------------------------------------------------------------------
+!                                                     getTotalMeshFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalMeshFacetData
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMeshFacetData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[DEPRECATED] :: We are working on alternative')
+ans = 0
+! IF (PRESENT(imeshFacetData)) THEN
+!   IF (ALLOCATED(obj%meshFacetData)) THEN
+!     IF (obj%meshFacetData(imeshFacetData)%isInitiated()) THEN
+!       ans = obj%meshFacetData(imeshFacetData)%SIZE()
+!     ELSE
+!       ans = 0
+!     END IF
+!   ELSE
+!     ans = 0
+!   END IF
+! ELSE
+!   IF (ALLOCATED(obj%meshFacetData)) THEN
+!     ans = SIZE(obj%meshFacetData)
+!   ELSE
+!     ans = 0
+!   END IF
+! END IF
+END PROCEDURE obj_GetTotalMeshFacetData
+
+!----------------------------------------------------------------------------
+!                                                          getTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalMaterial1
+SELECT CASE (dim)
+CASE (3)
+  ans = obj%meshVolume%GetTotalMaterial()
+CASE (2)
+  ans = obj%meshSurface%GetTotalMaterial()
+CASE (1)
+  ans = obj%meshCurve%GetTotalMaterial()
+CASE (0)
+  ans = obj%meshPoint%GetTotalMaterial()
+END SELECT
+END PROCEDURE obj_GetTotalMaterial1
+
+!----------------------------------------------------------------------------
+!                                                         GetUniqueElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetUniqueElemType
+CHARACTER(*), PARAMETER :: myName = "obj_GetUniqueElemType()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[DEPRECATED] :: We are working on alternative.')
+END PROCEDURE obj_GetUniqueElemType
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
