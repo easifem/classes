@@ -1422,10 +1422,11 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement)  &
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal)  &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans(SIZE(globalElement))
   END FUNCTION obj_GetLocalElemNumber1
 END INTERFACE
@@ -1439,10 +1440,11 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement)  &
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal)  &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetLocalElemNumber2
 END INTERFACE
