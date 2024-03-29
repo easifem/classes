@@ -295,6 +295,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Returns the node number of mesh
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
+  !! This is a subroutine which returns the node number of mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => obj_GetInternalNptrs
   !! Returns a vector of internal node numbers
 
@@ -944,6 +947,21 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(obj%tNodes)
   END FUNCTION obj_GetNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-29
+! summary: Returns the vector of global node numbers
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+  END SUBROUTINE obj_GetNptrs_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2324,7 +2342,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
-  & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
+ & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
