@@ -426,6 +426,21 @@ END SELECT
 END PROCEDURE obj_GetNptrs_
 
 !----------------------------------------------------------------------------
+!                                                                   GetNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInternalNptrs
+SELECT CASE (dim)
+CASE (3)
+  ans = obj%meshVolume%GetInternalNptrs()
+CASE (2)
+  ans = obj%meshSurface%GetInternalNptrs()
+CASE (1)
+  ans = obj%meshCurve%GetInternalNptrs()
+CASE (0)
+  ans = obj%meshPoint%GetInternalNptrs()
+END SELECT
+END PROCEDURE obj_GetInternalNptrs
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
