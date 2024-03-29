@@ -39,7 +39,7 @@ END PROCEDURE obj_GetOrder
 !                                                       GetFacetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetConnectivity1
+MODULE PROCEDURE MeshGetFacetConnectivity
 INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
 INTEGER(I4B) :: localFaceID, cellNum
 
@@ -66,20 +66,20 @@ ELSE
 END IF
 
 IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-END PROCEDURE obj_GetFacetConnectivity1
+END PROCEDURE MeshGetFacetConnectivity
 
 !----------------------------------------------------------------------------
 !                                                      GetFacetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetConnectivity2
+MODULE PROCEDURE obj_GetFacetConnectivity
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
 nptrs = obj%GetConnectivity(globalElement=globalElement)
 indx = GetConnectivity(obj%facetElements(iface))
 ans = nptrs(indx)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
-END PROCEDURE obj_GetFacetConnectivity2
+END PROCEDURE obj_GetFacetConnectivity
 
 !----------------------------------------------------------------------------
 !

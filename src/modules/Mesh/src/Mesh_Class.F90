@@ -48,6 +48,7 @@ PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
 PUBLIC :: meshPointerDeallocate
 PUBLIC :: MeshDisplay
+PUBLIC :: MeshGetFacetConnectivity
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 
@@ -126,9 +127,8 @@ CONTAINS
     & obj_GetOrder
   !! Returns the order ofthe element of mesh
 
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
-  !! Return the node nubmers in the facet element
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity =>  &
+    & obj_GetFacetConnectivity
   !! Return the node nubmers in the facet element of a cellElement
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
@@ -401,7 +401,7 @@ END INTERFACE
 ! - facetElement is local facet element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
+  MODULE FUNCTION MeshGetFacetConnectivity(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -414,7 +414,7 @@ INTERFACE
       !! Currently, we do not support slave-cell for meshFacet because
       !! the slave of meshFacet lives in different instance of obj_
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity1
+  END FUNCTION MeshGetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -432,13 +432,14 @@ END INTERFACE
 ! - iface is the local face number in globalElement
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
-    & iface) RESULT(ans)
+  MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
+    & iface, islocal) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity2
+  END FUNCTION obj_GetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
