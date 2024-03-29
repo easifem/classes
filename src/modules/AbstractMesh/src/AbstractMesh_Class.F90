@@ -36,6 +36,7 @@ PUBLIC :: AbstractMeshDeallocate
 PUBLIC :: AbstractMeshDisplay
 PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
+PUBLIC :: AbstractMeshGetFacetConnectivity
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
@@ -455,13 +456,8 @@ CONTAINS
   !! Return the local facet id, so that we can Get reference element of
   !! the facet element
 
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
-  !! Return the node nubmers in the facet element
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
-  !! Return the node nubmers in the facet element of a cellElement
-  GENERIC, PUBLIC :: GetFacetConnectivity => &
-    & obj_GetFacetConnectivity1, &
-    & obj_GetFacetConnectivity2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity =>  &
+    & obj_GetFacetConnectivity
   !! Generic method to Get the connectivity of a facet element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
@@ -1888,7 +1884,7 @@ END INTERFACE
 ! - facetElement is local facet element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
+  MODULE FUNCTION AbstractMeshGetFacetConnectivity(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -1901,7 +1897,7 @@ INTERFACE
       !! Currently, we do not support slave-cell for meshFacet because
       !! the slave of meshFacet lives in different instance of obj_
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity1
+  END FUNCTION AbstractMeshGetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1919,13 +1915,14 @@ END INTERFACE
 ! - iface is the local face number in globalElement
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
-    & iface) RESULT(ans)
+  MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
+    & iface, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity2
+  END FUNCTION obj_GetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

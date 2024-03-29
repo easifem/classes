@@ -944,7 +944,7 @@ END PROCEDURE obj_GetLocalFacetID
 !                                                      GetFacetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetConnectivity1
+MODULE PROCEDURE AbstractMeshGetFacetConnectivity
 INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
 INTEGER(I4B) :: localFaceID, cellNum
 
@@ -974,13 +974,13 @@ ELSE
 END IF
 
 IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-END PROCEDURE obj_GetFacetConnectivity1
+END PROCEDURE AbstractMeshGetFacetConnectivity
 
 !----------------------------------------------------------------------------
 !                                                      GetFacetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetConnectivity2
+MODULE PROCEDURE obj_GetFacetConnectivity
 ! CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
 INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
   & con(MaxNodesInElement, REFELEM_MAX_FACES), &
@@ -1031,7 +1031,7 @@ CASE (3_I4B)
 
 END SELECT
 
-END PROCEDURE obj_GetFacetConnectivity2
+END PROCEDURE obj_GetFacetConnectivity
 
 !----------------------------------------------------------------------------
 !                                                        GetFacetElementType
