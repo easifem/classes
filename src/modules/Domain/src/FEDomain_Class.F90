@@ -201,7 +201,10 @@ CONTAINS
   !! This routine returns the pointer to nodal coordinate
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
-  !! returns node number
+  !! returns node number, this is a function
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
+  !! returns node number, this is subroutine
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     & obj_GetInternalNptrs
@@ -897,7 +900,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         getNptrs@getMethod
+!                                                         GetNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -915,6 +918,27 @@ INTERFACE
     !! dim = [0, 1, 2, 3] for [meshPoint, meshCurve, meshSurface, meshVolume]
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetNptrs@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number
+!
+!# Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dim = [0, 1, 2, 3] for [meshPoint, meshCurve, meshSurface, meshVolume]
+  END SUBROUTINE obj_GetNptrs_
 END INTERFACE
 
 !----------------------------------------------------------------------------
