@@ -116,6 +116,17 @@ END DO
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
+!                                                               GetNptrs_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs_
+INTEGER(I4B) :: ii
+DO CONCURRENT(ii=1:SIZE(obj%nodeData))
+  nptrs(ii) = obj%nodeData(ii)%globalNodeNum
+END DO
+END PROCEDURE obj_GetNptrs_
+
+!----------------------------------------------------------------------------
 !                                                          GetInternalNptrs
 !----------------------------------------------------------------------------
 
