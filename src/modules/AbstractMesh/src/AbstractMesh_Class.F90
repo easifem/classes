@@ -301,6 +301,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => obj_GetInternalNptrs
   !! Returns a vector of internal node numbers
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs_ => obj_GetInternalNptrs_
+  !! Returns a vector of internal node numbers
+  !! subroutine version (no allocation)
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryNptrs => obj_GetBoundaryNptrs
   !! Returns a vector of boundary node numbers
 
@@ -977,6 +981,21 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetInternalNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetInternalNptrs_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-29
+! summary: Returns the vector of global node numbers of internal nodes
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInternalNptrs_(obj, nptrs)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+  END SUBROUTINE obj_GetInternalNptrs_
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -144,6 +144,38 @@ END DO
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
+!                                                          GetInternalNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInternalNptrs_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs_()"
+LOGICAL(LGT) :: problem
+#endif
+INTEGER(I4B) :: ii, dummy
+
+dummy = obj%GetTotalInternalNodes()
+
+#ifdef DEBUG_VER
+problem = dummy .GT. SIZE(nptrs)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of nptrs is not enough '//  &
+    & 'it should be ateast '//tostring(dummy))
+  RETURN
+END IF
+#endif
+
+dummy = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+    dummy = dummy + 1
+    nptrs(dummy) = obj%nodeData(ii)%globalNodeNum
+  END IF
+END DO
+END PROCEDURE obj_GetInternalNptrs_
+
+!----------------------------------------------------------------------------
 !                                                          GetBoundaryNptrs
 !----------------------------------------------------------------------------
 
