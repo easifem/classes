@@ -470,24 +470,26 @@ MODULE PROCEDURE obj_GetLocalNodeNumber2
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
 LOGICAL(LGT) :: problem
 #endif
-
 LOGICAL(LGT) :: islocal0
+
 islocal0 = Input(option=islocal, default=.FALSE.)
 
 IF (islocal0) THEN
   ans = globalNode
-ELSE
+  RETURN
+END IF
 
 #ifdef DEBUG_VER
-  problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: globalNode is out of bound.')
-  END IF
+
+problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalNode is out of bound.')
+END IF
+
 #endif
 
-  ans = obj%local_nptrs(globalNode)
-END IF
+ans = obj%local_nptrs(globalNode)
 
 END PROCEDURE obj_GetLocalNodeNumber2
 
@@ -579,26 +581,25 @@ islocal0 = Input(default=.FALSE., option=islocal)
 
 IF (islocal0) THEN
   ans = globalElement
-
-ELSE
+  RETURN
+END IF
 
 #ifdef DEBUG_VER
 
-  problem = (globalElement .LT. obj%MinElemNum)  &
-    & .OR. (globalElement .GT. obj%maxElemNum)
+problem = (globalElement .LT. obj%minElemNum)  &
+  & .OR. (globalElement .GT. obj%maxElemNum)
 
-  IF (problem) THEN
-    ans = 0
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: globalElement '//tostring(globalElement)// &
-      & ' not present.')
-    RETURN
-  END IF
+IF (problem) THEN
+  ans = 0
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement '//tostring(globalElement)// &
+    & ' not present.')
+  RETURN
+END IF
 
 #endif
 
-  ans = obj%local_elemNumber(globalElement)
-END IF
+ans = obj%local_elemNumber(globalElement)
 
 END PROCEDURE obj_GetLocalElemNumber2
 
@@ -1003,7 +1004,7 @@ INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
   & con(MaxNodesInElement, REFELEM_MAX_FACES), &
   & ii, tFaceNodes(REFELEM_MAX_FACES)
 
-iel = obj%GetLocalElemNumber(globalElement)
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 
 SELECT CASE (obj%xidim)
 
