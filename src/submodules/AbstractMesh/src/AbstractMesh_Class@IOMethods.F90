@@ -208,6 +208,8 @@ ELSE
   RETURN
 END IF
 
+CALL obj%InitiateElementToElements()
+
 IF (ALLOCATED(entities0)) DEALLOCATE (entities0)
 group0 = ""
 
