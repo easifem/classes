@@ -311,6 +311,26 @@ CASE DEFAULT
 #endif
 END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalEntities
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntities
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: problem
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities()"
+
+problem = dim .LT. 0 .OR. dim .GT. 3
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: dim of the mesh should be in [0,1,2,3]")
+END IF
+#endif
+
+ans = obj%tEntities(dim)
+END PROCEDURE obj_GetTotalEntities
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
