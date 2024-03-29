@@ -351,6 +351,37 @@ END SELECT
 END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
+!                                                               getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
+LOGICAL(LGT) :: problem
+
+problem = .NOT. ALLOCATED(obj%nodeCoord)
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
+  RETURN
+END IF
+#endif
+
+nodeCoord(1:obj%nsd, :) = obj%nodeCoord(1:obj%nsd, :)
+
+END PROCEDURE obj_GetNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                       getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord2
+INTEGER(I4B) :: localNode(SIZE(globalNode))
+INTEGER(I4B) :: nsd
+localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
+nsd = SIZE(nodeCoord, 1)
+nodeCoord = obj%nodeCoord(1:nsd, localNode)
+END PROCEDURE obj_GetNodeCoord2
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
