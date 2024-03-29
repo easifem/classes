@@ -288,7 +288,7 @@ END TYPE FEDomainPointer_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-03-28
 ! summary: Initiate the instance of [[FEDomain_]] object
 
 INTERFACE
@@ -307,7 +307,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-03-28
 ! summary: Deallocate data stored in FEDomain object
 
 INTERFACE FEDomainDeallocate
@@ -322,7 +322,7 @@ END INTERFACE FEDomainDeallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-03-28
 ! summary: Finalizer
 
 INTERFACE
@@ -336,7 +336,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 19 June 2021
+! date: 2024-03-28
 ! summary: This function returns pointer to a newly constructed FEDomain obj
 
 INTERFACE FEDomain_Pointer
@@ -352,7 +352,7 @@ END INTERFACE FEDomain_Pointer
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-03-28
 ! summary: Construct an instance of domain by importing data from mesh
 
 INTERFACE
@@ -368,7 +368,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
-! date:   2023-12-20
+! date:  2024-03-28
 ! summary:  Initiate an instance of domain by importing meshfile name from
 ! Toml file
 !
@@ -500,6 +500,7 @@ INTERFACE
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! Global element number
+    !! Make sure globalElement is present
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! Dimension, if dim is present then
     !! if dim=0, then search is performed in meshPoint
