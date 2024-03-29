@@ -151,6 +151,14 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       END IF
     END DO
 
+#ifdef DEBUG_VER
+    IF (jj .EQ. 0) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
+      RETURN
+    END IF
+#endif
+
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
     elementData(iel)%globalElements = temp1(1:aint)
@@ -295,6 +303,14 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
         END IF
       END IF
     END DO
+
+#ifdef DEBUG_VER
+    IF (jj .EQ. 0) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
+      RETURN
+    END IF
+#endif
 
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
@@ -443,6 +459,14 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
         END IF
       END IF
     END DO
+
+#ifdef DEBUG_VER
+    IF (jj .EQ. 0) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
+      RETURN
+    END IF
+#endif
 
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
@@ -638,13 +662,16 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber,  &
 
   IF (PRESENT(internalNptrs)) THEN
     CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
-& fieldname="intNodeNumber", myname=myname, modName=modName, check=.TRUE.)
+      & fieldname="intNodeNumber", myname=myname, modName=modName,  &
+      & check=.TRUE.)
   END IF
 
   obj%maxElemNum = MAXVAL(elemNumber)
   obj%minElemNum = MINVAL(elemNumber)
   obj%maxNptrs = MAXVAL(connectivity)
   obj%minNptrs = MINVAL(connectivity)
+
+  dsetname = ""
 
 END SUBROUTINE MeshImportVector
 
