@@ -900,8 +900,8 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     xyz(3, ii) = obj%z
 
     aint = GetElementIndex(elemType(ii))
-    obj%tElements_topology_wise(aint) = obj%tElements_topology_wise(aint) +  &
-                                                               & tElements(ii)
+    obj%tElements_topology_wise(aint) = obj%tElements_topology_wise(aint)  &
+      & + tElements(ii)
 
   END DO
 
