@@ -559,7 +559,7 @@ END PROCEDURE obj_GetGlobalElemNumber2
 MODULE PROCEDURE obj_GetLocalElemNumber1
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalElement)
-  ans(ii) = obj%GetLocalElemNumber(globalElement(ii))
+  ans(ii) = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
 END DO
 END PROCEDURE obj_GetLocalElemNumber1
 
@@ -571,18 +571,35 @@ MODULE PROCEDURE obj_GetLocalElemNumber2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemNumber2()"
 LOGICAL(LGT) :: problem
-
-problem = (globalElement .LT. obj%MinElemNum)  &
-  & .OR. (globalElement .GT. obj%maxElemNum)
-
-IF (problem) THEN
-  ans = 0
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalElement is not present.')
-END IF
 #endif
 
-ans = obj%local_elemNumber(globalElement)
+LOGICAL(LGT) :: islocal0
+
+islocal0 = Input(default=.FALSE., option=islocal)
+
+IF (islocal0) THEN
+  ans = globalElement
+
+ELSE
+
+#ifdef DEBUG_VER
+
+  problem = (globalElement .LT. obj%MinElemNum)  &
+    & .OR. (globalElement .GT. obj%maxElemNum)
+
+  IF (problem) THEN
+    ans = 0
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: globalElement '//tostring(globalElement)// &
+      & ' not present.')
+    RETURN
+  END IF
+
+#endif
+
+  ans = obj%local_elemNumber(globalElement)
+END IF
+
 END PROCEDURE obj_GetLocalElemNumber2
 
 !----------------------------------------------------------------------------
