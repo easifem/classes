@@ -163,6 +163,28 @@ END PROCEDURE obj_tNodes1
 MODULE PROCEDURE obj_tNodes2
 ans = obj%GetTotalNodes()
 END PROCEDURE obj_tNodes2
+
+!----------------------------------------------------------------------------
+!                                                           getTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElements
+IF (PRESENT(dim)) THEN
+  SELECT CASE (dim)
+  CASE (3)
+    ans = obj%meshVolume%GetTotalElements()
+  CASE (2)
+    ans = obj%meshSurface%GetTotalElements()
+  CASE (1)
+    ans = obj%meshCurve%GetTotalElements()
+  CASE (0)
+    ans = obj%meshPoint%GetTotalElements()
+  END SELECT
+
+ELSE
+  ans = SUM(obj%tElements)
+END IF
+END PROCEDURE obj_GetTotalElements
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
