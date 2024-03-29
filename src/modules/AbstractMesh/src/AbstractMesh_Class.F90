@@ -1325,8 +1325,8 @@ END INTERFACE
 ! This function returns the local node numbers from global node numbers.
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode) RESULT(ans)
- MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal)  &
+   & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1374,7 +1374,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: This routine returns the Global node number from a local node number
+! summary: Returns the Global node number from a local node number
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
@@ -1407,7 +1407,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: This routine returns the Global node number from a local node number
+! summary: Returns the Global node number from a local node number
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalElemNumber2(obj, LocalElement) RESULT(ans)
@@ -2365,7 +2365,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
- & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
+& rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
