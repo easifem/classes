@@ -125,6 +125,44 @@ CASE (0)
   ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode)
 END SELECT
 END PROCEDURE obj_GetNodeToElements2
+
+!----------------------------------------------------------------------------
+!                                                             getTotalNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNodes
+IF (PRESENT(dim)) THEN
+  SELECT CASE (dim)
+  CASE (3)
+    ans = obj%meshVolume%GetTotalNodes()
+  CASE (2)
+    ans = obj%meshSurface%GetTotalNodes()
+  CASE (1)
+    ans = obj%meshCurve%GetTotalNodes()
+  CASE (0)
+    ans = obj%meshPoint%GetTotalNodes()
+  END SELECT
+
+ELSE
+  ans = obj%tNodes
+END IF
+END PROCEDURE obj_GetTotalNodes
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tNodes1
+ans = obj%GetTotalNodes(dim=dim)
+END PROCEDURE obj_tNodes1
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tNodes2
+ans = obj%GetTotalNodes()
+END PROCEDURE obj_tNodes2
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
