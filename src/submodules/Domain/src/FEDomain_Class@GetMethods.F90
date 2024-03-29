@@ -69,6 +69,28 @@ CASE (0)
 END SELECT
 
 END PROCEDURE obj_IsElementPresent
+
+!----------------------------------------------------------------------------
+!                                                          getConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity
+INTEGER(I4B) :: dim0
+
+dim0 = Input(default=obj%nsd, option=dim)
+
+SELECT CASE (dim0)
+CASE (3)
+  ans = obj%meshVolume%GetConnectivity(globalElement=globalElement)
+CASE (2)
+  ans = obj%meshSurface%GetConnectivity(globalElement=globalElement)
+CASE (1)
+  ans = obj%meshCurve%GetConnectivity(globalElement=globalElement)
+CASE (0)
+  ans = obj%meshPoint%GetConnectivity(globalElement=globalElement)
+END SELECT
+
+END PROCEDURE obj_GetConnectivity
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
