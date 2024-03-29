@@ -185,6 +185,23 @@ ELSE
   ans = SUM(obj%tElements)
 END IF
 END PROCEDURE obj_GetTotalElements
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tElements1
+ans = obj%GetTotalElements()
+END PROCEDURE obj_tElements1
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tElements2
+ans = obj%GetTotalElements(dim=dim)
+END PROCEDURE obj_tElements2
+
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
