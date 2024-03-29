@@ -91,6 +91,40 @@ CASE (0)
 END SELECT
 
 END PROCEDURE obj_GetConnectivity
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements1
+SELECT CASE (obj%nsd)
+CASE (3)
+  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode)
+CASE (2)
+  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode)
+CASE (1)
+  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode)
+CASE (0)
+  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode)
+END SELECT
+END PROCEDURE obj_GetNodeToElements1
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements2
+SELECT CASE (obj%nsd)
+CASE (3)
+  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode)
+CASE (2)
+  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode)
+CASE (1)
+  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode)
+CASE (0)
+  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode)
+END SELECT
+END PROCEDURE obj_GetNodeToElements2
 MODULE PROCEDURE obj_GetNptrs
 SELECT CASE (dim)
 CASE (3)
