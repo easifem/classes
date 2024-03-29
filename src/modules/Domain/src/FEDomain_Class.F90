@@ -189,8 +189,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
-  !! Returns a dim entity-num of mesh which contains the element number
   PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord
   !! This routine returns the nodal coordinate in rank2 array
   PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
@@ -826,25 +824,6 @@ INTERFACE
     !! dimension of mesh entity
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 getDimEntityNum@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-12
-! summary: Returns dim and entity number
-!
-!# Introduction
-!   deprecated
-
-INTERFACE
-  MODULE FUNCTION obj_GetDimEntityNum(obj, globalElement) RESULT(ans)
-    CLASS(FEDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B) :: ans(2)
-  END FUNCTION obj_GetDimEntityNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
