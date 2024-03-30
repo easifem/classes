@@ -279,14 +279,22 @@ END PROCEDURE obj_isAllNodePresent
 
 MODULE PROCEDURE obj_isElementPresent
 LOGICAL(LGT) :: isok
+LOGICAL(LGT) :: islocal0
 
-isok = globalElement .GT. obj%maxElemNum  &
-  & .OR. globalElement .LT. obj%minElemNum
+islocal0 = Input(default=.FALSE., option=islocal)
 
-ans = .NOT. isok
+IF (islocal0) THEN
+  ans = (globalElement .GT. 0_I4B) .AND. (globalElement .LT. obj%tElements)
 
-IF (ans) THEN
-  ans = .NOT. (isok .OR. obj%local_elemNumber(globalElement) .EQ. 0)
+ELSE
+  isok = (globalElement .GT. obj%maxElemNum) .OR.  &
+    & (globalElement .LT. obj%minElemNum)
+
+  ans = .NOT. isok
+
+  IF (ans) THEN
+    ans = .NOT. (isok .OR. obj%local_elemNumber(globalElement) .EQ. 0)
+  END IF
 END IF
 
 END PROCEDURE obj_isElementPresent
