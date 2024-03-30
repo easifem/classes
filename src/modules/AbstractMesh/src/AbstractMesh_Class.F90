@@ -1541,11 +1541,12 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, includeSelf) &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, includeSelf, &
+    & islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT), INTENT(IN) :: includeSelf
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes1
 END INTERFACE
@@ -1573,11 +1574,12 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, includeSelf) &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, includeSelf,  &
+    & islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), INTENT(IN) :: includeSelf
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes2
 END INTERFACE

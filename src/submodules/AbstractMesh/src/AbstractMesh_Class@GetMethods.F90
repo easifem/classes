@@ -213,7 +213,7 @@ LOGICAL(LGT) :: abool, islocal0
 islocal0 = Input(default=.FALSE., option=islocal)
 
 IF (islocal0) THEN
-  ans = globalNode .LE. obj%tNodes
+  ans = (globalNode .GT. 0_I4B) .AND. (globalNode .LE. obj%tNodes)
 
 ELSE
 
@@ -673,19 +673,22 @@ MODULE PROCEDURE obj_GetNodeToNodes1
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodes1()"
 LOGICAL(LGT) :: problem
 #endif
+
 INTEGER(I4B) :: i
 
-i = obj%GetLocalNodeNumber(GlobalNode=GlobalNode)
-
 #ifdef DEBUG_VER
-problem = (i .EQ. 0) .OR. (i .GT. obj%tNodes)
+problem = .NOT. obj%isNodePresent(globalNode=globalNode, islocal=islocal)
 IF (problem) THEN
   ALLOCATE (ans(0))
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: globalNode is out of bound.')
   RETURN
 END IF
+#endif
 
+i = obj%GetLocalNodeNumber(GlobalNode=GlobalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
 IF (obj%isExtraNodeToNodesInitiated) THEN
   problem = .NOT. ALLOCATED(obj%nodeData(i)%extraGlobalNodes)
   IF (problem) THEN
@@ -695,7 +698,6 @@ IF (obj%isExtraNodeToNodesInitiated) THEN
 END IF
 #endif
 
-! check
 IF (obj%isExtraNodeToNodesInitiated .AND. IncludeSelf) THEN
   CALL Append(ans, [globalNode], obj%nodeData(i)%globalNodes,  &
     & obj%nodeData(i)%extraGlobalNodes)
@@ -729,7 +731,7 @@ nn(1) = 1
 n = SIZE(globalNode)
 
 DO ii = 1, n
-  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii))
+  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
   nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%globalNodes)
 END DO
 
