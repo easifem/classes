@@ -1151,10 +1151,11 @@ END INTERFACE
 ! no connection with the other mesh.
 
 INTERFACE
-  MODULE FUNCTION obj_isDomainBoundaryElement(obj, globalElement) &
+  MODULE FUNCTION obj_isDomainBoundaryElement(obj, globalElement, islocal) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isDomainBoundaryElement
 END INTERFACE
