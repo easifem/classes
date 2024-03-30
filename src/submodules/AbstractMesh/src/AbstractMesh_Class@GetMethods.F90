@@ -315,7 +315,7 @@ END PROCEDURE obj_isBoundaryElement
 
 MODULE PROCEDURE obj_isDomainBoundaryElement
 INTEGER(I4B) :: iel
-iel = obj%GetLocalElemNumber(globalElement)
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = obj%elementData(iel)%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
 END PROCEDURE obj_isDomainBoundaryElement
 
