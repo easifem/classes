@@ -199,7 +199,7 @@ END PROCEDURE obj_GetBoundaryNptrs
 
 MODULE PROCEDURE obj_isBoundaryNode
 INTEGER(I4B) :: localnode
-localnode = obj%GetLocalNodeNumber(GlobalNode)
+localnode = obj%GetLocalNodeNumber(GlobalNode, islocal=islocal)
 ans = obj%nodeData(localnode)%nodeType .NE. INTERNAL_NODE
 END PROCEDURE obj_isBoundaryNode
 

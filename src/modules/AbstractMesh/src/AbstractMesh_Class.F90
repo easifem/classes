@@ -1018,9 +1018,10 @@ END INTERFACE
 ! summary: This function returns true if given global node is a boundary node
 
 INTERFACE
-  MODULE FUNCTION obj_isBoundaryNode(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isBoundaryNode(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isBoundaryNode
 END INTERFACE
