@@ -208,12 +208,21 @@ END PROCEDURE obj_isBoundaryNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isNodePresent1
-LOGICAL(LGT) :: abool
+LOGICAL(LGT) :: abool, islocal0
 
-abool = globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs
-ans = .NOT. abool
-IF (ans) THEN
-  ans = obj%local_nptrs(globalNode) .GT. 0
+islocal0 = Input(default=.FALSE., option=islocal)
+
+IF (islocal0) THEN
+  ans = globalNode .LE. obj%tNodes
+
+ELSE
+
+  abool = globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs
+  ans = .NOT. abool
+  IF (ans) THEN
+    ans = obj%local_nptrs(globalNode) .GT. 0
+  END IF
+
 END IF
 
 END PROCEDURE obj_isNodePresent1
@@ -225,7 +234,7 @@ END PROCEDURE obj_isNodePresent1
 MODULE PROCEDURE obj_isNodePresent2
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
-  ans(ii) = obj%isNodePresent(globalNode(ii))
+  ans(ii) = obj%isNodePresent(globalNode(ii), islocal=islocal)
 END DO
 END PROCEDURE obj_isNodePresent2
 
@@ -240,7 +249,7 @@ INTEGER(I4B) :: ii, n
 n = SIZE(globalNode)
 
 DO ii = 1, n
-  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
+  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii), islocal=islocal)
 END DO
 
 ans = ANY(cond)
@@ -257,7 +266,7 @@ INTEGER(I4B) :: ii, n
 n = SIZE(globalNode)
 
 DO ii = 1, n
-  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
+  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii), islocal=islocal)
 END DO
 
 ans = ALL(cond)

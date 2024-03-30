@@ -1035,9 +1035,10 @@ END INTERFACE
 ! summary: Returns  TRUE if a given global node number is present
 
 INTERFACE
-  MODULE FUNCTION obj_isNodePresent1(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isNodePresent1(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isNodePresent1
 END INTERFACE
@@ -1051,9 +1052,10 @@ END INTERFACE
 ! summary: Returns  TRUE if a given global node number is present
 
 INTERFACE
-  MODULE FUNCTION obj_isNodePresent2(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isNodePresent2(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans(SIZE(globalNode))
   END FUNCTION obj_isNodePresent2
 END INTERFACE
@@ -1067,9 +1069,10 @@ END INTERFACE
 ! summary: Returns TRUE if any global node number is present
 
 INTERFACE
-  MODULE FUNCTION obj_isAnyNodePresent(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isAnyNodePresent(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isAnyNodePresent
 END INTERFACE
@@ -1083,9 +1086,10 @@ END INTERFACE
 ! summary: Returns TRUE if any global node number is present
 
 INTERFACE
-  MODULE FUNCTION obj_isAllNodePresent(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isAllNodePresent(obj, globalNode, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isAllNodePresent
 END INTERFACE
