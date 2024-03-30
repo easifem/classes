@@ -623,7 +623,7 @@ INTEGER(I4B) :: ii
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
 LOGICAL(LGT) :: problem
 
-problem = .NOT. obj%isNodePresent(globalNode)
+problem = .NOT. obj%isNodePresent(globalNode, islocal=islocal)
 IF (problem) THEN
   ALLOCATE (ans(0))
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -631,7 +631,7 @@ IF (problem) THEN
 END IF
 #endif
 
-ii = obj%GetLocalNodeNumber(globalNode)
+ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
 ans = obj%nodeData(ii)%globalElements
 END PROCEDURE obj_GetNodeToElements1
 
@@ -647,7 +647,7 @@ nn(1) = 1
 n = SIZE(globalNode)
 
 DO ii = 1, n
-  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii))
+  lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
   nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%globalElements)
 END DO
 

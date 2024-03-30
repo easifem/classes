@@ -1474,11 +1474,13 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
+    & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! A vector of local element number
   END FUNCTION obj_GetNodeToElements1
@@ -1505,11 +1507,13 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
+    & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! A vector of local element number
   END FUNCTION obj_GetNodeToElements2
