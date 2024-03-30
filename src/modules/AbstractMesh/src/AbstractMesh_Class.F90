@@ -620,7 +620,7 @@ END INTERFACE
 ! This routine Initiate the local_nptrs data in mesh.
 ! This routine also Sets the number of nodes in the mesh (tNodes)
 ! This routine allocate obj%nodeData
-! This routine Set localNodeNum and globalNodeNum data inside the
+! This routine Set localNodeNum and globalNode data inside the
 ! nodeData
 !
 !
@@ -866,9 +866,10 @@ END INTERFACE
 ! summary:  Get number of nodes in element
 
 INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement) RESULT(ans)
+  MODULE FUNCTION obj_GetNNE(obj, globalElement, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetNNE
 END INTERFACE
