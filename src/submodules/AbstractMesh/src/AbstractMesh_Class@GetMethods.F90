@@ -49,7 +49,7 @@ INTEGER(I4B) :: iel
 LOGICAL(LGT) :: isok
 #endif
 
-iel = obj%GetLocalElemNumber(globalElement)
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = 0
 
 #ifdef DEBUG_VER
@@ -62,6 +62,7 @@ IF (isok) ans = SIZE(obj%elementData(iel)%globalNodes)
 ans = SIZE(obj%elementData(iel)%globalNodes)
 
 #endif
+
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
