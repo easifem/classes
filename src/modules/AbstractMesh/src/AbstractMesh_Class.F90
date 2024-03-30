@@ -1616,7 +1616,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetElementToElements(obj, globalElement, &
-    & onlyElements) RESULT(ans)
+    & onlyElements, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1626,6 +1626,7 @@ INTERFACE
     !! about the elements connected to element iel is given
     !! If onlyElements is present and it is TRUE then only the
     !! information about the elements connected to element iel is given
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:, :)
     !! list of elements surrounding elements
   END FUNCTION obj_GetElementToElements
