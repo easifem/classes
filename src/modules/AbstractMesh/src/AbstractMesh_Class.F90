@@ -1952,10 +1952,11 @@ END INTERFACE
 ! summary: Returns the facet element type of the cell element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetElementType(obj, globalElement) &
+  MODULE FUNCTION obj_GetFacetElementType(obj, globalElement, islocal) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetFacetElementType
 END INTERFACE
