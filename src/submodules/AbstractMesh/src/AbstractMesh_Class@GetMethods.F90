@@ -1077,7 +1077,7 @@ END PROCEDURE obj_GetFacetConnectivity
 
 MODULE PROCEDURE obj_GetFacetElementType
 INTEGER(I4B) :: iel
-iel = obj%GetLocalElemNumber(globalElement=globalElement)
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 ans = obj%facetElementType(:, iel)
 END PROCEDURE obj_GetFacetElementType
 
