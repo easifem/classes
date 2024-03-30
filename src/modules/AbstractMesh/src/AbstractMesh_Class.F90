@@ -1104,10 +1104,11 @@ END INTERFACE
 ! summary: Returns  TRUE if a given global Element number is present
 
 INTERFACE
-  MODULE FUNCTION obj_isElementPresent(obj, globalElement) &
+  MODULE FUNCTION obj_isElementPresent(obj, globalElement, islocal) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isElementPresent
 END INTERFACE
@@ -2078,8 +2079,8 @@ END INTERFACE
 !- This routine generate the node to nodes mapping
 !- In other words, it generates info of node-numbers in mesh
 ! surrounding a node number
-!- This mapping is stored inside `obj%nodeData%globalNodeNum`
-!- For a local node number i, obj%nodeData(i)%globalNodeNum denotes the
+!- This mapping is stored inside `obj%nodeData%globalNode`
+!- For a local node number i, obj%nodeData(i)%globalNode denotes the
 ! global node data surrounding the local node number.
 !- This list does not include self node.
 !- This methods needs node-to-elements data, therefore if this data
