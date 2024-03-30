@@ -771,7 +771,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements()"
 LOGICAL(LGT) :: problem
 #endif
 
-iel = obj%GetLocalElemNumber(globalElement)
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 
 #ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData(iel)%globalElements)
