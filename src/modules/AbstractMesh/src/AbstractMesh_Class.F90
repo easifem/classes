@@ -2446,11 +2446,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
-    & iface, facetElementType)
+    & iface, facetElementType, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
     INTEGER(I4B), INTENT(IN) :: facetElementType
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_SetFacetElementType
 END INTERFACE
 

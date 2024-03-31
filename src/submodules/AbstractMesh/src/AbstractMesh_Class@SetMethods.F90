@@ -226,7 +226,8 @@ END PROCEDURE obj_SetMaterial
 
 MODULE PROCEDURE obj_SetFacetElementType
 INTEGER(I4B) :: localElem
-localElem = obj%GetLocalElemNumber(globalElement=globalElement)
+localElem = obj%GetLocalElemNumber(globalElement=globalElement,  &
+  & islocal=islocal)
 obj%facetElementType(iface, localElem) = facetElementType
 obj%elementData(localElem)%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
