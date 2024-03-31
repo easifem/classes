@@ -396,7 +396,7 @@ END PROCEDURE obj_GetNodeCoord
 MODULE PROCEDURE obj_GetNodeCoord2
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: nsd
-localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
+localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 nsd = SIZE(nodeCoord, 1)
 nodeCoord = obj%nodeCoord(1:nsd, localNode)
 END PROCEDURE obj_GetNodeCoord2
