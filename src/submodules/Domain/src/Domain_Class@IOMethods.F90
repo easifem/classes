@@ -104,53 +104,6 @@ END IF
 END PROCEDURE Domain_DisplayMeshFacetData
 
 !----------------------------------------------------------------------------
-!                                                                 Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshFacetData_Display
-LOGICAL(LGT) :: abool
-
-CALL Display(msg, unitno=unitno)
-
-CALL Display("elementType: BOUNDARY_ELEMENT", unitno=unitno)
-
-CALL Display(obj%masterMesh, "masterMesh: ", unitno=unitno)
-
-CALL Display(obj%slaveMesh, "slaveMesh: ", unitno=unitno)
-
-abool = ALLOCATED(obj%masterCellNumber)
-CALL Display(abool, "masterCellNumber Allocated: ", unitNo=unitNo)
-
-IF (abool) THEN
-  CALL Display(obj%masterCellNumber, msg="masterCellNumber: ", &
-    & unitno=unitno)
-END IF
-
-abool = ALLOCATED(obj%masterlocalFacetID)
-CALL Display(abool, "masterlocalFacetID Allocated: ", unitNo=unitNo)
-
-IF (abool) THEN
-  CALL Display(obj%masterlocalFacetID, msg="masterlocalFacetID: ", &
-    & unitno=unitno)
-END IF
-
-abool = ALLOCATED(obj%slaveCellNumber)
-CALL Display(abool, "slaveCellNumber Allocated: ", unitNo=unitNo)
-
-IF (abool) THEN
-  CALL Display(obj%slaveCellNumber, msg="slaveCellNumber: ", &
-    & unitno=unitno)
-END IF
-
-abool = ALLOCATED(obj%slavelocalFacetID)
-IF (abool) THEN
-  CALL Display(obj%slavelocalFacetID, msg="slavelocalFacetID: ", &
-    & unitno=unitno)
-END IF
-
-END PROCEDURE MeshFacetData_Display
-
-!----------------------------------------------------------------------------
 !                                                                   Import
 !----------------------------------------------------------------------------
 
