@@ -20,78 +20,8 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(FEDomain_Class) ConstructorMethods
-USE ReallocateUtility
-USE CSRSparsity_Method
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "FEDomain_Initiate()"
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-
-CALL obj%IMPORT(hdf5=hdf5, group=group)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate
-obj%isInitiated = .FALSE.
-obj%engine = ''
-obj%majorVersion = 0
-obj%minorVersion = 0
-obj%version = 0.0_DFP
-obj%nsd = 0
-obj%maxNptrs = 0
-obj%minNptrs = 0
-obj%tNodes = 0
-obj%isNodeNumberSparse = .FALSE.
-obj%maxElemNum = 0
-obj%minElemNum = 0
-obj%isElemNumberSparse = .FALSE.
-obj%tEntitiesForNodes = 0
-obj%tEntitiesForElements = 0
-obj%tElements(0:3) = 0
-obj%tEntities(0:3) = 0
-CALL DEALLOCATE (obj%meshmap)
-
-IF (ASSOCIATED(obj%meshVolume)) THEN
-  CALL obj%meshVolume%DEALLOCATE()
-  obj%meshVolume => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshSurface)) THEN
-  CALL obj%meshSurface%DEALLOCATE()
-  obj%meshSurface => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshCurve)) THEN
-  CALL obj%meshCurve%DEALLOCATE()
-  obj%meshCurve => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshPoint)) THEN
-  CALL obj%meshPoint%DEALLOCATE()
-  obj%meshPoint => NULL()
-END IF
-
-IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
-END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                              Final
@@ -113,4 +43,5 @@ END PROCEDURE obj_Constructor_1
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END SUBMODULE ConstructorMethods
