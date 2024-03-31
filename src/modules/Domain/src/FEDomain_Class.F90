@@ -498,7 +498,7 @@ END INTERFACE
 ! summary: Returns the connectivity vector of a given element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim)  &
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, islocal) &
     & RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -511,6 +511,7 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! vertex connectivity
   END FUNCTION obj_GetConnectivity

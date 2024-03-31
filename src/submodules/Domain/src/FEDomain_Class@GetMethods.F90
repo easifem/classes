@@ -79,13 +79,17 @@ dim0 = Input(default=obj%nsd, option=dim)
 
 SELECT CASE (dim0)
 CASE (3)
-  ans = obj%meshVolume%GetConnectivity(globalElement=globalElement)
+  ans = obj%meshVolume%GetConnectivity(globalElement=globalElement, &
+  & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetConnectivity(globalElement=globalElement)
+  ans = obj%meshSurface%GetConnectivity(globalElement=globalElement, &
+  & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetConnectivity(globalElement=globalElement)
+  ans = obj%meshCurve%GetConnectivity(globalElement=globalElement, &
+  & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetConnectivity(globalElement=globalElement)
+  ans = obj%meshPoint%GetConnectivity(globalElement=globalElement, &
+  & islocal=islocal)
 END SELECT
 
 END PROCEDURE obj_GetConnectivity
