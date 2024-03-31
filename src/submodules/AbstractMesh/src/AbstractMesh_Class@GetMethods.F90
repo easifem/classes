@@ -422,16 +422,16 @@ LOGICAL(LGT) :: problem
 #endif
 
 INTEGER(I4B) :: ii
-ii = obj%GetLocalElemNumber(globalElement)
 
 #ifdef DEBUG_VER
-problem = (ii .EQ. 0) .OR. (ii .GT. obj%tElements)
+problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: problem in getting localElement number')
 END IF
 #endif
 
+ii = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = obj%elementData(ii)%globalNodes
 END PROCEDURE obj_GetConnectivity
 
