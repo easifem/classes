@@ -421,18 +421,18 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
 LOGICAL(LGT) :: problem
 #endif
 
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
-problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
+problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: problem in getting localElement number')
 END IF
 #endif
 
-ii = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(ii)%globalNodes
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+ans = obj%elementData(iel)%globalNodes
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -811,25 +811,11 @@ END PROCEDURE obj_GetElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryElementData
-INTEGER(I4B) :: iel
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryElementData()"
-LOGICAL(LGT) :: problem
-
-problem = .NOT. obj%isBoundaryElement(globalElement)
-
-IF (problem) THEN
-  ALLOCATE (ans(0))
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Element is not boundary element.')
-  RETURN
-END IF
-#endif
-
-iel = obj%GetLocalElemNumber(globalElement)
+INTEGER(I4B) :: iel, tsize
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+tsize = SIZE(obj%elementData(iel)%boundaryData)
+CALL Reallocate(ans, tsize)
 ans = obj%elementData(iel)%boundaryData
-
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
