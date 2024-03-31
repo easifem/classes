@@ -490,24 +490,21 @@ LOGICAL(LGT) :: problem
 #endif
 LOGICAL(LGT) :: islocal0
 
-islocal0 = Input(option=islocal, default=.FALSE.)
-
-IF (islocal0) THEN
-  ans = globalNode
-  RETURN
-END IF
-
 #ifdef DEBUG_VER
-
-problem = (globalNode .LT. obj%minNptrs) .OR. (globalNode .GT. obj%maxNptrs)
+problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: globalNode is out of bound.')
 END IF
-
 #endif
 
-ans = obj%local_nptrs(globalNode)
+islocal0 = Input(option=islocal, default=.FALSE.)
+
+IF (islocal0) THEN
+  ans = globalNode
+ELSE
+  ans = obj%local_nptrs(globalNode)
+END IF
 
 END PROCEDURE obj_GetLocalNodeNumber2
 
