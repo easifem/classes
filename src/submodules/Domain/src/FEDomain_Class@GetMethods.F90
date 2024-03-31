@@ -53,13 +53,17 @@ INTEGER(I4B) :: dim0
 dim0 = Input(default=obj%nsd, option=dim)
 SELECT CASE (dim0)
 CASE (3)
-  ans = obj%meshVolume%IsElementPresent(globalElement=globalElement)
+  ans = obj%meshVolume%IsElementPresent(globalElement=globalElement,  &
+  & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%IsElementPresent(globalElement=globalElement)
+  ans = obj%meshSurface%IsElementPresent(globalElement=globalElement, &
+  & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%IsElementPresent(globalElement=globalElement)
+  ans = obj%meshCurve%IsElementPresent(globalElement=globalElement, &
+  & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%IsElementPresent(globalElement=globalElement)
+  ans = obj%meshPoint%IsElementPresent(globalElement=globalElement, &
+  & islocal=islocal)
 END SELECT
 
 END PROCEDURE obj_IsElementPresent
