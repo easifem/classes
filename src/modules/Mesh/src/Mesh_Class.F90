@@ -141,9 +141,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
   PROCEDURE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-    & obj_SetFacetElementType
-  !! Set the facet element type of a given cell number
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
   !! Set mesh quality
 
@@ -695,24 +692,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
   END SUBROUTINE obj_SetSparsity4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetFacetElementType@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2022-04-14
-! summary: Set the facet element type of a given cell number
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
-    & iface, facetElementType)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), INTENT(IN) :: iface
-    INTEGER(I4B), INTENT(IN) :: facetElementType
-  END SUBROUTINE obj_SetFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
