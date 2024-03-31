@@ -101,13 +101,17 @@ END PROCEDURE obj_GetConnectivity
 MODULE PROCEDURE obj_GetNodeToElements1
 SELECT CASE (obj%nsd)
 CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
+    & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
+    & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
+    & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
+    & islocal=islocal)
 END SELECT
 END PROCEDURE obj_GetNodeToElements1
 
@@ -118,13 +122,17 @@ END PROCEDURE obj_GetNodeToElements1
 MODULE PROCEDURE obj_GetNodeToElements2
 SELECT CASE (obj%nsd)
 CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
+    & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
+    & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
+    & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode)
+  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
+    & islocal=islocal)
 END SELECT
 END PROCEDURE obj_GetNodeToElements2
 

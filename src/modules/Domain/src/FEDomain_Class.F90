@@ -533,10 +533,12 @@ END INTERFACE
 ! for obj%nsd = 0, we use meshPoint
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
+    & RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), ALLOCATABLE :: ans(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END FUNCTION obj_GetNodeToElements1
 END INTERFACE
 
@@ -556,10 +558,12 @@ END INTERFACE
 ! for obj%nsd = 0, we use meshPoint
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
+    & RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END FUNCTION obj_GetNodeToElements2
 END INTERFACE
 
