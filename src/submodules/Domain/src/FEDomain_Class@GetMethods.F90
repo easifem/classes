@@ -223,13 +223,17 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
 
 SELECT CASE (obj%nsd)
 CASE (3)
-  ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
+  & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE DEFAULT
   ans = 0
 #ifdef DEBUG_VER
@@ -251,13 +255,17 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
 
 SELECT CASE (obj%nsd)
 CASE (3)
-  ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
+  & islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode)
+  ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
+  & islocal=islocal)
 CASE DEFAULT
   ans = 0
 #ifdef DEBUG_VER
