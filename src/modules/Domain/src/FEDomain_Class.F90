@@ -453,9 +453,10 @@ END INTERFACE
 ! summary: Returns true if the global node number is present
 
 INTERFACE
-  MODULE FUNCTION obj_IsNodePresent(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_IsNodePresent(obj, globalNode, islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsNodePresent
 END INTERFACE
