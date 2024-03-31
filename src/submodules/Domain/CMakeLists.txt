@@ -23,11 +23,4 @@ target_sources(
           ${src_path}/Domain_Class@IOMethods.F90
           ${src_path}/Domain_Class@GetMethods.F90
           ${src_path}/Domain_Class@SetMethods.F90
-          ${src_path}/Domain_Class@MeshDataMethods.F90
-          ${src_path}/FEDomain_Class@ConstructorMethods.F90
-          ${src_path}/FEDomain_Class@IOMethods.F90
-          ${src_path}/FEDomain_Class@GetMethods.F90
-          ${src_path}/FEDomain_Class@SetMethods.F90
-          ${src_path}/FEDomain_Class@MeshDataMethods.F90
-          ${src_path}/MeshFacetData_Class@Methods.F90
-)
+          ${src_path}/Domain_Class@MeshDataMethods.F90)
