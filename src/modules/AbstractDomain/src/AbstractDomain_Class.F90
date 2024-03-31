@@ -47,7 +47,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-03-31
 ! summary: AbstractDomain_ contains finite element mesh data of a domain
 !
 !{!pages/docs-api/AbstractDomain/AbstractDomain_.md!}
@@ -273,7 +273,7 @@ CONTAINS
 END TYPE AbstractDomain_
 
 !----------------------------------------------------------------------------
-!                                                             AbstractDomainPointer
+!                                                      AbstractDomainPointer
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractDomainPointer_
@@ -300,7 +300,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -395,7 +395,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             DisplayDomainInfo@IOMethods
+!                                               DisplayDomainInfo@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -807,7 +807,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getNodeCoord@getMethod
+!                                                     getNodeCoord@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -828,7 +828,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getNodeCoord@getMethod
+!                                                     getNodeCoord@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -858,7 +858,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getNodeCoordPointer@getMethod
+!                                             getNodeCoordPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -879,7 +879,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNptrs@getMethod
+!                                                         GetNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -900,7 +900,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNptrs@getMethod
+!                                                         GetNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -921,7 +921,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         getNptrs@getMethod
+!                                                GetInternalNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -942,7 +942,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           getNSD@getMethod
+!                                                         GetNSD@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -957,7 +957,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  getBoundingBox@GetMethods
+!                                                  GetBoundingBox@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -972,7 +972,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getTotalMeshFacetData@GetMethods
+!                                          GetTotalMeshFacetData@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1052,7 +1052,7 @@ INTERFACE AbstractDomainSetSparsity
 END INTERFACE AbstractDomainSetSparsity
 
 !----------------------------------------------------------------------------
-!                                               setTotalMaterial@setMethods
+!                                               SetTotalMaterial@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1246,7 +1246,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     SetAbstractDomainFacetElement@MeshDataMethods
+!                              SetAbstractDomainFacetElement@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
