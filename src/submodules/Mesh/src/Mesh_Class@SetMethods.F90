@@ -178,17 +178,6 @@ END SELECT
 END PROCEDURE obj_setSparsity4
 
 !----------------------------------------------------------------------------
-!                                                        setFacetElementType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_setFacetElementType
-INTEGER(I4B) :: localElem
-localElem = obj%getLocalElemNumber(globalElement=globalElement)
-obj%facetElementType(iface, localElem) = facetElementType
-obj%elementData(localElem)%elementType = facetElementType
-END PROCEDURE obj_setFacetElementType
-
-!----------------------------------------------------------------------------
 !                                                           setQuality
 !----------------------------------------------------------------------------
 
