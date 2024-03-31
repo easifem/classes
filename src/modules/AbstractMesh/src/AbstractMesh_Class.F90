@@ -1287,9 +1287,10 @@ END INTERFACE
 ! summary: This routine returns global node numbers in a given global elem
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement) RESULT(ans)
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetConnectivity
 END INTERFACE
