@@ -471,8 +471,8 @@ END INTERFACE
 ! summary: Returns true if the element number is present inside the domain
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim,  &
+    & islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! Element number
@@ -483,6 +483,7 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsElementPresent
 END INTERFACE
