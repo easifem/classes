@@ -879,13 +879,15 @@ END INTERFACE
 ! returns its nodal coordinates
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode)
+  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode, &
+    & islocal)
     CLASS(FEDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! It should be allocated by the user.
     !! SIZE(nodeCoord, 1) is equal to nsd
     !! Size(nodeCoord, 2) is equal to the size(globalNode)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetNodeCoord2
 END INTERFACE
 
