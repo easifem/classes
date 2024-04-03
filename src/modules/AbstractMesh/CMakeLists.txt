@@ -22,6 +22,14 @@ target_sources(
           ${src_path}/NodeData_Class.F90
           ${src_path}/NodeDataList_Class.F90
           ${src_path}/NodeDataBinaryTree_Class.F90
+          ${src_path}/EdgeData_Class.F90
+          ${src_path}/EdgeDataList_Class.F90
+          ${src_path}/EdgeDataBinaryTree_Class.F90
+          ${src_path}/EdgeDataBinaryTreeUtility.F90
+          ${src_path}/FaceData_Class.F90
+          ${src_path}/FaceDataList_Class.F90
+          ${src_path}/FaceDataBinaryTree_Class.F90
+          ${src_path}/FaceDataBinaryTreeUtility.F90
           ${src_path}/ElemData_Class.F90
           ${src_path}/ElemDataList_Class.F90
           ${src_path}/ElemDataBinaryTree_Class.F90

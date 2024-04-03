@@ -16,6 +16,10 @@
 !
 
 SUBMODULE(AbstractMesh_Class) NodeDataMethods
+USE Display_Method
+USE IntegerUtility
+USE GlobalData, ONLY: stdout
+USE AppendUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -25,8 +29,62 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum,  &
+  & globalNodeNum, nodewise_size(obj%tNodes)
+TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B), PARAMETER :: chunk_size = 32
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isNodeToElementsInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "NodeToElements is already initiated.")
+  RETURN
+END IF
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+obj%isNodeToElementsInitiated = .TRUE.
+
+nodewise_size = 0
+
+DO ii = 1, obj%tElements
+  globalElemNum = obj%elementData(ii)%globalElemNum
+
+  nn = SIZE(obj%elementData(ii)%globalNodes)
+
+  DO jj = 1, nn
+    globalNodeNum = obj%elementData(ii)%globalNodes(jj)
+    localNodeNum = obj%local_nptrs(globalNodeNum)
+
+    CALL Expand(vec=obj%nodeData(localNodeNum)%globalElements, &
+      & n=nodewise_size(localNodeNum), chunk_size=chunk_size,  &
+      & val=globalElemNum)
+  END DO
+
+END DO
+
+! Now we have to fix the size of `nodeData%globalElements`
+DO ii = 1, obj%tNodes
+  CALL Expand(vec=obj%nodeData(ii)%globalElements, &
+    & n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
+END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time : "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
@@ -35,8 +93,74 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
+  & local_elem_num, tnode, ii, global_node_num, local_node_num
+INTEGER(I4B), PARAMETER :: chunk_size = 64
+LOGICAL(LGT) :: found(obj%tNodes), skip
+TYPE(CPUTime_) :: TypeCPUTime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "Node to node information is already initiated.")
+  RETURN
+END IF
+
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+obj%isNodeToNodesInitiated = .TRUE.
+
+DO inode = 1, obj%tNodes
+  nodewise_size = 0
+  found = .FALSE.
+  telem = SIZE(obj%nodeData(inode)%globalElements)
+
+  DO iel = 1, telem
+    global_elem_num = obj%nodeData(inode)%globalElements(iel)
+    local_elem_num = obj%GetLocalElemNumber(global_elem_num)
+
+    tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
+    DO ii = 1, tnode
+
+      global_node_num = obj%elementData(local_elem_num)%globalNodes(ii)
+      local_node_num = obj%GetLocalNodeNumber(global_node_num)
+
+      skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
+      IF (.NOT. skip) THEN
+        CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+          & n=nodewise_size, chunk_size=chunk_size, &
+          & val=global_node_num)
+        found(local_node_num) = .TRUE.
+      END IF
+
+    END DO
+
+  END DO
+
+  CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+    & n=nodewise_size, chunk_size=chunk_size, &
+    & finished=.TRUE.)
+
+END DO
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName//  &
+    & " : time : "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------
@@ -44,9 +168,77 @@ END PROCEDURE obj_InitiateNodetoNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateExtraNodetoNodes
+! Define internal  variables
+INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
+INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
+  & indx(:)
+LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+! problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
+! IF (problem) RETURN
+
+problem = obj%isExtraNodeToNodesInitiated
+IF (problem) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Node to node information is already initiated")
+  RETURN
+END IF
+
+IF (.NOT. obj%isNodeToNodesInitiated) &
+  & CALL obj%InitiateNodeToNodes()
+
+IF (.NOT. obj%isNodeToElementsInitiated) &
+  & CALL obj%InitiateNodeToElements()
+
+IF (.NOT. obj%isElementToElementsInitiated) &
+  & CALL obj%InitiateElementToElements()
+
+DO iLocalNode = 1, obj%tNodes
+  iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+  n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
+  n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
+
+  DO iel = 1, SIZE(n2e)
+    e2e = obj%GetElementToElements(globalElement=n2e(iel), &
+      & onlyElements=.TRUE.)
+
+    mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
+
+    DO iel2 = 1, SIZE(mask_elem)
+
+      IF (mask_elem(iel2)) THEN
+
+        indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
+        mask_nptrs = .NOT. (indx.ISIN.n2n)
+        CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
+          & indx, mask_nptrs)
+
+      END IF
+
+    END DO
+
+    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%extraGlobalNodes)
+
+  END DO
+
+END DO
+
+obj%isExtraNodeToNodesInitiated = .TRUE.
+
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
+IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
+
 END PROCEDURE obj_InitiateExtraNodetoNodes
 
 !----------------------------------------------------------------------------

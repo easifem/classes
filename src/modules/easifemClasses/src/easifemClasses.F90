@@ -31,9 +31,30 @@ USE RealList_Class
 USE StringList_Class
 USE ElementList_Class
 USE ElementPointerVector_Class
+
+USE ElemData_Class
+USE ElemDataBinaryTree_Class
+USE ElemDataList_Class
+
+USE NodeData_Class
+USE NodeDataList_Class
+USE NodeDataBinaryTree_Class
+
+USE EdgeData_Class
+USE EdgeDataList_Class
+USE EdgeDataBinaryTree_Class
+
+USE FaceData_Class
+USE FaceDataList_Class
+USE FaceDataBinaryTree_Class
+
+USE FacetData_Class
+
 USE AbstractMesh_Class
 USE Mesh_Class
+USE FEMesh_Class
 USE MeshPointerVector_Class
+
 USE Domain_Class
 USE DomainUtility
 USE DomainConnectivity_Class

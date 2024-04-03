@@ -30,7 +30,6 @@ INTEGER(I4B) :: aint, ii
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 CALL Display(msg, unitno=unitno)
@@ -50,10 +49,13 @@ CALL Display(obj%tOverlappedMaterials,  &
 CALL Display(obj%tSolidMaterials, "tSolidMaterials: ", unitNo=unitNo)
 CALL Display(obj%SOLID_MATERIAL_ID, "SOLID_MATERIAL_ID: ", unitNo=unitNo)
 CALL Display(obj%algorithm, "algorithm: ", unitNo=unitNo)
+CALL Display(obj%vtkOutputFreq, "vtkOutputFreq: ", unitNo=unitNo)
 CALL Display(obj%name, "name: ", unitno=unitno)
 CALL Display(obj%engine, "engine: ", unitno=unitno)
 CALL Display(obj%tanmatProp, "tanmatProp: ", unitno=unitno)
 CALL Display(obj%outputPath, "outputPath: ", unitno=unitno)
+CALL Display(obj%unifyVTK, "unifyVTK: ", unitNo=unitNo)
+CALL Display(obj%createPVD, "createPVD: ", unitNo=unitNo)
 CALL Display(obj%coordinateSystem, "coordinateSystem: ", unitno=unitno)
 CALL Display(obj%maxIter, "maxIter: ", unitno=unitno)
 CALL Display(obj%timeDependency, "timeDependency: ", unitno=unitno)
@@ -371,7 +373,6 @@ TYPE(String) :: dsetname
 LOGICAL(LGT) :: isok, problem
 TYPE(CPUTime_) :: TypeCPUTime
 
-
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
@@ -439,9 +440,11 @@ MODULE PROCEDURE obj_WriteData_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
 LOGICAL(LGT) :: isok, problem
 TYPE(VTKFile_) :: avtk
-TYPE(String) :: filename
+TYPE(String) :: filename, path, prefix, suffix
+CHARACTER(*), PARAMETER :: ext = ".vtu"
 TYPE(CPUTime_) :: TypeCPUTime
-
+TYPE(AbstractNodeFieldPointer_) :: anfptr(3)
+INTEGER(I4B) :: ii
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
@@ -457,31 +460,77 @@ IF (problem) THEN
   RETURN
 END IF
 
-isok = ASSOCIATED(obj%displacement)
-IF (isok) THEN
-  filename = obj%outputPath//obj%GetPrefix()//"_displacement_"  &
-    & //tostring(obj%currentTimeStep)//".vtu"
-  CALL avtk%InitiateVTKFile(filename=filename%chars())
-  CALL obj%displacement%WriteData(vtk=avtk)
-  CALL avtk%DEALLOCATE()
-END IF
+problem = MOD(obj%currentTimeStep, obj%vtkOutputFreq) .NE. 0
+IF (problem) RETURN
 
-isok = ASSOCIATED(obj%velocity)
-IF (isok) THEN
-  filename = obj%outputPath//obj%GetPrefix()//"_velocity_"  &
-    & //tostring(obj%currentTimeStep)//".vtu"
-  CALL avtk%InitiateVTKFile(filename=filename%chars())
-  CALL obj%velocity%WriteData(vtk=avtk)
-  CALL avtk%DEALLOCATE()
-END IF
+DO ii = 1, 3; anfptr(ii)%ptr => NULL(); END DO
 
-isok = ASSOCIATED(obj%acceleration)
-IF (isok) THEN
-  filename = obj%outputPath//obj%GetPrefix()//"_acceleration_"  &
-    & //tostring(obj%currentTimeStep)//".vtu"
-  CALL avtk%InitiateVTKFile(filename=filename%chars())
-  CALL obj%acceleration%WriteData(vtk=avtk)
+path = obj%outputPath
+prefix = obj%GetPrefix()
+suffix = tostring(obj%currentTimeStep)
+
+IF (obj%unifyVTK) THEN
+
+  filename = prefix//"_result_"//suffix//ext
+  CALL avtk%InitiateVTKFile(filename=path%chars()//filename%chars())
+  isok = ASSOCIATED(obj%displacement)
+  IF (isok) anfptr(1)%ptr => obj%displacement
+  isok = ASSOCIATED(obj%velocity)
+  IF (isok) anfptr(2)%ptr => obj%velocity
+  isok = ASSOCIATED(obj%acceleration)
+  IF (isok) anfptr(3)%ptr => obj%acceleration
+  CALL NodeFieldsWriteData(obj=anfptr, vtk=avtk)
   CALL avtk%DEALLOCATE()
+
+  DO ii = 1, 3; anfptr(ii)%ptr => NULL(); END DO
+
+  IF (obj%createPVD) THEN
+    CALL obj%pvdFile%WriteDataSetTag(currentTime=obj%currentTime,  &
+    & filename=filename%chars())
+  END IF
+
+ELSE
+  isok = ASSOCIATED(obj%displacement)
+  IF (isok) THEN
+    filename = prefix//"_displacement_"//suffix//ext
+    CALL avtk%InitiateVTKFile(filename=path%chars()//filename%chars())
+    CALL obj%displacement%WriteData(vtk=avtk)
+    CALL avtk%DEALLOCATE()
+
+    IF (obj%createPVD) THEN
+      CALL obj%pvdFile%WriteDataSetTag(currentTime=obj%currentTime,  &
+      & filename=filename%chars(), part=0)
+    END IF
+
+  END IF
+
+  isok = ASSOCIATED(obj%velocity)
+  IF (isok) THEN
+    filename = prefix//"_velocity_"//suffix//ext
+    CALL avtk%InitiateVTKFile(filename=path%chars()//filename%chars())
+    CALL obj%velocity%WriteData(vtk=avtk)
+    CALL avtk%DEALLOCATE()
+
+    IF (obj%createPVD) THEN
+      CALL obj%pvdFile%WriteDataSetTag(currentTime=obj%currentTime,  &
+      & filename=filename%chars(), part=1)
+    END IF
+
+  END IF
+
+  isok = ASSOCIATED(obj%acceleration)
+  IF (isok) THEN
+    filename = prefix//"_acceleration_"//suffix//ext
+    CALL avtk%InitiateVTKFile(filename=path%chars()//filename%chars())
+    CALL obj%acceleration%WriteData(vtk=avtk)
+    CALL avtk%DEALLOCATE()
+
+    IF (obj%createPVD) THEN
+      CALL obj%pvdFile%WriteDataSetTag(currentTime=obj%currentTime,  &
+      & filename=filename%chars(), part=2)
+    END IF
+
+  END IF
 END IF
 
 #ifdef DEBUG_VER

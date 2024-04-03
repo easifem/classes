@@ -20,7 +20,9 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(Domain_Class) ConstructorMethods
-USE BaseMethod
+USE ReallocateUtility
+USE CSRSparsity_Method
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -29,14 +31,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Initiate
-CHARACTER(*), PARAMETER :: myName = "Domain_Initiate"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Domain_Initiate()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 ! Exception related to Mesh_ data type wil be printed in the
 ! domain only
-CALL e%raiseInformation(modName//'::'//myName//'-'// &
-  & 'INITIATING DOMAIN BY IMPORTING FROM MESH-FILE')
+
 CALL obj%IMPORT(hdf5=hdf5, group=group)
-CALL e%raiseInformation(modName//'::'//myName//'-'// &
-  & 'MESH-FILE IS READ & DOMAIN HAS BEEN CREATED')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
@@ -55,13 +64,11 @@ END PROCEDURE MeshFacetData_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFacetData_isInitiated
-!
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-!
 END PROCEDURE MeshFacetData_isInitiated
 
 !----------------------------------------------------------------------------
@@ -69,13 +76,11 @@ END PROCEDURE MeshFacetData_isInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFacetData_Size
-!
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = SIZE(obj%masterCellNumber)
 ELSE
   ans = 0
 END IF
-!
 END PROCEDURE MeshFacetData_Size
 
 !----------------------------------------------------------------------------
@@ -83,7 +88,8 @@ END PROCEDURE MeshFacetData_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Deallocate
-CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate"
+! CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate()"
+
 obj%isInitiated = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
@@ -103,12 +109,12 @@ obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
 CALL DEALLOCATE (obj%meshmap)
 IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
-! BUG
-CALL e%raiseDebug(modName//'::'//myName//'-'// &
-  & 'There should be better way to deallocate obj%meshList...')
-IF (ALLOCATED(obj%meshList)) THEN
-  DEALLOCATE (obj%meshList)
-END IF
+
+CALL meshPointerDeallocate(obj%meshVolume)
+CALL meshPointerDeallocate(obj%meshSurface)
+CALL meshPointerDeallocate(obj%meshCurve)
+CALL meshPointerDeallocate(obj%meshPoint)
+
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
 IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
 IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
@@ -128,7 +134,7 @@ END PROCEDURE Domain_Final
 
 MODULE PROCEDURE Domain_Constructor_1
 ALLOCATE (Domain_ :: ans)
-CALL ans%initiate(hdf5=hdf5, group=group)
+CALL ans%Initiate(hdf5=hdf5, group=group)
 END PROCEDURE Domain_Constructor_1
 
 !----------------------------------------------------------------------------

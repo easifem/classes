@@ -246,6 +246,15 @@ CALL Set(param, .TRUE., prefix, "isIncompressible",  &
 CALL Set(param, .TRUE., prefix, "showTime",  &
   & Input(option=showTime, default=.FALSE.))
 
+CALL Set(param, .TRUE., prefix, "unifyVTK",  &
+  & Input(option=unifyVTK, default=.FALSE.))
+
+CALL Set(param, .TRUE., prefix, "createPVD",  &
+  & Input(option=createPVD, default=.FALSE.))
+
+CALL Set(param, TypeIntI4B, prefix, "vtkOutputFreq",  &
+ & Input(option=vtkOutputFreq, default=1))
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -508,6 +517,21 @@ IF (obj%showTime) THEN
   CALL obj%showTimeFile%WRITE(val=temp_str)
 END IF
 
+CALL GetValue(param, prefix, "unifyVTK", obj%unifyVTK)
+
+CALL GetValue(param, prefix, "createPVD", obj%createPVD)
+
+IF (obj%createPVD) THEN
+  temp_str = obj%outputPath//prefix//"_results.pvd"
+  CALL obj%pvdFile%InitiatePVDFile(filename=temp_str)
+END IF
+
+CALL GetValue(param, prefix, "vtkOutputFreq", obj%vtkOutputFreq)
+
+IF (obj%vtkOutputFreq .LT. 0) THEN
+  obj%vtkOutputFreq = 1
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -530,6 +554,9 @@ INTEGER(I4B) :: ii, jj
 
 obj%tOverlappedMaterials = 0
 obj%outputPath = ""
+obj%unifyVTK = .FALSE.
+obj%createPVD = .FALSE.
+obj%vtkOutputFreq = 0
 obj%tanmatProp = ""
 obj%problemType = 0
 obj%IsInitiated = .FALSE.
@@ -755,6 +782,8 @@ NULLIFY (obj%bodySourceFunc)
 
 obj%showTime = .FALSE.
 CALL obj%showTimeFile%DEALLOCATE()
+
+CALL obj%pvdFile%DEALLOCATE()
 
 END PROCEDURE obj_Deallocate
 

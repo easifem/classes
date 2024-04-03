@@ -13,33 +13,31 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-MODULE EdgeBinaryTreeUtility
+MODULE EdgeDataBinaryTreeUtility
 USE GlobalData, ONLY: I4B
-USE EdgeBinaryTree_Class
-USE EdgeTreeData_Class
-
+USE EdgeDataBinaryTree_Class
+USE EdgeData_Class
 IMPLICIT NONE
-
 PRIVATE
 
-PUBLIC :: EdgeBinaryTree_GetArray
+PUBLIC :: EdgeDataBinaryTree_GetArray
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   EdgeBinaryTree_GetArray
+!                                               EdgeDataBinaryTree_GetArray
 !----------------------------------------------------------------------------
 
-RECURSIVE SUBROUTINE EdgeBinaryTree_GetArray(obj, VALUE)
-  TYPE(EdgeBinaryTree_), INTENT(INOUT) :: obj
+RECURSIVE SUBROUTINE EdgeDataBinaryTree_GetArray(obj, VALUE)
+  TYPE(EdgeDataBinaryTree_), INTENT(INOUT) :: obj
+  !! Binary tree of edge data
   INTEGER(I4B), INTENT(INOUT) :: VALUE(:, :)
-    !! The number of rows in value should be 2
-    !! The number of columns in value should be total number of edges
+  !! The number of rows in value should be 2
+  !! The number of columns in value should be total number of edges
 
-  TYPE(EdgeBinaryTree_) :: anode
-  TYPE(EdgeTreeData_), POINTER :: value_ptr
+  TYPE(EdgeDataBinaryTree_) :: anode
+  TYPE(EdgeData_), POINTER :: value_ptr
   INTEGER(I4B) :: ii
 
   IF (.NOT. obj%ASSOCIATED()) RETURN
@@ -47,7 +45,7 @@ RECURSIVE SUBROUTINE EdgeBinaryTree_GetArray(obj, VALUE)
   ! Get left
   anode = obj%GetNode(opt=-1)
   IF (anode%ASSOCIATED()) THEN
-    CALL EdgeBinaryTree_GetArray(anode, VALUE)
+    CALL EdgeDataBinaryTree_GetArray(anode, VALUE)
   END IF
 
   ! Get node value
@@ -62,12 +60,16 @@ RECURSIVE SUBROUTINE EdgeBinaryTree_GetArray(obj, VALUE)
   ! Get right
   anode = obj%GetNode(opt=1)
   IF (anode%ASSOCIATED()) THEN
-    CALL EdgeBinaryTree_GetArray(anode, VALUE)
+    CALL EdgeDataBinaryTree_GetArray(anode, VALUE)
   END IF
 
   NULLIFY (value_ptr)
   CALL anode%Unlink()
 
-END SUBROUTINE EdgeBinaryTree_GetArray
+END SUBROUTINE EdgeDataBinaryTree_GetArray
 
-END MODULE EdgeBinaryTreeUtility
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE EdgeDataBinaryTreeUtility

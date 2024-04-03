@@ -16,9 +16,13 @@
 !
 
 MODULE ElemData_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: ElementName
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
+  & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
+USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
+  & FaceShapeMetaData_Quadrangle
+USE SortUtility
 IMPLICIT NONE
 PRIVATE
 
@@ -34,11 +38,14 @@ PUBLIC :: ElemData_lt
 PUBLIC :: ElemData_eq
 PUBLIC :: ElemData_SetID
 PUBLIC :: ElemData_Copy
+PUBLIC :: ElemData_GetGlobalFaceCon
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
+
+INTEGER(I4B), PARAMETER :: MAX_NUM_OVERLAPPED_CONTINNUM = 4
 
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
@@ -57,8 +64,11 @@ END INTERFACE ElemDataDeallocate
 ! summary: Data type for storing element data
 
 TYPE :: ElemData_
+  LOGICAL(LGT) :: isActive = .TRUE.
+    !! Is element in active stage
   INTEGER(I4B) :: globalElemNum = 0_I4B
     !! global element number
+    !! cell connectivity number
   INTEGER(I4B) :: localElemNum = 0_I4B
     !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
@@ -69,8 +79,32 @@ TYPE :: ElemData_
   INTEGER(I4B) :: name = 0
     !! This is name of the element
     !! It can be Triangle, Triangle3, Triangle6, etc.
+    !! Quadrangle,
+  INTEGER(I4B) :: meshID = 0
+    !! ID of mesh to which the element belong
+    !! This is a gmsh concept
+  INTEGER(INT8) :: material(MAX_NUM_OVERLAPPED_CONTINNUM) = 0
+    !! materials mapped to the mesh
+    !! material(1) is the material-id (type of material) of medium 1
+    !! material(2) is the material-id (type of material) of medium 2
+    !!
+    !! ...
+    !!
+    !! For example, soil is a porous medium with n = 1,
+    !! fluid is a medium with n =2
+    !! then material(1) denotes the type of soil => clay, sand, silt
+    !! and material(2) denotes the type of fluid => water, oil, air
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
+    !! Vertex connectivity
+  INTEGER(I4B), ALLOCATABLE :: globalEdges(:)
+    !! Edge connectivity
+  INTEGER(INT8), ALLOCATABLE :: edgeOrient(:)
+    !! Orientation of edge
+  INTEGER(I4B), ALLOCATABLE :: globalFaces(:)
+    !! Face connectivity
+  INTEGER(INT8), ALLOCATABLE :: faceOrient(:, :)
+    !! Orientation of face
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
@@ -97,6 +131,10 @@ END TYPE ElemData_
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  List of element data type
 
 TYPE ElemDataType_
   INTEGER(I4B) :: internal = INTERNAL_ELEMENT
@@ -125,15 +163,21 @@ SUBROUTINE ElemData_Copy(obj1, obj2)
   TYPE(ElemData_), INTENT(INOUT) :: obj1
   TYPE(ElemData_), INTENT(IN) :: obj2
 
+  obj1%isActive = obj2%isActive
   obj1%globalElemNum = obj2%globalElemNum
   obj1%localElemNum = obj2%localElemNum
   obj1%elementType = obj2%elementType
   obj1%name = obj2%name
+
   IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
+  IF (ALLOCATED(obj2%globalEdges)) obj1%globalEdges = obj2%globalEdges
+  IF (ALLOCATED(obj2%globalFaces)) obj1%globalFaces = obj2%globalFaces
+
   IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
     & = obj2%globalElements
-  IF (ALLOCATED(obj2%boundaryData)) obj1%boundaryData &
+  IF (ALLOCATED(obj2%boundaryData)) obj1%boundaryData&
     & = obj2%boundaryData
+
 END SUBROUTINE ElemData_Copy
 
 !----------------------------------------------------------------------------
@@ -150,6 +194,7 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
 
   CALL Display(TRIM(msg), unitno=unitno)
+  CALL Display(obj%isActive, msg="isActive: ", unitno=unitno)
   CALL Display(obj%globalElemNum, msg="globalElemNum: ", unitno=unitno)
   CALL Display(obj%localElemNum, msg="localElemNum: ", unitno=unitno)
   CALL Display(ElemData_ElemType2String(obj%elementType), "elementType: ",  &
@@ -161,9 +206,28 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     CALL Display(obj%globalNodes, msg="globalNodes: ", unitno=unitno)
   END IF
 
+  ! globalEdges
+  IF (ALLOCATED(obj%globalEdges)) THEN
+    CALL Display(obj%globalEdges, msg="globalEdges: ", unitno=unitno)
+  END IF
+
+  IF (ALLOCATED(obj%edgeOrient)) THEN
+    CALL Display(obj%edgeOrient, msg="edgeOrient: ", unitno=unitno)
+  END IF
+
+  ! globalFaces
+  IF (ALLOCATED(obj%globalFaces)) THEN
+    CALL Display(obj%globalFaces, msg="globalFaces: ", unitno=unitno)
+  END IF
+
+  IF (ALLOCATED(obj%faceOrient)) THEN
+    CALL Display(obj%faceOrient, msg="faceOrient: ", unitno=unitno)
+  END IF
+
   ! globalElements
   IF (ALLOCATED(obj%globalElements)) THEN
-    CALL Display(obj%globalElements, msg="globalElements: ", unitno=unitno)
+    CALL Display(obj%globalElements, msg="globalElements: ", &
+    & unitno=unitno, full=.TRUE.)
   END IF
 
   ! boundaryData
@@ -204,10 +268,18 @@ END FUNCTION ElemData_ElemType2String
 
 SUBROUTINE ElemData_Deallocate(obj)
   TYPE(ElemData_), INTENT(INOUT) :: obj
+  obj%isActive = .TRUE.
   obj%globalElemNum = 0
   obj%localElemNum = 0
   obj%elementType = INTERNAL_ELEMENT
+  obj%name = 0
+  obj%meshID = 0
+  obj%material = 0
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
+  IF (ALLOCATED(obj%globalEdges)) DEALLOCATE (obj%globalEdges)
+  IF (ALLOCATED(obj%edgeOrient)) DEALLOCATE (obj%edgeOrient)
+  IF (ALLOCATED(obj%globalFaces)) DEALLOCATE (obj%globalFaces)
+  IF (ALLOCATED(obj%faceOrient)) DEALLOCATE (obj%faceOrient)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
 END SUBROUTINE ElemData_Deallocate
@@ -216,15 +288,35 @@ END SUBROUTINE ElemData_Deallocate
 !                                                           ElemDataInitiate
 !----------------------------------------------------------------------------
 
-SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
-  & elementType, globalNodes, globalElements, boundaryData)
+PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
+  & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
+  & globalFaces, name, isActive, meshID)
+  ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
+  ! obj%elementData(ii)%localElemNum = ii
+  ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
   TYPE(ElemData_), INTENT(INOUT) :: obj
+  !! element data object
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElemNum
+  !! global element number
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: localElemNum
+  !! local element number
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
+  !! element type: internal element, boundary element, etc.
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
+  !! vertex connectivity
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
+  !! element to element mapping
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: boundaryData(:)
+  !! boundary data
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalEdges(:)
+  !! edge connectivity
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalFaces(:)
+  !! gace connectivity
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
+  !! Type of element, triangle, triangle3, Quadrangle4, etc
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isActive
+  !! is element active
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID
 
   IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
   IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
@@ -232,6 +324,11 @@ SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
   IF (PRESENT(globalElements)) obj%globalElements = globalElements
   IF (PRESENT(boundaryData)) obj%boundaryData = boundaryData
+  IF (PRESENT(globalEdges)) obj%globalEdges = globalEdges
+  IF (PRESENT(globalFaces)) obj%globalFaces = globalFaces
+  IF (PRESENT(name)) obj%name = name
+  IF (PRESENT(isActive)) obj%isActive = isActive
+  IF (PRESENT(meshID)) obj%meshID = meshID
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------
@@ -274,5 +371,42 @@ SUBROUTINE ElemData_SetID(obj, id)
   INTEGER(I4B), INTENT(IN) :: id
   obj%localElemNum = id
 END SUBROUTINE ElemData_SetID
+
+!----------------------------------------------------------------------------
+!                                                 ElemData_GetGlobalFaceCon
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-12
+! summary:  Returns the vertex connectivity of global face of elements
+
+SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: globalFaceCon(:, :)
+  INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
+
+  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, REFELEM_MAX_FACES),  &
+    & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
+    & iface, face_temp(4), aint
+
+  CALL RefElemGetGeoParam(elemType=obj%name,  &
+    & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces0,  &
+    & faceOpt=1_I4B, faceElemType=faceElemType,  &
+    & tFaceNodes=tFaceNodes)
+
+  DO iface = 1, tFaces
+    aint = tFaceNodes(iface)
+    face_temp(1:aint) = obj%globalNodes(localFaces0(1:aint, iface))
+
+    CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint),  &
+      & sorted_face=globalFaceCon(1:aint, iface),  &
+      & localFaces=localFaceCon(1:aint, iface))
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalFaceCon
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE ElemData_Class

@@ -1,5 +1,5 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Copyright (C) Vikas Sharma, Ph.D
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,20 +13,20 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-#define  Binary_Tree_Type_Name EdgeBinaryTree_
+#define  Binary_Tree_Type_Name FaceDataBinaryTree_
 #define Binary_Tree_Activate_SetID_Method
-MODULE EdgeBinaryTree_Class
-USE EdgeTreeData_Class, ONLY: TreeData_ => EdgeTreeData_,  &
-  & TreeData_Deallocate => EdgeTreeData_Deallocate,  &
-  & TreeData_Display => EdgeTreeData_Display,  &
-  & TreeData_lt => EdgeTreeData_lt,  &
-  & TreeData_eq => EdgeTreeData_eq,  &
-  & TreeData_SetID => EdgeTreeData_SetID
+MODULE FaceDataBinaryTree_Class
+USE FaceData_Class, ONLY: TreeData_ => FaceData_,  &
+  & TreeData_Deallocate => FaceData_Deallocate,  &
+  & TreeData_Display => FaceData_Display,  &
+  & TreeData_lt => FaceData_lt,  &
+  & TreeData_eq => FaceData_eq,  &
+  & TreeData_SetID => FaceData_SetID
 
-#include "./BinaryTree.inc"
-END MODULE EdgeBinaryTree_Class
+#include "../../BinaryTree/src/BinaryTree.inc"
+
+END MODULE FaceDataBinaryTree_Class
 
 #undef Binary_Tree_Type_Name
 #undef Binary_Tree_Activate_SetID_Method

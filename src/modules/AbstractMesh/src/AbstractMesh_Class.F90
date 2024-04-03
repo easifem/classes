@@ -20,21 +20,21 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE Files, ONLY: HDF5File_, VTKFile_
 USE BaseType, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
-USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
-  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
-USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
-  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem,  &
-  & ElemData_Display => Display
-USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
-  & InternalFacetData_Display, BoundaryFacetData_Display
 USE CPUTime_Class, ONLY: CPUTime_
+USE ElemData_Class
+USE ElemDataBinaryTree_Class
+USE ElemDataList_Class
+USE NodeData_Class
+USE NodeDataList_Class
+USE NodeDataBinaryTree_Class
+USE FacetData_Class
 IMPLICIT NONE
 
 PRIVATE
 PUBLIC :: AbstractMesh_
 PUBLIC :: AbstractMeshDeallocate
 PUBLIC :: AbstractMeshDisplay
-PUBLIC :: AbstractMeshGetQuery
+PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
@@ -63,12 +63,19 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! Node to nodes mapping
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
     !! Element to elements mapping
+  LOGICAL(LGT) :: isEdgeConnectivityInitiated = .FALSE.
+    !! This is set to true when edge connectivity is initiated
+    !! See InitiateEdgeConnectivity method
+  LOGICAL(LGT) :: isFaceConnectivityInitiated = .FALSE.
+    !! This is set to true when face connectivity is initiated
+    !! See InitiateFaceConnectivity method
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
     !! Boundary data
   LOGICAL(LGT) :: isFacetDataInitiated = .FALSE.
     !! FacetData
   INTEGER(I4B) :: uid = 0
     !! Unique id of the mesh
+    !! In case of Mesh_ it is entityNumber of the mesh
   INTEGER(I4B) :: tElements_topology_wise(8) = 0
     !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
     !! pyramid (it is calculated in the postprocessing step)
@@ -76,8 +83,16 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! total element topologies, name of element topologies are stored in
     !! elemTopologies(1:tElemTopologies)
     !! this info is computed in a postprocessing step
+  INTEGER(I4B) :: maxNNE = 0
+    !! maximum number of nodes in element
   INTEGER(I4B) :: nsd = 0
     !! number of spatial dimension of the mesh
+  INTEGER(I4B) :: xidim = 0
+    !! xidimension of elements present inside the mesh
+    !! for point xidim = 0
+    !! for line/curve xidim = 1
+    !! for surface xidim = 2
+    !! for volume xidim = 3
   INTEGER(I4B) :: maxNptrs = 0
     !! largest node number present inside the mesh
   INTEGER(I4B) :: minNptrs = 0
@@ -88,7 +103,9 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! minimum element number present inside the mesh
   INTEGER(I4B) :: tNodes = 0
     !! total number of nodes present inside the mesh
-  INTEGER(I4B) :: tIntNodes = 0
+  INTEGER(I4B) :: tEdges = 0
+    !! total number of internal nodes inside the mesh
+  INTEGER(I4B) :: tFaces = 0
     !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tElements = 0
     !! total number of elements present inside the mesh
@@ -111,9 +128,6 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! y coordinate of centroid
   REAL(DFP) :: z = 0.0
     !! z coordinate of centroid
-  INTEGER(I4B), ALLOCATABLE :: physicalTag(:)
-    !! Physical entities associated with the current entity (mesh)
-    !! physical tags can be thought of as the material numbers
   INTEGER(I4B), ALLOCATABLE :: material(:)
     !! materials mapped to the mesh
     !! material(1) is the material id of medium 1
@@ -165,6 +179,15 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! Domain Facet Data
     !! INFO: This data is initiated by InitiateFacetElements method
 
+  TYPE(ElemDataList_) :: elementDataList
+  !! ElemData list
+  TYPE(ElemDataBinaryTree_) :: elementDataBinaryTree
+  !! ElemData binary tree
+  TYPE(NodeDataList_) :: nodeDataList
+  !! NodeData list
+  TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
+  !! NodeData binary tree
+
 CONTAINS
   PRIVATE
 
@@ -176,7 +199,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
     !! Deallocate memory occupied by the mesh instance
   PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => obj_isEmpty
-  !! Returns true if the mesh is empty.
+    !! Returns true if the mesh is empty.
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDynamicDataStructure =>  &
+  & obj_InitiateDynamicDataStructure
+    !! Initiate DynamicDataStructure of mesh from static data
 
   ! IO:
   ! @IOMethods
@@ -232,6 +258,16 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
     & obj_InitiateBoundaryData
   !! Initiate the boundary data
+
+  ! SET:
+  ! @EdgeDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
+    & obj_InitiateEdgeConnectivity
+
+  ! SET:
+  ! @FaceDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
+    & obj_InitiateFaceConnectivity
 
   ! SET:
   ! @FacetDataMethods
@@ -443,11 +479,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! returns the total material
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
-  !! Please use GetParam instead of GetQuery.
-  !! They are the same. But I like the name GetParam
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
@@ -502,22 +534,26 @@ END TYPE AbstractMesh_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Allocate the size of the mesh
+! date: 2024-03-18
+! summary: Read the mesh from the HDF5File_ see import method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group, dim, entities)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! Mesh file in hdf5 file format
-    CHARACTER(*), INTENT(IN) :: group
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: group
     !! location in HDF5 file
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entities(:)
+    !! entity number
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    Deallocate@Constructor
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -531,14 +567,32 @@ INTERFACE AbstractMeshDeallocate
 END INTERFACE AbstractMeshDeallocate
 
 !----------------------------------------------------------------------------
-!                                                         isEmpty@Constructor
+!                                                 isEmpty@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Returns true if the mesh is empty
 
 INTERFACE
   MODULE FUNCTION obj_isEmpty(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isEmpty
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                           InitiateDynamicDataStructure@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-31
+! summary:  Initiate dynamic data structure from static data structure
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateDynamicDataStructure(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateDynamicDataStructure
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -565,12 +619,25 @@ END INTERFACE
 ! This routine allocate obj%nodeData
 ! This routine Set localNodeNum and globalNodeNum data inside the
 ! nodeData
+!
+!
+! If group is present then the mesh from that group is read
+!
+! If dim is present then all entities of that dimension is read
+!
+! If (dim, entities) are present then we construct groups
+! based on dim and entities and make a mesh
 
 INTERFACE AbstractMeshImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dim, entities)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: group
+    !! Group name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entities(:)
+    !! entityNum
   END SUBROUTINE obj_Import
 END INTERFACE AbstractMeshImport
 
@@ -875,7 +942,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetNptrs(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B) :: ans(obj%tNodes)
   END FUNCTION obj_GetNptrs
 END INTERFACE
 
@@ -1192,6 +1259,11 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
 ! summary: This routine returns global node numbers in a given global elem
+!
+!# Introduction
+!
+! This routine returns the global node numbers (Vertex) connectivity
+! of all elements of the mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeConnectivity(obj, VALUE)
@@ -1409,9 +1481,9 @@ END INTERFACE
 !# Introduction
 ! This fucntion returns the vector of node numbers which surrounds a given
 ! node number `globalNode`.
-! - If `IncludeSelf` is true then, in the returned vector of integer,
+! - If `includeSelf` is true then, in the returned vector of integer,
 ! node number globalNode is also present
-!- If `IncludeSelf` is false then, in the returned vector of integer,
+!- If `includeSelf` is false then, in the returned vector of integer,
 ! node number `globalNode` is not present
 !
 !@note
@@ -1420,11 +1492,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION obj_GetNodeToNodes1(obj, globalNode, includeSelf) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    LOGICAL(LGT), INTENT(IN) :: IncludeSelf
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes1
 END INTERFACE
@@ -1441,9 +1513,9 @@ END INTERFACE
 !
 ! This function returns the vector of node numbers which surrounds a given
 ! node number `globalNode`.
-! - If `IncludeSelf` is true then, in the returned vector of integer,
+! - If `includeSelf` is true then, in the returned vector of integer,
 ! node number globalNode is also present
-!- If `IncludeSelf` is false then, in the returned vector of integer,
+!- If `includeSelf` is false then, in the returned vector of integer,
 ! node number `globalNode` is not present
 !
 !@note
@@ -1452,11 +1524,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION obj_GetNodeToNodes2(obj, globalNode, includeSelf) &
     & RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    LOGICAL(LGT), INTENT(IN) :: IncludeSelf
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeToNodes2
 END INTERFACE
@@ -1836,13 +1908,13 @@ END INTERFACE
 !                                                     GetQuery@GetMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractMeshGetQuery
-  MODULE SUBROUTINE obj_GetQuery(obj, &
+INTERFACE AbstractMeshGetParam
+  MODULE SUBROUTINE obj_GetParam(obj, &
     & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
     & xidim, elemType, nsd, maxNptrs, minNptrs, &
-    & maxElemNum, minElemNum, tNodes, tIntNodes, tElements, &
+    & maxElemNum, minElemNum, tNodes, tElements, &
     & minX, minY, minZ, maxX, maxY, maxZ, &
     & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
@@ -1853,15 +1925,15 @@ INTERFACE AbstractMeshGetQuery
 
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, &
       & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, tIntNodes, &
+      & maxElemNum, minElemNum, tNodes, &
       & tElements, tElements_topology_wise(8), tElemTopologies,  &
       & elemTopologies(8)
 
     REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, &
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
-  END SUBROUTINE obj_GetQuery
-END INTERFACE AbstractMeshGetQuery
+  END SUBROUTINE obj_GetParam
+END INTERFACE AbstractMeshGetParam
 
 !----------------------------------------------------------------------------
 !                                                GetMinElemNumber@GetMethods
@@ -2056,6 +2128,36 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE obj_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateEdgeConnectivity@EdgeDataMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  Initiate edge data in elemData
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateEdgeConnectivity(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateEdgeConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateFaceConnectivity@FaceDataMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-03-07
+! summary:  Initiate edge data in elemData
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFaceConnectivity(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateFaceConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

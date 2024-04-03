@@ -21,9 +21,10 @@ target_sources(
   PRIVATE ${src_path}/MeshUtility.F90
           ${src_path}/Mesh_Class@ConstructorMethods.F90
           ${src_path}/Mesh_Class@IOMethods.F90
-          ${src_path}/Mesh_Class@SetMethods.F90
           ${src_path}/Mesh_Class@GetMethods.F90
+          ${src_path}/Mesh_Class@SetMethods.F90
           ${src_path}/Mesh_Class@NodeDataMethods.F90
           ${src_path}/Mesh_Class@ElementDataMethods.F90
           ${src_path}/Mesh_Class@BoundaryDataMethods.F90
-          ${src_path}/Mesh_Class@FacetDataMethods.F90)
+          ${src_path}/Mesh_Class@FacetDataMethods.F90
+          )

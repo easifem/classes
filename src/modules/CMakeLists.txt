@@ -51,6 +51,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
 # VTKFile
 include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 
+# PVDFile
+include(${CMAKE_CURRENT_LIST_DIR}/PVDFile/CMakeLists.txt)
+
 # Files
 include(${CMAKE_CURRENT_LIST_DIR}/Files/CMakeLists.txt)
 
@@ -90,11 +93,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
 # AbstractMesh
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 
+# FEMesh
+include(${CMAKE_CURRENT_LIST_DIR}/FEMesh/CMakeLists.txt)
+
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
-
-# DynamicMesh
-include(${CMAKE_CURRENT_LIST_DIR}/DynamicMesh/CMakeLists.txt)
 
 # MeshPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)

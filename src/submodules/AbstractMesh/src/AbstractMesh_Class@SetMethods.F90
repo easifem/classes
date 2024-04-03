@@ -17,6 +17,7 @@
 SUBMODULE(AbstractMesh_Class) SetMethods
 USE BoundingBox_Method
 USE ReallocateUtility
+USE CSRMatrix_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -57,9 +58,61 @@ END PROCEDURE obj_SetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: i, j, k, tNodes
+INTEGER(I4B), ALLOCATABLE :: n2n(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+tsize = obj%GetTotalElements()
+problem = tsize .EQ. 0_I4B
+IF (problem) THEN
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+  RETURN
+END IF
+
+! check
+problem = .NOT. obj%isNodeToNodesInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
+  RETURN
+END IF
+#endif
+
+tNodes = obj%GetTotalNodes()
+
+DO i = 1, tNodes
+  j = obj%GetGlobalNodeNumber(localNode=i)
+  k = localNodeNumber(j)
+  IF (k .NE. 0) THEN
+    n2n = localNodeNumber( &
+      & obj%GetNodeToNodes(globalNode=j, includeSelf=.TRUE.))
+    CALL SetSparsity(obj=mat, row=k, col=n2n)
+  END IF
+END DO
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE obj_SetSparsity1
 
 !----------------------------------------------------------------------------
@@ -67,9 +120,57 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
-CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: i, j, tNodes
+INTEGER(I4B), ALLOCATABLE :: n2n(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+tsize = obj%GetTotalElements()
+problem = tsize .EQ. 0_I4B
+IF (problem) THEN
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+  RETURN
+END IF
+
+! check
+problem = .NOT. obj%isNodeToNodesInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
+  RETURN
+END IF
+#endif
+
+tNodes = obj%GetTotalNodes()
+
+DO i = 1, tNodes
+  j = obj%GetGlobalNodeNumber(localNode=i)
+  n2n = obj%GetNodeToNodes(globalNode=j, includeSelf=.TRUE.)
+  CALL SetSparsity(obj=mat, row=j, col=n2n)
+END DO
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
@@ -124,9 +225,10 @@ END PROCEDURE obj_SetMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
-CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: localElem
+localElem = obj%GetLocalElemNumber(globalElement=globalElement)
+obj%facetElementType(iface, localElem) = facetElementType
+obj%elementData(localElem)%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------

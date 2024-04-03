@@ -26,9 +26,10 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateBoundaryData
 ! Define internal variables
-INTEGER(I4B) :: iel, tFace, ii, jj, kk
+INTEGER(I4B) :: iel, tFace, ii, jj, kk, temp4(4)
 INTEGER(I4B), ALLOCATABLE :: global_nptrs(:), ElemToElem(:, :)
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData"
+LOGICAL(LGT) :: isok
 
 ! check
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
@@ -53,8 +54,14 @@ IF (.NOT. obj%isElementToElementsInitiated) &
 
 obj%isBoundaryDataInitiated = .TRUE.
 
-IF (.NOT. ALLOCATED(obj%FacetElements)) &
-  & obj%FacetElements = FacetElements(obj%refelem)
+isok = ALLOCATED(obj%facetElements)
+IF (.NOT. isok) THEN
+  IF (obj%xidim .GT. 0) THEN
+    temp4 = TotalEntities(obj%refelem%name)
+    ALLOCATE (obj%facetElements(temp4(obj%xidim)))
+    CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
+  END IF
+END IF
 
 tFace = SIZE(obj%FacetElements)
 

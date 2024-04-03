@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(DynamicMesh_Class) ConstructorMethods
+SUBMODULE(FEMesh_Class) ConstructorMethods
 IMPLICIT NONE
 CONTAINS
 
@@ -28,20 +28,39 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate
-CALL AbstractMeshDeallocate(obj)
-CALL obj%elementDataList%DEALLOCATE()
-CALL obj%elementDataBinaryTree%DEALLOCATE()
-
-CALL obj%nodeDataList%DEALLOCATE()
-CALL obj%nodeDataBinaryTree%DEALLOCATE()
-END PROCEDURE obj_Deallocate
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Constructor_1
+ALLOCATE (FEMesh_ :: ans)
+END PROCEDURE obj_Constructor_1
+
+!----------------------------------------------------------------------------
+!                                               FEMeshPointerDeallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE FEMeshPointerDeallocate
+CLASS(FEMesh_), POINTER :: meshObj
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+meshObj => NULL()
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+
+  DO ii = 1, tsize
+
+    meshObj => obj(ii)%ptr
+    isok = ASSOCIATED(meshObj)
+    IF (isok) THEN
+      CALL meshobj%DEALLOCATE()
+      meshObj => NULL()
+    END IF
+
+  END DO
+
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE FEMeshPointerDeallocate
 
 END SUBMODULE ConstructorMethods

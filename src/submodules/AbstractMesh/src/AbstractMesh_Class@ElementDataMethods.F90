@@ -16,6 +16,12 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
+USE ReallocateUtility
+USE Display_Method
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES
+USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
+  & InitiateElementToElements2D, &
+  & InitiateElementToElements1D
 IMPLICIT NONE
 CONTAINS
 
@@ -25,8 +31,62 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateElementToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+problem = .NOT. ALLOCATED(obj%elementData)
+
+#ifdef DEBUG_VER
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
+  RETURN
+END IF
+#endif
+
+SELECT CASE (obj%xidim)
+CASE (1_I4B)
+
+  CALL InitiateElementToElements1D( &
+    & elementData=obj%elementData,  &
+    & tNodesInMesh=obj%tNodes, &
+    & showTime=obj%showTime, &
+    & local_nptrs=obj%local_nptrs)
+
+CASE (2_I4B)
+
+  problem = .NOT. obj%isEdgeConnectivityInitiated
+  IF (problem) THEN
+    CALL obj%InitiateEdgeConnectivity()
+  END IF
+  CALL InitiateElementToElements2D( &
+    & elementData=obj%elementData,  &
+    & tEdgeInMesh=obj%tEdges, &
+    & showTime=obj%showTime)
+
+CASE (3_I4B)
+
+  problem = .NOT. obj%isFaceConnectivityInitiated
+  IF (problem) THEN
+    CALL obj%InitiateFaceConnectivity()
+  END IF
+  CALL InitiateElementToElements3D(elementData=obj%elementData,  &
+    & tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found.')
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------

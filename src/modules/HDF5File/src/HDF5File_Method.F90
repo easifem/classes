@@ -47,6 +47,7 @@ PUBLIC :: ImportIntVector
 PUBLIC :: HDF5ReadScalar
 PUBLIC :: HDF5ReadVector
 PUBLIC :: HDF5ReadMatrix
+PUBLIC :: HDF5GetEntities
 
 INTERFACE HDF5ReadVector
   MODULE PROCEDURE HDF5ReadIntVector, HDF5ReadRealVector
@@ -61,6 +62,50 @@ END INTERFACE HDF5ReadMatrix
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                               obj_Import_GetEntities
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5GetEntities(hdf5, group, dim, tEntities, myName,  &
+  & modName)
+  CLASS(HDF5File_), INTENT(INOUT) :: hdf5
+  CHARACTER(*), INTENT(IN) :: group
+  INTEGER(I4B), INTENT(IN) :: dim
+  INTEGER(I4B), INTENT(OUT) :: tEntities
+  CHARACTER(*), INTENT(IN) :: myName
+  CHARACTER(*), INTENT(IN) :: modName
+
+  SELECT CASE (dim)
+
+  CASE (0)
+    ! numPointEntities
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+      & VALUE=tEntities, fieldname="numPointEntities",  &
+      & myName=myName, modName=modName)
+
+  CASE (1)
+    ! numCurveEntities
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+      & VALUE=tEntities, fieldname="numCurveEntities",  &
+      & myName=myName, modName=modName)
+
+  CASE (2)
+    ! numSurfaceEntities
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+      & VALUE=tEntities, fieldname="numSurfaceEntities",  &
+      & myName=myName, modName=modName)
+
+  CASE (3)
+    ! numVolumeEntities
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+      & VALUE=tEntities, fieldname="numVolumeEntities",  &
+      & myName=myName, modName=modName)
+
+  CASE default
+  END SELECT
+
+END SUBROUTINE HDF5GetEntities
 
 !----------------------------------------------------------------------------
 !                                                          HDF5ReadIntMatrix
@@ -227,6 +272,12 @@ SUBROUTINE HDF5ReadScalar(hdf5, VALUE, group, fieldname, myname, modname,  &
       CALL hdf5%READ(astr, VALUE)
 
     TYPE is (REAL(DFP))
+      CALL hdf5%READ(astr, VALUE)
+
+    TYPE IS (String)
+      CALL hdf5%READ(astr, VALUE)
+
+    TYPE IS (CHARACTER(LEN=*))
       CALL hdf5%READ(astr, VALUE)
 
     END SELECT

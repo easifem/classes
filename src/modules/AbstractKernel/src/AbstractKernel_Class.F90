@@ -45,6 +45,7 @@ USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
 USE Field
 USE TxtFile_Class
+USE PVDFile_Class
 USE KernelUtility
 USE UserFunction_Class
 
@@ -100,6 +101,8 @@ END TYPE AbstractAlgoParam_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 April 2022
+!> author: Shion Shimizu
+! update:  2024-02-10
 ! summary: Abstract class for kernel
 
 TYPE, ABSTRACT :: AbstractKernel_
@@ -146,6 +149,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! solid material id
   INTEGER(I4B) :: algorithm = 0
   !! algorithm
+  INTEGER(I4B) :: vtkOutputFreq = 0
+  !! frequency of output with WriteData_vtk
   TYPE(String) :: name
   !! This is the name of the kernel. It can be anything you want.
   TYPE(String) :: engine
@@ -159,6 +164,14 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(String) :: outputPath
   !! Path to put output files
   !! Default is results
+  LOGICAL(LGT) :: unifyVTK = .FALSE.
+  !! if it is true all data are exported into one vtu file
+  !! in WriteData_vtk method
+  LOGICAL(LGT) :: createPVD = .FALSE.
+  !! if true paraview data file is created
+  !! in WriteData_vtk method
+  TYPE(PVDFile_) :: pvdFile
+  !! instance of pvd file class
   INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
   !! Spatial coordinate system type. It can take following values
   !! `KERNEL_CARTESIAN` for Cartesian coordinates
@@ -753,6 +766,8 @@ END TYPE AbstractKernelPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Aug 2021
+!> author: Shion Shimizu
+! update: 2024-02-10
 ! summary: Set kernel parameters
 
 INTERFACE
@@ -764,17 +779,18 @@ INTERFACE
     & baseInterpolationForSpace, baseContinuityForSpace, &
     & quadratureTypeForSpace, ipTypeForSpace, &
     & basisTypeForSpace, alphaForSpace, &
-    & betaForSpace, lambdaForSpace, &
-    & baseInterpolationForTime, baseContinuityForTime, &
-    & quadratureTypeForTime, ipTypeForTime, &
+    & betaForSpace, lambdaForSpace, baseInterpolationForTime,  &
+    & baseContinuityForTime, quadratureTypeForTime, ipTypeForTime,  &
     & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
     & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
-    & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
-    & tSolidMaterials, algorithm, isIsotropic, isIncompressible,  &
-    & rtoleranceForDisplacement, atoleranceForDisplacement,  &
+    & isSymNitsche, nitscheAlpha,  &
+    & materialInterfaces, isConstantMatProp, tSolidMaterials,  &
+    & algorithm, vtkOutputFreq, isIsotropic, isIncompressible,  &
+    & rtoleranceForDisplacement, atoleranceForDisplacement, &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials, outputPath, tPointSource, showTime)
+    & tOverlappedMaterials, outputPath, tPointSource, showTime,  &
+    & unifyVTK, createPVD)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -890,6 +906,8 @@ INTERFACE
     !! It is true if the material properties are constant
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: algorithm
     !! algorithm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: vtkOutputFreq
+    !! frequency of output with WriteData_vtk
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropic
     !! It is true if the material is isotropic
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIncompressible
@@ -916,6 +934,10 @@ INTERFACE
     !! total number of point sources, size of nbcPointSource
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: showTime
     !! Show time of each steps
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: unifyVTK
+    !! unified write data to vtk file
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: createPVD
+    !! create the paraview data file
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 

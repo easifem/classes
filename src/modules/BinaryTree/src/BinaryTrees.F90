@@ -18,7 +18,4 @@
 MODULE BinaryTrees
 USE IntTreeData_Class
 USE IntBinaryTree_Class
-USE EdgeTreeData_Class
-USE EdgeBinaryTree_Class
-USE EdgeBinaryTreeUtility
 END MODULE BinaryTrees

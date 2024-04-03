@@ -19,7 +19,12 @@ SUBMODULE(AbstractMesh_Class) IOMethods
 USE GlobalData, ONLY: stdout
 USE Display_Method
 USE ReallocateUtility
-USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
+! USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
+USE HDF5File_Method, ONLY: HDF5GetEntities
+USE AbstractMeshUtility, ONLY: MeshImportFromGroup, MeshImportFromDim
+USE ArangeUtility
+USE InputUtility
+USE ReferenceElement_Method, ONLY: ElementName
 IMPLICIT NONE
 CONTAINS
 
@@ -29,6 +34,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: abool
+INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
 
@@ -58,18 +64,36 @@ CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ",  &
 
 CALL Display(obj%uid, "uid: ", unitno=unitno)
 
-CALL Display(obj%tElements_topology_wise, "tElements Topology wise: ",  &
+CALL Display("Total elements (topology wise)", unitno=unitno)
+CALL EqualLine(unitno=unitno)
+CALL Display(obj%tElements_topology_wise(1), "point: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(2), "line: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(3), "triangle: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(4), "quadrangle: ",&
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(5), "tetrahedron: ",&
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(6), "hexahedron: ", &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(7), "prism: ",  &
+  & unitno=unitno)
+CALL Display(obj%tElements_topology_wise(8), "pyramid: ",  &
+  & unitno=unitno)
+CALL BlankLines(unitno=unitno)
+
+CALL Display(obj%tElemTopologies, "Total topologies: ",  &
   & unitno=unitno)
 
-CALL Display(obj%tElemTopologies, "total Element Topoglies in Mesh: ",  &
-  & unitno=unitno)
-
-IF (obj%tElemTopologies .GT. 0) THEN
-  CALL Display(obj%elemTopologies(1:obj%tElemTopologies),  &
-    & "element Topologies in mesh: ", unitno=unitno)
-END IF
+DO ii = 1, obj%tElemTopologies
+  CALL Display("  Topologies("//tostring(ii)//"): "//  &
+    & ElementName(obj%elemTopologies(ii)), unitno=unitno)
+END DO
 
 CALL Display(obj%nsd, "nsd: ", unitno=unitno)
+CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 
 CALL Display(obj%maxNptrs, "maxNptrs: ", unitno=unitno)
 
@@ -80,8 +104,8 @@ CALL Display(obj%maxElemNum, "maxElemNum: ", unitno=unitno)
 CALL Display(obj%minElemNum, "minElemNum: ", unitno=unitno)
 
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
-
-CALL Display(obj%tIntNodes, "tIntNodes: ", unitno=unitno)
+CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
+CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 
 CALL Display(obj%tElements, "tElements: ", unitno=unitno)
 
@@ -102,12 +126,6 @@ CALL Display(obj%X, "X: ", unitno=unitno)
 CALL Display(obj%Y, "Y: ", unitno=unitno)
 
 CALL Display(obj%Z, "Z: ", unitno=unitno)
-
-abool = ALLOCATED(obj%physicalTag)
-CALL Display(abool, "physicalTag ALLOCATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL Display(obj%physicalTag, "physicalTag: ", unitno=unitno)
-END IF
 
 abool = ALLOCATED(obj%material)
 CALL Display(abool, "materialALLOCATED: ", unitno=unitno)
@@ -150,246 +168,46 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, dummy
-LOGICAL(LGT) :: isok
-INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
-  & internalNptrs(:)
-LOGICAL(LGT), ALLOCATABLE :: mask(:)
-TYPE(CPUTime_) :: TypeCPUTime
+LOGICAL(LGT) :: cases(3), isArg(3)
+INTEGER(I4B), ALLOCATABLE :: entities0(:)
+CHARACTER(:), ALLOCATABLE :: group0
+INTEGER(I4B) :: tEntities
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+group0 = input(option=group, default="")
+
 CALL obj%DEALLOCATE()
 
-dsetname = TRIM(group)
+isArg = [PRESENT(group), PRESENT(dim), PRESENT(entities)]
 
-isok = hdf5%isOpen()
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: HDF5 file is not opened')
-  RETURN
-END IF
+cases(1) = (.NOT. isArg(2)) .AND. (.NOT. isArg(3))
+cases(2) = ALL(isArg(2:3))
+cases(3) = isArg(2) .AND. (.NOT. isArg(3))
 
-isok = hdf5%isRead()
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: HDF5 file does not have read permission')
-  RETURN
-END IF
+IF (cases(1)) THEN
+  CALL MeshImportFromGroup(obj, hdf5, group0)
 
-isok = hdf5%isGroup(dsetname)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//dsetname//  &
-    & ' is not a group; it should be a group which contains the meshEntity')
-  RETURN
-END IF
+ELSEIF (cases(2)) THEN
+  CALL MeshImportFromDim(obj, hdf5, group0, dim, entities, SIZE(entities))
 
-isok = hdf5%pathExists(dsetname)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//dsetname//' path does not exists')
-  RETURN
-END IF
+ELSEIF (cases(3)) THEN
+  CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim,  &
+    & tEntities=tEntities, myName=myName, modName=modName)
+  entities0 = arange(1_I4B, tEntities)
+  CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
 
-IF (obj%showTime) THEN
-  CALL Display("Showing Time States of Importing Mesh", unitno=stdout)
-  CALL EqualLine(unitno=stdout)
-  CALL TypeCPUTime%SetStartTime()
-END IF
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname,  &
-  & fieldname="uid", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
-  & fieldname="nsd", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tIntNodes, group=dsetname,  &
-  & fieldname="tIntNodes", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname,  &
-  & fieldname="tElements", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minX, group=dsetname,  &
-  & fieldname="minX", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minY, group=dsetname,  &
-  & fieldname="minY", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minZ, group=dsetname,  &
-  & fieldname="minZ", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxX, group=dsetname,  &
-  & fieldname="maxX", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxY, group=dsetname,  &
-  & fieldname="maxY", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxZ, group=dsetname,  &
-  & fieldname="maxZ", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%x, group=dsetname,  &
-  & fieldname="x", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%y, group=dsetname,  &
-  & fieldname="y", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname,  &
-  & fieldname="z", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
-  & fieldname="physicalTag", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname,  &
-  & fieldname="boundingEntity", myname=myname, modname=modname, check=.FALSE.)
-
-! If boundingEntity is not initiated then we initiate it with size=0
-! Bounding entity will not be initiated for point type
-IF (.NOT. ALLOCATED(obj%boundingEntity)) THEN
-  CALL Reallocate(obj%boundingEntity, 0)
-END IF
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in importing scalar data: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
-  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
-  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
-
-CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
-  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in importing elemNumber, connectivity, intNodeNumber: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-isok = .FALSE.
-IF (ALLOCATED(elemNumber)) THEN
-  isok = SIZE(elemNumber) .NE. 0
-END IF
-
-IF (.NOT. isok) THEN
+ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: either elemNumber not ALLOCATED '//  &
-    & 'or size of elemNumber is zero')
+    & '[INTERNAL ERROR] :: No case found')
   RETURN
 END IF
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-obj%maxElemNum = MAXVAL(elemNumber)
-obj%minElemNum = MINVAL(elemNumber)
-obj%maxNptrs = MAXVAL(connectivity)
-obj%minNptrs = MINVAL(connectivity)
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in setting max and min: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
-CALL Reallocate(obj%local_nptrs, obj%maxNptrs)
-ALLOCATE (obj%elementData(obj%tElements))
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in alloc local_elemNumber, local_nptrs, elementData: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-CALL Reallocate(mask, obj%maxNptrs)
-mask = .FALSE.
-mask(internalNptrs) = .TRUE.
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in making mask: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-DO CONCURRENT(ii=1:obj%tElements)
-  obj%local_elemNumber(elemNumber(ii)) = ii
-  obj%elementData(ii)%globalElemNum = elemNumber(ii)
-  obj%elementData(ii)%localElemNum = ii
-  obj%elementData(ii)%globalNodes = connectivity(:, ii)
-  obj%local_nptrs(connectivity(:, ii)) = connectivity(:, ii)
-END DO
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in making elementData: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
-ALLOCATE (obj%nodeData(obj%tNodes))
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in allocating nodeData: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-dummy = 0
-DO ii = 1, obj%maxNptrs
-  IF (obj%local_nptrs(ii) .NE. 0) THEN
-    dummy = dummy + 1
-    obj%nodeData(dummy)%globalNodeNum = obj%local_Nptrs(ii)
-    obj%nodeData(dummy)%localNodeNum = dummy
-
-    IF (mask(ii)) THEN
-      obj%nodeData(dummy)%nodeType = INTERNAL_NODE
-    ELSE
-      obj%nodeData(dummy)%nodeType = BOUNDARY_NODE
-    END IF
-
-    obj%local_nptrs(ii) = dummy
-  END IF
-END DO
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time in making nodeData: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
-  CALL EqualLine(unitno=stdout)
-END IF
-
-IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
-IF (ALLOCATED(mask)) DEALLOCATE (mask)
+IF (ALLOCATED(entities0)) DEALLOCATE (entities0)
+group0 = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -473,9 +291,16 @@ END PROCEDURE obj_ExportToVTK
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayElementData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, telements
+
+CALL Display(msg, unitno=unitno)
+telements = obj%GetTotalElements()
+
+DO ii = 1, telements
+  CALL elemData_Display(obj=obj%elementData(ii),  &
+    & msg="elementData("//tostring(ii)//"): ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
+END DO
 END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
@@ -483,9 +308,14 @@ END PROCEDURE obj_DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayNodeData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayNodeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, tNodes
+tNodes = obj%GetTotalNodes()
+CALL Display(msg, unitno=unitno)
+DO ii = 1, tNodes
+  CALL nodeData_Display(obj%nodeData(ii),  &
+    & msg="nodeData("//tostring(ii)//"): ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
+END DO
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
@@ -493,9 +323,24 @@ END PROCEDURE obj_DisplayNodeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayInternalFacetData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayInternalFacetData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: abool
+
+CALL Display(msg, unitno=unitno)
+
+abool = ALLOCATED(obj%internalFacetData)
+IF (abool) THEN; n = SIZE(obj%internalFacetData); ELSE; n = 0; END IF
+
+CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
+
+DO ii = 1, n
+
+  CALL InternalFacetData_Display(obj=obj%internalFacetData(ii),  &
+    & msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL BlankLines(nol=1, unitno=unitno)
+
+END DO
 END PROCEDURE obj_DisplayInternalFacetData
 
 !----------------------------------------------------------------------------
@@ -503,9 +348,23 @@ END PROCEDURE obj_DisplayInternalFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayBoundaryFacetData
-CHARACTER(*), PARAMETER :: myName = "obj_DisplayBoundaryFacetData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: abool
+
+abool = ALLOCATED(obj%boundaryFacetData)
+IF (abool) THEN; n = SIZE(obj%boundaryFacetData); ELSE; n = 0; END IF
+
+CALL Display(msg, unitno=unitno)
+CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
+
+DO ii = 1, n
+
+  CALL BoundaryFacetData_Display(obj=obj%boundaryFacetData(ii),  &
+    & msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL BlankLines(nol=1, unitno=unitno)
+
+END DO
 END PROCEDURE obj_DisplayBoundaryFacetData
 
 !----------------------------------------------------------------------------
