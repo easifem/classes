@@ -539,6 +539,35 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetUniqueElemType
 
 !----------------------------------------------------------------------------
+!                                                                  GetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetParam
+IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(engine)) engine = obj%engine%chars()
+IF (PRESENT(majorVersion)) majorVersion = obj%majorVersion
+IF (PRESENT(minorVersion)) minorVersion = obj%minorVersion
+IF (PRESENT(version)) version = obj%version
+IF (PRESENT(nsd)) nsd = obj%nsd
+IF (PRESENT(maxNptrs)) maxNptrs = obj%maxNptrs
+IF (PRESENT(minNptrs)) minNptrs = obj%minNptrs
+IF (PRESENT(tNodes)) tNodes = obj%tNodes
+IF (PRESENT(isNodeNumberSparse)) isNodeNumberSparse = obj%isNodeNumberSparse
+IF (PRESENT(maxElemNum)) maxElemNum = obj%maxElemNum
+IF (PRESENT(minElemNum)) minElemNum = obj%minElemNum
+IF (PRESENT(isElemNumberSparse)) isElemNumberSparse = obj%isElemNumberSparse
+IF (PRESENT(tEntitiesForElements)) tEntitiesForElements = obj%tEntitiesForElements
+IF (PRESENT(tEntitiesForNodes)) tEntitiesForNodes = obj%tEntitiesForNodes
+IF (PRESENT(tElements)) tElements = obj%tElements
+IF (PRESENT(tEntities)) tEntities = obj%tEntities
+IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
+IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
+IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
+IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
+IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
+END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
