@@ -224,6 +224,8 @@ CONTAINS
   !! The size of returned integer vector can be different from
   !! the total number of meshes present in domain.
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+
   ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
@@ -1019,6 +1021,47 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetUniqueElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetParam@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-08
+! summary:  Get the PARAMETER
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, majorVersion, &
+ minorVersion, version, nsd, maxNptrs, minNptrs, tNodes, isNodeNumberSparse, &
+              maxElemNum, minElemNum, isElemNumberSparse, tEntitiesForNodes, &
+          tEntitiesForElements, tElements, tEntities, nodeCoord, meshVolume, &
+                                 meshSurface, meshCurve, meshPoint, meshMap)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
+    CHARACTER(*), OPTIONAL, INTENT(INOUT) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: majorVersion
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: minorVersion
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: version
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxNptrs
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: minNptrs
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tNodes
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isNodeNumberSparse
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxElemNum
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: minElemNum
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemNumberSparse
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEntitiesForNodes
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEntitiesForElements
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: tElements(0:3)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: tEntities(0:3)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: nodeCoord(:, :)
+    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshVolume
+    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshSurface
+    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshCurve
+    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshPoint
+    TYPE(CSRSparsity_), OPTIONAL, INTENT(INOUT) :: meshMap
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
