@@ -608,7 +608,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE plot_Hist(obj, d, N, db, relWidth, fillColor, fillPattern, &
-                                            & lineColor, lineWidth)
+                                              & lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     REAL(DFP), INTENT(IN) :: d(:)
