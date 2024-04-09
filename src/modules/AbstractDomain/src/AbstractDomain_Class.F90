@@ -166,12 +166,12 @@ CONTAINS
     & obj_tElements2
   !! return total number of elements in domain, mesh, or part of domain
 
-  PROCEDURE, PASS(obj) :: obj_GetLocalNodeNumber1
-  PROCEDURE, PASS(obj) :: obj_GetLocalNodeNumber2
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   GENERIC, PUBLIC :: &
     & GetLocalNodeNumber => &
-    & obj_GetLocalNodeNumber1, &
-    & obj_GetLocalNodeNumber2
+    & GetLocalNodeNumber1, &
+    & GetLocalNodeNumber2
   PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
   PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber2
@@ -967,8 +967,12 @@ END INTERFACE
 ! summary: Returns bounding box
 
 INTERFACE
-  MODULE FUNCTION obj_GetBoundingBox(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of the mesh
+    !! if dim is not present then nodeCoord in domain is
+    !! used for computing the bounding box
     TYPE(BoundingBox_) :: ans
   END FUNCTION obj_GetBoundingBox
 END INTERFACE
