@@ -318,6 +318,9 @@ CONTAINS
   !! Returns true if a node number is present
   GENERIC, PUBLIC :: isNodePresent => isNodePresent1, isNodePresent2
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeMask => obj_GetNodeMask
+  !! returns the mask for the present of node
+
   PROCEDURE, PUBLIC, PASS(obj) :: isAnyNodePresent => obj_isAnyNodePresent
   !! Returns true if any of the node number is present
 
@@ -1059,6 +1062,24 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans(SIZE(globalNode))
   END FUNCTION obj_isNodePresent2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNodeMask@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-09
+! summary:  Returns a mask vector for presence of nodes
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeMask(obj, mask, local_nptrs)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT), INTENT(INOUT) :: mask(:)
+    !! the size of mask should be more than or equal to  the maxNptrs
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_nptrs(:)
+    !! additional mapping
+  END SUBROUTINE obj_GetNodeMask
 END INTERFACE
 
 !----------------------------------------------------------------------------
