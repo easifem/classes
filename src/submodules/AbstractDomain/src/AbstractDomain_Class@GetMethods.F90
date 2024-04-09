@@ -473,14 +473,20 @@ END PROCEDURE obj_GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox
-REAL(DFP) :: lim(6)
-INTEGER(I4B) :: nsd
-!> main
-lim = 0.0_DFP
-nsd = SIZE(obj%nodeCoord, 1)
-lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
-lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
-CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
+INTEGER(I4B) :: dim0
+
+dim0 = Input(default=obj%nsd, option=dim)
+SELECT CASE (dim0)
+CASE (0_I4B)
+  ans = obj%meshPoint%GetBoundingBox(nodes=obj%nodeCoord)
+CASE (1_I4B)
+  ans = obj%meshCurve%GetBoundingBox(nodes=obj%nodeCoord)
+CASE (2_I4B)
+  ans = obj%meshSurface%GetBoundingBox(nodes=obj%nodeCoord)
+CASE (3_I4B)
+  ans = obj%meshVolume%GetBoundingBox(nodes=obj%nodeCoord)
+END SELECT
+
 END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
@@ -492,23 +498,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMeshFacetData()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[DEPRECATED] :: We are working on alternative')
 ans = 0
-! IF (PRESENT(imeshFacetData)) THEN
-!   IF (ALLOCATED(obj%meshFacetData)) THEN
-!     IF (obj%meshFacetData(imeshFacetData)%isInitiated()) THEN
-!       ans = obj%meshFacetData(imeshFacetData)%SIZE()
-!     ELSE
-!       ans = 0
-!     END IF
-!   ELSE
-!     ans = 0
-!   END IF
-! ELSE
-!   IF (ALLOCATED(obj%meshFacetData)) THEN
-!     ans = SIZE(obj%meshFacetData)
-!   ELSE
-!     ans = 0
-!   END IF
-! END IF
 END PROCEDURE obj_GetTotalMeshFacetData
 
 !----------------------------------------------------------------------------
