@@ -240,6 +240,38 @@ END DO
 END PROCEDURE obj_isNodePresent2
 
 !----------------------------------------------------------------------------
+!                                                         GetNodeMask
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeMask
+INTEGER(I4B) :: ii, jj, kk, tsize
+LOGICAL(LGT) :: isok
+
+isok = .NOT. PRESENT(local_nptrs)
+mask = .FALSE.
+
+IF (isok) THEN
+
+  tsize = SIZE(obj%nodeData)
+  DO CONCURRENT(ii=1:tsize)
+    jj = obj%nodeData(ii)%globalNodeNum
+    mask(jj) = .TRUE.
+  END DO
+
+  RETURN
+
+END IF
+
+tsize = SIZE(obj%nodeData)
+DO CONCURRENT(ii=1:tsize)
+  jj = obj%nodeData(ii)%globalNodeNum
+  kk = local_nptrs(jj)
+  mask(kk) = .TRUE.
+END DO
+
+END PROCEDURE obj_GetNodeMask
+
+!----------------------------------------------------------------------------
 !                                                           isAnyNodePresent
 !----------------------------------------------------------------------------
 
@@ -388,26 +420,22 @@ END PROCEDURE obj_GetBoundingBox1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox2
-INTEGER(I4B) :: nsd
+INTEGER(I4B) :: nsd, tsize, ii
 REAL(DFP) :: lim(6)
+LOGICAL(LGT) :: mask(SIZE(nodes, 1), SIZE(nodes, 2))
 
 lim = 0.0_DFP
 nsd = SIZE(nodes, 1)
-IF (PRESENT(local_nptrs)) THEN
-  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd,  &
-    & local_nptrs(obj%GetNptrs())),  &
-    & dim=2)
-  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd,  &
-    & local_nptrs(obj%GetNptrs())),  &
-    & dim=2)
-ELSE
-  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, &
-    & obj%GetNptrs()), &
-    & dim=2)
-  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, &
-    & obj%GetNptrs()), &
-    & dim=2)
-END IF
+tsize = SIZE(mask, 2)
+
+CALL obj%GetNodeMask(mask=mask(1, :), local_nptrs=local_nptrs)
+DO ii = 2, nsd
+  mask(ii, :) = mask(1, :)
+END DO
+
+lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, :), dim=2, mask=mask)
+lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, :), dim=2, mask=mask)
+
 CALL Initiate(obj=ans, nsd=nsd, lim=lim)
 END PROCEDURE obj_GetBoundingBox2
 
