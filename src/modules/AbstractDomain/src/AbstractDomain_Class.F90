@@ -202,6 +202,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
   !! returns node number, this is subroutine
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
+  !! Get node numbers in the box
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     & obj_GetInternalNptrs
   !! returns internal node number
@@ -918,8 +921,27 @@ INTERFACE
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
     INTEGER(I4B), INTENT(IN) :: dim
-    !! dim = [0, 1, 2, 3] for [meshPoint, meshCurve, meshSurface, meshVolume]
+    !! dim = 0 meshPoint is called
+    !! dim=1 meshCurve is called
+    !! dim=2, meshSurface is called
+    !! dim=~3, meshVolume is called
   END SUBROUTINE obj_GetNptrs_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrsInBox(obj, nptrs, box)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nptrs(:)
+    TYPE(BoundingBox_), INTENT(IN) :: box
+  END SUBROUTINE obj_GetNptrsInBox
 END INTERFACE
 
 !----------------------------------------------------------------------------
