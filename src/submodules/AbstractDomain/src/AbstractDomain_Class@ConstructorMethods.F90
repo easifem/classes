@@ -22,6 +22,7 @@
 SUBMODULE(AbstractDomain_Class) ConstructorMethods
 USE ReallocateUtility
 USE CSRSparsity_Method
+USE Kdtree2_Module, ONLY: Kdtree2_Destroy
 IMPLICIT NONE
 CONTAINS
 
@@ -51,6 +52,7 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+obj%showTime = .FALSE.
 obj%isInitiated = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
@@ -91,7 +93,23 @@ IF (ASSOCIATED(obj%meshPoint)) THEN
 END IF
 
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
+
+CALL obj%DeallocateKdtree()
+
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                           DeallocateKdtree
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DeallocateKdtree
+IF (ASSOCIATED(obj%kdtree)) THEN
+  CALL Kdtree2_Destroy(obj%kdtree)
+  obj%kdtree => NULL()
+END IF
+
+IF (ALLOCATED(obj%kdresult)) DEALLOCATE (obj%kdresult)
+END PROCEDURE obj_DeallocateKdtree
 
 !----------------------------------------------------------------------------
 !
