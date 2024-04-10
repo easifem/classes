@@ -18,8 +18,63 @@
 SUBMODULE(AbstractDomain_Class) MeshDataMethods
 USE BaseMethod
 USE DomainConnectivity_Class
+USE Kdtree2_Module, ONLY: Kdtree2_create
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                            InitiateKdtree
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateKdtree
+INTEGER(I4B) :: nsd
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+LOGICAL(LGT) :: isok
+#endif
+
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL obj%DeallocateKdtree()
+
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%nodeCoord)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractDomain_::obj%nodeCoord not allocated')
+  RETURN
+END IF
+
+#endif
+
+nsd = obj%nsd
+! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
+obj%kdtree => Kdtree2_Create(input_data=obj%nodeCoord(1:nsd, :), &
+                             dim=nsd, sort=.FALSE., rearrange=.TRUE.)
+
+ALLOCATE (obj%kdresult(obj%tNodes))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+
+END PROCEDURE obj_InitiateKdtree
 
 !----------------------------------------------------------------------------
 !                                                     InitiateNodeToElements

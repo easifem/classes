@@ -31,6 +31,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
+USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
 
 IMPLICIT NONE
 PRIVATE
@@ -54,6 +55,8 @@ CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 
 TYPE, ABSTRACT :: AbstractDomain_
   PRIVATE
+  LOGICAL(LGT) :: showTime = .FALSE.
+  !! set to true if you want to show time taken by various routines.
   LOGICAL(LGT) :: isInitiated = .FALSE.
     !! flag
   TYPE(String) :: engine
@@ -109,6 +112,9 @@ TYPE, ABSTRACT :: AbstractDomain_
   CLASS(AbstractMesh_), POINTER :: meshPoint => NULL()
     !! meshPoint list of meshes of point entities
 
+  TYPE(Kdtree2_), POINTER :: kdtree => NULL()
+  TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
+
   TYPE(CSRSparsity_) :: meshMap
   !! Sparse mesh data in CSR format
 CONTAINS
@@ -120,6 +126,7 @@ CONTAINS
   !! Initiate an instance of domain
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data stored inside an instance of domain
+  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
 
   ! IO:
   ! @IOMethods
@@ -231,41 +238,58 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
+  !! Set showTime option
+
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
   !! set the total number of materials
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! set the material
+
   PROCEDURE, PASS(obj) :: SetNodeCoord1 => obj_SetNodeCoord1
   !! setNodeCoord
   GENERIC, PUBLIC :: SetNodeCoord => SetNodeCoord1
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
 
   ! SET:
   ! @MeshDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
+  !! initiate the kdtree structure
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
   !! Initiate node to element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
     & obj_InitiateNodeToNodes
   !! Initiate node to node data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
       & obj_InitiateElementToElements
   !! Initiate element to element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
       & obj_InitiateBoundaryData
   !! Initiate element to element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
       & obj_InitiateFacetElements
   !! Initiate element to element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
       & obj_InitiateExtraNodeToNodes
   !! Initiate extra node to nodes information for edge based methods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
     & obj_SetFacetElementType
   !! Set facet element of meshes
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => &
     & obj_SetMeshmap
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
@@ -318,6 +342,21 @@ INTERFACE AbstractDomainDeallocate
     !! AbstractDomain object
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractDomainDeallocate
+
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-10
+! summary: Deallocate kdtree related data
+
+INTERFACE
+  MODULE SUBROUTINE obj_DeallocateKdtree(obj)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+    !! AbstractDomain object
+  END SUBROUTINE obj_DeallocateKdtree
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -1091,6 +1130,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   SetShowTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-04-10
+! summary:  Set the showTime
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetShowTime(obj, VALUE)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetShowTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     SetSparsity@setMethods
 !----------------------------------------------------------------------------
 
@@ -1190,6 +1244,20 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
   END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           InitiateKdtree@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-10
+! summary: Initiate the kd tree
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateKdtree(obj)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateKdtree
 END INTERFACE
 
 !----------------------------------------------------------------------------
