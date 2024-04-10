@@ -1030,7 +1030,10 @@ END PROCEDURE AbstractMeshGetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity
-! CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
+#endif
+
 INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
   & con(MaxNodesInElement, REFELEM_MAX_FACES), &
   & ii, tFaceNodes(REFELEM_MAX_FACES)
@@ -1074,9 +1077,31 @@ CASE (3_I4B)
 
   CALL Reallocate(ans, tFaceNodes(iface))
 
+#ifdef DEBUG_VER
+  DO ii = 1, SIZE(ans)
+
+    IF (con(ii, iface) .EQ. 0_I4B) THEN
+      CALL Display(elemType, "elemType: ")
+      CALL Display(temp4, "TotalEntities: ")
+      CALL Display(order, "order: ")
+      CALL Display(tFaceNodes, "tFaceNodes: ")
+      CALL Display(iface, "iface: ")
+      CALL Display(con, "con: ")
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: con(ii, iface) is zero')
+      RETURN
+    END IF
+
+    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
+  END DO
+
+#else
+
   DO ii = 1, SIZE(ans)
     ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
   END DO
+
+#endif
 
 END SELECT
 
