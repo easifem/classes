@@ -212,6 +212,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
   !! Get node numbers in the box
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
+  !! Get node numbers in box with allocation
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     & obj_GetInternalNptrs
   !! returns internal node number
@@ -976,11 +979,38 @@ END INTERFACE
 ! summary: this routine returns the global node number in a box
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrsInBox(obj, nptrs, box)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
+  MODULE SUBROUTINE obj_GetNptrsInBox(obj, box, nptrs)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! If Kdtree is not init then we init it
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nptrs(:)
     TYPE(BoundingBox_), INTENT(IN) :: box
   END SUBROUTINE obj_GetNptrsInBox
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrsInBox_(obj, box, nptrs, tnodes, isStrict)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! If Kdtree is not init then we init it
+    TYPE(BoundingBox_), INTENT(IN) :: box
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! it should allocated, size of nptrs should be .ge. tnodes
+    INTEGER(I4B), INTENT(INOUT) :: tnodes
+    !! total nodes found
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isStrict
+    !! Default is true
+    !! If it is true the returned points are strictly inside or on the
+    !! box, but not outside of it
+    !! This is because we use radius of bounding box to find the points
+    !! this is over estimation.
+  END SUBROUTINE obj_GetNptrsInBox_
 END INTERFACE
 
 !----------------------------------------------------------------------------
