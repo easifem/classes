@@ -21,8 +21,9 @@
 SUBMODULE(AbstractDomain_Class) GetMethods
 USE ReallocateUtility
 USE InputUtility
-USE BoundingBox_Method
+USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside
 USE F95_BLAS, ONLY: Copy
+USE Kdtree2_Module, ONLY: Kdtree2_r_nearest
 IMPLICIT NONE
 CONTAINS
 
@@ -448,8 +449,85 @@ END PROCEDURE obj_GetNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox
-nptrs = box.Nptrs.obj%nodeCoord
+! nptrs = box.Nptrs.obj%nodeCoord
+REAL(DFP) :: qv(3), r2
+INTEGER(I4B) :: nfound, ii
+
+qv = Center(box)
+r2 = GetRadiusSqr(box)
+
+CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), r2=r2, &
+               nfound=nfound, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
+
+CALL Reallocate(nptrs, nfound)
+
+DO CONCURRENT(ii=1:nfound)
+  nptrs(ii) = obj%kdresult(ii)%idx
+END DO
+
 END PROCEDURE obj_GetNptrsInBox
+
+!----------------------------------------------------------------------------
+!                                                             GetNptrsInBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrsInBox_
+! nptrs = box.Nptrs.obj%nodeCoord
+REAL(DFP) :: qv(3), r2
+INTEGER(I4B) :: ii, jj, kk, nsd
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+LOGICAL(LGT) :: isok, abool
+
+isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
+IF (isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+
+  CALL obj%InitiateKdtree()
+END IF
+
+qv = Center(box)
+r2 = GetRadiusSqr(box)
+nsd = obj%nsd
+
+CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
+               nfound=tnodes, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
+
+#ifdef DEBUG_VER
+isok = SIZE(nptrs) .LT. tnodes
+IF (isok) THEN
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of nptrs is not enough')
+  RETURN
+
+END IF
+#endif
+
+isok = Input(default=.TRUE., option=isStrict)
+
+IF (.NOT. isok) THEN
+  DO CONCURRENT(ii=1:tnodes)
+    nptrs(ii) = obj%kdresult(ii)%idx
+  END DO
+  RETURN
+END IF
+
+jj = 0
+DO ii = 1, tnodes
+
+  kk = obj%kdresult(ii)%idx
+  abool = isInside(box, obj%nodeCoord(1:nsd, kk))
+  IF (abool) THEN
+    jj = jj + 1
+    nptrs(jj) = kk
+  END IF
+
+END DO
+
+tnodes = jj
+
+END PROCEDURE obj_GetNptrsInBox_
 
 !----------------------------------------------------------------------------
 !                                                                   GetNptrs

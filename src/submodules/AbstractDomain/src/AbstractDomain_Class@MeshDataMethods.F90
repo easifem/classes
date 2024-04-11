@@ -16,9 +16,12 @@
 !
 
 SUBMODULE(AbstractDomain_Class) MeshDataMethods
+USE GlobalData, ONLY: stdout
 USE BaseMethod
 USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
+USE CPUTime_Class, ONLY: CPUTime_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -28,8 +31,9 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateKdtree
 INTEGER(I4B) :: nsd
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+
+#ifdef DEBUG_VER
 LOGICAL(LGT) :: isok
 #endif
 
@@ -69,9 +73,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+  CALL Display(modName//" : "//myName//  &
+    & " : time : "//  &
+    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 END PROCEDURE obj_InitiateKdtree

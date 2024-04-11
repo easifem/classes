@@ -105,7 +105,8 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_DisplayDomainInfo
 LOGICAL(LGT) :: abool
 
-CALL Display(obj%isInitiated, "AbstractDomain_::obj Initiated: ", unitno=unitno)
+CALL Display(obj%isInitiated, "AbstractDomain_::obj Initiated: ", &
+             unitno=unitno)
 IF (.NOT. obj%isInitiated) RETURN
 
 CALL EqualLine(unitno=unitno)
@@ -192,7 +193,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & 'Calling AbstractDomainImportMetaData')
 #endif
 
-CALL AbstractDomainImportMetaData(obj=obj, hdf5=hdf5, group=group, myName=myName)
+CALL AbstractDomainImportMetaData(obj=obj, hdf5=hdf5, group=group, &
+                                  myName=myName)
 
 IF (obj%nsd .EQ. 3_I4B) THEN
 
@@ -249,7 +251,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                     AbstractDomainImportCheckErr
+!                                               AbstractDomainImportCheckErr
 !----------------------------------------------------------------------------
 
 SUBROUTINE AbstractDomainImportCheckErr(obj, hdf5, myName)
@@ -284,7 +286,7 @@ SUBROUTINE AbstractDomainImportCheckErr(obj, hdf5, myName)
 END SUBROUTINE AbstractDomainImportCheckErr
 
 !----------------------------------------------------------------------------
-!                                                    AbstractDomainImportMetaData
+!                                               AbstractDomainImportMetaData
 !----------------------------------------------------------------------------
 
 SUBROUTINE AbstractDomainImportMetaData(obj, hdf5, group, myName)
@@ -465,7 +467,7 @@ CALL obj%ImportFromToml(table=node)
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
 CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF,  &
-      & unitno=stdout)
+            & unitno=stdout)
 END IF
 #endif
 
