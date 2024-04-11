@@ -196,7 +196,10 @@ CONTAINS
   !! This routine returns the nodal coordinate in rank2 array
   PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
   !! This routine returns the nodal coordinate in rank2 array
-  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2
+  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
+  !! This routine returns the nodal coordinate in rank2 array
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
+    GetNodeCoord3
   !! Generic method which returns the nodal coordinates
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
@@ -891,10 +894,6 @@ END INTERFACE
 ! - This routine returns the nodal coordinates in the form of rank2 array.
 ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
 ! number, and the rows correspond to the component.
-! - If `dim` and `tag` are absent then this routine returns the nodal
-! coordinates of the entire domain
-! - If `dim` and `tag` are present then the routine selects the mesh and
-! returns its nodal coordinates
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode, &
@@ -902,11 +901,41 @@ INTERFACE
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! It should be allocated by the user.
-    !! SIZE(nodeCoord, 1) is equal to nsd
+    !! SIZE(nodeCoord, 1) should be atleast obj%nsd
     !! Size(nodeCoord, 2) is equal to the size(globalNode)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node numbers (pointer to nodeCoord)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal is true then we do not find local node nubmers
+    !! in this case globalNode implies local node
   END SUBROUTINE obj_GetNodeCoord2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-11
+! summary: This routine returns the nodal coordinates
+!
+!# Introduction
+! - This routine returns the nodal coordinates
+! - globalNode is global node (pointer to nodeCoord)
+! - if islocal is true then globalNode is local node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalNode, &
+    & islocal)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
+    !! It should be allocated by the user.
+    !! SIZE(nodeCoord, 1) should be atleast nsd
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! globalNode number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalnode above is local node
+  END SUBROUTINE obj_GetNodeCoord3
 END INTERFACE
 
 !----------------------------------------------------------------------------
