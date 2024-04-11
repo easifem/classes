@@ -144,7 +144,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo =>  &
     & obj_DisplayDomainInfo
 
-  ! GET:
+  ! Get:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
@@ -162,7 +162,7 @@ CONTAINS
     !! Returns the total nodes in a dimension
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
     & obj_tNodes1, obj_tNodes2
-  !! Generic method for getting total nodes
+  !! Generic method for Getting total nodes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
   !! returns the total number of Elements in domain, mesh, or part of mesh
@@ -202,6 +202,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
     & obj_GetNodeCoordPointer
   !! This routine returns the pointer to nodal coordinate
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
+  GENERIC, PUBLIC :: GetNearestNode => &
+    GetNearestNode1, GetNearestNode2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! returns node number, this is a function
@@ -660,7 +665,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getTotalElements@GetMethods
+!                                                GetTotalElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -734,7 +739,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getLocalNodeNumber@GetMethods
+!                                             GetLocalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -754,7 +759,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              getLocalNodeNumber@GetMethods
+!                                              GetLocalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -772,7 +777,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getGlobalNodeNumber@GetMethods
+!                                             GetGlobalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -788,7 +793,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              getGlobalNodeNumber@GetMethods
+!                                              GetGlobalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -854,7 +859,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getNodeCoord@GetMethods
+!                                                     GetNodeCoord@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -875,7 +880,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getNodeCoord@GetMethods
+!                                                     GetNodeCoord@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -905,7 +910,50 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getNodeCoordPointer@GetMethods
+!                                                  GetNearestNode@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-11
+! summary:  Get nearest node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNearestNode1(obj, qv, x, globalNode)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: qv(:)
+    !! Query vector
+    REAL(DFP), INTENT(INOUT) :: x(:)
+    !! node coord of nearest node
+    INTEGER(I4B), INTENT(OUT) :: globalNode
+    !! globalNode number
+  END SUBROUTINE obj_GetNearestNode1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetNearestNode@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-11
+! summary:  Get nearest node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNearestNode2(obj, qv, x, globalNode, nn)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: qv(:)
+    !! Query vector
+    REAL(DFP), INTENT(INOUT) :: x(:, :)
+    !! node coord of nearest node
+    !! the size(x, 2) should be atleast nn
+    INTEGER(I4B), INTENT(INOUT) :: globalNode(:)
+    !! globalNode number, size of globalNode should be atleast nn
+    INTEGER(I4B), INTENT(IN) :: nn
+    !! number of nearest points
+  END SUBROUTINE obj_GetNearestNode2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetNodeCoordPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

@@ -23,7 +23,7 @@ USE ReallocateUtility
 USE InputUtility
 USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside
 USE F95_BLAS, ONLY: Copy
-USE Kdtree2_Module, ONLY: Kdtree2_r_nearest
+USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 IMPLICIT NONE
 CONTAINS
 
@@ -70,7 +70,7 @@ END SELECT
 END PROCEDURE obj_IsElementPresent
 
 !----------------------------------------------------------------------------
-!                                                          getConnectivity
+!                                                          GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
@@ -96,7 +96,7 @@ END SELECT
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
-!                                                         getNodeToElements
+!                                                         GetNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
@@ -117,7 +117,7 @@ END SELECT
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
-!                                                         getNodeToElements
+!                                                         GetNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
@@ -138,7 +138,7 @@ END SELECT
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
-!                                                             getTotalNodes
+!                                                             GetTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
@@ -176,7 +176,7 @@ ans = obj%GetTotalNodes()
 END PROCEDURE obj_tNodes2
 
 !----------------------------------------------------------------------------
-!                                                           getTotalElements
+!                                                           GetTotalElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements
@@ -214,7 +214,7 @@ ans = obj%GetTotalElements(dim=dim)
 END PROCEDURE obj_tElements2
 
 !----------------------------------------------------------------------------
-!                                                         getLocalNodeNumber
+!                                                         GetLocalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
@@ -246,7 +246,7 @@ END SELECT
 END PROCEDURE obj_GetLocalNodeNumber1
 
 !----------------------------------------------------------------------------
-!                                                         getLocalNodeNumber
+!                                                         GetLocalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
@@ -278,7 +278,7 @@ END SELECT
 END PROCEDURE obj_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
-!                                                       getGlobalNodeNumber
+!                                                       GetGlobalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber1
@@ -305,7 +305,7 @@ END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
-!                                                         getGlobalNodeNumber
+!                                                         GetGlobalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber2
@@ -352,7 +352,7 @@ ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
 
 !----------------------------------------------------------------------------
-!                                                             getMeshPointer
+!                                                             GetMeshPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
@@ -370,7 +370,7 @@ END SELECT
 END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
-!                                                               getNodeCoord
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord
@@ -391,7 +391,7 @@ nodeCoord(1:obj%nsd, :) = obj%nodeCoord(1:obj%nsd, :)
 END PROCEDURE obj_GetNodeCoord
 
 !----------------------------------------------------------------------------
-!                                                       getNodeCoord
+!                                                       GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord2
@@ -403,7 +403,56 @@ nodeCoord = obj%nodeCoord(1:nsd, localNode)
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
-!                                                        getNodeCoordPointer
+!                                                           GetNearestNode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNearestNode1
+CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode1()"
+LOGICAL(LGT) :: isok
+
+isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  CALL obj%InitiateKdtree()
+END IF
+
+CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=1, &
+                       results=obj%kdresult)
+
+globalNode = obj%kdresult(1)%idx
+x(1:obj%nsd) = obj%nodeCoord(1:obj%nsd, globalNode)
+
+END PROCEDURE obj_GetNearestNode1
+
+!----------------------------------------------------------------------------
+!                                                           GetNearestNode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNearestNode2
+CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode2()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii
+
+isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  CALL obj%InitiateKdtree()
+END IF
+
+CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=nn, &
+                       results=obj%kdresult)
+
+DO ii = 1, nn
+  globalNode(ii) = obj%kdresult(ii)%idx
+  x(1:obj%nsd, ii) = obj%nodeCoord(1:obj%nsd, globalNode(ii))
+END DO
+
+END PROCEDURE obj_GetNearestNode2
+
+!----------------------------------------------------------------------------
+!                                                        GetNodeCoordPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoordPointer
@@ -575,7 +624,7 @@ END SELECT
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
-!                                                                     getNSD
+!                                                                     GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNSD
@@ -583,7 +632,7 @@ ans = obj%nsd
 END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
-!                                                             getBoundingBox
+!                                                             GetBoundingBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox
@@ -604,7 +653,7 @@ END SELECT
 END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
-!                                                     getTotalMeshFacetData
+!                                                     GetTotalMeshFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalMeshFacetData
@@ -615,7 +664,7 @@ ans = 0
 END PROCEDURE obj_GetTotalMeshFacetData
 
 !----------------------------------------------------------------------------
-!                                                          getTotalMaterial
+!                                                          GetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalMaterial1
