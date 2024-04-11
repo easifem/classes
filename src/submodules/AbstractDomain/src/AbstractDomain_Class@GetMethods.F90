@@ -449,21 +449,49 @@ END PROCEDURE obj_GetNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox
-! nptrs = box.Nptrs.obj%nodeCoord
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox()"
 REAL(DFP) :: qv(3), r2
-INTEGER(I4B) :: nfound, ii
+INTEGER(I4B) :: tnodes, ii, nsd
+LOGICAL(LGT) :: isok
+LOGICAL(LGT), ALLOCATABLE :: bools(:)
+INTEGER(I4B), ALLOCATABLE :: nptrs0(:)
+
+isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
+IF (isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+
+  CALL obj%InitiateKdtree()
+END IF
 
 qv = Center(box)
 r2 = GetRadiusSqr(box)
+nsd = obj%nsd
 
-CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), r2=r2, &
-               nfound=nfound, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
+CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
+               nfound=tnodes, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
 
-CALL Reallocate(nptrs, nfound)
+isok = Input(default=.TRUE., option=isStrict)
 
-DO CONCURRENT(ii=1:nfound)
-  nptrs(ii) = obj%kdresult(ii)%idx
+IF (.NOT. isok) THEN
+  CALL Reallocate(nptrs, tnodes)
+  DO CONCURRENT(ii=1:tnodes)
+    nptrs(ii) = obj%kdresult(ii)%idx
+  END DO
+  RETURN
+END IF
+
+CALL Reallocate(nptrs0, tnodes)
+CALL Reallocate(bools, tnodes)
+DO CONCURRENT(ii=1:tnodes)
+  nptrs0(ii) = obj%kdresult(ii)%idx
+  bools(ii) = isInside(box, obj%nodeCoord(1:nsd, obj%kdresult(ii)%idx))
 END DO
+
+nptrs = PACK(nptrs0, bools)
+
+IF (ALLOCATED(bools)) DEALLOCATE (bools)
+IF (ALLOCATED(nptrs0)) DEALLOCATE (nptrs0)
 
 END PROCEDURE obj_GetNptrsInBox
 

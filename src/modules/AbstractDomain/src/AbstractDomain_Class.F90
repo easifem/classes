@@ -979,11 +979,17 @@ END INTERFACE
 ! summary: this routine returns the global node number in a box
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrsInBox(obj, box, nptrs)
+  MODULE SUBROUTINE obj_GetNptrsInBox(obj, box, nptrs, isStrict)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
       !! If Kdtree is not init then we init it
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nptrs(:)
     TYPE(BoundingBox_), INTENT(IN) :: box
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isStrict
+    !! Default is true
+    !! If it is true the returned points are strictly inside or on the
+    !! box, but not outside of it
+    !! This is because we use radius of bounding box to find the points
+    !! this is over estimation.
   END SUBROUTINE obj_GetNptrsInBox
 END INTERFACE
 
