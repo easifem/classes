@@ -425,12 +425,12 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
   END DO
 
+  tNodes = 2
   DO iel = 1, telems
 
     problem = .NOT. elementData(iel)%isActive
     IF (problem) CYCLE
 
-    tNodes = SIZE(elementData(iel)%globalNodes)
     jj = 0
     temp1 = 0
     bndyflag = 0
