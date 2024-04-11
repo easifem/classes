@@ -522,7 +522,8 @@ LOGICAL(LGT) :: islocal0
 problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode is out of bound.')
+    & '[INTERNAL ERROR] :: globalNode '//tostring(globalNode)// &
+    ' is out of bound')
 END IF
 #endif
 

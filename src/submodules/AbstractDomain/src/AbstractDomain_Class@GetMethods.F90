@@ -74,7 +74,16 @@ END PROCEDURE obj_IsElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
+#endif
+
 INTEGER(I4B) :: dim0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 dim0 = Input(default=obj%nsd, option=dim)
 
@@ -93,6 +102,11 @@ CASE (0)
   & islocal=islocal)
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -100,6 +114,15 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 SELECT CASE (obj%nsd)
 CASE (3)
   ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
@@ -114,6 +137,12 @@ CASE (0)
   ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
     & islocal=islocal)
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -121,6 +150,15 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 SELECT CASE (obj%nsd)
 CASE (3)
   ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
@@ -135,6 +173,12 @@ CASE (0)
   ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
     & islocal=islocal)
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
