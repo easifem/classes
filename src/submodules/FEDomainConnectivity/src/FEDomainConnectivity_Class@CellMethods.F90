@@ -21,6 +21,19 @@ USE IntegerUtility, ONLY: OPERATOR(.in.)
 USE ReallocateUtility
 USE Display_Method
 IMPLICIT NONE
+
+#ifdef MAX_NODES_IN_ELEM
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = MAX_NODES_IN_ELEM
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = 128
+#endif
+
+#ifdef MAX_NODE_TO_ELEM
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -31,22 +44,20 @@ MODULE PROCEDURE obj_InitiateCellToCellData1
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateCellToCellData1()"
 INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
 ! some counters and indices
-INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
-! node number in mesh1
-INTEGER(I4B), ALLOCATABLE :: nptrs2(:), nptrs(:)
-! node number in mesh2
-INTEGER(I4B), ALLOCATABLE :: elem2(:)
 ! element numbers in mesh2
 INTEGER(I4B), POINTER :: nodeToNode(:)
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: nptrs1(PARAM_MAX_NNE), nptrs2(PARAM_MAX_NNE), &
+                nptrs3(PARAM_MAX_NNE), elem2(PARAM_MAX_NODE_TO_ELEM)
 
-INTEGER(I4B) :: telem1, minelem, maxelem
+INTEGER(I4B) :: minelem, maxelem, telem2
 
-#ifdef DEBUG_VER
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
+
+#ifdef DEBUG_VER
 
 isok = obj%isCellToCell
 IF (isok) THEN
@@ -80,17 +91,13 @@ nsd = domain1%GetNSD()
 
 nodeToNode => obj%GetNodeToNodePointer()
 
-telem1 = domain1%GetTotalElements(dim=nsd)
-
 ! Get mesh pointer
 DO iel1 = minelem, maxelem
   isok = domain1%isElementPresent(globalElement=iel1)
   IF (.NOT. isok) CYCLE
 
-  nptrs1 = domain1%GetConnectivity(globalElement=iel1, islocal=.FALSE., &
-                                   dim=nsd)
-  order1 = SIZE(nptrs1)
-  CALL Reallocate(nptrs2, order1)
+ CALL domain1%GetConnectivity_(globalElement=iel1, ans=nptrs1, tsize=order1, &
+                                islocal=.FALSE., dim=nsd)
   DO ii = 1, order1
     nptrs2(ii) = nodeToNode(nptrs1(ii))
   END DO
@@ -98,20 +105,21 @@ DO iel1 = minelem, maxelem
   DO ii = 1, order1
     IF (nptrs2(ii) .EQ. 0) CYCLE
 
-    elem2 = domain2%GetNodeToElements(GlobalNode=nptrs2(ii))
+    CALL domain2%GetNodeToElements_(GlobalNode=nptrs2(ii), ans=elem2, &
+                                    tsize=telem2, islocal=.FALSE.)
 
-    DO jj = 1, SIZE(elem2)
+    DO jj = 1, telem2
 
-      nptrs = domain2%GetConnectivity(globalElement=elem2(jj), dim=nsd)
-      order2 = SIZE(nptrs)
+      CALL domain2%GetConnectivity_(globalElement=elem2(jj), &
+                           ans=nptrs3, tsize=order2, dim=nsd, islocal=.FALSE.)
 
       IF (order1 .GE. order2) THEN
-        IF (nptrs.in.nptrs2) THEN
+        IF (nptrs3(1:order2) .in.nptrs2(1:order1)) THEN
           obj%cellToCell(iel1) = elem2(jj)
           EXIT
         END IF
       ELSE
-        IF (nptrs2.in.nptrs) THEN
+        IF (nptrs2(1:order1) .in.nptrs3(1:order2)) THEN
           obj%cellToCell(iel1) = elem2(jj)
           EXIT
         END IF
@@ -124,10 +132,6 @@ DO iel1 = minelem, maxelem
 END DO
 
 NULLIFY (nodeToNode)
-IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
-IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
