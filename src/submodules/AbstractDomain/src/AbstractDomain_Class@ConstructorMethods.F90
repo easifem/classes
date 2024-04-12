@@ -41,6 +41,17 @@ CALL obj%DEALLOCATE()
 
 CALL obj%IMPORT(hdf5=hdf5, group=group)
 
+SELECT CASE (obj%nsd)
+CASE (0)
+  obj%mesh => obj%meshPoint
+CASE (1)
+  obj%mesh => obj%meshCurve
+CASE (2)
+  obj%mesh => obj%meshSurface
+CASE (3)
+  obj%mesh => obj%meshVolume
+END SELECT
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
@@ -71,6 +82,8 @@ obj%tEntitiesForElements = 0
 obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
 CALL DEALLOCATE (obj%meshmap)
+
+obj%mesh => NULL()
 
 IF (ASSOCIATED(obj%meshVolume)) THEN
   CALL obj%meshVolume%DEALLOCATE()
