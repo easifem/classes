@@ -94,6 +94,9 @@ IF (abool) THEN
   CALL BlankLines(nol=1, unitno=unitno)
 END IF
 
+abool = ASSOCIATED(obj%mesh)
+CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
+
 CALL Display(obj%meshMap%isInitiated, "meshMap Initiated: ", unitno=unitno)
 
 END PROCEDURE obj_Display
@@ -467,7 +470,7 @@ CALL obj%ImportFromToml(table=node)
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
 CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF,  &
-            & unitno=stdout)
+                  & unitno=stdout)
 END IF
 #endif
 

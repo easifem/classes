@@ -111,6 +111,11 @@ TYPE, ABSTRACT :: AbstractDomain_
     !! meshCurve list of meshes of curve entities
   CLASS(AbstractMesh_), POINTER :: meshPoint => NULL()
     !! meshPoint list of meshes of point entities
+  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+    !! mesh points to meshVolume for nsd = 3
+    !! mesh points to meshSurface for nsd = 2
+    !! mesh points to meshCurve for nsd = 1
+    !! mesh points to meshPoint for nsd = 0
 
   TYPE(Kdtree2_), POINTER :: kdtree => NULL()
   TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
@@ -1466,9 +1471,13 @@ INTERFACE
     & medium, material)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: entityNum
+    !! entity number
     INTEGER(I4B), INTENT(IN) :: medium
+    !! medium number (like soil, water)
     INTEGER(I4B), INTENT(IN) :: material
+    !! type of medium like clay, sand, water1, water2
   END SUBROUTINE obj_SetMaterial
 END INTERFACE
 
@@ -1478,7 +1487,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-24
-! summary: SetNodeCoord
+! summary: Set the node coordinate of the domain
 
 INTERFACE
   MODULE SUBROUTINE obj_SetNodeCoord1(obj, nodeCoord, scale, &
