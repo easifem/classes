@@ -597,7 +597,8 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
     & RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! we can init the node to element data if necessary
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -622,11 +623,74 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
     & RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! we can init the node to element data if necessary
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END FUNCTION obj_GetNodeToElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
+!
+!# Introduction
+!
+! For obj%nsd = 3, we use meshVolume
+! For obj%nsd = 2, we use meshSurface
+! For obj%nsd = 1, we use meshCurve
+! for obj%nsd = 0, we use meshPoint
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! We can init the node to element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
+!
+!# Introduction
+!
+! For obj%nsd = 3, we use meshVolume
+! For obj%nsd = 2, we use meshSurface
+! For obj%nsd = 1, we use meshCurve
+! for obj%nsd = 0, we use meshPoint
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+      !! We can ionit the node to element data
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements2_
 END INTERFACE
 
 !----------------------------------------------------------------------------
