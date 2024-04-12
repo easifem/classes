@@ -110,6 +110,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
+!                                                                    GetNNE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNNE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNNE()"
+#endif
+
+INTEGER(I4B) :: dim0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+dim0 = Input(default=obj%nsd, option=dim)
+
+SELECT CASE (dim0)
+CASE (3)
+  ans = obj%meshVolume%GetNNE(globalElement=globalElement, &
+  & islocal=islocal)
+CASE (2)
+  ans = obj%meshSurface%GetNNE(globalElement=globalElement, &
+  & islocal=islocal)
+CASE (1)
+  ans = obj%meshCurve%GetNNE(globalElement=globalElement, &
+  & islocal=islocal)
+CASE (0)
+  ans = obj%meshPoint%GetNNE(globalElement=globalElement, &
+  & islocal=islocal)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_GetNNE
+
+!----------------------------------------------------------------------------
 !                                                         GetNodeToElements
 !----------------------------------------------------------------------------
 
