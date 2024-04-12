@@ -407,10 +407,20 @@ CONTAINS
   !! Returns the local element number of a global element number
 
   PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
+  !! Get list of elements surrounding a single nodes
   PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
+  !! Get list of elements surrounding several nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
     & GetNodeToElements1, GetNodeToElements2
-  !! Returns the element attached to a given global node number
+  !! Generic method to get elements around node or nodes
+
+  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
+  !! Get list of elements surrounding a single nodes (no alloc)
+  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
+  !! Get list of elements surrounding several nodes (no alloc)
+  GENERIC, PUBLIC :: GetNodeToElements_ => &
+    & GetNodeToElements1_, GetNodeToElements2_
+  !! Generic method to get elements around node or nodes (no alloc)
 
   PROCEDURE, PASS(obj) :: GetNodeToNodes1 => obj_GetNodeToNodes1
   !! Returns global node number connected to a given global node
@@ -1543,6 +1553,52 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! A vector of local element number
   END FUNCTION obj_GetNodeToElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements2_
 END INTERFACE
 
 !----------------------------------------------------------------------------
