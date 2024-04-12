@@ -666,6 +666,8 @@ IF (problem) THEN
 END IF
 #endif
 
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
 ans = obj%nodeData(ii)%globalElements
 END PROCEDURE obj_GetNodeToElements1
@@ -677,6 +679,8 @@ END PROCEDURE obj_GetNodeToElements1
 MODULE PROCEDURE obj_GetNodeToElements2
 INTEGER(I4B) :: ii, jj, kk, n, lnode(SIZE(globalNode)),  &
   & nn(SIZE(globalNode) + 1)
+
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 nn(1) = 1
 n = SIZE(globalNode)
