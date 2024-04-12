@@ -216,9 +216,19 @@ END PROCEDURE obj_SetTotalMaterial
 !                                                                setMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMaterial
+MODULE PROCEDURE obj_SetMaterial2
 obj%material(medium) = material
-END PROCEDURE obj_SetMaterial
+END PROCEDURE obj_SetMaterial2
+
+!----------------------------------------------------------------------------
+!                                                                setMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterial1
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_SetMaterial1
 
 !----------------------------------------------------------------------------
 !                                                        setFacetElementType
