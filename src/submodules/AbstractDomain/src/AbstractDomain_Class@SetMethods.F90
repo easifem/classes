@@ -71,30 +71,35 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
 INTEGER(I4B) :: ivar, nsd(SIZE(domains))
-CHARACTER(:), ALLOCATABLE :: matProp
 LOGICAL(LGT) :: problem
+#endif
+
+CHARACTER(:), ALLOCATABLE :: matProp
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+
 DO ivar = 1, SIZE(domains)
 
   problem = .NOT. ASSOCIATED(domains(ivar)%ptr)
   IF (problem) THEN
     CALL e%RaiseError(modName//"::"//myName//" - "// &
-      & '[INTERNAL ERROR] :: domains( '//Tostring(ivar)//' ) NOT ASSOCIATED')
+      & '[INTERNAL ERROR] :: domains('//Tostring(ivar)//') NOT ASSOCIATED')
     RETURN
   END IF
 
   problem = .NOT. domains(ivar)%ptr%isInitiated
   IF (problem) THEN
     CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & '[INTERNAL ERROR] :: domains( '//Tostring(ivar)// &
-    & ' )%ptr NOT INITIATED')
+    & '[INTERNAL ERROR] :: domains('//Tostring(ivar)//')%ptr NOT INITIATED')
+    RETURN
   END IF
 
   nsd(ivar) = domains(ivar)%ptr%GetNSD()
@@ -108,9 +113,11 @@ IF (problem) THEN
   RETURN
 END IF
 
+#endif
+
 matProp = GetMatrixProp(mat)
 
-IF (TRIM(matProp) .EQ. "RECTANGLE") THEN
+IF (matProp .EQ. "RECTANGLE") THEN
   CALL part2_obj_Set_sparsity2(domains=domains, mat=mat)
 ELSE
   CALL part1_obj_Set_sparsity2(domains=domains, mat=mat)
@@ -307,13 +314,35 @@ END PROCEDURE obj_SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#endif
 
-! meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-! CALL meshptr%SetMaterial(medium=medium, material=material)
-! meshptr => NULL()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%SetMaterial(medium=medium, material=material, &
+                                 entityNum=entityNum)
+CASE (1)
+  CALL obj%meshCurve%SetMaterial(medium=medium, material=material, &
+                                 entityNum=entityNum)
+CASE (2)
+  CALL obj%meshSurface%SetMaterial(medium=medium, material=material, &
+                                   entityNum=entityNum)
+CASE (3)
+  CALL obj%meshVolume%SetMaterial(medium=medium, material=material, &
+                                  entityNum=entityNum)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
@@ -321,9 +350,16 @@ END PROCEDURE obj_SetMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetNodeCoord1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord1()"
-REAL(DFP) :: scale0
 LOGICAL(LGT) :: problem
+#endif
+
+REAL(DFP) :: scale0
+LOGICAL(LGT) :: add0
+INTEGER(I4B) :: ii, tnodes, nsd
+
+#ifdef DEBUG_VER
 
 problem = .NOT. ALLOCATED(obj%nodeCoord)
 IF (problem) THEN
@@ -340,14 +376,25 @@ IF (problem) THEN
   & 'with obj_::obj%nodeCoord')
   RETURN
 END IF
+#endif
 
 scale0 = Input(option=scale, default=1.0_DFP)
+add0 = Input(option=addContribution, default=.FALSE.)
+tnodes = SIZE(nodeCoord, 2)
+nsd = obj%nsd
 
-IF (PRESENT(addContribution)) THEN
-  obj%nodeCoord = obj%nodeCoord + scale * nodeCoord
-ELSE
-  obj%nodeCoord = nodeCoord
+IF (add0) THEN
+  DO CONCURRENT(ii=1:tnodes)
+    obj%nodeCoord(1:nsd, ii) = nodeCoord(1:nsd, ii) * scale0 &
+                               + obj%nodeCoord(1:nsd, ii)
+  END DO
+  RETURN
 END IF
+
+! make do concurrent loop for setting obj%nodeCoord to nodeCoord
+DO CONCURRENT(ii=1:tnodes)
+  obj%nodeCoord(1:nsd, ii) = nodeCoord(1:nsd, ii)
+END DO
 
 END PROCEDURE obj_SetNodeCoord1
 
