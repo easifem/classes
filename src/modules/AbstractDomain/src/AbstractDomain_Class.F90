@@ -144,16 +144,30 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo =>  &
     & obj_DisplayDomainInfo
 
-  ! Get:
+  ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
+  !! Check if a node is present or node in domain
+
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
+  !! Check if an element is present or node in domain
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
+  !! Get the vertex connectivity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
+  !! Get number of nodes(vertex)  in element, size of connectivity
+
   PROCEDURE, PASS(obj) :: obj_GetNodeToElements1
+  !! Get the list of elements connnected to a specified node
   PROCEDURE, PASS(obj) :: obj_GetNodeToElements2
+  !! Get the list of elements connnected to many specified nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
     & obj_GetNodeToElements1, &
     & obj_GetNodeToElements2
+  !! Generic method to get node to element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
     !! returns the total number of nodes in the domain, mesh, or part of mesh
   PROCEDURE, PASS(obj) :: obj_tNodes1
@@ -514,8 +528,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-12
-! update: 2021-11-12
+! date: 2024-04-12
 ! summary: Returns the connectivity vector of a given element number
 
 INTERFACE
@@ -536,6 +549,34 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! vertex connectivity
   END FUNCTION obj_GetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetNNE@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-12
+! summary: Returns the connectivity vector of a given element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, islocal) &
+    & RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    !! Make sure globalElement is present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+    !! vertex connectivity
+  END FUNCTION obj_GetNNE
 END INTERFACE
 
 !----------------------------------------------------------------------------
