@@ -156,16 +156,28 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
   !! Get the vertex connectivity
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
+  !! Get the vertex connectivity
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get number of nodes(vertex)  in element, size of connectivity
 
-  PROCEDURE, PASS(obj) :: obj_GetNodeToElements1
+  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
   !! Get the list of elements connnected to a specified node
-  PROCEDURE, PASS(obj) :: obj_GetNodeToElements2
+  PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
   !! Get the list of elements connnected to many specified nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
-    & obj_GetNodeToElements1, &
-    & obj_GetNodeToElements2
+    & GetNodeToElements1, &
+    & GetNodeToElements2
+  !! Generic method to get node to element data
+
+  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
+  !! Get the list of elements connnected to a specified node
+  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
+  !! Get the list of elements connnected to many specified nodes
+  GENERIC, PUBLIC :: GetNodeToElements_ => &
+    & GetNodeToElements1_, &
+    & GetNodeToElements2_
   !! Generic method to get node to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
@@ -549,6 +561,37 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! vertex connectivity
   END FUNCTION obj_GetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-12
+! summary: Returns the connectivity vector of a given element number
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, &
+                                         dim, islocal)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    !!
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    !! Make sure globalElement is present
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! vertex connectivity
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetConnectivity_
 END INTERFACE
 
 !----------------------------------------------------------------------------
