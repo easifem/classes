@@ -73,6 +73,18 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
 
+  INTEGER(I4B), ALLOCATABLE :: material(:)
+    !! materials mapped to the mesh
+    !! material(1) is the material id of medium 1
+    !! material(2) is the material id of medium 2
+    !! ...
+    !! material(n) is the material id of medium n
+    !!
+    !! For example, soil is a porous medium n = 1,
+    !! fluid is a medium n =2
+    !! then material(1) denotes the type of soil => clay, sand, silt
+    !! and material(2) denotes the type of fluid, water, oil, air
+
 CONTAINS
   PRIVATE
 
