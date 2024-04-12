@@ -19,6 +19,7 @@ SUBMODULE(FEDomainConnectivity_Class) CellMethods
 ! USE BaseMethod
 USE IntegerUtility, ONLY: OPERATOR(.in.)
 USE ReallocateUtility
+USE Display_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -28,7 +29,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateCellToCellData1
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateCellToCellData1()"
-INTEGER(I4B) :: ii, nsd, order1, order2, iel1, iel2
+INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
 ! some counters and indices
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
 ! node number in mesh1
@@ -94,27 +95,30 @@ DO iel1 = minelem, maxelem
     nptrs2(ii) = nodeToNode(nptrs1(ii))
   END DO
 
-  elem2 = domain2%GetNodeToElements(GlobalNode=nptrs2)
+  DO ii = 1, order1
+    IF (nptrs2(ii) .EQ. 0) CYCLE
 
-  ! now we are ready to search iel2 in elem2 which
-  ! contains all nptrs2
-  DO ii = 1, SIZE(elem2)
-    iel2 = elem2(ii)
+    elem2 = domain2%GetNodeToElements(GlobalNode=nptrs2(ii))
 
-    nptrs = domain2%GetConnectivity(globalElement=iel2, dim=nsd)
-    order2 = SIZE(nptrs)
+    DO jj = 1, SIZE(elem2)
 
-    IF (order1 .GE. order2) THEN
-      IF (nptrs.in.nptrs2) THEN
-        obj%cellToCell(iel1) = iel2
-        EXIT
+      nptrs = domain2%GetConnectivity(globalElement=elem2(jj), dim=nsd)
+      order2 = SIZE(nptrs)
+
+      IF (order1 .GE. order2) THEN
+        IF (nptrs.in.nptrs2) THEN
+          obj%cellToCell(iel1) = elem2(jj)
+          EXIT
+        END IF
+      ELSE
+        IF (nptrs2.in.nptrs) THEN
+          obj%cellToCell(iel1) = elem2(jj)
+          EXIT
+        END IF
       END IF
-    ELSE
-      IF (nptrs2.in.nptrs) THEN
-        obj%cellToCell(iel1) = iel2
-        EXIT
-      END IF
-    END IF
+
+    END DO
+
   END DO
 
 END DO
