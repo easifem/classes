@@ -367,6 +367,10 @@ CONTAINS
     & obj_GetConnectivity
   !! Returns  node numbers in an element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => &
+    & obj_GetConnectivity_
+  !! Returns  node numbers in an element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
     & obj_GetNodeConnectivity
   !! Returns the node connectivity of the mesh elements
@@ -1325,6 +1329,25 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-12
+! summary: This routine returns global node numbers in a given global elem
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, &
+                                         islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetConnectivity_
 END INTERFACE
 
 !----------------------------------------------------------------------------

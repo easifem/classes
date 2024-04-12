@@ -27,7 +27,6 @@ USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
   & ElementOrder, &
   & TotalEntities, &
   & RefElemGetGeoParam
-USE SafeSizeUtility
 
 IMPLICIT NONE
 
@@ -46,7 +45,7 @@ CONTAINS
 MODULE PROCEDURE obj_GetNNE
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = SafeSize(obj%elementData(iel)%globalNodes)
+ans = SIZE(obj%elementData(iel)%globalNodes)
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
@@ -451,6 +450,31 @@ END PROCEDURE obj_GetConnectivity
 !                                                            GetConnectivity
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetConnectivity_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: problem in getting localElement number')
+END IF
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+tsize = SIZE(obj%elementData(iel)%globalNodes)
+ans(1:tsize) = obj%elementData(iel)%globalNodes
+END PROCEDURE obj_GetConnectivity_
+
+!----------------------------------------------------------------------------
+!                                                            GetConnectivity
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetNodeConnectivity
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeConnectivity()"
@@ -704,7 +728,7 @@ END IF
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-tsize = SafeSize(obj%nodeData(ii)%globalElements)
+tsize = SIZE(obj%nodeData(ii)%globalElements)
 
 DO jj = 1, tsize
   ans(jj) = obj%nodeData(ii)%globalElements(jj)
@@ -725,7 +749,7 @@ n = SIZE(globalNode)
 
 DO ii = 1, n
   lnode = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  b = a + SafeSize(obj%nodeData(lnode)%globalElements)
+  b = a + SIZE(obj%nodeData(lnode)%globalElements)
 
   kk = 0
   DO jj = a, b - 1
@@ -741,7 +765,7 @@ tsize = b - 1
 
 IF (tsize .LE. 1) RETURN
 
-CALL RemoveDuplicates_(obj=ans, tsize=tsize, isSorted=.FALSE.)
+CALL RemoveDuplicates_(obj=ans(1:tsize), tsize=tsize, isSorted=.FALSE.)
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
