@@ -16,10 +16,7 @@
 !
 
 SUBMODULE(AbstractDomain_Class) SetMethods
-! USE BaseMethod
-USE FEMesh_Class, ONLY: FEMesh_
-USE DomainConnectivity_Class, ONLY: DomainConnectivity_
-! USE DomainUtility
+USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
 USE CSRMatrix_Method
 USE BoundingBox_Method
 USE Display_Method
@@ -114,10 +111,9 @@ END IF
 matProp = GetMatrixProp(mat)
 
 IF (TRIM(matProp) .EQ. "RECTANGLE") THEN
-  !FIXME:
-  ! CALL SetSparsity3(domains=domains, mat=mat)
+  CALL part2_obj_Set_sparsity2(domains=domains, mat=mat)
 ELSE
-  CALL part1_obj_set_sparsity2(domains=domains, mat=mat)
+  CALL part1_obj_Set_sparsity2(domains=domains, mat=mat)
 END IF
 
 matProp = ""
@@ -130,21 +126,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
-!                                                 part1_obj_set_sparsity2
+!                                                 part1_obj_Set_sparsity2
 !----------------------------------------------------------------------------
 
-SUBROUTINE part1_obj_set_sparsity2(domains, mat)
+SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
   CLASS(AbstractDomainPointer_), INTENT(IN) :: domains(:)
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
 
-  INTEGER(I4B) :: ivar, jvar, rowLBOUND, rowUBOUND, colLBOUND, colUBOUND
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "part1_obj_Set_sparsity2()"
+  INTEGER(I4B) :: ivar, jvar
   CLASS(AbstractDomain_), POINTER :: rowDomain, colDomain
   CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
-  TYPE(DomainConnectivity_) :: domainConn
+  TYPE(FEDomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
-  CHARACTER(*), PARAMETER :: myName = "part1_obj_set_sparsity2()"
-  TYPE(BoundingBox_) :: row_box, col_box
-  LOGICAL(LGT) :: is_intersect, isdebug
+  LOGICAL(LGT) :: isdebug
 
   isdebug = .FALSE.
 
@@ -165,57 +161,129 @@ SUBROUTINE part1_obj_set_sparsity2(domains, mat)
     IF (isdebug) CALL Display("row domain = "//tostring(ivar))
 
     rowDomain => domains(ivar)%ptr
-    rowMesh => rowDomain%meshVolume
+    IF (.NOT. ASSOCIATED(rowDomain)) CYCLE
+
+    rowMesh => rowDomain%GetMeshPointer(dim=rowDomain%GetNSD())
     IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
     IF (rowMesh%isEmpty()) CYCLE
-    row_box = rowMesh%GetBoundingBox()
-    rowLBOUND = LBOUND(rowMesh%local_nptrs, 1)
-    rowUBOUND = UBOUND(rowMesh%local_nptrs, 1)
 
     DO jvar = 1, SIZE(domains)
 
       IF (isdebug) CALL Display("col domain = "//tostring(jvar))
 
       colDomain => domains(jvar)%ptr
-      colMesh => colDomain%meshVolume
+      IF (.NOT. ASSOCIATED(colDomain)) CYCLE
+
+      colMesh => colDomain%GetMeshPointer(dim=colDomain%GetNSD())
       IF (.NOT. ASSOCIATED(colMesh)) CYCLE
       IF (colMesh%isEmpty()) CYCLE
-      col_box = colMesh%getBoundingBox()
-      is_intersect = row_box.isIntersect.col_box
-      colLBOUND = LBOUND(colMesh%local_nptrs, 1)
-      colUBOUND = UBOUND(colMesh%local_nptrs, 1)
 
       CALL domainConn%DEALLOCATE()
-      !FIXME:
-      ! CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
-      ! & domain2=colDomain)
+      CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
+        & domain2=colDomain)
       nodeToNode => domainConn%GetNodeToNodePointer()
 
-      IF (is_intersect) THEN
-        CALL rowMesh%SetSparsity( &
-          & mat=mat, &
-          & colMesh=colMesh, &
-          & nodeToNode=nodeToNode, &
-          & ivar=ivar, &
-          & jvar=jvar)
-      END IF
+      CALL rowMesh%SetSparsity( &
+        & mat=mat, &
+        & colMesh=colMesh, &
+        & nodeToNode=nodeToNode, &
+        & ivar=ivar, &
+        & jvar=jvar)
 
     END DO
   END DO
 
   CALL SetSparsity(mat)
-
   NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
-
-  !FIXME:
-  ! CALL domainConn%DEALLOCATE()
+  CALL domainConn%DEALLOCATE()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[END] ')
 #endif
 
-END SUBROUTINE part1_obj_set_sparsity2
+END SUBROUTINE part1_obj_Set_sparsity2
+
+!----------------------------------------------------------------------------
+!                                                   part2_obj_Set_sparsity2
+!----------------------------------------------------------------------------
+
+SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
+  CLASS(AbstractDomainPointer_), INTENT(IN) :: domains(2)
+  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "part2_obj_Set_sparsity2()"
+  INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
+  INTEGER(I4B) :: nsd(tvar), ii
+  CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
+  CLASS(AbstractDomain_), POINTER :: rowDomain, colDomain
+  TYPE(FEDomainConnectivity_) :: domainConn
+  INTEGER(I4B), POINTER :: nodeToNode(:)
+  LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+  DO ii = 1, tvar
+    nsd(ii) = domains(ii)%ptr%GetNSD()
+  END DO
+
+  rowDomain => NULL()
+  colDomain => NULL()
+  rowDomain => domains(1)%ptr
+  colDomain => domains(2)%ptr
+
+#ifdef DEBUG_VER
+
+  problem = (.NOT. ASSOCIATED(rowDomain)) .OR. (.NOT. ASSOCIATED(colDomain))
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: rowMesh not ASSOCIATED')
+    RETURN
+  END IF
+
+#endif
+
+  rowMesh => NULL()
+  colMesh => NULL()
+  rowMesh => rowDomain%GetMeshPointer(dim=nsd(1))
+  colMesh => colDomain%GetMeshPointer(dim=nsd(2))
+
+#ifdef DEBUG_VER
+
+  problem = (.NOT. ASSOCIATED(rowMesh)) .OR. (.NOT. ASSOCIATED(colMesh))
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: rowMesh or colMesh not ASSOCIATED')
+    RETURN
+  END IF
+
+#endif
+
+  CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
+    & domain2=colDomain)
+  nodeToNode => domainConn%GetNodeToNodePointer()
+
+  CALL rowMesh%SetSparsity(mat=mat, colMesh=colMesh, &
+                           nodeToNode=nodeToNode, ivar=ivar, jvar=jvar)
+
+  CALL SetSparsity(mat)
+
+  NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
+
+  CALL domainConn%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+END SUBROUTINE part2_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
 !                                                          SetTotalMaterial
@@ -243,7 +311,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 
-! meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+! meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 ! CALL meshptr%SetMaterial(medium=medium, material=material)
 ! meshptr => NULL()
 END PROCEDURE obj_SetMaterial
@@ -300,8 +368,8 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! dim0 = Input(default=obj%nsd, option=dim)
 !
 ! IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
-!   meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
-!   IF (meshptr%getTotalElements() .EQ. 0) THEN
+!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+!   IF (meshptr%GetTotalElements() .EQ. 0) THEN
 !     CALL e%RaiseWarning(modName//'::'//myName//' - '// &
 !     & 'mesh if empty')
 !   ELSE
@@ -318,13 +386,13 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! END IF
 !
 ! IF (PRESENT(dim) .AND. .NOT. PRESENT(entityNum)) THEN
-!   tmesh = obj%getTotalMesh(dim=dim)
+!   tmesh = obj%GetTotalMesh(dim=dim)
 !   CALL Reallocate(max_, SIZE(measures), tmesh)
 !   min_ = max_
 !
 !   DO imesh = 1, tmesh
-!     meshptr => obj%getMeshPointer(dim=dim, entityNum=imesh)
-!     IF (meshptr%getTotalElements() .EQ. 0) THEN
+!     meshptr => obj%GetMeshPointer(dim=dim, entityNum=imesh)
+!     IF (meshptr%GetTotalElements() .EQ. 0) THEN
 !       max_(:, imesh) = -1 * MaxDFP
 !       min_(:, imesh) = MaxDFP
 !     ELSE

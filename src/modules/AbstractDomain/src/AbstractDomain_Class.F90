@@ -1415,7 +1415,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
   END SUBROUTINE obj_SetSparsity1
 END INTERFACE
@@ -1430,7 +1430,7 @@ END INTERFACE
 
 INTERFACE AbstractDomainSetSparsity
   MODULE SUBROUTINE obj_SetSparsity2(domains, mat)
-    CLASS(AbstractDomainPointer_), INTENT(IN) :: domains(:)
+    CLASS(AbstractDomainPointer_), INTENT(INOUT) :: domains(:)
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
   END SUBROUTINE obj_SetSparsity2
 END INTERFACE AbstractDomainSetSparsity
