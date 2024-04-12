@@ -79,17 +79,17 @@ END TYPE ElementConnectivity_
 TYPE :: FEDomainConnectivity_
   PRIVATE
   LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
-    !! True if an instance of [[FEDomainConnectivity_]] is initiated
+    !! True if an instance of [[FEDomainConnectivity_]] is Initiated
   LOGICAL(LGT), PUBLIC :: isFacetToCell = .FALSE.
-    !! True if FacetToCell data is allocated and initiated
+    !! True if FacetToCell data is allocated and Initiated
   LOGICAL(LGT), PUBLIC :: isNodeToNode = .FALSE.
-    !! True if nodeToNode data is initiate
+    !! True if nodeToNode data is Initiate
   LOGICAL(LGT), PUBLIC :: isCellToCell = .FALSE.
-    !! True if elemToElem data is initiated
+    !! True if elemToElem data is Initiated
   INTEGER(I4B), ALLOCATABLE :: nodeToNode(:)
     !! Node to node connectivity
     !! Size of NodeToNode is equal to the largest node number in
-    !! domain-1 or mesh-1 (depending upon how the data is initiated)
+    !! domain-1 or mesh-1 (depending upon how the data is Initiated)
     !! NodeToNode(i) => global node number in domain-2, corresponding to
     !! global node number `i` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCell(:)
@@ -127,7 +127,9 @@ CONTAINS
   FINAL :: obj_Final
   !! finalizer
 
+  ! SET:
   ! @NodeMethods
+
   PROCEDURE, PASS(obj) :: InitiateNodeToNodeData1 => &
     obj_InitiateNodeToNodeData1
   !! Initiate [[FEDomainConnectivity_:nodeToNode]]
@@ -139,18 +141,17 @@ CONTAINS
     & obj_GetNodeToNodePointer
   !! Return pointer to the [[FEDomainConnectivity_:nodeToNode]]
 
+  ! SET:
   ! @CellMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: obj_InitiateCellToCellData1
   !! Initiates [[FEDomainConnectivity_:cellToCell]] data
-  PROCEDURE, PUBLIC, PASS(obj) :: obj_InitiateCellToCellData2
-  !! Initiates [[FEDomainConnectivity_:cellToCell]] data
   GENERIC, PUBLIC :: InitiateCellToCellData => &
-    & obj_InitiateCellToCellData1, &
-    & obj_InitiateCellToCellData2
-
+    & obj_InitiateCellToCellData1
   !! Initiates [[FEDomainConnectivity_:cellToCell]] data
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellToCellPointer => &
-    & obj_GetCellToCellPointer
+    obj_GetCellToCellPointer
   !! Return pointer to the [[FEDomainConnectivity_:CellToCell]]
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => &
     & obj_GetDimEntityNum
@@ -379,7 +380,7 @@ END INTERFACE
 !all meshes in the domain2 will be generated!
 !@endnote
 !
-! - `obj%nodeToNode` will be initiated
+! - `obj%nodeToNode` will be Initiated
 ! - `domain1` main domain
 ! - `domain2` secondary domain
 
@@ -418,58 +419,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         InitiateCellToCellData@CellMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! update: 2021-11-10
-! summary: Generate cell to cell connectivity
-!
-!# Introduction
-!
-!This subroutine generates the cell to cell connectivity between
-!two meshes
-!
-! - `obj%cellToCell` will be initiated
-! - `domain1` main domain
-! - `domain2` secondary domain
-! - `dim1, entitynum1` dimension and entity number of mesh in `domain1`
-! - `dim2, entitynum2` dimension and entity number of mesh in `domain2`
-!
-! Following points should be noted
-!
-! - The topology of elements in both meshes should be the same, this
-! means that if one mesh is triangle then other mesh should be a triangle
-! - The xidim of the elements in both meshes should be the same, this means
-! that if the mesh1 is surface mesh then mesh2 should be a surface mesh
-! - This routine needs [[FEDomainConnectivity_:nodeToNode]] information, so
-! make sure it is initiated before calling this routine.
-
-INTERFACE
-  MODULE SUBROUTINE obj_initiateCellToCellData1(obj, domain1, domain2, &
-                                           dim1, dim2, entityNum1, entityNum2)
-    CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
-    !! FEDomain connectivity object,
-    !! [[FEDomainConnectivity:cellToCell]] will be initiated
-    CLASS(FEDomain_), INTENT(IN) :: domain1
-    !! Primary domain, in cellToCell(i), i denotes the
-    !! global element number in domain1 domain.
-    CLASS(FEDomain_), INTENT(IN) :: domain2
-    !! secondary domain, => cellToCell(i) denotes the
-    !! global cell number in `domain2` domain.
-    INTEGER(I4B), INTENT(IN) :: dim1
-    !! dimension of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: dim2
-    !! dimension of mesh in domain2
-    INTEGER(I4B), INTENT(IN) :: entityNum1
-    !! entity num of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: entityNum2
-    !! entity num of mesh in domain2
-  END SUBROUTINE obj_initiateCellToCellData1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                        InitiateCellToCellData@NodeMethods
 !----------------------------------------------------------------------------
 
@@ -483,7 +432,7 @@ END INTERFACE
 !This subroutine generates the cell to cell connectivity between
 !two domains.
 !
-! - `obj%cellToCell` will be initiated
+! - `obj%cellToCell` will be Initiated
 ! - `domain1` main domain
 ! - `domain2` secondary domain
 !
@@ -524,16 +473,16 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateCellToCellData2(obj, domain1, domain2)
+  MODULE SUBROUTINE obj_InitiateCellToCellData1(obj, domain1, domain2)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEDomain connectivity object
-    CLASS(FEDomain_), INTENT(IN) :: domain1
+    CLASS(FEDomain_), INTENT(INOUT) :: domain1
     !! Primary domain, in CellToCell(i), i denotes the
     !! global element number in domain1 domain.
-    CLASS(FEDomain_), INTENT(IN) :: domain2
+    CLASS(FEDomain_), INTENT(INOUT) :: domain2
     !! Secondary domain => CellToCell(i) denotes the
     !! global element number in domain2 domain.
-  END SUBROUTINE obj_InitiateCellToCellData2
+  END SUBROUTINE obj_InitiateCellToCellData1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -587,7 +536,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! - This routine initiate `facetToCell` for given facetFEMesh and CellFEMesh
+! - This routine Initiate `facetToCell` for given facetFEMesh and CellFEMesh
 ! - In this case facetFEMesh should be a boundary of cellFEMesh
 ! - This routine should not be used for internal boundary.
 
@@ -649,7 +598,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! - This routine initiate `facetToCell` for given facetFEMesh and CellFEMesh
+! - This routine Initiate `facetToCell` for given facetFEMesh and CellFEMesh
 ! - In this case facetFEMesh can be an internal boundary of cellFEMesh
 
 INTERFACE
@@ -676,7 +625,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! - This routine initiate `facetToCell` for given facetFEMesh and CellFEMesh
+! - This routine Initiate `facetToCell` for given facetFEMesh and CellFEMesh
 ! - In this case facetFEMesh can be an internal boundary of cellFEMesh
 
 INTERFACE

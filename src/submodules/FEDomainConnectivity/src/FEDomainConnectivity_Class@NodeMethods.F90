@@ -21,6 +21,7 @@ USE BaseType, ONLY: BoundingBox_
 USE BoundingBox_Method
 USE ReallocateUtility
 USE ApproxUtility
+USE Display_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -72,7 +73,7 @@ isok = obj%isNodeToNode
 IF (isok) RETURN
 
 ii = domain1%GetTotalNodes()
-CALL Reallocate(obj%NodeToNode, ii)
+CALL Reallocate(obj%nodeToNode, ii)
 obj%isNodeToNode = .TRUE.
 
 box1 = domain1%GetBoundingBox()
@@ -99,8 +100,9 @@ DO ii = 1, tnodes1
   CALL domain2%GetNearestNode(qv=x1, x=x2, globalNode=node2)
 
   isok = ALL(x1.APPROXEQ.x2)
+  jj = domain1%GetGlobalNodeNumber(node1)
+
   IF (isok) THEN
-    jj = domain1%GetGlobalNodeNumber(node1)
     obj%nodeToNode(jj) = node2
   ELSE
     obj%nodeToNode(jj) = 0_I4B
