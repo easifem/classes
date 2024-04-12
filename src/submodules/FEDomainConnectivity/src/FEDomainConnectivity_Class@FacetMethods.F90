@@ -24,112 +24,115 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
-  & isMaster)
-  CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
-  !! FEDomain connectivity data
-  CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
-  !! Mesh of facet elements
-  CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
-  !! Master mesh
-  INTEGER(I4B), INTENT(IN) :: dim
-  !! dim
-  INTEGER(I4B), INTENT(IN) :: entityNum
-  !! entityNum
-  LOGICAL(LGT), INTENT(IN) :: isMaster
-  !! if true then cell Mesh is master cell
-  !! if false then cell mesh is slave cell
-
-  ! INTEGER(I4B) :: iface, icell, ii, tfacet, cellGlobalNum, &
-  !   & localFacetID, jj
-  ! INTEGER(I4B), ALLOCATABLE :: nptrs(:), pt2elem(:), &
-  !   & cellNptrs(:), facetNptrs(:)
-  ! CHARACTER(*), PARAMETER :: myName = "facet_to_cell_helper()"
-  !
-  ! ii = 0
-  !
-  ! IF (.NOT. ALLOCATED(cellMesh%facetElements)) THEN
-  !   CALL e%raiseError(modName//'::'//myName//' - '// &
-  !     & 'AbstractMesh_::cellMesh%facetElements should be allocated!')
-  !   RETURN
-  ! END IF
-  !
-  ! tfacet = SIZE(cellMesh%facetElements)
-  !
-  ! DO iface = facetMesh%minElemNum, facetMesh%maxElemNum
-  !   IF (.NOT. facetMesh%isElementPresent(globalElement=iface)) CYCLE
-  !   nptrs = facetMesh%getConnectivity(globalElement=iface)
-  !
-  !   ! It is important that all nodes of a facet element are present
-  !   ! in the cellMesh.
-  !
-  !   ii = ii + 1
-  !
-  !   obj%facetToCell(ii)%facetID = iface
-  !
-  !   IF (.NOT. cellMesh%isAllNodePresent(nptrs)) CYCLE
-  !
-  !   ! Get the element in Cell mesh surrounding this node
-  !
-  !   pt2elem = cellMesh%getNodetoElements(globalNode=nptrs)
-  !
-  !   DO icell = 1, SIZE(pt2elem)
-  !
-  !     cellNptrs = cellMesh%getConnectivity(globalElement=pt2elem(icell))
-  !
-  !     IF (nptrs.IN.cellNptrs) THEN
-  !
-  !       cellGlobalNum = pt2elem(icell)
-  !
-  !       localFacetID = 0
-  !
-  !       DO jj = 1, tfacet
-  !
-  !         facetNptrs = cellMesh%getFacetConnectivity(&
-  !           & globalElement=cellGlobalNum, &
-  !           & iface=jj)
-  !
-  !         IF (nptrs.in.facetNptrs) THEN
-  !           localFacetID = jj
-  !           EXIT
-  !         END IF
-  !
-  !       END DO
-  !
-  !       IF (localFacetID .EQ. 0) THEN
-  !         CALL e%raiseError(modName//'::'//myName//' - '// &
-  !           & 'No local facet found')
-  !       END IF
-  !
-  !       IF (isMaster) THEN
-  !         obj%facetToCell(ii)%GlobalCellData(1, 1) = cellGlobalNum
-  !         obj%facetToCell(ii)%GlobalCellData(2, 1) = localFacetID
-  !         obj%facetToCell(ii)%GlobalCellData(3:4, 1) = [dim, entityNum]
-  !       ELSE
-  !         obj%facetToCell(ii)%GlobalCellData(1, 2) = cellGlobalNum
-  !         obj%facetToCell(ii)%GlobalCellData(2, 2) = localFacetID
-  !         obj%facetToCell(ii)%GlobalCellData(3:4, 2) = [dim, entityNum]
-  !       END IF
-  !
-  !       EXIT
-  !
-  !     END IF
-  !
-  !   END DO
-  ! END DO
-  !
-  ! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-  ! IF (ALLOCATED(pt2elem)) DEALLOCATE (pt2elem)
-  ! IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-  ! IF (ALLOCATED(facetNptrs)) DEALLOCATE (facetNptrs)
-
-END SUBROUTINE facet_to_cell_helper
+! SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
+!   & isMaster)
+!   CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
+!   !! FEDomain connectivity data
+!   CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
+!   !! Mesh of facet elements
+!   CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
+!   !! Master mesh
+!   INTEGER(I4B), INTENT(IN) :: dim
+!   !! dim
+!   INTEGER(I4B), INTENT(IN) :: entityNum
+!   !! entityNum
+!   LOGICAL(LGT), INTENT(IN) :: isMaster
+!   !! if true then cell Mesh is master cell
+!   !! if false then cell mesh is slave cell
+!
+!   ! INTEGER(I4B) :: iface, icell, ii, tfacet, cellGlobalNum, &
+!   !   & localFacetID, jj
+!   ! INTEGER(I4B), ALLOCATABLE :: nptrs(:), pt2elem(:), &
+!   !   & cellNptrs(:), facetNptrs(:)
+!   ! CHARACTER(*), PARAMETER :: myName = "facet_to_cell_helper()"
+!   !
+!   ! ii = 0
+!   !
+!   ! IF (.NOT. ALLOCATED(cellMesh%facetElements)) THEN
+!   !   CALL e%raiseError(modName//'::'//myName//' - '// &
+!   !     & 'AbstractMesh_::cellMesh%facetElements should be allocated!')
+!   !   RETURN
+!   ! END IF
+!   !
+!   ! tfacet = SIZE(cellMesh%facetElements)
+!   !
+!   ! DO iface = facetMesh%minElemNum, facetMesh%maxElemNum
+!   !   IF (.NOT. facetMesh%isElementPresent(globalElement=iface)) CYCLE
+!   !   nptrs = facetMesh%getConnectivity(globalElement=iface)
+!   !
+!   !   ! It is important that all nodes of a facet element are present
+!   !   ! in the cellMesh.
+!   !
+!   !   ii = ii + 1
+!   !
+!   !   obj%facetToCell(ii)%facetID = iface
+!   !
+!   !   IF (.NOT. cellMesh%isAllNodePresent(nptrs)) CYCLE
+!   !
+!   !   ! Get the element in Cell mesh surrounding this node
+!   !
+!   !   pt2elem = cellMesh%getNodetoElements(globalNode=nptrs)
+!   !
+!   !   DO icell = 1, SIZE(pt2elem)
+!   !
+!   !     cellNptrs = cellMesh%getConnectivity(globalElement=pt2elem(icell))
+!   !
+!   !     IF (nptrs.IN.cellNptrs) THEN
+!   !
+!   !       cellGlobalNum = pt2elem(icell)
+!   !
+!   !       localFacetID = 0
+!   !
+!   !       DO jj = 1, tfacet
+!   !
+!   !         facetNptrs = cellMesh%getFacetConnectivity(&
+!   !           & globalElement=cellGlobalNum, &
+!   !           & iface=jj)
+!   !
+!   !         IF (nptrs.in.facetNptrs) THEN
+!   !           localFacetID = jj
+!   !           EXIT
+!   !         END IF
+!   !
+!   !       END DO
+!   !
+!   !       IF (localFacetID .EQ. 0) THEN
+!   !         CALL e%raiseError(modName//'::'//myName//' - '// &
+!   !           & 'No local facet found')
+!   !       END IF
+!   !
+!   !       IF (isMaster) THEN
+!   !         obj%facetToCell(ii)%GlobalCellData(1, 1) = cellGlobalNum
+!   !         obj%facetToCell(ii)%GlobalCellData(2, 1) = localFacetID
+!   !         obj%facetToCell(ii)%GlobalCellData(3:4, 1) = [dim, entityNum]
+!   !       ELSE
+!   !         obj%facetToCell(ii)%GlobalCellData(1, 2) = cellGlobalNum
+!   !         obj%facetToCell(ii)%GlobalCellData(2, 2) = localFacetID
+!   !         obj%facetToCell(ii)%GlobalCellData(3:4, 2) = [dim, entityNum]
+!   !       END IF
+!   !
+!   !       EXIT
+!   !
+!   !     END IF
+!   !
+!   !   END DO
+!   ! END DO
+!   !
+!   ! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+!   ! IF (ALLOCATED(pt2elem)) DEALLOCATE (pt2elem)
+!   ! IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
+!   ! IF (ALLOCATED(facetNptrs)) DEALLOCATE (facetNptrs)
+!
+! END SUBROUTINE facet_to_cell_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData1
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 !
 ! INTEGER(I4B) :: tfacet
 ! CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData1"
@@ -170,7 +173,9 @@ END PROCEDURE obj_InitiateFacetToCellData1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData2
-! CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData2"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData2()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 ! INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, nsd
 ! CLASS(AbstractMesh_), POINTER :: meshptr
 ! LOGICAL(LGT) :: isVar
@@ -256,12 +261,14 @@ END PROCEDURE obj_InitiateFacetToCellData2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData3
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 !
 ! INTEGER(I4B) :: iface, icell, ii, colID, tface, tfacet, &
 ! & cellGlobalNum, localFacetID, jj
 ! INTEGER(I4B), ALLOCATABLE :: nptrs(:), pt2elem(:), &
 !   & cellNptrs(:), facetNptrs(:)
-! CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData3"
 ! LOGICAL(LGT) :: isVar
 !
 ! CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -376,7 +383,9 @@ END PROCEDURE obj_InitiateFacetToCellData3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData4
-! CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData4"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData4()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 ! INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, ii, iface, icell, &
 ! & nsd, tfacet, cellGlobalNum, localFacetID, jj
 ! CLASS(AbstractMesh_), POINTER :: cellMesh
