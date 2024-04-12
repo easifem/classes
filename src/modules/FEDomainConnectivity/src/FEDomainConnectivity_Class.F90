@@ -21,12 +21,14 @@
 
 MODULE FEDomainConnectivity_Class
 USE GlobalData, ONLY: LGT, DFP, I4B
-! USE BaseType
 USE AbstractMesh_Class
-USE FEDomain_Class
+USE AbstractDomain_Class
 USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "FEDomainConnectivity_Class"
 INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
 INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
@@ -388,10 +390,10 @@ INTERFACE
   MODULE SUBROUTINE obj_InitiateNodeToNodeData1(obj, domain1, domain2)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEDomain connectivity object
-    CLASS(FEDomain_), INTENT(INOUT) :: domain1
+    CLASS(AbstractDomain_), INTENT(INOUT) :: domain1
     !! Primary domain, in nodeToNode(i), i denotes the
     !! global node number in domain1 domain.
-    CLASS(FEDomain_), INTENT(INOUT) :: domain2
+    CLASS(AbstractDomain_), INTENT(INOUT) :: domain2
     !! Secondary domain => nodeToNode(i) denotes the
     !! global node number in domain2 domain.
   END SUBROUTINE obj_InitiateNodeToNodeData1
@@ -476,10 +478,10 @@ INTERFACE
   MODULE SUBROUTINE obj_InitiateCellToCellData1(obj, domain1, domain2)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEDomain connectivity object
-    CLASS(FEDomain_), INTENT(INOUT) :: domain1
+    CLASS(AbstractDomain_), INTENT(INOUT) :: domain1
     !! Primary domain, in CellToCell(i), i denotes the
     !! global element number in domain1 domain.
-    CLASS(FEDomain_), INTENT(INOUT) :: domain2
+    CLASS(AbstractDomain_), INTENT(INOUT) :: domain2
     !! Secondary domain => CellToCell(i) denotes the
     !! global element number in domain2 domain.
   END SUBROUTINE obj_InitiateCellToCellData1
@@ -581,9 +583,9 @@ INTERFACE
     !! FEMesh connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetFEMesh
     !! FEMesh of facet elements
-    CLASS(FEDomain_), INTENT(INOUT) :: masterFEDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: masterFEDomain
     !! FEDomain of master elements
-    CLASS(FEDomain_), INTENT(INOUT) :: slaveFEDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: slaveFEDomain
     !! FEDomain of slave elements
   END SUBROUTINE obj_InitiateFacetToCellData2
 END INTERFACE
@@ -634,7 +636,7 @@ MODULE SUBROUTINE obj_InitiateFacetToCellData4(obj, facetFEMesh, cellFEDomain)
     !! FEDomain connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetFEMesh
     !! FEMesh of facet elements
-    CLASS(FEDomain_), INTENT(INOUT) :: cellFEDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: cellFEDomain
     !! Master mesh
   END SUBROUTINE obj_InitiateFacetToCellData4
 END INTERFACE
