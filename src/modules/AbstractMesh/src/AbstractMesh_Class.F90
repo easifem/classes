@@ -539,8 +539,14 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_setMaterial
+
+  PROCEDURE, PASS(obj) :: SetMaterial1 => obj_setMaterial1
   !! Adding a material ID of a medium which is mapped to the mesh
+  PROCEDURE, PASS(obj) :: SetMaterial2 => obj_setMaterial2
+  !! Adding a material ID of a medium which is mapped to the mesh
+  !! This is for backward compatibility only
+  GENERIC, PUBLIC :: SetMaterial => SetMaterial1, SetMaterial2
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
     & obj_SetFacetElementType
   !! Set the facet element type of a given cell number
@@ -2532,11 +2538,33 @@ END INTERFACE
 ! summary: Set the materials id of a given medium
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMaterial(obj, medium, material)
+  MODULE SUBROUTINE obj_SetMaterial2(obj, medium, material)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B), INTENT(IN) :: material
-  END SUBROUTINE obj_SetMaterial
+  END SUBROUTINE obj_SetMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterial1(obj, entityNum, &
+    & medium, material)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! medium number (like soil, water)
+    INTEGER(I4B), INTENT(IN) :: material
+    !! type of medium like clay, sand, water1, water2
+  END SUBROUTINE obj_SetMaterial1
 END INTERFACE
 
 !----------------------------------------------------------------------------
