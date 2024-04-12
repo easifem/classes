@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
+USE GlobalData, ONLY: INT8
 USE BoundingBox_Method
 USE ReallocateUtility
 USE CSRMatrix_Method
@@ -216,19 +217,35 @@ END PROCEDURE obj_SetTotalMaterial
 !                                                                setMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMaterial2
-obj%material(medium) = material
-END PROCEDURE obj_SetMaterial2
+MODULE PROCEDURE obj_SetMaterial1
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+! start a loop of obj%elementData with ii = 1, size(obj%elementData)
+
+DO CONCURRENT(ii=1:obj%tElements)
+  isok = obj%elementData(ii)%isActive
+  IF (.NOT. isok) CYCLE
+
+  ! if obj%elementData(ii)%meshID is equal to entityNum then
+  ! set %material(medium) = material
+  isok = obj%elementData(ii)%meshID .EQ. entityNum
+  IF (isok) THEN
+    CALL ElemDataSet(obj%elementData(ii), material=material, &
+                     medium=medium)
+  END IF
+
+END DO
+
+END PROCEDURE obj_SetMaterial1
 
 !----------------------------------------------------------------------------
 !                                                                setMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMaterial1
-CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_SetMaterial1
+MODULE PROCEDURE obj_SetMaterial2
+obj%material(medium) = material
+END PROCEDURE obj_SetMaterial2
 
 !----------------------------------------------------------------------------
 !                                                        setFacetElementType
