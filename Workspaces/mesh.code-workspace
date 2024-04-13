@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "Mesh",
+			"path": "../src/modules/Mesh"
+		},
+		{
+			"name": "Mesh",
+			"path": "../src/submodules/Mesh"
+		}
+	]
+}

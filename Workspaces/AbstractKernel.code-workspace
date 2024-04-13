@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/AbstractKernel"
+		},
+		{
+			"path": "../src/submodules/AbstractKernel"
+		}
+	]
+}

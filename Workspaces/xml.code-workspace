@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/XMLFile"
+		},
+		{
+			"path": "../src/submodules/XMLFile"
+		},
+		{
+			"path": "../../easifem-tests/tests/testXMLFile"
+		}
+	]
+}

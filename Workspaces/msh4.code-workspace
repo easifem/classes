@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/MSH"
+		},
+		{
+			"path": "../src/submodules/MSH"
+		}
+	]
+}

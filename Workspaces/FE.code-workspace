@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/Element"
+		},
+		{
+			"path": "../src/modules/FacetElement"
+		},
+		{
+			"path": "../src/modules/FE"
+		},
+		{
+			"path": "../src/submodules/Element"
+		},
+		{
+			"path": "../src/submodules/FacetElement"
+		}
+	]
+}

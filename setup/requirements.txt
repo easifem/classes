@@ -1,0 +1,11 @@
+numpy
+scipy
+matplotlib
+jupyter
+jupyterlab
+plotly
+dash
+seaborn
+pillow
+opencv-python
+pandas

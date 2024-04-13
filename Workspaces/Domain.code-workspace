@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/Domain"
+		},
+		{
+			"path": "../src/submodules/Domain"
+		},
+		{
+			"path": "../tests/testDomain"
+		},
+		{
+			"path": "../src/modules/Mesh"
+		},
+		{
+			"path": "../src/submodules/Mesh"
+		}
+	]
+}
