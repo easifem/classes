@@ -895,19 +895,83 @@ IF (obj%isExtraNodeToNodesInitiated) THEN
 END IF
 #endif
 
+#ifdef DEBUG_VER
+
 a = 0
 IF (IncludeSelf) THEN
 
-  ans(1) = obj%GetglobalNodeNumber(i)
   a = 1
   tsize = 1
 
+  problem = SIZE(ans) .LT. 1
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: size of ans is not enough')
+    RETURN
+  END IF
+
+  ans(1) = obj%GetglobalNodeNumber(i)
+
 END IF
 
+#else
+
+a = 0
+IF (IncludeSelf) THEN
+
+  a = 1
+  tsize = 1
+  ans(1) = obj%GetglobalNodeNumber(i)
+
+END IF
+
+#endif
+
 tsize = a + SIZE(obj%nodeData(i)%globalNodes)
+
+#ifdef DEBUG_VER
+
+! problem = size ans .lt. 1
+problem = SIZE(ans) .LT. tsize
+! call raiseError if problem is true
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of ans is not enough')
+  RETURN
+END IF
+
 ans(a + 1:tsize) = obj%nodedata(i)%globalNodes
 
+#else
+
+ans(a + 1:tsize) = obj%nodedata(i)%globalNodes
+
+#endif
+
+! exatranodes
+
 abool = obj%isExtraNodeToNodesInitiated
+
+#ifdef DEBUG_VER
+
+IF (abool) THEN
+
+  a = tsize
+  tsize = tsize + SIZE(obj%nodeData(i)%extraglobalNodes)
+
+  problem = SIZE(ans) .LT. tsize
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: size of ans is not enough')
+    RETURN
+  END IF
+
+  ans(a + 1:tsize) = obj%nodedata(i)%extraglobalNodes
+
+END IF
+
+#else
+
 IF (abool) THEN
 
   a = tsize
@@ -915,6 +979,8 @@ IF (abool) THEN
   ans(a + 1:tsize) = obj%nodedata(i)%extraglobalNodes
 
 END IF
+
+#endif
 
 END PROCEDURE obj_GetNodeToNodes1_
 
