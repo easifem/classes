@@ -63,7 +63,7 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-obj%showTime = .FALSE.
+! obj%showTime = .FALSE.
 obj%isInitiated = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
