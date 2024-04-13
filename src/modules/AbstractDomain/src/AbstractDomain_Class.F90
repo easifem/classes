@@ -1331,10 +1331,19 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalMaterial1(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalMaterial1(obj, dim, globalElement, &
+                                        islocal, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! which dimension of the mesh we should search
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is globalElement a local one
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! This is used for backward compatibility, default is 1
     INTEGER(I4B) :: ans
+    !! returns the total materials in the element
   END FUNCTION obj_GetTotalMaterial1
 END INTERFACE
 

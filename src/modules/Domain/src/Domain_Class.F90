@@ -227,12 +227,10 @@ CONTAINS
   !! Get Order
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & Domain_GetTotalMeshFacetData
-  PROCEDURE, PRIVATE, PASS(obj) :: Domain_GetTotalMaterial1, &
-    & Domain_GetTotalMaterial2
-  GENERIC, PUBLIC :: GetTotalMaterial => &
-    & Domain_GetTotalMaterial1, &
-    & Domain_GetTotalMaterial2
-  !! Get total number of materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => Domain_GetTotalMaterial1
+  !! return the total materials
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => Domain_GetElemType
   !! Returns the element type of each mesh
   PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType =>  &
@@ -1092,29 +1090,20 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE FUNCTION Domain_GetTotalMaterial1(obj, dim) RESULT(ans)
+  MODULE FUNCTION Domain_GetTotalMaterial1(obj, dim, globalElement, &
+                                           islocal, entityNum) RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION Domain_GetTotalMaterial1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetTotalMaterial@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Set the materials id of a given medium
-
-INTERFACE
-  MODULE FUNCTION Domain_GetTotalMaterial2(obj, dim, entityNum) RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), INTENT(IN) :: entityNum
+    !! which dimension of the mesh we should search
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is globalElement a local one
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! This is used for backward compatibility, default is 1
     INTEGER(I4B) :: ans
-  END FUNCTION Domain_GetTotalMaterial2
+    !! returns the total materials in the element
+  END FUNCTION Domain_GetTotalMaterial1
 END INTERFACE
 
 !----------------------------------------------------------------------------

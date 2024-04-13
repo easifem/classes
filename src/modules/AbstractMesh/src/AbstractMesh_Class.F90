@@ -514,9 +514,7 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial1 => obj_GetTotalMaterial1
   !! returns the total materials in an element
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial2 => obj_GetTotalMaterial2
-  !! returns the total material, this is a backward compatibility only
-  GENERIC, PUBLIC :: GetTotalMaterial => GetTotalMaterial1, GetTotalMaterial2
+  GENERIC, PUBLIC :: GetTotalMaterial => GetTotalMaterial1
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
@@ -1967,21 +1965,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalMaterial1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetMaterial@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the materials id of a given medium
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalMaterial2(obj) RESULT(ans)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -319,4 +319,4 @@ include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 # ----------------------------------------------------------------------------
 
 # AbstractKernel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)

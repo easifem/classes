@@ -880,13 +880,17 @@ END PROCEDURE obj_GetTotalMeshFacetData
 MODULE PROCEDURE obj_GetTotalMaterial1
 SELECT CASE (dim)
 CASE (3)
-  ans = obj%meshVolume%GetTotalMaterial()
+  ans = obj%meshVolume%GetTotalMaterial(globalElement=globalElement, &
+                                        islocal=islocal)
 CASE (2)
-  ans = obj%meshSurface%GetTotalMaterial()
+  ans = obj%meshSurface%GetTotalMaterial(globalElement=globalElement, &
+                                         islocal=islocal)
 CASE (1)
-  ans = obj%meshCurve%GetTotalMaterial()
+  ans = obj%meshCurve%GetTotalMaterial(globalElement=globalElement, &
+                                       islocal=islocal)
 CASE (0)
-  ans = obj%meshPoint%GetTotalMaterial()
+  ans = obj%meshPoint%GetTotalMaterial(globalElement=globalElement, &
+                                       islocal=islocal)
 END SELECT
 END PROCEDURE obj_GetTotalMaterial1
 

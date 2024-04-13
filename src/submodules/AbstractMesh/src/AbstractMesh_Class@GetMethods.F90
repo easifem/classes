@@ -1144,17 +1144,6 @@ ans = obj%elementData(iel)%material(medium)
 END PROCEDURE obj_GetMaterial1
 
 !----------------------------------------------------------------------------
-!                                                                GetMaterial
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMaterial2
-CHARACTER(*), PARAMETER :: myName = "obj_GetMaterial2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: This routine is not available')
-ans = 0
-END PROCEDURE obj_GetMaterial2
-
-!----------------------------------------------------------------------------
 !                                                         GetTotalMaterial
 !----------------------------------------------------------------------------
 
@@ -1166,17 +1155,6 @@ IF (ALLOCATED(obj%elementData(iel)%material)) THEN
   ans = SIZE(obj%elementData(iel)%material)
 END IF
 END PROCEDURE obj_GetTotalMaterial1
-
-!----------------------------------------------------------------------------
-!                                                         GetTotalMaterial
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalMaterial2
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMaterial2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: This routine is not available')
-ans = 0
-END PROCEDURE obj_GetTotalMaterial2
 
 !----------------------------------------------------------------------------
 !                                                      GetTotalFacetElements
