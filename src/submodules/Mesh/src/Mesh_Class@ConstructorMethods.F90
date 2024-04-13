@@ -54,8 +54,6 @@ IF (ALLOCATED(obj%facetElements)) THEN
   DEALLOCATE (obj%facetElements)
 END IF
 
-IF (ALLOCATED(obj%material)) DEALLOCATE (obj%material)
-
 obj%refelem => NULL()
 END PROCEDURE obj_Deallocate
 

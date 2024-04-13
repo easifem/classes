@@ -45,11 +45,6 @@ CALL Display(abool, "refElem ASSOCIATED: ", unitno=unitno)
 abool = ALLOCATED(obj%facetElements)
 CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
-abool = ALLOCATED(obj%material)
-CALL Display(abool, "materialALLOCATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL Display(obj%material, "material: ", unitno=unitno)
-END IF
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
