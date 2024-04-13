@@ -23,6 +23,7 @@ USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
 USE SortUtility
+USE ReallocateUtility
 IMPLICIT NONE
 PRIVATE
 
@@ -300,10 +301,24 @@ END SUBROUTINE ElemData_Deallocate
 !
 ! this subroutine allocates materials in obj
 
-SUBROUTINE ElemData_SetTotalMaterial(obj, n)
+PURE SUBROUTINE ElemData_SetTotalMaterial(obj, n)
   TYPE(ElemData_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
-  ALLOCATE (obj%material(n))
+
+  ! internal variables
+  INTEGER(INT8), ALLOCATABLE :: temp_material(:)
+  INTEGER(I4B) :: n0
+
+  IF (ALLOCATED(obj%material)) THEN
+    n0 = SIZE(obj%material)
+    CALL Reallocate(temp_material, n0 + n)
+    temp_material(1:n0) = obj%material(1:n0)
+    CALL MOVE_ALLOC(from=temp_material, to=obj%material)
+
+  ELSE
+    CALL Reallocate(obj%material, n)
+  END IF
+
 END SUBROUTINE ElemData_SetTotalMaterial
 
 !----------------------------------------------------------------------------
