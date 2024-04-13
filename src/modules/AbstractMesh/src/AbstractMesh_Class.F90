@@ -18,7 +18,7 @@
 MODULE AbstractMesh_Class
 USE GlobalData, ONLY: LGT, I4B, DFP
 USE Files, ONLY: HDF5File_, VTKFile_
-USE BaseType, ONLY: BoundingBox_, CSRMatrix_
+USE BaSetype, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
 USE CPUTime_Class, ONLY: CPUTime_
 USE ElemData_Class
@@ -65,10 +65,10 @@ TYPE, ABSTRACT :: AbstractMesh_
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
     !! Element to elements mapping
   LOGICAL(LGT) :: isEdgeConnectivityInitiated = .FALSE.
-    !! This is set to true when edge connectivity is initiated
+    !! This is Set to true when edge connectivity is initiated
     !! See InitiateEdgeConnectivity method
   LOGICAL(LGT) :: isFaceConnectivityInitiated = .FALSE.
-    !! This is set to true when face connectivity is initiated
+    !! This is Set to true when face connectivity is initiated
     !! See InitiateFaceConnectivity method
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
     !! Boundary data
@@ -225,7 +225,7 @@ CONTAINS
     & obj_DisplayMeshInfo
     !! Display mesh statistics
 
-  ! SET:
+  ! Set:
   ! @NodeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
@@ -237,29 +237,29 @@ CONTAINS
     & obj_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping (used in jump based FEM)
 
-  ! SET:
+  ! Set:
   ! @ElementDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & obj_InitiateElementToElements
   !! Initiate element to elements mapping
 
-  ! SET:
+  ! Set:
   ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
     & obj_InitiateBoundaryData
   !! Initiate the boundary data
 
-  ! SET:
+  ! Set:
   ! @EdgeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
     & obj_InitiateEdgeConnectivity
 
-  ! SET:
+  ! Set:
   ! @FaceDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
     & obj_InitiateFaceConnectivity
 
-  ! SET:
+  ! Set:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     & obj_InitiateFacetElements
@@ -423,6 +423,14 @@ CONTAINS
     & GetNodeToNodes1, GetNodeToNodes2
   !! Returns nodes connected to a given node number
 
+  PROCEDURE, PASS(obj) :: GetNodeToNodes1_ => obj_GetNodeToNodes1_
+  !! Returns global node number connected to a given global node
+  PROCEDURE, PASS(obj) :: GetNodeToNodes2_ => obj_GetNodeToNodes2_
+  !! Returns global node numbers connected to given global node numbers
+  GENERIC, PUBLIC :: GetNodeToNodes_ => &
+    & GetNodeToNodes1_, GetNodeToNodes2_
+  !! Returns nodes connected to a given node number
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetElementToElements => &
     & obj_GetElementToElements
   !! Returns local element number connected to a given local
@@ -482,11 +490,21 @@ CONTAINS
     & obj_GetXidimension
   !! Return the NSD
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial => obj_GetMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial1 => obj_GetMaterial1
   !! returns the material id of a given medium
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
-  !! returns the total material
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial2 => obj_GetMaterial2
+  !! returns the material id of a given medium
+  !! this is a backward compatibility only
+
+  GENERIC, PUBLIC :: GetMaterial => GetMaterial1, GetMaterial2
+  !! Returns the material number
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial1 => obj_GetTotalMaterial1
+  !! returns the total materials in an element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial2 => obj_GetTotalMaterial2
+  !! returns the total material, this is a backward compatibility only
+  GENERIC, PUBLIC :: GetTotalMaterial => GetTotalMaterial1, GetTotalMaterial2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
@@ -500,46 +518,53 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Get maximum node number
 
-  ! SET:
+  ! Set:
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
   !! Set showTime option
 
-  PROCEDURE, PASS(obj) :: SetBoundingBox1 => obj_setBoundingBox1
+  PROCEDURE, PASS(obj) :: SetBoundingBox1 => obj_SetBoundingBox1
   !! Set the bounding box of the mesh
-  PROCEDURE, PASS(obj) :: SetBoundingBox2 => obj_setBoundingBox2
+  PROCEDURE, PASS(obj) :: SetBoundingBox2 => obj_SetBoundingBox2
   !! Set the bounding box from the given nodes, and local_nptrs
-  GENERIC, PUBLIC :: SetBoundingBox => setBoundingBox1,  &
+  GENERIC, PUBLIC :: SetBoundingBox => SetBoundingBox1,  &
     & SetBoundingBox2
   !! Set the bounding box
 
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set the sparsity of sparse matrix
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_setSparsity2
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   !! Set the sparsity of sparse matrix
-  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
+  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_SetSparsity3
   !! Set the sparsity of sparse matrix
-  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
+  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
   !! Set the sparsity of sparse matrix
-  GENERIC, PUBLIC :: SetSparsity => setSparsity1, setSparsity2,  &
-    & SetSparsity3, setSparsity4
-  !! Generic method for setting the sparsity
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2,  &
+    & SetSparsity3, SetSparsity4
+  !! Generic method for Setting the sparsity
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
+  PROCEDURE, PASS(obj) :: SetTotalMaterial1 => obj_SetTotalMaterial1
   !! Adding a material ID of a medium which is mapped to the mesh
+  PROCEDURE, PASS(obj) :: SetTotalMaterial2 => obj_SetTotalMaterial2
+  !! Adding a material ID of a medium which is mapped to the mesh
+  GENERIC, PUBLIC :: SetTotalMaterial => SetTotalMaterial1, SetTotalMaterial2
+  !! Generic method
 
-  PROCEDURE, PASS(obj) :: SetMaterial1 => obj_setMaterial1
+  PROCEDURE, PASS(obj) :: SetMaterial1 => obj_SetMaterial1
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PASS(obj) :: SetMaterial2 => obj_setMaterial2
+  PROCEDURE, PASS(obj) :: SetMaterial2 => obj_SetMaterial2
   !! Adding a material ID of a medium which is mapped to the mesh
   !! This is for backward compatibility only
-  GENERIC, PUBLIC :: SetMaterial => SetMaterial1, SetMaterial2
+  PROCEDURE, PASS(obj) :: SetMaterial3 => obj_SetMaterial3
+  !! Set material to an element
+  GENERIC, PUBLIC :: SetMaterial => SetMaterial1, SetMaterial2, &
+    & SetMaterial3
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
     & obj_SetFacetElementType
   !! Set the facet element type of a given cell number
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
     !! Set mesh quality
 
 END TYPE AbstractMesh_
@@ -1685,6 +1710,73 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                 GetNodeToNodes_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-13
+! summary: Returns the node surrounding a node
+!
+!# Introduction
+! This fucntion returns the vector of node numbers which surrounds a given
+! node number `globalNode`.
+! - If `includeSelf` is true then, in the returned vector of integer,
+! node number globalNode is also present
+!- If `includeSelf` is false then, in the returned vector of integer,
+! node number `globalNode` is not present
+!
+!@note
+!  If the node number `globalNode` is not present in the mesh then the
+! returned vector of integer has zero length
+!@endnote
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToNodes1_(obj, globalNode, includeSelf, &
+    & ans, tsize, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetNodeToNodes1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetNodeToNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the node surrounding a node
+!
+!# Introduction
+!
+! This function returns the vector of node numbers which surrounds a given
+! node number `globalNode`.
+! - If `includeSelf` is true then, in the returned vector of integer,
+! node number globalNode is also present
+!- If `includeSelf` is false then, in the returned vector of integer,
+! node number `globalNode` is not present
+!
+!@note
+!  If the node number `globalNode` is not present in the mesh then the
+! returned vector of integer has zero length
+!@endnote
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToNodes2_(obj, globalNode, includeSelf,  &
+    & ans, tsize, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: includeSelf
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetNodeToNodes2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                      GetElementToElements@MeshDataMethods
 !----------------------------------------------------------------------------
 
@@ -1821,11 +1913,14 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE FUNCTION obj_GetMaterial(obj, medium) RESULT(ans)
+  MODULE FUNCTION obj_GetMaterial1(obj, medium, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetMaterial
+  END FUNCTION obj_GetMaterial1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1837,10 +1932,44 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalMaterial(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetMaterial2(obj, medium) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMaterial1(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMaterial1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMaterial2(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalMaterial
+  END FUNCTION obj_GetTotalMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2395,7 +2524,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                      SetSparsity@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2438,7 +2567,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                      SetSparsity@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2453,9 +2582,9 @@ INTERFACE
   MODULE SUBROUTINE obj_SetSparsity3(obj, colMesh, nodeToNode, mat, &
     & ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
+    !! Abstract mesh class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
+    !! Abstract mesh class
     INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
     !! Node to node connectivity between obj and colMesh
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
@@ -2466,7 +2595,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@setMethod
+!                                                      SetSparsity@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2512,10 +2641,48 @@ END INTERFACE
 ! summary: Set the materials id of a given medium
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial(obj, n)
+  MODULE SUBROUTINE obj_SetTotalMaterial1(obj, n, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
-  END SUBROUTINE obj_SetTotalMaterial
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_SetTotalMaterial1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE obj_SetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterial1(obj, entityNum, medium, material)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! medium number (like soil, water)
+    INTEGER(I4B), INTENT(IN) :: material
+    !! type of medium like clay, sand, water1, water2
+  END SUBROUTINE obj_SetMaterial1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2535,7 +2702,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetMaterial@setMethods
+!                                                     SetMaterial@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2544,16 +2711,19 @@ END INTERFACE
 ! summary: Set the materials id of a given medium
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMaterial1(obj, entityNum, &
-    & medium, material)
+  MODULE SUBROUTINE obj_SetMaterial3(obj, medium, material, globalElement, &
+                                     islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: entityNum
-    !! entity number
     INTEGER(I4B), INTENT(IN) :: medium
     !! medium number (like soil, water)
     INTEGER(I4B), INTENT(IN) :: material
     !! type of medium like clay, sand, water1, water2
-  END SUBROUTINE obj_SetMaterial1
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! is global element local
+    !! we cannot keep it optional for unique interface
+  END SUBROUTINE obj_SetMaterial3
 END INTERFACE
 
 !----------------------------------------------------------------------------

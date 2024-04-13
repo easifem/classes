@@ -74,6 +74,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
@@ -95,6 +96,7 @@ IF (problem) THEN
     & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
   RETURN
 END IF
+
 #endif
 
 tNodes = obj%GetTotalNodes()
@@ -136,6 +138,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
@@ -157,6 +160,7 @@ IF (problem) THEN
     & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
   RETURN
 END IF
+
 #endif
 
 tNodes = obj%GetTotalNodes()
@@ -180,8 +184,66 @@ END PROCEDURE obj_SetSparsity2
 
 MODULE PROCEDURE obj_SetSparsity3
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity3()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: ii
+INTEGER(I4B), ALLOCATABLE :: temp(:)
+LOGICAL(LGT), ALLOCATABLE :: maskVec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+IF (.NOT. colMesh%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+problem = SIZE(nodeToNode) .NE. obj%maxNptrs
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
+  RETURN
+END IF
+
+#endif
+
+! check
+IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
+
+DO ii = obj%minNptrs, obj%maxNptrs
+  IF (.NOT. obj%IsNodePresent(globalNode=ii)) CYCLE
+  temp = nodeToNode(obj%GetNodeToNodes(GlobalNode=ii, IncludeSelf=.TRUE.))
+  maskVec = colMesh%IsNodePresent(globalNode=temp)
+
+  IF (ANY(maskVec)) THEN
+    CALL SetSparsity( &
+      & obj=mat, &
+      & row=ii, &
+      & col=PACK(temp, maskVec), &
+      & ivar=ivar,  &
+      & jvar=jvar)
+  END IF
+
+END DO
+
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
+IF (ALLOCATED(maskVec)) DEALLOCATE (maskVec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_SetSparsity3
 
 !----------------------------------------------------------------------------
@@ -198,20 +260,26 @@ END PROCEDURE obj_SetSparsity4
 !                                                           setTotalMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial
-INTEGER(I4B), ALLOCATABLE :: temp_material(:)
-INTEGER(I4B) :: n0
+MODULE PROCEDURE obj_SetTotalMaterial1
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
+CALL ElemData_SetTotalMaterial(obj%elementData(iel), n=n)
+END PROCEDURE obj_SetTotalMaterial1
 
-IF (ALLOCATED(obj%material)) THEN
-  n0 = SIZE(obj%material)
-  CALL Reallocate(temp_material, n0 + n)
-  temp_material(1:n0) = obj%material(1:n0)
-  CALL MOVE_ALLOC(from=temp_material, to=obj%material)
-  RETURN
-END IF
+!----------------------------------------------------------------------------
+!                                                           setTotalMaterial
+!----------------------------------------------------------------------------
 
-CALL Reallocate(obj%material, n)
-END PROCEDURE obj_SetTotalMaterial
+MODULE PROCEDURE obj_SetTotalMaterial2
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+DO CONCURRENT(ii=1:obj%tElements)
+  isok = obj%elementData(ii)%isActive
+  IF (.NOT. isok) CYCLE
+  CALL ElemData_SetTotalMaterial(obj%elementData(ii), n=n)
+END DO
+END PROCEDURE obj_SetTotalMaterial2
 
 !----------------------------------------------------------------------------
 !                                                                setMaterial
@@ -244,8 +312,33 @@ END PROCEDURE obj_SetMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial2
-obj%material(medium) = material
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+! start a loop of obj%elementData with ii = 1, size(obj%elementData)
+
+DO CONCURRENT(ii=1:obj%tElements)
+  isok = obj%elementData(ii)%isActive
+  IF (.NOT. isok) CYCLE
+  CALL ElemDataSet(obj%elementData(ii), material=material, &
+                   medium=medium)
+END DO
 END PROCEDURE obj_SetMaterial2
+
+!----------------------------------------------------------------------------
+!                                                                setMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterial3
+INTEGER(I4B) :: iel
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement,  &
+  & islocal=islocal)
+
+CALL ElemDataSet(obj%elementData(iel), material=material, &
+                 medium=medium)
+
+END PROCEDURE obj_SetMaterial3
 
 !----------------------------------------------------------------------------
 !                                                        setFacetElementType

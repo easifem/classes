@@ -131,6 +131,7 @@ CONTAINS
 
   !  GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
@@ -146,6 +147,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial2 => obj_GetMaterial2
+  !! returns the material id of a given medium
+  !! this is a backward compatibility only
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial2 => &
+    obj_GetTotalMaterial2
+  !! returns the total number of material this is for
+  !! backward compatibility only
+
   ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
@@ -155,6 +165,14 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
   !! Set mesh quality
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial2 => &
+    obj_SetTotalMaterial2
+  !! Set total materials in materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial2 => &
+    obj_SetMaterial2
+  !! Set total materials in materials
 
 END TYPE Mesh_
 
@@ -483,6 +501,37 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaterial2(obj, medium) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMaterial2(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                   InitiateExtraNodeToNode@NodeDataMethods
 !----------------------------------------------------------------------------
 
@@ -724,6 +773,37 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
   END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE obj_SetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterial2(obj, medium, material)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE obj_SetMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------

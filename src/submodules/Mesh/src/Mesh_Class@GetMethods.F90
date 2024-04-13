@@ -107,6 +107,36 @@ IF (PRESENT(elemType)) elemType = obj%elemType
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
+!                                                               GetMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaterial2
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+ans = 0
+
+isok = ALLOCATED(obj%material)
+IF (.NOT. isok) RETURN
+
+isok = medium .LE. SIZE(obj%material)
+IF (.NOT. isok) RETURN
+#endif
+
+ans = obj%material(medium)
+END PROCEDURE obj_GetMaterial2
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalMaterial2
+ans = 0
+IF (ALLOCATED(obj%material)) THEN
+  ans = SIZE(obj%material)
+END IF
+END PROCEDURE obj_GetTotalMaterial2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
