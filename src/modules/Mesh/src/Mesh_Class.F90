@@ -63,6 +63,7 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 !{!pages/docs-api/Mesh/Mesh_.md!}
 
 TYPE, EXTENDS(AbstractMesh_) :: Mesh_
+  PRIVATE
   INTEGER(I4B) :: elemType = 0
     !! type of element present inside the mesh
 
