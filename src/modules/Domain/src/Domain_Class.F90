@@ -1368,7 +1368,8 @@ END INTERFACE
 ! as `DOMAIN_BOUNDARY_ELEMENT`.
 !
 ! However, some of these boundary facet-elements will be located at the
-! domain’s boundary. These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
+! domain’s boundary.
+! These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
 !
 ! Some of the facet elements will be at located at the interface of two
 ! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
