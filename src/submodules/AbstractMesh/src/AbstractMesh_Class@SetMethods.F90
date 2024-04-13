@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
-USE GlobalData, ONLY: INT8
+USE globalData, ONLY: INT8
 USE BoundingBox_Method
 USE ReallocateUtility
 USE CSRMatrix_Method
@@ -65,8 +65,8 @@ INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: problem
 #endif
 
-INTEGER(I4B) :: i, j, k, tNodes
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
+INTEGER(I4B) :: i, j, k, tNodes, tsize
+INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -89,28 +89,31 @@ IF (problem) THEN
   RETURN
 END IF
 
+#endif
+
 ! check
 problem = .NOT. obj%isNodeToNodesInitiated
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
-  RETURN
-END IF
-
-#endif
+IF (problem) CALL obj%InitiateNodeToNodes()
 
 tNodes = obj%GetTotalNodes()
 
+! TODO:
+! Use openmp parallel loop
+! make n2n a variable, each thread has its own copy of n2n
+! each thread will call setSparsity with its own copy of n2n
+
 DO i = 1, tNodes
-  j = obj%GetGlobalNodeNumber(localNode=i)
+  j = obj%GetglobalNodeNumber(localNode=i)
   k = localNodeNumber(j)
-  IF (k .NE. 0) THEN
-    n2n = localNodeNumber( &
-      & obj%GetNodeToNodes(globalNode=j, includeSelf=.TRUE.))
-    CALL SetSparsity(obj=mat, row=k, col=n2n)
-  END IF
+
+  IF (k .EQ. 0) CYCLE
+
+  CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
+    & ans=n2n, tsize=tsize, islocal=.TRUE.)
+
+  CALL SetSparsity(obj=mat, row=k, col=n2n(1:tsize))
+
 END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -124,17 +127,17 @@ END PROCEDURE obj_SetSparsity1
 
 MODULE PROCEDURE obj_SetSparsity2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
 INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: problem
 #endif
 
-INTEGER(I4B) :: i, j, tNodes
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
+INTEGER(I4B) :: i, j, tNodes, tsize
+INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+  & '[START]')
 #endif
 
 #ifdef DEBUG_VER
@@ -153,24 +156,23 @@ IF (problem) THEN
   RETURN
 END IF
 
-! check
-problem = .NOT. obj%isNodeToNodesInitiated
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
-  RETURN
-END IF
-
 #endif
+
+problem = .NOT. obj%isNodeToNodesInitiated
+IF (problem) CALL obj%InitiateNodeToNodes()
 
 tNodes = obj%GetTotalNodes()
 
 DO i = 1, tNodes
-  j = obj%GetGlobalNodeNumber(localNode=i)
-  n2n = obj%GetNodeToNodes(globalNode=j, includeSelf=.TRUE.)
-  CALL SetSparsity(obj=mat, row=j, col=n2n)
+
+  j = obj%GetglobalNodeNumber(localNode=i)
+
+  CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
+    & ans=n2n, tsize=tsize, islocal=.TRUE.)
+
+  CALL SetSparsity(obj=mat, row=j, col=n2n(1:tsize))
+
 END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -184,10 +186,10 @@ END PROCEDURE obj_SetSparsity2
 
 MODULE PROCEDURE obj_SetSparsity3
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity3()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: ii
-INTEGER(I4B), ALLOCATABLE :: temp(:)
-LOGICAL(LGT), ALLOCATABLE :: maskVec(:)
+LOGICAL(LGT) :: problem, isok
+
+INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
+                temp(PARAM_MAX_NODE_TO_NODE), ll, jj, kk
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -220,24 +222,29 @@ END IF
 ! check
 IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
 
-DO ii = obj%minNptrs, obj%maxNptrs
-  IF (.NOT. obj%IsNodePresent(globalNode=ii)) CYCLE
-  temp = nodeToNode(obj%GetNodeToNodes(GlobalNode=ii, IncludeSelf=.TRUE.))
-  maskVec = colMesh%IsNodePresent(globalNode=temp)
+DO ii = 1, obj%tNodes
 
-  IF (ANY(maskVec)) THEN
-    CALL SetSparsity( &
-      & obj=mat, &
-      & row=ii, &
-      & col=PACK(temp, maskVec), &
-      & ivar=ivar,  &
-      & jvar=jvar)
-  END IF
+  CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
+                         !! n2n(1) will contains the global node for ii
+
+  ll = 0
+  DO jj = 1, tsize
+    kk = nodeToNode(n2n(jj))
+    isok = colMesh%IsNodePresent(globalNode=kk, islocal=.FALSE.)
+
+    IF (isok) THEN
+      ll = ll + 1
+      temp(ll) = kk
+    END IF
+
+  END DO
+
+  IF (ll .EQ. 0) CYCLE
+
+  CALL SetSparsity(obj=mat, row=n2n(1), col=temp(1:ll), ivar=ivar, jvar=jvar)
 
 END DO
-
-IF (ALLOCATED(temp)) DEALLOCATE (temp)
-IF (ALLOCATED(maskVec)) DEALLOCATE (maskVec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
