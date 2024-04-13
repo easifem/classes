@@ -61,6 +61,7 @@ INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
 ! summary:  Abstract class for mesh
 
 TYPE, ABSTRACT :: AbstractMesh_
+  ! PRIVATE
   LOGICAL(LGT) :: showTime = .FALSE.
     !! If true, then we show the time taken by various mesh operations
     !! This is for checking the performance of a subclass
@@ -528,7 +529,18 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Get maximum node number
 
-  ! Set:
+  PROCEDURE, PUBLIC, PASS(obj) :: isInit => obj_isInit
+  PROCEDURE, PUBLIC, PASS(obj) :: isNodeToElements => obj_isNodeToElements
+  PROCEDURE, PUBLIC, PASS(obj) :: isNodeToNodes => obj_isNodeToNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: isExtraNodeToNodes => obj_isExtraNodeToNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: isElementToElements => &
+    obj_isElementToElements
+  PROCEDURE, PUBLIC, PASS(obj) :: isEdgeConnectivity => obj_isEdgeConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: isFaceConnectivity => obj_isFaceConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryData => obj_isBoundaryData
+  PROCEDURE, PUBLIC, PASS(obj) :: isFacetData => obj_isFacetData
+
+  ! SET:
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
@@ -576,6 +588,9 @@ CONTAINS
   !! Set the facet element type of a given cell number
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
     !! Set mesh quality
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  !! set parameters of mesh
 
 END TYPE AbstractMesh_
 
@@ -2259,6 +2274,106 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_isInit(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isInit
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function for obj_isNodeToElements
+
+INTERFACE
+  MODULE FUNCTION obj_isNodeToElements(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_isNodeToNodes
+INTERFACE
+  MODULE FUNCTION obj_isNodeToNodes(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_isExtraNodeToNodes
+INTERFACE
+  MODULE FUNCTION obj_isExtraNodeToNodes(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isExtraNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_isElementToElements
+INTERFACE
+  MODULE FUNCTION obj_isElementToElements(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_isEdgeConnectivity
+INTERFACE
+  MODULE FUNCTION obj_isEdgeConnectivity(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isEdgeConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+!function obj_isFaceConnectivity
+INTERFACE
+  MODULE FUNCTION obj_isFaceConnectivity(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isFaceConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_boundaryData
+INTERFACE
+  MODULE FUNCTION obj_isBoundaryData(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         isInit@GetMethods
+!----------------------------------------------------------------------------
+! function obj_isfacetData
+INTERFACE
+  MODULE FUNCTION obj_isFacetData(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                     InitiateNodeToElements@NodeDataMethods
 !----------------------------------------------------------------------------
 
@@ -2758,6 +2873,37 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
   END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetParam@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetParam(obj, &
+    & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+    & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+    & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
+    & xidim, elemType, nsd, maxNptrs, minNptrs, &
+    & maxElemNum, minElemNum, tNodes, tElements, &
+    & minX, minY, minZ, maxX, maxY, maxZ, &
+    & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated, &
+      & isNodeToElementsInitiated, isNodeToNodesInitiated, &
+      & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+      & isBoundaryDataInitiated, isFacetDataInitiated
+
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: uid, &
+      & xidim, elemType, nsd, maxNptrs, minNptrs, &
+      & maxElemNum, minElemNum, tNodes, &
+      & tElements, tElements_topology_wise(8), tElemTopologies,  &
+      & elemTopologies(8)
+
+    REAL(DFP), OPTIONAL, INTENT(IN) :: minX, &
+      & minY, minZ, maxX, maxY, maxZ, &
+      & x, y, z
+  END SUBROUTINE obj_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

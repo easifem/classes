@@ -1459,12 +1459,84 @@ ans = obj%minNptrs
 END PROCEDURE obj_GetMinNodeNumber
 
 !----------------------------------------------------------------------------
-!
+!                                                           GetMaxNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNodeNumber
 ans = obj%maxNptrs
 END PROCEDURE obj_GetMaxNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                                 isInit
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isInit
+ans = obj%isInitiated
+END PROCEDURE obj_isInit
+
+!----------------------------------------------------------------------------
+!                                                              isNodeToNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isNodeToElements
+ans = obj%isNodeToElementsInitiated
+END PROCEDURE obj_isNodeToElements
+
+!----------------------------------------------------------------------------
+!                                                              isNodeToNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isNodeToNodes
+ans = obj%isNodeToNodesInitiated
+END PROCEDURE obj_isNodeToNodes
+
+!----------------------------------------------------------------------------
+!                                                         isExtraNodeToNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isExtraNodeToNodes
+ans = obj%isExtraNodeToNodesInitiated
+END PROCEDURE obj_isExtraNodeToNodes
+
+!----------------------------------------------------------------------------
+!                                                       isElementToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isElementToElements
+ans = obj%isElementToElementsInitiated
+END PROCEDURE obj_isElementToElements
+
+!----------------------------------------------------------------------------
+!                                                       isEdgeConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isEdgeConnectivity
+ans = obj%isEdgeConnectivityInitiated
+END PROCEDURE obj_isEdgeConnectivity
+
+!----------------------------------------------------------------------------
+!                                                         isFaceConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isFaceConnectivity
+ans = obj%isFaceConnectivityInitiated
+END PROCEDURE obj_isFaceConnectivity
+
+!----------------------------------------------------------------------------
+!                                                             isBoundaryData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isBoundaryData
+ans = obj%isBoundaryDataInitiated
+END PROCEDURE obj_isBoundaryData
+
+!----------------------------------------------------------------------------
+!                                                                 isFaceData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isFacetData
+ans = obj%isFacetDataInitiated
+END PROCEDURE obj_isFacetData
 
 !----------------------------------------------------------------------------
 !

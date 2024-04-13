@@ -370,6 +370,67 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetQuality
 
 !----------------------------------------------------------------------------
+!                                                         SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetParam
+IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
+
+IF (PRESENT(isNodeToElementsInitiated)) obj%isNodeToElementsInitiated =  &
+  & isNodeToElementsInitiated
+
+IF (PRESENT(isNodeToNodesInitiated)) obj%isNodeToNodesInitiated =  &
+  & isNodeToNodesInitiated
+
+IF (PRESENT(isExtraNodeToNodesInitiated)) obj%isExtraNodeToNodesInitiated =  &
+  & isExtraNodeToNodesInitiated
+
+IF (PRESENT(isElementToElementsInitiated)) obj%isElementToElementsInitiated =  &
+  & isElementToElementsInitiated
+
+IF (PRESENT(isBoundaryDataInitiated)) obj%isBoundaryDataInitiated = &
+  & isBoundaryDataInitiated
+
+IF (PRESENT(isFacetDataInitiated)) obj%isFacetDataInitiated =  &
+  & isFacetDataInitiated
+
+IF (PRESENT(uid)) obj%uid = uid
+
+IF (PRESENT(tElements_topology_wise))  &
+  & obj%tElements_topology_wise = tElements_topology_wise
+
+IF (PRESENT(tElemTopologies)) obj%tElemTopologies = tElemTopologies
+
+IF (PRESENT(elemTopologies)) obj%elemTopologies = elemTopologies
+
+IF (PRESENT(nsd)) obj%nsd = nsd
+
+IF (PRESENT(maxNptrs)) obj%maxNptrs = maxNptrs
+
+IF (PRESENT(minNptrs)) obj%minNptrs = minNptrs
+
+IF (PRESENT(maxElemNum)) obj%maxElemNum = maxElemNum
+
+IF (PRESENT(minElemNum)) obj%minElemNum = minElemNum
+
+IF (PRESENT(tNodes)) obj%tNodes = tNodes
+
+IF (PRESENT(tElements)) obj%tElements = tElements
+
+IF (PRESENT(minX)) obj%minX = minX
+
+IF (PRESENT(minY)) obj%minY = minY
+
+IF (PRESENT(minZ)) obj%minZ = minZ
+
+IF (PRESENT(maxX)) obj%maxX = maxX
+
+IF (PRESENT(maxY)) obj%maxY = maxY
+
+IF (PRESENT(maxZ)) obj%maxZ = maxZ
+END PROCEDURE obj_SetParam
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

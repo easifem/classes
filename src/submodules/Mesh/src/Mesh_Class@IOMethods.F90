@@ -55,7 +55,7 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: temp4(4)
+INTEGER(I4B) :: temp4(4), xidim, nsd
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -68,13 +68,16 @@ CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
-obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
-  & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
+xidim = obj%GetXidimension()
+nsd = obj%GetNSD()
+
+obj%refelem => ReferenceElement_Pointer(xidim=xidim, &
+  & nsd=nsd, elemType=obj%elemType, ipType=Equidistance)
 
 isok = obj%xidim .GT. 0
 IF (isok) THEN
   temp4 = TotalEntities(obj%elemType)
-  ALLOCATE (obj%facetElements(temp4(obj%xidim)))
+  ALLOCATE (obj%facetElements(temp4(xidim)))
   CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
 END IF
 
@@ -94,7 +97,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
 LOGICAL(LGT) :: OpenTag_, CloseTag_, Content_
 INTEGER(INT8) :: vtkType
 INTEGER(INT8), ALLOCATABLE :: types(:)
-INTEGER(I4B) :: nCells, nPoints, ii, jj, nne
+INTEGER(I4B) :: nCells, nPoints, ii, jj, nne, minelem, maxelem
 INTEGER(I4B), ALLOCATABLE :: vtkIndx(:), connectivity(:), &
   & offsets(:), localNptrs(:)
 
@@ -142,7 +145,10 @@ IF (Content_) THEN
     offsets(ii) = offsets(ii - 1) + nne
   END DO
 
-  DO ii = obj%minElemNum, obj%maxElemNum
+  minelem = obj%GetMinElemNumber()
+  maxelem = obj%GetMaxElemNumber()
+
+  DO ii = minelem, maxelem
     IF (obj%isElementPresent(ii)) THEN
       jj = jj + 1
       localNptrs = obj%GetLocalNodeNumber( &

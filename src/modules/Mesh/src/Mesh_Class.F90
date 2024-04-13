@@ -48,7 +48,6 @@ PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
 PUBLIC :: meshPointerDeallocate
 PUBLIC :: MeshDisplay
-PUBLIC :: MeshGetFacetConnectivity
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 
@@ -94,12 +93,6 @@ CONTAINS
     !! Display the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & obj_DisplayFacetElements
-
-  ! SET:
-  ! @NodeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-    & obj_InitiateExtraNodetoNodes
-  !! Initiate Node to nodes mapping
 
   ! SET:
   ! @ElementDataMethods
@@ -392,36 +385,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Returns the connectivity of a facet element
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element
-! - facetElement is local facet element number
-
-INTERFACE
-  MODULE FUNCTION MeshGetFacetConnectivity(obj, facetElement, &
-    & elementType, isMaster) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: facetElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    LOGICAL(LGT), INTENT(IN) :: isMaster
-      !! if isMaster is true then connectivity of facet in master-cell
-      !! is returned, otherwise connectivity of facet in slave-cell
-      !! is returned. This is only applicable for internal facet element
-      !! because for domain facet we do not have slave-cell.
-      !! Currently, we do not support slave-cell for meshFacet because
-      !! the slave of meshFacet lives in different instance of obj_
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION MeshGetFacetConnectivity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
 ! summary: Returns the connectivity of a facet element of a cellElement
 !
 !# Introduction
@@ -470,35 +433,6 @@ INTERFACE
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
   END SUBROUTINE obj_GetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   InitiateExtraNodeToNode@NodeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 June 2021
-! summary: Initiate node to node connectivity data
-!
-!# Introduction
-!
-!- This routine generate the node to nodes mapping
-!- This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
-!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes
-! global node data surrounding the local node number used for edge-based
-!  stabilization. This list does not include self node.
-!
-!- This methods needs information about `nodeToNodes`, `nodeToElements`,
-! and `elementToElements`. Therefore,
-!- If `nodeToNodes` is not Initiated, then this method initiates it.
-!- If `nodeToElements` is not Initiated, then this method initiates it.
-!- If `elementToElements` is not Initiated, then this method initiates it.
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateExtraNodetoNodes(obj)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! mesh data
-  END SUBROUTINE obj_InitiateExtraNodetoNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------

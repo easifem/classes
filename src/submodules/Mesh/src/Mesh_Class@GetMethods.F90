@@ -36,39 +36,6 @@ ans = obj%refelem%order
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
-!                                                       GetFacetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshGetFacetConnectivity
-INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
-INTEGER(I4B) :: localFaceID, cellNum
-
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  IF (isMaster) THEN
-    cellNum = obj%internalFacetData(facetElement)%masterCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%masterLocalFacetID
-  ELSE
-    cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
-  END IF
-
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
-  localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
-END SELECT
-
-IF (cellNum .NE. 0) THEN
-  cellNptrs = obj%GetConnectivity(globalElement=cellNum)
-  ans = cellNptrs(GetConnectivity(obj%facetElements(localFaceID)))
-ELSE
-  ALLOCATE (ans(0))
-END IF
-
-IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-END PROCEDURE MeshGetFacetConnectivity
-
-!----------------------------------------------------------------------------
 !                                                      GetFacetConnectivity
 !----------------------------------------------------------------------------
 
@@ -102,7 +69,6 @@ CALL AbstractMeshGetParam(obj=obj, &
     & tElemTopologies=tElemTopologies,  &
     & elemTopologies=elemTopologies)
 
-IF (PRESENT(xidim)) xidim = obj%xidim
 IF (PRESENT(elemType)) elemType = obj%elemType
 END PROCEDURE obj_GetParam
 
