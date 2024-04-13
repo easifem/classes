@@ -29,15 +29,27 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "FEDomainConnectivity_Class"
-INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
-INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
-INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3
-INTEGER(I4B), PUBLIC, PARAMETER :: oversetType = 4
-
 PUBLIC :: FEDomainConnectivity_
 PUBLIC :: FEDomainConnectivityPointer_
 PUBLIC :: FEDomainConnectivityDeallocate
+
+CHARACTER(*), PARAMETER :: modName = "FEDomainConnectivity_Class"
+INTEGER(I4B), PARAMETER :: pType = 1
+INTEGER(I4B), PARAMETER :: hType = 2
+INTEGER(I4B), PARAMETER :: rType = 3
+INTEGER(I4B), PARAMETER :: oversetType = 4
+
+#ifdef MAX_NNE
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = MAX_NNE
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = 128
+#endif
+
+#ifdef MAX_NODE_TO_ELEM
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
+#endif
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
