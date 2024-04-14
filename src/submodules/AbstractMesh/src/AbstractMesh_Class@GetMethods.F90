@@ -1099,11 +1099,13 @@ END PROCEDURE obj_GetElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryElementData
-INTEGER(I4B) :: iel, tsize
+INTEGER(I4B) :: iel, tsize, ii
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 tsize = SIZE(obj%elementData(iel)%boundaryData)
 CALL Reallocate(ans, tsize)
-ans = obj%elementData(iel)%boundaryData
+DO ii = 1, tsize
+  ans(ii) = obj%elementData(iel)%boundaryData(ii)
+END DO
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
@@ -1161,8 +1163,16 @@ END PROCEDURE obj_GetTotalMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFacetElements
-ans = obj%GetTotalInternalFacetElements() &
-  & + obj%GetTotalBoundaryFacetElements()
+SELECT CASE (obj%nsd)
+CASE (3)
+  ans = obj%tFaces
+CASE (2)
+  ans = obj%tEdges
+CASE (1)
+  ans = obj%tNodes
+CASE (0)
+  ans = 0_I4B
+END SELECT
 END PROCEDURE obj_GetTotalFacetElements
 
 !----------------------------------------------------------------------------

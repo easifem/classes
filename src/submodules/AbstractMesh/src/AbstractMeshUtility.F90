@@ -22,6 +22,7 @@ USE ReallocateUtility
 USE CPUTime_Class
 USE ExceptionHandler_Class, ONLY: e
 USE ElemData_Class
+USE FacetData_Class
 USE ReferenceElement_Method
 
 IMPLICIT NONE
@@ -30,10 +31,107 @@ PRIVATE
 PUBLIC :: InitiateElementToElements3D
 PUBLIC :: InitiateElementToElements2D
 PUBLIC :: InitiateElementToElements1D
+PUBLIC :: GetFacetDataFromElemData
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility"
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                  GetFacetDataFromElemData
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-14
+! summary:  Get facet data from the element data
+
+SUBROUTINE GetFacetDataFromElemData(elementData, facetData, masks, nsd)
+  TYPE(ElemData_), INTENT(IN) :: elementData
+  TYPE(FacetData_), INTENT(INOUT) :: facetData(:)
+  LOGICAL(LGT), INTENT(INOUT) :: masks(:)
+  INTEGER(I4B), INTENT(IN) :: nsd
+
+  ! now lets find the facets located on the DOMAIN_BOUNDARY_ELEMENT
+  IF (nsd .EQ. 3) THEN
+    CALL Help_GetFacetDataFromElemData(elementData, facetData, masks,  &
+      & elementData%globalFaces)
+
+  ELSE
+    CALL Help_GetFacetDataFromElemData(elementData, facetData, masks,  &
+      & elementData%globalEdges)
+
+  END IF
+
+END SUBROUTINE GetFacetDataFromElemData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
+  TYPE(ElemData_), INTENT(IN) :: elementData
+  TYPE(FacetData_), INTENT(INOUT) :: facetData(:)
+  LOGICAL(LGT), INTENT(INOUT) :: masks(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faces(:)
+
+  ! internal variables
+  INTEGER(I4B) :: ii, iface, tsize, jj
+
+  ! now lets find the facets located on the DOMAIN_BOUNDARY_ELEMENT
+
+  tsize = SIZE(elementData%boundaryData)
+  DO ii = 1, tsize
+
+    ! this is local face number in master cell
+    jj = elementData%boundaryData(ii)
+
+    ! this is global facet number in the mesh
+    iface = faces(jj)
+
+    ! do not count two times
+    IF (masks(iface)) CYCLE
+
+    ! we have found the facet element so mark it.
+    masks(iface) = .TRUE.
+
+    ! all elements found in this loop are located inside the domain
+    facetData(iface)%elementType = DOMAIN_BOUNDARY_ELEMENT
+    facetData(iface)%masterCellNumber = elementData%globalElemNum
+    facetData(iface)%masterLocalFacetID = jj
+
+    facetData(iface)%slaveCellNumber = 0_I4B
+    facetData(iface)%slaveLocalFacetID = 0_I4B
+
+  END DO
+
+  tsize = SIZE(elementData%globalElements)
+
+  DO ii = 1, tsize, 3
+
+    ! this is local face number in master cell
+    jj = elementData%globalElements(ii + 1)
+
+    ! this is global facet number in the mesh
+    iface = faces(jj)
+
+    ! do not count two times
+    IF (masks(iface)) CYCLE
+
+    ! we have found the facet element so mark it.
+    masks(iface) = .TRUE.
+
+    ! all elements found in this loop are located inside the domain
+    facetData(iface)%elementType = INTERNAL_ELEMENT
+
+    facetData(iface)%slaveCellNumber = elementData%globalElements(ii)
+    facetData(iface)%slaveLocalFacetID = elementData%globalElements(ii + 2)
+
+    facetData(iface)%masterCellNumber = elementData%globalElemNum
+    facetData(iface)%masterLocalFacetID = jj
+
+  END DO
+
+END SUBROUTINE Help_GetFacetDataFromElemData
 
 !----------------------------------------------------------------------------
 !                                               InitiateElementToElements3D
