@@ -339,8 +339,8 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
-ans = obj%boundaryFacetData(facetElement)%elementType  &
-  & .EQ. DOMAIN_BOUNDARY_ELEMENT
+ans = FacetData_Iselement(obj=obj%facetData(facetElement), &
+                          filter=DOMAIN_BOUNDARY_ELEMENT)
 END PROCEDURE obj_isDomainFacetElement
 
 !----------------------------------------------------------------------------
@@ -1266,35 +1266,23 @@ END PROCEDURE obj_GetLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshGetFacetConnectivity
-INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
 INTEGER(I4B) :: localFaceID, cellNum
 
-SELECT CASE (elementType)
-
-CASE (INTERNAL_ELEMENT)
-
-  IF (isMaster) THEN
-    cellNum = obj%internalFacetData(facetElement)%masterCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%masterLocalFacetID
-  ELSE
-    cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
-  END IF
-
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-
-  cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
-  localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
-
-END SELECT
-
-IF (cellNum .NE. 0) THEN
-  ans = obj%GetFacetConnectivity(iface=localFaceID, globalElement=cellNum)
+IF (isMaster) THEN
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement),  &
+    & masterCellNumber=cellNum, masterLocalFacetID=localFaceID)
 ELSE
-  ALLOCATE (ans(0))
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement),  &
+    & slaveCellNumber=cellNum, slaveLocalFacetID=localFaceID)
 END IF
 
-IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
+IF (cellNum .EQ. 0) THEN
+  ALLOCATE (ans(0))
+  RETURN
+END IF
+
+ans = obj%GetFacetConnectivity(iface=localFaceID, globalElement=cellNum)
+
 END PROCEDURE AbstractMeshGetFacetConnectivity
 
 !----------------------------------------------------------------------------
@@ -1302,10 +1290,6 @@ END PROCEDURE AbstractMeshGetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity()"
-#endif
-
 INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
   & con(MaxNodesInElement, REFELEM_MAX_FACES), &
   & ii, tFaceNodes(REFELEM_MAX_FACES)
@@ -1349,31 +1333,9 @@ CASE (3_I4B)
 
   CALL Reallocate(ans, tFaceNodes(iface))
 
-#ifdef DEBUG_VER
-  DO ii = 1, SIZE(ans)
-
-    IF (con(ii, iface) .EQ. 0_I4B) THEN
-      CALL Display(elemType, "elemType: ")
-      CALL Display(temp4, "TotalEntities: ")
-      CALL Display(order, "order: ")
-      CALL Display(tFaceNodes, "tFaceNodes: ")
-      CALL Display(iface, "iface: ")
-      CALL Display(con, "con: ")
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: con(ii, iface) is zero')
-      RETURN
-    END IF
-
+  DO ii = 1, tFaceNodes(iface)
     ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
   END DO
-
-#else
-
-  DO ii = 1, SIZE(ans)
-    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
-  END DO
-
-#endif
 
 END SELECT
 

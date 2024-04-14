@@ -100,7 +100,7 @@ abool = ALLOCATED(obj%facetElements)
 IF (abool) THEN; n = SIZE(obj%facetElements); ELSE; n = 0; END IF
 
 CALL Display(msg, unitno=unitno)
-CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
+CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
 DO ii = 1, n
 

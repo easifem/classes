@@ -91,8 +91,6 @@ IF (ALLOCATED(obj%facetElementType)) DEALLOCATE (obj%facetElementType)
 
 IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
 IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
-IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
-IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 
 IF (ALLOCATED(obj%facetData)) DEALLOCATE (obj%facetData)
 

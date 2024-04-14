@@ -174,14 +174,6 @@ TYPE, ABSTRACT :: AbstractMesh_
   TYPE(ElemData_), ALLOCATABLE :: elementData(:)
     !! element data
 
-  TYPE(InternalFacetData_), ALLOCATABLE :: internalFacetData(:)
-    !! Internal facet data
-    !!ISSUE: This data is initiated by InitiateFacetElements method
-
-  TYPE(BoundaryFacetData_), ALLOCATABLE :: boundaryFacetData(:)
-    !! Domain Facet Data
-    !!ISSUE: This data is initiated by InitiateFacetElements method
-
   TYPE(FacetData_), ALLOCATABLE :: facetData(:)
   !! facet data
 
@@ -2754,8 +2746,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
-& rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
-  & colLBOUND, colUBOUND, ivar, jvar)
+     rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
+                                     colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
@@ -2917,13 +2909,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, &
-    & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-    & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-    & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-    & xidim, elemType, nsd, maxNptrs, minNptrs, &
-    & maxElemNum, minElemNum, tNodes, tElements, &
-    & minX, minY, minZ, maxX, maxY, maxZ, &
-    & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
+                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
+                                 maxElemNum, minElemNum, tNodes, tElements, &
+                                 minX, minY, minZ, maxX, maxY, maxZ, &
+            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated, &
       & isNodeToElementsInitiated, isNodeToNodesInitiated, &
