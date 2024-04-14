@@ -346,7 +346,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
-!                                                           SetNodeCoord
+!                                                             SetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetNodeCoord1

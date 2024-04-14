@@ -17,10 +17,11 @@
 
 SUBMODULE(AbstractDomain_Class) MeshDataMethods
 USE GlobalData, ONLY: stdout
-USE BaseMethod
+USE Display_Method
 USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
 USE CPUTime_Class, ONLY: CPUTime_
+USE ElemData_Class, ONLY: BOUNDARY_ELEMENT
 
 IMPLICIT NONE
 CONTAINS
@@ -226,9 +227,56 @@ END PROCEDURE obj_InitiateExtraNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
-CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
+CLASS(AbstractMesh_), POINTER :: masterMesh
+INTEGER(I4B) :: kk, iel, iface, telements
+INTEGER(I4B), ALLOCATABLE :: faceID(:)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+masterMesh => obj%GetMeshPointer(dim=obj%nsd)
+
+CALL masterMesh%GetParam(isBoundaryDataInitiated=isok)
+IF (.NOT. isok) CALL masterMesh%InitiateBoundaryData()
+
+telements = masterMesh%GetTotalElements()
+
+DO iel = 1, telements
+  isok = masterMesh%isElementPresent(globalElement=iel, &
+                                     islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  isok = masterMesh%isBoundaryElement(globalElement=iel, &
+                                      islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  faceID = masterMesh%GetBoundaryElementData(globalElement=iel, &
+                                             islocal=.TRUE.)
+
+  DO iface = 1, SIZE(faceID)
+
+    kk = faceID(iface)
+
+    CALL masterMesh%SetFacetElementType(globalElement=iel, &
+      & iface=kk, facetElementType=BOUNDARY_ELEMENT, islocal=.TRUE.)
+
+  END DO
+
+END DO
+
+NULLIFY (masterMesh)
+
+IF (ALLOCATED(faceID)) DEALLOCATE (faceID)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------
