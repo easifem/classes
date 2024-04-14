@@ -1180,10 +1180,19 @@ END PROCEDURE obj_GetTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
+
 ans = 0
-IF (ALLOCATED(obj%internalFacetData)) THEN
-  ans = SIZE(obj%internalFacetData)
-END IF
+isok = ALLOCATED(obj%facetData)
+IF (.NOT. isok) RETURN
+
+tsize = SIZE(obj%facetData)
+DO ii = 1, tsize
+  isok = FacetData_Iselement(obj=obj%facetData(ii), filter=INTERNAL_ELEMENT)
+  IF (isok) ans = ans + 1
+END DO
+
 END PROCEDURE obj_GetTotalInternalFacetElements
 
 !----------------------------------------------------------------------------
@@ -1191,10 +1200,24 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
+
 ans = 0
-IF (ALLOCATED(obj%boundaryFacetData)) THEN
-  ans = SIZE(obj%boundaryFacetData)
-END IF
+isok = ALLOCATED(obj%facetData)
+IF (.NOT. isok) RETURN
+tsize = SIZE(obj%facetData)
+
+DO ii = 1, tsize
+  isok = FacetData_Iselement(obj=obj%facetData(ii), filter=BOUNDARY_ELEMENT)
+  IF (isok) ans = ans + 1
+END DO
+
+DO ii = 1, tsize
+  isok = FacetData_Iselement(obj=obj%facetData(ii), &
+                             filter=DOMAIN_BOUNDARY_ELEMENT)
+  IF (isok) ans = ans + 1
+END DO
 END PROCEDURE obj_GetTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -1202,12 +1225,8 @@ END PROCEDURE obj_GetTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMasterCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans = obj%internalFacetData(facetElement)%masterCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = obj%boundaryFacetData(facetElement)%masterCellNumber
-END SELECT
+CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                        masterCellNumber=ans)
 END PROCEDURE obj_GetMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -1215,12 +1234,8 @@ END PROCEDURE obj_GetMasterCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSlaveCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans = obj%internalFacetData(facetElement)%slaveCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = 0
-END SELECT
+CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                        slaveCellNumber=ans)
 END PROCEDURE obj_GetSlaveCellNumber
 
 !----------------------------------------------------------------------------
@@ -1228,14 +1243,8 @@ END PROCEDURE obj_GetSlaveCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellNumber
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  ans(1) = obj%internalFacetData(facetElement)%masterCellNumber
-  ans(2) = obj%internalFacetData(facetElement)%slaveCellNumber
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans(1) = obj%boundaryFacetData(facetElement)%masterCellNumber
-  ans(2) = 0
-END SELECT
+CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                        masterCellNumber=ans(1), slaveCellNumber=ans(2))
 END PROCEDURE obj_GetCellNumber
 
 !----------------------------------------------------------------------------
@@ -1243,16 +1252,13 @@ END PROCEDURE obj_GetCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalFacetID
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  IF (isMaster) THEN
-    ans = obj%internalFacetData(facetElement)%masterLocalFacetID
-  ELSE
-    ans = obj%internalFacetData(facetElement)%slaveLocalFacetID
-  END IF
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  ans = obj%boundaryFacetData(facetElement)%masterLocalFacetID
-END SELECT
+IF (isMaster) THEN
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                          masterLocalFacetID=ans)
+ELSE
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                          slaveLocalFacetID=ans)
+END IF
 END PROCEDURE obj_GetLocalFacetID
 
 !----------------------------------------------------------------------------

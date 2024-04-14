@@ -85,7 +85,7 @@ CALL Display(obj%tElemTopologies, "Total topologies: ",  &
   & unitno=unitno)
 
 DO ii = 1, obj%tElemTopologies
-  CALL Display("  Topologies("//tostring(ii)//"): "//  &
+  CALL Display("Topologies("//tostring(ii)//"): "//  &
     & ElementName(obj%elemTopologies(ii)), unitno=unitno)
 END DO
 
@@ -144,12 +144,6 @@ CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
 
 abool = ALLOCATED(obj%elementData)
 CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%internalFacetData)
-CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%boundaryFacetData)
-CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
 
 abool = ALLOCATED(obj%facetData)
 CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
@@ -219,23 +213,24 @@ END PROCEDURE obj_DisplayFacetData
 
 MODULE PROCEDURE obj_DisplayInternalFacetData
 INTEGER(I4B) :: ii, n
+INTEGER(I4B), PARAMETER :: filter = INTERNAL_ELEMENT
 LOGICAL(LGT) :: abool
 
 CALL Display(msg, unitno=unitno)
 
-abool = ALLOCATED(obj%internalFacetData)
-IF (abool) THEN; n = SIZE(obj%internalFacetData); ELSE; n = 0; END IF
+abool = ALLOCATED(obj%facetData)
+IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
 
-CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
+CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
 DO ii = 1, n
 
-  CALL InternalFacetData_Display(obj=obj%internalFacetData(ii),  &
-    & msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
-
+  CALL FacetData_Display_Filter(obj=obj%facetData(ii), filter=filter, &
+                 msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
   CALL BlankLines(nol=1, unitno=unitno)
 
 END DO
+
 END PROCEDURE obj_DisplayInternalFacetData
 
 !----------------------------------------------------------------------------
@@ -246,16 +241,22 @@ MODULE PROCEDURE obj_DisplayBoundaryFacetData
 INTEGER(I4B) :: ii, n
 LOGICAL(LGT) :: abool
 
-abool = ALLOCATED(obj%boundaryFacetData)
-IF (abool) THEN; n = SIZE(obj%boundaryFacetData); ELSE; n = 0; END IF
-
 CALL Display(msg, unitno=unitno)
-CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
+
+abool = ALLOCATED(obj%facetData)
+IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
+
+CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
 DO ii = 1, n
 
-  CALL BoundaryFacetData_Display(obj=obj%boundaryFacetData(ii),  &
-    & msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+  CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
+                                filter=BOUNDARY_ELEMENT, &
+                 msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
+                                filter=DOMAIN_BOUNDARY_ELEMENT, &
+           msg="domainBoundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
 
   CALL BlankLines(nol=1, unitno=unitno)
 

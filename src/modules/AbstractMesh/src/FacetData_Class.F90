@@ -16,7 +16,7 @@
 !
 
 MODULE FacetData_Class
-USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: I4B, LGT
 USE Display_Method, ONLY: Display
 USE ElemData_Class, ONLY: INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
   & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT
@@ -25,6 +25,8 @@ PRIVATE
 
 PUBLIC :: FacetData_
 PUBLIC :: FacetData_Display
+PUBLIC :: FacetData_Display_filter
+PUBLIC :: FacetData_Iselement
 PUBLIC :: FacetData_GetParam
 PUBLIC :: FacetData_SetParam
 
@@ -187,6 +189,46 @@ SUBROUTINE FacetData_Display(obj, msg, unitno)
     & unitno=unitno)
 
 END SUBROUTINE FacetData_Display
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-14
+! summary: Display the instance of InternalFacetData
+
+SUBROUTINE FacetData_Display_Filter(obj, filter, msg, unitno)
+  CLASS(FacetData_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: filter
+  CHARACTER(*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+
+  SELECT CASE (filter)
+  CASE (INTERNAL_ELEMENT)
+    CALL FacetData_Display(obj, msg, unitno)
+  CASE (BOUNDARY_ELEMENT)
+    CALL FacetData_Display(obj, msg, unitno)
+  CASE (DOMAIN_BOUNDARY_ELEMENT)
+    CALL FacetData_Display(obj, msg, unitno)
+  END SELECT
+
+END SUBROUTINE FacetData_Display_Filter
+
+!----------------------------------------------------------------------------
+!                                                       IsElement@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-14
+! summary: Display the instance of InternalFacetData
+
+PURE ELEMENTAL FUNCTION FacetData_Iselement(obj, filter) RESULT(ans)
+  CLASS(FacetData_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: filter
+  LOGICAL(LGT) :: ans
+  ans = obj%elementType .EQ. filter
+END FUNCTION FacetData_Iselement
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
