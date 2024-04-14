@@ -1531,9 +1531,8 @@ END PROCEDURE obj_isElementActive
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetParam
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetParam()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                        elementType=elementType)
 END PROCEDURE obj_GetFacetParam
 
 !----------------------------------------------------------------------------

@@ -507,9 +507,8 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetParam
-CHARACTER(*), PARAMETER :: myName = "obj_SEtBoundaryFacetParam()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+CALL FacetData_SetParam(obj=obj%facetData(facetElement), &
+                        elementType=elementType)
 END PROCEDURE obj_SetFacetParam
 
 !----------------------------------------------------------------------------
