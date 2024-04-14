@@ -226,7 +226,7 @@ DO ii = 1, tsize
   CALL masterMesh%GetParam(isBoundaryDataInitiated=isVar)
 
   IF (.NOT. isVar) THEN
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
       & 'In masterMesh (nsd = '//tostring(obj%nsd)// &
       & ', entityNum = '//tostring(ii)// &
       & ' Boundary data is not initiated, calling '// &
@@ -285,12 +285,16 @@ CLASS(AbstractMesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet
 INTEGER(I4B), ALLOCATABLE :: faceNptrs(:)
 LOGICAL(LGT) :: faceFound, isVar
-CHARACTER(*), PARAMETER :: myName = "Domain_SetDomainFacetElement"
+CHARACTER(*), PARAMETER :: myName = "Domain_SetDomainFacetElement()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development'// &
+  'Read https://easifem.atlassian.net/jira/software/projects/EAS/list?selectedIssue=EAS-108' )
 
 tsize = obj%GetTotalMesh(dim=obj%nsd)
 
@@ -300,19 +304,32 @@ DO ii = 1, tsize
 
   CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
 
+#ifdef DEBUG_VER
   IF (.NOT. isVar) THEN
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'In masterMesh (nsd = '//tostring(obj%nsd)// &
-    & ', entityNum = '//tostring(ii)// &
-    & ' Facet data is not initiated, calling '// &
-    & ' InitiateFacetElements')
-    CALL masterMesh%InitiateFacetElements()
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+            '[INTERNAL ERROR] :: In masterMesh (nsd = '//tostring(obj%nsd)// &
+                            ', entityNum = '//tostring(ii)// &
+                            ' Facet data is not initiated, calling '// &
+                            ' InitiateFacetElements')
   END IF
+#endif
 
+  IF (.NOT. isVar) CALL masterMesh%InitiateFacetElements()
+
+  ! FIXME:
+  ! Get total number of facet elements
   tDomFacet = masterMesh%GetTotalBoundaryFacetElements()
   tMeshFacet = 0
 
+  ! FIXME:
+  ! Start a loop over all facet elements
   DO iel = 1, tDomFacet
+
+    ! FIXME:
+    ! get the type of face element
+    ! continue only when it is a domain boundary element
+    ! because if it is internal element there is no result
+    ! if it is boundary element then we have already done our job
 
     faceNptrs = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -322,6 +339,7 @@ DO ii = 1, tsize
 
     faceFound = .FALSE.
 
+    ! INFO:
     ! The code below checks if any other mesh contains the
     ! facetNptrs; if there exists such as mesh, then
     ! the face-element is actually meshFacet (not domainFacet).
@@ -342,8 +360,8 @@ DO ii = 1, tsize
     END DO
 
     IF (faceFound) THEN
-      masterMesh%boundaryFacetData(iel)%elementType = &
-        & BOUNDARY_ELEMENT
+      CALL masterMesh%SetFacetParam(facetElement=iel, &
+                                    elementType=BOUNDARY_ELEMENT)
     END IF
 
   END DO
@@ -367,7 +385,7 @@ END PROCEDURE Domain_SetDomainFacetElement
 MODULE PROCEDURE Domain_SetMeshmap
 CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshmap"
 CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
-INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet
+INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet, elemtype
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshmap(:, :)
 LOGICAL(LGT) :: isVar
 
@@ -377,7 +395,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 IF (ALLOCATED(obj%meshFacetData)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'meshFacetData is already allocated... dellocate it first')
 END IF
 
@@ -392,11 +410,11 @@ DO ii = 1, tsize
   CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
 
   IF (.NOT. isVar) THEN
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'In masterMesh (nsd = '//tostring(obj%nsd)// &
-    & ', entityNum = '//tostring(ii)// &
-    & ' Facet data is not initiated, calling '// &
-    & ' InitiateFacetElements')
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            'In masterMesh (nsd = '//tostring(obj%nsd)// &
+                            ', entityNum = '//tostring(ii)// &
+                            ' Facet data is not initiated, calling '// &
+                            ' InitiateFacetElements')
     CALL masterMesh%InitiateFacetElements()
   END IF
 
@@ -406,8 +424,10 @@ DO ii = 1, tsize
 
     DO iel = 1, tDomFacet
 
-      IF (masterMesh%boundaryFacetData(iel)%elementType &
-        & .EQ. BOUNDARY_ELEMENT) THEN
+      CALL masterMesh%GetFacetParam(elementType=elemtype, &
+                                    facetElement=iel)
+
+      IF (elemtype .EQ. BOUNDARY_ELEMENT) THEN
 
         nptrs = AbstractMeshGetFacetConnectivity( &
           & obj=masterMesh, &
@@ -458,7 +478,7 @@ MODULE PROCEDURE Domain_SetMeshFacetElement
 CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshFacetElement"
 CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tSize, ii, imeshfacet, tBndyFacet_master, &
-  & iface_slave, iface_master, tmeshfacet, tBndyFacet_slave
+  & iface_slave, iface_master, tmeshfacet, tBndyFacet_slave, elemtype
 INTEGER(I4B), ALLOCATABLE :: faceNptrs_master(:), faceNptrs_slave(:)
 
 #ifdef DEBUG_VER
@@ -468,7 +488,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! main
 IF (.NOT. obj%meshmap%isInitiated) THEN
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & 'Domain_::obj%meshMap is not initiated, calling obj%SetMeshMap()')
   CALL obj%SetMeshMap()
 END IF
@@ -500,8 +520,9 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
 
   DO iface_master = 1, tBndyFacet_master
 
-    IF (masterMesh%boundaryFacetData(iface_master)%elementType .EQ. &
-      & DOMAIN_BOUNDARY_ELEMENT) CYCLE
+    CALL masterMesh%GetFacetParam(elementType=elemtype, &
+                                  facetElement=iface_master)
+    IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
     faceNptrs_master = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -521,8 +542,9 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
 
   DO iface_master = 1, tBndyFacet_master
 
-    IF (masterMesh%boundaryFacetData(iface_master)%elementType .EQ. &
-      & DOMAIN_BOUNDARY_ELEMENT) CYCLE
+    CALL masterMesh%GetFacetParam(elementType=elemtype, &
+                                  facetElement=iface_master)
+    IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
     faceNptrs_master = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -534,8 +556,9 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
 
       DO iface_slave = 1, tBndyFacet_slave
 
-        IF (slaveMesh%boundaryFacetData(iface_slave)%elementType .EQ. &
-          & DOMAIN_BOUNDARY_ELEMENT) CYCLE
+        CALL slaveMesh%GetFacetParam(elementType=elemtype, &
+                                     facetElement=iface_slave)
+        IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
         faceNptrs_slave = AbstractMeshGetFacetConnectivity( &
           & obj=slaveMesh, &
