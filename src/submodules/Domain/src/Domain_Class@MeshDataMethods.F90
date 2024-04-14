@@ -29,7 +29,7 @@ CONTAINS
 MODULE PROCEDURE Domain_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateNodeToElements()"
 INTEGER(I4B) :: ii, dim
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -57,7 +57,7 @@ END PROCEDURE Domain_InitiateNodeToElements
 
 MODULE PROCEDURE Domain_InitiateNodeToNodes
 INTEGER(I4B) :: ii, dim
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateExtraNodeToNodes()"
 
 #ifdef DEBUG_VER
@@ -87,7 +87,7 @@ END PROCEDURE Domain_InitiateNodeToNodes
 MODULE PROCEDURE Domain_InitiateElementToElements
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateElementToElements()"
 INTEGER(I4B) :: ii, dim
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -117,7 +117,7 @@ END PROCEDURE Domain_InitiateElementToElements
 MODULE PROCEDURE Domain_InitiateBoundaryData
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateBoundaryData()"
 INTEGER(I4B) :: ii, dim
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -147,7 +147,7 @@ END PROCEDURE Domain_InitiateBoundaryData
 MODULE PROCEDURE Domain_InitiateFacetElements
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateFacetElements()"
 INTEGER(I4B) :: ii, dim, nsd, tmesh
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -178,7 +178,7 @@ END PROCEDURE Domain_InitiateFacetElements
 MODULE PROCEDURE Domain_InitiateExtraNodeToNodes
 INTEGER(I4B) :: ii, dim
 CHARACTER(*), PARAMETER :: myName = "Domain_InitiateExtraNodeToNodes()"
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -206,7 +206,7 @@ END PROCEDURE Domain_InitiateExtraNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_SetFacetElementType
-CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
+CLASS(AbstractMesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tsize, ii, jj, kk, iel, iface
 INTEGER(I4B), ALLOCATABLE :: faceID(:), faceNptrs(:)
 CHARACTER(*), PARAMETER :: myName = "Domain_SetFacetElementType"
@@ -318,9 +318,8 @@ DO ii = 1, tsize
     ! if it is boundary element then we have already done our job
 
     CALL masterMesh%GetFacetParam(facetElement=iel, elementType=elemtype)
-    isok = (elemtype .EQ. BOUNDARY_ELEMENT) &
-           .OR. (elemtype .EQ. INTERNAL_ELEMENT)
-    IF (isok) CYCLE
+    isok = elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT
+    IF (.NOT. isok) CYCLE
 
     faceNptrs = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -375,7 +374,7 @@ END PROCEDURE Domain_SetDomainFacetElement
 
 MODULE PROCEDURE Domain_SetMeshmap
 CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshmap()"
-CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
+CLASS(AbstractMesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet, elemtype
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshmap(:, :)
 LOGICAL(LGT) :: isok
@@ -459,11 +458,12 @@ END PROCEDURE Domain_SetMeshmap
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_SetMeshFacetElement
-CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshFacetElement"
-CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
+CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshFacetElement()"
+CLASS(AbstractMesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tSize, ii, imeshfacet, tBndyFacet_master, &
   & iface_slave, iface_master, tmeshfacet, tBndyFacet_slave, elemtype
 INTEGER(I4B), ALLOCATABLE :: faceNptrs_master(:), faceNptrs_slave(:)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -495,18 +495,23 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
   slaveMesh => obj%GetMeshPointer(dim=obj%nsd, &
     & entityNum=obj%meshFacetData(imeshfacet)%slaveMesh)
 
-  tBndyFacet_master = masterMesh%GetTotalBoundaryFacetElements()
-  tBndyFacet_slave = slaveMesh%GetTotalBoundaryFacetElements()
+  ! FIXME:
+  tBndyFacet_master = masterMesh%GetTotalFacetElements()
+  ! FIXME:
+  tBndyFacet_slave = slaveMesh%GetTotalFacetElements()
 
   ! count the number of facet elements in imeshfacet
 
   tmeshfacet = 0
 
+  ! FIXME:
   DO iface_master = 1, tBndyFacet_master
 
     CALL masterMesh%GetFacetParam(elementType=elemtype, &
                                   facetElement=iface_master)
-    IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
+
+    isok = elemtype .EQ. BOUNDARY_ELEMENT
+    IF (.NOT. isok) CYCLE
 
     faceNptrs_master = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -528,7 +533,9 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
 
     CALL masterMesh%GetFacetParam(elementType=elemtype, &
                                   facetElement=iface_master)
-    IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
+
+    isok = elemtype .EQ. BOUNDARY_ELEMENT
+    IF (.NOT. isok) CYCLE
 
     faceNptrs_master = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
@@ -542,7 +549,9 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
 
         CALL slaveMesh%GetFacetParam(elementType=elemtype, &
                                      facetElement=iface_slave)
-        IF (elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT) CYCLE
+
+        isok = elemtype .EQ. BOUNDARY_ELEMENT
+        IF (.NOT. isok) CYCLE
 
         faceNptrs_slave = AbstractMeshGetFacetConnectivity( &
           & obj=slaveMesh, &
