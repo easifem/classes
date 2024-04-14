@@ -506,11 +506,11 @@ END PROCEDURE obj_SetParam
 !                                                   SetBoundaryFacetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetBoundaryFacetParam
+MODULE PROCEDURE obj_SetFacetParam
 CHARACTER(*), PARAMETER :: myName = "obj_SEtBoundaryFacetParam()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_SetBoundaryFacetParam
+END PROCEDURE obj_SetFacetParam
 
 !----------------------------------------------------------------------------
 !
