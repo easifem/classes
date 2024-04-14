@@ -23,10 +23,39 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
 IMPLICIT NONE
 PRIVATE
 
+PUBLIC :: FacetData_
+PUBLIC :: FacetData_Display
+PUBLIC :: FacetData_GetParam
+PUBLIC :: FacetData_SetParam
+
 PUBLIC :: InternalFacetData_
-PUBLIC :: BoundaryFacetData_
 PUBLIC :: InternalFacetData_Display
+
+PUBLIC :: BoundaryFacetData_
 PUBLIC :: BoundaryFacetData_Display
+
+!----------------------------------------------------------------------------
+!                                                                FacetData_
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-26
+! summary: Data storage for internal facets of mesh
+
+TYPE FacetData_
+  INTEGER(I4B) :: masterCellNumber = 0
+    !! master cell nubmer
+  INTEGER(I4B) :: slaveCellNumber = 0
+    !! slave cell number
+  INTEGER(I4B) :: masterLocalFacetID = 0
+    !! local facet ID in master cell
+  INTEGER(I4B) :: slaveLocalFacetID = 0
+    !! slave facet ID in slave cell
+  INTEGER(I4B) :: elementType = 0
+  !! INTERNAL_ELEMENT
+  !! BOUNDARY_ELEMENT
+  !! DOMAIN_BOUNDARY_ELEMENT
+END TYPE FacetData_
 
 !----------------------------------------------------------------------------
 !                                                         InternalFacetData_
@@ -38,13 +67,13 @@ PUBLIC :: BoundaryFacetData_Display
 
 TYPE InternalFacetData_
   INTEGER(I4B) :: masterCellNumber = 0
-    !! master cell nubmer
+  !! master cell nubmer
   INTEGER(I4B) :: slaveCellNumber = 0
-    !! slave cell number
+  !! slave cell number
   INTEGER(I4B) :: masterLocalFacetID = 0
-    !! local facet ID in master cell
+  !! local facet ID in master cell
   INTEGER(I4B) :: slaveLocalFacetID = 0
-    !! slave facet ID in slave cell
+  !! slave facet ID in slave cell
 END TYPE InternalFacetData_
 
 !----------------------------------------------------------------------------
@@ -73,6 +102,91 @@ END TYPE BoundaryFacetData_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-14
+! summary: Display the instance of InternalFacetData
+
+SUBROUTINE FacetData_SetParam(obj, elementType, masterCellNumber, &
+                       slaveCellNumber, masterLocalFacetID, slaveLocalFacetID)
+  CLASS(FacetData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: masterCellNumber
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: slaveCellNumber
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: masterLocalFacetID
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: slaveLocalFacetID
+
+  IF (PRESENT(elementType)) obj%elementType = elementType
+  IF (PRESENT(masterCellNumber)) obj%masterCellNumber = masterCellNumber
+  IF (PRESENT(slaveCellNumber)) obj%slaveCellNumber = slaveCellNumber
+  IF (PRESENT(masterLocalFacetID)) obj%masterLocalFacetID = masterLocalFacetID
+  IF (PRESENT(slaveLocalFacetID)) obj%slaveLocalFacetID = slaveLocalFacetID
+END SUBROUTINE FacetData_SetParam
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-14
+! summary: Display the instance of InternalFacetData
+
+SUBROUTINE FacetData_GetParam(obj, elementType, masterCellNumber, &
+                       slaveCellNumber, masterLocalFacetID, slaveLocalFacetID)
+  CLASS(FacetData_), INTENT(IN) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elementType
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: masterCellNumber
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: slaveCellNumber
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: masterLocalFacetID
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: slaveLocalFacetID
+
+  IF (PRESENT(elementType)) elementType = obj%elementType
+  IF (PRESENT(masterCellNumber)) masterCellNumber = obj%masterCellNumber
+  IF (PRESENT(slaveCellNumber)) slaveCellNumber = obj%slaveCellNumber
+  IF (PRESENT(masterLocalFacetID)) masterLocalFacetID = obj%masterLocalFacetID
+  IF (PRESENT(slaveLocalFacetID)) slaveLocalFacetID = obj%slaveLocalFacetID
+END SUBROUTINE FacetData_GetParam
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-14
+! summary: Display the instance of InternalFacetData
+
+SUBROUTINE FacetData_Display(obj, msg, unitno)
+  CLASS(FacetData_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+
+  CALL Display(TRIM(msg), unitno=unitno)
+
+  SELECT CASE (obj%elementType)
+  CASE (INTERNAL_ELEMENT)
+    CALL Display("elementType: INTERNAL_FACET_ELEMENT", unitno=unitno)
+  CASE (BOUNDARY_ELEMENT)
+    CALL Display("elementType: BOUNDARY_FACET_ELEMENT", unitno=unitno)
+  CASE (DOMAIN_BOUNDARY_ELEMENT)
+    CALL Display("elementType: DOMAIN_FACET_ELEMENT", unitno=unitno)
+  CASE DEFAULT
+    CALL Display("elementType: UNKNOWN_FACET_ELEMENT", unitno=unitno)
+  END SELECT
+
+  CALL Display(obj%masterCellNumber, msg="masterCellNumber: ", &
+    & unitno=unitno)
+  CALL Display(obj%slaveCellNumber, msg="slaveCellNumber: ", &
+    & unitno=unitno)
+  CALL Display(obj%masterlocalFacetID, msg="masterlocalFacetID: ", &
+    & unitno=unitno)
+  CALL Display(obj%slavelocalFacetID, msg="slavelocalFacetID: ", &
+    & unitno=unitno)
+
+END SUBROUTINE FacetData_Display
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
