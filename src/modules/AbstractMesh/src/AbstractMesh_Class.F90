@@ -178,7 +178,7 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! Internal facet data
     !! INFO: This data is initiated by InitiateFacetElements method
 
-  TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
+  TYPE(BoundaryFacetData_), ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
     !! INFO: This data is initiated by InitiateFacetElements method
 
@@ -534,6 +534,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isFacetData => obj_isFacetData
   PROCEDURE, PUBLIC, PASS(obj) :: isElementActive => obj_isElementActive
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetParam => obj_GetFacetParam
+  !! Get the parameters of facet elements
+
   ! SET:
   ! @SetMethods
 
@@ -586,8 +589,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! set parameters of mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetBoundaryFacetParam &
-    => obj_SetBoundaryFacetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetParam &
+    => obj_SetFacetParam
+  !! Set the parametersof facet element
 
 END TYPE AbstractMesh_
 
@@ -2368,6 +2372,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   GetFacetParam@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-14
+! summary:  Get the parameters of facet elements
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetParam(obj, facetElement, elementType)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: facetElement
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elementType
+  END SUBROUTINE obj_GetFacetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                     InitiateNodeToElements@NodeDataMethods
 !----------------------------------------------------------------------------
 
@@ -2904,14 +2924,16 @@ END INTERFACE
 !                                          SetBoundaryFacetParam@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-14
+! summary:  Set the parameters of facet elements
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetBoundaryFacetParam(obj, globalElement, &
-                                              elementType, islocal)
+  MODULE SUBROUTINE obj_SetFacetParam(obj, facetElement, elementType)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), INTENT(IN) :: elementType
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_SetBoundaryFacetParam
+    INTEGER(I4B), INTENT(IN) :: facetElement
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
+  END SUBROUTINE obj_SetFacetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
