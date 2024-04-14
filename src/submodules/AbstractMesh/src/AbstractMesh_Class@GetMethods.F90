@@ -1549,6 +1549,16 @@ ans = obj%elementData(iel)%isActive
 END PROCEDURE obj_isElementActive
 
 !----------------------------------------------------------------------------
+!                                                           GetFacetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetParam
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetParam()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetFacetParam
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
