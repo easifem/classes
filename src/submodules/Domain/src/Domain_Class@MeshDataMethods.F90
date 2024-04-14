@@ -292,10 +292,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development'// &
-  'Read https://easifem.atlassian.net/jira/software/projects/EAS/list?selectedIssue=EAS-108' )
-
 tsize = obj%GetTotalMesh(dim=obj%nsd)
 
 DO ii = 1, tsize
@@ -378,11 +374,11 @@ END PROCEDURE Domain_SetDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_SetMeshmap
-CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshmap"
+CHARACTER(*), PARAMETER :: myName = "Domain_SetMeshmap()"
 CLASS(Mesh_), POINTER :: masterMesh, slaveMesh
 INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet, elemtype
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshmap(:, :)
-LOGICAL(LGT) :: isVar
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -391,7 +387,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (ALLOCATED(obj%meshFacetData)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'meshFacetData is already allocated... dellocate it first')
+    & '[INTERNAL ERROR] :: Domain_::obj%meshFacetData is already ALLOCATED')
+  RETURN
 END IF
 
 tsize = obj%GetTotalMesh(dim=obj%nsd)
@@ -402,16 +399,9 @@ DO ii = 1, tsize
   masterMesh => obj%GetMeshPointer(dim=obj%nsd, entityNum=ii)
   tDomFacet = masterMesh%GetTotalBoundaryFacetElements()
 
-  CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
+  CALL masterMesh%GetParam(isFacetDataInitiated=isok)
 
-  IF (.NOT. isVar) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'In masterMesh (nsd = '//tostring(obj%nsd)// &
-                            ', entityNum = '//tostring(ii)// &
-                            ' Facet data is not initiated, calling '// &
-                            ' InitiateFacetElements')
-    CALL masterMesh%InitiateFacetElements()
-  END IF
+  IF (.NOT. isok) CALL masterMesh%InitiateFacetElements()
 
   DO jj = ii + 1, tsize
 
@@ -446,9 +436,8 @@ DO ii = 1, tsize
 END DO
 
 tMeshFacet = COUNT(meshmap .EQ. 1)
-!
+
 ! ALLOCATE meshFacetData
-!
 ALLOCATE (obj%meshFacetData(tMeshFacet))
 CALL Initiate(obj%meshMap, ncol=tsize, nrow=tsize)
 CALL SetSparsity(obj%meshMap, graph=meshmap)
