@@ -282,9 +282,9 @@ END PROCEDURE Domain_SetFacetElementType
 
 MODULE PROCEDURE Domain_SetDomainFacetElement
 CLASS(AbstractMesh_), POINTER :: masterMesh, slaveMesh
-INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet
+INTEGER(I4B) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet, elemtype
 INTEGER(I4B), ALLOCATABLE :: faceNptrs(:)
-LOGICAL(LGT) :: faceFound, isVar
+LOGICAL(LGT) :: faceFound, isok
 CHARACTER(*), PARAMETER :: myName = "Domain_SetDomainFacetElement()"
 
 #ifdef DEBUG_VER
@@ -302,26 +302,16 @@ DO ii = 1, tsize
 
   masterMesh => obj%GetMeshPointer(dim=obj%nsd, entityNum=ii)
 
-  CALL masterMesh%GetParam(isFacetDataInitiated=isVar)
+  CALL masterMesh%GetParam(isFacetDataInitiated=isok)
 
-#ifdef DEBUG_VER
-  IF (.NOT. isVar) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: In masterMesh (nsd = '//tostring(obj%nsd)// &
-                            ', entityNum = '//tostring(ii)// &
-                            ' Facet data is not initiated, calling '// &
-                            ' InitiateFacetElements')
-  END IF
-#endif
+  IF (.NOT. isok) CALL masterMesh%InitiateFacetElements()
 
-  IF (.NOT. isVar) CALL masterMesh%InitiateFacetElements()
-
-  ! FIXME:
+  !INFO:
   ! Get total number of facet elements
-  tDomFacet = masterMesh%GetTotalBoundaryFacetElements()
+  tDomFacet = masterMesh%GetTotalFacetElements()
   tMeshFacet = 0
 
-  ! FIXME:
+  !INFO:
   ! Start a loop over all facet elements
   DO iel = 1, tDomFacet
 
@@ -330,6 +320,11 @@ DO ii = 1, tsize
     ! continue only when it is a domain boundary element
     ! because if it is internal element there is no result
     ! if it is boundary element then we have already done our job
+
+    CALL masterMesh%GetFacetParam(facetElement=iel, elementType=elemtype)
+    isok = (elemtype .EQ. BOUNDARY_ELEMENT) &
+           .OR. (elemtype .EQ. INTERNAL_ELEMENT)
+    IF (isok) CYCLE
 
     faceNptrs = AbstractMeshGetFacetConnectivity( &
       & obj=masterMesh, &
