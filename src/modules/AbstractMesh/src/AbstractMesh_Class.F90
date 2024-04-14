@@ -176,11 +176,14 @@ TYPE, ABSTRACT :: AbstractMesh_
 
   TYPE(InternalFacetData_), ALLOCATABLE :: internalFacetData(:)
     !! Internal facet data
-    !! INFO: This data is initiated by InitiateFacetElements method
+    !!ISSUE: This data is initiated by InitiateFacetElements method
 
   TYPE(BoundaryFacetData_), ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
-    !! INFO: This data is initiated by InitiateFacetElements method
+    !!ISSUE: This data is initiated by InitiateFacetElements method
+
+  TYPE(FacetData_), ALLOCATABLE :: facetData(:)
+  !! facet data
 
   TYPE(ElemDataList_) :: elementDataList
   !! ElemData list
@@ -225,6 +228,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
     & obj_DisplayElementData
     !! Display element data
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
+    & obj_DisplayFacetData
+    !! Display  facet data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
     & obj_DisplayInternalFacetData
     !! Display internal facet data
@@ -862,7 +868,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Displays the element data
+! summary: Displays the internal facet data
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayInternalFacetData(obj, msg, unitno)
@@ -873,12 +879,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              DisplayFacetData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Displays the facet data
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayFacetData(obj, msg, unitno)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_DisplayFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                        DisplayBoundaryFacetData@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Displays the element data
+! summary: Displays the boundary facet data
 
 INTERFACE
   MODULE SUBROUTINE obj_DisplayBoundaryFacetData(obj, msg, unitno)

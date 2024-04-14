@@ -94,6 +94,8 @@ IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 
+IF (ALLOCATED(obj%facetData)) DEALLOCATE (obj%facetData)
+
 CALL obj%elementDataList%DEALLOCATE()
 CALL obj%elementDataBinaryTree%DEALLOCATE()
 CALL obj%nodeDataList%DEALLOCATE()

@@ -151,6 +151,9 @@ CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
 abool = ALLOCATED(obj%boundaryFacetData)
 CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
 
+abool = ALLOCATED(obj%facetData)
+CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -184,6 +187,31 @@ DO ii = 1, tNodes
   CALL BlankLines(nol=1, unitno=unitno)
 END DO
 END PROCEDURE obj_DisplayNodeData
+
+!----------------------------------------------------------------------------
+!                                                  DisplayFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayFacetData
+INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: abool
+
+CALL Display(msg, unitno=unitno)
+
+abool = ALLOCATED(obj%facetData)
+IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
+
+CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
+
+DO ii = 1, n
+
+  CALL FacetData_Display(obj=obj%facetData(ii),  &
+    & msg="facetData("//tostring(ii)//"): ", unitno=unitno)
+
+  CALL BlankLines(nol=1, unitno=unitno)
+
+END DO
+END PROCEDURE obj_DisplayFacetData
 
 !----------------------------------------------------------------------------
 !                                                  DisplayInternalFacetData
