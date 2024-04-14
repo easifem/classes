@@ -311,12 +311,6 @@ DO ii = 1, tsize
   ! Start a loop over all facet elements
   DO iel = 1, tDomFacet
 
-    ! FIXME:
-    ! get the type of face element
-    ! continue only when it is a domain boundary element
-    ! because if it is internal element there is no result
-    ! if it is boundary element then we have already done our job
-
     CALL masterMesh%GetFacetParam(facetElement=iel, elementType=elemtype)
     isok = elemtype .EQ. DOMAIN_BOUNDARY_ELEMENT
     IF (.NOT. isok) CYCLE

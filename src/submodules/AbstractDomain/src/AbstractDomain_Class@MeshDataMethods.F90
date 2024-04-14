@@ -284,10 +284,9 @@ END PROCEDURE obj_SetFacetElementType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetDomainFacetElement
-CHARACTER(*), PARAMETER :: myName = "obj_SetDomainFacetElement"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-
+! this routine does nothing at this level
+! because we do not have difference between boundary element and
+! domain boundary element
 END PROCEDURE obj_SetDomainFacetElement
 
 !----------------------------------------------------------------------------
