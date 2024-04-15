@@ -164,13 +164,13 @@ INTEGER(I4B), POINTER :: nodeToNode(:)
 !
 ! check
 !
-IF (.NOT. domain1%isInitiated) &
+IF (.NOT. domain1%isInit()) &
   & CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-1 is not initiated, first initiate")
 !
 ! check
 !
-IF (.NOT. domain2%isInitiated) &
+IF (.NOT. domain2%isInit()) &
   & CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-2 is not initiated, first initiate")
 !

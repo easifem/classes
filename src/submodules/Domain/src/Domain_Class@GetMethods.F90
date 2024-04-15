@@ -711,6 +711,14 @@ CALL RemoveDuplicates(ans)
 END PROCEDURE Domain_GetUniqueElemType
 
 !----------------------------------------------------------------------------
+!                                                         IsInit
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_IsInit
+ans = obj%isInitiated
+END PROCEDURE Domain_IsInit
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 END SUBMODULE GetMethods

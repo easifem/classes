@@ -57,7 +57,7 @@ CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 TYPE :: Domain_
   PRIVATE
-  LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInitiated = .FALSE.
     !! flag
   TYPE(String) :: engine
     !! Engine used for generating the meshes
@@ -241,6 +241,9 @@ CONTAINS
   !! Returns the unique element type in each mesh
   !! The size of returned integer vector can be different from
   !! the total number of meshes present in domain.
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInit => Domain_IsInit
+  !! Returns obj%isInitiated
 
   ! SET:
   ! @SetMethods
@@ -1142,6 +1145,21 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION Domain_GetUniqueElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       IsInit@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION Domain_IsInit(obj) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION Domain_IsInit
 END INTERFACE
 
 !----------------------------------------------------------------------------
