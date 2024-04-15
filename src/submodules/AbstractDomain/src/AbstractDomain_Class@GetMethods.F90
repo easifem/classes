@@ -40,23 +40,16 @@ END PROCEDURE obj_IsNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsElementPresent
-INTEGER(I4B) :: dim0
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-dim0 = Input(default=obj%nsd, option=dim)
-SELECT CASE (dim0)
-CASE (3)
-  ans = obj%meshVolume%IsElementPresent(globalElement=globalElement,  &
-  & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-END SELECT
+IF (PRESENT(dim)) THEN
+  meshptr => obj%GetMeshPointer(dim=dim)
+  ans = meshptr%isElementPresent(globalElement=globalElement, islocal=islocal)
+  meshptr => NULL()
+  RETURN
+END IF
+
+ans = obj%mesh%isElementPresent(globalElement=globalElement, islocal=islocal)
 
 END PROCEDURE obj_IsElementPresent
 
