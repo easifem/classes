@@ -58,7 +58,7 @@ mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
 mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 ! TODO
 ! is it possible to have bounds of obj%cellToCell from
-! mesh1%minElemNum to mesh1%maxElemNum, it will save the space
+! mesh1%GetMinElemNumber() to mesh1%GetMaxElemNumber(), it will save the space
 minElem = mesh1%GetMinElemNumber()
 maxElem = mesh1%GetMaxElemNumber()
 CALL Reallocate(obj%cellToCell, maxElem)
@@ -187,11 +187,11 @@ IF (obj%isCellToCell) &
   & "It seems, obj%cellToCell data is already initiated")
 !
 ! TODO is it possible to have bounds of obj%cellToCell from
-!      domain1%minElemNum to domain1%maxElemNum,
+!      domain1%GetMinElemNumber() to domain1%GetMaxElemNumber(),
 !      it will save the space
 !
-CALL Reallocate(obj%cellToCell, domain1%maxElemNum)
-CALL Reallocate(obj%cellToCellExtraData, 2, domain1%maxElemNum)
+CALL Reallocate(obj%cellToCell, domain1%GetMaxElemNumber())
+CALL Reallocate(obj%cellToCellExtraData, 2, domain1%GetMaxElemNumber())
 obj%isCellToCell = .TRUE.
 nsd = domain1%getNSD()
 !
@@ -201,7 +201,7 @@ nodeToNode => obj%getNodeToNodePointer()
 !
 ! get mesh pointer
 !
-DO iel1 = domain1%minElemNum, domain1%maxElemNum
+DO iel1 = domain1%GetMinElemNumber(), domain1%GetMaxElemNumber()
   !
   IF (.NOT. domain1%isElementPresent(globalElement=iel1)) CYCLE
   !

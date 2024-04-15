@@ -62,7 +62,7 @@ mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
 mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 ! TODO
 ! is it possible to have bounds of obj%NodeToNode from
-! mesh1%minNptrs to mesh1%maxNptrs, it will save the space
+! mesh1%GetMinNodeNumber() to mesh1%GetMaxNodeNumber(), it will save the space
 CALL Reallocate(obj%NodeToNode, mesh1%GetMaxNodeNumber())
 obj%isNodeToNode = .TRUE.
 
@@ -146,9 +146,10 @@ END IF
 
 ! TODO:
 ! is it possible to have bounds of obj%NodeToNode from
-! domain1%minNptrs to domain1%maxNptrs, it will save the space
+! domain1%GetMinNodeNumber() to
+! domain1%GetMaxNodeNumber(), it will save the space
 
-CALL Reallocate(obj%NodeToNode, domain1%maxNptrs)
+CALL Reallocate(obj%NodeToNode, domain1%GetMaxNodeNumber())
 obj%isNodeToNode = .TRUE.
 
 CALL Display("Make intersection box ")

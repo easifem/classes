@@ -69,17 +69,17 @@ TYPE :: Domain_
     !! Version  MajorVersion.MinorVersion
   INTEGER(I4B) :: nsd = 0_I4B
     !! number of spatial dimension
-  INTEGER(I4B), PUBLIC :: maxNptrs = 0
+  INTEGER(I4B) :: maxNptrs = 0
     !! Largest node number in the domain
-  INTEGER(I4B), PUBLIC :: minNptrs = 0
+  INTEGER(I4B) :: minNptrs = 0
     !! Smallest node number in the domain
   INTEGER(I4B) :: tNodes = 0
     !! Total number of nodes in the mesh
   LOGICAL(I4B) :: isNodeNumberSparse = .FALSE.
     !! True if node numbers are not continuous
-  INTEGER(I4B), PUBLIC :: maxElemNum = 0
+  INTEGER(I4B) :: maxElemNum = 0
     !! Largest element number in the domain
-  INTEGER(I4B), PUBLIC :: minElemNum = 0
+  INTEGER(I4B) :: minElemNum = 0
     !! Smallest element number in the domain
   LOGICAL(LGT) :: isElemNumberSparse = .FALSE.
     !! True if element numbers are sparse
@@ -244,6 +244,11 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsInit => Domain_IsInit
   !! Returns obj%isInitiated
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => obj_GetMinNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => obj_GetMaxElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
 
   ! SET:
   ! @SetMethods
@@ -1160,6 +1165,66 @@ INTERFACE
     CLASS(Domain_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION Domain_IsInit
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetMaxNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxNodeNumber(obj) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMinNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMinNodeNumber(obj) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMinNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetMaxElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxElemNumber(obj) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMinElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMinElemNumber(obj) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMinElemNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
