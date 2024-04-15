@@ -47,21 +47,7 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 #endif
 
-SELECT CASE (obj%nsd)
-CASE (0)
-  CALL obj%meshPoint%SetSparsity(mat=mat)
-CASE (1)
-  CALL obj%meshCurve%SetSparsity(mat=mat)
-CASE (2)
-  CALL obj%meshSurface%SetSparsity(mat=mat)
-CASE (3)
-  CALL obj%meshVolume%SetSparsity(mat=mat)
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for nsd='//tostring(obj%nsd))
-  RETURN
-END SELECT
-
+CALL obj%mesh%SetSparsity(mat)
 CALL SetSparsity(mat)
 
 END PROCEDURE obj_SetSparsity1
