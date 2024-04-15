@@ -999,17 +999,17 @@ END INTERFACE
 !
 !# Introduction
 !
-! This returns the mesh Entity pointer.
+! This returns the pointer to the abtract mesh object
 ! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
 ! curve, surface, volume meshes.
-! - tag, is the number of mesh
-! entityNum is not used here
+! - the default value of dim is obj%nsd
 
 INTERFACE
   MODULE FUNCTION obj_GetMeshPointer1(obj, dim) RESULT(Ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of mesh entity
+    !! The default value of dim is obj%nsd
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer1
 END INTERFACE

@@ -556,7 +556,10 @@ END PROCEDURE obj_GetTotalEntities
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
-SELECT CASE (dim)
+INTEGER(I4B) :: dim0
+dim0 = Input(default=obj%nsd, option=dim)
+
+SELECT CASE (dim0)
 CASE (0)
   ans => obj%meshPoint
 CASE (1)
