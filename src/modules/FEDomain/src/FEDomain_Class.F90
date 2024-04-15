@@ -52,6 +52,20 @@ CHARACTER(*), PARAMETER :: modName = "FEDomain_Class"
 !{!pages/docs-api/FEDomain/FEDomain_.md!}
 
 TYPE, EXTENDS(AbstractDomain_) :: FEDomain_
+  PRIVATE
+  CLASS(AbstractMesh_), POINTER :: meshVolume => NULL()
+    !! meshVolume list of meshes of volume entities
+  CLASS(AbstractMesh_), POINTER :: meshSurface => NULL()
+    !! meshSurface list of meshes of surface entities
+  CLASS(AbstractMesh_), POINTER :: meshCurve => NULL()
+    !! meshCurve list of meshes of curve entities
+  CLASS(AbstractMesh_), POINTER :: meshPoint => NULL()
+    !! meshPoint list of meshes of point entities
+  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+    !! mesh points to meshVolume for nsd = 3
+    !! mesh points to meshSurface for nsd = 2
+    !! mesh points to meshCurve for nsd = 1
+    !! mesh points to meshPoint for nsd = 0
 CONTAINS
 
   ! CONSTRUCTOR:
