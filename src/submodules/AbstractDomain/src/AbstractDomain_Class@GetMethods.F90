@@ -58,39 +58,10 @@ END PROCEDURE obj_IsElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
-#endif
-
-INTEGER(I4B) :: dim0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (3)
-  ans = obj%meshVolume%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
