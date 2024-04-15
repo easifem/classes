@@ -70,12 +70,8 @@ obj%tEntitiesForNodes = 0
 obj%tEntitiesForElements = 0
 obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
-CALL DEALLOCATE (obj%meshmap)
-
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
-
 CALL obj%DeallocateKdtree()
-
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

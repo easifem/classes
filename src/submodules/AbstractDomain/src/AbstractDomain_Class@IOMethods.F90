@@ -56,11 +56,8 @@ CALL Display("tElements: "//tostring(obj%tElements), &
   & unitno=unitno)
 CALL Display("tEntities: "//tostring(obj%tEntities), &
   & unitno=unitno)
-
 abool = ALLOCATED(obj%nodeCoord)
 CALL Display(abool, "nodeCoord Allocated: ", unitno=unitno)
-
-CALL Display(obj%meshMap%isInitiated, "meshMap Initiated: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 
@@ -357,7 +354,7 @@ CALL obj%ImportFromToml(table=node)
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
 CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF,  &
-                              & unitno=stdout)
+                                  & unitno=stdout)
 END IF
 #endif
 

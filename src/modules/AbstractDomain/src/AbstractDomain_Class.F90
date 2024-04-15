@@ -110,9 +110,6 @@ TYPE, ABSTRACT :: AbstractDomain_
   TYPE(Kdtree2_), POINTER :: kdtree => NULL()
   TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
 
-  TYPE(CSRSparsity_) :: meshMap
-  !! Sparse mesh data in CSR format
-
 CONTAINS
   PRIVATE
 
@@ -1370,9 +1367,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, majorVersion, &
  minorVersion, version, nsd, maxNptrs, minNptrs, tNodes, isNodeNumberSparse, &
               maxElemNum, minElemNum, isElemNumberSparse, tEntitiesForNodes, &
-          tEntitiesForElements, tElements, tEntities, nodeCoord, meshVolume, &
-                                 meshSurface, meshCurve, meshPoint, meshMap, &
-                                 mesh)
+                        tEntitiesForElements, tElements, tEntities, nodeCoord)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     CHARACTER(*), OPTIONAL, INTENT(INOUT) :: engine
@@ -1392,12 +1387,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: tElements(0:3)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: tEntities(0:3)
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: nodeCoord(:, :)
-    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshVolume
-    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshSurface
-    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshCurve
-    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshPoint
-    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: mesh
-    TYPE(CSRSparsity_), OPTIONAL, INTENT(INOUT) :: meshMap
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
