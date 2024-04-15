@@ -193,31 +193,6 @@ END PROCEDURE obj_tElements2
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
 ans = globalNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
-!   & islocal=islocal)
-! CASE (2)
-!   ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (1)
-!   ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (0)
-!   ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
-
 END PROCEDURE obj_GetLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -226,31 +201,6 @@ END PROCEDURE obj_GetLocalNodeNumber1
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
 ans = globalNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
-!   & islocal=islocal)
-! CASE (2)
-!   ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (1)
-!   ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (0)
-!   ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
-
 END PROCEDURE obj_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -259,26 +209,6 @@ END PROCEDURE obj_GetLocalNodeNumber2
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber1
 ans = localNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber1()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetGlobalNodeNumber(localNode=localNode)
-! CASE (2)
-!   ans = obj%meshSurface%GetGlobalNodeNumber(localNode=localNode)
-! CASE (1)
-!   ans = obj%meshCurve%GetGlobalNodeNumber(localNode=localNode)
-! CASE (0)
-!   ans = obj%meshPoint%GetGlobalNodeNumber(localNode=localNode)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -287,26 +217,6 @@ END PROCEDURE obj_GetGlobalNodeNumber1
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber2
 ans = localNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetGlobalNodeNumber(localNode=localNode)
-! CASE (2)
-!   ans = obj%meshSurface%GetGlobalNodeNumber(localNode=localNode)
-! CASE (1)
-!   ans = obj%meshCurve%GetGlobalNodeNumber(localNode=localNode)
-! CASE (0)
-!   ans = obj%meshPoint%GetGlobalNodeNumber(localNode=localNode)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
