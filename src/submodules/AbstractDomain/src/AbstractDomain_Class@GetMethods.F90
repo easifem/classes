@@ -224,18 +224,6 @@ END PROCEDURE obj_GetGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: problem
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities()"
-
-problem = dim .LT. 0 .OR. dim .GT. 3
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: dim of the mesh should be in [0,1,2,3]")
-END IF
-#endif
-
 ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
 
@@ -265,6 +253,7 @@ END PROCEDURE obj_GetMeshPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord
+INTEGER(I4B) :: ii, tsize
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
 LOGICAL(LGT) :: problem
@@ -277,7 +266,10 @@ IF (problem) THEN
 END IF
 #endif
 
-nodeCoord(1:obj%nsd, :) = obj%nodeCoord(1:obj%nsd, :)
+tsize = SIZE(obj%nodeCoord, 2)
+DO CONCURRENT(ii=1:tsize)
+  nodeCoord(1:obj%nsd, ii) = obj%nodeCoord(1:obj%nsd, ii)
+END DO
 
 END PROCEDURE obj_GetNodeCoord
 
