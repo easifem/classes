@@ -79,10 +79,11 @@ obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
 isok = obj%xidim .GT. 0
 IF (isok) THEN
   temp4 = TotalEntities(obj%elemType)
-  SELECT CASE (ElementTopology(obj%elemType))
-  CASE (Line)
-    temp4(1) = 2
-  END SELECT
+  !! INFO:
+  !! In case of line, the number of facet elements are end points
+  !! not the total number of nodes
+  !! temp4(1) will denote total number of nodes
+  IF (obj%xidim .EQ. 1_I4B) temp4(1) = 2
   ALLOCATE (obj%facetElements(temp4(obj%xidim)))
   CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
 END IF
