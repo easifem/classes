@@ -99,7 +99,7 @@ TYPE :: Domain_
     !! tEntities( 1 ) = total number of line mesh entities, mesh of Edge
     !! tEntities( 2 ) = total number of surface mesh entities, mesh Boundary
     !! tEntities( 3 ) = total number of volume mesh entities, Omega
-  REAL(DFP), ALLOCATABLE, PUBLIC :: nodeCoord(:, :)
+  REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
     !! Nodal coordinates in XiJ format
     !! Number of rows are 3, and number of columns is total nodes
   INTEGER(I4B), ALLOCATABLE, PUBLIC :: local_nptrs(:)
