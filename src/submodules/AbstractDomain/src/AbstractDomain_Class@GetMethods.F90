@@ -32,16 +32,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsNodePresent
-SELECT CASE (obj%nsd)
-CASE (0)
-  ans = obj%meshPoint%IsNodePresent(globalNode, islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%IsNodePresent(globalNode, islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%IsNodePresent(globalNode, islocal=islocal)
-CASE (3)
-  ans = obj%meshVolume%IsNodePresent(globalNode, islocal=islocal)
-END SELECT
+ans = obj%mesh%IsNodePresent(globalNode, islocal=islocal)
 END PROCEDURE obj_IsNodePresent
 
 !----------------------------------------------------------------------------
