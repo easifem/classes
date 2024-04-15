@@ -283,16 +283,10 @@ END SUBROUTINE part2_obj_Set_sparsity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMaterial
-SELECT CASE (dim)
-CASE (0)
-  CALL obj%meshPoint%SetTotalMaterial(n)
-CASE (1)
-  CALL obj%meshCurve%SetTotalMaterial(n)
-CASE (2)
-  CALL obj%meshSurface%SetTotalMaterial(n)
-CASE (3)
-  CALL obj%meshVolume%SetTotalMaterial(n)
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+CALL meshptr%SetTotalMaterial(n)
+meshptr => NULL()
 END PROCEDURE obj_SetTotalMaterial
 
 !----------------------------------------------------------------------------
@@ -300,35 +294,11 @@ END PROCEDURE obj_SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (dim)
-CASE (0)
-  CALL obj%meshPoint%SetMaterial(medium=medium, material=material, &
-                                 entityNum=entityNum)
-CASE (1)
-  CALL obj%meshCurve%SetMaterial(medium=medium, material=material, &
-                                 entityNum=entityNum)
-CASE (2)
-  CALL obj%meshSurface%SetMaterial(medium=medium, material=material, &
-                                   entityNum=entityNum)
-CASE (3)
-  CALL obj%meshVolume%SetMaterial(medium=medium, material=material, &
-                                  entityNum=entityNum)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+CALL meshptr%SetMaterial(medium=medium, material=material, &
+                         entityNum=entityNum)
+meshptr => NULL()
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
