@@ -28,6 +28,27 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             GetMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer1
+INTEGER(I4B) :: dim0
+dim0 = Input(default=obj%nsd, option=dim)
+
+SELECT CASE (dim0)
+CASE (0)
+  ans => obj%meshPoint
+CASE (1)
+  ans => obj%meshCurve
+CASE (2)
+  ans => obj%meshSurface
+CASE (3)
+  ans => obj%meshVolume
+END SELECT
+
+END PROCEDURE obj_GetMeshPointer1
+
+!----------------------------------------------------------------------------
 !                                                             IsNodePresent
 !----------------------------------------------------------------------------
 
@@ -228,27 +249,6 @@ ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
 
 !----------------------------------------------------------------------------
-!                                                             GetMeshPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshPointer1
-INTEGER(I4B) :: dim0
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (0)
-  ans => obj%meshPoint
-CASE (1)
-  ans => obj%meshCurve
-CASE (2)
-  ans => obj%meshSurface
-CASE (3)
-  ans => obj%meshVolume
-END SELECT
-
-END PROCEDURE obj_GetMeshPointer1
-
-!----------------------------------------------------------------------------
 !                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
@@ -357,16 +357,10 @@ END PROCEDURE obj_GetNodeCoordPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetNptrs()
-CASE (2)
-  ans = obj%meshSurface%GetNptrs()
-CASE (1)
-  ans = obj%meshCurve%GetNptrs()
-CASE (0)
-  ans = obj%meshPoint%GetNptrs()
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetNptrs()
+meshptr => NULL()
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
@@ -374,16 +368,10 @@ END PROCEDURE obj_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs_
-SELECT CASE (dim)
-CASE (3)
-  CALL obj%meshVolume%GetNptrs_(nptrs=nptrs)
-CASE (2)
-  CALL obj%meshSurface%GetNptrs_(nptrs=nptrs)
-CASE (1)
-  CALL obj%meshCurve%GetNptrs_(nptrs=nptrs)
-CASE (0)
-  CALL obj%meshPoint%GetNptrs_(nptrs=nptrs)
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+CALL meshptr%GetNptrs_(nptrs=nptrs)
+meshptr => NULL()
 END PROCEDURE obj_GetNptrs_
 
 !----------------------------------------------------------------------------
@@ -504,16 +492,10 @@ END PROCEDURE obj_GetNptrsInBox_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInternalNptrs
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetInternalNptrs()
-CASE (2)
-  ans = obj%meshSurface%GetInternalNptrs()
-CASE (1)
-  ans = obj%meshCurve%GetInternalNptrs()
-CASE (0)
-  ans = obj%meshPoint%GetInternalNptrs()
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetInternalNptrs()
+meshptr => NULL()
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -529,20 +511,10 @@ END PROCEDURE obj_GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox
-INTEGER(I4B) :: dim0
-
-dim0 = Input(default=obj%nsd, option=dim)
-SELECT CASE (dim0)
-CASE (0_I4B)
-  ans = obj%meshPoint%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (1_I4B)
-  ans = obj%meshCurve%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (2_I4B)
-  ans = obj%meshSurface%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (3_I4B)
-  ans = obj%meshVolume%GetBoundingBox(nodes=obj%nodeCoord)
-END SELECT
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
+meshptr => NULL()
 END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
@@ -561,20 +533,10 @@ END PROCEDURE obj_GetTotalMeshFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalMaterial1
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetTotalMaterial(globalElement=globalElement, &
-                                        islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetTotalMaterial(globalElement=globalElement, &
-                                         islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetTotalMaterial(globalElement=globalElement, &
-                                       islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetTotalMaterial(globalElement=globalElement, &
-                                       islocal=islocal)
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetTotalMaterial(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetTotalMaterial1
 
 !----------------------------------------------------------------------------
