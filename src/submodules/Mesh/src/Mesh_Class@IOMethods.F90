@@ -79,6 +79,10 @@ obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
 isok = obj%xidim .GT. 0
 IF (isok) THEN
   temp4 = TotalEntities(obj%elemType)
+  SELECT CASE (ElementTopology(obj%elemType))
+  CASE (Line)
+    temp4(1) = 2
+  END SELECT
   ALLOCATE (obj%facetElements(temp4(obj%xidim)))
   CALL GetFacetElements(refelem=obj%refelem, ans=obj%facetElements)
 END IF
