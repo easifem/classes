@@ -94,35 +94,7 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+ans = obj%mesh%GetNodeToElements(globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -130,35 +102,7 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+ans = obj%mesh%GetNodeToElements(globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
@@ -166,35 +110,8 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1_()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  CALL obj%meshVolume%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CALL obj%mesh%GetNodeToElements_(globalNode=globalNode,  &
+  & islocal=islocal, ans=ans, tsize=tsize)
 END PROCEDURE obj_GetNodeToElements1_
 
 !----------------------------------------------------------------------------
@@ -202,35 +119,8 @@ END PROCEDURE obj_GetNodeToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2_()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  CALL obj%meshVolume%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CALL obj%mesh%GetNodeToElements_(globalNode=globalNode,  &
+  & islocal=islocal, ans=ans, tsize=tsize)
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
