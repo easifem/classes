@@ -62,8 +62,8 @@ MODULE PROCEDURE obj_SetSparsity1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
 INTEGER(I4B) :: tsize
-LOGICAL(LGT) :: problem
 #endif
+LOGICAL(LGT) :: problem
 
 INTEGER(I4B) :: i, j, k, tNodes, tsize
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
@@ -129,8 +129,8 @@ MODULE PROCEDURE obj_SetSparsity2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
 INTEGER(I4B) :: tsize
-LOGICAL(LGT) :: problem
 #endif
+LOGICAL(LGT) :: problem
 
 INTEGER(I4B) :: i, j, tNodes, tsize
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
