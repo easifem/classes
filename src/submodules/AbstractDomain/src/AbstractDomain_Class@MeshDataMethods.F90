@@ -294,9 +294,7 @@ END PROCEDURE obj_SetDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMeshmap
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshmap"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+! this routine does nothing at abstract level
 END PROCEDURE obj_SetMeshmap
 
 !----------------------------------------------------------------------------
@@ -304,9 +302,7 @@ END PROCEDURE obj_SetMeshmap
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMeshFacetElement
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshFacetElement()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+! this routine does nothing at abstract level
 END PROCEDURE obj_SetMeshFacetElement
 
 !----------------------------------------------------------------------------
