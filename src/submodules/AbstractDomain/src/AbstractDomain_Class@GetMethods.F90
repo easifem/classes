@@ -128,21 +128,14 @@ END PROCEDURE obj_GetNodeToElements2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
+CLASS(AbstractMesh_), POINTER :: meshptr
 IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (3)
-    ans = obj%meshVolume%GetTotalNodes()
-  CASE (2)
-    ans = obj%meshSurface%GetTotalNodes()
-  CASE (1)
-    ans = obj%meshCurve%GetTotalNodes()
-  CASE (0)
-    ans = obj%meshPoint%GetTotalNodes()
-  END SELECT
-
-ELSE
-  ans = obj%tNodes
+  meshptr => obj%GetMeshPointer(dim=dim)
+  ans = meshptr%GetTotalNodes()
+  meshptr => NULL()
+  RETURN
 END IF
+ans = obj%tNodes
 END PROCEDURE obj_GetTotalNodes
 
 !----------------------------------------------------------------------------
