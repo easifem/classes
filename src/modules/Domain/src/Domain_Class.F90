@@ -102,9 +102,9 @@ TYPE :: Domain_
   REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
     !! Nodal coordinates in XiJ format
     !! Number of rows are 3, and number of columns is total nodes
-  INTEGER(I4B), ALLOCATABLE, PUBLIC :: local_nptrs(:)
+  INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
     !! local_nptrs are required to access the nodeCoord
-  INTEGER(I4B), ALLOCATABLE, PUBLIC :: global_nptrs(:)
+  INTEGER(I4B), ALLOCATABLE :: global_nptrs(:)
     !! global nptrs
 
   TYPE(MeshPointer_), ALLOCATABLE :: meshVolume(:)
@@ -116,7 +116,7 @@ TYPE :: Domain_
   TYPE(MeshPointer_), ALLOCATABLE :: meshPoint(:)
     !! meshPoint list of meshes of point entities
 
-  TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData(:)
+  TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData(:)
   !! Mesh facet data
   TYPE(CSRSparsity_) :: meshMap
   !! Sparse mesh data in CSR format
