@@ -25,7 +25,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                           SetShowTime
+!                                                               SetShowTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetShowTime
@@ -119,7 +119,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
-!                                                 part1_obj_Set_sparsity2
+!                                                   part1_obj_Set_sparsity2
 !----------------------------------------------------------------------------
 
 SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
@@ -279,7 +279,7 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
 END SUBROUTINE part2_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
-!                                                          SetTotalMaterial
+!                                                           SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMaterial
@@ -290,7 +290,7 @@ meshptr => NULL()
 END PROCEDURE obj_SetTotalMaterial
 
 !----------------------------------------------------------------------------
-!                                                          SetTotalMaterial
+!                                                           SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial
@@ -302,7 +302,7 @@ meshptr => NULL()
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
-!                                                             SetNodeCoord
+!                                                              SetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetNodeCoord1

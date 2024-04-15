@@ -1376,7 +1376,8 @@ INTERFACE
  minorVersion, version, nsd, maxNptrs, minNptrs, tNodes, isNodeNumberSparse, &
               maxElemNum, minElemNum, isElemNumberSparse, tEntitiesForNodes, &
           tEntitiesForElements, tElements, tEntities, nodeCoord, meshVolume, &
-                                 meshSurface, meshCurve, meshPoint, meshMap)
+                                 meshSurface, meshCurve, meshPoint, meshMap, &
+                                 mesh)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     CHARACTER(*), OPTIONAL, INTENT(INOUT) :: engine
@@ -1400,6 +1401,7 @@ INTERFACE
     CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshSurface
     CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshCurve
     CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: meshPoint
+    CLASS(AbstractMesh_), POINTER, OPTIONAL, INTENT(INOUT) :: mesh
     TYPE(CSRSparsity_), OPTIONAL, INTENT(INOUT) :: meshMap
   END SUBROUTINE obj_GetParam
 END INTERFACE
@@ -1420,7 +1422,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetSparsity@setMethods
+!                                                     SetSparsity@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1435,7 +1437,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetSparsity@setMethods
+!                                                     SetSparsity@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1450,7 +1452,7 @@ INTERFACE AbstractDomainSetSparsity
 END INTERFACE AbstractDomainSetSparsity
 
 !----------------------------------------------------------------------------
-!                                               SetTotalMaterial@setMethods
+!                                               SetTotalMaterial@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

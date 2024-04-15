@@ -470,7 +470,7 @@ CALL obj%ImportFromToml(table=node)
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
 CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF,  &
-                  & unitno=stdout)
+                    & unitno=stdout)
 END IF
 #endif
 

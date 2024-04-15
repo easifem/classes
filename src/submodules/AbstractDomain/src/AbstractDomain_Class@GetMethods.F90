@@ -576,6 +576,7 @@ IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
 IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
 IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
 IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
+IF (PRESENT(mesh)) mesh => obj%mesh
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
