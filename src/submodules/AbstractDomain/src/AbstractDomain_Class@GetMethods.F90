@@ -159,21 +159,16 @@ END PROCEDURE obj_tNodes2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements
-IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (3)
-    ans = obj%meshVolume%GetTotalElements()
-  CASE (2)
-    ans = obj%meshSurface%GetTotalElements()
-  CASE (1)
-    ans = obj%meshCurve%GetTotalElements()
-  CASE (0)
-    ans = obj%meshPoint%GetTotalElements()
-  END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-ELSE
-  ans = SUM(obj%tElements)
+IF (PRESENT(dim)) THEN
+  meshptr => obj%GetMeshPointer(dim=dim)
+  ans = meshptr%GetTotalElements()
+  meshptr => NULL()
+  RETURN
 END IF
+
+ans = SUM(obj%tElements)
 END PROCEDURE obj_GetTotalElements
 
 !----------------------------------------------------------------------------
