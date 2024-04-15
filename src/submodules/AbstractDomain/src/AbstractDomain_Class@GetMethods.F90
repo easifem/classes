@@ -69,39 +69,12 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
-#endif
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-INTEGER(I4B) :: dim0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (3)
-  CALL obj%meshVolume%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+meshptr => obj%GetMeshPointer(dim=dim)
+CALL meshptr%GetConnectivity_(globalElement=globalElement, &
+                              islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
