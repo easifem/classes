@@ -21,10 +21,10 @@
 
 MODULE DomainConnectivity_Class
 USE BaseType
-USE GlobalData
-USE Mesh_Class
-USE Domain_Class
+USE GlobalData, ONLY: I4B, LGT, DFP
+USE Domain_Class, ONLY: Domain_
 USE ExceptionHandler_Class, ONLY: e
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "DomainConnectivity_Class"
@@ -618,9 +618,9 @@ INTERFACE
     & cellMesh, dim, entityNum, isMaster)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
-    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-    CLASS(Mesh_), INTENT(INOUT) :: cellMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: entityNum
@@ -652,7 +652,7 @@ INTERFACE
     & masterDomain, slaveDomain)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Mesh connectivity data
-    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
     CLASS(Domain_), INTENT(INOUT) :: masterDomain
     !! Domain of master elements
@@ -679,9 +679,9 @@ INTERFACE
     & cellMesh, dim, entityNum)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
-    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-    CLASS(Mesh_), INTENT(INOUT) :: cellMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: entityNum
@@ -705,7 +705,7 @@ INTERFACE
   MODULE SUBROUTINE dc_InitiateFacetToCellData4(obj, facetMesh, cellDomain)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
-    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
     CLASS(Domain_), INTENT(INOUT) :: cellDomain
     !! Master mesh

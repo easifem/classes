@@ -260,11 +260,16 @@ END INTERFACE
 ! - the default value of dim is obj%nsd
 
 INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim) RESULT(Ans)
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
+                                      globalElement, isLocal) RESULT(Ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of mesh entity
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer1
 END INTERFACE

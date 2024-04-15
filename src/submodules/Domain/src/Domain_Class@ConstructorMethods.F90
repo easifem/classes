@@ -19,90 +19,66 @@
 ! date: 18 June 2021
 ! summary: This submodule contains methods for domain object
 
-SUBMODULE(Domain_Class) ConstructorMethods
-USE ReallocateUtility
-USE CSRSparsity_Method
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Domain_Initiate
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Domain_Initiate()"
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-! Exception related to Mesh_ data type wil be printed in the
-! domain only
-
-CALL obj%IMPORT(hdf5=hdf5, group=group)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-END PROCEDURE Domain_Initiate
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Domain_Deallocate
-! CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate()"
-
-obj%isInitiated = .FALSE.
-obj%engine = ''
-obj%majorVersion = 0
-obj%minorVersion = 0
-obj%version = 0.0_DFP
-obj%nsd = 0
-obj%maxNptrs = 0
-obj%minNptrs = 0
-obj%tNodes = 0
-obj%isNodeNumberSparse = .FALSE.
-obj%maxElemNum = 0
-obj%minElemNum = 0
-obj%isElemNumberSparse = .FALSE.
-obj%tEntitiesForNodes = 0
-obj%tEntitiesForElements = 0
-obj%tElements(0:3) = 0
-obj%tEntities(0:3) = 0
-CALL DEALLOCATE (obj%meshmap)
-IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
-
-CALL meshPointerDeallocate(obj%meshVolume)
-CALL meshPointerDeallocate(obj%meshSurface)
-CALL meshPointerDeallocate(obj%meshCurve)
-CALL meshPointerDeallocate(obj%meshPoint)
-
-IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
-IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
-IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
-END PROCEDURE Domain_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                              Final
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Domain_Final
-CALL Obj%DEALLOCATE()
-END PROCEDURE Domain_Final
-
-!----------------------------------------------------------------------------
-!                                                            Domain_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Domain_Constructor_1
-ALLOCATE (Domain_ :: ans)
-CALL ans%Initiate(hdf5=hdf5, group=group)
-END PROCEDURE Domain_Constructor_1
-
-!----------------------------------------------------------------------------
+! SUBMODULE(Domain_Class) ConstructorMethods
+! USE Mesh_Class, ONLY: MeshPointerDeallocate
+! USE CSRSparsity_Method, ONLY: CSRSparsity_Deallocate => DEALLOCATE
+! IMPLICIT NONE
+! CONTAINS
 !
-!----------------------------------------------------------------------------
-END SUBMODULE ConstructorMethods
+! !----------------------------------------------------------------------------
+! !                                                                   Initiate
+! !----------------------------------------------------------------------------
+!
+! MODULE PROCEDURE obj_Initiate
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!   & '[START] ')
+! #endif
+!
+! CALL obj%DEALLOCATE()
+! CALL obj%IMPORT(hdf5=hdf5, group=group)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!   & '[END] ')
+! #endif
+! END PROCEDURE obj_Initiate
+!
+! !----------------------------------------------------------------------------
+! !                                                             Deallocate
+! !----------------------------------------------------------------------------
+!
+! MODULE PROCEDURE obj_Deallocate
+! CALL AbstractDomainDeallocate(obj)
+! CALL CSRSparsity_Deallocate(obj%meshmap)
+! IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
+! CALL MeshPointerDeallocate(obj%meshVolume)
+! CALL MeshPointerDeallocate(obj%meshSurface)
+! CALL MeshPointerDeallocate(obj%meshCurve)
+! CALL MeshPointerDeallocate(obj%meshPoint)
+! IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
+! IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
+! END PROCEDURE obj_Deallocate
+!
+! !----------------------------------------------------------------------------
+! !                                                              Final
+! !----------------------------------------------------------------------------
+!
+! MODULE PROCEDURE obj_Final
+! CALL Obj%DEALLOCATE()
+! END PROCEDURE obj_Final
+!
+! !----------------------------------------------------------------------------
+! !                                                            obj_Pointer
+! !----------------------------------------------------------------------------
+!
+! MODULE PROCEDURE obj_Constructor_1
+! ALLOCATE (Domain_ :: ans)
+! CALL ans%Initiate(hdf5=hdf5, group=group)
+! END PROCEDURE obj_Constructor_1
+!
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+! END SUBMODULE ConstructorMethods

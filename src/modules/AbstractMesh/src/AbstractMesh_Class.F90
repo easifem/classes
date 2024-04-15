@@ -521,6 +521,7 @@ CONTAINS
   !! Get maximum node number
 
   PROCEDURE, PUBLIC, PASS(obj) :: isInit => obj_isInit
+  !! Returns obj%isInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: isNodeToElements => obj_isNodeToElements
   PROCEDURE, PUBLIC, PASS(obj) :: isNodeToNodes => obj_isNodeToNodes
   PROCEDURE, PUBLIC, PASS(obj) :: isExtraNodeToNodes => obj_isExtraNodeToNodes

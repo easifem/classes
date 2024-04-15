@@ -26,8 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE dc_InitiateNodeToNodeData1
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateNodeToNodeData1"
-CLASS(Mesh_), POINTER :: mesh1 => NULL()
-CLASS(Mesh_), POINTER :: mesh2 => NULL()
+CLASS(AbstractMesh_), POINTER :: mesh1 => NULL()
+CLASS(AbstractMesh_), POINTER :: mesh2 => NULL()
 TYPE(BoundingBox_) :: box, box1, box2
 LOGICAL(LGT) :: isvar, problem, isok
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:), nptrs2(:)

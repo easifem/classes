@@ -44,10 +44,21 @@ END PROCEDURE obj_GetMeshPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsNodePresent
-CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer()
-ans = meshptr%IsNodePresent(globalNode=globalNode, islocal=islocal)
-meshptr => NULL()
+LOGICAL(LGT) :: islocal0
+
+islocal0 = Input(default=.FALSE., option=islocal)
+
+IF (islocal0) THEN
+  ans = (globalNode .GT. 0) .AND. (globalNode .LE. obj%tNodes)
+  RETURN
+END IF
+
+ans = (globalNode .GE. obj%minNptrs) .AND. (globalNode .LE. obj%maxNptrs)
+
+IF (ans) THEN
+  ans = obj%GetLocalNodeNumber(globalNode) .NE. 0_I4B
+END IF
+
 END PROCEDURE obj_IsNodePresent
 
 !----------------------------------------------------------------------------
@@ -180,11 +191,23 @@ END PROCEDURE obj_tNodes2
 
 MODULE PROCEDURE obj_GetTotalElements
 CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: case1, isDim, isEntityNum
 
-IF (PRESENT(dim)) THEN
-  meshptr => obj%GetMeshPointer(dim=dim)
+isEntityNum = PRESENT(entityNum)
+isDim = PRESENT(dim)
+case1 = isDim .AND. isEntityNum
+
+IF (case1) THEN
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
   ans = meshptr%GetTotalElements()
   meshptr => NULL()
+  RETURN
+END IF
+
+case1 = isDim .AND. (.NOT. isEntityNum)
+
+IF (case1) THEN
+  ans = obj%tElements(dim)
   RETURN
 END IF
 
@@ -251,10 +274,10 @@ END PROCEDURE obj_GetTotalEntities
 !                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeCoord
+MODULE PROCEDURE obj_GetNodeCoord1
 INTEGER(I4B) :: ii, tsize
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
 LOGICAL(LGT) :: problem
 
 problem = .NOT. ALLOCATED(obj%nodeCoord)
@@ -270,7 +293,7 @@ DO CONCURRENT(ii=1:tsize)
   nodeCoord(1:obj%nsd, ii) = obj%nodeCoord(1:obj%nsd, ii)
 END DO
 
-END PROCEDURE obj_GetNodeCoord
+END PROCEDURE obj_GetNodeCoord1
 
 !----------------------------------------------------------------------------
 !                                                       GetNodeCoord

@@ -20,7 +20,7 @@
 
 SUBMODULE(MeshSelection_Class) GetElemNumMethods
 USE BaseMethod
-USE Mesh_Class, ONLY: Mesh_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 IMPLICIT NONE
 CONTAINS
 
@@ -73,7 +73,7 @@ END PROCEDURE meshSelect_GetElemNum1
 
 MODULE PROCEDURE meshSelect_GetElemNum2
 CHARACTER(*), PARAMETER :: myname = "meshSelect_GetElemNum2()"
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER

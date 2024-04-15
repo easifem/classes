@@ -28,9 +28,9 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
 & isMaster)
   CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
-  CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+  CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-  CLASS(Mesh_), INTENT(INOUT) :: cellMesh
+  CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
   INTEGER(I4B), INTENT(IN) :: dim
   INTEGER(I4B), INTENT(IN) :: entityNum
@@ -49,7 +49,7 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
   tfacet = cellMesh%GetTotalFacetElements()
   IF (tfacet .EQ. 0_I4B) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+     '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
   END IF
 
   DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
@@ -168,7 +168,7 @@ END PROCEDURE dc_InitiateFacetToCellData1
 MODULE PROCEDURE dc_InitiateFacetToCellData2
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData2"
 INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, nsd
-CLASS(Mesh_), POINTER :: meshptr
+CLASS(AbstractMesh_), POINTER :: meshptr
 LOGICAL(LGT) :: isVar
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -264,9 +264,9 @@ CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START] InitiateFacetToCellData()')
 
 tfacet = cellMesh%GetTotalFacetElements()
-IF (tfacet .eq. 0) THEN
+IF (tfacet .EQ. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+   & '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
 END IF
 
 CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
@@ -374,7 +374,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData4"
 INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, ii, iface, icell, &
 & nsd, tfacet, cellGlobalNum, localFacetID, jj
-CLASS(Mesh_), POINTER :: cellMesh
+CLASS(AbstractMesh_), POINTER :: cellMesh
 INTEGER(I4B), ALLOCATABLE :: colID(:), nptrs(:), pt2elem(:), &
   & cellNptrs(:), facetNptrs(:)
 LOGICAL(LGT) :: isVar
@@ -424,9 +424,9 @@ DO icellMesh = 1, tCellMesh
   IF (cellMesh%getTotalElements() .EQ. 0) CYCLE
 
   tfacet = cellMesh%GetTotalFacetElements()
-  IF (tfacet .eq. 0) THEN
+  IF (tfacet .EQ. 0) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+     '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
   END IF
 
   CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)

@@ -181,25 +181,28 @@ CONTAINS
     !! Returns the total nodes in domain
   PROCEDURE, PASS(obj) :: obj_tNodes2
     !! Returns the total nodes in a dimension
+  PROCEDURE, PASS(obj) :: obj_tNodes3
+    !! Returns the total nodes in domain
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
-    & obj_tNodes1, obj_tNodes2
+    & obj_tNodes1, obj_tNodes2, obj_tNodes3
   !! Generic method for Getting total nodes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
   !! returns the total number of Elements in domain, mesh, or part of mesh
-
-  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements1, obj_tElements2
+  PROCEDURE, PASS(obj) :: obj_tElements1
+  PROCEDURE, PASS(obj) :: obj_tElements2
+  PROCEDURE, PASS(obj) :: obj_tElements3
   !! returns total number of elements in domain, mesh, or part of domain
   GENERIC, PUBLIC :: OPERATOR(.tElements.) => obj_tElements1,  &
-    & obj_tElements2
+    & obj_tElements2, obj_tElements3
   !! return total number of elements in domain, mesh, or part of domain
 
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
-  GENERIC, PUBLIC :: &
-    & GetLocalNodeNumber => &
+  GENERIC, PUBLIC :: GetLocalNodeNumber => &
     & GetLocalNodeNumber1, &
     & GetLocalNodeNumber2
+
   PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
   PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber2
@@ -212,8 +215,12 @@ CONTAINS
   !! This routine returns total number of meshes of given dimension
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  !! Returns pointer to the mesh in the domain
 
-  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
+  !! Returns a dim entity-num of mesh which contains the element number
+
+  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
   !! This routine returns the nodal coordinate in rank2 array
   PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
   !! This routine returns the nodal coordinate in rank2 array
@@ -254,6 +261,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Returns the spatial dimension of each physical entities
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  !! Get Order
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & obj_GetTotalMeshFacetData
 
@@ -267,6 +277,14 @@ CONTAINS
   !! the total number of meshes present in domain.
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInit => obj_IsInit
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => obj_GetMinNodeNumber
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => obj_GetMaxElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
 
   ! SET:
   ! @SetMethods
@@ -284,9 +302,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! set the material
 
-  PROCEDURE, PASS(obj) :: SetNodeCoord1 => obj_SetNodeCoord1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord1 => obj_SetNodeCoord1
   !! setNodeCoord
-  GENERIC, PUBLIC :: SetNodeCoord => SetNodeCoord1
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
 
@@ -477,7 +494,7 @@ END INTERFACE AbstractDomainDisplay
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 20 May 2022
+! date: 2024-04-15
 ! summary: Display the domain
 
 INTERFACE AbstractDomainDisplayDomainInfo
@@ -753,15 +770,12 @@ END INTERFACE
 ! routine will returns the total nodes in that entity only.
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodes(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalNodes(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of the mesh entity
-    !! - `dim=0` denotes mesh of point entities
-    !! - `dim=1` denotes mesh of curve entities
-    !! - `dim=2` denotes mesh of surface entities
-    !! - `dim=3` denotes mesh of volume entities
-    !! If dim is not present then this routine returns obj%tNodes
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodes
 END INTERFACE
@@ -813,6 +827,39 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         tNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+!
+!# Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+! Here, opt = [dim, entityNum]
+!
+! This function is used for defining an operator [[.tNodes.]]
+!
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+! - `entityNum` should not be out of bound
+
+INTERFACE
+  MODULE FUNCTION obj_tNodes3(obj, opt) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: opt(2)
+    !! opt(1) is dim
+    !! opt(2) is entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_tNodes3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                GetTotalElements@GetMethods
 !----------------------------------------------------------------------------
 
@@ -842,7 +889,7 @@ END INTERFACE
 !@endtodo
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalElements(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalElements(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of mesh entities
@@ -851,6 +898,7 @@ INTERFACE
     !!  `dim=2` denotes mesh of surface entities
     !!  `dim=3` denotes mesh of volume entities
     !! If dim is not present then sum of obj%tElements is returned
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entitynum
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalElements
 END INTERFACE
@@ -884,6 +932,23 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B) :: ans
   END FUNCTION obj_tElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns the total elements in a given mesh
+
+INTERFACE
+  MODULE FUNCTION obj_tElements3(obj, opt) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: opt(2)
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_tElements3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -997,13 +1062,37 @@ END INTERFACE
 ! - the default value of dim is obj%nsd
 
 INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim) RESULT(Ans)
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
+                                      globalElement, isLocal) RESULT(Ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of mesh entity
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getDimEntityNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: Returns dim and entity number
+
+INTERFACE
+  MODULE FUNCTION obj_GetDimEntityNum(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION obj_GetDimEntityNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1020,11 +1109,12 @@ END INTERFACE
 ! number, and the rows correspond to the component.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord(obj, nodeCoord)
+  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim, entityNum)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
-    !! make sure nodeCoord is allocated
-  END SUBROUTINE obj_GetNodeCoord
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+  END SUBROUTINE obj_GetNodeCoord1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1148,7 +1238,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNptrs@GetMethods
+!                                                         getNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1160,10 +1250,10 @@ END INTERFACE
 ! xidim is the dimension of the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    !! dim = [0, 1, 2, 3] for [meshPoint, meshCurve, meshSurface, meshVolume]
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNptrs
 END INTERFACE
@@ -1242,7 +1332,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetInternalNptrs@GetMethods
+!                                                         getNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1254,27 +1344,12 @@ END INTERFACE
 ! xidim is the dimension of the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    !! dim = [0, 1, 2, 3] for [meshPoint, meshCurve, meshSurface, meshVolume]
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetInternalNptrs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         GetNSD@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Sept 2021
-! summary: This routine returns the number of spatial dimensions
-
-INTERFACE
-  MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1294,6 +1369,37 @@ INTERFACE
     !! used for computing the bounding box
     TYPE(BoundingBox_) :: ans
   END FUNCTION obj_GetBoundingBox
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetNSD@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This routine returns the number of spatial dimensions
+
+INTERFACE
+  MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNSD
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This routine returns the order of meshes of dimensions=dim
+
+INTERFACE
+  MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1340,6 +1446,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                 GetElemType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-23
+! summary:  Returns the element type of each mesh in domain
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                               GetUniqueElemType@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1353,6 +1475,81 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetUniqueElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       IsInit@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInit(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInit
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetMaxNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxNodeNumber(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMinNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMinNodeNumber(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMinNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetMaxElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxElemNumber(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMinElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-15
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_GetMinElemNumber(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMinElemNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -33,6 +33,8 @@ LOGICAL(LGT) :: abool
 
 CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
 
+IF (.NOT. obj%IsInit()) RETURN
+
 abool = ASSOCIATED(obj%meshVolume)
 CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
 IF (abool) THEN
