@@ -32,20 +32,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
-INTEGER(I4B) :: dim0
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (0)
-  ans => obj%meshPoint
-CASE (1)
-  ans => obj%meshCurve
-CASE (2)
-  ans => obj%meshSurface
-CASE (3)
-  ans => obj%meshVolume
-END SELECT
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+ans => NULL()
 END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
@@ -53,7 +44,10 @@ END PROCEDURE obj_GetMeshPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsNodePresent
-ans = obj%mesh%IsNodePresent(globalNode, islocal=islocal)
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+ans = meshptr%IsNodePresent(globalNode=globalNode, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_IsNodePresent
 
 !----------------------------------------------------------------------------
@@ -62,16 +56,9 @@ END PROCEDURE obj_IsNodePresent
 
 MODULE PROCEDURE obj_IsElementPresent
 CLASS(AbstractMesh_), POINTER :: meshptr
-
-IF (PRESENT(dim)) THEN
-  meshptr => obj%GetMeshPointer(dim=dim)
-  ans = meshptr%isElementPresent(globalElement=globalElement, islocal=islocal)
-  meshptr => NULL()
-  RETURN
-END IF
-
-ans = obj%mesh%isElementPresent(globalElement=globalElement, islocal=islocal)
-
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%IsElementPresent(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_IsElementPresent
 
 !----------------------------------------------------------------------------
@@ -115,7 +102,10 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-ans = obj%mesh%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+ans = meshptr%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -123,7 +113,10 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
-ans = obj%mesh%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+ans = meshptr%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
@@ -131,8 +124,11 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1_
-CALL obj%mesh%GetNodeToElements_(globalNode=globalNode,  &
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+CALL meshptr%GetNodeToElements_(globalNode=globalNode,  &
   & islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements1_
 
 !----------------------------------------------------------------------------
@@ -140,8 +136,11 @@ END PROCEDURE obj_GetNodeToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2_
-CALL obj%mesh%GetNodeToElements_(globalNode=globalNode,  &
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+CALL meshptr%GetNodeToElements_(globalNode=globalNode,  &
   & islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
@@ -572,11 +571,6 @@ IF (PRESENT(tEntitiesForNodes)) tEntitiesForNodes = obj%tEntitiesForNodes
 IF (PRESENT(tElements)) tElements = obj%tElements
 IF (PRESENT(tEntities)) tEntities = obj%tEntities
 IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
-IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
-IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
-IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
-IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
-IF (PRESENT(mesh)) mesh => obj%mesh
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------

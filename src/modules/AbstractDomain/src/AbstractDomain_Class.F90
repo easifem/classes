@@ -40,6 +40,10 @@ PUBLIC :: AbstractDomain_
 PUBLIC :: AbstractDomainPointer_
 PUBLIC :: AbstractDomainDeallocate
 PUBLIC :: AbstractDomainSetSparsity
+PUBLIC :: AbstractDomainInitiate
+PUBLIC :: AbstractDomainImport
+PUBLIC :: AbstractDomainDisplay
+PUBLIC :: AbstractDomainDisplayDomainInfo
 
 CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 
@@ -54,7 +58,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 !{!pages/docs-api/AbstractDomain/AbstractDomain_.md!}
 
 TYPE, ABSTRACT :: AbstractDomain_
-  PRIVATE
+  ! PRIVATE
   LOGICAL(LGT) :: showTime = .FALSE.
   !! set to true if you want to show time taken by various routines.
   LOGICAL(LGT) :: isInitiated = .FALSE.
@@ -103,6 +107,12 @@ TYPE, ABSTRACT :: AbstractDomain_
     !! Nodal coordinates in XiJ format
     !! Number of rows are 3, and number of columns is total nodes
 
+  TYPE(Kdtree2_), POINTER :: kdtree => NULL()
+  TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
+
+  TYPE(CSRSparsity_) :: meshMap
+  !! Sparse mesh data in CSR format
+
   CLASS(AbstractMesh_), POINTER :: meshVolume => NULL()
     !! meshVolume list of meshes of volume entities
   CLASS(AbstractMesh_), POINTER :: meshSurface => NULL()
@@ -116,17 +126,12 @@ TYPE, ABSTRACT :: AbstractDomain_
     !! mesh points to meshSurface for nsd = 2
     !! mesh points to meshCurve for nsd = 1
     !! mesh points to meshPoint for nsd = 0
-
-  TYPE(Kdtree2_), POINTER :: kdtree => NULL()
-  TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
-
-  TYPE(CSRSparsity_) :: meshMap
-  !! Sparse mesh data in CSR format
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of domain
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -135,7 +140,8 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PASS(obj) :: IMPORT => obj_Import
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Initiates an instance of domain by importing data from meshfile
   !! TODO Add an export method to [[obj_]] class
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
@@ -280,6 +286,7 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
   !! Set showTime option
 
@@ -301,6 +308,7 @@ CONTAINS
 
   ! SET:
   ! @MeshDataMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
   !! initiate the kdtree structure
 
@@ -359,7 +367,7 @@ END TYPE AbstractDomainPointer_
 ! date: 2024-03-28
 ! summary: Initiate the instance of [[AbstractDomain_]] object
 
-INTERFACE
+INTERFACE AbstractDomainInitiate
   MODULE SUBROUTINE obj_Initiate(obj, hdf5, group)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! AbstractDomainData object
@@ -368,7 +376,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
     !! Group name (directory name)
   END SUBROUTINE obj_Initiate
-END INTERFACE
+END INTERFACE AbstractDomainInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -408,13 +416,13 @@ END INTERFACE
 ! date: 2024-03-28
 ! summary: Construct an instance of domain by importing data from mesh
 
-INTERFACE
+INTERFACE AbstractDomainImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
-END INTERFACE
+END INTERFACE AbstractDomainImport
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
@@ -472,13 +480,13 @@ END INTERFACE
 ! date: 20 May 2022
 ! summary: Display the domain
 
-INTERFACE
+INTERFACE AbstractDomainDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
-END INTERFACE
+END INTERFACE AbstractDomainDisplay
 
 !----------------------------------------------------------------------------
 !                                               DisplayDomainInfo@IOMethods
@@ -488,13 +496,13 @@ END INTERFACE
 ! date: 20 May 2022
 ! summary: Display the domain
 
-INTERFACE
+INTERFACE AbstractDomainDisplayDomainInfo
   MODULE SUBROUTINE obj_DisplayDomainInfo(obj, msg, unitno)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayDomainInfo
-END INTERFACE
+END INTERFACE AbstractDomainDisplayDomainInfo
 
 !----------------------------------------------------------------------------
 !                                                   IsNodePresent@GetMethods

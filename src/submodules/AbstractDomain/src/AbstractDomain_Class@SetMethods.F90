@@ -37,6 +37,7 @@ END PROCEDURE obj_SetShowTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
+CLASS(AbstractMesh_), POINTER :: meshptr
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
 
@@ -47,8 +48,10 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 #endif
 
-CALL obj%mesh%SetSparsity(mat)
+meshptr => obj%GetMeshPointer()
+CALL meshptr%SetSparsity(mat)
 CALL SetSparsity(mat)
+meshptr => NULL()
 
 END PROCEDURE obj_SetSparsity1
 

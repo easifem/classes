@@ -20,8 +20,74 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(FEDomain_Class) ConstructorMethods
+USE AbstractDomain_Class, ONLY: AbstractDomainInitiate, &
+                                AbstractDomainDeallocate
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+
+CALL obj%IMPORT(hdf5=hdf5, group=group)
+
+SELECT CASE (obj%nsd)
+CASE (0)
+  obj%mesh => obj%meshPoint
+CASE (1)
+  obj%mesh => obj%meshCurve
+CASE (2)
+  obj%mesh => obj%meshSurface
+CASE (3)
+  obj%mesh => obj%meshVolume
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+
+CALL AbstractDomainDeallocate(obj=obj)
+
+obj%mesh => NULL()
+
+IF (ASSOCIATED(obj%meshVolume)) THEN
+  CALL obj%meshVolume%DEALLOCATE()
+  obj%meshVolume => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshSurface)) THEN
+  CALL obj%meshSurface%DEALLOCATE()
+  obj%meshSurface => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshCurve)) THEN
+  CALL obj%meshCurve%DEALLOCATE()
+  obj%meshCurve => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshPoint)) THEN
+  CALL obj%meshPoint%DEALLOCATE()
+  obj%meshPoint => NULL()
+END IF
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                              Final
