@@ -25,7 +25,7 @@
 MODULE Domain_Class
 USE BaseType, ONLY: CSRSparsity_, CSRMatrix_, BoundingBox_
 USE GlobalData, ONLY: DFP, I4B, LGT
-USE Mesh_Class, ONLY: Mesh_, MeshPointer_
+USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE MeshFacetData_Class, ONLY: MeshFacetData_
@@ -56,13 +56,13 @@ CHARACTER(*), PARAMETER :: modName = "obj_Class"
 
 TYPE, EXTENDS(AbstractDomain_) :: Domain_
   PRIVATE
-  TYPE(MeshPointer_), ALLOCATABLE :: meshVolume(:)
+  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshVolume(:)
     !! meshVolume list of meshes of volume entities
-  TYPE(MeshPointer_), ALLOCATABLE :: meshSurface(:)
+  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshSurface(:)
     !! meshSurface list of meshes of surface entities
-  TYPE(MeshPointer_), ALLOCATABLE :: meshCurve(:)
+  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshCurve(:)
     !! meshCurve list of meshes of curve entities
-  TYPE(MeshPointer_), ALLOCATABLE :: meshPoint(:)
+  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshPoint(:)
     !! meshPoint list of meshes of point entities
   TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData(:)
   !! Mesh facet data
