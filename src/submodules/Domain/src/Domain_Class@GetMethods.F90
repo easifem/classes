@@ -30,57 +30,159 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-! LOGICAL(LGT) :: problem
-!
-! problem = entityNum .GT. obj%tEntities(dim)
-! IF (problem) THEN
-!   CALL e%RaiseError(modName//"::"//myName//" - "// &
-!     & "[INTERNAL ERROR] :: entityNum are out of bound")
-!   RETURN
-! END IF
-! #endif
-!
-! SELECT CASE (dim)
-! CASE (0)
-!   ans => obj%meshPoint(entityNum)%ptr
-! CASE (1)
-!   ans => obj%meshCurve(entityNum)%ptr
-! CASE (2)
-!   ans => obj%meshSurface(entityNum)%ptr
-! CASE (3)
-!   ans => obj%meshVolume(entityNum)%ptr
-! END SELECT
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+LOGICAL(LGT) :: acase
+
+ans => NULL()
+
+acase = PRESENT(entityNum) .AND. PRESENT(dim)
+IF (acase) THEN
+  CALL getmeshpointer_case1(obj, dim, entityNum, ans)
+  RETURN
+END IF
+
+acase = PRESENT(globalElement) .AND. (.NOT. PRESENT(dim))
+IF (acase) THEN
+  CALL getmeshpointer_case2(obj, globalElement, ans, islocal)
+  RETURN
+END IF
+
+acase = PRESENT(globalElement) .AND. PRESENT(dim)
+IF (acase) THEN
+  CALL getmeshpointer_case3(obj, globalElement, dim, ans, islocal)
+  RETURN
+END IF
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: No case found')
+
 END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
-!                                                             getMeshPointer
+!                                                            GetMeshPointer
 !----------------------------------------------------------------------------
 
-! MODULE PROCEDURE obj_GetMeshPointer2
-! ! CHARACTER(*), PARAMETER :: myname = "obj_GetMeshPointer2()"
-! INTEGER(i4b) :: dim, entityNum
-! LOGICAL(LGT) :: abool
-!
-! ans => NULL()
-!
-! dimloop: DO dim = 0, obj%nsd
-!
-!   DO entityNum = 1, obj%GetTotalMesh(dim=dim)
-!
-!     ans => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!     abool = ans%isElementPresent(globalElement=globalElement)
-!
-!     IF (abool) THEN
-!       EXIT dimloop
-!     END IF
-!
-!   END DO
-!
-! END DO dimloop
-!
-! END PROCEDURE obj_GetMeshPointer2
+SUBROUTINE getmeshpointer_case3(obj, globalElement, dim, ans, islocal)
+  CLASS(Domain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalElement, dim
+  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+
+  ! internal variables
+  INTEGER(I4B) :: ii, jj, nsd, tsize
+  LOGICAL(LGT) :: isok, found
+
+  ans => NULL()
+  nsd = obj%GetNSD()
+  found = .FALSE.
+  ii = dim
+
+  tsize = obj%GetTotalEntities(dim=ii)
+
+  elemloop: DO jj = 1, tsize
+
+    ans => obj%GetMeshPointer(dim=ii, entityNum=jj)
+
+    CALL getmeshpointer_case1(obj, ii, jj, ans)
+
+    isok = ASSOCIATED(ans)
+    IF (.NOT. isok) CYCLE elemloop
+
+    found = ans%IsElementPresent(globalElement=globalElement, &
+                                 islocal=islocal)
+
+    IF (found) EXIT elemloop
+
+  END DO elemloop
+
+  IF (.NOT. found) ans => NULL()
+
+END SUBROUTINE getmeshpointer_case3
+
+!----------------------------------------------------------------------------
+!                                                            GetMeshPointer
+!----------------------------------------------------------------------------
+
+SUBROUTINE getmeshpointer_case2(obj, globalElement, ans, islocal)
+  CLASS(Domain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalElement
+  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+
+  ! internal variables
+  INTEGER(I4B) :: ii, jj, nsd, tsize
+  LOGICAL(LGT) :: isok, found
+
+  ans => NULL()
+  nsd = obj%GetNSD()
+  found = .FALSE.
+
+  dimloop: DO ii = 0, nsd
+
+    tsize = obj%GetTotalEntities(dim=ii)
+
+    elemloop: DO jj = 1, tsize
+
+      ans => obj%GetMeshPointer(dim=ii, entityNum=jj)
+
+      CALL getmeshpointer_case1(obj, ii, jj, ans)
+
+      isok = ASSOCIATED(ans)
+      IF (.NOT. isok) CYCLE
+
+      found = ans%IsElementPresent(globalElement=globalElement, &
+                                   islocal=islocal)
+
+      IF (found) EXIT dimloop
+
+    END DO elemloop
+
+  END DO dimloop
+
+  IF (.NOT. found) ans => NULL()
+
+END SUBROUTINE getmeshpointer_case2
+
+!----------------------------------------------------------------------------
+!                                                           case2
+!----------------------------------------------------------------------------
+
+SUBROUTINE getmeshpointer_case1(obj, dim, entityNum, ans)
+  CLASS(Domain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: dim, entityNum
+  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
+
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+  LOGICAL(LGT) :: problem
+  INTEGER(I4B) :: aint
+
+  ans => NULL()
+
+  aint = obj%GetTotalEntities(dim)
+  problem = entityNum .GT. aint
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
+      & "[INTERNAL ERROR] :: entityNum are out of bound")
+    RETURN
+  END IF
+
+  SELECT CASE (dim)
+  CASE (0)
+    ans => obj%meshPoint(entityNum)%ptr
+  CASE (1)
+    ans => obj%meshCurve(entityNum)%ptr
+  CASE (2)
+    ans => obj%meshSurface(entityNum)%ptr
+  CASE (3)
+    ans => obj%meshVolume(entityNum)%ptr
+  CASE DEFAULT
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
+      & "[INTERNAL ERROR] :: no case found for nsd")
+  END SELECT
+
+END SUBROUTINE getmeshpointer_case1
+
 !
 ! !----------------------------------------------------------------------------
 ! !                                                          isElementPresent
