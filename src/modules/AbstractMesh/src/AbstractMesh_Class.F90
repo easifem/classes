@@ -32,11 +32,13 @@ IMPLICIT NONE
 
 PRIVATE
 PUBLIC :: AbstractMesh_
+PUBLIC :: AbstractMeshPointer_
 PUBLIC :: AbstractMeshDeallocate
 PUBLIC :: AbstractMeshDisplay
 PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
 PUBLIC :: AbstractMeshGetFacetConnectivity
+PUBLIC :: AbstractMeshPointerDeallocate
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
@@ -595,6 +597,14 @@ CONTAINS
 END TYPE AbstractMesh_
 
 !----------------------------------------------------------------------------
+!                                                   AbstractMeshPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractMeshPointer_
+  CLASS(AbstractMesh_), POINTER :: ptr => NULL()
+END TYPE AbstractMeshPointer_
+
+!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -658,6 +668,20 @@ INTERFACE
   MODULE SUBROUTINE obj_InitiateDynamicDataStructure(obj)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateDynamicDataStructure
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-16
+! summary: Free up the memory stored in [[obj_]]
+
+INTERFACE
+  MODULE SUBROUTINE AbstractMeshPointerDeallocate(obj)
+    TYPE(AbstractMeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE AbstractMeshPointerDeallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

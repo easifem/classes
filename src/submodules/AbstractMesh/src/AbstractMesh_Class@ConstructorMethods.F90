@@ -192,4 +192,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_InitiateDynamicDataStructure
 
+!----------------------------------------------------------------------------
+!                                             AbstractMeshPointerDeallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractMeshPointerDeallocate
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+meshptr => NULL()
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+
+  DO ii = 1, tsize
+
+    meshptr => obj(ii)%ptr
+    isok = ASSOCIATED(meshptr)
+    IF (isok) THEN
+      CALL meshptr%DEALLOCATE()
+      meshptr => NULL()
+    END IF
+
+  END DO
+
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE AbstractMeshPointerDeallocate
+
 END SUBMODULE ConstructorMethods
