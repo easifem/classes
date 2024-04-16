@@ -15,12 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(Domain_Class) SetMethods
+SUBMODULE(Domain_Class) SetMethods
 ! USE BaseMethod
 ! USE DomainConnectivity_Class
 ! USE DomainUtility
-! IMPLICIT NONE
-! CONTAINS
+IMPLICIT NONE
+CONTAINS
 !
 ! !----------------------------------------------------------------------------
 ! !                                                               SetSparsity
@@ -66,8 +66,10 @@
 ! !                                                               SetSparsity
 ! !----------------------------------------------------------------------------
 !
-! MODULE PROCEDURE obj_SetSparsity2
-! CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
+MODULE PROCEDURE obj_SetSparsity2
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 ! INTEGER(I4B) :: ivar, nsd(SIZE(domains))
 ! CHARACTER(20) :: matProp
 !
@@ -111,7 +113,7 @@
 !   & '[END] ')
 ! #endif
 !
-! END PROCEDURE obj_SetSparsity2
+END PROCEDURE obj_SetSparsity2
 !
 ! !----------------------------------------------------------------------------
 ! !                                                          SetTotalMaterial
@@ -240,7 +242,7 @@
 ! ! summary:  Set sparsity for sparse matrix of BlockMatrixField
 !
 ! SUBROUTINE SetSparsity2(domains, mat)
-!   CLASS(DomainPointer_), INTENT(IN) :: domains(:)
+! CLASS(DomainPointer_), INTENT(IN) :: domains(:)
 !   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
 !   INTEGER(I4B) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
 !     & ivar, jvar, nsd(SIZE(domains))
@@ -426,4 +428,4 @@
 ! !
 ! !----------------------------------------------------------------------------
 !
-! END SUBMODULE SetMethods
+END SUBMODULE SetMethods

@@ -144,7 +144,7 @@ SUBROUTINE getmeshpointer_case2(obj, globalElement, ans, islocal)
 END SUBROUTINE getmeshpointer_case2
 
 !----------------------------------------------------------------------------
-!                                                           case2
+!                                                                    case1
 !----------------------------------------------------------------------------
 
 SUBROUTINE getmeshpointer_case1(obj, dim, entityNum, ans)
@@ -249,20 +249,6 @@ END DO dimloop
 NULLIFY (meshptr)
 
 END PROCEDURE obj_IsElementPresent
-!
-! !----------------------------------------------------------------------------
-! !                                                          getConnectivity
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetConnectivity
-! CLASS(Mesh_), POINTER :: meshptr
-!
-! ! main
-! meshptr => obj%GetMeshPointer(globalElement=globalElement, islocal=islocal)
-! ans = meshptr%GetConnectivity(globalElement=globalElement, &
-!                               islocal=islocal)
-! meshptr => NULL()
-! END PROCEDURE obj_GetConnectivity
 !
 ! !----------------------------------------------------------------------------
 ! !                                                         getNodeToElements

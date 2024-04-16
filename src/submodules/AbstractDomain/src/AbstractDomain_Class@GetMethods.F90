@@ -80,7 +80,8 @@ END PROCEDURE obj_IsElementPresent
 
 MODULE PROCEDURE obj_GetConnectivity
 CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
 ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
 meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
@@ -92,7 +93,8 @@ END PROCEDURE obj_GetConnectivity
 MODULE PROCEDURE obj_GetConnectivity_
 CLASS(AbstractMesh_), POINTER :: meshptr
 
-meshptr => obj%GetMeshPointer(dim=dim)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
 CALL meshptr%GetConnectivity_(globalElement=globalElement, &
                               islocal=islocal, ans=ans, tsize=tsize)
 meshptr => NULL()
@@ -597,6 +599,96 @@ IF (PRESENT(tElements)) tElements = obj%tElements
 IF (PRESENT(tEntities)) tEntities = obj%tEntities
 IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
 END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                             GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetOrder
+
+!----------------------------------------------------------------------------
+!                                                           GetMinElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMinElemNumber
+ans = obj%minElemNum
+END PROCEDURE obj_GetMinElemNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxElemNumber
+ans = obj%maxElemNum
+END PROCEDURE obj_GetMaxElemNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMinNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMinNodeNumber
+ans = obj%minNptrs
+END PROCEDURE obj_GetMinNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxNodeNumber
+ans = obj%maxNptrs
+END PROCEDURE obj_GetMaxNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                               GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemType
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetElemType
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tNodes3
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNodeNumber()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_tNodes3
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tElements3
+CHARACTER(*), PARAMETER :: myName = "obj_tElements3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_tElements3
+
+!----------------------------------------------------------------------------
+!                                                           GetDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDimEntityNum
+CHARACTER(*), PARAMETER :: myName = "obj_GetDimEntityNum()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetDimEntityNum
+
+!----------------------------------------------------------------------------
+!                                                           GetDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInit
+ans = obj%isInitiated
+END PROCEDURE obj_IsInit
 
 !----------------------------------------------------------------------------
 !

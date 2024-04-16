@@ -200,6 +200,11 @@ CONTAINS
     & obj_tElements2, obj_tElements3
   !! return total number of elements in domain, mesh, or part of domain
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
+  !! returns total number of mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
+  !! returns total number of mesh
+
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   GENERIC, PUBLIC :: GetLocalNodeNumber => &
@@ -213,9 +218,6 @@ CONTAINS
   GENERIC, PUBLIC :: GetGlobalNodeNumber => &
     & obj_GetGlobalNodeNumber1, &
     & obj_GetGlobalNodeNumber2
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
-  !! This routine returns total number of meshes of given dimension
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Returns a dim entity-num of mesh which contains the element number
@@ -269,6 +271,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial1
   !! Get total number of materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
+  !! returns the element type of each mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType =>  &
     & obj_GetUniqueElemType
@@ -596,7 +601,8 @@ END INTERFACE
 ! summary: Returns the connectivity vector of a given element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, islocal) &
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, entityNum, &
+  islocal) &
     & RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -609,6 +615,8 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number (for old style domain_)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! vertex connectivity
@@ -625,7 +633,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, &
-                                         dim, islocal)
+                                         dim, entityNum, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !!
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -642,6 +650,7 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetConnectivity_
 END INTERFACE
