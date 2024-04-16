@@ -506,6 +506,36 @@ INTERFACE AbstractDomainDisplayDomainInfo
 END INTERFACE AbstractDomainDisplayDomainInfo
 
 !----------------------------------------------------------------------------
+!                                                  GetMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This rotuine returns mesh pointer
+!
+!# Introduction
+!
+! This returns the pointer to the abtract mesh object
+! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
+! curve, surface, volume meshes.
+! - the default value of dim is obj%nsd
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
+                                      globalElement, isLocal) RESULT(Ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entity
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    CLASS(AbstractMesh_), POINTER :: ans
+  END FUNCTION obj_GetMeshPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   IsNodePresent@GetMethods
 !----------------------------------------------------------------------------
 
@@ -530,9 +560,15 @@ END INTERFACE
 ! date: 2021-11-12
 ! update: 2021-11-12
 ! summary: Returns true if the element number is present inside the domain
+!
+!# Introduction
+!
+! globalElement, dim, entityNum
+! globalElement, dim
+! globalElement
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim,  &
+  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
     & islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -544,6 +580,8 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsElementPresent
@@ -1044,36 +1082,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalEntities
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetMeshPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: This rotuine returns mesh pointer
-!
-!# Introduction
-!
-! This returns the pointer to the abtract mesh object
-! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
-! curve, surface, volume meshes.
-! - the default value of dim is obj%nsd
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-                                      globalElement, isLocal) RESULT(Ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-    !! dimension of mesh entity
-    !! The default value of dim is obj%nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-    !! entity number
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    CLASS(AbstractMesh_), POINTER :: ans
-  END FUNCTION obj_GetMeshPointer1
 END INTERFACE
 
 !----------------------------------------------------------------------------

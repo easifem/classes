@@ -183,54 +183,72 @@ SUBROUTINE getmeshpointer_case1(obj, dim, entityNum, ans)
 
 END SUBROUTINE getmeshpointer_case1
 
-!
-! !----------------------------------------------------------------------------
-! !                                                          isElementPresent
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_IsElementPresent
-! CLASS(Mesh_), POINTER :: meshptr
-! INTEGER(I4B) :: dim0, entityNum, tsize, nsd
-!
-! ans = .FALSE.
-!
-! IF (PRESENT(dim)) THEN
-!
-!   tsize = obj%GetTotalEntities(dim=dim)
-!
-!   DO entityNum = 1, tsize
-!     meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!     ans = meshptr%IsElementPresent(globalElement=globalElement, &
-!                                    islocal=islocal)
-!     IF (ans) EXIT
-!   END DO
-!
-!   NULLIFY (meshptr)
-!   RETURN
-!
-! END IF
-!
-! nsd = obj%GetNSD()
-!
-! dimloop: DO dim0 = 0, nsd
-!
-!   tsize = obj%GetTotalEntities(dim=dim0)
-!
-!   DO entityNum = 1, tsize
-!
-!     meshptr => obj%GetMeshPointer(dim=dim0, entityNum=entityNum)
-!     ans = meshptr%IsElementPresent(globalElement=globalElement, &
-!                                    islocal=islocal)
-!
-!     IF (ans) EXIT dimloop
-!
-!   END DO
-!
-! END DO dimloop
-!
-! NULLIFY (meshptr)
-!
-! END PROCEDURE obj_IsElementPresent
+!----------------------------------------------------------------------------
+!                                                          isElementPresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElementPresent
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: ii, jj, tsize, nsd
+LOGICAL(LGT) :: acase
+
+ans = .FALSE.
+
+!! case1
+acase = PRESENT(dim) .AND. PRESENT(entityNum)
+IF (acase) THEN
+
+  ii = entityNum
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
+  ans = meshptr%IsElementPresent(globalElement=globalElement, &
+                                 islocal=islocal)
+  NULLIFY (meshptr)
+
+  RETURN
+END IF
+
+!! case 2
+acase = PRESENT(dim) .AND. (.NOT. PRESENT(entityNum))
+IF (acase) THEN
+
+  tsize = obj%GetTotalEntities(dim=dim)
+
+  ent_loop: DO ii = 1, tsize
+
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
+    ans = meshptr%IsElementPresent(globalElement=globalElement, &
+                                   islocal=islocal)
+    IF (ans) EXIT ent_loop
+
+  END DO ent_loop
+
+  NULLIFY (meshptr)
+
+  RETURN
+END IF
+
+nsd = obj%GetNSD()
+
+dimloop: DO ii = 0, nsd
+
+  tsize = obj%GetTotalEntities(dim=ii)
+
+  DO jj = 1, tsize
+
+    meshptr => obj%GetMeshPointer(dim=ii, entityNum=jj)
+    ans = meshptr%IsElementPresent(globalElement=globalElement, &
+                                   islocal=islocal)
+
+    IF (ans) EXIT dimloop
+
+  END DO
+
+END DO dimloop
+
+NULLIFY (meshptr)
+
+END PROCEDURE obj_IsElementPresent
 !
 ! !----------------------------------------------------------------------------
 ! !                                                          getConnectivity

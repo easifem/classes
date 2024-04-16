@@ -105,9 +105,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
   !! This routine a pointer to Abstract mesh object
 
-  PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
-  !! Returns true if the global node number is present in the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
   !! Returns true if the global element is present in the mesh
 
@@ -416,23 +413,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   IsNodePresent@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Sept 2021
-! summary: Returns true if the global node number is present
-
-INTERFACE
-  MODULE FUNCTION obj_IsNodePresent(obj, globalNode, islocal) RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_IsNodePresent
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               IsElementPresent@GetMethods
 !----------------------------------------------------------------------------
 
@@ -441,7 +421,7 @@ END INTERFACE
 ! summary: Returns true if the element number is present inside the domain
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim,  &
+  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
     & islocal) RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -453,6 +433,8 @@ INTERFACE
     !! if dim=2, then search is performed in meshSurface
     !! if dim=3, then search is performed in meshVolume
     !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsElementPresent

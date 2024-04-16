@@ -45,6 +45,7 @@ END PROCEDURE obj_GetMeshPointer1
 
 MODULE PROCEDURE obj_IsNodePresent
 LOGICAL(LGT) :: islocal0
+INTEGER(I4B) :: aint
 
 islocal0 = Input(default=.FALSE., option=islocal)
 
@@ -56,7 +57,8 @@ END IF
 ans = (globalNode .GE. obj%minNptrs) .AND. (globalNode .LE. obj%maxNptrs)
 
 IF (ans) THEN
-  ans = obj%GetLocalNodeNumber(globalNode) .NE. 0_I4B
+  aint = obj%GetLocalNodeNumber(globalNode)
+  ans = aint .NE. 0_I4B
 END IF
 
 END PROCEDURE obj_IsNodePresent
@@ -67,7 +69,7 @@ END PROCEDURE obj_IsNodePresent
 
 MODULE PROCEDURE obj_IsElementPresent
 CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 ans = meshptr%IsElementPresent(globalElement=globalElement, islocal=islocal)
 meshptr => NULL()
 END PROCEDURE obj_IsElementPresent
