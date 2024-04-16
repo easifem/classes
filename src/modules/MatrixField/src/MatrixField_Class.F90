@@ -39,7 +39,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE AbstractMatrixField_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
@@ -554,7 +554,7 @@ INTERFACE MatrixFieldInitiate1
   MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_Initiate1
 END INTERFACE MatrixFieldInitiate1
 
@@ -617,7 +617,7 @@ INTERFACE MatrixFieldInitiate3
   MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE MatrixFieldInitiate3
 
@@ -674,8 +674,8 @@ INTERFACE MatrixFieldImport
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE MatrixFieldImport
 
@@ -692,8 +692,8 @@ INTERFACE
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_ImportPmat
 END INTERFACE
 

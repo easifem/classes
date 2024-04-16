@@ -372,7 +372,7 @@ INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 REAL(DFP) :: args(4), VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
-CLASS(Domain_), POINTER :: dom
+CLASS(AbstractDomain_), POINTER :: dom
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

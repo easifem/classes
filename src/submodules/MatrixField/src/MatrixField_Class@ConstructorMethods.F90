@@ -20,6 +20,7 @@
 
 SUBMODULE(MatrixField_Class) ConstructorMethods
 USE BaseMethod
+USE Domain_Class, ONLY: DomainSetSparsity
 IMPLICIT NONE
 CONTAINS
 

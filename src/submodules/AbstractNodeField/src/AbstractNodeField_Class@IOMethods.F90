@@ -17,7 +17,7 @@
 SUBMODULE(AbstractNodeField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
-USE Mesh_Class
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 IMPLICIT NONE
 CONTAINS
 
@@ -195,8 +195,8 @@ END SUBROUTINE ExportFieldToVTK
 MODULE PROCEDURE obj_WriteData1_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData1_vtk()"
 LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
-TYPE(Domain_), POINTER :: dom
-TYPE(Mesh_), POINTER :: meshPtr
+CLASS(AbstractDomain_), POINTER :: dom
+CLASS(AbstractMesh_), POINTER :: meshPtr
 INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
 & tnodes, var_rank, var_vartype, itime
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
@@ -245,7 +245,7 @@ timeCompo = obj%GetTimeCompo(tPhysicalVars)
 IF (isSingleDomain) THEN
   dom => obj%domain
   nsd = dom%GetNSD()
-  tMesh = dom%GetTotalMesh(dim=nsd)
+  tMesh = dom%GetTotalEntities(dim=nsd)
 
   DO imesh = 1, tMesh
     meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
@@ -290,8 +290,8 @@ END PROCEDURE obj_WriteData1_vtk
 MODULE PROCEDURE obj_WriteData2_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData2_vtk()"
 LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
-TYPE(Domain_), POINTER :: dom
-TYPE(Mesh_), POINTER :: meshPtr
+CLASS(AbstractDomain_), POINTER :: dom
+CLASS(AbstractMesh_), POINTER :: meshPtr
 INTEGER(I4B) :: imesh, tMesh, nsd, ivar, &
 & tnodes, var_rank, var_vartype, itime
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
@@ -300,7 +300,7 @@ REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
 CHARACTER(1), ALLOCATABLE :: dofNames(:), dofNames_sub(:)
 TYPE(FEVariable_) :: fevar
 INTEGER(I4B) :: tfield, iobj, tsize, aint
-TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
 CLASS(AbstractNodeField_), POINTER :: obj0
 
 tfield = SIZE(obj)
@@ -356,7 +356,7 @@ DO iobj = 1, tfield
 END DO
 
 nsd = dom%GetNSD()
-tMesh = dom%GetTotalMesh(dim=nsd)
+tMesh = dom%GetTotalEntities(dim=nsd)
 
 tsize = 0
 DO iobj = 1, tfield

@@ -28,7 +28,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE VTKFile_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE DirichletBC_Class
 USE FiniteElement_Class
 USE UserFunction_Class
@@ -207,7 +207,7 @@ INTERFACE ScalarFieldInitiate1
   MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_Initiate1
 END INTERFACE ScalarFieldInitiate1
 
@@ -252,7 +252,7 @@ END INTERFACE ScalarFieldDeallocate
 INTERFACE ScalarField
   MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     TYPE(ScalarField_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE ScalarField
@@ -268,7 +268,7 @@ END INTERFACE ScalarField
 INTERFACE ScalarField_Pointer
   MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CLASS(ScalarField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE ScalarField_Pointer
@@ -286,8 +286,8 @@ INTERFACE ScalarFieldImport
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
 

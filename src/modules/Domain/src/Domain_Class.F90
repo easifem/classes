@@ -28,11 +28,11 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE Mesh_Class, ONLY: Mesh_, MeshPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
-USE tomlf, ONLY: toml_table
-USE TxtFile_Class, ONLY: TxtFile_
 USE MeshFacetData_Class, ONLY: MeshFacetData_
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+USE AbstractDomain_Class
+
 IMPLICIT NONE
 PRIVATE
 
@@ -77,8 +77,6 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => obj_Initiate
-  !! Initiate an instance of domain
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data stored inside an instance of domain
   !! TODO Rename Deallocate to Deallocate
@@ -266,25 +264,6 @@ END TYPE Domain_
 TYPE :: DomainPointer_
   CLASS(Domain_), POINTER :: ptr => NULL()
 END TYPE DomainPointer_
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
-! summary: Initiate the instance of [[obj_]] object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    !! DomainData object
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    !! HDF5 file
-    CHARACTER(*), INTENT(IN) :: group
-    !! Group name (directory name)
-  END SUBROUTINE obj_Initiate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods

@@ -16,69 +16,53 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-04-16
 ! summary: This submodule contains methods for domain object
 
-! SUBMODULE(Domain_Class) ConstructorMethods
-! USE Mesh_Class, ONLY: MeshPointerDeallocate
-! USE CSRSparsity_Method, ONLY: CSRSparsity_Deallocate => DEALLOCATE
-! IMPLICIT NONE
-! CONTAINS
-!
-! !----------------------------------------------------------------------------
-! !                                                                   Initiate
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_Initiate
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[START] ')
-! #endif
-!
-! CALL obj%DEALLOCATE()
-! CALL obj%IMPORT(hdf5=hdf5, group=group)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[END] ')
-! #endif
-! END PROCEDURE obj_Initiate
-!
-! !----------------------------------------------------------------------------
-! !                                                             Deallocate
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_Deallocate
-! CALL AbstractDomainDeallocate(obj)
-! CALL CSRSparsity_Deallocate(obj%meshmap)
-! IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
+SUBMODULE(Domain_Class) ConstructorMethods
+! USE AbstractMesh_Class, ONLY: MeshPointerDeallocate
+USE CSRSparsity_Method, ONLY: CSRSparsity_Deallocate => DEALLOCATE
+USE MeshFacetData_Class, ONLY: MeshFacetDataDeallocate
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+CALL AbstractDomainDeallocate(obj)
+CALL CSRSparsity_Deallocate(obj%meshmap)
+IF (ALLOCATED(obj%meshFacetData)) &
+  CALL MeshFacetDataDeallocate(obj%meshFacetData)
+
 ! CALL MeshPointerDeallocate(obj%meshVolume)
 ! CALL MeshPointerDeallocate(obj%meshSurface)
 ! CALL MeshPointerDeallocate(obj%meshCurve)
 ! CALL MeshPointerDeallocate(obj%meshPoint)
-! IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
-! IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
-! END PROCEDURE obj_Deallocate
+
+IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
+IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                              Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Final
+CALL Obj%DEALLOCATE()
+END PROCEDURE obj_Final
+
+!----------------------------------------------------------------------------
+!                                                            obj_Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Constructor_1
+ALLOCATE (Domain_ :: ans)
+CALL ans%Initiate(hdf5=hdf5, group=group)
+END PROCEDURE obj_Constructor_1
+
+!----------------------------------------------------------------------------
 !
-! !----------------------------------------------------------------------------
-! !                                                              Final
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_Final
-! CALL Obj%DEALLOCATE()
-! END PROCEDURE obj_Final
-!
-! !----------------------------------------------------------------------------
-! !                                                            obj_Pointer
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_Constructor_1
-! ALLOCATE (Domain_ :: ans)
-! CALL ans%Initiate(hdf5=hdf5, group=group)
-! END PROCEDURE obj_Constructor_1
-!
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-! END SUBMODULE ConstructorMethods
+!----------------------------------------------------------------------------
+END SUBMODULE ConstructorMethods

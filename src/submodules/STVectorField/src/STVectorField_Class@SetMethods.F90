@@ -1009,7 +1009,7 @@ LOGICAL(LGT) :: istimes, problem
 INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), itime, ispace
 REAL(DFP) :: args(4), xij(3, 1)
 REAL(DFP), ALLOCATABLE :: VALUE(:)
-CLASS(Domain_), POINTER :: dom
+CLASS(AbstractDomain_), POINTER :: dom
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

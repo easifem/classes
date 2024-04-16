@@ -28,7 +28,7 @@ USE BlockNodeField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
@@ -143,7 +143,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE
 
@@ -202,8 +202,8 @@ INTERFACE
     CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

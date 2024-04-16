@@ -45,7 +45,7 @@ PUBLIC :: Mesh_
 PUBLIC :: MeshPointer_
 PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
-PUBLIC :: meshPointerDeallocate
+PUBLIC :: MeshPointerDeallocate
 PUBLIC :: MeshDisplay
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
@@ -188,7 +188,7 @@ END INTERFACE DEALLOCATE
 ! summary: Free up the memory stored in [[obj_]]
 
 INTERFACE DEALLOCATE
-  MODULE SUBROUTINE meshPointerDeallocate(obj)
+  MODULE SUBROUTINE MeshPointerDeallocate(obj)
     TYPE(MeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE meshPointerDeallocate
 END INTERFACE DEALLOCATE

@@ -128,7 +128,7 @@ END PROCEDURE obj_CheckEssentialParam
 
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
 TYPE(ParameterList_), POINTER :: sublist
 

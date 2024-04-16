@@ -19,6 +19,7 @@
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
 SUBMODULE(BlockMatrixField_Class) ConstructorMethods
+USE Domain_Class, ONLY: DomainSetSparsity
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -167,7 +168,7 @@ END PROCEDURE obj_checkEssentialParam
 
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
-TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii
 
 ii = param%get(key="BlockMatrixField/tPhysicalVarNames", &

@@ -19,7 +19,7 @@ USE RealVector_Method
 USE DOF_Method
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
-USE Domain_Class, ONLY: DomainPointer_, Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomainPointer_, AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
@@ -98,6 +98,7 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of AbstractNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -112,6 +113,7 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! GetPointer to the fortran vector stored inside the realvec
   !! This function should be called for Native engine only
@@ -142,6 +144,7 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
@@ -150,6 +153,7 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
+
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
@@ -157,6 +161,7 @@ CONTAINS
 
   ! GET:
   ! @BlasMethods
+
   PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
   PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
   PROCEDURE, PASS(obj) :: AXPY3 => obj_AXPY3
@@ -211,7 +216,7 @@ INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -260,7 +265,7 @@ INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -307,8 +312,8 @@ INTERFACE AbstractNodeFieldImport
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE AbstractNodeFieldImport
 

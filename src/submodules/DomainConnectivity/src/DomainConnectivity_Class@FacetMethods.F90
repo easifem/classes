@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
-& isMaster)
+                                isMaster)
   CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
   CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh

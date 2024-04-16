@@ -25,7 +25,7 @@ USE AbstractField_Class
 USE AbstractNodeField_Class
 USE AbstractMatrixField_Class
 USE BlockMatrixField_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
@@ -113,7 +113,7 @@ INTERFACE
   MODULE SUBROUTINE mField_Initiate1(obj, param, dom)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE mField_Initiate1
 END INTERFACE
 
@@ -160,7 +160,7 @@ INTERFACE
   MODULE SUBROUTINE mField_Initiate3(obj, param, dom)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE mField_Initiate3
 END INTERFACE
 
@@ -223,8 +223,8 @@ INTERFACE
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_Import
 END INTERFACE
 

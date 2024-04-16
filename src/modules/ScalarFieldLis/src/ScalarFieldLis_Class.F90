@@ -28,7 +28,7 @@ USE ScalarField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class"
@@ -145,7 +145,7 @@ END INTERFACE
 INTERFACE ScalarFieldLis
   MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     TYPE(ScalarFieldLis_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE ScalarFieldLis
@@ -161,7 +161,7 @@ END INTERFACE ScalarFieldLis
 INTERFACE ScalarFieldLis_Pointer
   MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CLASS(ScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE ScalarFieldLis_Pointer
@@ -224,7 +224,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -237,8 +237,8 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

@@ -39,7 +39,7 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 IMPLICIT NONE
 PRIVATE
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
@@ -134,9 +134,9 @@ TYPE, ABSTRACT :: AbstractField_
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
-  TYPE(Domain_), POINTER :: domain => NULL()
+  CLASS(AbstractDomain_), POINTER :: domain => NULL()
   !! Domain contains the information of the finite element meshes.
-  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+  TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
   !! Domain for each physical variables
   !! The size of `domains` should be equal to the total number of
   !! physical variables.
@@ -299,7 +299,7 @@ INTERFACE AbstractFieldInitiate
   MODULE SUBROUTINE aField_Initiate1(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE aField_Initiate1
 END INTERFACE AbstractFieldInitiate
 
@@ -334,7 +334,7 @@ INTERFACE AbstractFieldInitiate
   MODULE SUBROUTINE aField_Initiate3(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE aField_Initiate3
 END INTERFACE AbstractFieldInitiate
 
@@ -391,8 +391,8 @@ INTERFACE AbstractFieldImport
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE aField_Import
 END INTERFACE AbstractFieldImport
 
@@ -476,8 +476,8 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: is
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: lis_ptr
-    TYPE(Domain_), OPTIONAL, TARGET, INTENT(IN) :: domain
-    TYPE(DomainPointer_), OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: domain
+    TYPE(AbstractDomainPointer_), OPTIONAL, INTENT(IN) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(IN) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(IN) :: dof
@@ -526,8 +526,8 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: is
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(OUT) :: lis_ptr
-    TYPE(Domain_), OPTIONAL, POINTER, INTENT(OUT) :: domain
-    TYPE(DomainPointer_), OPTIONAL, INTENT(OUT) :: domains(:)
+    CLASS(AbstractDomain_), OPTIONAL, POINTER, INTENT(OUT) :: domain
+    TYPE(AbstractDomainPointer_), OPTIONAL, INTENT(OUT) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(OUT) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(OUT) :: dof

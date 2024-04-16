@@ -27,7 +27,7 @@ USE AbstractNodeField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
-USE Domain_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE DirichletBC_Class
 USE FiniteElement_Class
 USE UserFunction_Class
@@ -228,7 +228,7 @@ INTERFACE VectorFieldInitiate1
   MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_Initiate1
 END INTERFACE VectorFieldInitiate1
 
@@ -297,7 +297,7 @@ END INTERFACE
 INTERFACE VectorField
   MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     TYPE(VectorField_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE VectorField
@@ -313,7 +313,7 @@ END INTERFACE VectorField
 INTERFACE VectorField_Pointer
   MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CLASS(VectorField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE VectorField_Pointer
@@ -347,8 +347,8 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
