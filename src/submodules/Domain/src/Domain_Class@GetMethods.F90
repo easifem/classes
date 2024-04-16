@@ -19,8 +19,10 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(Domain_Class) GetMethods
-! USE BaseType, ONLY: IntVector_
-! USE IntVector_Method
+USE BaseType, ONLY: IntVector_
+USE IntVector_Method
+USE AppendUtility
+USE ReallocateUtility
 
 IMPLICIT NONE
 CONTAINS
@@ -249,55 +251,95 @@ END DO dimloop
 NULLIFY (meshptr)
 
 END PROCEDURE obj_IsElementPresent
-!
-! !----------------------------------------------------------------------------
-! !                                                         getNodeToElements
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNodeToElements1
-! CLASS(Mesh_), POINTER :: meshptr
-! INTEGER(I4B) :: dim, entityNum
-! INTEGER(I4B), ALLOCATABLE :: ivec(:)
-! LOGICAL(LGT) :: isok
-!
-! meshptr => NULL()
-! isok = obj%isNodePresent(globalNode=globalNode)
-!
-! IF (isok) THEN
-!   dimloop: DO dim = 0, obj%nsd
-!     DO entityNum = 1, obj%GetTotalEntities(dim=dim)
-!       meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!       ivec = meshptr%GetNodeToElements(globalNode=globalNode, &
-!                                        islocal=islocal)
-!       CALL Append(ans, ivec)
-!     END DO
-!   END DO dimloop
-!   meshptr => NULL()
-!   IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-! ELSE
-!   ALLOCATE (ans(0))
-! END IF
-!
-! END PROCEDURE obj_GetNodeToElements1
-!
-! !----------------------------------------------------------------------------
-! !                                                         getNodeToElements
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNodeToElements2
-! TYPE(IntVector_) :: intvec
-! INTEGER(I4B), ALLOCATABLE :: ivec(:)
-! INTEGER(I4B) :: ii
-!
-! DO ii = 1, SIZE(globalNode)
-!   ivec = obj%GetNodeToElements(globalNode=GlobalNode(ii), islocal=islocal)
-!   CALL Append(intvec, ivec)
-! END DO
-! ans = intvec
-! CALL DEALLOCATE (intvec)
-! IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-! END PROCEDURE obj_GetNodeToElements2
-!
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements1
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: dim, entityNum
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+LOGICAL(LGT) :: isok
+
+meshptr => NULL()
+isok = obj%IsNodePresent(globalNode=globalNode)
+IF (.NOT. isok) THEN
+  CALL Reallocate(ans, 0)
+  RETURN
+END IF
+
+dimloop: DO dim = 0, obj%GetNSD()
+  DO entityNum = 1, obj%GetTotalEntities(dim=dim)
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+    ivec = meshptr%GetNodeToElements(globalNode=globalNode, &
+                                     islocal=islocal)
+    CALL Append(ans, ivec)
+  END DO
+END DO dimloop
+
+meshptr => NULL()
+
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+
+END PROCEDURE obj_GetNodeToElements1
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements2
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+INTEGER(I4B) :: ii
+
+DO ii = 1, SIZE(globalNode)
+  ivec = obj%GetNodeToElements(globalNode=GlobalNode(ii), islocal=islocal)
+  CALL Append(intvec, ivec)
+END DO
+
+ans = intvec
+CALL DEALLOCATE (intvec)
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+
+END PROCEDURE obj_GetNodeToElements2
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements1_
+INTEGER(I4B), ALLOCATABLE :: temp(:)
+INTEGER(I4B) :: ii
+
+temp = obj%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+tsize = SIZE(temp)
+DO ii = 1, tsize
+  ans(ii) = temp(ii)
+END DO
+
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
+
+END PROCEDURE obj_GetNodeToElements1_
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeToElements2_
+INTEGER(I4B), ALLOCATABLE :: temp(:)
+INTEGER(I4B) :: ii
+
+temp = obj%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+tsize = SIZE(temp)
+DO ii = 1, tsize
+  ans(ii) = temp(ii)
+END DO
+
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
+
+END PROCEDURE obj_GetNodeToElements2_
+
 ! !----------------------------------------------------------------------------
 ! !                                                             getTotalNodes
 ! !----------------------------------------------------------------------------

@@ -108,19 +108,16 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
   !! Returns true if the global element is present in the mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
-  !! Get number of nodes(vertex)  in element, size of connectivity
+  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
+  !! Get the list of elements connnected to a specified node
+  PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
+  !! Get the list of elements connnected to many specified nodes
 
-  ! PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
-  ! !! Get the list of elements connnected to a specified node
-  ! PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
-  ! !! Get the list of elements connnected to many specified nodes
-  !
-  ! PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
-  ! !! Get the list of elements connnected to a specified node
-  ! PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
-  ! !! Get the list of elements connnected to many specified nodes
-  !
+  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
+  !! Get the list of elements connnected to a specified node
+  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
+  !! Get the list of elements connnected to many specified nodes
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
   !   !! returns the total number of nodes in the domain, mesh, or part of mesh
   !
@@ -435,131 +432,107 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetNNE@GetMethods
+!                                               GetNodeToElements@GetMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
 INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, islocal) &
+  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
     & RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! Global element number
-    !! Make sure globalElement is present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-    !! Dimension, if dim is present then
-    !! if dim=0, then search is performed in meshPoint
-    !! if dim=1, then search is performed in meshCurve
-    !! if dim=2, then search is performed in meshSurface
-    !! if dim=3, then search is performed in meshVolume
-    !! The default value of dim is obj%nsd
+    CLASS(Domain_), INTENT(INOUT) :: obj
+      !! we can init the node to element data if necessary
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    INTEGER(I4B) :: ans
-    !! vertex connectivity
-  END FUNCTION obj_GetNNE
+  END FUNCTION obj_GetNodeToElements1
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                               GetNodeToElements@GetMethods
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
+    & RESULT(ans)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+      !! we can init the node to element data if necessary
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END FUNCTION obj_GetNodeToElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2021-11-12
-! ! update: 2021-11-12
-! ! summary: returns the elements connected to a node
+!# Introduction
 !
-! INTERFACE
-!   MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
-!     & RESULT(ans)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!       !! we can init the node to element data if necessary
-!     INTEGER(I4B), INTENT(IN) :: globalNode
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!   END FUNCTION obj_GetNodeToElements1
-! END INTERFACE
+! For obj%nsd = 3, we use meshVolume
+! For obj%nsd = 2, we use meshSurface
+! For obj%nsd = 1, we use meshCurve
+! for obj%nsd = 0, we use meshPoint
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+      !! We can init the node to element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: returns the elements connected to a node
 !
-! !----------------------------------------------------------------------------
-! !                                               GetNodeToElements@GetMethods
-! !----------------------------------------------------------------------------
+!# Introduction
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2021-11-12
-! ! update: 2021-11-12
-! ! summary: returns the elements connected to a node
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
-!     & RESULT(ans)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!       !! we can init the node to element data if necessary
-!     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!   END FUNCTION obj_GetNodeToElements2
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                               GetNodeToElements@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2024-03-28
-! ! summary: returns the elements connected to a node
-! !
-! !# Introduction
-! !
-! ! For obj%nsd = 3, we use meshVolume
-! ! For obj%nsd = 2, we use meshSurface
-! ! For obj%nsd = 1, we use meshCurve
-! ! for obj%nsd = 0, we use meshPoint
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
-!                                             globalNode, islocal)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!       !! We can init the node to element
-!     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-!     !! node to elements, it should be atleast tsize long
-!     INTEGER(I4B), INTENT(OUT) :: tsize
-!     !! actual size of ans, it is returned by this routine
-!     INTEGER(I4B), INTENT(IN) :: globalNode
-!     !! global node number
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     !! is true it means globalNode is actually local node
-!   END SUBROUTINE obj_GetNodeToElements1_
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                               GetNodeToElements@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2024-03-28
-! ! summary: returns the elements connected to a node
-! !
-! !# Introduction
-! !
-! ! For obj%nsd = 3, we use meshVolume
-! ! For obj%nsd = 2, we use meshSurface
-! ! For obj%nsd = 1, we use meshCurve
-! ! for obj%nsd = 0, we use meshPoint
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
-!                                             globalNode, islocal)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!       !! We can ionit the node to element data
-!     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-!     !! node to elements, it should be atleast tsize long
-!     INTEGER(I4B), INTENT(OUT) :: tsize
-!     !! actual size of ans, it is returned by this routine
-!     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-!     !! global node number
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     !! is true it means globalNode is actually local node
-!   END SUBROUTINE obj_GetNodeToElements2_
-! END INTERFACE
-!
+! For obj%nsd = 3, we use meshVolume
+! For obj%nsd = 2, we use meshSurface
+! For obj%nsd = 1, we use meshCurve
+! for obj%nsd = 0, we use meshPoint
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
+                                            globalNode, islocal)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+      !! We can ionit the node to element data
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! node to elements, it should be atleast tsize long
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! actual size of ans, it is returned by this routine
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is true it means globalNode is actually local node
+  END SUBROUTINE obj_GetNodeToElements2_
+END INTERFACE
+
 ! !----------------------------------------------------------------------------
 ! !                                                 GetTotalNodes@GetMethods
 ! !----------------------------------------------------------------------------

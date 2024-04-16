@@ -107,7 +107,8 @@ END PROCEDURE obj_GetConnectivity_
 MODULE PROCEDURE obj_GetNNE
 CLASS(AbstractMesh_), POINTER :: meshptr
 
-meshptr => obj%GetMeshPointer(dim=dim)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
 ans = meshptr%GetNNE(globalElement=globalElement, islocal=islocal)
 
 END PROCEDURE obj_GetNNE
