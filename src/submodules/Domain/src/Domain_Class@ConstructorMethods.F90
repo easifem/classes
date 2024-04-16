@@ -20,7 +20,7 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(Domain_Class) ConstructorMethods
-! USE AbstractMesh_Class, ONLY: MeshPointerDeallocate
+USE AbstractMesh_Class, ONLY: AbstractMeshPointerDeallocate
 USE CSRSparsity_Method, ONLY: CSRSparsity_Deallocate => DEALLOCATE
 USE MeshFacetData_Class, ONLY: MeshFacetDataDeallocate
 IMPLICIT NONE
@@ -32,15 +32,13 @@ CONTAINS
 
 MODULE PROCEDURE obj_Deallocate
 CALL AbstractDomainDeallocate(obj)
+CALL AbstractMeshPointerDeallocate(obj%meshVolume)
+CALL AbstractMeshPointerDeallocate(obj%meshSurface)
+CALL AbstractMeshPointerDeallocate(obj%meshCurve)
+CALL AbstractMeshPointerDeallocate(obj%meshPoint)
 CALL CSRSparsity_Deallocate(obj%meshmap)
 IF (ALLOCATED(obj%meshFacetData)) &
   CALL MeshFacetDataDeallocate(obj%meshFacetData)
-
-! CALL MeshPointerDeallocate(obj%meshVolume)
-! CALL MeshPointerDeallocate(obj%meshSurface)
-! CALL MeshPointerDeallocate(obj%meshCurve)
-! CALL MeshPointerDeallocate(obj%meshPoint)
-
 IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
 IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
 END PROCEDURE obj_Deallocate

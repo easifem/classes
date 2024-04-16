@@ -42,7 +42,7 @@ PUBLIC :: DomainDeallocate
 PUBLIC :: Domain_Pointer
 PUBLIC :: DomainSetSparsity
 
-CHARACTER(*), PARAMETER :: modName = "obj_Class"
+CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 !----------------------------------------------------------------------------
 !                                                                   obj_
@@ -88,12 +88,12 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(Obj) :: IMPORT => obj_Import
   !! Initiates an instance of domain by importing data from meshfile
-  !! TODO Add an export method to [[obj_]] class
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  !! TODO Add a display method to [[obj_]] class
+  !! Display the content of domain
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo => obj_DisplayDomainInfo
+  !! Display the domain info
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshFacetData => &
     & obj_DisplayMeshFacetData
