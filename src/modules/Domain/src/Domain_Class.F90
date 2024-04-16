@@ -102,6 +102,9 @@ CONTAINS
   ! GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  !! This routine a pointer to Abstract mesh object
+
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
   !! Returns true if the global node number is present in the domain
 
@@ -146,9 +149,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalMesh
   !! This routine returns total number of meshes of given dimension
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
-  !! This routine a pointer to [[Mesh_]] object
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Returns a dim entity-num of mesh which contains the element number
@@ -372,6 +372,47 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  getMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This rotuine returns mesh pointer
+!
+!# Introduction
+!
+! This returns the mesh Entity pointer.
+! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
+! curve, surface, volume meshes.
+! - tag, is the number of mesh
+!
+! Calling example:
+!
+!```fortran
+! GetMeshPointer(dim, entityNum)
+! GetMeshPointer(globalElement)
+! GetMeshPointer(dim, globalElement, islocal)
+!```
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
+                                      globalElement, islocal) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entity
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number, it is used for domain_
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is global element a local element
+    CLASS(AbstractMesh_), POINTER :: ans
+    !! abstract mesh pointer
+  END FUNCTION obj_GetMeshPointer1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -770,36 +811,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalMesh
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  getMeshPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: This rotuine returns mesh pointer
-!
-!# Introduction
-!
-! This returns the mesh Entity pointer.
-! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
-! curve, surface, volume meshes.
-! - tag, is the number of mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-                                      globalElement, isLocal) RESULT(Ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-    !! dimension of mesh entity
-    !! The default value of dim is obj%nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-    !! entity number
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    CLASS(AbstractMesh_), POINTER :: ans
-  END FUNCTION obj_GetMeshPointer1
 END INTERFACE
 
 !----------------------------------------------------------------------------

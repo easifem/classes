@@ -18,12 +18,69 @@
 ! date: 18 June 2021
 ! summary: This submodule contains methods for domain object
 
-! SUBMODULE(Domain_Class) GetMethods
+SUBMODULE(Domain_Class) GetMethods
 ! USE BaseType, ONLY: IntVector_
 ! USE IntVector_Method
+
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer1
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+! LOGICAL(LGT) :: problem
 !
-! IMPLICIT NONE
-! CONTAINS
+! problem = entityNum .GT. obj%tEntities(dim)
+! IF (problem) THEN
+!   CALL e%RaiseError(modName//"::"//myName//" - "// &
+!     & "[INTERNAL ERROR] :: entityNum are out of bound")
+!   RETURN
+! END IF
+! #endif
+!
+! SELECT CASE (dim)
+! CASE (0)
+!   ans => obj%meshPoint(entityNum)%ptr
+! CASE (1)
+!   ans => obj%meshCurve(entityNum)%ptr
+! CASE (2)
+!   ans => obj%meshSurface(entityNum)%ptr
+! CASE (3)
+!   ans => obj%meshVolume(entityNum)%ptr
+! END SELECT
+END PROCEDURE obj_GetMeshPointer1
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetMeshPointer2
+! ! CHARACTER(*), PARAMETER :: myname = "obj_GetMeshPointer2()"
+! INTEGER(i4b) :: dim, entityNum
+! LOGICAL(LGT) :: abool
+!
+! ans => NULL()
+!
+! dimloop: DO dim = 0, obj%nsd
+!
+!   DO entityNum = 1, obj%GetTotalMesh(dim=dim)
+!
+!     ans => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+!     abool = ans%isElementPresent(globalElement=globalElement)
+!
+!     IF (abool) THEN
+!       EXIT dimloop
+!     END IF
+!
+!   END DO
+!
+! END DO dimloop
+!
+! END PROCEDURE obj_GetMeshPointer2
 !
 ! !----------------------------------------------------------------------------
 ! !                                                          isElementPresent
@@ -285,64 +342,6 @@
 ! MODULE PROCEDURE obj_GetTotalMesh
 ! ans = obj%GetTotalEntities(dim=dim)
 ! END PROCEDURE obj_GetTotalMesh
-!
-! !----------------------------------------------------------------------------
-! !                                                             getMeshPointer
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetMeshPointer1
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-! LOGICAL(LGT) :: problem
-!
-! problem = entityNum .GT. obj%tEntities(dim)
-! IF (problem) THEN
-!   CALL e%RaiseError(modName//"::"//myName//" - "// &
-!     & "[INTERNAL ERROR] :: entityNum are out of bound")
-!   RETURN
-! END IF
-! #endif
-!
-! SELECT CASE (dim)
-! CASE (0)
-!   ans => obj%meshPoint(entityNum)%ptr
-! CASE (1)
-!   ans => obj%meshCurve(entityNum)%ptr
-! CASE (2)
-!   ans => obj%meshSurface(entityNum)%ptr
-! CASE (3)
-!   ans => obj%meshVolume(entityNum)%ptr
-! END SELECT
-!
-! END PROCEDURE obj_GetMeshPointer1
-!
-! !----------------------------------------------------------------------------
-! !                                                             getMeshPointer
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetMeshPointer2
-! ! CHARACTER(*), PARAMETER :: myname = "obj_GetMeshPointer2()"
-! INTEGER(i4b) :: dim, entityNum
-! LOGICAL(LGT) :: abool
-!
-! ans => NULL()
-!
-! dimloop: DO dim = 0, obj%nsd
-!
-!   DO entityNum = 1, obj%GetTotalMesh(dim=dim)
-!
-!     ans => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!     abool = ans%isElementPresent(globalElement=globalElement)
-!
-!     IF (abool) THEN
-!       EXIT dimloop
-!     END IF
-!
-!   END DO
-!
-! END DO dimloop
-!
-! END PROCEDURE obj_GetMeshPointer2
 !
 ! !----------------------------------------------------------------------------
 ! !                                                           getDimEntityNum
@@ -654,8 +653,8 @@
 ! MODULE PROCEDURE obj_IsInit
 ! ans = obj%isInitiated
 ! END PROCEDURE obj_IsInit
+
+!----------------------------------------------------------------------------
 !
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-! END SUBMODULE GetMethods
+!----------------------------------------------------------------------------
+END SUBMODULE GetMethods

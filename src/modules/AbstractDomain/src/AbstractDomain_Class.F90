@@ -142,6 +142,9 @@ CONTAINS
   ! GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  !! Returns pointer to the mesh in the domain
+
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
   !! Check if a node is present or node in domain
 
@@ -213,9 +216,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
   !! This routine returns total number of meshes of given dimension
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
-  !! Returns pointer to the mesh in the domain
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Returns a dim entity-num of mesh which contains the element number
