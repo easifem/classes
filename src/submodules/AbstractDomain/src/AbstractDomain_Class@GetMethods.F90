@@ -652,6 +652,18 @@ ans = obj%nsd
 END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
+!                                                             GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
+ans = 0
+END PROCEDURE obj_GetOrder
+
+!----------------------------------------------------------------------------
 !                                                     GetTotalMeshFacetData
 !----------------------------------------------------------------------------
 
@@ -707,16 +719,6 @@ IF (PRESENT(tElements)) tElements = obj%tElements
 IF (PRESENT(tEntities)) tEntities = obj%tEntities
 IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
 END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
-!                                                             GetOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetOrder
-CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
 !                                                           GetMinElemNumber

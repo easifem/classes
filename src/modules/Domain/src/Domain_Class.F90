@@ -138,12 +138,12 @@ CONTAINS
     & obj_GetInternalNptrs
   ! Get the internal node numbers in the mesh
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
-  ! !! Get Order
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  !! Get Order of meshes
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
   !   & obj_GetTotalMeshFacetData
-  !
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial1
   ! !! return the total materials
   !
@@ -644,22 +644,22 @@ INTERFACE
   END FUNCTION obj_GetInternalNptrs
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                                        GetOrder@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: This routine returns the order of meshes of dimensions=dim
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION obj_GetOrder
-! END INTERFACE
-!
+!----------------------------------------------------------------------------
+!                                                        GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This routine returns the order of meshes of dimensions=dim
+
+INTERFACE
+  MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetOrder
+END INTERFACE
+
 ! !----------------------------------------------------------------------------
 ! !                                          getTotalMeshFacetData@GetMethods
 ! !----------------------------------------------------------------------------

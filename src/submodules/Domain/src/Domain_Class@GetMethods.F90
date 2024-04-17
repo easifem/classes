@@ -555,28 +555,28 @@ NULLIFY (meshptr)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 END PROCEDURE obj_GetInternalNptrs
 
-! !----------------------------------------------------------------------------
-! !                                                                    getNSD
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetOrder
-! INTEGER(I4B) :: ii
-! CLASS(Mesh_), POINTER :: meshptr
-!
-! CALL Reallocate(ans, obj%GetTotalMesh(dim=dim))
-!
-! DO ii = 1, SIZE(ans)
-!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-!   IF (meshptr%GetTotalElements() .EQ. 0_I4B) THEN
-!     ans(ii) = 0
-!   ELSE
-!     ans(ii) = meshptr%GetOrder()
-!   END IF
-!   meshptr => NULL()
-! END DO
-!
-! END PROCEDURE obj_GetOrder
-!
+!----------------------------------------------------------------------------
+!                                                                    getNSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder
+INTEGER(I4B) :: ii
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+CALL Reallocate(ans, obj%GetTotalMesh(dim=dim))
+
+DO ii = 1, SIZE(ans)
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
+  IF (meshptr%GetTotalElements() .EQ. 0_I4B) THEN
+    ans(ii) = 0
+  ELSE
+    ans(ii) = meshptr%GetOrder()
+  END IF
+  meshptr => NULL()
+END DO
+
+END PROCEDURE obj_GetOrder
+
 ! !----------------------------------------------------------------------------
 ! !                                                     getTotalMeshFacetData
 ! !----------------------------------------------------------------------------
