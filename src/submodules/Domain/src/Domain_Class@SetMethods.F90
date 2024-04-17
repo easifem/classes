@@ -116,7 +116,7 @@ END IF
 matprop = CSRMatrix_GetMatrixProp(mat)
 
 IF (matprop .EQ. "RECTANGLE") THEN
-! CALL SetSparsity3(domains=domains, mat=mat)
+  CALL SetSparsity3(domains=domains, mat=mat)
 ELSE
   CALL SetSparsity2(domains=domains, mat=mat)
 END IF
@@ -395,84 +395,119 @@ SUBROUTINE SetSparsity2(domains, mat)
 
 END SUBROUTINE SetSparsity2
 
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
 !
-! !> author: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary:  Set sparsity for sparse matrix of MatrixField, which is rectangle
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary:  Set sparsity for sparse matrix of MatrixField, which is rectangle
+
+SUBROUTINE SetSparsity3(domains, mat)
+  CLASS(AbstractDomainPointer_), INTENT(IN) :: domains(2)
+  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "SetSparsity3()"
+  INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
+  CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
+  CLASS(AbstractDomain_), POINTER :: rowDomain, colDomain
+  TYPE(DomainConnectivity_) :: domainConn
+
+  INTEGER(I4B), POINTER :: nodeToNode(:), rowGlobalToLocalNodeNum(:), &
+                           colGlobalToLocalNodeNum(:)
+
+  INTEGER(I4B) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
+    & nsd(tvar), ii, rowLBOUND, rowUBOUND, colLBOUND, colUBOUND
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+  DO ii = 1, tvar
+    nsd(ii) = domains(ii)%ptr%GetNSD()
+  END DO
+
+  ! nullify first for safety
+
+  NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
+  rowDomain => domains(1)%ptr
+  colDomain => domains(2)%ptr
+
+  SELECT TYPE (rowDomain)
+  CLASS IS (Domain_)
+    rowLBOUND = LBOUND(rowDomain%local_nptrs, 1)
+    rowUBOUND = UBOUND(rowDomain%local_nptrs, 1)
+    rowGlobalToLocalNodeNum => rowDomain%local_nptrs
+
+  CLASS DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: No case found for rowDomain')
+  END SELECT
+
+  SELECT TYPE (colDomain)
+  CLASS IS (Domain_)
+    colLBOUND = LBOUND(colDomain%local_nptrs, 1)
+    colUBOUND = UBOUND(colDomain%local_nptrs, 1)
+    colGlobalToLocalNodeNum => colDomain%local_nptrs
+
+  CLASS DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: No case found for colDomain')
+  END SELECT
+
+  rowMeshSize = rowDomain%GetTotalMesh(dim=nsd(ivar))
+  colMeshSize = colDomain%GetTotalMesh(dim=nsd(jvar))
+
+  CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
+    & domain2=colDomain)
+
+  nodeToNode => domainConn%GetNodeToNodePointer()
+
+  DO rowMeshID = 1, rowMeshSize
+
+    rowMesh => rowDomain%GetMeshPointer(dim=nsd(ivar), &
+      & entityNum=rowMeshID)
+
+    IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
+
+    DO colMeshID = 1, colMeshSize
+
+      colMesh => colDomain%GetMeshPointer(dim=nsd(jvar), &
+        & entityNum=colMeshID)
+
+      IF (ASSOCIATED(colMesh)) &
+        CALL rowMesh%SetSparsity(mat=mat, &
+                                 colMesh=colMesh, &
+                                 nodeToNode=nodeToNode, &
+                            rowGlobalToLocalNodeNum=rowGlobalToLocalNodeNum, &
+                                 rowLBOUND=rowLBOUND, &
+                                 rowUBOUND=rowUBOUND, &
+                            colGlobalToLocalNodeNum=colGlobalToLocalNodeNum, &
+                                 colLBOUND=colLBOUND, &
+                                 colUBOUND=colUBOUND, &
+                                 ivar=ivar, jvar=jvar)
+
+    END DO
+  END DO
+
+  CALL CSRMatrix_SetSparsity(mat)
+
+  NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode, &
+           rowGlobalToLocalNodeNum, colGlobalToLocalNodeNum)
+
+  CALL domainConn%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+END SUBROUTINE SetSparsity3
+
+!----------------------------------------------------------------------------
 !
-! SUBROUTINE SetSparsity3(domains, mat)
-!   CLASS(DomainPointer_), INTENT(IN) :: domains(2)
-!   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-!   !
-!   INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
-!   INTEGER(I4B) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
-!     & nsd(tvar), ii
-!   CLASS(Mesh_), POINTER :: rowMesh, colMesh
-!   CLASS(obj_), POINTER :: rowDomain, colDomain
-!   TYPE(DomainConnectivity_) :: domainConn
-!   INTEGER(I4B), POINTER :: nodeToNode(:)
-!
-!   ! check
-!
-!   DO ii = 1, tvar
-!     nsd(ii) = domains(ii)%ptr%GetNSD()
-!   END DO
-!
-!   ! nullify first for safety
-!
-!   rowMesh => NULL();
-!   colMesh => NULL();
-!   rowDomain => domains(1)%ptr
-!   colDomain => domains(2)%ptr
-!
-!   rowMeshSize = rowDomain%GetTotalMesh(dim=nsd(ivar))
-!   colMeshSize = colDomain%GetTotalMesh(dim=nsd(jvar))
-!
-!   CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
-!     & domain2=colDomain)
-!
-!   nodeToNode => domainConn%GetNodeToNodePointer()
-!
-!   DO rowMeshID = 1, rowMeshSize
-!
-!     rowMesh => rowDomain%GetMeshPointer(dim=nsd(ivar), &
-!       & entityNum=rowMeshID)
-!
-!     IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
-!
-!     DO colMeshID = 1, colMeshSize
-!
-!       colMesh => colDomain%GetMeshPointer(dim=nsd(jvar), &
-!         & entityNum=colMeshID)
-!
-!       IF (ASSOCIATED(colMesh)) &
-!         CALL rowMesh%SetSparsity(mat=mat, &
-!                                  colMesh=colMesh, &
-!                                  nodeToNode=nodeToNode, &
-!                               rowGlobalToLocalNodeNum=rowDomain%local_nptrs, &
-!                                  rowLBOUND=LBOUND(rowDomain%local_nptrs, 1), &
-!                                  rowUBOUND=UBOUND(rowDomain%local_nptrs, 1), &
-!                               colGlobalToLocalNodeNum=colDomain%local_nptrs, &
-!                                  colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
-!                                  colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
-!                                  ivar=ivar, jvar=jvar)
-!
-!     END DO
-!   END DO
-!
-!   CALL SetSparsity(mat)
-!
-!   NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
-!
-!   CALL domainConn%DEALLOCATE()
-!
-! END SUBROUTINE SetSparsity3
-!
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-!
+!----------------------------------------------------------------------------
+
 END SUBMODULE SetMethods
