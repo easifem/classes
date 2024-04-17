@@ -165,10 +165,10 @@ END PROCEDURE obj_GetNodeToElements2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes()"
 CLASS(AbstractMesh_), POINTER :: meshptr
 LOGICAL(LGT) :: case1, problem
 
+ans = 0
 case1 = (.NOT. PRESENT(dim)) .AND. (.NOT. PRESENT(entityNum))
 IF (case1) THEN
   ans = obj%tNodes
@@ -178,10 +178,7 @@ END IF
 meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 
 problem = .NOT. ASSOCIATED(meshptr)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//'-'// &
-    & '[INTERNAL ERROR] :: There is some issue in getting pointer to mesh')
-END IF
+IF (problem) RETURN
 
 ans = meshptr%GetTotalNodes()
 NULLIFY (meshptr)
@@ -481,6 +478,17 @@ meshptr => NULL()
 END PROCEDURE obj_GetNptrs_
 
 !----------------------------------------------------------------------------
+!                                                                   GetNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInternalNptrs
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetInternalNptrs()
+meshptr => NULL()
+END PROCEDURE obj_GetInternalNptrs
+
+!----------------------------------------------------------------------------
 !                                                             GetNptrsInBox
 !----------------------------------------------------------------------------
 
@@ -512,7 +520,7 @@ isok = Input(default=.TRUE., option=isStrict)
 IF (.NOT. isok) THEN
   CALL Reallocate(nptrs, tnodes)
   DO CONCURRENT(ii=1:tnodes)
-    nptrs(ii) = obj%kdresult(ii)%idx
+    nptrs(ii) = obj%GetGlobalNodeNumber(localNode=obj%kdresult(ii)%idx)
   END DO
   RETURN
 END IF
@@ -520,7 +528,7 @@ END IF
 CALL Reallocate(nptrs0, tnodes)
 CALL Reallocate(bools, tnodes)
 DO CONCURRENT(ii=1:tnodes)
-  nptrs0(ii) = obj%kdresult(ii)%idx
+  nptrs0(ii) = obj%GetGlobalNodeNumber(localNode=obj%kdresult(ii)%idx)
   bools(ii) = isInside(box, obj%nodeCoord(1:nsd, obj%kdresult(ii)%idx))
 END DO
 
@@ -592,17 +600,6 @@ END DO
 tnodes = jj
 
 END PROCEDURE obj_GetNptrsInBox_
-
-!----------------------------------------------------------------------------
-!                                                                   GetNptrs
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetInternalNptrs
-CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
-ans = meshptr%GetInternalNptrs()
-meshptr => NULL()
-END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
 !                                                                     GetNSD

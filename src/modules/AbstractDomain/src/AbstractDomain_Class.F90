@@ -248,15 +248,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
   !! returns node number, this is subroutine
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
+    & obj_GetInternalNptrs
+  !! returns internal node number
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
   !! Get node numbers in the box
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
   !! Get node numbers in box with allocation
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
-    & obj_GetInternalNptrs
-  !! returns internal node number
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => obj_GetBoundingBox
   !! returns bounding box
@@ -1045,9 +1045,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
+!
+!# Introduction
+!
+! Note this function should be pure because we use it in doconcurrent
 
 INTERFACE
-  MODULE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode
     INTEGER(I4B) :: ans
@@ -1063,7 +1067,7 @@ END INTERFACE
 ! summary: Returns local node number of a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode(:)
     INTEGER(I4B) :: ans(SIZE(localNode))
@@ -1282,6 +1286,33 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-17
+! summary: this routine returns the global node number
+!
+!# Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, entityNum, tsize)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dim = 0 meshPoint is called
+    !! dim=1 meshCurve is called
+    !! dim=2, meshSurface is called
+    !! dim=~3, meshVolume is called
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
+    !! Returns the size of nptrs where data has been written
+  END SUBROUTINE obj_GetNptrs_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetInternalNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
 ! date: 2 Sept 2021
 ! summary: this routine returns the global node number
 !
@@ -1290,15 +1321,12 @@ END INTERFACE
 ! xidim is the dimension of the mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim)
+  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
     INTEGER(I4B), INTENT(IN) :: dim
-    !! dim = 0 meshPoint is called
-    !! dim=1 meshCurve is called
-    !! dim=2, meshSurface is called
-    !! dim=~3, meshVolume is called
-  END SUBROUTINE obj_GetNptrs_
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetInternalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1348,27 +1376,6 @@ INTERFACE
     !! This is because we use radius of bounding box to find the points
     !! this is over estimation.
   END SUBROUTINE obj_GetNptrsInBox_
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         getNptrs@getMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Sept 2021
-! summary: this routine returns the global node number
-!
-!# Introduction
-! This routine returns the global node number
-! xidim is the dimension of the mesh
-
-INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetInternalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------

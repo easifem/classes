@@ -131,8 +131,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Get the node numbers
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
-  !   & obj_GetInternalNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
+  !! Get the node numbers
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
+    & obj_GetInternalNptrs
   !
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => obj_GetBoundingBox
   ! !! returns bounding box
@@ -554,7 +557,7 @@ END INTERFACE
 ! summary: Returns local node number of a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode
     INTEGER(I4B) :: ans
@@ -570,7 +573,7 @@ END INTERFACE
 ! summary: Returns local node number of a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode(:)
     INTEGER(I4B) :: ans(SIZE(localNode))
@@ -578,7 +581,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         getNptrs@getMethod
+!                                                         GetNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -597,27 +600,54 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNptrs
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-17
+! summary: this routine returns the global node number
 !
-! !----------------------------------------------------------------------------
-! !                                                         getNptrs@getMethod
-! !----------------------------------------------------------------------------
+!# Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, entityNum, tsize)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dim = 0 meshPoint is called
+    !! dim=1 meshCurve is called
+    !! dim=2, meshSurface is called
+    !! dim=~3, meshVolume is called
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
+    !! Returns the size of nptrs where data has been written
+  END SUBROUTINE obj_GetNptrs_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetInternalNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2 Sept 2021
-! ! summary: this routine returns the global node number
-! !
-! !# Introduction
-! ! This routine returns the global node number
-! ! xidim is the dimension of the mesh
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION obj_GetInternalNptrs
-! END INTERFACE
+!# Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetInternalNptrs
+END INTERFACE
 !
 ! !----------------------------------------------------------------------------
 ! !                                                  GetBoundingBox@GetMethods

@@ -25,6 +25,7 @@ USE AppendUtility
 USE ReallocateUtility
 USE InputUtility
 USE ArangeUtility
+USE IntegerUtility
 
 IMPLICIT NONE
 CONTAINS
@@ -378,10 +379,10 @@ END PROCEDURE obj_GetLocalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber1
-LOGICAL(LGT) :: isok
-ans = 0
-isok = localNode .LE. obj%GetTotalNodes()
-IF (.NOT. isok) RETURN
+! LOGICAL(LGT) :: isok
+! ans = 0
+! isok = localNode .LE. obj%GetTotalNodes()
+! IF (.NOT. isok) RETURN
 ans = obj%global_nptrs(localNode)
 END PROCEDURE obj_GetGlobalNodeNumber1
 
@@ -449,36 +450,111 @@ IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 
 END PROCEDURE obj_GetNptrs
 
-! !----------------------------------------------------------------------------
-! !                                                                   getNptrs
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetInternalNptrs
-! INTEGER(I4B) :: ii
-! CLASS(Mesh_), POINTER :: meshptr
-! TYPE(IntVector_) :: intvec
-!
-! meshptr => NULL()
-! DO ii = 1, SIZE(entityNum)
-!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
-!   IF (ASSOCIATED(meshptr)) THEN
-!     CALL APPEND(intvec, meshptr%GetInternalNptrs())
-!   END IF
-! END DO
-! CALL RemoveDuplicates(intvec)
-! ans = intvec
-! CALL DEALLOCATE (intvec)
-! NULLIFY (meshptr)
-! END PROCEDURE obj_GetInternalNptrs
-!
-! !----------------------------------------------------------------------------
-! !                                                                     getNSD
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNSD
-! ans = obj%NSD
-! END PROCEDURE obj_GetNSD
-!
+!----------------------------------------------------------------------------
+!                                                                 GetNptrs_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs_
+INTEGER(I4B) :: ii, tentity, offset, n, jj
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: problem
+
+meshptr => NULL()
+offset = 1
+
+IF (PRESENT(entityNum)) THEN
+  tentity = SIZE(entityNum)
+
+  DO ii = 1, tentity
+    jj = entityNum(ii)
+    CALL macro
+  END DO
+
+ELSE
+
+  tentity = obj%GetTotalEntities(dim=dim)
+  DO ii = 1, tentity
+    jj = ii
+    CALL macro
+  END DO
+
+END IF
+
+n = offset - 1
+CALL RemoveDuplicates_(obj=nptrs(1:n), tsize=n, isSorted=.FALSE.)
+IF (PRESENT(tsize)) tsize = n
+
+NULLIFY (meshptr)
+
+CONTAINS
+
+SUBROUTINE macro
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=jj)
+
+  problem = .NOT. ASSOCIATED(meshptr)
+  IF (problem) RETURN
+
+  problem = meshptr%isEmpty()
+  IF (problem) RETURN
+
+  CALL meshptr%GetNptrs_(nptrs=nptrs(offset:), tsize=n)
+
+  offset = offset + n
+END SUBROUTINE macro
+
+END PROCEDURE obj_GetNptrs_
+
+!----------------------------------------------------------------------------
+!                                                         GetInternalNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInternalNptrs
+CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs()"
+INTEGER(I4B) :: ii, tentity, tnodes
+CLASS(AbstractMesh_), POINTER :: meshptr
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), ent0(:)
+LOGICAL(LGT) :: problem
+
+meshptr => NULL()
+IF (PRESENT(entityNum)) THEN
+  ent0 = entityNum
+  tentity = SIZE(ent0)
+ELSE
+  tentity = obj%GetTotalEntities(dim=dim)
+  ent0 = arange(1_I4B, tentity)
+END IF
+
+DO ii = 1, tentity
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ent0(ii))
+
+  problem = .NOT. ASSOCIATED(meshptr)
+  IF (problem) CYCLE
+
+  problem = meshptr%isEmpty()
+  IF (problem) CYCLE
+
+  nptrs = meshptr%GetInternalNptrs()
+
+  CALL APPEND(intvec, nptrs)
+
+END DO
+
+CALL RemoveDuplicates(intvec)
+
+IF (isAllocated(intvec)) THEN
+  ans = intvec
+ELSE
+  CALL Reallocate(ans, 0)
+END IF
+
+CALL DEALLOCATE (intvec)
+
+NULLIFY (meshptr)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+END PROCEDURE obj_GetInternalNptrs
+
 ! !----------------------------------------------------------------------------
 ! !                                                                    getNSD
 ! !----------------------------------------------------------------------------

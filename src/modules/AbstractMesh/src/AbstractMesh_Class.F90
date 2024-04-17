@@ -1329,7 +1329,7 @@ END INTERFACE
 ! summary: returns total number of nodes in the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodes(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetTotalNodes(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodes
