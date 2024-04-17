@@ -23,6 +23,8 @@ USE BaseType, ONLY: IntVector_
 USE IntVector_Method
 USE AppendUtility
 USE ReallocateUtility
+USE InputUtility
+USE ArangeUtility
 
 IMPLICIT NONE
 CONTAINS
@@ -340,288 +342,113 @@ IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 END PROCEDURE obj_GetNodeToElements2_
 
-! !----------------------------------------------------------------------------
-! !                                                             getTotalNodes
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetTotalNodes
-! CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes()"
-! CLASS(Mesh_), POINTER :: meshPtr
-! INTEGER(I4B) :: ii
-! LOGICAL(LGT) :: case1, isEntityNum, isDim, problem, case2
-!
-! isEntityNum = PRESENT(entityNum)
-! isDim = PRESENT(dim)
-!
-! case1 = isEntityNum .AND. isDim
-!
-! IF (case1) THEN
-!
-! #ifdef DEBUG_VER
-!   problem = entityNum .GT. obj%GetTotalEntities(dim)
-!   IF (problem) THEN
-!     CALL e%RaiseError(modName//'::'//myName//'-'// &
-!     & '[INTERNAL ERROR] :: The the enitityNum='//tostring(entityNum) &
-!     & //" for dimension="//tostring(dim)// &
-!     & " is out of bound.")
-!     RETURN
-!   END IF
-! #endif
-!
-!   meshPtr => NULL()
-!   meshPtr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!
-! #ifdef DEBUG_VER
-!   problem = .NOT. ASSOCIATED(meshPtr)
-!   IF (problem) THEN
-!     CALL e%RaiseError(modName//'::'//myName//'-'// &
-!       & '[INTERNAL ERROR] :: There is some issue in getting pointer to mesh')
-!   END IF
-! #endif
-!
-!   ans = meshPtr%GetTotalNodes()
-!   NULLIFY (meshPtr)
-!
-!   RETURN
-!
-! END IF
-!
-! #ifdef DEBUG_VER
-!
-! case2 = .NOT. isEntityNum .AND. isDim
-! IF (case2) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: both entityNum and dim  should be PRESENT.')
-!   RETURN
-! END IF
-!
-! #endif
-!
-! ans = obj%tNodes
-! END PROCEDURE obj_GetTotalNodes
-!
-! !----------------------------------------------------------------------------
-! !                                                                   tNodes
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_tNodes1
-! ans = obj%GetTotalNodes(dim=opt(1), entityNum=opt(2))
-! END PROCEDURE obj_tNodes1
-!
-! !----------------------------------------------------------------------------
-! !                                                                   tNodes
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_tNodes2
-! ans = obj%GetTotalNodes()
-! END PROCEDURE obj_tNodes2
-!
-! !----------------------------------------------------------------------------
-! !                                                                  tElements
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_tElements3
-! ans = obj%GetTotalElements(dim=opt(1), entityNum=opt(2))
-! END PROCEDURE obj_tElements3
-!
-! !----------------------------------------------------------------------------
-! !                                                         getLocalNodeNumber
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetLocalNodeNumber1
-! LOGICAL(LGT) :: isok
-! ans = 0
-! isok = obj%IsNodePresent(globalNode=globalNode, islocal=islocal)
-! IF (isok) THEN
-!   ans = obj%local_nptrs(globalNode)
-! END IF
-! END PROCEDURE obj_GetLocalNodeNumber1
-!
-! !----------------------------------------------------------------------------
-! !                                                         getLocalNodeNumber
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetLocalNodeNumber2
-! INTEGER(I4B) :: ii
-! LOGICAL(LGT) :: isok
-!
-! DO ii = 1, SIZE(globalNode)
-!   isok = obj%IsNodePresent(globalNode(ii), islocal=islocal)
-!   ans(ii) = 0
-!   IF (isok) THEN
-!     ans(ii) = obj%local_nptrs(globalNode(ii))
-!   END IF
-! END DO
-! END PROCEDURE obj_GetLocalNodeNumber2
-!
-! !----------------------------------------------------------------------------
-! !                                                       getGlobalNodeNumber
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetGlobalNodeNumber1
-! LOGICAL(LGT) :: isok
-! ans = 0
-! isok = localNode .LE. obj%GetTotalNodes()
-! IF (isok) THEN
-!   ans = obj%global_nptrs(localNode)
-! END IF
-! END PROCEDURE obj_GetGlobalNodeNumber1
-!
-! !----------------------------------------------------------------------------
-! !                                                         getGlobalNodeNumber
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetGlobalNodeNumber2
-! INTEGER(I4B) :: ii
-! LOGICAL(LGT) :: isok
-! DO ii = 1, SIZE(localNode)
-!   ans(ii) = 0
-!   isok = localNode(ii) .LE. obj%GetTotalNodes()
-!   IF (isok) THEN
-!     ans(ii) = obj%global_nptrs(localNode(ii))
-!   END IF
-! END DO
-! END PROCEDURE obj_GetGlobalNodeNumber2
-!
-! !----------------------------------------------------------------------------
-! !                                                              getTotalMesh
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetTotalMesh
-! ans = obj%GetTotalEntities(dim=dim)
-! END PROCEDURE obj_GetTotalMesh
-!
-! !----------------------------------------------------------------------------
-! !                                                           getDimEntityNum
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetDimEntityNum
-! INTEGER(i4b) :: dim, entityNum
-! CLASS(Mesh_), POINTER :: meshptr
-! ! main
-! ans = 0
-! dimloop: DO dim = 0, obj%nsd
-!   DO entityNum = 1, obj%GetTotalEntities(dim=dim)
-!     meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!     IF (meshptr%IsElementPresent(globalElement=globalElement, &
-!                                  islocal=islocal)) THEN
-!       ans = [dim, entityNum]
-!       EXIT dimloop
-!     END IF
-!   END DO
-! END DO dimloop
-! END PROCEDURE obj_GetDimEntityNum
-!
-! !----------------------------------------------------------------------------
-! !                                                               getNodeCoord
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNodeCoord
-! CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
-! CLASS(Mesh_), POINTER :: meshPtr
-! INTEGER(I4B) :: np, ii, jj
-!
-! #ifdef DEBUG_VER
-!
-! LOGICAL(LGT) :: problem
-! problem = .NOT. ALLOCATED(obj%nodeCoord)
-! IF (problem) THEN
-!   CALL e%RaiseError(modName//"::"//myName//" - "// &
-!     & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
-!   RETURN
-! END IF
-!
-! #endif
-!
-! IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
-!   meshPtr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!   np = meshPtr%GetTotalNodes()
-!   CALL Reallocate(nodeCoord, 3_I4B, np)
-!   jj = SIZE(nodeCoord, 1)
-!   DO ii = 1, np
-!     nodeCoord(1:jj, ii) = obj%nodeCoord(1:jj, &
-!       & obj%GetLocalNodeNumber(globalNode=ii, islocal=.TRUE.))
-!   END DO
-!   NULLIFY (meshPtr)
-! ELSE
-!   nodeCoord = obj%nodeCoord
-! END IF
-!
-! END PROCEDURE obj_GetNodeCoord
-!
-! !----------------------------------------------------------------------------
-! !                                                       getNodeCoord
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNodeCoord2
-! INTEGER(I4B) :: localNode(SIZE(globalNode))
-! INTEGER(I4B) :: nsd
-! localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
-! nsd = SIZE(nodeCoord, 1)
-! nodeCoord = obj%nodeCoord(1:nsd, localNode)
-! END PROCEDURE obj_GetNodeCoord2
-!
-! !----------------------------------------------------------------------------
-! !                                                        getNodeCoordPointer
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNodeCoordPointer
-! ans => obj%nodeCoord
-! END PROCEDURE obj_GetNodeCoordPointer
-!
-! !----------------------------------------------------------------------------
-! !                                            getGlobalToLocalNodeNumPointer
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetGlobalToLocalNodeNumPointer
-! ans => obj%local_nptrs
-! END PROCEDURE obj_GetGlobalToLocalNodeNumPointer
-!
-! !----------------------------------------------------------------------------
-! !                                                                   getNptrs
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetNptrs
-! CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs()"
-! INTEGER(I4B) :: ii, tentity, tnodes
-! CLASS(Mesh_), POINTER :: meshptr
-! TYPE(IntVector_) :: intvec
-! INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-! LOGICAL(LGT) :: problem
-!
-! meshptr => NULL()
-! tentity = SIZE(entityNum)
-! DO ii = 1, tentity
-!
-!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
-!
-!   problem = .NOT. ASSOCIATED(meshptr)
-!   IF (problem) CYCLE
-!
-!   problem = meshptr%isEmpty()
-!   IF (problem) CYCLE
-!
-!   nptrs = meshptr%GetNptrs()
-!
-!   CALL APPEND(intvec, nptrs)
-!
-! END DO
-!
-! CALL RemoveDuplicates(intvec)
-!
-! IF (isAllocated(intvec)) THEN
-!   ans = intvec
-! ELSE
-!   CALL reallocate(ans, 0)
-! END IF
-!
-! CALL DEALLOCATE (intvec)
-!
-! NULLIFY (meshptr)
-! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-!
-! END PROCEDURE obj_GetNptrs
-!
+!----------------------------------------------------------------------------
+!                                                         GetLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber1
+LOGICAL(LGT) :: isok
+ans = 0
+isok = obj%IsNodePresent(globalNode=globalNode, islocal=islocal)
+IF (.NOT. isok) RETURN
+
+isok = Input(default=.FALSE., option=islocal)
+IF (isok) THEN
+  ans = globalNode
+ELSE
+  ans = obj%local_nptrs(globalNode)
+END IF
+END PROCEDURE obj_GetLocalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber2
+INTEGER(I4B) :: ii, tsize
+tsize = SIZE(globalNode)
+DO ii = 1, tsize
+  ans(ii) = obj%GetLocalNodeNumber(globalNode=globalNode(ii), &
+                                   islocal=islocal)
+END DO
+END PROCEDURE obj_GetLocalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                       getGlobalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalNodeNumber1
+LOGICAL(LGT) :: isok
+ans = 0
+isok = localNode .LE. obj%GetTotalNodes()
+IF (.NOT. isok) RETURN
+ans = obj%global_nptrs(localNode)
+END PROCEDURE obj_GetGlobalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getGlobalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalNodeNumber2
+INTEGER(I4B) :: ii, tsize
+tsize = SIZE(localNode)
+DO ii = 1, tsize
+  ans(ii) = obj%GetGlobalNodeNumber(localNode=localNode(ii))
+END DO
+END PROCEDURE obj_GetGlobalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                                   getNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs()"
+INTEGER(I4B) :: ii, tentity, tnodes
+CLASS(AbstractMesh_), POINTER :: meshptr
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), ent0(:)
+LOGICAL(LGT) :: problem
+
+meshptr => NULL()
+IF (PRESENT(entityNum)) THEN
+  ent0 = entityNum
+  tentity = SIZE(ent0)
+ELSE
+  tentity = obj%GetTotalEntities(dim=dim)
+  ent0 = arange(1_I4B, tentity)
+END IF
+
+DO ii = 1, tentity
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ent0(ii))
+
+  problem = .NOT. ASSOCIATED(meshptr)
+  IF (problem) CYCLE
+
+  problem = meshptr%isEmpty()
+  IF (problem) CYCLE
+
+  nptrs = meshptr%GetNptrs()
+
+  CALL APPEND(intvec, nptrs)
+
+END DO
+
+CALL RemoveDuplicates(intvec)
+
+IF (isAllocated(intvec)) THEN
+  ans = intvec
+ELSE
+  CALL Reallocate(ans, 0)
+END IF
+
+CALL DEALLOCATE (intvec)
+
+NULLIFY (meshptr)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+
+END PROCEDURE obj_GetNptrs
+
 ! !----------------------------------------------------------------------------
 ! !                                                                   getNptrs
 ! !----------------------------------------------------------------------------

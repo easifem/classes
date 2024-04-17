@@ -24,6 +24,7 @@ USE InputUtility
 USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside
 USE F95_BLAS, ONLY: Copy
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
+USE Display_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -87,7 +88,7 @@ meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
-!                                                          GetConnectivity
+!                                                          GetConnectivity_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
@@ -164,14 +165,27 @@ END PROCEDURE obj_GetNodeToElements2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes()"
 CLASS(AbstractMesh_), POINTER :: meshptr
-IF (PRESENT(dim)) THEN
-  meshptr => obj%GetMeshPointer(dim=dim)
-  ans = meshptr%GetTotalNodes()
-  meshptr => NULL()
+LOGICAL(LGT) :: case1, problem
+
+case1 = (.NOT. PRESENT(dim)) .AND. (.NOT. PRESENT(entityNum))
+IF (case1) THEN
+  ans = obj%tNodes
   RETURN
 END IF
-ans = obj%tNodes
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+problem = .NOT. ASSOCIATED(meshptr)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//'-'// &
+    & '[INTERNAL ERROR] :: There is some issue in getting pointer to mesh')
+END IF
+
+ans = meshptr%GetTotalNodes()
+NULLIFY (meshptr)
+
 END PROCEDURE obj_GetTotalNodes
 
 !----------------------------------------------------------------------------
@@ -191,6 +205,14 @@ ans = obj%GetTotalNodes()
 END PROCEDURE obj_tNodes2
 
 !----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tNodes3
+ans = obj%GetTotalNodes(dim=opt(1), entityNum=opt(2))
+END PROCEDURE obj_tNodes3
+
+!----------------------------------------------------------------------------
 !                                                           GetTotalElements
 !----------------------------------------------------------------------------
 
@@ -200,8 +222,8 @@ LOGICAL(LGT) :: case1, isDim, isEntityNum
 
 isEntityNum = PRESENT(entityNum)
 isDim = PRESENT(dim)
-case1 = isDim .AND. isEntityNum
 
+case1 = isDim .AND. isEntityNum
 IF (case1) THEN
   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
   ans = meshptr%GetTotalElements()
@@ -210,7 +232,6 @@ IF (case1) THEN
 END IF
 
 case1 = isDim .AND. (.NOT. isEntityNum)
-
 IF (case1) THEN
   ans = obj%tElements(dim)
   RETURN
@@ -234,6 +255,14 @@ END PROCEDURE obj_tElements1
 MODULE PROCEDURE obj_tElements2
 ans = obj%GetTotalElements(dim=dim)
 END PROCEDURE obj_tElements2
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tElements3
+ans = obj%GetTotalElements(dim=opt(1), entityNum=opt(2))
+END PROCEDURE obj_tElements3
 
 !----------------------------------------------------------------------------
 !                                                         GetLocalNodeNumber
@@ -276,27 +305,77 @@ ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
 
 !----------------------------------------------------------------------------
+!                                                           GetDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDimEntityNum
+INTEGER(I4B) :: dim, entityNum, tsize
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+! main
+ans = 0
+dimloop: DO dim = 0, obj%nsd
+
+  tsize = obj%GetTotalEntities(dim=dim)
+  DO entityNum = 1, tsize
+
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+    IF (meshptr%IsElementPresent(globalElement=globalElement, &
+                                 islocal=islocal)) THEN
+      ans = [dim, entityNum]
+      EXIT dimloop
+    END IF
+
+  END DO
+
+END DO dimloop
+
+meshptr => NULL()
+END PROCEDURE obj_GetDimEntityNum
+
+!----------------------------------------------------------------------------
 !                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord1
-INTEGER(I4B) :: ii, tsize
-#ifdef DEBUG_VER
+INTEGER(I4B) :: ii, tsize, nsd, jj
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
-LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: isok
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-problem = .NOT. ALLOCATED(obj%nodeCoord)
-IF (problem) THEN
+isok = ALLOCATED(obj%nodeCoord)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
   RETURN
 END IF
-#endif
 
-tsize = SIZE(obj%nodeCoord, 2)
-DO CONCURRENT(ii=1:tsize)
-  nodeCoord(1:obj%nsd, ii) = obj%nodeCoord(1:obj%nsd, ii)
+isok = (.NOT. PRESENT(dim)) .AND. (.NOT. PRESENT(entityNum))
+IF (isok) THEN
+
+  tsize = SIZE(obj%nodeCoord, 2)
+  nsd = SIZE(obj%nodeCoord, 1)
+  CALL Reallocate(nodeCoord, nsd, tsize)
+
+  DO CONCURRENT(ii=1:tsize)
+    nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, ii)
+  END DO
+
+  RETURN
+END IF
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+tsize = meshptr%GetTotalNodes()
+CALL Reallocate(nodeCoord, 3_I4B, tsize)
+nsd = SIZE(obj%nodeCoord, 1)
+DO ii = 1, tsize
+  jj = meshptr%GetGlobalNodeNumber(localNode=ii)
+  jj = obj%GetLocalNodeNumber(globalNode=jj)
+  nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, jj)
 END DO
+
+NULLIFY (meshptr)
 
 END PROCEDURE obj_GetNodeCoord1
 
@@ -319,6 +398,14 @@ INTEGER(I4B) :: localNode
 localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 nodeCoord(1:obj%nsd) = obj%nodeCoord(1:obj%nsd, localNode)
 END PROCEDURE obj_GetNodeCoord3
+
+!----------------------------------------------------------------------------
+!                                                        GetNodeCoordPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoordPointer
+ans => obj%nodeCoord
+END PROCEDURE obj_GetNodeCoordPointer
 
 !----------------------------------------------------------------------------
 !                                                           GetNearestNode
@@ -370,14 +457,6 @@ DO ii = 1, nn
 END DO
 
 END PROCEDURE obj_GetNearestNode2
-
-!----------------------------------------------------------------------------
-!                                                        GetNodeCoordPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNodeCoordPointer
-ans => obj%nodeCoord
-END PROCEDURE obj_GetNodeCoordPointer
 
 !----------------------------------------------------------------------------
 !                                                                   GetNptrs
@@ -652,36 +731,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetElemType
-
-!----------------------------------------------------------------------------
-!                                                           GetMaxNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_tNodes3
-CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNodeNumber()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_tNodes3
-
-!----------------------------------------------------------------------------
-!                                                           GetMaxNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_tElements3
-CHARACTER(*), PARAMETER :: myName = "obj_tElements3()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_tElements3
-
-!----------------------------------------------------------------------------
-!                                                           GetDimEntityNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetDimEntityNum
-CHARACTER(*), PARAMETER :: myName = "obj_GetDimEntityNum()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetDimEntityNum
 
 !----------------------------------------------------------------------------
 !                                                           GetDimEntityNum

@@ -118,45 +118,19 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
   !! Get the list of elements connnected to many specified nodes
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
-  !   !! returns the total number of nodes in the domain, mesh, or part of mesh
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
-  ! !! returns the total number of Elements in domain, mesh, or part of mesh
-  !
-  ! !! return total number of elements in domain, mesh, or part of domain
-  ! PROCEDURE, PASS(obj) :: obj_GetLocalNodeNumber1
-  ! !! Local element number
-  ! PROCEDURE, PASS(obj) :: obj_GetLocalNodeNumber2
-  ! !! local element number
-  !
-  ! PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber1
-  ! !! Returns the global node number of a local node number
-  ! PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber2
-  ! !! Returns the global node number of a local node number
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalMesh
-  ! !! This routine returns total number of meshes of given dimension
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
-  ! !! Returns a dim entity-num of mesh which contains the element number
-  !
-  ! PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
-  ! !! This routine returns the nodal coordinate in rank2 array
-  ! PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
-  ! !! This routine returns the nodal coordinate in rank2 array
-  ! PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
-  ! !! This routine returns the nodal coordinate in rank2 array
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
-  !   & obj_GetNodeCoordPointer
-  ! !! This routine returns the pointer to nodal coordinate
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalToLocalNodeNumPointer => &
-  !   & obj_GetGlobalToLocalNodeNumPointer
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
-  !
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  !! Local element number
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  !! Local element number
+
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
+  !! Returns the global node number of a local node number
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
+  !! Returns the global node number of a local node number
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
+  !! Get the node numbers
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
   !   & obj_GetInternalNptrs
   !
@@ -533,345 +507,96 @@ INTERFACE
   END SUBROUTINE obj_GetNodeToElements2_
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                                 GetTotalNodes@GetMethods
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                             GetLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! Global node number in mesh of obj%nsd dimension
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+    !! Local node number in mesh of obj%nsd dimension
+  END FUNCTION obj_GetLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(SIZE(globalNode))
+  END FUNCTION obj_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getGlobalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-16
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: localNode
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetGlobalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getGlobalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-16
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: localNode(:)
+    INTEGER(I4B) :: ans(SIZE(localNode))
+  END FUNCTION obj_GetGlobalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         getNptrs@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 28 June 2021
-! ! summary: Returns the total number of nodes in the domain
-! !
-! !# Introduction
-! !
-! ! This function returns the total number of nodes in a given mesh entity
-! ! The mesh entity is given by its ID and its dimension.
-! !
-! ! - `dim=0` denotes mesh of point entities
-! ! - `dim=1` denotes mesh of curve entities
-! ! - `dim=2` denotes mesh of surface entities
-! ! - `dim=3` denotes mesh of volume entities
-! ! - `entityNum` should not be out of bound
-! !
-! ! Note: Both `dim` and `entityNum` should be present or absent.
-! ! This is because two entities of same dimension can have common nodes
-! ! which this routine cannot predict.
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetTotalNodes(obj, dim, entityNum) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-!     !! dimension of the mesh entity
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-!     !! entity number
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetTotalNodes
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                GetTotalElements@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 28 June 2021
-! ! summary: Returns the total number of elements in the domain
-! !
-! !# Introduction
-! !
-! ! This function returns the total number of elements in
-! !
-! ! - entire AbstractDomain
-! ! - selected region of domain
-! ! - The mesh selection can be made by specifying the `dim` and `entityNum`
-! !
-! !@note
-! !@endnote
-! !
-! !@warn
-! ! `entityNum` should not be out of bound
-! !@endwarn
-! !
-! !@todo
-! !
-! ! TODO: Use entityNum in AbstractDomain_GetTotalElements
-! !
-! !@endtodo
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetTotalElements(obj, dim, entityNum) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-!     !! dimension of mesh entities
-!     !!  `dim=0` denotes mesh of point entities
-!     !!  `dim=1` denotes mesh of curve entities
-!     !!  `dim=2` denotes mesh of surface entities
-!     !!  `dim=3` denotes mesh of volume entities
-!     !! If dim is not present then sum of obj%tElements is returned
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entitynum
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetTotalElements
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                             getLocalNodeNumber@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: Returns local node number of a global node number
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal)  &
-!     & RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: globalNode
-!     !! Global node number in mesh of obj%nsd dimension
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     INTEGER(I4B) :: ans
-!     !! Local node number in mesh of obj%nsd dimension
-!   END FUNCTION obj_GetLocalNodeNumber1
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                              getLocalNodeNumber@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: Returns local node number of a global node number
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal)  &
-!     & RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     INTEGER(I4B) :: ans(SIZE(globalNode))
-!   END FUNCTION obj_GetLocalNodeNumber2
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                             getGlobalNodeNumber@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: Returns local node number of a global node number
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: localNode
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetGlobalNodeNumber1
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                              getGlobalNodeNumber@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: Returns local node number of a global node number
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: localNode(:)
-!     INTEGER(I4B) :: ans(SIZE(localNode))
-!   END FUNCTION obj_GetGlobalNodeNumber2
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                    getTotalMesh@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: This function returns the total number of mesh
-! !
-! !# Introduction
-! !
-! ! This function returns the total number of mesh
-! !
-! ! - `dim=0` returns the total number of mesh of point entities
-! ! - `dim=1` returns the total number of mesh of curve entities
-! ! - `dim=2` returns the total number of mesh of surface entities
-! ! - `dim=3` returns the total number of mesh of volume entities
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetTotalMesh(obj, dim) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetTotalMesh
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                 getDimEntityNum@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2024-04-15
-! ! summary: Returns dim and entity number
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetDimEntityNum(obj, globalElement, islocal) &
-!     RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: globalElement
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     INTEGER(I4B) :: ans(2)
-!   END FUNCTION obj_GetDimEntityNum
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                     getNodeCoord@getMethod
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 23 July 2021
-! ! summary: This routine returns the nodal coordinates
-! !
-! !# Introduction
-! ! - This routine returns the nodal coordinates in the form of rank2 array.
-! ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
-! ! number, and the rows correspond to the component.
-! ! - If `dim` and `tag` are absent then this routine returns the nodal
-! ! coordinates of the entire domain
-! ! - If `dim` and `tag` are present then the routine selects the mesh and
-! ! returns its nodal coordinates
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim, entityNum)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-!   END SUBROUTINE obj_GetNodeCoord1
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                     getNodeCoord@getMethod
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 23 July 2021
-! ! summary: This routine returns the nodal coordinates
-! !
-! !# Introduction
-! ! - This routine returns the nodal coordinates in the form of rank2 array.
-! ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
-! ! number, and the rows correspond to the component.
-! ! - If `dim` and `tag` are absent then this routine returns the nodal
-! ! coordinates of the entire domain
-! ! - If `dim` and `tag` are present then the routine selects the mesh and
-! ! returns its nodal coordinates
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode, &
-!     & islocal)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
-!     !! It should be allocated by the user.
-!     !! SIZE(nodeCoord, 1) should be atleast obj%nsd
-!     !! Size(nodeCoord, 2) is equal to the size(globalNode)
-!     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-!     !! global node numbers (pointer to nodeCoord)
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     !! if islocal is true then we do not find local node nubmers
-!     !! in this case globalNode implies local node
-!   END SUBROUTINE obj_GetNodeCoord2
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                     GetNodeCoord@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2024-04-11
-! ! summary: This routine returns the nodal coordinates
-! !
-! !# Introduction
-! ! - This routine returns the nodal coordinates
-! ! - globalNode is global node (pointer to nodeCoord)
-! ! - if islocal is true then globalNode is local node
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalNode, &
-!     & islocal)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
-!     !! It should be allocated by the user.
-!     !! SIZE(nodeCoord, 1) should be atleast nsd
-!     INTEGER(I4B), INTENT(IN) :: globalNode
-!     !! globalNode number
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     !! if true then globalnode above is local node
-!   END SUBROUTINE obj_GetNodeCoord3
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                             getNodeCoordPointer@getMethod
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 23 July 2021
-! ! summary: This routine returns the pointer to nodal coordinates
-! !
-! !# Introduction
-! ! - This routine returns the pointer to nodal coordinates in the form of
-! ! rank2 array.
-! ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
-! ! number, and the rows correspond to the component.
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetNodeCoordPointer(obj) RESULT(ans)
-!     CLASS(Domain_), TARGET, INTENT(IN) :: obj
-!     REAL(DFP), POINTER :: ans(:, :)
-!   END FUNCTION obj_GetNodeCoordPointer
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                  getGlobalToLocalNodeNumPointer@getMethod
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 23 July 2021
-! ! summary: This routine returns the pointer to nodal coordinates
-! !
-! !# Introduction
-! ! - This routine returns the pointer to nodal coordinates in the form of
-! ! rank2 array.
-! ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
-! ! number, and the rows correspond to the component.
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetGlobalToLocalNodeNumPointer(obj) RESULT(ans)
-!     CLASS(Domain_), TARGET, INTENT(IN) :: obj
-!     INTEGER(I4B), POINTER :: ans(:)
-!   END FUNCTION obj_GetGlobalToLocalNodeNumPointer
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                         getNptrs@getMethod
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2 Sept 2021
-! ! summary: this routine returns the global node number
-! !
-! !# Introduction
-! ! This routine returns the global node number
-! ! xidim is the dimension of the mesh
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION obj_GetNptrs
-! END INTERFACE
+!# Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNptrs
+END INTERFACE
 !
 ! !----------------------------------------------------------------------------
 ! !                                                         getNptrs@getMethod

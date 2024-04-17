@@ -200,24 +200,26 @@ CONTAINS
     & obj_tElements2, obj_tElements3
   !! return total number of elements in domain, mesh, or part of domain
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
-  !! returns total number of mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
-  !! returns total number of mesh
-
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  !! Get local node numbers stored in the domain
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  !! Get local node numbers stored in the domain
   GENERIC, PUBLIC :: GetLocalNodeNumber => &
     & GetLocalNodeNumber1, &
     & GetLocalNodeNumber2
 
-  PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber1
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
-  PROCEDURE, PASS(obj) :: obj_GetGlobalNodeNumber2
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
   !! Returns the global node number of a local node number
   GENERIC, PUBLIC :: GetGlobalNodeNumber => &
-    & obj_GetGlobalNodeNumber1, &
-    & obj_GetGlobalNodeNumber2
+    & GetGlobalNodeNumber1, &
+    & GetGlobalNodeNumber2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
+  !! returns total number of mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
+  !! GetTotalMesh will be removed in future, please use GetTotalEntities
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Returns a dim entity-num of mesh which contains the element number
@@ -238,8 +240,7 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
-  GENERIC, PUBLIC :: GetNearestNode => &
-    GetNearestNode1, GetNearestNode2
+  GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! returns node number, this is a function
@@ -1179,7 +1180,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalNode, &
-    & islocal)
+                                      islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
     !! It should be allocated by the user.
@@ -1189,6 +1190,27 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then globalnode above is local node
   END SUBROUTINE obj_GetNodeCoord3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetNodeCoordPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the pointer to nodal coordinates
+!
+!# Introduction
+! - This routine returns the pointer to nodal coordinates in the form of
+! rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+
+INTERFACE
+  MODULE FUNCTION obj_GetNodeCoordPointer(obj) RESULT(ans)
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: obj
+    REAL(DFP), POINTER :: ans(:, :)
+  END FUNCTION obj_GetNodeCoordPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1232,27 +1254,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: nn
     !! number of nearest points
   END SUBROUTINE obj_GetNearestNode2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetNodeCoordPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: This routine returns the pointer to nodal coordinates
-!
-!# Introduction
-! - This routine returns the pointer to nodal coordinates in the form of
-! rank2 array.
-! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
-! number, and the rows correspond to the component.
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeCoordPointer(obj) RESULT(ans)
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: obj
-    REAL(DFP), POINTER :: ans(:, :)
-  END FUNCTION obj_GetNodeCoordPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
