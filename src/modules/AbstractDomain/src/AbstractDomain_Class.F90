@@ -282,15 +282,23 @@ CONTAINS
   !! The size of returned integer vector can be different from
   !! the total number of meshes present in domain.
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsInit => obj_IsInit
+  !! Returns obj%initiated
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
+  !! Returns obj%maxNptrs
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => obj_GetMinNodeNumber
+  !! Returns obj%minNptrs
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => obj_GetMaxElemNumber
+  !! Returns obj%maxElemNum
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
+  !! Returns obj%minElemNum
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Returns parameters
 
   ! SET:
   ! @SetMethods

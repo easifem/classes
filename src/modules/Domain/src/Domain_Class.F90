@@ -144,18 +144,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & obj_GetTotalMeshFacetData
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial1
-  ! !! return the total materials
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
-  ! !! Returns the element type of each mesh
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType =>  &
-  !   & obj_GetUniqueElemType
-  ! !! Returns the unique element type in each mesh
-  ! !! The size of returned integer vector can be different from
-  ! !! the total number of meshes present in domain.
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
+  !! return the total materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
+  !! Returns the element type of each mesh
+
   ! ! SET:
   ! ! @SetMethods
   !
@@ -702,39 +696,23 @@ INTERFACE
     !! returns the total materials in the element
   END FUNCTION obj_GetTotalMaterial
 END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                 GetElemType@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> author: Vikas Sharma, Ph. D.
-! ! date:  2023-09-23
-! ! summary:  Returns the element type of each mesh in domain
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION obj_GetElemType
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                               GetUniqueElemType@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> author: Vikas Sharma, Ph. D.
-! ! date:  2023-09-23
-! ! summary: Returns only the unique elements in the meshes of domain
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetUniqueElemType(obj, dim) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION obj_GetUniqueElemType
-! END INTERFACE
-!
+
+!----------------------------------------------------------------------------
+!                                                     GetElemType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-23
+! summary:  Returns the element type of each mesh in domain
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetElemType
+END INTERFACE
+
 ! !----------------------------------------------------------------------------
 ! !                                                     SetSparsity@setMethods
 ! !----------------------------------------------------------------------------

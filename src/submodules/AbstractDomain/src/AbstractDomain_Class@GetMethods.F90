@@ -695,13 +695,22 @@ meshptr => NULL()
 END PROCEDURE obj_GetTotalMaterial
 
 !----------------------------------------------------------------------------
+!                                                               GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemType
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetElemType
+
+!----------------------------------------------------------------------------
 !                                                         GetUniqueElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetUniqueElemType
-CHARACTER(*), PARAMETER :: myName = "obj_GetUniqueElemType()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[DEPRECATED] :: We are working on alternative.')
+ans = obj%GetElemType(dim=dim)
+CALL RemoveDuplicates(ans)
 END PROCEDURE obj_GetUniqueElemType
 
 !----------------------------------------------------------------------------
@@ -760,16 +769,6 @@ END PROCEDURE obj_GetMinNodeNumber
 MODULE PROCEDURE obj_GetMaxNodeNumber
 ans = obj%maxNptrs
 END PROCEDURE obj_GetMaxNodeNumber
-
-!----------------------------------------------------------------------------
-!                                                               GetElemType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetElemType
-CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
 !                                                           GetDimEntityNum

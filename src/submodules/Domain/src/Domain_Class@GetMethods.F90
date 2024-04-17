@@ -26,6 +26,7 @@ USE ReallocateUtility
 USE InputUtility
 USE ArangeUtility
 USE IntegerUtility
+USE Display_Method
 
 IMPLICIT NONE
 CONTAINS
@@ -603,83 +604,67 @@ IF (isok) &
   ans = SIZE(obj%meshFacetData)
 END PROCEDURE obj_GetTotalMeshFacetData
 
-! !----------------------------------------------------------------------------
-! !                                                       obj_GetElemType
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetElemType
-! CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
-! CLASS(mesh_), POINTER :: meshptr
-! INTEGER(I4B) :: ii, tMesh, idim, nsd, jj
-!
-! #ifdef DEBUG_VER
-!
-! IF (dim .GT. 3) THEN
-!   CALL e%RaiseError(modName//"::"//myName//" - "// &
-!     & "[INTERNAL ERROR] :: Dim of the mesh should be in [0,1,2,3]"//  &
-!     & " given dim is equal to "//tostring(dim))
-!   RETURN
-! END IF
-!
-! #endif
-!
-! IF (dim .LT. 0) THEN
-!   tMesh = 0
-!   nsd = obj%GetNSD()
-!   jj = 0
-!
-!   DO idim = 1, nsd
-!     tMesh = tMesh + obj%GetTotalMesh(dim=idim)
-!   END DO
-!
-!   CALL Reallocate(ans, tMesh)
-!
-!   DO idim = 1, nsd
-!     DO ii = 1, obj%GetTotalMesh(dim=idim)
-!       meshptr => obj%GetMeshPointer( &
-!         & dim=idim, &
-!         & entityNum=ii)
-!       jj = jj + 1
-!       CALL meshptr%GetParam(elemType=ans(jj))
-!     END DO
-!   END DO
-!
-!   meshptr => NULL()
-!   RETURN
-! END IF
-!
-! tMesh = obj%GetTotalMesh(dim=dim)
-! CALL Reallocate(ans, tMesh)
-!
-! DO ii = 1, tMesh
-!   meshptr => obj%GetMeshPointer( &
-!     & dim=dim, &
-!     & entityNum=ii)
-!   CALL meshptr%GetParam(elemType=ans(ii))
-! END DO
-!
-! meshptr => NULL()
-!
-! END PROCEDURE obj_GetElemType
-!
-! !----------------------------------------------------------------------------
-! !                                                         GetUniqueElemType
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetUniqueElemType
-! ans = obj%GetElemType(dim=dim)
-! CALL RemoveDuplicates(ans)
-! END PROCEDURE obj_GetUniqueElemType
-!
-! !----------------------------------------------------------------------------
-! !                                                         IsInit
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_IsInit
-! ans = obj%isInitiated
-! END PROCEDURE obj_IsInit
+!----------------------------------------------------------------------------
+!                                                       obj_GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemType
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: ii, tMesh, idim, nsd, jj
+
+#ifdef DEBUG_VER
+
+IF (dim .GT. 3) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Dim of the mesh should be in [0,1,2,3]"//  &
+    & " given dim is equal to "//tostring(dim))
+  RETURN
+END IF
+
+#endif
+
+IF (dim .LT. 0) THEN
+  tMesh = 0
+  nsd = obj%GetNSD()
+  jj = 0
+
+  DO idim = 1, nsd
+    tMesh = tMesh + obj%GetTotalMesh(dim=idim)
+  END DO
+
+  CALL Reallocate(ans, tMesh)
+
+  DO idim = 1, nsd
+    DO ii = 1, obj%GetTotalMesh(dim=idim)
+      meshptr => obj%GetMeshPointer( &
+        & dim=idim, &
+        & entityNum=ii)
+      jj = jj + 1
+      CALL meshptr%GetParam(elemType=ans(jj))
+    END DO
+  END DO
+
+  meshptr => NULL()
+  RETURN
+END IF
+
+tMesh = obj%GetTotalMesh(dim=dim)
+CALL Reallocate(ans, tMesh)
+
+DO ii = 1, tMesh
+  meshptr => obj%GetMeshPointer( &
+    & dim=dim, &
+    & entityNum=ii)
+  CALL meshptr%GetParam(elemType=ans(ii))
+END DO
+
+meshptr => NULL()
+
+END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END SUBMODULE GetMethods
