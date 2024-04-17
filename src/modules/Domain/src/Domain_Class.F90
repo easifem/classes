@@ -141,8 +141,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   !! Get Order of meshes
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
-  !   & obj_GetTotalMeshFacetData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
+    & obj_GetTotalMeshFacetData
 
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial1
   ! !! return the total materials
@@ -660,23 +660,23 @@ INTERFACE
   END FUNCTION obj_GetOrder
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                          getTotalMeshFacetData@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 24 May 2022
-! ! summary: returns size of meshFacetData
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetTotalMeshFacetData(obj, imeshFacetData) &
-!     & RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetTotalMeshFacetData
-! END INTERFACE
-!
+!----------------------------------------------------------------------------
+!                                          GetTotalMeshFacetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 May 2022
+! summary: returns size of meshFacetData
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMeshFacetData(obj, imeshFacetData) &
+    RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMeshFacetData
+END INTERFACE
+
 ! !----------------------------------------------------------------------------
 ! !                                               GetTotalMaterial@GetMethods
 ! !----------------------------------------------------------------------------

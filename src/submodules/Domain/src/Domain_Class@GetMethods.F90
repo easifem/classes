@@ -577,30 +577,32 @@ END DO
 
 END PROCEDURE obj_GetOrder
 
-! !----------------------------------------------------------------------------
-! !                                                     getTotalMeshFacetData
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetTotalMeshFacetData
-! IF (PRESENT(imeshFacetData)) THEN
-!   IF (ALLOCATED(obj%meshFacetData)) THEN
-!     IF (obj%meshFacetData(imeshFacetData)%isInitiated()) THEN
-!       ans = obj%meshFacetData(imeshFacetData)%SIZE()
-!     ELSE
-!       ans = 0
-!     END IF
-!   ELSE
-!     ans = 0
-!   END IF
-! ELSE
-!   IF (ALLOCATED(obj%meshFacetData)) THEN
-!     ans = SIZE(obj%meshFacetData)
-!   ELSE
-!     ans = 0
-!   END IF
-! END IF
-! END PROCEDURE obj_GetTotalMeshFacetData
-!
+!----------------------------------------------------------------------------
+!                                                     getTotalMeshFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalMeshFacetData
+LOGICAL(LGT) :: isok, isok2
+
+ans = 0
+IF (PRESENT(imeshFacetData)) THEN
+
+  isok = ALLOCATED(obj%meshFacetData)
+  IF (isok) THEN
+
+    isok2 = obj%meshFacetData(imeshFacetData)%isInitiated()
+    IF (isok2) &
+      ans = obj%meshFacetData(imeshFacetData)%SIZE()
+
+  END IF
+  RETURN
+END IF
+
+isok = ALLOCATED(obj%meshFacetData)
+IF (isok) &
+  ans = SIZE(obj%meshFacetData)
+END PROCEDURE obj_GetTotalMeshFacetData
+
 ! !----------------------------------------------------------------------------
 ! !                                                         GetTotalMaterial
 ! !----------------------------------------------------------------------------
