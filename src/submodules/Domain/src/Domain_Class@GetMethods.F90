@@ -604,19 +604,6 @@ IF (isok) &
 END PROCEDURE obj_GetTotalMeshFacetData
 
 ! !----------------------------------------------------------------------------
-! !                                                         GetTotalMaterial
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetTotalMaterial1
-! CLASS(mesh_), POINTER :: meshptr
-!
-! meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-! ans = meshptr%GetTotalMaterial(globalElement=globalElement, &
-!                                islocal=islocal)
-! meshptr => NULL()
-! END PROCEDURE obj_GetTotalMaterial1
-!
-! !----------------------------------------------------------------------------
 ! !                                                       obj_GetElemType
 ! !----------------------------------------------------------------------------
 !

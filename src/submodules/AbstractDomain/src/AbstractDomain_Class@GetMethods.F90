@@ -678,12 +678,21 @@ END PROCEDURE obj_GetTotalMeshFacetData
 !                                                          GetTotalMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalMaterial1
+MODULE PROCEDURE obj_GetTotalMaterial
 CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
+LOGICAL(LGT) :: isok
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+isok = ASSOCIATED(meshptr)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::obj_GetTotalMaterial - '// &
+    & '[INTERNAL ERROR] :: meshptr is not initiated.')
+  RETURN
+END IF
+
 ans = meshptr%GetTotalMaterial(globalElement=globalElement, islocal=islocal)
 meshptr => NULL()
-END PROCEDURE obj_GetTotalMaterial1
+END PROCEDURE obj_GetTotalMaterial
 
 !----------------------------------------------------------------------------
 !                                                         GetUniqueElemType

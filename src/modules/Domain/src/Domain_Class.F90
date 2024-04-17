@@ -677,31 +677,31 @@ INTERFACE
   END FUNCTION obj_GetTotalMeshFacetData
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                               GetTotalMaterial@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2021-12-09
-! ! update: 2021-12-09
-! ! summary: Returns the materials id of a given medium
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetTotalMaterial1(obj, dim, globalElement, &
-!                                         islocal, entityNum) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     !! which dimension of the mesh we should search
-!     INTEGER(I4B), INTENT(IN) :: globalElement
-!     !! global element number
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-!     !! is globalElement a local one
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-!     !! This is used for backward compatibility, default is 1
-!     INTEGER(I4B) :: ans
-!     !! returns the total materials in the element
-!   END FUNCTION obj_GetTotalMaterial1
-! END INTERFACE
+!----------------------------------------------------------------------------
+!                                               GetTotalMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMaterial(obj, dim, globalElement, &
+                                       islocal, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! which dimension of the mesh we should search
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is globalElement a local one
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! This is used for backward compatibility, default is 1
+    INTEGER(I4B) :: ans
+    !! returns the total materials in the element
+  END FUNCTION obj_GetTotalMaterial
+END INTERFACE
 !
 ! !----------------------------------------------------------------------------
 ! !                                                 GetElemType@GetMethods
