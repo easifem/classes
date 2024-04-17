@@ -22,7 +22,7 @@
 MODULE DomainConnectivity_Class
 USE BaseType
 USE GlobalData, ONLY: I4B, LGT, DFP
-USE Domain_Class, ONLY: Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 IMPLICIT NONE
@@ -365,10 +365,10 @@ INTERFACE
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity object,
     !! [[DomainConnectivity:nodeToNode]] will be initiated
-    CLASS(Domain_), INTENT(IN) :: domain1
+    CLASS(AbstractDomain_), INTENT(IN) :: domain1
     !! Primary domain, in nodeToNode(i), i denotes the
     !! global node number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
+    CLASS(AbstractDomain_), INTENT(IN) :: domain2
     !! secondary domain, => nodeToNode(i) denotes the
     !! global node number in `domain2` domain.
     INTEGER(I4B), INTENT(IN) :: dim1
@@ -408,10 +408,10 @@ INTERFACE
   MODULE SUBROUTINE dc_InitiateNodeToNodeData2(obj, domain1, domain2)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity object
-    CLASS(Domain_), INTENT(IN) :: domain1
+    CLASS(AbstractDomain_), INTENT(IN) :: domain1
     !! Primary domain, in nodeToNode(i), i denotes the
     !! global node number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
+    CLASS(AbstractDomain_), INTENT(IN) :: domain2
     !! Secondary domain => nodeToNode(i) denotes the
     !! global node number in domain2 domain.
   END SUBROUTINE dc_InitiateNodeToNodeData2
@@ -474,10 +474,10 @@ INTERFACE
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity object,
     !! [[DomainConnectivity:cellToCell]] will be initiated
-    CLASS(Domain_), INTENT(IN) :: domain1
+    CLASS(AbstractDomain_), INTENT(IN) :: domain1
     !! Primary domain, in cellToCell(i), i denotes the
     !! global element number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
+    CLASS(AbstractDomain_), INTENT(IN) :: domain2
     !! secondary domain, => cellToCell(i) denotes the
     !! global cell number in `domain2` domain.
     INTEGER(I4B), INTENT(IN) :: dim1
@@ -549,10 +549,10 @@ INTERFACE
   MODULE SUBROUTINE dc_InitiateCellToCellData2(obj, domain1, domain2)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity object
-    CLASS(Domain_), INTENT(IN) :: domain1
+    CLASS(AbstractDomain_), INTENT(IN) :: domain1
     !! Primary domain, in CellToCell(i), i denotes the
     !! global element number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
+    CLASS(AbstractDomain_), INTENT(IN) :: domain2
     !! Secondary domain => CellToCell(i) denotes the
     !! global element number in domain2 domain.
   END SUBROUTINE dc_InitiateCellToCellData2
@@ -654,9 +654,9 @@ INTERFACE
     !! Mesh connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-    CLASS(Domain_), INTENT(INOUT) :: masterDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: masterDomain
     !! Domain of master elements
-    CLASS(Domain_), INTENT(INOUT) :: slaveDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: slaveDomain
     !! Domain of slave elements
   END SUBROUTINE dc_InitiateFacetToCellData2
 END INTERFACE
@@ -707,7 +707,7 @@ INTERFACE
     !! Domain connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-    CLASS(Domain_), INTENT(INOUT) :: cellDomain
+    CLASS(AbstractDomain_), INTENT(INOUT) :: cellDomain
     !! Master mesh
   END SUBROUTINE dc_InitiateFacetToCellData4
 END INTERFACE
@@ -841,6 +841,7 @@ INTERFACE
     !! List of cell element numbers
   END FUNCTION dc_SlaveCellNumber3
 END INTERFACE
+
 !----------------------------------------------------------------------------
 !                                          masterFacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
