@@ -1061,9 +1061,10 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs)
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, tsize)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
   END SUBROUTINE obj_GetNptrs_
 END INTERFACE
 

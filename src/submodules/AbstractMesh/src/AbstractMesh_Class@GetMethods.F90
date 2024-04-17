@@ -89,7 +89,7 @@ END IF
 END PROCEDURE obj_GetBoundingEntity
 
 !----------------------------------------------------------------------------
-!                                                               GetNptrs
+!                                                                   GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs
@@ -100,14 +100,16 @@ END DO
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
-!                                                               GetNptrs_
+!                                                                  GetNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs_
-INTEGER(I4B) :: ii
-DO CONCURRENT(ii=1:SIZE(obj%nodeData))
+INTEGER(I4B) :: ii, n
+n = SIZE(obj%nodeData)
+DO CONCURRENT(ii=1:n)
   nptrs(ii) = obj%nodeData(ii)%globalNodeNum
 END DO
+IF (PRESENT(tsize)) tsize = n
 END PROCEDURE obj_GetNptrs_
 
 !----------------------------------------------------------------------------
