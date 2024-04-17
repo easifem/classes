@@ -21,47 +21,51 @@ SUBMODULE(Domain_Class) SetMethods
 ! USE DomainUtility
 IMPLICIT NONE
 CONTAINS
-!
-! !----------------------------------------------------------------------------
-! !                                                               SetSparsity
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetSparsity1
-! INTEGER(I4B) :: imesh, dim, tmesh, lb, ub
-! CLASS(Mesh_), POINTER :: meshobj
-!
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
-!
-! IF (.NOT. obj%isInitiated) THEN
-!   CALL e%raiseError(modName//"::"//myName//" - "// &
-!     & "[INTERNAL ERROR] :: Domain is not initiated, first initiate")
-! END IF
-! #endif
-!
-! ! Call SetSparsity1 from DomainUtility
-! ! CALL SetSparsity1(obj=obj, mat=mat)
-!
-! meshobj => NULL()
-! lb = LBOUND(obj%local_nptrs, 1)
-! ub = UBOUND(obj%local_nptrs, 1)
-!
-! DO dim = 1, 3
-!   tmesh = obj%getTotalMesh(dim=dim)
-!   DO imesh = 1, tmesh
-!     meshobj => obj%getMeshPointer(dim=dim, entityNum=imesh)
-!     IF (ASSOCIATED(meshobj)) &
-!       CALL meshobj%setSparsity(mat=mat, &
-!                         localNodeNumber=obj%local_nptrs, lbound=lb, ubound=ub)
-!   END DO
-! END DO
-!
-! CALL SetSparsity(mat)
-!
-! NULLIFY (meshobj)
-!
-! END PROCEDURE obj_SetSparsity1
-!
+
+!----------------------------------------------------------------------------
+!                                                               SetSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetSparsity1
+INTEGER(I4B) :: imesh, dim, tmesh, lb, ub
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Domain is not initiated, first initiate")
+  RETURN
+END IF
+#endif
+
+! Call SetSparsity1 from DomainUtility
+! CALL SetSparsity1(obj=obj, mat=mat)
+
+lb = LBOUND(obj%local_nptrs, 1)
+ub = UBOUND(obj%local_nptrs, 1)
+
+DO dim = 1, 3
+
+  tmesh = obj%GetTotalMesh(dim=dim)
+  DO imesh = 1, tmesh
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=imesh)
+    isok = ASSOCIATED(meshptr)
+    IF (isok) &
+      CALL meshptr%SetSparsity(mat=mat, &
+                        localNodeNumber=obj%local_nptrs, lbound=lb, ubound=ub)
+  END DO
+
+END DO
+
+CALL SetSparsity(mat)
+
+meshptr => NULL()
+
+END PROCEDURE obj_SetSparsity1
+
 ! !----------------------------------------------------------------------------
 ! !                                                               SetSparsity
 ! !----------------------------------------------------------------------------

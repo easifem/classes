@@ -150,14 +150,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
   !! Returns the element type of each mesh
 
-  ! ! SET:
-  ! ! @SetMethods
-  !
-  ! PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
-  ! !! Set sparsity
-  ! PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
-  ! !! Set sparsity
-  !
+  ! SET:
+  ! @SetMethods
+
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  !! Set sparsity of csrmatrix
+
+  PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
+  !! Set sparsity
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
   ! !! set the total number of materials
   !
@@ -713,20 +714,20 @@ INTERFACE
   END FUNCTION obj_GetElemType
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                                     SetSparsity@setMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 12 Oct 2021
-! ! summary: Set sparsity in [[CSRMatrix_]] from [[obj_]]
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-!   END SUBROUTINE obj_SetSparsity1
-! END INTERFACE
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[obj_]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     SetSparsity@setMethods
