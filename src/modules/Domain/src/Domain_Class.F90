@@ -136,13 +136,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     & obj_GetInternalNptrs
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => obj_GetBoundingBox
-  ! !! returns bounding box
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
-  ! !! Returns the spatial dimension of each physical entities
-  !
+  ! Get the internal node numbers in the mesh
+
   ! PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   ! !! Get Order
   !
@@ -648,41 +643,7 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetInternalNptrs
 END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                  GetBoundingBox@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 13 Oct 2021
-! ! summary: Returns bounding box
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetBoundingBox(obj, dim) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-!     !! dimension of the mesh
-!     !! if dim is not present then nodeCoord in domain is
-!     !! used for computing the bounding box
-!     TYPE(BoundingBox_) :: ans
-!   END FUNCTION obj_GetBoundingBox
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                         GetNSD@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 21 Sept 2021
-! ! summary: This routine returns the number of spatial dimensions
-!
-! INTERFACE
-!   MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
-!     CLASS(Domain_), INTENT(IN) :: obj
-!     INTEGER(I4B) :: ans
-!   END FUNCTION obj_GetNSD
-! END INTERFACE
-!
+
 ! !----------------------------------------------------------------------------
 ! !                                                        GetOrder@GetMethods
 ! !----------------------------------------------------------------------------

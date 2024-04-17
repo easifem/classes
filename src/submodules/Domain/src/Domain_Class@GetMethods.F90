@@ -578,21 +578,6 @@ END PROCEDURE obj_GetInternalNptrs
 ! END PROCEDURE obj_GetOrder
 !
 ! !----------------------------------------------------------------------------
-! !                                                             getBoundingBox
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_GetBoundingBox
-! REAL(DFP) :: lim(6)
-! INTEGER(I4B) :: nsd
-! !> main
-! lim = 0.0_DFP
-! nsd = SIZE(obj%nodeCoord, 1)
-! lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
-! lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
-! CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
-! END PROCEDURE obj_GetBoundingBox
-!
-! !----------------------------------------------------------------------------
 ! !                                                     getTotalMeshFacetData
 ! !----------------------------------------------------------------------------
 !

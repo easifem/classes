@@ -21,7 +21,8 @@
 SUBMODULE(AbstractDomain_Class) GetMethods
 USE ReallocateUtility
 USE InputUtility
-USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside
+USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
+                              BoundingBox_Initiate => Initiate
 USE F95_BLAS, ONLY: Copy
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 USE Display_Method
@@ -602,23 +603,53 @@ tnodes = jj
 END PROCEDURE obj_GetNptrsInBox_
 
 !----------------------------------------------------------------------------
+!                                                             GetBoundingBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBoundingBox
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox()"
+LOGICAL(LGT) :: acase
+
+acase = (.NOT. PRESENT(entityNum)) .AND. (.NOT. PRESENT(dim))
+IF (acase) THEN; CALL case1; ELSE; CALL case2; END IF
+
+CONTAINS
+SUBROUTINE case1
+  REAL(DFP) :: lim(6)
+  INTEGER(I4B) :: nsd
+  !> main
+  lim = 0.0_DFP
+  nsd = SIZE(obj%nodeCoord, 1)
+  lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
+  lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
+  CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
+END SUBROUTINE case1
+
+SUBROUTINE case2
+  CLASS(AbstractMesh_), POINTER :: meshptr
+  LOGICAL(LGT) :: isok
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+  isok = ASSOCIATED(meshptr)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & 'meshptr is not initiated.')
+    RETURN
+  END IF
+
+  ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
+  meshptr => NULL()
+END SUBROUTINE case2
+
+END PROCEDURE obj_GetBoundingBox
+
+!----------------------------------------------------------------------------
 !                                                                     GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNSD
 ans = obj%nsd
 END PROCEDURE obj_GetNSD
-
-!----------------------------------------------------------------------------
-!                                                             GetBoundingBox
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetBoundingBox
-CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
-ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
-meshptr => NULL()
-END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
 !                                                     GetTotalMeshFacetData

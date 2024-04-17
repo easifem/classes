@@ -1383,16 +1383,17 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 13 Oct 2021
+! date: 2024-04-17
 ! summary: Returns bounding box
 
 INTERFACE
-  MODULE FUNCTION obj_GetBoundingBox(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox(obj, dim, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of the mesh
     !! if dim is not present then nodeCoord in domain is
     !! used for computing the bounding box
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
     TYPE(BoundingBox_) :: ans
   END FUNCTION obj_GetBoundingBox
 END INTERFACE
