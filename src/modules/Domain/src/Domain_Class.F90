@@ -144,9 +144,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & obj_GetTotalMeshFacetData
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
-  !! return the total materials
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
   !! Returns the element type of each mesh
 
@@ -159,17 +156,8 @@ CONTAINS
   PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
   !! Set sparsity
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
-  ! !! set the total number of materials
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
-  ! !! set the material
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord1
-  ! !! setNodeCoord
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
+
   ! ! SET:
   ! ! @MeshDataMethods
   !
@@ -673,32 +661,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetTotalMaterial@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Returns the materials id of a given medium
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalMaterial(obj, dim, globalElement, &
-                                       islocal, entityNum) RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! which dimension of the mesh we should search
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! is globalElement a local one
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-    !! This is used for backward compatibility, default is 1
-    INTEGER(I4B) :: ans
-    !! returns the total materials in the element
-  END FUNCTION obj_GetTotalMaterial
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                     GetElemType@GetMethods
 !----------------------------------------------------------------------------
 
@@ -744,78 +706,22 @@ INTERFACE DomainSetSparsity
   END SUBROUTINE obj_SetSparsity2
 END INTERFACE DomainSetSparsity
 
-! !----------------------------------------------------------------------------
-! !                                               setTotalMaterial@setMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2021-12-09
-! ! update: 2021-12-09
-! ! summary:
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetTotalMaterial(obj, dim, n)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), INTENT(IN) :: n
-!   END SUBROUTINE obj_SetTotalMaterial
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                     SetMaterial@setMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 2021-12-09
-! ! update: 2021-12-09
-! ! summary: Set the materials id of a given medium
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetMaterial(obj, dim, entityNum, &
-!     & medium, material)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: dim
-!     INTEGER(I4B), INTENT(IN) :: entityNum
-!     INTEGER(I4B), INTENT(IN) :: medium
-!     INTEGER(I4B), INTENT(IN) :: material
-!   END SUBROUTINE obj_SetMaterial
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                   SetNodeCoord@SetMethods
-! !----------------------------------------------------------------------------
-!
-! !> author: Vikas Sharma, Ph. D.
-! ! date:  2023-02-24
-! ! summary: SetNodeCoord
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetNodeCoord1(obj, nodeCoord, scale, &
-!     & addContribution)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
-!     !! nodal coordinate in xij Format
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!   END SUBROUTINE obj_SetNodeCoord1
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                   SetQuality@SetMethods
-! !----------------------------------------------------------------------------
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-!     & min_measures, dim, entityNum)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: measures(:)
-!     REAL(DFP), INTENT(OUT) :: max_measures(:)
-!     REAL(DFP), INTENT(OUT) :: min_measures(:)
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-!   END SUBROUTINE obj_SetQuality
-! END INTERFACE
-!
+!----------------------------------------------------------------------------
+!                                                   SetQuality@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
+    & min_measures, dim, entityNum)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+  END SUBROUTINE obj_SetQuality
+END INTERFACE
+
 ! !----------------------------------------------------------------------------
 ! !                                     InitiateNodeToElements@MeshDataMethods
 ! !----------------------------------------------------------------------------

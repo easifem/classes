@@ -16,11 +16,11 @@
 !
 
 SUBMODULE(Domain_Class) SetMethods
-! USE BaseMethod
+USE BaseMethod, ONLY: MaxDFP, MinDFP
 USE BoundingBox_Method
 USE Display_Method
 USE DomainConnectivity_Class
-! USE DomainUtility
+USE ReallocateUtility
 USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
                             CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: Tostring
@@ -127,125 +127,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_SetSparsity2
-!
-! !----------------------------------------------------------------------------
-! !                                                          SetTotalMaterial
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetTotalMaterial
-! INTEGER(I4B) :: ii
-! CLASS(mesh_), POINTER :: meshptr
-!
-! DO ii = 1, obj%GetTotalMesh(dim=dim)
-!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-!   CALL meshptr%SetTotalMaterial(n)
-! END DO
-! meshptr => NULL()
-! END PROCEDURE obj_SetTotalMaterial
-!
-! !----------------------------------------------------------------------------
-! !                                                          SetTotalMaterial
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetMaterial
-! CLASS(mesh_), POINTER :: meshptr
-!
-! meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-! CALL meshptr%SetMaterial(medium=medium, material=material)
-! meshptr => NULL()
-! END PROCEDURE obj_SetMaterial
-!
-! !----------------------------------------------------------------------------
-! !                                                           SetNodeCoord
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetNodeCoord1
-! CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord1"
-! REAL(DFP) :: scale0
-!
-! IF (.NOT. ALLOCATED(obj%nodeCoord)) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!   & 'obj_::obj%nodeCoord not allocated')
-! END IF
-!
-! IF (SIZE(nodeCoord, 1) .NE. SIZE(obj%nodeCoord, 1) &
-!   & .OR. SIZE(nodeCoord, 2) .NE. SIZE(obj%nodeCoord, 2)) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!   & 'Size of nodeCoord does not match with obj_::obj%nodeCoord')
-! END IF
-!
-! scale0 = input(option=scale, default=1.0_DFP)
-!
-! IF (PRESENT(addContribution)) THEN
-!   obj%nodeCoord = obj%nodeCoord + scale * nodeCoord
-! ELSE
-!   obj%nodeCoord = nodeCoord
-! END IF
-!
-! END PROCEDURE obj_SetNodeCoord1
-!
-! !----------------------------------------------------------------------------
-! !                                                                 SetQuality
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetQuality
-! CLASS(Mesh_), POINTER :: meshptr
-! CHARACTER(*), PARAMETER :: myName = "obj_SetQuality"
-! REAL(DFP), ALLOCATABLE :: max_(:, :), min_(:, :)
-! INTEGER(I4B) :: tmesh, imesh
-!
-! IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
-!   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-!   IF (meshptr%GetTotalElements() .EQ. 0) THEN
-!     CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-!     & 'mesh if empty')
-!   ELSE
-!     CALL meshptr%SetQuality(&
-!       & measures=measures, &
-!       & max_measures=max_measures, &
-!       & min_measures=min_measures, &
-!       & nodeCoord=obj%nodeCoord, &
-!       & local_nptrs=obj%local_nptrs &
-!       & )
-!   END IF
-!   NULLIFY (meshptr)
-!   RETURN
-! END IF
-!
-! IF (PRESENT(dim) .AND. .NOT. PRESENT(entityNum)) THEN
-!   tmesh = obj%GetTotalMesh(dim=dim)
-!   CALL Reallocate(max_, SIZE(measures), tmesh)
-!   CALL Reallocate(min_, SIZE(measures), tmesh)
-!   min_(:, :) = max_(:, :)
-!
-!   DO imesh = 1, tmesh
-!     meshptr => obj%GetMeshPointer(dim=dim, entityNum=imesh)
-!     IF (meshptr%GetTotalElements() .EQ. 0) THEN
-!       max_(:, imesh) = -1 * MaxDFP
-!       min_(:, imesh) = MaxDFP
-!     ELSE
-!       CALL meshptr%SetQuality(&
-!         & measures=measures, &
-!         & max_measures=max_(:, imesh), &
-!         & min_measures=min_(:, imesh), &
-!         & nodeCoord=obj%nodeCoord, &
-!         & local_nptrs=obj%local_nptrs &
-!         & )
-!     END IF
-!   END DO
-!
-!   max_measures = MAXVAL(max_, dim=2)
-!   min_measures = MINVAL(min_, dim=2)
-!   NULLIFY (meshptr)
-!   DEALLOCATE (max_, min_)
-!   RETURN
-! END IF
-!
-! CALL e%RaiseError(modName//'::'//myName//' - '// &
-!   & 'No case found')
-!
-! END PROCEDURE obj_SetQuality
-!
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -505,6 +387,74 @@ SUBROUTINE SetSparsity3(domains, mat)
 #endif
 
 END SUBROUTINE SetSparsity3
+
+!----------------------------------------------------------------------------
+!                                                                 SetQuality
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuality
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuality()"
+LOGICAL(LGT) :: acase
+
+acase = PRESENT(dim) .AND. PRESENT(entityNum)
+IF (acase) THEN; CALL case1; RETURN; END IF
+
+acase = PRESENT(dim) .AND. .NOT. PRESENT(entityNum)
+IF (acase) THEN; CALL case2; RETURN; END IF
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[INTERNAL ERROR] :: No case found')
+
+CONTAINS
+SUBROUTINE case1
+  LOGICAL(LGT) :: isok
+  CLASS(AbstractMesh_), POINTER :: meshptr
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+  isok = meshptr%GetTotalElements() .EQ. 0
+
+  IF (.NOT. isok) THEN
+
+    CALL meshptr%SetQuality(measures=measures, max_measures=max_measures, &
+                         min_measures=min_measures, nodeCoord=obj%nodeCoord, &
+                            local_nptrs=obj%local_nptrs)
+
+  END IF
+
+  NULLIFY (meshptr)
+END SUBROUTINE case1
+
+SUBROUTINE case2
+  CLASS(AbstractMesh_), POINTER :: meshptr
+  INTEGER(I4B) :: tmesh, imesh
+  REAL(DFP), ALLOCATABLE :: max_(:, :), min_(:, :)
+
+  tmesh = obj%GetTotalMesh(dim=dim)
+  CALL Reallocate(max_, SIZE(measures), tmesh)
+  CALL Reallocate(min_, SIZE(measures), tmesh)
+  min_(:, :) = max_(:, :)
+
+  DO imesh = 1, tmesh
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=imesh)
+    IF (meshptr%GetTotalElements() .EQ. 0) THEN
+      max_(:, imesh) = -1 * MaxDFP
+      min_(:, imesh) = MaxDFP
+    ELSE
+     CALL meshptr%SetQuality(measures=measures, max_measures=max_(:, imesh), &
+                       min_measures=min_(:, imesh), nodeCoord=obj%nodeCoord, &
+                              local_nptrs=obj%local_nptrs)
+
+    END IF
+  END DO
+
+  max_measures = MAXVAL(max_, dim=2)
+  min_measures = MINVAL(min_, dim=2)
+  NULLIFY (meshptr)
+  DEALLOCATE (max_, min_)
+END SUBROUTINE case2
+
+END PROCEDURE obj_SetQuality
 
 !----------------------------------------------------------------------------
 !

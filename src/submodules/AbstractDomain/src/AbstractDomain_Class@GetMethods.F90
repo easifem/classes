@@ -26,6 +26,7 @@ USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
 USE F95_BLAS, ONLY: Copy
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 USE Display_Method
+USE IntegerUtility, ONLY: RemoveDuplicates
 IMPLICIT NONE
 CONTAINS
 

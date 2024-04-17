@@ -287,10 +287,25 @@ END SUBROUTINE part2_obj_Set_sparsity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMaterial
+INTEGER(I4B) :: ii, tsize
 CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
-CALL meshptr%SetTotalMaterial(n)
+
+IF (PRESENT(entityNum)) THEN
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+  CALL meshptr%SetTotalMaterial(n)
+  meshptr => NULL()
+
+  RETURN
+END IF
+
+tsize = obj%GetTotalEntities(dim=dim)
+DO ii = 1, tsize
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
+  CALL meshptr%SetTotalMaterial(n)
+END DO
 meshptr => NULL()
+
 END PROCEDURE obj_SetTotalMaterial
 
 !----------------------------------------------------------------------------
@@ -299,7 +314,17 @@ END PROCEDURE obj_SetTotalMaterial
 
 MODULE PROCEDURE obj_SetMaterial
 CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer(dim=dim)
+LOGICAL(LGT) :: isok
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+isok = ASSOCIATED(meshptr)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::obj_SetMaterial - '// &
+    & '[INTERNAL ERROR] :: meshptr not associated')
+  RETURN
+END IF
+
 CALL meshptr%SetMaterial(medium=medium, material=material, &
                          entityNum=entityNum)
 meshptr => NULL()
@@ -309,7 +334,7 @@ END PROCEDURE obj_SetMaterial
 !                                                              SetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetNodeCoord1
+MODULE PROCEDURE obj_SetNodeCoord
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord1()"
 LOGICAL(LGT) :: problem
@@ -356,7 +381,7 @@ DO CONCURRENT(ii=1:tnodes)
   obj%nodeCoord(1:nsd, ii) = nodeCoord(1:nsd, ii)
 END DO
 
-END PROCEDURE obj_SetNodeCoord1
+END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                 SetQuality

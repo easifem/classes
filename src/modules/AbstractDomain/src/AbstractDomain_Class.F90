@@ -316,7 +316,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! set the material
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord1 => obj_SetNodeCoord1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! setNodeCoord
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
@@ -1672,15 +1672,18 @@ END INTERFACE AbstractDomainSetSparsity
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
+! date:  2024-04-17
 ! summary:
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial(obj, dim, n)
+  MODULE SUBROUTINE obj_SetTotalMaterial(obj, dim, n, entityNum)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh to select from
     INTEGER(I4B), INTENT(IN) :: n
+    !! Total number of materials
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number of given dimension
   END SUBROUTINE obj_SetTotalMaterial
 END INTERFACE
 
@@ -1717,14 +1720,14 @@ END INTERFACE
 ! summary: Set the node coordinate of the domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetNodeCoord1(obj, nodeCoord, scale, &
+  MODULE SUBROUTINE obj_SetNodeCoord(obj, nodeCoord, scale, &
     & addContribution)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     !! nodal coordinate in xij Format
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_SetNodeCoord1
+  END SUBROUTINE obj_SetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
