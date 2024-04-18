@@ -105,7 +105,6 @@ CONTAINS
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   PROCEDURE, PASS(obj) :: SetSparsity3 => obj_SetSparsity3
   PROCEDURE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
 
@@ -373,23 +372,6 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                SetSparsity@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 Oct 2021
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity2(obj, mat)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! Mesh_ class
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! CSRMatrix object
-  END SUBROUTINE obj_SetSparsity2
 END INTERFACE
 
 !----------------------------------------------------------------------------

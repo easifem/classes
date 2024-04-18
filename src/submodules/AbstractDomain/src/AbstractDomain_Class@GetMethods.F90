@@ -683,6 +683,7 @@ MODULE PROCEDURE obj_GetTotalMaterial
 CLASS(AbstractMesh_), POINTER :: meshptr
 LOGICAL(LGT) :: isok
 
+ans = 0
 meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 isok = ASSOCIATED(meshptr)
 IF (.NOT. isok) THEN

@@ -21,36 +21,10 @@ USE BaseMethod
 USE Mesh_Class
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: SetSparsity2
 PUBLIC :: SetSparsity3
 PUBLIC :: SetSparsity4
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE SetSparsity2(obj, mat)
-  CLASS(Mesh_), INTENT(INOUT) :: obj
-  ! Mesh_ class
-  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  ! CSRMatrix object
-  !
-  INTEGER(I4B) :: i, j, tNodes
-  INTEGER(I4B), ALLOCATABLE :: n2n(:)
-
-  tNodes = obj%getTotalNodes()
-
-  DO i = 1, tNodes
-    j = obj%getGlobalNodeNumber(LocalNode=i)
-    n2n = obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.)
-    CALL SetSparsity(obj=Mat, Row=j, Col=n2n)
-  END DO
-
-  IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
-
-END SUBROUTINE SetSparsity2
 
 !----------------------------------------------------------------------------
 !
