@@ -39,15 +39,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-IF (obj%isNodeToElementsInitiated) THEN
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-    & "[INFO] :: NodeToElements is already initiated.")
-  RETURN
-END IF
+IF (obj%isNodeToElementsInitiated) RETURN
+obj%isNodeToElementsInitiated = .TRUE.
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-obj%isNodeToElementsInitiated = .TRUE.
 
 nodewise_size = 0
 
@@ -104,11 +99,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-IF (obj%isNodeToNodesInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "Node to node information is already initiated.")
-  RETURN
-END IF
+IF (obj%isNodeToNodesInitiated) RETURN
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -185,20 +176,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! IF (problem) RETURN
 
 problem = obj%isExtraNodeToNodesInitiated
-IF (problem) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Node to node information is already initiated")
-  RETURN
-END IF
+IF (problem) RETURN
 
-IF (.NOT. obj%isNodeToNodesInitiated) &
-  & CALL obj%InitiateNodeToNodes()
+IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
 
-IF (.NOT. obj%isNodeToElementsInitiated) &
-  & CALL obj%InitiateNodeToElements()
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
-IF (.NOT. obj%isElementToElementsInitiated) &
-  & CALL obj%InitiateElementToElements()
+IF (.NOT. obj%isElementToElementsInitiated) CALL obj%InitiateElementToElements()
 
 DO iLocalNode = 1, obj%tNodes
   iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)

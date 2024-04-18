@@ -53,6 +53,12 @@ CALL Display(obj%isNodeToNodesInitiated, "isNodeToNodesInitiated: ", &
 CALL Display(obj%isElementToElementsInitiated,&
   & "isElementToElementsInitiated: ", unitno=unitno)
 
+CALL Display(obj%isEdgeConnectivityInitiated,&
+  & "isEdgeConnectivityInitiated: ", unitno=unitno)
+
+CALL Display(obj%isFaceConnectivityInitiated,&
+  & "isFaceConnectivityInitiated: ", unitno=unitno)
+
 CALL Display(obj%isBoundaryDataInitiated,  &
   & "isBoundaryDataInitiated: ", unitno=unitno)
 

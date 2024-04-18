@@ -40,7 +40,7 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateFaceConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFaceConnectivity()"
 INTEGER(I4B) :: tElements, iel, elemType, tFaces,  &
-  & localFaces(4_I4B, REFELEM_MAX_FACES), face(4), sorted_face(4),  &
+  & localFaces(4_I4B, REFELEM_MAX_FACES), face0(4), sorted_face(4),  &
   & tNodes, tsize1, tsize2, iface,  &
   & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
   & aint, faceOrient(3_I4B)
@@ -55,13 +55,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 problem = obj%isFaceConnectivityInitiated
-IF (problem) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractMesh_::obj face connectivity is already initiated.')
-  RETURN
-END IF
+IF (problem) RETURN
 
-#ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
 
 IF (problem) THEN
@@ -69,7 +64,6 @@ IF (problem) THEN
     & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
   RETURN
 END IF
-#endif
 
 tElements = obj%GetTotalElements()
 
@@ -94,14 +88,14 @@ DO iel = 1, tElements
 
     aint = tFaceNodes(iface)
 
-    face(1:aint) = obj%elementData(iel)%globalNodes(localFaces(1:aint, iface))
+   face0(1:aint) = obj%elementData(iel)%globalNodes(localFaces(1:aint, iface))
 
     abool = IsQuadrangle(faceElemType(iface))
     IF (abool) THEN
-      CALL FaceShapeMetaData_Quadrangle(face=face(1:aint),  &
+      CALL FaceShapeMetaData_Quadrangle(face=face0(1:aint),  &
         & sorted_face=sorted_face(1:aint), faceOrient=faceOrient)
     ELSE
-      CALL FaceShapeMetaData_Triangle(face=face(1:aint),  &
+      CALL FaceShapeMetaData_Triangle(face=face0(1:aint),  &
         & sorted_face=sorted_face(1:aint), faceOrient=faceOrient)
     END IF
 

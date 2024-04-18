@@ -62,7 +62,7 @@ ALLOCATE (obj%facetData(tface))
 CALL Reallocate(masks, tface)
 masks = .FALSE.
 
-CALL obj%SetParam(isFacetDataInitiated=.TRUE.)
+obj%isFacetDataInitiated = .TRUE.
 
 telements = obj%GetTotalElements()
 DO iel = 1, telements

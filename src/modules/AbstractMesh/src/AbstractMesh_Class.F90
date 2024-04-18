@@ -280,6 +280,10 @@ CONTAINS
 
   !  GET:
   ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
+  !! Get the element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get number of nodes in an element
 
@@ -957,6 +961,23 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayMeshInfo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetElemData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemData(obj, elemdata, globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(in) :: obj
+    TYPE(ElemData_), INTENT(INOUT) :: elemdata
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetElemData
 END INTERFACE
 
 !----------------------------------------------------------------------------

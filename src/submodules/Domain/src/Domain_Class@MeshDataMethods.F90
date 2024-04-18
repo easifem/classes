@@ -91,7 +91,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
 END PROCEDURE obj_InitiateFacetElements
 
 !----------------------------------------------------------------------------
-!                                                     InitiateExtraNodeToNodes
+!                                                    InitiateExtraNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateExtraNodeToNodes

@@ -39,6 +39,16 @@ INTEGER(I4B), PARAMETER :: MaxNodesInElement = 125
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemData
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+elemdata = obj%elementData(iel)
+END PROCEDURE obj_GetElemData
+
+!----------------------------------------------------------------------------
 !                                                                  GetNNE
 !----------------------------------------------------------------------------
 

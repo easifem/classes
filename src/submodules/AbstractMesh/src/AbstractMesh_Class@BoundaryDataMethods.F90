@@ -30,19 +30,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-! check
-#ifdef DEBUG_VER
-IF (obj%isBoundaryDataInitiated) THEN
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-    & "[INFO] :: Boundary data information is already initiated.")
-  RETURN
-END IF
-
-#else
-
 IF (obj%isBoundaryDataInitiated) RETURN
-
-#endif
 
 CALL obj%InitiateElementToElements()
 

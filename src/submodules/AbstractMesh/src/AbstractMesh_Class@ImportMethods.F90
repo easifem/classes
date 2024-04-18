@@ -45,8 +45,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 group0 = Input(option=group, default="")
 
-CALL obj%DEALLOCATE()
-
 isArg = [PRESENT(group), PRESENT(dim), PRESENT(entities)]
 
 cases(1) = (.NOT. isArg(2)) .AND. (.NOT. isArg(3))

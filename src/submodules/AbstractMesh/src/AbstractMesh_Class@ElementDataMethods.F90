@@ -40,44 +40,39 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 problem = .NOT. ALLOCATED(obj%elementData)
 
-#ifdef DEBUG_VER
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
   RETURN
 END IF
-#endif
+
+IF (obj%isElementToElementsInitiated) RETURN
+obj%isElementToElementsInitiated = .TRUE.
 
 SELECT CASE (obj%xidim)
 CASE (0_I4B)
 
 CASE (1_I4B)
 
-  CALL InitiateElementToElements1D( &
-    & elementData=obj%elementData,  &
-    & tNodesInMesh=obj%tNodes, &
-    & showTime=obj%showTime, &
-    & local_nptrs=obj%local_nptrs)
+  CALL InitiateElementToElements1D(elementData=obj%elementData, &
+                             tNodesInMesh=obj%tNodes, showTime=obj%showTime, &
+                                   local_nptrs=obj%local_nptrs)
 
 CASE (2_I4B)
 
   problem = .NOT. obj%isEdgeConnectivityInitiated
-  IF (problem) THEN
-    CALL obj%InitiateEdgeConnectivity()
-  END IF
-  CALL InitiateElementToElements2D( &
-    & elementData=obj%elementData,  &
-    & tEdgeInMesh=obj%tEdges, &
-    & showTime=obj%showTime)
+  IF (problem) CALL obj%InitiateEdgeConnectivity()
+
+  CALL InitiateElementToElements2D(elementData=obj%elementData, &
+                                tEdgeInMesh=obj%tEdges, showTime=obj%showTime)
 
 CASE (3_I4B)
 
   problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) THEN
-    CALL obj%InitiateFaceConnectivity()
-  END IF
-  CALL InitiateElementToElements3D(elementData=obj%elementData,  &
-    & tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+  IF (problem) CALL obj%InitiateFaceConnectivity()
+
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &

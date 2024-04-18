@@ -41,6 +41,7 @@ PUBLIC :: ElemData_SetID
 PUBLIC :: ElemData_Copy
 PUBLIC :: ElemData_GetGlobalFaceCon
 PUBLIC :: ElemData_SetTotalMaterial
+PUBLIC :: ASSIGNMENT(=)
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -56,6 +57,10 @@ END INTERFACE Display
 INTERFACE ElemDataDeallocate
   MODULE PROCEDURE ElemData_Deallocate
 END INTERFACE ElemDataDeallocate
+
+INTERFACE ASSIGNMENT(=)
+  MODULE PROCEDURE ElemData_Copy
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 ElemData_
@@ -170,11 +175,14 @@ SUBROUTINE ElemData_Copy(obj1, obj2)
   obj1%localElemNum = obj2%localElemNum
   obj1%elementType = obj2%elementType
   obj1%name = obj2%name
+  obj1%meshID = obj2%meshID
 
+  IF (ALLOCATED(obj2%material)) obj1%material = obj2%material
   IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
   IF (ALLOCATED(obj2%globalEdges)) obj1%globalEdges = obj2%globalEdges
+  IF (ALLOCATED(obj2%edgeOrient)) obj1%edgeOrient = obj2%edgeOrient
   IF (ALLOCATED(obj2%globalFaces)) obj1%globalFaces = obj2%globalFaces
-
+  IF (ALLOCATED(obj2%faceOrient)) obj1%faceOrient = obj2%faceOrient
   IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
     & = obj2%globalElements
   IF (ALLOCATED(obj2%boundaryData)) obj1%boundaryData&

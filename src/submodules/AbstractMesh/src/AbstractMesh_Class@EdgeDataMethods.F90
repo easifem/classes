@@ -48,13 +48,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 problem = obj%isEdgeConnectivityInitiated
-IF (problem) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractMesh_::obj edge connectivity already initiated,')
-  RETURN
-END IF
+IF (problem) RETURN
 
-#ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
 
 IF (problem) THEN
@@ -62,7 +57,6 @@ IF (problem) THEN
     & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
   RETURN
 END IF
-#endif
 
 tElements = obj%GetTotalElements()
 
