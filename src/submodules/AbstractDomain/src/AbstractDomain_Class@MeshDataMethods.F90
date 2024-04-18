@@ -170,10 +170,6 @@ IF (.NOT. isok) CALL masterMesh%InitiateBoundaryData()
 telements = masterMesh%GetTotalElements()
 
 DO iel = 1, telements
-  isok = masterMesh%isElementPresent(globalElement=iel, &
-                                     islocal=.TRUE.)
-  IF (.NOT. isok) CYCLE
-
   isok = masterMesh%isBoundaryElement(globalElement=iel, &
                                       islocal=.TRUE.)
   IF (.NOT. isok) CYCLE

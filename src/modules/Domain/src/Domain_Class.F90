@@ -158,45 +158,45 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
 
-  ! ! SET:
-  ! ! @MeshDataMethods
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-  !   & obj_InitiateNodeToElements
-  ! !! Initiate node to element data
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-  !   & obj_InitiateNodeToNodes
-  ! !! Initiate node to node data
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-  !     & obj_InitiateElementToElements
-  ! !! Initiate element to element data
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-  !     & obj_InitiateBoundaryData
-  ! !! Initiate element to element data
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-  !     & obj_InitiateFacetElements
-  ! !! Initiate element to element data
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-  !     & obj_InitiateExtraNodeToNodes
-  ! !! Initiate extra node to nodes information for edge based methods
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-  !   & obj_SetFacetElementType
-  ! !! Set facet element of meshes
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
-  !   & obj_SetDomainFacetElement
-  ! !! Set facet element of meshes
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
-  !
-  ! PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-  !   & obj_SetMeshFacetElement
+  ! SET:
+  ! @MeshDataMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
+    obj_InitiateNodeToElements
+  !! Initiate node to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
+    obj_InitiateNodeToNodes
+  !! Initiate node to node data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
+    obj_InitiateElementToElements
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
+      & obj_InitiateBoundaryData
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
+      & obj_InitiateFacetElements
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
+      & obj_InitiateExtraNodeToNodes
+  !! Initiate extra node to nodes information for edge based methods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
+    & obj_SetFacetElementType
+  !! Set facet element of meshes
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
+    & obj_SetDomainFacetElement
+  !! Set facet element of meshes
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
+    & obj_SetMeshFacetElement
 
 END TYPE Domain_
 
@@ -722,192 +722,192 @@ INTERFACE
   END SUBROUTINE obj_SetQuality
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                     InitiateNodeToElements@MeshDataMethods
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                     InitiateNodeToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-elements data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        InitiateNodeToNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-nodes data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the element-to-element data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateElementToElements(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateBoundaryData@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the boundarydata info in mesh of domain
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the node-to-elements data in mesh of domain
+!# Introduction
 !
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateNodeToElements
-! END INTERFACE
+! This routine sets the boundary data info in mesh of domain.
+! This routine calls `InitiateBoundarydata` on each mesh
+! Then, it calls SetFacetElementType() on domain object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      InitiateFacetElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the facet elements data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFacetElements(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateExtraNodeToNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-nodes data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateExtraNodeToNodes(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateExtraNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       SetFacetElementType@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 April 2022
+! summary: This routine sets the domain boundary element for cells and faces
 !
-! !----------------------------------------------------------------------------
-! !                                        InitiateNodeToNodes@MeshDataMethods
-! !----------------------------------------------------------------------------
+!# Introduction
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the node-to-nodes data in mesh of domain
+! The boudnary element of mesh may not be domain boundary element. This
+! is because mesh does not have information of surrounding mesh. Therefore
+! for mesh methods there is no distinction between boundary element
+! and domain-boundary-element. And mesh-method set all of its boundary-elem
+! to domain-elem.
 !
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateNodeToNodes
-! END INTERFACE
+! This methods correctly identifies the domain-boundary-element from
+! mesh boundary-element.
+! In this way the mesh-boundary-element, which are not domain-boundary-element
+! can be treated as the interface element between two meshes.
 !
-! !----------------------------------------------------------------------------
-! !                                  InitiateElementToElements@MeshDataMethods
-! !----------------------------------------------------------------------------
+! This methods needs following information:
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the element-to-element data in mesh of domain
+!- boundary element data should be initiated for each mesh, this means
+! a call to InitiateBoundaryElementData is necessary
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFacetElementType(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetFacetElementType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      SetDomainFacetElement@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 April 2022
+! summary: This routine sets the domain boundary element for cells and faces
 !
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateElementToElements(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateElementToElements
-! END INTERFACE
+!# Introduction
 !
-! !----------------------------------------------------------------------------
-! !                                       InitiateBoundaryData@MeshDataMethods
-! !----------------------------------------------------------------------------
+! This routine sets the domain boundary element for cells and faces.
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the boundarydata info in mesh of domain
-! !
-! !# Introduction
-! !
-! ! This routine sets the boundary data info in mesh of domain.
-! ! This routine calls `InitiateBoundarydata` on each mesh
-! ! Then, it calls SetFacetElementType() on domain object.
+! When we call [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! for mesh,
+! we can only identify boundary-facet-elements (i.e., boundary elements
+! of the mesh).
+! Moreover, when we call
+! [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! from mesh or domain, all the facet elements are tagged
+! as `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateBoundaryData
-! END INTERFACE
+! However, some of these boundary facet-elements will be located at the
+! domain’s boundary.
+! These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! !----------------------------------------------------------------------------
-! !                                      InitiateFacetElements@MeshDataMethods
-! !----------------------------------------------------------------------------
+! Some of the facet elements will be at located at the interface of two
+! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
 !
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the facet elements data in mesh of domain
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateFacetElements(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateFacetElements
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                   InitiateExtraNodeToNodes@MeshDataMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 4 Nov 2022
-! ! summary: This routine sets the node-to-nodes data in mesh of domain
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_InitiateExtraNodeToNodes(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_InitiateExtraNodeToNodes
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                       SetFacetElementType@MeshDataMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 14 April 2022
-! ! summary: This routine sets the domain boundary element for cells and faces
-! !
-! !# Introduction
-! !
-! ! The boudnary element of mesh may not be domain boundary element. This
-! ! is because mesh does not have information of surrounding mesh. Therefore
-! ! for mesh methods there is no distinction between boundary element
-! ! and domain-boundary-element. And mesh-method set all of its boundary-elem
-! ! to domain-elem.
-! !
-! ! This methods correctly identifies the domain-boundary-element from
-! ! mesh boundary-element.
-! ! In this way the mesh-boundary-element, which are not domain-boundary-element
-! ! can be treated as the interface element between two meshes.
-! !
-! ! This methods needs following information:
-! !
-! !- boundary element data should be initiated for each mesh, this means
-! ! a call to InitiateBoundaryElementData is necessary
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetFacetElementType(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_SetFacetElementType
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                      SetDomainFacetElement@MeshDataMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 14 April 2022
-! ! summary: This routine sets the domain boundary element for cells and faces
-! !
-! !# Introduction
-! !
-! ! This routine sets the domain boundary element for cells and faces.
-! !
-! ! When we call [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
-! ! for mesh,
-! ! we can only identify boundary-facet-elements (i.e., boundary elements
-! ! of the mesh).
-! ! Moreover, when we call
-! ! [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
-! ! from mesh or domain, all the facet elements are tagged
-! ! as `DOMAIN_BOUNDARY_ELEMENT`.
-! !
-! ! However, some of these boundary facet-elements will be located at the
-! ! domain’s boundary.
-! ! These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
-! !
-! ! Some of the facet elements will be at located at the interface of two
-! ! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
-! !
-! ! This method correctly differentiates between `BOUNDARY_ELEMENT`  and
-! ! `DOMAIN_BOUNDARY_ELEMENT`.
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetDomainFacetElement(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_SetDomainFacetElement
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                 SetMeshmap@MeshDataMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 20 May 2022
-! ! summary: This routine sets meshMap
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetMeshmap(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_SetMeshmap
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                        SetMeshFacetElement@MeshDataMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 20 May 2022
-! ! summary: This routine sets meshFacetData
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetMeshFacetElement(obj)
-!     CLASS(Domain_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_SetMeshFacetElement
-! END INTERFACE
+! This method correctly differentiates between `BOUNDARY_ELEMENT`  and
+! `DOMAIN_BOUNDARY_ELEMENT`.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetDomainFacetElement(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetDomainFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetMeshmap@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: This routine sets meshMap
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMeshmap(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMeshmap
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        SetMeshFacetElement@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: This routine sets meshFacetData
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMeshFacetElement(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMeshFacetElement
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

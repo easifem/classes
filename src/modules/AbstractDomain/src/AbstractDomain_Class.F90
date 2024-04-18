@@ -355,14 +355,15 @@ CONTAINS
     & obj_SetFacetElementType
   !! Set facet element of meshes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => &
-    & obj_SetMeshmap
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-    & obj_SetMeshFacetElement
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
     & obj_SetDomainFacetElement
   !! Set facet element of meshes
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
+  !! valid for old style domain only
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
+    & obj_SetMeshFacetElement
 
 END TYPE AbstractDomain_
 
