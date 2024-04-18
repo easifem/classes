@@ -16,11 +16,11 @@
 !
 
 SUBMODULE(Domain_Class) SetMethods
-USE BaseMethod, ONLY: MaxDFP, MinDFP
-USE BoundingBox_Method
+USE GlobalData, ONLY: MaxDFP, MinDFP
+USE BoundingBox_Method, ONLY: OPERATOR(.isIntersect.)
 USE Display_Method
-USE DomainConnectivity_Class
-USE ReallocateUtility
+USE DomainConnectivity_Class, ONLY: DomainConnectivity_
+USE ReallocateUtility, ONLY: Reallocate
 USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
                             CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: Tostring
