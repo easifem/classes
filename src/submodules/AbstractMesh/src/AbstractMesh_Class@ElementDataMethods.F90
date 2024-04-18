@@ -101,7 +101,7 @@ END PROCEDURE obj_InitiateElementToElements
 SUBROUTINE MarkInternalNodes(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
-  INTEGER(I4B) :: ii, jj, tsize, tElements, kk
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
@@ -126,7 +126,8 @@ SUBROUTINE MarkInternalNodes(obj)
         & iface=obj%elementData(ii)%boundaryData(jj),  &
         & isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
-        obj%nodeData(nptrs(kk))%nodeType = TypeNode%domainBoundary
+        ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
+        obj%nodeData(ll)%nodeType = TypeNode%domainBoundary
       END DO
     END DO
 
