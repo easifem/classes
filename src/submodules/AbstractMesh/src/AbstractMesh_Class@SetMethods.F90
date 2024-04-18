@@ -59,21 +59,16 @@ END PROCEDURE obj_SetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
 INTEGER(I4B) :: tsize
-#endif
 LOGICAL(LGT) :: problem
-
-INTEGER(I4B) :: i, j, k, tNodes, tsize
+INTEGER(I4B) :: i, j, k, tNodes, ii
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
-
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -89,8 +84,6 @@ IF (problem) THEN
   RETURN
 END IF
 
-#endif
-
 ! check
 problem = .NOT. obj%isNodeToNodesInitiated
 IF (problem) CALL obj%InitiateNodeToNodes()
@@ -103,13 +96,17 @@ tNodes = obj%GetTotalNodes()
 ! each thread will call setSparsity with its own copy of n2n
 
 DO i = 1, tNodes
-  j = obj%GetglobalNodeNumber(localNode=i)
+  j = obj%GetGlobalNodeNumber(localNode=i)
   k = localNodeNumber(j)
 
   IF (k .EQ. 0) CYCLE
 
   CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
     & ans=n2n, tsize=tsize, islocal=.TRUE.)
+
+  DO ii = 1, tsize
+    n2n(ii) = localNodeNumber(n2n(ii))
+  END DO
 
   CALL SetSparsity(obj=mat, row=k, col=n2n(1:tsize))
 
