@@ -97,10 +97,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   !! Returns the order ofthe element of mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity => &
-    obj_GetFacetConnectivity
-  !! Return the node nubmers in the facet element of a cellElement
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
@@ -321,31 +317,6 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Returns the connectivity of a facet element of a cellElement
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element of a cellElement
-! - globalElement is global element number of cell number
-! - iface is the local face number in globalElement
-
-INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
-    & iface, islocal) RESULT(ans)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), INTENT(IN) :: iface
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------

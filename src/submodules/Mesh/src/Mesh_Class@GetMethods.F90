@@ -36,19 +36,6 @@ ans = obj%refelem%order
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
-!                                                      GetFacetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetConnectivity
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
-nptrs = obj%GetConnectivity(globalElement=globalElement)
-indx = GetConnectivity(obj%facetElements(iface))
-ans = nptrs(indx)
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-IF (ALLOCATED(indx)) DEALLOCATE (indx)
-END PROCEDURE obj_GetFacetConnectivity
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
