@@ -102,12 +102,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
-  ! SET:
-  ! @SetMethods
-
-  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_SetSparsity3
-  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
-
   !GET:
   ! @GetMethods
 
@@ -372,64 +366,6 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 Oct 2021
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity3(obj, colMesh, nodeToNode, mat, &
-    & ivar, jvar)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
-    CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
-    INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-    !! Node to node connectivity between obj and colMesh
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: jvar
-  END SUBROUTINE obj_SetSparsity3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 Oct 2021
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
-  & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
-  & colLBOUND, colUBOUND, ivar, jvar)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
-    CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
-    INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-    !! node to node connectivity between obj and colMesh
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
-    INTEGER(I4B), INTENT(IN) :: rowLBOUND
-    INTEGER(I4B), INTENT(IN) :: rowUBOUND
-    INTEGER(I4B), INTENT(IN) :: rowGlobalToLocalNodeNum( &
-      & rowLBOUND:rowUBOUND)
-    !! Global to local node number map
-    INTEGER(I4B), INTENT(IN) :: colLBOUND
-    INTEGER(I4B), INTENT(IN) :: colUBOUND
-    INTEGER(I4B), INTENT(IN) :: colGlobalToLocalNodeNum( &
-      & colLBOUND:colUBOUND)
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: jvar
-  END SUBROUTINE obj_SetSparsity4
 END INTERFACE
 
 !----------------------------------------------------------------------------

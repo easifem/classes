@@ -185,8 +185,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
@@ -205,8 +203,6 @@ IF (problem) THEN
     & "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
   RETURN
 END IF
-
-#endif
 
 ! check
 IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
@@ -248,8 +244,72 @@ END PROCEDURE obj_SetSparsity3
 
 MODULE PROCEDURE obj_SetSparsity4
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity4()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: isok
+
+INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
+                temp(PARAM_MAX_NODE_TO_NODE), ll, jj, kk, row
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+IF (.NOT. colMesh%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+isok = SIZE(nodeToNode) .GE. obj%GetMaxNodeNumber()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs "//  &
+    & "[easifemClasses ISSUE#63]")
+  RETURN
+END IF
+
+isok = obj%isNodeToNodesInitiated
+IF (.NOT. isok) CALL obj%InitiateNodeToNodes()
+
+DO ii = 1, obj%tNodes
+
+  CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
+                         !! n2n(1) will contains the global node for ii
+  row = rowGlobalToLocalNodeNum(n2n(1))
+
+  ll = 0
+  DO jj = 1, tsize
+    kk = nodeToNode(n2n(jj))
+    isok = colMesh%IsNodePresent(globalNode=kk, islocal=.FALSE.)
+
+    IF (isok) THEN
+      ll = ll + 1
+      temp(ll) = kk
+    END IF
+
+  END DO
+
+  DO jj = 1, ll
+    temp(jj) = colGlobalToLocalNodeNum(temp(jj))
+  END DO
+
+  IF (ll .EQ. 0) CYCLE
+  CALL SetSparsity(obj=Mat, row=row, col=temp(1:ll), ivar=ivar, jvar=jvar)
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_SetSparsity4
 
 !----------------------------------------------------------------------------
