@@ -117,8 +117,8 @@ SUBROUTINE MarkInternalNodes(obj)
 
   DO ii = 1, tElements
 
-    isok = .NOT. (obj%isBoundaryElement(ii, isLocal=.TRUE.))
-    IF (isok) CYCLE
+    isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
+    IF (.NOT. isok) CYCLE
 
     tsize = SIZE(obj%elementData(ii)%boundaryData)
     DO jj = 1, tsize
