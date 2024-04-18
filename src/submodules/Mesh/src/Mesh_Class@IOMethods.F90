@@ -25,9 +25,15 @@ USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector,  &
 
 USE NodeData_Class, ONLY: NodeData_Display
 USE ElemData_Class, ONLY: ElemData_Display
-USE FacetData_Class, ONLY: BoundaryFacetData_Display,  &
-& InternalFacetData_Display
+USE FacetData_Class, ONLY: BoundaryFacetData_Display, &
+                           InternalFacetData_Display
 IMPLICIT NONE
+
+CHARACTER(*), PARAMETER :: mygroup(4) = ["pointEntities  ", &
+                                         "curveEntities  ", &
+                                         "surfaceEntities", &
+                                         "volumeEntities "]
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -62,9 +68,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-dsetname = TRIM(group)
-CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group, dim=dim, &
-                        entities=entities)
+CALL GenerateDataSetName
+
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: Problem in getting dataset name')
+  RETURN
+END IF
+
+CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=dsetname)
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
@@ -86,6 +98,30 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
+
+CONTAINS
+SUBROUTINE GenerateDataSetName
+  isok = .TRUE.
+
+  IF (PRESENT(group)) THEN
+    dsetname = group
+    RETURN
+  END IF
+
+  IF (PRESENT(dim) .AND. .NOT. (PRESENT(entities))) THEN
+    dsetname = TRIM(mygroup(dim + 1))//"_1"
+    RETURN
+  END IF
+
+  IF (PRESENT(dim) .AND. PRESENT(entities)) THEN
+    dsetname = TRIM(mygroup(dim + 1))//"_"//tostring(entities(1))
+    RETURN
+  END IF
+
+  isok = .FALSE.
+  dsetname = ""
+
+END SUBROUTINE
 
 END PROCEDURE obj_Import
 
