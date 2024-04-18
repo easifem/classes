@@ -21,45 +21,11 @@ USE BaseMethod
 USE Mesh_Class
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: SetSparsity1
 PUBLIC :: SetSparsity2
 PUBLIC :: SetSparsity3
 PUBLIC :: SetSparsity4
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE SetSparsity1(obj, mat, localNodeNumber, lbound, &
-  & ubound)
-  CLASS(Mesh_), INTENT(INOUT) :: obj
-  ! [[Mesh_]] class
-  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  ! [[CSRMatrix_]] object
-  INTEGER(I4B), INTENT(IN) :: lbound
-  INTEGER(I4B), INTENT(IN) :: ubound
-  INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
-  ! Global to local node number map
-  !
-  !
-  INTEGER(I4B) :: i, j, k, tNodes
-  INTEGER(I4B), ALLOCATABLE :: n2n(:)
-
-  tNodes = obj%getTotalNodes()
-
-  DO i = 1, tNodes
-    j = obj%getGlobalNodeNumber(LocalNode=i)
-    k = localNodeNumber(j)
-    IF (k .NE. 0) THEN
-      n2n = localNodeNumber( &
-        & obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.))
-      CALL SetSparsity(obj=Mat, Row=k, Col=n2n)
-    END IF
-  END DO
-  IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
-END SUBROUTINE SetSparsity1
 
 !----------------------------------------------------------------------------
 !

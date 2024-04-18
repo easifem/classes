@@ -24,47 +24,6 @@ CONTAINS
 !                                                                setSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setSparsity1
-CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-IF (.NOT. obj%isInit()) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "Mesh data is not initiated, first initiate")
-END IF
-
-! if the mesh is empty then return
-IF (obj%getTotalElements() .EQ. 0_I4B) THEN
-  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-  & 'Empty mesh found, returning')
-  RETURN
-END IF
-
-! check
-IF (.NOT. obj%isNodeToNodes()) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'In mesh NodeToNodeData is not initiated')
-END IF
-
-! Call from MeshUtility
-CALL SetSparsity1(obj=obj, mat=mat, localNodeNumber=localNodeNumber, &
-  & lbound=lbound, ubound=ubound)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE obj_setSparsity1
-
-!----------------------------------------------------------------------------
-!                                                                setSparsity
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_setSparsity2
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
 
@@ -105,13 +64,13 @@ IF (.NOT. colMesh%isInit()) THEN
 END IF
 
 ! check
-IF (SIZE(nodeToNode) .NE. obj%GetMaxNodeNumber() ) THEN
+IF (SIZE(nodeToNode) .NE. obj%GetMaxNodeNumber()) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
 
 ! check
-IF (.NOT. obj%isNodeToNodes() ) THEN
+IF (.NOT. obj%isNodeToNodes()) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
@@ -140,23 +99,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-IF (.NOT. obj%isInit() ) THEN
+IF (.NOT. obj%isInit()) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
 END IF
 
-IF (.NOT. colMesh%isInit() ) THEN
+IF (.NOT. colMesh%isInit()) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
 END IF
 
-IF (SIZE(nodeToNode) .LT. obj%GetMaxNodeNumber() ) THEN
+IF (SIZE(nodeToNode) .LT. obj%GetMaxNodeNumber()) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs "//  &
     & "[easifemClasses ISSUE#63]")
 END IF
 
-IF (.NOT. obj%isNodeToNodes() ) THEN
+IF (.NOT. obj%isNodeToNodes()) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: In mesh NodeToNodeData is not initiated')
 END IF

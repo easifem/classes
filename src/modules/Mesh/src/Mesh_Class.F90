@@ -77,6 +77,7 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   FINAL :: obj_Final
     !! mesh finalizer
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -84,6 +85,7 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -102,16 +104,17 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_setSparsity2
-  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
-  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
+
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
+  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_SetSparsity3
+  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
 
   !GET:
   ! @GetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: isFacetElement => obj_isFacetElement
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => obj_GetTotalFacetElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
+    obj_GetTotalFacetElements
 
 END TYPE Mesh_
 
@@ -370,32 +373,6 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      SetSparsity@SetMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-!
-!# Introduction
-!
-! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity1(obj, mat, localNodeNumber, lbound, &
-    & ubound)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
-    INTEGER(I4B), INTENT(IN) :: lbound
-    INTEGER(I4B), INTENT(IN) :: ubound
-    INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
-    !! Global to local node number map
-  END SUBROUTINE obj_SetSparsity1
 END INTERFACE
 
 !----------------------------------------------------------------------------

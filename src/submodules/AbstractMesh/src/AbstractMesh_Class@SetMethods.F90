@@ -123,12 +123,8 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
-INTEGER(I4B) :: tsize
-#endif
 LOGICAL(LGT) :: problem
-
 INTEGER(I4B) :: i, j, tNodes, tsize
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
@@ -136,8 +132,6 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
-
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -152,8 +146,6 @@ IF (problem) THEN
   & '[INTERNAL ERROR] :: Empty mesh found, returning')
   RETURN
 END IF
-
-#endif
 
 problem = .NOT. obj%isNodeToNodesInitiated
 IF (problem) CALL obj%InitiateNodeToNodes()
