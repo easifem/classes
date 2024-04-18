@@ -33,6 +33,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+CALL obj%DEALLOCATE()
 CALL obj%IMPORT(hdf5=hdf5, group=group, dim=dim, entities=entities)
 
 obj%readFromFile = .TRUE.

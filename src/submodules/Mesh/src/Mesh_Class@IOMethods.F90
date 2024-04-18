@@ -63,7 +63,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 dsetname = TRIM(group)
-CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
+CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group, dim=dim, &
+                        entities=entities)
 
 CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
   & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
