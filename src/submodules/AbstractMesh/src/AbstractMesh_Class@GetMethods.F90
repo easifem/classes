@@ -1175,16 +1175,8 @@ END PROCEDURE obj_GetTotalMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFacetElements
-SELECT CASE (obj%nsd)
-CASE (3)
-  ans = obj%tFaces
-CASE (2)
-  ans = obj%tEdges
-CASE (1)
-  ans = obj%tNodes
-CASE (0)
-  ans = 0_I4B
-END SELECT
+ans = 0
+IF (ALLOCATED(obj%facetData)) ans = SIZE(obj%facetData)
 END PROCEDURE obj_GetTotalFacetElements
 
 !----------------------------------------------------------------------------
