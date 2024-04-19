@@ -48,7 +48,7 @@ IF (problem) CALL obj%InitiateElementToElements()
 problem = .NOT. obj%IsBoundaryData()
 IF (problem) CALL obj%InitiateBoundaryData()
 
-tface = obj%GetTotalFacetElements()
+tface = obj%tfaces
 
 problem = tface .EQ. 0
 IF (problem) THEN

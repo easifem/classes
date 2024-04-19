@@ -52,16 +52,8 @@ SUBROUTINE GetFacetDataFromElemData(elementData, facetData, masks, nsd)
   INTEGER(I4B), INTENT(IN) :: nsd
 
   ! now lets find the facets located on the DOMAIN_BOUNDARY_ELEMENT
-  IF (nsd .EQ. 3) THEN
-    CALL Help_GetFacetDataFromElemData(elementData, facetData, masks,  &
-      & elementData%globalFaces)
-
-  ELSE
-    CALL Help_GetFacetDataFromElemData(elementData, facetData, masks,  &
-      & elementData%globalEdges)
-
-  END IF
-
+  CALL Help_GetFacetDataFromElemData(elementData, facetData, masks,  &
+    & elementData%globalFaces)
 END SUBROUTINE GetFacetDataFromElemData
 
 !----------------------------------------------------------------------------
