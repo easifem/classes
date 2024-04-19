@@ -297,7 +297,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
   LOGICAL(LGT), INTENT(IN) :: showTime
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements2D()"
+  CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements2D()_old"
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tedges, ii, jj, temp1(3 * 4), &
     & cint, bndyflag(4)

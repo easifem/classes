@@ -108,6 +108,7 @@ DO iel = 1, tElements
 END DO
 
 CALL edgeTree%DEALLOCATE()
+NULLIFY (edgePtr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

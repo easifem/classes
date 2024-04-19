@@ -60,11 +60,11 @@ CASE (1_I4B)
 
 CASE (2_I4B)
 
-  problem = .NOT. obj%isEdgeConnectivityInitiated
-  IF (problem) CALL obj%InitiateEdgeConnectivity()
+  problem = .NOT. obj%isFaceConnectivityInitiated
+  IF (problem) CALL obj%InitiateFaceConnectivity()
 
-  CALL InitiateElementToElements2D(elementData=obj%elementData, &
-                                tEdgeInMesh=obj%tEdges, showTime=obj%showTime)
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
 CASE (3_I4B)
 
