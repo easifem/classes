@@ -40,15 +40,15 @@ INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_Polydata = 9
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
 CHARACTER(*), PARAMETER, DIMENSION(10) :: dataStructureName = &
   & [ &
-  & "Imagedata        ", &
+  & "ImageData        ", &
   & "RectilinearGrid  ", &
   & "StructuredGrid   ", &
-  & "Polydata         ", &
+  & "PolyData         ", &
   & "UnstructuredGrid ", &
-  & "PImagedata       ", &
+  & "PImageData       ", &
   & "PRectilinearGrid ", &
   & "PStructuredGrid  ", &
-  & "PPolydata        ", &
+  & "PPolyData        ", &
   & "PUnstructuredGrid"  &
   & ]
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ASCII = 1
