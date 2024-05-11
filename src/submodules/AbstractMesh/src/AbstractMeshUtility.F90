@@ -283,6 +283,10 @@ END SUBROUTINE InitiateElementToElements3D
 !                                                InitiateElementToElements2D
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-04-19
+! summary: This routine uses the edge data in 2d to form element to element
+
 SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
   TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tEdgeInMesh
@@ -323,16 +327,6 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 
     problem = .NOT. elementData(iel)%isActive
     IF (problem) CYCLE
-
-#ifdef DEBUG_VER
-    problem = .NOT. ALLOCATED(elementData(iel)%globalEdges)
-    IF (problem) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
-        & " does not have globalEdges data allocated.")
-      RETURN
-    END IF
-#endif
 
     tedges = SIZE(elementData(iel)%globalEdges)
     DO ii = 1, tedges
@@ -383,14 +377,6 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
         END IF
       END IF
     END DO
-
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
 
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
