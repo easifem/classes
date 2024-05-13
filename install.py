@@ -23,7 +23,6 @@ else:
     cmake_def += " -D USE_GMSH_SDK:BOOL=ON"
     cmake_def += " -D CMAKE_BUILD_TYPE=Debug"
     cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
-    cmake_def += " -D USE_LIS:BOOL=ON"
     cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
     print("CMAKE DEF : ", cmake_def)
     _build0 = os.path.join(os.environ["HOME"], "temp")
