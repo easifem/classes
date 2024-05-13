@@ -40,7 +40,6 @@ MODULE PROCEDURE obj_SetSparsity1
 CLASS(AbstractMesh_), POINTER :: meshptr
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
