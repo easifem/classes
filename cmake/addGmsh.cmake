@@ -26,7 +26,7 @@ if(USE_GMSH_SDK)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   set(PY_VENV "${CMAKE_INSTALL_PREFIX}/gmsh")
   set(PY_BIN_DIR "${PY_VENV}/bin")
-  set(GMSH_LIBRARIES "${PY_VENV}/lib/libgmsh.so")
+  set(GMSH_LIBRARIES "${PY_VENV}/lib/libgmsh.so.4.13")
 
   install(
     CODE "
