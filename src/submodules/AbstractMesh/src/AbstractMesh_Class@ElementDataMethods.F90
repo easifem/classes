@@ -16,12 +16,13 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
-USE ReallocateUtility
-USE Display_Method
+USE ReallocateUtility, ONLY: Reallocate
+USE Display_Method, ONLY: Display, ToString
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
   & InitiateElementToElements2D, &
   & InitiateElementToElements1D
+USE NodeData_Class, ONLY: TypeNode
 IMPLICIT NONE
 CONTAINS
 
@@ -77,7 +78,7 @@ CASE (3_I4B)
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: No case found for xidim '  &
-    & //tostring(obj%xidim))
+    & //ToString(obj%xidim))
 END SELECT
 
 CALL MarkInternalNodes(obj=obj)
@@ -99,9 +100,9 @@ SUBROUTINE MarkInternalNodes(obj)
   INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-  CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
 
 #ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[START] ')
 #endif

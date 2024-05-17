@@ -21,13 +21,13 @@ USE Files, ONLY: HDF5File_, VTKFile_
 USE BaSetype, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
 USE CPUTime_Class, ONLY: CPUTime_
-USE ElemData_Class
-USE ElemDataBinaryTree_Class
-USE ElemDataList_Class
-USE NodeData_Class
-USE NodeDataList_Class
-USE NodeDataBinaryTree_Class
-USE FacetData_Class
+USE ElemData_Class, ONLY: ElemData_
+USE ElemDataBinaryTree_Class, ONLY: ElemDataBinaryTree_
+USE ElemDataList_Class, ONLY: ElemDataList_
+USE NodeData_Class, ONLY: NodeData_
+USE NodeDataList_Class, ONLY: NodeDataList_
+USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
+USE FacetData_Class, ONLY: FacetData_
 IMPLICIT NONE
 
 PRIVATE
@@ -52,6 +52,12 @@ INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_NODE = 256
 INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
 #else
 INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
+#endif
+
+#ifdef MAX_CONNECTIVITY_SIZE
+INTEGER(I4B), PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = MAX_CONNECTIVITY_SIZE
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = 256
 #endif
 
 !----------------------------------------------------------------------------
@@ -217,28 +223,28 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
     !! Display the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
-    & obj_DisplayNodeData
+    obj_DisplayNodeData
   !! Display node data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
-    & obj_DisplayElementData
+    obj_DisplayElementData
     !! Display element data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
-    & obj_DisplayFacetData
+    obj_DisplayFacetData
     !! Display  facet data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
-    & obj_DisplayInternalFacetData
+    obj_DisplayInternalFacetData
     !! Display internal facet data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
-    & obj_DisplayBoundaryFacetData
+    obj_DisplayBoundaryFacetData
     !! Display mesh facet data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
-    & obj_DisplayFacetElements
+    obj_DisplayFacetElements
     !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
-    & obj_DisplayMeshInfo
+    obj_DisplayMeshInfo
     !! Display mesh statistics
 
-  ! Set:
+  ! SET:
   ! @NodeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
@@ -250,29 +256,29 @@ CONTAINS
     & obj_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping (used in jump based FEM)
 
-  ! Set:
+  ! SET:
   ! @ElementDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & obj_InitiateElementToElements
   !! Initiate element to elements mapping
 
-  ! Set:
+  ! SET:
   ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
     & obj_InitiateBoundaryData
   !! Initiate the boundary data
 
-  ! Set:
+  ! SET:
   ! @EdgeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
     & obj_InitiateEdgeConnectivity
 
-  ! Set:
+  ! SET:
   ! @FaceDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
     & obj_InitiateFaceConnectivity
 
-  ! Set:
+  ! SET:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     & obj_InitiateFacetElements
@@ -371,7 +377,7 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => &
     & obj_GetConnectivity
-  !! Returns  node numbers in an element
+  !! Returns  node numbers in an element (this is vertex connectivity)
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => &
     & obj_GetConnectivity_
@@ -379,26 +385,26 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
     & obj_GetNodeConnectivity
-  !! Returns the node connectivity of the mesh elements
+  !! Returns all the node connectivity of the mesh elements
 
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 =>  &
-  & obj_GetLocalNodeNumber1
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => &
+    obj_GetLocalNodeNumber1
   !! Returns the local node number of a glocal node number
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 =>  &
-  & obj_GetLocalNodeNumber2
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => &
+    obj_GetLocalNodeNumber2
   !! Returns the local node number of a global node number
   GENERIC, PUBLIC :: GetLocalNodeNumber => GetLocalNodeNumber1, &
-    & GetLocalNodeNumber2
+    GetLocalNodeNumber2
   !! Returns the local node number of a global node number
 
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 =>  &
-    & obj_GetGlobalNodeNumber1
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => &
+    obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 =>  &
-    & obj_GetGlobalNodeNumber2
+  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => &
+    obj_GetGlobalNodeNumber2
   !! Returns the global node number of a local node number
   GENERIC, PUBLIC :: GetGlobalNodeNumber => GetGlobalNodeNumber1, &
-    & GetGlobalNodeNumber2
+    GetGlobalNodeNumber2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes =>  &
     & obj_GetTotalBoundaryNodes
@@ -407,13 +413,13 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetGlobalElemNumber1 => obj_GetGlobalElemNumber1
   PROCEDURE, PASS(obj) :: GetGlobalElemNumber2 => obj_GetGlobalElemNumber2
   GENERIC, PUBLIC :: GetGlobalElemNumber => &
-    & GetGlobalElemNumber1, GetGlobalElemNumber2
+    GetGlobalElemNumber1, GetGlobalElemNumber2
 
   !! Returns the global element number for a local element number
   PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
   PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
   GENERIC, PUBLIC :: GetLocalElemNumber => &
-    & GetLocalElemNumber1, GetLocalElemNumber2
+    GetLocalElemNumber1, GetLocalElemNumber2
   !! Returns the local element number of a global element number
 
   PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
@@ -421,7 +427,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
   !! Get list of elements surrounding several nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
-    & GetNodeToElements1, GetNodeToElements2
+    GetNodeToElements1, GetNodeToElements2
   !! Generic method to get elements around node or nodes
 
   PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
@@ -541,6 +547,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetParam => obj_GetFacetParam
   !! Get the parameters of facet elements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
+  !! Get total entities (VEFC) in an element
 
   ! SET:
   ! @SetMethods
@@ -876,10 +885,18 @@ END INTERFACE
 ! summary: Displays the element data
 
 INTERFACE
-  MODULE SUBROUTINE obj_DisplayElementData(obj, msg, unitno)
+  MODULE SUBROUTINE obj_DisplayElementData(obj, msg, unitno, globalElement, &
+                                           islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! object
     CHARACTER(*), INTENT(IN) :: msg
+    !! message
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    !! unit number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local
   END SUBROUTINE obj_DisplayElementData
 END INTERFACE
 
@@ -1427,14 +1444,21 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
 ! summary: This routine returns global node numbers in a given global elem
+!
+!# Introduction
+!
+! This returns the vertex connectivity
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, islocal, opt) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
+    !! Vertex, Edge, Face, Cell
+    !! Default is Vertex
   END FUNCTION obj_GetConnectivity
 END INTERFACE
 
@@ -1448,12 +1472,18 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, &
-                                         islocal)
+                                         islocal, opt)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! vector of connectivity
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written to ans
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal is present and true then globalElement is a local element
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
+    !! Vertex, Edge, Face, Cell
+    !! Default is Vertex
   END SUBROUTINE obj_GetConnectivity_
 END INTERFACE
 
@@ -2446,6 +2476,24 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elementType
   END SUBROUTINE obj_GetFacetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalEntities@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-15
+! summary: Get total entities
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEntities(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(4)
+  END FUNCTION obj_GetTotalEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------

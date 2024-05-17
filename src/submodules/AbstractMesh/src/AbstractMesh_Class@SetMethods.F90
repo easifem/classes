@@ -15,10 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
-USE globalData, ONLY: INT8
-USE BoundingBox_Method
-USE ReallocateUtility
-USE CSRMatrix_Method
+USE GlobalData, ONLY: INT8
+USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
+                              OPERATOR(.Xmin.), &
+                              OPERATOR(.Ymin.), &
+                              OPERATOR(.Zmin.), &
+                              OPERATOR(.Xmax.), &
+                              OPERATOR(.Ymax.), &
+                              OPERATOR(.Zmax.)
+USE ReallocateUtility, ONLY: Reallocate
+USE CSRMatrix_Method, ONLY: SetSparsity
+USE FacetData_Class, ONLY: FacetData_SetParam
+USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, ElemDataSet
 IMPLICIT NONE
 CONTAINS
 
@@ -51,7 +59,7 @@ MODULE PROCEDURE obj_SetBoundingBox2
 TYPE(BoundingBox_) :: box
 Box = obj%GetBoundingBox(nodes=nodes, local_nptrs=local_nptrs)
 CALL obj%SetBoundingBox(box=box)
-CALL DEALLOCATE (box)
+CALL DeallocateBox(box)
 END PROCEDURE obj_SetBoundingBox2
 
 !----------------------------------------------------------------------------

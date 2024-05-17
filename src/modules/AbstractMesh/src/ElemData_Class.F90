@@ -22,8 +22,9 @@ USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
   & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
-USE SortUtility
-USE ReallocateUtility
+USE SortUtility, ONLY: Sort
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 PRIVATE
 
@@ -42,6 +43,8 @@ PUBLIC :: ElemData_Copy
 PUBLIC :: ElemData_GetGlobalFaceCon
 PUBLIC :: ElemData_SetTotalMaterial
 PUBLIC :: ASSIGNMENT(=)
+PUBLIC :: ElemData_GetConnectivity
+PUBLIC :: ElemData_GetTotalEntities
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -202,6 +205,7 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   TYPE(ElemData_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: msg
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  LOGICAL(LGT) :: abool
 
   CALL Display(TRIM(msg), unitno=unitno)
   CALL Display(obj%isActive, msg="isActive: ", unitno=unitno)
@@ -212,41 +216,57 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
   CALL Display(ElementName(obj%name), "elementName: ", unitno=unitno)
 
   ! display material if it is allocated
-  IF (ALLOCATED(obj%material)) THEN
+  abool = ALLOCATED(obj%material)
+  CALL Display(abool, "material ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%material, msg="material: ", unitno=unitno)
   END IF
 
   ! globalNodes
-  IF (ALLOCATED(obj%globalNodes)) THEN
+  abool = ALLOCATED(obj%globalNodes)
+  CALL Display(abool, "globalNodes ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%globalNodes, msg="globalNodes: ", unitno=unitno)
   END IF
 
   ! globalEdges
-  IF (ALLOCATED(obj%globalEdges)) THEN
+  abool = ALLOCATED(obj%globalEdges)
+  CALL Display(abool, "globalEdges ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%globalEdges, msg="globalEdges: ", unitno=unitno)
   END IF
 
-  IF (ALLOCATED(obj%edgeOrient)) THEN
+  abool = ALLOCATED(obj%edgeOrient)
+  CALL Display(abool, "edgeOrient ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%edgeOrient, msg="edgeOrient: ", unitno=unitno)
   END IF
 
   ! globalFaces
-  IF (ALLOCATED(obj%globalFaces)) THEN
+  abool = ALLOCATED(obj%globalFaces)
+  CALL Display(abool, "globalFaces ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%globalFaces, msg="globalFaces: ", unitno=unitno)
   END IF
 
-  IF (ALLOCATED(obj%faceOrient)) THEN
+  abool = ALLOCATED(obj%faceOrient)
+  CALL Display(abool, "faceOrient ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%faceOrient, msg="faceOrient: ", unitno=unitno)
   END IF
 
   ! globalElements
-  IF (ALLOCATED(obj%globalElements)) THEN
+  abool = ALLOCATED(obj%globalElements)
+  CALL Display(abool, "globalElements ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%globalElements, msg="globalElements: ", &
     & unitno=unitno, full=.TRUE.)
   END IF
 
   ! boundaryData
-  IF (ALLOCATED(obj%boundaryData)) THEN
+  abool = ALLOCATED(obj%boundaryData)
+  CALL Display(abool, "boundaryData ALLOCATED: ", unitno=unitno)
+  IF (abool) THEN
     CALL Display(obj%boundaryData, msg="boundaryData: ", unitno=unitno)
   END IF
 END SUBROUTINE ElemData_Display
@@ -466,6 +486,86 @@ SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
   END DO
 
 END SUBROUTINE ElemData_GetGlobalFaceCon
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_GetConnectivity
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: con(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+  CHARACTER(*), INTENT(IN), OPTIONAL :: opt
+
+  !! internal variable
+  CHARACTER(1) :: opt0
+  INTEGER(I4B) :: aint, ii, jj
+
+  opt0 = 'V'
+  IF (PRESENT(opt)) opt0(1:1) = opt(1:1)
+
+  SELECT CASE (opt0)
+  CASE ("V", "v")
+    tsize = SIZE(obj%globalNodes)
+    con(1:tsize) = obj%globalNodes
+  CASE ("E", "e")
+    tsize = SIZE(obj%globalEdges)
+    con(1:tsize) = obj%globalEdges
+  CASE ("F", "f")
+    tsize = SIZE(obj%globalFaces)
+    con(1:tsize) = obj%globalFaces
+  CASE ("C", "c")
+    tsize = 1
+    con(1) = obj%globalElemNum
+  CASE ("A", "a")
+    aint = 1
+    tsize = SIZE(obj%globalNodes)
+    jj = 0
+    DO ii = aint, tsize
+      jj = jj + 1
+      con(ii) = obj%globalNodes(jj)
+    END DO
+
+    aint = tsize + 1
+    tsize = tsize + SIZE(obj%globalEdges)
+    jj = 0
+    DO ii = aint, tsize
+      jj = jj + 1
+      con(ii) = obj%globalEdges(jj)
+    END DO
+
+    aint = tsize + 1
+    tsize = tsize + SIZE(obj%globalFaces)
+    jj = 0
+    DO ii = aint, tsize
+      jj = jj + 1
+      con(ii) = obj%globalFaces(jj)
+    END DO
+
+    aint = tsize + 1
+    tsize = tsize + 1
+    con(aint) = obj%globalElemNum
+  END SELECT
+
+END SUBROUTINE ElemData_GetConnectivity
+
+!----------------------------------------------------------------------------
+!                                                 ElemData_GetTotalEntities
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-15
+! summary: Returns total number of vertex, edge, faces, and cells in element
+
+FUNCTION ElemData_GetTotalEntities(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(i4b) :: ans(4)
+  ans = 0
+  ans(1) = SafeSize(obj%globalNodes)
+  ans(2) = SafeSize(obj%globalEdges)
+  ans(3) = SafeSize(obj%globalFaces)
+  ans(4) = 1
+END FUNCTION ElemData_GetTotalEntities
 
 !----------------------------------------------------------------------------
 !

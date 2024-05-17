@@ -16,13 +16,18 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ImportMethods
-USE ReallocateUtility
-USE HDF5File_Method
-USE ArangeUtility
-USE InputUtility
-USE ReferenceElement_Method
-USE Display_Method
-USE AssertUtility
+USE ReallocateUtility, ONLY: Reallocate
+USE HDF5File_Method, ONLY: HDF5GetEntities, HDF5ReadScalar, HDF5ReadVector,  &
+  & HDF5ReadMatrix
+USE ArangeUtility, ONLY: Arange
+USE InputUtility, ONLY: Input
+USE ReferenceElement_Method, ONLY: GetElementIndex, GetTotalNodes,  &
+  & ReferenceElementInfo
+USE Display_Method, ONLY: Display, EqualLine, ToString
+USE AssertUtility, ONLY: Assert
+USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE
+USE ElemData_Class, ONLY: ElemDataSet
+USE GlobalData, ONLY: stdout
 
 IMPLICIT NONE
 CONTAINS
@@ -61,7 +66,7 @@ ELSEIF (cases(3)) THEN
   CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim,  &
     & tEntities=tEntities, myName=myName, modName=modName)
   IF (tEntities .GT. 0_I4B) THEN
-    entities0 = arange(1_I4B, tEntities)
+    entities0 = Arange(1_I4B, tEntities)
     CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
   END IF
 
@@ -514,7 +519,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing scalar data [MeshImportScalar] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -525,7 +530,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing vector data [MeshImportVector] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -535,7 +540,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
      & " : time in importing element data [MeshImportElementData] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -545,7 +550,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing node data [MeshImportNodeData] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -610,7 +615,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   END SELECT
 
   DO ii = 1, tEntities
-    dsetname = prefix//tostring(entities(ii))
+    dsetname = prefix//ToString(entities(ii))
     CALL MeshImportCheckError(hdf5, dsetname)
     CALL MeshImportScalar(obj, hdf5, dsetname)
     CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType(ii), group=dsetname,  &
@@ -642,7 +647,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing scalar data [MeshImportScalar] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -687,7 +692,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   aint = 0
   bint = 0
   DO ii = 1, tEntities
-    dsetname = prefix//tostring(entities(ii))
+    dsetname = prefix//ToString(entities(ii))
     CALL MeshImportVector(obj, hdf5, dsetname, temp_int_2d, temp_int_1d)
     aint = bint + 1
     bint = bint + tElements(ii)
@@ -725,7 +730,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing vector data [MeshImportVector] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -751,7 +756,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
      & " : time in importing element data [MeshImportElementData] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -761,7 +766,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time in importing node data [MeshImportNodeData] : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 

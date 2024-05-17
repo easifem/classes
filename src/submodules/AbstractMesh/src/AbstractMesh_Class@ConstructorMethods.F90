@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ConstructorMethods
-USE Display_Method
+USE Display_Method, ONLY: Display, &
+                          EqualLine, ToString
 USE GlobalData, ONLY: stdout
+USE ElemData_Class, ONLY: ElemData_Pointer, &
+                          ElemData_Copy
+USE NodeData_Class, ONLY: NodeData_Pointer, &
+                          NodeData_Copy
 IMPLICIT NONE
 CONTAINS
 
@@ -26,9 +31,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
@@ -163,7 +167,7 @@ IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL Display(modName//" : "//myName//  &
     & " : time for making elementDataList: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    & ToString(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -179,7 +183,7 @@ IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL Display(modName//" : "//myName//  &
     & " : time for making nodeDataList: "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    & ToString(TypeCPUTime%GetTime()), unitno=stdout)
   CALL EqualLine(unitno=stdout)
 END IF
 

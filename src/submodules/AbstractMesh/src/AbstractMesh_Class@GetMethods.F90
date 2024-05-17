@@ -15,18 +15,27 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
-USE ReallocateUtility
-USE IntegerUtility
-USE AppendUtility
-USE BoundingBox_Method
-USE InputUtility
-USE Display_Method
+USE ReallocateUtility, ONLY: Reallocate
+USE IntegerUtility, ONLY: RemoveDuplicates, RemoveDuplicates_
+USE AppendUtility, ONLY: Append
+USE BoundingBox_Method, ONLY: InitBox => Initiate
+USE InputUtility, ONLY: Input
+USE Display_Method, ONLY: Display, ToString
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
   & GetEdgeConnectivity,  &
   & GetFaceConnectivity,  &
   & ElementOrder, &
   & TotalEntities, &
   & RefElemGetGeoParam
+USE FacetData_Class, ONLY: FacetData_Iselement, &
+                           FacetData_GetParam
+USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
+                          BOUNDARY_ELEMENT, &
+                          DOMAIN_BOUNDARY_ELEMENT, &
+                          ElemData_GetTotalEntities, &
+                          ElemData_GetConnectivity
+USE NodeData_Class, ONLY: INTERNAL_NODE, &
+                          BOUNDARY_NODE
 
 IMPLICIT NONE
 
@@ -157,7 +166,7 @@ problem = dummy .GT. SIZE(nptrs)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: size of nptrs is not enough '//  &
-    & 'it should be ateast '//tostring(dummy))
+    & 'it should be ateast '//ToString(dummy))
   RETURN
 END IF
 #endif
@@ -407,7 +416,7 @@ lim(3) = obj%minY
 lim(4) = obj%maxY
 lim(5) = obj%minZ
 lim(6) = obj%maxZ
-CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
+CALL InitBox(obj=ans, nsd=3_I4B, lim=lim)
 END PROCEDURE obj_GetBoundingBox1
 
 !----------------------------------------------------------------------------
@@ -431,7 +440,7 @@ END DO
 lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, :), dim=2, mask=mask)
 lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, :), dim=2, mask=mask)
 
-CALL Initiate(obj=ans, nsd=nsd, lim=lim)
+CALL InitBox(obj=ans, nsd=nsd, lim=lim)
 END PROCEDURE obj_GetBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -439,23 +448,12 @@ END PROCEDURE obj_GetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
-LOGICAL(LGT) :: problem
-#endif
-
-INTEGER(I4B) :: iel
-
-#ifdef DEBUG_VER
-problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: problem in getting localElement number')
-END IF
-#endif
-
-iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(iel)%globalNodes
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+CALL obj%GetConnectivity_(globalElement=globalElement, &
+                          ans=temp, tsize=tsize, opt=opt)
+ALLOCATE (ans(tsize))
+ans(1:tsize) = temp(1:tsize)
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -463,14 +461,12 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
-LOGICAL(LGT) :: problem
-#endif
-
 INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
+LOGICAL(LGT) :: problem
+
 problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -479,8 +475,10 @@ END IF
 #endif
 
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-tsize = SIZE(obj%elementData(iel)%globalNodes)
-ans(1:tsize) = obj%elementData(iel)%globalNodes
+
+CALL ElemData_GetConnectivity(obj=obj%elementData(iel), con=ans, &
+                              tsize=tsize, opt=opt)
+
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
@@ -542,7 +540,7 @@ LOGICAL(LGT) :: islocal0
 problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode '//tostring(globalNode)// &
+    & '[INTERNAL ERROR] :: globalNode '//ToString(globalNode)// &
     ' is out of bound')
 END IF
 #endif
@@ -656,7 +654,7 @@ problem = (globalElement .LT. obj%minElemNum)  &
 IF (problem) THEN
   ans = 0
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalElement '//tostring(globalElement)// &
+    & '[INTERNAL ERROR] :: globalElement '//ToString(globalElement)// &
     & ' not present.')
   RETURN
 END IF
@@ -1080,7 +1078,7 @@ IF (problem) THEN
   CALL Reallocate(ans, 0, 0)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: globalElements not found! '//  &
-    & 'local element number = '//tostring(iel))
+    & 'local element number = '//ToString(iel))
   RETURN
 END IF
 #endif
@@ -1542,5 +1540,11 @@ END PROCEDURE obj_GetFacetParam
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntities
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+ans = ElemData_GetTotalEntities(obj%elementData(iel))
+END PROCEDURE obj_GetTotalEntities
 
 END SUBMODULE GetMethods

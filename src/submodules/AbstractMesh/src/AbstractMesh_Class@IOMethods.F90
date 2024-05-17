@@ -17,11 +17,23 @@
 
 SUBMODULE(AbstractMesh_Class) IOMethods
 USE GlobalData, ONLY: stdout
-USE Display_Method
-USE ReallocateUtility
-USE ArangeUtility
-USE InputUtility
+USE Display_Method, ONLY: Display, &
+                          ToString, &
+                          EqualLine, &
+                          BlankLines
+USE ReallocateUtility, ONLY: Reallocate
+USE ArangeUtility, ONLY: Arange
+USE InputUtility, ONLY: Input
 USE ReferenceElement_Method, ONLY: ElementName
+USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
+                          BOUNDARY_ELEMENT, &
+                          DOMAIN_BOUNDARY_ELEMENT, &
+                          ElemData_Display
+USE FacetData_Class, ONLY: FacetData_Display, &
+                           FacetData_Display_Filter
+
+USE NodeData_Class, ONLY: nodeData_Display
+
 IMPLICIT NONE
 CONTAINS
 
@@ -91,7 +103,7 @@ CALL Display(obj%tElemTopologies, "Total topologies: ",  &
   & unitno=unitno)
 
 DO ii = 1, obj%tElemTopologies
-  CALL Display("Topologies("//tostring(ii)//"): "//  &
+  CALL Display("Topologies("//ToString(ii)//"): "//  &
     & ElementName(obj%elemTopologies(ii)), unitno=unitno)
 END DO
 
@@ -164,13 +176,22 @@ MODULE PROCEDURE obj_DisplayElementData
 INTEGER(I4B) :: ii, telements
 
 CALL Display(msg, unitno=unitno)
+
+IF (PRESENT(globalElement)) THEN
+  ii = obj%GetLocalElemNumber(globalElement=globalElement, isLocal=isLocal)
+  CALL elemData_Display(obj=obj%elementData(ii),  &
+    & msg="elementData("//ToString(ii)//"): ", unitno=unitno)
+  RETURN
+END IF
+
 telements = obj%GetTotalElements()
 
 DO ii = 1, telements
   CALL elemData_Display(obj=obj%elementData(ii),  &
-    & msg="elementData("//tostring(ii)//"): ", unitno=unitno)
+    & msg="elementData("//ToString(ii)//"): ", unitno=unitno)
   CALL BlankLines(nol=1, unitno=unitno)
 END DO
+
 END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
@@ -183,7 +204,7 @@ tNodes = obj%GetTotalNodes()
 CALL Display(msg, unitno=unitno)
 DO ii = 1, tNodes
   CALL nodeData_Display(obj%nodeData(ii),  &
-    & msg="nodeData("//tostring(ii)//"): ", unitno=unitno)
+    & msg="nodeData("//ToString(ii)//"): ", unitno=unitno)
   CALL BlankLines(nol=1, unitno=unitno)
 END DO
 END PROCEDURE obj_DisplayNodeData
@@ -206,7 +227,7 @@ CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 DO ii = 1, n
 
   CALL FacetData_Display(obj=obj%facetData(ii),  &
-    & msg="facetData("//tostring(ii)//"): ", unitno=unitno)
+    & msg="facetData("//ToString(ii)//"): ", unitno=unitno)
 
   CALL BlankLines(nol=1, unitno=unitno)
 
@@ -232,7 +253,7 @@ CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 DO ii = 1, n
 
   CALL FacetData_Display_Filter(obj=obj%facetData(ii), filter=filter, &
-                 msg="internalFacetData("//tostring(ii)//"): ", unitno=unitno)
+                 msg="internalFacetData("//ToString(ii)//"): ", unitno=unitno)
   CALL BlankLines(nol=1, unitno=unitno)
 
 END DO
@@ -258,11 +279,11 @@ DO ii = 1, n
 
   CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
                                 filter=BOUNDARY_ELEMENT, &
-                 msg="boundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+                 msg="boundaryFacetData("//ToString(ii)//"): ", unitno=unitno)
 
   CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
                                 filter=DOMAIN_BOUNDARY_ELEMENT, &
-           msg="domainBoundaryFacetData("//tostring(ii)//"): ", unitno=unitno)
+           msg="domainBoundaryFacetData("//ToString(ii)//"): ", unitno=unitno)
 
   CALL BlankLines(nol=1, unitno=unitno)
 
