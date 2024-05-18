@@ -126,6 +126,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
+# FEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
+
 # GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 
