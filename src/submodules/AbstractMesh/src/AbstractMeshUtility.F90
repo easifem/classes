@@ -147,14 +147,12 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
-#endif
+                          '[START] ')
 
-#ifdef DEBUG_VER
   problem = tFaceInMesh .EQ. 0
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Total number of faces are zero.')
+                      '[INTERNAL ERROR] :: Total number of faces are zero.')
     RETURN
   END IF
 #endif
@@ -169,16 +167,6 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
     problem = .NOT. elementData(iel)%isActive
     IF (problem) CYCLE
-
-#ifdef DEBUG_VER
-    problem = .NOT. ALLOCATED(elementData(iel)%globalFaces)
-    IF (problem) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
-        & " does not have globalFaces data allocated.")
-      RETURN
-    END IF
-#endif
 
     tfaces = SIZE(elementData(iel)%globalFaces)
     DO ii = 1, tfaces
@@ -231,14 +219,6 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       END IF
     END DO
 
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
-
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)
     elementData(iel)%globalElements = temp1(1:aint)
@@ -264,11 +244,6 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   IF (ALLOCATED(face2elem)) DEALLOCATE (face2elem)
   IF (ALLOCATED(amask)) DEALLOCATE (amask)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
-#endif
 
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
@@ -443,9 +418,7 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[START] ')
-#endif
 
-#ifdef DEBUG_VER
   problem = tNodesInMesh .EQ. 0
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -464,16 +437,6 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
     problem = .NOT. elementData(iel)%isActive
     IF (problem) CYCLE
-
-#ifdef DEBUG_VER
-    problem = .NOT. ALLOCATED(elementData(iel)%globalNodes)
-    IF (problem) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: local element number = '//tostring(iel)//  &
-        & " does not have globalNodes data allocated.")
-      RETURN
-    END IF
-#endif
 
     DO ii = 1, 2
       aint = elementData(iel)%globalNodes(ii)
@@ -525,14 +488,6 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
         END IF
       END IF
     END DO
-
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
 
     aint = jj * 3
     CALL Reallocate(elementData(iel)%globalElements, aint)

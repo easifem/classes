@@ -43,21 +43,27 @@ PUBLIC :: AbstractMeshPointerDeallocate
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
 #ifdef MAX_NODE_TO_NODE
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_NODE = MAX_NODE_TO_NODE
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_NODE = MAX_NODE_TO_NODE
 #else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_NODE = 256
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_NODE = 256
 #endif
 
 #ifdef MAX_NODE_TO_ELEM
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
 #else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
 #endif
 
 #ifdef MAX_CONNECTIVITY_SIZE
-INTEGER(I4B), PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = MAX_CONNECTIVITY_SIZE
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = MAX_CONNECTIVITY_SIZE
 #else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = 256
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = 256
+#endif
+
+#ifdef MAX_NNE
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NNE = MAX_NNE
+#else
+INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NNE = 128
 #endif
 
 !----------------------------------------------------------------------------
@@ -2597,19 +2603,13 @@ END INTERFACE
 !# Introduction
 !
 !- This routine creates the element surrounding a given element data
-!- Before calling this routine make sure the `refelem` in mesh is allocated.
-!- By using `refelem`, this routine forms the FacetElements.
-!- This routine needs `nodeToElements` information, therefore, if
-! `nodeToElements` is not Initiated then it calls `initiateNodeToelements`
-! method
-!- This method forms the following data:
-!- `obj%elementData(ielem)%globalElements`
-!- It also identifies those elements which are boundary element of mesh, and
-!- Set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those element
-!- Note that at this point boundary element are those which has at least
-! one orphan face.
-!- Note that at this point these boundary element can be interface element
-! between two mesh, or domain-boundary element.
+!- For 1D element it calls InitiateElementToElements1D,
+!- For 2D and 3D element it calls InitiateElementToElements3D
+!- In the end it calls MarkInternalNodes routine, to identify internal nodes
+!- If ElementToElements is already initiated then it does nothing
+!
+! In the case of 2D and 3D mesh, this routine will also form the
+! the globalFaces of element data.
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateElementToElements(obj)

@@ -320,7 +320,7 @@ LOGICAL(LGT) :: islocal0
 islocal0 = Input(default=.FALSE., option=islocal)
 
 IF (islocal0) THEN
-  ans = (globalElement .GT. 0_I4B) .AND. (globalElement .LT. obj%tElements)
+  ans = (globalElement .GT. 0_I4B) .AND. (globalElement .LE. obj%tElements)
 
 ELSE
   isok = (globalElement .GT. obj%maxElemNum) .OR.  &
@@ -451,7 +451,7 @@ MODULE PROCEDURE obj_GetConnectivity
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
 CALL obj%GetConnectivity_(globalElement=globalElement, &
-                          ans=temp, tsize=tsize, opt=opt)
+                          ans=temp, tsize=tsize, opt=opt, islocal=islocal)
 ALLOCATE (ans(tsize))
 ans(1:tsize) = temp(1:tsize)
 END PROCEDURE obj_GetConnectivity

@@ -39,18 +39,6 @@ INTEGER(I4B), PARAMETER :: hType = 2
 INTEGER(I4B), PARAMETER :: rType = 3
 INTEGER(I4B), PARAMETER :: oversetType = 4
 
-#ifdef MAX_NNE
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = MAX_NNE
-#else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = 128
-#endif
-
-#ifdef MAX_NODE_TO_ELEM
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
-#else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
-#endif
-
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
 !----------------------------------------------------------------------------

@@ -50,7 +50,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = obj%isCellToCell
 IF (isok) THEN
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "[INFO] :: It seems, obj%cellToCell data is already initiated")
+               "[INFO] :: It seems, obj%cellToCell data is already initiated")
   RETURN
 END IF
 
