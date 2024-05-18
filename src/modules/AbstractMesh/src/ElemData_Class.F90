@@ -506,20 +506,22 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
 
   SELECT CASE (opt0)
   CASE ("V", "v")
-    tsize = SIZE(obj%globalNodes)
-    con(1:tsize) = obj%globalNodes
+    tsize = SafeSize(obj%globalNodes)
+    DO ii = 1, tsize; con(ii) = obj%globalNodes(ii); END DO
+
   CASE ("E", "e")
-    tsize = SIZE(obj%globalEdges)
-    con(1:tsize) = obj%globalEdges
+    tsize = SafeSize(obj%globalEdges)
+    DO ii = 1, tsize; con(ii) = obj%globalEdges(ii); END DO
+
   CASE ("F", "f")
-    tsize = SIZE(obj%globalFaces)
-    con(1:tsize) = obj%globalFaces
+    tsize = SafeSize(obj%globalFaces)
+    DO ii = 1, tsize; con(ii) = obj%globalFaces(ii); END DO
   CASE ("C", "c")
     tsize = 1
     con(1) = obj%globalElemNum
   CASE ("A", "a")
     aint = 1
-    tsize = SIZE(obj%globalNodes)
+    tsize = SafeSize(obj%globalNodes)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
@@ -527,7 +529,7 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
     END DO
 
     aint = tsize + 1
-    tsize = tsize + SIZE(obj%globalEdges)
+    tsize = tsize + SafeSize(obj%globalEdges)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
@@ -535,7 +537,7 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
     END DO
 
     aint = tsize + 1
-    tsize = tsize + SIZE(obj%globalFaces)
+    tsize = tsize + SafeSize(obj%globalFaces)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
