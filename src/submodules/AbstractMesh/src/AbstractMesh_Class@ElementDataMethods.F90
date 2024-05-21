@@ -18,7 +18,7 @@
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: Display, ToString
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
   & InitiateElementToElements2D, &
   & InitiateElementToElements1D

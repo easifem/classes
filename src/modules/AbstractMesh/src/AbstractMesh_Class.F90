@@ -296,6 +296,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
   !! Get the element data
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => obj_GetElemDataPointer
+  !! Get pointer to an element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get number of nodes in an element
 
@@ -352,45 +355,54 @@ CONTAINS
   !! Returns true if a given global element number is a boundary element
 
   PROCEDURE, PUBLIC, PASS(obj) :: isDomainBoundaryElement => &
-    & obj_isDomainBoundaryElement
+    obj_isDomainBoundaryElement
   !! Returns true if a given global element number is a boundary element
 
   PROCEDURE, PUBLIC, PASS(obj) :: isDomainFacetElement => &
-    & obj_isDomainFacetElement
+    obj_isDomainFacetElement
   !! Returns true if a given global element number is a boundary element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalNodes => &
-    & obj_GetTotalInternalNodes
+    obj_GetTotalInternalNodes
   !! Returns the total number of internal nodes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
   !! Returns the total number of nodes
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaces => obj_GetTotalFaces
+  !! Returns the total number of faces in the mesh (obj%tFaces)
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdges => obj_GetTotalEdges
+  !! Returns the total number of edges in the mesh (obj%tEdges)
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCells => obj_size
+  !! Returns the total number of cells in the mesh (obj%tElements)
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_size
   !! Returns the size of the mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
-    & obj_GetTotalBoundaryElements
+    obj_GetTotalBoundaryElements
   !! Returns the total number of boundary element
 
   PROCEDURE, PASS(obj) :: GetBoundingBox1 => obj_GetBoundingBox1
   !! Returns the bounding box of the mesh
   PROCEDURE, PASS(obj) :: GetBoundingBox2 => obj_GetBoundingBox2
   !! Return the bounding box from the given nodes, and local_nptrs
-  GENERIC, PUBLIC :: GetBoundingBox => GetBoundingBox1,  &
-    & GetBoundingBox2
+  GENERIC, PUBLIC :: GetBoundingBox => GetBoundingBox1, &
+    GetBoundingBox2
   !! Return the bounding box
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => &
-    & obj_GetConnectivity
+    obj_GetConnectivity
   !! Returns  node numbers in an element (this is vertex connectivity)
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => &
-    & obj_GetConnectivity_
+    obj_GetConnectivity_
   !! Returns  node numbers in an element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
-    & obj_GetNodeConnectivity
+    obj_GetNodeConnectivity
   !! Returns all the node connectivity of the mesh elements
 
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => &
@@ -412,8 +424,8 @@ CONTAINS
   GENERIC, PUBLIC :: GetGlobalNodeNumber => GetGlobalNodeNumber1, &
     GetGlobalNodeNumber2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes =>  &
-    & obj_GetTotalBoundaryNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes => &
+    obj_GetTotalBoundaryNodes
   !! Returns the total number of boundary nodes
 
   PROCEDURE, PASS(obj) :: GetGlobalElemNumber1 => obj_GetGlobalElemNumber1
@@ -449,7 +461,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNodeToNodes2 => obj_GetNodeToNodes2
   !! Returns global node numbers connected to given global node numbers
   GENERIC, PUBLIC :: GetNodeToNodes => &
-    & GetNodeToNodes1, GetNodeToNodes2
+    GetNodeToNodes1, GetNodeToNodes2
   !! Returns nodes connected to a given node number
 
   PROCEDURE, PASS(obj) :: GetNodeToNodes1_ => obj_GetNodeToNodes1_
@@ -457,66 +469,66 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNodeToNodes2_ => obj_GetNodeToNodes2_
   !! Returns global node numbers connected to given global node numbers
   GENERIC, PUBLIC :: GetNodeToNodes_ => &
-    & GetNodeToNodes1_, GetNodeToNodes2_
+    GetNodeToNodes1_, GetNodeToNodes2_
   !! Returns nodes connected to a given node number
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetElementToElements => &
-    & obj_GetElementToElements
+    obj_GetElementToElements
   !! Returns local element number connected to a given local
   !! element number, it also gives information about the local
   !! facet number
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryElementData => &
-    & obj_GetBoundaryElementData
+    obj_GetBoundaryElementData
   !! Returns boundary element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
-    & obj_GetTotalFacetElements
+    obj_GetTotalFacetElements
   !! Returns the total number of facet elements in the mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryFacetElements => &
-    & obj_GetTotalBoundaryFacetElements
+    obj_GetTotalBoundaryFacetElements
   !! Returns the total number of boundary facet elements
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalFacetElements => &
-    & obj_GetTotalInternalFacetElements
+    obj_GetTotalInternalFacetElements
   !! Returns the total number of internal facet elements
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
-    & obj_GetMasterCellNumber
+    obj_GetMasterCellNumber
   !! Returns the master cell number of a facet element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetSlaveCellNumber => &
-    & obj_GetSlaveCellNumber
+    obj_GetSlaveCellNumber
   !! Returns the slave cell number of a facet element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellNumber => &
-    & obj_GetCellNumber
+    obj_GetCellNumber
   !! Returns the master and slave cell number of a facet element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => &
-    & obj_GetLocalFacetID
+    obj_GetLocalFacetID
   !! Return the local facet id, so that we can Get reference element of
   !! the facet element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity =>  &
-    & obj_GetFacetConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity => &
+    obj_GetFacetConnectivity
   !! Generic method to Get the connectivity of a facet element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
-    & obj_GetFacetElementType
+    obj_GetFacetElementType
   !! Returns the facet element type of a given cell element number
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
-    & obj_GetOrder
+    obj_GetOrder
   !! Returns the order ofthe element of mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
-    & obj_GetNSD
+    obj_GetNSD
   !! Return the NSD
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
-    & obj_GetXidimension
+    obj_GetXidimension
   !! Return the NSD
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial => obj_GetMaterial1
@@ -554,8 +566,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetParam => obj_GetFacetParam
   !! Get the parameters of facet elements
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
-  !! Get total entities (VEFC) in an element
+  PROCEDURE, PASS(obj) :: GetTotalEntities1 => obj_GetTotalEntities1
+  !! Get total entities in an element
+  PROCEDURE, PASS(obj) :: GetTotalEntities2 => obj_GetTotalEntities2
+  !! Get total entities (VEFC) in the mesh
+  GENERIC, PUBLIC :: GetTotalEntities => GetTotalEntities1, GetTotalEntities2
+  !! Generic method for getting total enttiies in mesh and an element
 
   ! SET:
   ! @SetMethods
@@ -567,8 +583,8 @@ CONTAINS
   !! Set the bounding box of the mesh
   PROCEDURE, PASS(obj) :: SetBoundingBox2 => obj_SetBoundingBox2
   !! Set the bounding box from the given nodes, and local_nptrs
-  GENERIC, PUBLIC :: SetBoundingBox => SetBoundingBox1,  &
-    & SetBoundingBox2
+  GENERIC, PUBLIC :: SetBoundingBox => SetBoundingBox1, &
+    SetBoundingBox2
   !! Set the bounding box
 
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
@@ -579,8 +595,8 @@ CONTAINS
   !! Set the sparsity of sparse matrix
   PROCEDURE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
   !! Set the sparsity of sparse matrix
-  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2,  &
-    & SetSparsity3, SetSparsity4
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2, &
+    SetSparsity3, SetSparsity4
   !! Generic method for Setting the sparsity
 
   PROCEDURE, PASS(obj) :: SetTotalMaterial1 => obj_SetTotalMaterial1
@@ -598,10 +614,10 @@ CONTAINS
   PROCEDURE, PASS(obj) :: SetMaterial3 => obj_SetMaterial3
   !! Set material to an element
   GENERIC, PUBLIC :: SetMaterial => SetMaterial1, SetMaterial2, &
-    & SetMaterial3
+    SetMaterial3
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-    & obj_SetFacetElementType
+    obj_SetFacetElementType
   !! Set the facet element type of a given cell number
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
     !! Set mesh quality
@@ -609,8 +625,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! set parameters of mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetParam &
-    => obj_SetFacetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetParam => obj_SetFacetParam
   !! Set the parametersof facet element
 
 END TYPE AbstractMesh_
@@ -1004,6 +1019,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetElemData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemDataPointer(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemDataPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         GetNNE@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1350,7 +1383,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetTotalInternalNodes@GetMethodss
+!                                          GetTotalInternalNodes@GetMethodss
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1377,6 +1410,36 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalFaces@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: returns total number of Faces in the mesh
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetTotalFaces(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFaces
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalEdges@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: returns total number of Edges in the mesh
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetTotalEdges(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalEdges
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2369,6 +2432,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         isInit@GetMethods
 !----------------------------------------------------------------------------
+
 ! function for obj_isNodeToElements
 
 INTERFACE
@@ -2392,6 +2456,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         isInit@GetMethods
 !----------------------------------------------------------------------------
+
 ! function obj_isExtraNodeToNodes
 INTERFACE
   MODULE FUNCTION obj_isExtraNodeToNodes(obj) RESULT(ans)
@@ -2403,6 +2468,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         isInit@GetMethods
 !----------------------------------------------------------------------------
+
 ! function obj_isElementToElements
 INTERFACE
   MODULE FUNCTION obj_isElementToElements(obj) RESULT(ans)
@@ -2414,6 +2480,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         isInit@GetMethods
 !----------------------------------------------------------------------------
+
 ! function obj_isEdgeConnectivity
 INTERFACE
   MODULE FUNCTION obj_isEdgeConnectivity(obj) RESULT(ans)
@@ -2460,7 +2527,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION obj_isElementActive(obj, globalElement, islocal) RESULT(ans)
+  MODULE FUNCTION obj_isElementActive(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -2493,13 +2561,29 @@ END INTERFACE
 ! summary: Get total entities
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalEntities(obj, globalElement, islocal) &
+  MODULE FUNCTION obj_GetTotalEntities1(obj, globalElement, islocal) &
     RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans(4)
-  END FUNCTION obj_GetTotalEntities
+  END FUNCTION obj_GetTotalEntities1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalEntities@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-15
+! summary: Get total entities
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEntities2(obj) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(4)
+  END FUNCTION obj_GetTotalEntities2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3001,6 +3085,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                       SetParam@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Set param
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, &

@@ -21,12 +21,13 @@ USE AppendUtility, ONLY: Append
 USE BoundingBox_Method, ONLY: InitBox => Initiate
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: Display, ToString
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
-  & GetEdgeConnectivity,  &
-  & GetFaceConnectivity,  &
-  & ElementOrder, &
-  & TotalEntities, &
-  & RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: &
+  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
+  GetEdgeConnectivity, &
+  GetFaceConnectivity, &
+  ElementOrder, &
+  TotalEntities, &
+  RefElemGetGeoParam
 USE FacetData_Class, ONLY: FacetData_Iselement, &
                            FacetData_GetParam
 USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
@@ -56,6 +57,16 @@ INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 elemdata = obj%elementData(iel)
 END PROCEDURE obj_GetElemData
+
+!----------------------------------------------------------------------------
+!                                                       GetElemDataPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemDataPointer
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+ans => obj%elementData(iel)
+END PROCEDURE obj_GetElemDataPointer
 
 !----------------------------------------------------------------------------
 !                                                                  GetNNE
@@ -379,12 +390,28 @@ END DO
 END PROCEDURE obj_GetTotalInternalNodes
 
 !----------------------------------------------------------------------------
-!                                                       GetTotalNodes
+!                                                              GetTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
 ans = obj%tNodes
 END PROCEDURE obj_GetTotalNodes
+
+!----------------------------------------------------------------------------
+!                                                             GetTotalFaces
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalFaces
+ans = obj%tFaces
+END PROCEDURE obj_GetTotalFaces
+
+!----------------------------------------------------------------------------
+!                                                             GetTotalEdges
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEdges
+ans = obj%tEdges
+END PROCEDURE obj_GetTotalEdges
 
 !----------------------------------------------------------------------------
 !                                                   GetTotalBoundaryNodes
@@ -530,13 +557,12 @@ END PROCEDURE obj_GetLocalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
-LOGICAL(LGT) :: problem
-#endif
 LOGICAL(LGT) :: islocal0
 
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
+LOGICAL(LGT) :: problem
+
 problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -1541,10 +1567,21 @@ END PROCEDURE obj_GetFacetParam
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalEntities
+MODULE PROCEDURE obj_GetTotalEntities1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = ElemData_GetTotalEntities(obj%elementData(iel))
-END PROCEDURE obj_GetTotalEntities
+END PROCEDURE obj_GetTotalEntities1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntities2
+ans(1) = obj%tNodes
+ans(2) = obj%tEdges
+ans(3) = obj%tFaces
+ans(4) = obj%tElements
+END PROCEDURE obj_GetTotalEntities2
 
 END SUBMODULE GetMethods

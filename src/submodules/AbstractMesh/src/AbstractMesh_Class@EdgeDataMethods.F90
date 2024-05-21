@@ -16,8 +16,10 @@
 !
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_EDGES,  &
-  & REFELEM_MAX_POINTS, RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: &
+  REFELEM_MAX_EDGES => PARAM_REFELEM_MAX_EDGES, &
+  REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
+  RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
 USE ReallocateUtility, ONLY: Reallocate
 USE EdgeData_Class
