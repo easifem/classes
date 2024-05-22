@@ -15,8 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE GlobalData, ONLY: TypeIntI4B
+USE Display_Method, ONLY: ToString
+USE InputUtility, ONLY: Input
+USE FPL_Method, ONLY: CheckEssentialParam, &
+                      FPL_Set => Set, &
+                      FPL_GetValue => GetValue
 IMPLICIT NONE
 CONTAINS
 
@@ -29,24 +33,22 @@ CHARACTER(*), PARAMETER :: myName = "AbstractFieldCheckEssentialParam()"
 TYPE(String) :: astr
 TYPE(String), ALLOCATABLE :: essentialParam(:)
 INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
 
 astr = "/name/engine/fieldType/comm/local_n/global_n"
 CALL astr%Split(essentialParam, sep="/")
-CALL CheckEssentialParam( &
-  & obj=param,  &
-  & keys=essentialParam,  &
-  & prefix=prefix,  &
-  & myName=myName,  &
-  & modName=modName)
+CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=prefix, &
+                         myName=myName, modName=modName)
 ! INFO: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
-IF (ALLOCATED(essentialParam)) THEN
-  DO ii = 1, SIZE(essentialParam)
-    essentialParam(ii) = ""
-  END DO
-  DEALLOCATE (essentialParam)
-END IF
 astr = ""
+isok = ALLOCATED(essentialParam)
+IF (.NOT. isok) RETURN
+
+DO ii = 1, SIZE(essentialParam)
+  essentialParam(ii) = ""
+END DO
+DEALLOCATE (essentialParam)
 END PROCEDURE AbstractFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -59,44 +61,62 @@ INTEGER(I4B) :: ierr
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
 LOGICAL(LGT) :: isSublist
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 sublist => NULL()
 
 ! Create a new sublist
 isSublist = param%isSubList(prefix)
 
 IF (isSublist) THEN
+
   ierr = param%GetSubList(key=prefix, sublist=sublist)
   IF (ierr .NE. 0) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+    RETURN
   END IF
+
 ELSE
+
   sublist => param%NewSubList(key=prefix)
+
 END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
 END IF
 
-CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="name", VALUE=name)
+CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
+             VALUE=name)
 
-CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="engine",  &
-  & VALUE=engine)
+CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", &
+             VALUE=engine)
 
-CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
-  & VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
+CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
+             VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
 
-CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
-  & VALUE=input(option=fieldType, default=0_I4B))
+CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
+             VALUE=input(option=fieldType, default=0_I4B))
 
-CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
-  & VALUE=input(option=local_n, default=0_I4B))
+CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
+             VALUE=input(option=local_n, default=0_I4B))
 
-CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
-  & VALUE=input(option=global_n, default=0_I4B))
+CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
+             VALUE=input(option=global_n, default=0_I4B))
 
 sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE SetAbstractFieldParam
 
 !----------------------------------------------------------------------------
@@ -109,12 +129,16 @@ SUBROUTINE AbstractFieldInitiate_Help1(obj, param, prefix)
   CHARACTER(*), INTENT(IN) :: prefix
 
   obj%isInitiated = .TRUE.
- CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
-  CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
-  CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
-  CALL GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
-  CALL GetValue(obj=param, prefix=prefix, key="global_n", VALUE=obj%global_n)
-  CALL GetValue(obj=param, prefix=prefix, key="local_n", VALUE=obj%local_n)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="fieldType", &
+                    VALUE=obj%fieldType)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="name", &
+                    VALUE=obj%name)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="global_n", &
+                    VALUE=obj%global_n)
+  CALL FPL_GetValue(obj=param, prefix=prefix, key="local_n", &
+                    VALUE=obj%local_n)
 END SUBROUTINE AbstractFieldInitiate_Help1
 
 !----------------------------------------------------------------------------
@@ -129,7 +153,7 @@ CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AbstractFieldInitiate()')
+                        '[START]')
 #endif
 
 prefix = obj%GetPrefix()
@@ -139,7 +163,8 @@ sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
 IF (ierr .NE. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
 END IF
 
 ! NOTE: We should not call deallocate in abstract classes.
@@ -151,7 +176,8 @@ END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
 END IF
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
@@ -160,8 +186,9 @@ sublist => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AbstractFieldInitiate()')
+                        '[END]')
 #endif
+
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -169,19 +196,21 @@ END PROCEDURE aField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate2"
+CHARACTER(*), PARAMETER :: myName = "aField_Initiate2()"
 INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Initiate()')
+                        '[START]')
 #endif
 
 IF (.NOT. obj2%isInitiated .OR. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: Either obj is already initiated or '//  &
-    & ' obj2 is not initiated.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                 '[INTERNAL ERROR] :: Either obj is already initiated or '// &
+                    ' obj2 is not initiated.')
+  RETURN
 END IF
+
 obj%isInitiated = obj2%isInitiated
 obj%fieldType = obj2%fieldType
 obj%name = obj2%name
@@ -194,7 +223,9 @@ obj%local_n = obj2%local_n
 obj%is = obj2%is
 obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
+
 obj%domain => obj2%domain
+
 IF (ALLOCATED(obj2%domains)) THEN
   tsize = SIZE(obj2%domains)
   ALLOCATE (obj%domains(tsize))
@@ -203,9 +234,22 @@ IF (ALLOCATED(obj2%domains)) THEN
   END DO
 END IF
 
+obj%fedof = obj2%fedof
+
+IF (ALLOCATED(obj2%fedofs)) THEN
+
+  tsize = SIZE(obj2%fedofs)
+  ALLOCATE (obj%fedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%fedofs(ii)%ptr => obj2%fedofs(ii)%ptr
+  END DO
+
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Initiate()')
+  & '[END]')
 #endif
 END PROCEDURE aField_Initiate2
 
@@ -214,7 +258,7 @@ END PROCEDURE aField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate_2()"
+CHARACTER(*), PARAMETER :: myName = "aField_Initiate3()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr, ii, tsize
 LOGICAL(LGT) :: isOK
@@ -222,7 +266,7 @@ CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AbstractFieldInitiate()')
+                        '[START]')
 #endif
 
 prefix = obj%GetPrefix()
@@ -232,7 +276,7 @@ sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
 IF (ierr .NE. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
   RETURN
 END IF
 
@@ -243,9 +287,10 @@ END IF
 ! here.
 ! CALL obj%DEALLOCATE()
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
+isok = ASSOCIATED(sublist)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
   RETURN
 END IF
 
@@ -257,7 +302,7 @@ DO ii = 1, tsize
   isOK = ASSOCIATED(dom(ii)%ptr)
   IF (.NOT. isOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: dom('//tostring(ii)//') is not ASSOCIATED.')
+             '[INTERNAL ERROR] :: dom('//ToString(ii)//') is not ASSOCIATED.')
     RETURN
   END IF
   obj%domains(ii)%ptr => dom(ii)%ptr
@@ -267,8 +312,9 @@ sublist => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AbstractFieldInitiate()')
+                        '[END]')
 #endif
+
 END PROCEDURE aField_Initiate3
 
 !----------------------------------------------------------------------------
@@ -289,13 +335,29 @@ obj%local_n = 0
 obj%is = 0
 obj%ie = 0
 obj%lis_ptr = 0
+
 obj%domain => NULL()
+
 IF (ALLOCATED(obj%domains)) THEN
   DO ii = 1, SIZE(obj%domains)
     obj%domains(ii)%ptr => NULL()
   END DO
   DEALLOCATE (obj%domains)
 END IF
+
+CALL obj%fedof%DEALLOCATE()
+
+IF (ALLOCATED(obj%fedofs)) THEN
+
+  DO ii = 1, SIZE(obj%fedofs)
+    CALL obj%fedofs(ii)%ptr%DEALLOCATE()
+    obj%fedofs(ii)%ptr => NULL()
+  END DO
+
+  DEALLOCATE (obj%fedofs)
+
+END IF
+
 END PROCEDURE aField_Deallocate
 
 !----------------------------------------------------------------------------

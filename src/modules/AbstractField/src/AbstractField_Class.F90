@@ -32,16 +32,20 @@
 ! [[AbstractMatrixField_]].
 
 MODULE AbstractField_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stdin, INT64, Constant, &
+                      Space, Time
+USE BaseType, ONLY: RealVector_, DOF_
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
 IMPLICIT NONE
 PRIVATE
+
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = Constant
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACE = Space
@@ -142,14 +146,20 @@ TYPE, ABSTRACT :: AbstractField_
   !! physical variables.
   !! It is used in the case of BlockNodeField
   !! and BlockMatrixField
+  TYPE(FEDOF_) :: fedof
+  !! pointer to FEDOF
+  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+  !! pointer to FEDOF
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE(aField_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
-    & CheckEssentialParam
+    CheckEssentialParam
   !! Check essential parameters
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => aField_Initiate1
   !! Initiate the field by reading param and given domain
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => aField_Initiate2
@@ -158,6 +168,7 @@ CONTAINS
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
 
@@ -169,6 +180,7 @@ CONTAINS
   !! Import data from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
   !! Export data in hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
@@ -176,8 +188,8 @@ CONTAINS
   ! GET:
   ! @GetMethods
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars  &
-    & => aField_GetTotalPhysicalVars
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
+    aField_GetTotalPhysicalVars
   !! Returns the total number of physical variables
   !! INFO: This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
@@ -198,8 +210,8 @@ CONTAINS
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF =>  &
-   & aField_GetTotalVertexDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
+    aField_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
   !! INFO: This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
@@ -211,8 +223,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => aField_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
   !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant  &
-    & => aField_isConstant
+  PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
+    aField_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
@@ -248,25 +260,28 @@ END INTERFACE
 ! summary:  Set AbstractField_ parameters
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine,  &
-    & fieldType, comm, local_n, global_n)
+  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, &
+                                          fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
+    !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
     !! communication group
     !! Only needed for parallel environment
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size of scalar field on each processor
+    !! local size of field on each processor
     !! Only needed for parallel environment
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size of scalar field on distributed on processors
+    !! global size of field on distributed on processors
     !! Only needed for parallel environment
   END SUBROUTINE SetAbstractFieldParam
 END INTERFACE
