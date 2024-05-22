@@ -102,6 +102,10 @@ CONTAINS
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
   !! Generic method for initiating FEDOF
 
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  !! Copy
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
+
   PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
   PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
   PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
@@ -180,6 +184,21 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: order(:)
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Copy@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Copy
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CLASS(FEDOF_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------

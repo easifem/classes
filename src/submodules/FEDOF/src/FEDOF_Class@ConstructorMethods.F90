@@ -414,4 +414,25 @@ IF (ALLOCATED(obj%faceIA)) DEALLOCATE (obj%faceIA)
 IF (ALLOCATED(obj%cellIA)) DEALLOCATE (obj%cellIA)
 END PROCEDURE obj_Deallocate
 
+!----------------------------------------------------------------------------
+!                                                                    Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+obj%tdof = obj2%tdof
+obj%tNodes = obj2%tNodes
+obj%tEdges = obj2%tEdges
+obj%tFaces = obj2%tFaces
+obj%tCells = obj2%tCells
+obj%baseContinuity = obj2%baseContinuity
+obj%baseInterpolation = obj2%baseInterpolation
+obj%mesh => obj2%mesh
+IF (ALLOCATED(obj2%cellOrder)) obj%cellOrder = obj2%cellOrder
+IF (ALLOCATED(obj2%faceOrder)) obj%faceOrder = obj2%faceOrder
+IF (ALLOCATED(obj2%edgeOrder)) obj%edgeOrder = obj2%edgeOrder
+IF (ALLOCATED(obj2%edgeIA)) obj%edgeIA = obj2%edgeIA
+IF (ALLOCATED(obj2%faceIA)) obj%faceIA = obj2%faceIA
+IF (ALLOCATED(obj2%cellIA)) obj%cellIA = obj2%cellIA
+END PROCEDURE obj_Copy
+
 END SUBMODULE ConstructorMethods
