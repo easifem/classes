@@ -34,7 +34,8 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           BOUNDARY_ELEMENT, &
                           DOMAIN_BOUNDARY_ELEMENT, &
                           ElemData_GetTotalEntities, &
-                          ElemData_GetConnectivity
+                          ElemData_GetConnectivity, &
+                          ElemData_GetElementToElements
 USE NodeData_Class, ONLY: INTERNAL_NODE, &
                           BOUNDARY_NODE
 
@@ -755,11 +756,9 @@ MODULE PROCEDURE obj_GetNodeToElements1_
 INTEGER(I4B) :: ii, jj
 LOGICAL(LGT) :: problem
 
+tsize = 0
 problem = .NOT. obj%isNodePresent(globalNode, islocal=islocal)
-IF (problem) THEN
-  tsize = 0
-  RETURN
-END IF
+IF (problem) RETURN
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -1088,47 +1087,47 @@ END PROCEDURE obj_GetNodeToNodes2_
 
 MODULE PROCEDURE obj_GetElementToElements
 LOGICAL(LGT) :: onlyElem
-INTEGER(I4B) :: iel, tsize
+INTEGER(I4B) :: nrow, temp(REFELEM_MAX_FACES, 3), ii, ncol, jj
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements()"
-LOGICAL(LGT) :: problem
-#endif
+onlyElem = Input(default=.FALSE., option=onlyElem)
 
-iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-
-#ifdef DEBUG_VER
-problem = .NOT. ALLOCATED(obj%elementData(iel)%globalElements)
-
-IF (problem) THEN
-  CALL Reallocate(ans, 0, 0)
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalElements not found! '//  &
-    & 'local element number = '//ToString(iel))
+IF (onlyElem) THEN
+  CALL obj%GetElementToElements_(globalElement=globalElement, &
+                                 islocal=islocal, ans=temp(:, 1), tsize=nrow)
+  ALLOCATE (ans(nrow, 1))
+  DO ii = 1, nrow; ans(ii, 1) = temp(ii, 1); END DO
   RETURN
+
 END IF
-#endif
 
-onlyElem = Input(option=onlyElements, default=.FALSE.)
+CALL obj%GetElementToElements_(globalElement=globalelement, &
+                              islocal=islocal, ans=temp, nrow=nrow, ncol=ncol)
+ALLOCATE (ans(nrow, ncol))
 
-ASSOCIATE (indx => obj%elementData(iel)%globalElements)
-
-  tsize = SIZE(indx)
-
-  IF (onlyElem) THEN
-
-    ALLOCATE (ans(tsize / 3, 1))
-    ans(:, 1) = indx(1 :: 3)
-
-  ELSE
-
-    ALLOCATE (ans(tsize / 3, 3))
-    ans = TRANSPOSE(RESHAPE(indx, [3, tsize / 3]))
-  END IF
-
-END ASSOCIATE
-
+DO jj = 1, ncol; DO ii = 1, nrow; ans(ii, jj) = temp(ii, jj); END DO; END DO
 END PROCEDURE obj_GetElementToElements
+
+!----------------------------------------------------------------------------
+!                                                       GetElementToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElementToElements1_
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+CALL ElemData_GetElementToElements(obj=obj%elementData(iel), ans=ans, &
+                                   tsize=tsize)
+END PROCEDURE obj_GetElementToElements1_
+
+!----------------------------------------------------------------------------
+!                                                       GetElementToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElementToElements2_
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+CALL ElemData_GetElementToElements(obj=obj%elementData(iel), ans=ans, &
+                                   nrow=nrow, ncol=ncol)
+END PROCEDURE obj_GetElementToElements2_
 
 !----------------------------------------------------------------------------
 !                                                     GetBoundaryElementData
