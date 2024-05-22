@@ -19,6 +19,12 @@
 
 SUBMODULE(FEDOF_Class) GetMethods
 USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
+USE ElemData_Class, ONLY: ElemData_, &
+                          ElemData_GetTotalEntities, &
+                          ElemData_GetEdge, &
+                          ElemData_GetFace, &
+                          ElemData_GetCell
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +33,6 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetVertexDOF
-INTEGER(I4B) :: ii
 tsize = 1
 ans(1) = obj%mesh%GetLocalNodeNumber(globalNode, islocal=islocal)
 END PROCEDURE obj_GetVertexDOF
@@ -41,7 +46,7 @@ INTEGER(I4B) :: ii
 tsize = 0
 DO ii = obj%edgeIA(globalEdge), obj%edgeIA(globalEdge + 1) - 1
   tsize = tsize + 1
-  ans(tsize) = obj%edgeJA(ii)
+  ans(tsize) = ii
 END DO
 END PROCEDURE obj_GetEdgeDOF
 
@@ -54,7 +59,7 @@ INTEGER(I4B) :: ii
 tsize = 0
 DO ii = obj%faceIA(globalface), obj%faceIA(globalface + 1) - 1
   tsize = tsize + 1
-  ans(tsize) = obj%faceJA(ii)
+  ans(tsize) = ii
 END DO
 END PROCEDURE obj_GetFaceDOF
 
@@ -63,11 +68,12 @@ END PROCEDURE obj_GetFaceDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellDOF
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, jj
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
 tsize = 0
-DO ii = obj%cellIA(globalcell), obj%cellIA(globalcell + 1) - 1
+DO ii = obj%cellIA(jj), obj%cellIA(jj + 1) - 1
   tsize = tsize + 1
-  ans(tsize) = obj%cellJA(ii)
+  ans(tsize) = ii
 END DO
 END PROCEDURE obj_GetCellDOF
 
@@ -109,12 +115,63 @@ END DO
 ! cell
 a = b + 1; b = b + ent(4)
 DO ii = a, b
-  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk)
+  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
+                      islocal=.FALSE.)
   jj = jj + kk
 END DO
 
 tsize = jj - 1
 
 END PROCEDURE obj_GetConnectivity_
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDOF1
+ans = obj%tdof
+END PROCEDURE obj_GetTotalDOF1
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDOF2
+TYPE(ElemData_), POINTER :: elemdata
+INTEGER(I4B) :: ii, jj, ent(4)
+
+elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
+                                        islocal=islocal)
+
+ent = ElemData_GetTotalEntities(elemdata)
+
+ans = ent(1)
+
+DO ii = 1, ent(2)
+  jj = ElemData_GetEdge(elemdata, ii)
+  ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
+END DO
+
+DO ii = 1, ent(3)
+  jj = ElemData_GetFace(elemdata, ii)
+  ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
+END DO
+
+jj = ElemData_GetCell(elemdata, islocal=.TRUE.)
+ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+
+END PROCEDURE obj_GetTotalDOF2
+
+!----------------------------------------------------------------------------
+!                                                         GetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity
+INTEGER(I4B) :: tdof
+tdof = obj%GetTotalDOF(globalElement=globalElement, isLocal=isLocal)
+ALLOCATE (ans(tdof))
+CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
+                          globalElement=globalElement, islocal=islocal)
+END PROCEDURE obj_GetConnectivity
 
 END SUBMODULE GetMethods

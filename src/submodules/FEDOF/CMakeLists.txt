@@ -18,5 +18,7 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME} PRIVATE ${src_path}/FEDOF_Class@ConstructorMethods.F90
-                          ${src_path}/FEDOF_Class@GetMethods.F90)
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/FEDOF_Class@ConstructorMethods.F90
+          ${src_path}/FEDOF_Class@GetMethods.F90
+          ${src_path}/FEDOF_Class@IOMethods.F90)

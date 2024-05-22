@@ -18,8 +18,7 @@
 !
 
 MODULE FEDOF_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE BaseType, ONLY: DOF_, BaseContinuity_, BaseInterpolation_
+USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 
@@ -38,12 +37,22 @@ CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
 ! date: 2024-05-14
 ! summary: FEDOF data type
 
-TYPE, EXTENDS(DOF_) :: FEDOF_
-  CLASS(BaseContinuity_), ALLOCATABLE :: baseContinuity
+TYPE :: FEDOF_
+  INTEGER(I4B) :: tdof = 0
+  !! Total number of degrees of freedom
+  INTEGER(I4B) :: tNodes = 0
+  !! Total number of nodes
+  INTEGER(I4B) :: tEdges = 0
+  !! Total number of edges
+  INTEGER(I4B) :: tFaces = 0
+  !! Total number of faces
+  INTEGER(I4B) :: tCells = 0
+  !! Total number of cells
+  CHARACTER(:), ALLOCATABLE :: baseContinuity
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
   !! H1, HCurl, HDiv, DG
-  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpolation
+  CHARACTER(:), ALLOCATABLE :: baseInterpolation
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
   !! LagrangeInterpolation
@@ -54,21 +63,28 @@ TYPE, EXTENDS(DOF_) :: FEDOF_
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
 
-  INTEGER(I4B), ALLOCATABLE :: edgeIA(:), edgeJA(:)
+  INTEGER(INT8), ALLOCATABLE :: cellOrder(:)
+  !! Order of each cell
+  INTEGER(INT8), ALLOCATABLE :: faceOrder(:)
+  !! order of each face
+  INTEGER(INT8), ALLOCATABLE :: edgeOrder(:)
+  !! order of each edge
+
+  INTEGER(I4B), ALLOCATABLE :: edgeIA(:)
   !! sparsity for edge, the size of edgeJA is equal to the total number of
   !! degrees of freedom on edge,
   !! the size of edgeIA is equal to the total number of edges + 1
   !! The degrees of freedom of iedge is stored in
   !! edgeJA(edgeIA(iedge):edgeIA(iedge+1)-1)
 
-  INTEGER(I4B), ALLOCATABLE :: faceIA(:), faceJA(:)
+  INTEGER(I4B), ALLOCATABLE :: faceIA(:)
   !! sparsity for face, the size of faceJA is equal to the total number of
   !! degrees of freedom on face,
   !! the size of faceIA is equal to the total number of faces + 1
   !! The degrees of freedom of iface is stored in
   !! faceJA(faceIA(iface):faceIA(iface+1)-1)
 
-  INTEGER(I4B), ALLOCATABLE :: cellIA(:), cellJA(:)
+  INTEGER(I4B), ALLOCATABLE :: cellIA(:)
   !! sparsity for cell, the size of cellJA is equal to the total number of
   !! degrees of freedom on cell,
   !! the size of cellIA is equal to the total number of cells + 1
@@ -77,10 +93,46 @@ TYPE, EXTENDS(DOF_) :: FEDOF_
 
 CONTAINS
 
+  !SET:
+  !@ConstructorMethods
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate FEDOF by using homogeneous order
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate FEDOF by using inhomogeneous order
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  !! Generic method for initiating FEDOF
+
+  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the data
+
+  !IO:
+  !@IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the contents of FEDOF
+
+  !GET:
+  !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
+  !! Get vertex degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeDOF => obj_GetEdgeDOF
+  !! Get edge degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetFaceDOF => obj_GetFaceDOF
+  !! Get face degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
+  !! Get cell degrees of freedom
+  PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
+  !! Retuns the total degrees of freedom in FEDOF
+  PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
+  !! Retuns the total dof of an element
+  GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2
+  !! Generic mehthod for getting the total dof
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
 
 END TYPE FEDOF_
 
@@ -128,6 +180,48 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: order(:)
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Deallocate the data
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Get the connectivity (function)
+
+INTERFACE
+  MODULE FUNCTION obj_GetConnectivity(obj, opt, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+    CHARACTER(*), INTENT(IN) :: opt
+    !! opt = Vertex
+    !! opt = Edge
+    !! opt = Face
+    !! opt = Cell
+    !! opt = All
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal true then globalElement is local element number
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! connectivity of element
+  END FUNCTION obj_GetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -179,11 +273,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetEdgeDOF(obj, globalEdge, ans, tsize)
+  MODULE SUBROUTINE obj_GetEdgeDOF(obj, globalEdge, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalEdge
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
   END SUBROUTINE obj_GetEdgeDOF
 END INTERFACE
 
@@ -192,11 +287,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFaceDOF(obj, globalFace, ans, tsize)
+  MODULE SUBROUTINE obj_GetFaceDOF(obj, globalFace, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalFace
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
   END SUBROUTINE obj_GetFaceDOF
 END INTERFACE
 
@@ -205,12 +301,106 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize)
+  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalCell
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
   END SUBROUTINE obj_GetCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Returns total number of dof in the FEDOF
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF1(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Returns total number of dof in the FEDOF
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF2(obj, globalElement, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-19
+! summary: Display the content of FE DOF
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetCellOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCellOrder(obj, cellOrder)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+  END SUBROUTINE obj_SetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetFaceOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the face order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFaceOrder(obj, cellOrder)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+  END SUBROUTINE obj_SetFaceOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetEdgeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the Edge order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetEdgeOrder(obj, cellOrder)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+  END SUBROUTINE obj_SetEdgeOrder
 END INTERFACE
 
 END MODULE FEDOF_Class
