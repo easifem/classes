@@ -28,6 +28,10 @@ USE NodeData_Class, ONLY: NodeData_
 USE NodeDataList_Class, ONLY: NodeDataList_
 USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
 USE FacetData_Class, ONLY: FacetData_
+USE AbstractMeshParam, ONLY: PARAM_MAX_NODE_TO_NODE, &
+                             PARAM_MAX_NODE_TO_ELEM, &
+                             PARAM_MAX_CONNECTIVITY_SIZE, &
+                             PARAM_MAX_NNE
 IMPLICIT NONE
 
 PRIVATE
@@ -39,32 +43,12 @@ PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
 PUBLIC :: AbstractMeshGetFacetConnectivity
 PUBLIC :: AbstractMeshPointerDeallocate
+PUBLIC :: PARAM_MAX_NODE_TO_NODE
+PUBLIC :: PARAM_MAX_NODE_TO_ELEM
+PUBLIC :: PARAM_MAX_CONNECTIVITY_SIZE
+PUBLIC :: PARAM_MAX_NNE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
-
-#ifdef MAX_NODE_TO_NODE
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_NODE = MAX_NODE_TO_NODE
-#else
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_NODE = 256
-#endif
-
-#ifdef MAX_NODE_TO_ELEM
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
-#else
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
-#endif
-
-#ifdef MAX_CONNECTIVITY_SIZE
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = MAX_CONNECTIVITY_SIZE
-#else
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_CONNECTIVITY_SIZE = 256
-#endif
-
-#ifdef MAX_NNE
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NNE = MAX_NNE
-#else
-INTEGER(I4B), PUBLIC, PARAMETER :: PARAM_MAX_NNE = 128
-#endif
 
 !----------------------------------------------------------------------------
 !                                                             AbstractMesh_
@@ -477,6 +461,15 @@ CONTAINS
   !! Returns local element number connected to a given local
   !! element number, it also gives information about the local
   !! facet number
+
+  PROCEDURE, PASS(obj) :: GetElementToElements1_ => &
+    obj_GetElementToElements1_
+  !! Get element to elements mapping
+  PROCEDURE, PASS(obj) :: GetElementToElements2_ => &
+    obj_GetElementToElements2_
+  !! Get element to elements mapping
+  GENERIC, PUBLIC :: GetElementToElements_ => GetElementToElements1_, &
+    GetElementToElements2_
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryElementData => &
     obj_GetBoundaryElementData
@@ -2006,6 +1999,79 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:, :)
     !! list of elements surrounding elements
   END FUNCTION obj_GetElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Returns element to element connectivity information
+!
+!# Introduction
+!
+! This routine returns element to element connectivity information
+! for a given global element number `globalElement`
+!
+! This routine returns only the global element numbers surrouding
+! the given element `globalElement`
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElementToElements1_(obj, ans, tsize, &
+                                               globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! mesh
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! list of elements surrounding elements
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written to ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is present and true then globalElement is a local element
+  END SUBROUTINE obj_GetElementToElements1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Returns element to element connectivity information
+!
+!# Introduction
+!
+! This routine returns element to element connectivity information
+! for a given global element number `globalElement`
+!
+! It returns the **full information** about elements surrounding the global
+! element `globalElement`. In this case,
+!
+! - Each Row of `ans` denotes the element to which `globalElement` is
+! connected to
+! - Column-1 of `ans` denotes global element number of the neighbour
+! - Column-2 denotes the local face number of element `globalElement`
+! - Column-3 denotes the local face number of global element given by
+! the column number 1 (same row)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElementToElements2_(obj, ans, nrow, ncol, &
+                                               globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! mesh
+    INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+    !! list of elements surrounding elements
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written to ans
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written to ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is present and true then globalElement is a local element
+  END SUBROUTINE obj_GetElementToElements2_
 END INTERFACE
 
 !----------------------------------------------------------------------------
