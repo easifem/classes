@@ -18,13 +18,23 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
-  & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
+                                   RefElemGetGeoParam, &
+                                   ElementName, &
+                                   GetFaceElemType, &
+                                   GetEdgeConnectivity, &
+                                   PARAM_REFELEM_MAX_EDGES
+
+USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
+
+USE InterpolationUtility, ONLY: GetTotalInDOF
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
 USE SortUtility, ONLY: Sort
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
+USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
 PRIVATE
 
@@ -45,6 +55,15 @@ PUBLIC :: ElemData_SetTotalMaterial
 PUBLIC :: ASSIGNMENT(=)
 PUBLIC :: ElemData_GetConnectivity
 PUBLIC :: ElemData_GetTotalEntities
+PUBLIC :: ElemData_GetVertex
+PUBLIC :: ElemData_GetEdge
+PUBLIC :: ElemData_GetFace
+PUBLIC :: ElemData_GetCell
+PUBLIC :: ElemData_GetTotalEdgeDOF
+PUBLIC :: ElemData_GetTotalFaceDOF
+PUBLIC :: ElemData_GetTotalCellDOF
+PUBLIC :: ElemData_GetElementToElements
+PUBLIC :: ElemData_GetEdgeConnectivity
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -52,6 +71,8 @@ INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 
 ! INTEGER(I4B), PARAMETER :: MAX_NUM_OVERLAPPED_CONTINNUM = 4
+
+CHARACTER(*), PARAMETER :: modName = "ElemData_Class"
 
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
@@ -63,6 +84,11 @@ END INTERFACE ElemDataDeallocate
 
 INTERFACE ASSIGNMENT(=)
   MODULE PROCEDURE ElemData_Copy
+END INTERFACE
+
+INTERFACE ElemData_GetElementToElements
+  MODULE PROCEDURE ElemData_GetElementToElements1, &
+    ElemData_GetElementToElements2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -86,13 +112,15 @@ TYPE :: ElemData_
     !! it will be called the boundary element
     !! INTERNAL_ELEMENT: If the element does not contain the boundary node
     !! then it will be called the internal element
+    !! TODO: Change elementType to Int8
   INTEGER(I4B) :: name = 0
     !! This is name of the element
     !! It can be Triangle, Triangle3, Triangle6, etc.
-    !! Quadrangle,
+    !! Quadrangle, Quadrangle4, Quadrangle8, etc.
   INTEGER(I4B) :: meshID = 0
     !! ID of mesh to which the element belong
     !! This is a gmsh concept
+    !! TODO: Change elementType to Int8
   INTEGER(INT8), ALLOCATABLE :: material(:)
     !! materials mapped to the mesh
     !! material(1) is the material-id (type of material) of medium 1
@@ -104,11 +132,13 @@ TYPE :: ElemData_
     !! fluid is a medium with n =2
     !! then material(1) denotes the type of soil => clay, sand, silt
     !! and material(2) denotes the type of fluid => water, oil, air
+    !! TODO: Change material to Int8
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! nodes contained in the element, connectivity
     !! Vertex connectivity
   INTEGER(I4B), ALLOCATABLE :: globalEdges(:)
     !! Edge connectivity
+    !! Edge is defined for 3D elements only
   INTEGER(INT8), ALLOCATABLE :: edgeOrient(:)
     !! Orientation of edge
   INTEGER(I4B), ALLOCATABLE :: globalFaces(:)
@@ -467,22 +497,23 @@ SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
   INTEGER(I4B), INTENT(INOUT) :: globalFaceCon(:, :)
   INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
 
-  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, REFELEM_MAX_FACES),  &
-    & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
-    & iface, face_temp(4), aint
+INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, PARAM_REFELEM_MAX_FACES), &
+                  faceElemType(PARAM_REFELEM_MAX_FACES), &
+                  tFaceNodes(PARAM_REFELEM_MAX_FACES), &
+                  iface, face_temp(4), aint
 
-  CALL RefElemGetGeoParam(elemType=obj%name,  &
-    & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces0,  &
-    & faceOpt=1_I4B, faceElemType=faceElemType,  &
-    & tFaceNodes=tFaceNodes)
+  CALL RefElemGetGeoParam(elemType=obj%name, &
+                          tFaces=tFaces, tNodes=tNodes, faceCon=localFaces0, &
+                          faceOpt=1_I4B, faceElemType=faceElemType, &
+                          tFaceNodes=tFaceNodes)
 
   DO iface = 1, tFaces
     aint = tFaceNodes(iface)
     face_temp(1:aint) = obj%globalNodes(localFaces0(1:aint, iface))
 
-    CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint),  &
-      & sorted_face=globalFaceCon(1:aint, iface),  &
-      & localFaces=localFaceCon(1:aint, iface))
+    CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint), &
+                                   sorted_face=globalFaceCon(1:aint, iface), &
+                                      localFaces=localFaceCon(1:aint, iface))
   END DO
 
 END SUBROUTINE ElemData_GetGlobalFaceCon
@@ -561,7 +592,7 @@ END SUBROUTINE ElemData_GetConnectivity
 
 FUNCTION ElemData_GetTotalEntities(obj) RESULT(ans)
   TYPE(ElemData_), INTENT(in) :: obj
-  INTEGER(i4b) :: ans(4)
+  INTEGER(I4B) :: ans(4)
   ans = 0
   ans(1) = SafeSize(obj%globalNodes)
   ans(2) = SafeSize(obj%globalEdges)
@@ -570,7 +601,272 @@ FUNCTION ElemData_GetTotalEntities(obj) RESULT(ans)
 END FUNCTION ElemData_GetTotalEntities
 
 !----------------------------------------------------------------------------
-!
+!                                                     ElemData_GetEdge
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the global vertex number
+
+FUNCTION ElemData_GetVertex(obj, ii) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(in) :: ii
+  INTEGER(I4B) :: ans
+  ans = obj%globalNodes(ii)
+END FUNCTION ElemData_GetVertex
+
+!----------------------------------------------------------------------------
+!                                                     ElemData_GetEdge
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the global edge
+
+FUNCTION ElemData_GetEdge(obj, ii) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(in) :: ii
+  INTEGER(I4B) :: ans
+  ans = obj%globalEdges(ii)
+END FUNCTION ElemData_GetEdge
+
+!----------------------------------------------------------------------------
+!                                                     ElemData_GetFace
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the global face
+
+FUNCTION ElemData_GetFace(obj, ii) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(in) :: ii
+  INTEGER(I4B) :: ans
+  ans = obj%globalFaces(ii)
+END FUNCTION ElemData_GetFace
+
+!----------------------------------------------------------------------------
+!                                                     ElemData_GetCell
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the global element number
+
+FUNCTION ElemData_GetCell(obj, islocal) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  LOGICAL(LGT), INTENT(in) :: islocal
+  INTEGER(I4B) :: ans
+
+  IF (islocal) THEN
+    ans = obj%localElemNum
+  ELSE
+    ans = obj%globalElemNum
+  END IF
+END FUNCTION ElemData_GetCell
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_GetTotalEdgeDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the total number of edge dof on the edge of an element
+!
+!# Introduction
+!
+! All dofs are internal to the edge
+
+FUNCTION ElemData_GetTotalEdgeDOF(obj, ii, order, baseContinuity, &
+                                  baseInterpolation) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  !! Element data object
+  INTEGER(I4B), INTENT(IN) :: ii
+  !! Local edge number
+  INTEGER(I4B), INTENT(IN) :: order
+  !! Order on the edge
+  CHARACTER(*), INTENT(IN) :: baseContinuity
+  !! base continuity: H1, HDiv, HCurl
+  CHARACTER(*), INTENT(IN) :: baseInterpolation
+  !! base interpolation type
+  INTEGER(I4B) :: ans
+  !! Total number of dof on edge
+  ans = MAX(order - 2, 0_I4B)
+END FUNCTION ElemData_GetTotalEdgeDOF
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_GetTotalFaceDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the total number of edge dof on the edge of an element
+!
+!# Introduction
+!
+! All dofs are internal to face
+
+FUNCTION ElemData_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
+                                  baseInterpolation) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  !! Element data object
+  INTEGER(I4B), INTENT(IN) :: ii
+  !! Local face number
+  INTEGER(I4B), INTENT(IN) :: order
+  !! Order on the edge
+  CHARACTER(*), INTENT(IN) :: baseContinuity
+  !! base continuity: H1, HDiv, HCurl
+  CHARACTER(*), INTENT(IN) :: baseInterpolation
+  !! base interpolation type
+  INTEGER(I4B) :: ans
+  !! Total number of dof on edge
+
+  ! Internal variables
+  INTEGER(I4B) :: faceElemType(PARAM_REFELEM_MAX_FACES)
+
+  !! Get faceElemType
+  CALL GetFaceElemType(elemType=obj%name, faceElemType=faceElemType)
+
+  !! Get the
+  ans = GetTotalInDOF(order=order, elemType=faceElemType(ii), &
+           baseContinuity=baseContinuity, baseInterpolation=baseInterpolation)
+
+  ans = MAX(ans, 0_I4B)
+
+END FUNCTION ElemData_GetTotalFaceDOF
+
+!----------------------------------------------------------------------------
+!                                                   ElemData_GetTotalCellDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Get the total number of edge dof on the edge of an element
+!
+!# Introduction
+!
+! All dofs are internal to cell
+
+FUNCTION ElemData_GetTotalCellDOF(obj, order, baseContinuity, &
+                                  baseInterpolation) RESULT(ans)
+  TYPE(ElemData_), INTENT(in) :: obj
+  !! Element data object
+  INTEGER(I4B), INTENT(IN) :: order
+  !! Order on the edge
+  CHARACTER(*), INTENT(IN) :: baseContinuity
+  !! base continuity: H1, HDiv, HCurl
+  CHARACTER(*), INTENT(IN) :: baseInterpolation
+  !! base interpolation type
+  INTEGER(I4B) :: ans
+  !! Total number of dof on edge
+
+  ans = GetTotalInDOF(order=order, elemType=obj%name, &
+           baseContinuity=baseContinuity, baseInterpolation=baseInterpolation)
+
+  ans = MAX(ans, 0_I4B)
+END FUNCTION ElemData_GetTotalCellDOF
+
+!----------------------------------------------------------------------------
+!                                              ElemData_GetElementToElements
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemData_GetElementToElements1(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  !! Element to element, it should be allocated by user before calling
+  INTEGER(I4B), INTENT(OUT) :: tsize
+  !! The size of data written to ans
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%globalElements) / 3
+
+  DO ii = 1, tsize
+    ans(ii) = obj%globalElements((ii - 1) * 3 + 1)
+  END DO
+
+END SUBROUTINE ElemData_GetElementToElements1
+
+!----------------------------------------------------------------------------
+!                                              ElemData_GetElementToElements
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemData_GetElementToElements2(obj, ans, nrow, ncol, &
+                                          includeBoundaryElement)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+  !! Element to element, it should be allocated by user before calling
+  INTEGER(I4B), INTENT(OUT) :: nrow
+  !! Number of rows written to ans
+  INTEGER(I4B), INTENT(OUT) :: ncol
+  !! Number of columns written to ans
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: includeBoundaryElement
+
+  INTEGER(I4B) :: ii, jj
+
+  nrow = SIZE(obj%globalElements) / 3
+  ncol = 3
+
+  DO ii = 1, nrow
+    DO jj = 1, ncol
+      ans(ii, jj) = obj%globalElements((ii - 1) * 3 + jj)
+    END DO
+  END DO
+
+  IF (PRESENT(includeBoundaryElement)) THEN
+    IF (includeBoundaryElement) THEN
+
+      DO ii = 1, SIZE(obj%boundaryData)
+        nrow = nrow + 1
+        ans(nrow, 1) = obj%globalElemNum
+        ans(nrow, 2) = obj%boundaryData(ii)
+        ans(nrow, 3) = 0
+      END DO
+
+    END IF
+  END IF
+
+END SUBROUTINE ElemData_GetElementToElements2
+
+!----------------------------------------------------------------------------
+!                                               ElemData_GetEdgeConnectivity
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Get the end points of the edge
+
+SUBROUTINE ElemData_GetEdgeConnectivity(obj, ans, tsize, ii)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  !! Element data object
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  !! edge connectivity, node numbers are global
+  INTEGER(I4B), INTENT(OUT) :: tsize
+  !! total data written to ans
+  INTEGER(I4B), INTENT(IN) :: ii
+  !! Edge number (local)
+
+  INTEGER(I4B) :: ncol, jj, con(PARAM_MAX_NNE, PARAM_REFELEM_MAX_EDGES)
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ElemData_GetEdgeConnectivity()"
+  LOGICAL(LGT) :: problem
+#endif
+
+  CALL GetEdgeConnectivity(elemType=obj%name, con=con, opt=1_I4B, &
+                           nrow=tsize, ncol=ncol)
+
+#ifdef DEBUG_VER
+  problem = ii .GT. ncol
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR]: Edge number is greater than the number of edges')
+  END IF
+#endif
+
+  DO jj = 1, tsize
+    ans(jj) = con(jj, ii)
+  END DO
+END SUBROUTINE ElemData_GetEdgeConnectivity
 
 END MODULE ElemData_Class
