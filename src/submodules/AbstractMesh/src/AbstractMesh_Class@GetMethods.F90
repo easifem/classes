@@ -678,14 +678,14 @@ END IF
 
 #ifdef DEBUG_VER
 
-problem = (globalElement .LT. obj%minElemNum)  &
-  & .OR. (globalElement .GT. obj%maxElemNum)
+problem = (globalElement .LT. obj%minElemNum) &
+          .OR. (globalElement .GT. obj%maxElemNum)
 
 IF (problem) THEN
   ans = 0
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalElement '//ToString(globalElement)// &
-    & ' not present.')
+             '[INTERNAL ERROR] :: globalElement '//ToString(globalElement)// &
+                    ' not present.')
   RETURN
 END IF
 
