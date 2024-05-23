@@ -563,22 +563,25 @@ LOGICAL(LGT) :: islocal0
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
 LOGICAL(LGT) :: problem
-
-problem = .NOT. obj%isNodePresent(globalnode, islocal=islocal)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode '//ToString(globalNode)// &
-    ' is out of bound')
-END IF
 #endif
 
 islocal0 = Input(option=islocal, default=.FALSE.)
 
 IF (islocal0) THEN
   ans = globalNode
-ELSE
-  ans = obj%local_nptrs(globalNode)
+  RETURN
 END IF
+
+#ifdef DEBUG_VER
+problem = .NOT. obj%isNodePresent(globalnode, islocal=.FALSE.)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                   '[INTERNAL ERROR] :: globalNode '//ToString(globalNode)// &
+                    ' is out of bound')
+END IF
+#endif
+
+ans = obj%local_nptrs(globalNode)
 
 END PROCEDURE obj_GetLocalNodeNumber2
 
@@ -606,7 +609,7 @@ problem = (localNode .EQ. 0) .OR. (localNode .GT. obj%tNodes)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: localNode is out of bound.')
+                    '[INTERNAL ERROR] :: localNode is out of bound.')
 END IF
 #endif
 
