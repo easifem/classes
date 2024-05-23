@@ -149,6 +149,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
+  !! Get the mesh pointer
+
 END TYPE FEDOF_
 
 !----------------------------------------------------------------------------
@@ -482,6 +485,21 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: cellOrder(:)
   END SUBROUTINE obj_SetEdgeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Get the mesh pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), POINTER :: ans
+  END FUNCTION obj_GetMeshPointer
 END INTERFACE
 
 END MODULE FEDOF_Class

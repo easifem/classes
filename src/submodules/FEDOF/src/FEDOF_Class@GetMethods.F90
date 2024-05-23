@@ -177,9 +177,18 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                           GetMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer
+ans => obj%mesh
+END PROCEDURE obj_GetMeshPointer
 
 !----------------------------------------------------------------------------
 !
