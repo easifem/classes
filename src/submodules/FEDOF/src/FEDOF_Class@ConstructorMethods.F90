@@ -40,6 +40,16 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             SetFEDOFParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetFEDOFParam
+CHARACTER(*), PARAMETER :: myName = "SetFEDOFParam()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE SetFEDOFParam
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
@@ -114,6 +124,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                     FEDOF_Initiate_Help

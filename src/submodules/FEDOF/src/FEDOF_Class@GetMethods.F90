@@ -174,4 +174,15 @@ CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
                           globalElement=globalElement, islocal=islocal)
 END PROCEDURE obj_GetConnectivity
 
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE GetMethods

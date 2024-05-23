@@ -27,7 +27,7 @@ MODULE PROCEDURE obj_SetParam
 !USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 !USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 
-CHARACTER(*), PARAMETER :: myName = "obj_SetParam"
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
 INTEGER(I4B) :: ii
 
 IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated

@@ -21,6 +21,7 @@ MODULE FEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
+USE FPL, ONLY: ParameterList_
 
 IMPLICIT NONE
 PRIVATE
@@ -28,6 +29,7 @@ PRIVATE
 PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
+CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
 
 !----------------------------------------------------------------------------
 !                                                                   FEDOF_
@@ -99,7 +101,9 @@ CONTAINS
   !! Initiate FEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate FEDOF by using inhomogeneous order
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate FEDOF from ParameterList
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
   !! Generic method for initiating FEDOF
 
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -122,18 +126,25 @@ CONTAINS
   !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeDOF => obj_GetEdgeDOF
   !! Get edge degrees of freedom
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFaceDOF => obj_GetFaceDOF
   !! Get face degrees of freedom
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
+
   PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Retuns the total degrees of freedom in FEDOF
   PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
   !! Retuns the total dof of an element
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2
   !! Generic mehthod for getting the total dof
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix for setting the data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
@@ -147,6 +158,26 @@ END TYPE FEDOF_
 TYPE :: FEDOFPointer_
   TYPE(FEDOF_), POINTER :: ptr => NULL()
 END TYPE FEDOFPointer_
+
+!----------------------------------------------------------------------------
+!                                           SetFEDOFParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set the essential parameters for constructing the FEDOF
+
+INTERFACE
+MODULE SUBROUTINE SetFEDOFParam( param, baseContinuity, baseInterpolation, orderFile )
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity or conformity of basis defined on reference
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Type of basis functions used for interpolation on reference
+    CHARACTER(*), INTENT(IN) :: orderFile
+    !! file containing the order of each element
+  END SUBROUTINE SetFEDOFParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -184,6 +215,22 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: order(:)
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate3(obj, param, mesh)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -359,6 +406,21 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Get the prefix for setting essential parameters
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

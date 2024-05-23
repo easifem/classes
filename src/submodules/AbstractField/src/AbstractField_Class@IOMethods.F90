@@ -81,9 +81,10 @@ END PROCEDURE aField_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_WriteData_hdf5
-CHARACTER(*), PARAMETER :: myName = "aField_WriteData_hdf5"
+CHARACTER(*), PARAMETER :: myName = "aField_WriteData_hdf5()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[IMPLEMENTATION ERROR] :: This method should be implemented by children of AbstractField_')
+            '[IMPLEMENTATION ERROR] :: This method should be implemented '// &
+                  'by children of AbstractField_')
 END PROCEDURE aField_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -91,9 +92,10 @@ END PROCEDURE aField_WriteData_hdf5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "aField_WriteData_vtk"
+CHARACTER(*), PARAMETER :: myName = "aField_WriteData_vtk()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[IMPLEMENTATION ERROR] :: This method should be implemented by children of AbstractField_')
+          '[IMPLEMENTATION ERROR] :: This method should be implemented by'// &
+                  ' children of AbstractField_')
 END PROCEDURE aField_WriteData_vtk
 
 !----------------------------------------------------------------------------
