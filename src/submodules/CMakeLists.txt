@@ -141,6 +141,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 # UserFunction
 include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
+# AbstractBC
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
+
+# DirichletBC
+include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
+
+# NeumannBC
+include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
+
+# NitscheBC
+include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
 # AbstractMesh
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 
@@ -247,14 +259,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 # include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 #
 # # FieldFactory include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
-#
-# # AbstractBC include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
-#
-# # DirichletBC include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
-#
-# # NeumannBC include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
-#
-# # NitscheBC include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
 #
 # # AbstractLinSolver
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)

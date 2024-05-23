@@ -216,6 +216,21 @@ include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 # UserFunction
 include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
+# AbstractBC
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
+
+# DirichletBC
+include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
+
+# NeumannBC
+include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
+
+# NitscheBC
+include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
+# BoundaryCondition
+include(${CMAKE_CURRENT_LIST_DIR}/BoundaryCondition/CMakeLists.txt)
+
 # AbstractVector
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
 
@@ -225,10 +240,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 # AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 
-# # AbstractNodeField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
-#
-# # AbstractMeshField
+# AbstractNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
+
+# AbstractMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 #
 # # ScalarMeshField
@@ -300,17 +315,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 # # Field include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 #
 # # FieldFactory include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
-#
-# # AbstractBC include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
-#
-# # DirichletBC include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
-#
-# # NeumannBC include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
-#
-# # NitscheBC include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
-#
-# # BoundaryCondition
-# include(${CMAKE_CURRENT_LIST_DIR}/BoundaryCondition/CMakeLists.txt)
 #
 # # LinSolver include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 #
