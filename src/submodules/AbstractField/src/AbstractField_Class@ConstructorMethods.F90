@@ -145,8 +145,8 @@ END SUBROUTINE AbstractFieldInitiate_Help1
 !                                                                Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 CHARACTER(:), ALLOCATABLE :: prefix
@@ -189,14 +189,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE aField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate2()"
+MODULE PROCEDURE obj_Initiate2
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
@@ -251,14 +251,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE aField_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate3()"
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr, ii, tsize
 LOGICAL(LGT) :: isOK
@@ -315,13 +315,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE aField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii
 obj%name = ""
 obj%engine = ""
@@ -358,7 +358,7 @@ IF (ALLOCATED(obj%fedofs)) THEN
 
 END IF
 
-END PROCEDURE aField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !

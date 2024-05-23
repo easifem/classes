@@ -23,7 +23,7 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Display
+MODULE PROCEDURE obj_Display
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
@@ -74,36 +74,36 @@ ELSE
   CALL Display("domains : NOT ALLOCATED", unitNo=unitNo)
 END IF
 
-END PROCEDURE aField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_WriteData_hdf5
-CHARACTER(*), PARAMETER :: myName = "aField_WriteData_hdf5()"
+MODULE PROCEDURE obj_WriteData_hdf5
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
             '[IMPLEMENTATION ERROR] :: This method should be implemented '// &
                   'by children of AbstractField_')
-END PROCEDURE aField_WriteData_hdf5
+END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "aField_WriteData_vtk()"
+MODULE PROCEDURE obj_WriteData_vtk
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
           '[IMPLEMENTATION ERROR] :: This method should be implemented by'// &
                   ' children of AbstractField_')
-END PROCEDURE aField_WriteData_vtk
+END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Export
-CHARACTER(*), PARAMETER :: myName = "aField_Export()"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dname
 
 #ifdef DEBUG_VER
@@ -174,14 +174,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE aField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                             aField_Import
+!                                                             obj_Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Import
-CHARACTER(*), PARAMETER :: myName = "aField_Import()"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: strval, dsetname
 
 #ifdef DEBUG_VER
@@ -318,6 +318,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE aField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

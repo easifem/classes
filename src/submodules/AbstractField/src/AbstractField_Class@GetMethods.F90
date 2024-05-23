@@ -102,133 +102,133 @@ END PROCEDURE obj_GetParam
 !                                                       GetTotalPhysicalVars
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalPhysicalVars
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalPhysicalVars()"
+MODULE PROCEDURE obj_GetTotalPhysicalVars
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
-END PROCEDURE aField_GetTotalPhysicalVars
+END PROCEDURE obj_GetTotalPhysicalVars
 
 !----------------------------------------------------------------------------
-!                                                     aField_GetPhysicalNames
+!                                                     obj_GetPhysicalNames
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetPhysicalNames
-CHARACTER(*), PARAMETER :: myName = "aField_GetNames()"
+MODULE PROCEDURE obj_GetPhysicalNames
+CHARACTER(*), PARAMETER :: myName = "obj_GetNames()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   " child classes.")
-END PROCEDURE aField_GetPhysicalNames
+END PROCEDURE obj_GetPhysicalNames
 
 !----------------------------------------------------------------------------
 !                                                           GetSpaceCompo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetSpaceCompo
-CHARACTER(*), PARAMETER :: myName = "aField_GetSpaceCompo()"
+MODULE PROCEDURE obj_GetSpaceCompo
+CHARACTER(*), PARAMETER :: myName = "obj_GetSpaceCompo()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   " child classes.")
-END PROCEDURE aField_GetSpaceCompo
+END PROCEDURE obj_GetSpaceCompo
 
 !----------------------------------------------------------------------------
 !                                                           GetTimeCompo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTimeCompo
-CHARACTER(*), PARAMETER :: myName = "aField_GetTimeCompo"
+MODULE PROCEDURE obj_GetTimeCompo
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   " child classes.")
-END PROCEDURE aField_GetTimeCompo
+END PROCEDURE obj_GetTimeCompo
 
 !----------------------------------------------------------------------------
 !                                                           GetStorageFMT
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetStorageFMT
-CHARACTER(*), PARAMETER :: myName = "aField_GetStorageFMT"
+MODULE PROCEDURE obj_GetStorageFMT
+CHARACTER(*), PARAMETER :: myName = "obj_GetStorageFMT"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   " child classes.")
-END PROCEDURE aField_GetStorageFMT
+END PROCEDURE obj_GetStorageFMT
 
 !----------------------------------------------------------------------------
 !                                                               GetTotalDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalDOF
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalDOF()"
+MODULE PROCEDURE obj_GetTotalDOF
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   ' child classes')
-END PROCEDURE aField_GetTotalDOF
+END PROCEDURE obj_GetTotalDOF
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalVertexDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalVertexDOF
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalVertexDOF()"
+MODULE PROCEDURE obj_GetTotalVertexDOF
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
-END PROCEDURE aField_GetTotalVertexDOF
+END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalEdgeDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalEdgeDOF
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalEdgeDOF()"
+MODULE PROCEDURE obj_GetTotalEdgeDOF
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEdgeDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
-END PROCEDURE aField_GetTotalEdgeDOF
+END PROCEDURE obj_GetTotalEdgeDOF
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalFaceDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalFaceDOF
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalFaceDOF()"
+MODULE PROCEDURE obj_GetTotalFaceDOF
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFaceDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
-END PROCEDURE aField_GetTotalFaceDOF
+END PROCEDURE obj_GetTotalFaceDOF
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalCellDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetTotalCellDOF
-CHARACTER(*), PARAMETER :: myName = "aField_GetTotalCellDOF()"
+MODULE PROCEDURE obj_GetTotalCellDOF
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCellDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
-END PROCEDURE aField_GetTotalCellDOF
+END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
 !                                                                 isConstant
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_isConstant
+MODULE PROCEDURE obj_isConstant
 IF (obj%fieldType .EQ. TypeField%constant) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-END PROCEDURE aField_isConstant
+END PROCEDURE obj_isConstant
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "aField_GetPrefix()"
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
 '[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
 ans = ""
-END PROCEDURE aField_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

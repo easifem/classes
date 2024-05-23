@@ -156,33 +156,33 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE(aField_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     CheckEssentialParam
   !! Check essential parameters
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => aField_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and given domain
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => aField_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => aField_Initiate3
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
 
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
 
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
 
   ! GET:
@@ -191,56 +191,56 @@ CONTAINS
   !! Get the parameters of AbstractField
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
-    aField_GetTotalPhysicalVars
+    obj_GetTotalPhysicalVars
   !! Returns the total number of physical variables
   !! INFO: This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => aField_GetPhysicalNames
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Returns the names of physical variables
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => aField_GetSpaceCompo
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Return space component
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => aField_GetTimeCompo
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Return time component
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => aField_GetStorageFMT
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Return storage format
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => aField_GetTotalDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !! INFO: This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
-    aField_GetTotalVertexDOF
+    obj_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
   !! Returns the total number of edge degree of freedoms
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => aField_GetTotalFaceDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
   !! Returns the total number of face degree of freedoms
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => aField_GetTotalCellDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
   !! INFO: This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
-    aField_isConstant
+    obj_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix of the field, it is necessary for Setting essential param
   !! INFO: This routine should be implemented by child classes
 
@@ -259,11 +259,11 @@ END TYPE AbstractField_
 ! summary: This routine Check the essential parameters in param.
 
 ABSTRACT INTERFACE
-  SUBROUTINE aField_CheckEssentialParam(obj, param)
+  SUBROUTINE obj_CheckEssentialParam(obj, param)
     IMPORT :: AbstractField_, ParameterList_
     CLASS(AbstractField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -326,11 +326,11 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE aField_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE aField_Initiate1
+  END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -342,14 +342,14 @@ END INTERFACE AbstractFieldInitiate
 ! summary: Initiate by copying other fields, and different options
 
 INTERFACE AbstractFieldInitiate2
-  MODULE SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
+  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE aField_Initiate2
+  END SUBROUTINE obj_Initiate2
 END INTERFACE AbstractFieldInitiate2
 
 !----------------------------------------------------------------------------
@@ -361,11 +361,11 @@ END INTERFACE AbstractFieldInitiate2
 ! summary: Initiate by reading options from [[ParameterList_]]
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE aField_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE aField_Initiate3
+  END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -373,9 +373,9 @@ END INTERFACE AbstractFieldInitiate
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
-  END SUBROUTINE aField_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -405,11 +405,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldDisplay
-  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE aField_Display
+  END SUBROUTINE obj_Display
 END INTERFACE AbstractFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -417,13 +417,13 @@ END INTERFACE AbstractFieldDisplay
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldImport
-  MODULE SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE aField_Import
+  END SUBROUTINE obj_Import
 END INTERFACE AbstractFieldImport
 
 !----------------------------------------------------------------------------
@@ -431,11 +431,11 @@ END INTERFACE AbstractFieldImport
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldExport
-  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_Export
+  END SUBROUTINE obj_Export
 END INTERFACE AbstractFieldExport
 
 !----------------------------------------------------------------------------
@@ -443,11 +443,11 @@ END INTERFACE AbstractFieldExport
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldWriteData
-  MODULE SUBROUTINE aField_WriteData_hdf5(obj, hdf5, group)
+  MODULE SUBROUTINE obj_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_WriteData_hdf5
+  END SUBROUTINE obj_WriteData_hdf5
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -459,10 +459,10 @@ END INTERFACE AbstractFieldWriteData
 ! summary:  Export data in vrkfile
 
 INTERFACE AbstractFieldWriteData
-  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk)
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE aField_WriteData_vtk
+  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -512,8 +512,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, fieldType, name, &
          engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
-                      domain, domains, tSize, realVec, dof, isPMatInitiated, &
-                                 fedof, fedofs)
+         domain, domains, tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
@@ -547,10 +546,10 @@ END INTERFACE
 ! summary:  Returns the total number of physical variables
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalPhysicalVars(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION aField_GetTotalPhysicalVars
+  END FUNCTION obj_GetTotalPhysicalVars
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -562,10 +561,10 @@ END INTERFACE
 ! summary:  Returns the names of physical variables
 
 INTERFACE
-  MODULE SUBROUTINE aField_GetPhysicalNames(obj, ans)
+  MODULE SUBROUTINE obj_GetPhysicalNames(obj, ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
-  END SUBROUTINE aField_GetPhysicalNames
+  END SUBROUTINE obj_GetPhysicalNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -577,13 +576,13 @@ END INTERFACE
 ! summary:  Returns space components
 
 INTERFACE
-  MODULE FUNCTION aField_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
       !! Total number of physical variables
       !! This can be obtained from GetTotalPhysicalVars method
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetSpaceCompo
+  END FUNCTION obj_GetSpaceCompo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -595,11 +594,11 @@ END INTERFACE
 ! summary:  Returns Time components
 
 INTERFACE
-  MODULE FUNCTION aField_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTimeCompo
+  END FUNCTION obj_GetTimeCompo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -611,10 +610,10 @@ END INTERFACE
 ! summary:  Returns storage format
 
 INTERFACE
-  MODULE FUNCTION aField_GetStorageFMT(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION aField_GetStorageFMT
+  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -629,11 +628,11 @@ END INTERFACE
 ! This method is same as calling the size function.
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalDOF
+  END FUNCTION obj_GetTotalDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -645,11 +644,11 @@ END INTERFACE
 ! summary:  Returns the total number of vertex degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalVertexDOF
+  END FUNCTION obj_GetTotalVertexDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -661,11 +660,11 @@ END INTERFACE
 ! summary:  Returns the total number of Edge degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalEdgeDOF
+  END FUNCTION obj_GetTotalEdgeDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -677,11 +676,11 @@ END INTERFACE
 ! summary:  Returns the total number of Face degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalFaceDOF
+  END FUNCTION obj_GetTotalFaceDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -693,11 +692,11 @@ END INTERFACE
 ! summary:  Returns the total number of Cell degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalCellDOF
+  END FUNCTION obj_GetTotalCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -708,10 +707,10 @@ END INTERFACE
 ! date:  2023-09-22
 ! summary:  Returns true if the field is constant
 INTERFACE
-  MODULE FUNCTION aField_IsConstant(obj) RESULT(ans)
+  MODULE FUNCTION obj_IsConstant(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION aField_IsConstant
+  END FUNCTION obj_IsConstant
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -723,10 +722,10 @@ END INTERFACE
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION aField_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION aField_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 END MODULE AbstractField_Class
