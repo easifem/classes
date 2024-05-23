@@ -15,8 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) SetMethods
-USE BaseMethod
-USE FPL_Method
+USE GlobalData, ONLY: CHAR_LF
 IMPLICIT NONE
 CONTAINS
 
@@ -24,11 +23,11 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE SetParam
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+MODULE PROCEDURE obj_SetParam
+!USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+!USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 
-CHARACTER(*), PARAMETER :: myName = "SetParam"
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam"
 INTEGER(I4B) :: ii
 
 IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
@@ -43,17 +42,20 @@ IF (PRESENT(local_n)) obj%local_n = local_n
 IF (PRESENT(is)) obj%is = is
 IF (PRESENT(ie)) obj%ie = ie
 IF (PRESENT(lis_ptr)) obj%lis_ptr = lis_ptr
+
 IF (PRESENT(domain)) obj%domain => domain
+IF (PRESENT(fedof)) obj%fedof = fedof
+
 IF (PRESENT(domains)) THEN
   IF (.NOT. ALLOCATED(obj%domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractField_::Obj%domains is not allocated ')
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[CONFIG ERROR] :: AbstractField_::Obj%domains is not allocated ')
   END IF
 
   IF (SIZE(obj%domains) .NE. SIZE(domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractField_::Obj%domains '//  &
-    & CHAR_LF//'size is not same as size of domains')
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[CONFIG ERROR] :: AbstractField_::Obj%domains '// &
+                      CHAR_LF//'size is not same as size of domains')
   END IF
 
   DO ii = 1, SIZE(domains)
@@ -61,14 +63,32 @@ IF (PRESENT(domains)) THEN
   END DO
 END IF
 
-SELECT TYPE (obj)
-CLASS IS (AbstractNodeField_)
-  IF (PRESENT(tSize)) obj%tSize = tSize
-  IF (PRESENT(realVec)) obj%realVec = realVec
-  IF (PRESENT(dof)) obj%dof = dof
-CLASS IS (AbstractMatrixField_)
-  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
-END SELECT
-END PROCEDURE SetParam
+IF (PRESENT(fedofs)) THEN
+  IF (.NOT. ALLOCATED(obj%fedofs)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+             '[CONFIG ERROR] :: AbstractField_::Obj%fedofs is not allocated ')
+  END IF
+
+  IF (SIZE(obj%fedofs) .NE. SIZE(fedofs)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[CONFIG ERROR] :: AbstractField_::Obj%fedofs '// &
+                      CHAR_LF//'size is not same as size of fedofs')
+  END IF
+
+  DO ii = 1, SIZE(fedofs)
+    obj%fedofs(ii)%ptr => fedofs(ii)%ptr
+  END DO
+END IF
+
+!
+!SELECT TYPE (obj)
+!CLASS IS (AbstractNodeField_)
+!  IF (PRESENT(tSize)) obj%tSize = tSize
+!  IF (PRESENT(realVec)) obj%realVec = realVec
+!  IF (PRESENT(dof)) obj%dof = dof
+!CLASS IS (AbstractMatrixField_)
+!  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
+!END SELECT
+END PROCEDURE obj_SetParam
 
 END SUBMODULE SetMethods

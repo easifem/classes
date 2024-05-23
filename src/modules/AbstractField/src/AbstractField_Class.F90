@@ -246,7 +246,7 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
+  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam => obj_SetParam
 
 END TYPE AbstractField_
 
@@ -474,25 +474,9 @@ END INTERFACE AbstractFieldWriteData
 ! summary:  Set field variables of abstract field
 
 INTERFACE
-  MODULE SUBROUTINE SetParam(obj, &
-    & isInitiated, &
-    & fieldType, &
-    & name, &
-    & engine, &
-    & comm, &
-    & myRank, &
-    & numProcs, &
-    & global_n, &
-    & local_n, &
-    & is, &
-    & ie,  &
-    & lis_ptr, &
-    & domain, &
-    & domains, &
-    & tSize, &
-    & realVec, &
-    & dof, &
-    & isPMatInitiated)
+  MODULE SUBROUTINE obj_SetParam(obj, isInitiated, fieldType, name, &
+         engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
+         domain, domains, tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
@@ -512,7 +496,9 @@ INTERFACE
     TYPE(RealVector_), OPTIONAL, INTENT(IN) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(IN) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPMatInitiated
-  END SUBROUTINE SetParam
+    TYPE(FEDOF_), OPTIONAL, INTENT(in) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(in) :: fedofs(:)
+  END SUBROUTINE obj_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
