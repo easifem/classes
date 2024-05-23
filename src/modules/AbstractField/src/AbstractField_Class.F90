@@ -188,46 +188,61 @@ CONTAINS
   ! GET:
   ! @GetMethods
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam => obj_GetParam
+  !! Get the parameters of AbstractField
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     aField_GetTotalPhysicalVars
   !! Returns the total number of physical variables
   !! INFO: This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => aField_GetPhysicalNames
   !! Returns the names of physical variables
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => aField_GetSpaceCompo
   !! Return space component
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => aField_GetTimeCompo
   !! Return time component
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => aField_GetStorageFMT
   !! Return storage format
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => aField_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
     aField_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
   !! Returns the total number of edge degree of freedoms
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => aField_GetTotalFaceDOF
   !! Returns the total number of face degree of freedoms
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => aField_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
     aField_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
+  !! Get the prefix of the field, it is necessary for Setting essential param
+  !! INFO: This routine should be implemented by child classes
 
   ! SET:
   ! @SetMethods

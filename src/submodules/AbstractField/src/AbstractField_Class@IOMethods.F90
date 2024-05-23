@@ -15,8 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) IOMethods
-USE BaseMethod
-USE FPL_Method
+USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -26,55 +25,53 @@ CONTAINS
 
 MODULE PROCEDURE aField_Display
 INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
 
-CALL Display("#"//TRIM(msg), unitNo=unitNo)
+CALL Display(msg, unitNo=unitNo)
 
 IF (obj%isInitiated) THEN
-  CALL Display("# isInitiated : TRUE", unitNo=unitNo)
+  CALL Display("isInitiated : TRUE", unitNo=unitNo)
 ELSE
-  CALL Display("# isInitiated : FALSE, Nothing to Display!", unitNo=unitNo)
+  CALL Display("isInitiated : FALSE, Nothing to Display!", unitNo=unitNo)
   RETURN
 END IF
 
-CALL Display(obj%name//'', msg="# name : ", unitNo=unitNo)
+CALL Display(obj%name%chars(), msg="name : ", unitNo=unitNo)
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL Display("# fieldType : CONSTANT", unitNo=unitNo)
+  CALL Display("fieldType : CONSTANT", unitNo=unitNo)
 ELSE
-  CALL Display("# fieldType : NORMAL", unitNo=unitNo)
+  CALL Display("fieldType : NORMAL", unitNo=unitNo)
 END IF
 
-CALL Display(obj%engine, msg='# engine : ', unitNo=unitNo)
-CALL Display(obj%comm, msg='# comm: ', unitNo=unitNo)
-CALL Display(obj%myRank, msg='# myRank: ', unitNo=unitNo)
-CALL Display(obj%numProcs, msg='# numProcs: ', unitNo=unitNo)
-CALL Display(obj%global_n, msg='# global_n: ', unitNo=unitNo)
-CALL Display(obj%local_n, msg='# local_n: ', unitNo=unitNo)
-CALL Display(obj%is, msg='# is: ', unitNo=unitNo)
-CALL Display(obj%ie, msg='# ie: ', unitNo=unitNo)
-CALL Display(obj%lis_ptr, msg='# lis_ptr: ', unitNo=unitNo)
+CALL Display(obj%engine%chars(), msg='engine : ', unitNo=unitNo)
+CALL Display(obj%comm, msg='comm: ', unitNo=unitNo)
+CALL Display(obj%myRank, msg='myRank: ', unitNo=unitNo)
+CALL Display(obj%numProcs, msg='numProcs: ', unitNo=unitNo)
+CALL Display(obj%global_n, msg='global_n: ', unitNo=unitNo)
+CALL Display(obj%local_n, msg='local_n: ', unitNo=unitNo)
+CALL Display(obj%is, msg='is: ', unitNo=unitNo)
+CALL Display(obj%ie, msg='ie: ', unitNo=unitNo)
+CALL Display(obj%lis_ptr, msg='lis_ptr: ', unitNo=unitNo)
 
-IF (ASSOCIATED(obj%domain)) THEN
-  CALL Display("# domain : ASSOCIATED", unitNo=unitNo)
-ELSE
-  CALL Display("# domain : NOT ASSOCIATED", unitNo=unitNo)
-END IF
-!
+isok = ASSOCIATED(obj%domain)
+CALL Display(isok, "domain ASSOCIATED: ", unitNo=unitNo)
+
 IF (ALLOCATED(obj%domains)) THEN
-  CALL Display("# domains : ALLOCATED [" &
-    & //TOSTRING(SIZE(obj%domains)) &
-    & //"]", unitNo=unitNo)
+  CALL Display("domains : ALLOCATED [" &
+               //TOSTRING(SIZE(obj%domains)) &
+               //"]", unitNo=unitNo)
   DO ii = 1, SIZE(obj%domains)
     IF (ASSOCIATED(obj%domains(ii)%ptr)) THEN
-      CALL Display("# domains("//TOSTRING(ii) &
-        & //")%ptr : ASSOCIATED", unitNo=unitNo)
+      CALL Display("domains("//TOSTRING(ii) &
+                   //")%ptr : ASSOCIATED", unitNo=unitNo)
     ELSE
-      CALL Display("# domains("//TOSTRING(ii)  &
-        & //")%ptr : NOT ASSOCIATED", unitNo=unitNo)
+      CALL Display("domains("//TOSTRING(ii) &
+                   //")%ptr : NOT ASSOCIATED", unitNo=unitNo)
     END IF
   END DO
 ELSE
-  CALL Display("# domains : NOT ALLOCATED", unitNo=unitNo)
+  CALL Display("domains : NOT ALLOCATED", unitNo=unitNo)
 END IF
 
 END PROCEDURE aField_Display
@@ -85,8 +82,8 @@ END PROCEDURE aField_Display
 
 MODULE PROCEDURE aField_WriteData_hdf5
 CHARACTER(*), PARAMETER :: myName = "aField_WriteData_hdf5"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method should be implemented by children of AbstractField_')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[IMPLEMENTATION ERROR] :: This method should be implemented by children of AbstractField_')
 END PROCEDURE aField_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -95,8 +92,8 @@ END PROCEDURE aField_WriteData_hdf5
 
 MODULE PROCEDURE aField_WriteData_vtk
 CHARACTER(*), PARAMETER :: myName = "aField_WriteData_vtk"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method should be implemented by children of AbstractField_')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[IMPLEMENTATION ERROR] :: This method should be implemented by children of AbstractField_')
 END PROCEDURE aField_WriteData_vtk
 
 !----------------------------------------------------------------------------
@@ -104,75 +101,76 @@ END PROCEDURE aField_WriteData_vtk
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Export
-CHARACTER(*), PARAMETER :: myName = "aField_Export"
+CHARACTER(*), PARAMETER :: myName = "aField_Export()"
 TYPE(String) :: dname
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Instnace of MatrixField_ is not initiated')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+              '[INTERNAL ERROR] :: Instnace of MatrixField_ is not initiated')
 END IF
 
 ! Check
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 ! Check
 IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have write permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+               '[INTERNAL ERROR] :: HDF5 file does not have write permission')
 END IF
 
 ! fieldType
 dname = TRIM(group)//"/fieldType"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=STRING(FIELD_TYPE_NAME(obj%fieldType)))
+CALL hdf5%WRITE(dsetname=dname%chars(), &
+                vals=STRING(FIELD_TYPE_NAME(obj%fieldType)))
 
 ! name
 dname = TRIM(group)//"/name"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%name)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%name)
 
 ! engine
 dname = TRIM(group)//"/engine"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%engine)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%engine)
 
 ! comm
 dname = TRIM(group)//"/comm"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%comm)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%comm)
 
 ! myRank
 dname = TRIM(group)//"/myRank"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%myRank)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%myRank)
 
 ! numProcs
 dname = TRIM(group)//"/numProcs"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%numProcs)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%numProcs)
 
 ! local_n
 dname = TRIM(group)//"/local_n"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%local_n)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%local_n)
 
 ! global_n
 dname = TRIM(group)//"/global_n"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%global_n)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%global_n)
 
 ! is
 dname = TRIM(group)//"/is"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%is)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%is)
 
 ! ie
 dname = TRIM(group)//"/ie"
-CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%ie)
+CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%ie)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE aField_Export
 
@@ -181,28 +179,30 @@ END PROCEDURE aField_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Import
-CHARACTER(*), PARAMETER :: myName = "aField_Import"
+CHARACTER(*), PARAMETER :: myName = "aField_Import()"
 TYPE(String) :: strval, dsetname
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Import()')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! main program
 IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The instance of AbstractField_ is already initiated')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    '[INTERNAL ERROR] :: The instance of AbstractField_ is already initiated')
 END IF
 
 ! Check
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 ! Check
 IF (.NOT. hdf5%isRead()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have read permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
 END IF
 
 ! fieldType
@@ -217,8 +217,8 @@ END IF
 ! name
 dsetname = TRIM(group)//"/name"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset name should be present')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: The dataset name should be present')
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
 END IF
@@ -288,13 +288,13 @@ ELSE
 END IF
 
 IF (ASSOCIATED(obj%domain)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'obj%domain is associated, deallocate first')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+             '[INTERNAL ERROR] :: obj%domain is associated, deallocate first')
 END IF
 
 IF (ALLOCATED(obj%domains)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'obj%domains is allocated, deallocate first')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+             '[INTERNAL ERROR] :: obj%domains is allocated, deallocate first')
 END IF
 
 IF (PRESENT(dom)) THEN
@@ -304,15 +304,17 @@ ELSE IF (PRESENT(domains)) THEN
   obj%domains(1)%ptr => domains(1)%ptr
   obj%domains(2)%ptr => domains(2)%ptr
 ELSE
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & "For non-rectangle matrix dom should be present, "// &
-    & "for rectangle matrix matrix domains should be present")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    "[INTERNAL ERROR] :: For non-rectangle matrix dom should be present, "// &
+                    "for rectangle matrix matrix domains should be present")
 END IF
 
 obj%isInitiated = .TRUE.
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-& '[END] Import()')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE aField_Import
 

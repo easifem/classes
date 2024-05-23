@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) GetMethods
-USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -48,17 +47,20 @@ IF (PRESENT(domain)) domain => obj%domain
 IF (PRESENT(domains)) THEN
   IF (.NOT. ALLOCATED(obj%domains)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'AbstractField_::obj%domains is not allocated ')
+          '[INTERNAL ERROR] :: AbstractField_::obj%domains is not allocated ')
+    RETURN
   END IF
 
   IF (SIZE(obj%domains) .NE. SIZE(domains)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'AbstractField_::obj%domains size is not same as size of domains')
+     '[INTERNAL ERROR] :: AbstractField_::obj%domains size is not same as size of domains')
+    RETURN
   END IF
 
   DO ii = 1, SIZE(domains)
     domains(ii)%ptr => obj%domains(ii)%ptr
   END DO
+
 END IF
 
 IF (PRESENT(fedof)) fedof = obj%fedof
@@ -211,7 +213,7 @@ END PROCEDURE aField_GetTotalCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_isConstant
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
@@ -225,7 +227,7 @@ END PROCEDURE aField_isConstant
 MODULE PROCEDURE aField_GetPrefix
 CHARACTER(*), PARAMETER :: myName = "aField_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[WIP ERROR] :: This method should be implemented by child class.')
+'[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
 ans = ""
 END PROCEDURE aField_GetPrefix
 
