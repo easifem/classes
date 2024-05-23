@@ -22,5 +22,5 @@ target_sources(
           ${src_path}/AbstractNodeField_Class@GetMethods.F90
           ${src_path}/AbstractNodeField_Class@SetMethods.F90
           # ${src_path}/AbstractNodeField_Class@DBCMethods.F90
-          # ${src_path}/AbstractNodeField_Class@BlasMethods.F90
+          ${src_path}/AbstractNodeField_Class@BlasMethods.F90
           ${src_path}/AbstractNodeField_Class@IOMethods.F90)
