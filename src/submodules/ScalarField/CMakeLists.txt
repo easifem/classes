@@ -21,7 +21,7 @@ target_sources(
   PRIVATE ${src_path}/ScalarField_Class@ConstructorMethods.F90
           # ${src_path}/ScalarField_Class@BlasMethods.F90
           ${src_path}/ScalarField_Class@IOMethods.F90
-          # ${src_path}/ScalarField_Class@SetMethods.F90
+          ${src_path}/ScalarField_Class@SetMethods.F90
           # ${src_path}/ScalarField_Class@DBCMethods.F90
           # ${src_path}/ScalarField_Class@GetMethods.F90
 )

@@ -21,7 +21,7 @@
 MODULE ScalarField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE String_Class, ONLY: String
-USE Basetype, ONLY: FEVariable_
+USE BaseType, ONLY: FEVariable_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
@@ -296,13 +296,19 @@ END INTERFACE ScalarFieldImport
 ! summary: This routine Sets the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
                              addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if present and true then globalNode is a local node
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add contribution
   END SUBROUTINE obj_Set1
 END INTERFACE
 
@@ -312,14 +318,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine Sets all the entries of a scalar field
+! summary: This routine Sets all the entries of a scalar field to value
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
+    !! All values of scalar field will be set to value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add contribution (add or set)
   END SUBROUTINE obj_Set2
 END INTERFACE
 
@@ -349,12 +358,19 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global nodes
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be assigned on globalNode
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set4
 END INTERFACE
 
@@ -367,12 +383,20 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local nodes
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! value to be assigned on globalNode
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+
   END SUBROUTINE obj_Set5
 END INTERFACE
 
@@ -385,15 +409,23 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using triplet
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, istart, iend, stride, VALUE, &
+  MODULE SUBROUTINE obj_Set6(obj, istart, iend, stride, islocal, VALUE, &
                              scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
+    !! global/local node start
     INTEGER(I4B), INTENT(IN) :: iend
+    !! global/local node end
     INTEGER(I4B), INTENT(IN) :: stride
+    !! global/local node stride
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be assigned on globalNode
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set6
 END INTERFACE
 
@@ -406,15 +438,25 @@ END INTERFACE
 ! summary: Set the vector vals using triplet
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, istart, iend, stride, VALUE, &
+  MODULE SUBROUTINE obj_Set7(obj, istart, iend, stride, islocal, VALUE, &
                              scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
     INTEGER(I4B), INTENT(IN) :: istart
+    !! global/local node start
     INTEGER(I4B), INTENT(IN) :: iend
+    !! global/local node end
     INTEGER(I4B), INTENT(IN) :: stride
+    !! global/local node stride
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! value to be assigned on globalNode
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+
   END SUBROUTINE obj_Set7
 END INTERFACE
 
@@ -439,16 +481,23 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine Sets the selected entries using [[FEVariable_]]
+! summary: This routine Sets the selected entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local nodes
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
     TYPE(FEVariable_), INTENT(IN) :: VALUE
-  !! Scalar, Nodal, FEVariable (Space or Constant)
+    !! Scalar, Nodal, FEVariable (Space or Constant)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set9
 END INTERFACE
 
@@ -473,6 +522,10 @@ END INTERFACE
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set
+
 INTERFACE
   MODULE SUBROUTINE obj_Set11(obj, ivar, idof, VALUE, ivar_value, &
                               idof_value, scale, addContribution)
@@ -490,6 +543,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                   SetByFunction@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: This sets the scalar field using a function
+!
+!# Introduction
+!
+!@note
+!   This routine is valid only for the Lagrange polymials
+!@endnote
 
 INTERFACE
   MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
