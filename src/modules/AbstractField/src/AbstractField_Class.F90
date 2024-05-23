@@ -187,7 +187,7 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
+  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam => obj_GetParam
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     aField_GetTotalPhysicalVars
   !! Returns the total number of physical variables
@@ -509,25 +509,10 @@ END INTERFACE
 ! summary:  Get the field variables
 
 INTERFACE
-  MODULE SUBROUTINE GetParam(obj, &
-    & isInitiated, &
-    & fieldType, &
-    & name, &
-    & engine, &
-    & comm, &
-    & myRank, &
-    & numProcs, &
-    & global_n, &
-    & local_n, &
-    & is, &
-    & ie,  &
-    & lis_ptr, &
-    & domain, &
-    & domains, &
-    & tSize, &
-    & realVec, &
-    & dof, &
-    & isPMatInitiated)
+  MODULE SUBROUTINE obj_GetParam(obj, isInitiated, fieldType, name, &
+         engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
+                      domain, domains, tSize, realVec, dof, isPMatInitiated, &
+                                 fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
@@ -547,7 +532,9 @@ INTERFACE
     TYPE(RealVector_), OPTIONAL, INTENT(OUT) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(OUT) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isPMatInitiated
-  END SUBROUTINE GetParam
+    TYPE(FEDOF_), OPTIONAL, INTENT(INOUT) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(out) :: fedofs(:)
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
