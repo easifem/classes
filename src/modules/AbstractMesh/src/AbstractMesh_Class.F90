@@ -204,32 +204,47 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => obj_GetNodeCoord
+
+  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
+  !! Get node coord from the HDF5File
+  PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
+  !! Get node coord in a 2D array, stored inside nodedata
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2
+
     !! Read the nodeCoords from the hdf5file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
     !! Export mesh to an hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
     !! Export mesh to a VTKfile
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
     !! Display the mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
     obj_DisplayNodeData
   !! Display node data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
     obj_DisplayElementData
     !! Display element data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
     obj_DisplayFacetData
     !! Display  facet data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
     obj_DisplayInternalFacetData
     !! Display internal facet data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
     obj_DisplayBoundaryFacetData
     !! Display mesh facet data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     obj_DisplayFacetElements
     !! Display facet element shape data
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
     obj_DisplayMeshInfo
     !! Display mesh statistics
@@ -783,12 +798,12 @@ END INTERFACE AbstractMeshImport
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord(obj, nodeCoord, hdf5, group)
+  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, hdf5, group)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_GetNodeCoord
+  END SUBROUTINE obj_GetNodeCoord1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -992,6 +1007,38 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayMeshInfo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNodeCoord2@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Reads hdf5File for nodecoord of the mesh
+!
+!# Introduction
+!
+! This routine reads [[HDFFile_]] instance for constructing nodeCoord of mesh
+!
+! - Rows of `nodeCoord` represents the spatial component
+! - Columns of `nodeCoord` retpresents the node number
+! - Total number of columns in `nodeCoord` is equal to the number of
+! nodes present in the mesh object.
+!
+!@note
+! The nodeCoord returned by this routine should be used by the mesh object
+! itself. This is because, in nodeCoords the nodes are arranged locally.
+! However, if you wish to use nodeCoord, then Get the localNodeNumber of a
+! global node by calling the mesh methods, and use this localNodeNumber to
+! extract the coordinates.
+!@endnote
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+  END SUBROUTINE obj_GetNodeCoord2
 END INTERFACE
 
 !----------------------------------------------------------------------------

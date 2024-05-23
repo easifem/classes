@@ -1583,4 +1583,14 @@ ans(3) = obj%tFaces
 ans(4) = obj%tElements
 END PROCEDURE obj_GetTotalEntities2
 
+!----------------------------------------------------------------------------
+!                                                           GetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord2
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord2()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNodeCoord2
+
 END SUBMODULE GetMethods

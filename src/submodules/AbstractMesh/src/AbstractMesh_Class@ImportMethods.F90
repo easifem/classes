@@ -92,8 +92,8 @@ END PROCEDURE obj_Import
 !                                                              GetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeCoord
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
+MODULE PROCEDURE obj_GetNodeCoord1
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
 CHARACTER(:), ALLOCATABLE :: dsetname
 INTEGER(I4B) :: ii, jj
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -136,7 +136,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE obj_GetNodeCoord
+END PROCEDURE obj_GetNodeCoord1
 
 !----------------------------------------------------------------------------
 !                                                                     Export
