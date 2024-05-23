@@ -215,9 +215,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 #
 # # STTensorMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
-#
-# # ScalarField include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
-#
+
+# ScalarField
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
+
 # # ScalarFieldLis
 # include(${CMAKE_CURRENT_LIST_DIR}/ScalarFieldLis/CMakeLists.txt)
 #

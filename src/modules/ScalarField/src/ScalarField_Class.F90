@@ -148,8 +148,8 @@ END TYPE ScalarFieldPointer_
 ! summary: Set the essential parameters
 
 INTERFACE
-  MODULE SUBROUTINE SetScalarFieldParam(param, name, engine,  &
-    & fieldType, comm, local_n, global_n)
+  MODULE SUBROUTINE SetScalarFieldParam(param, name, engine, &
+                                        fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     !! name of the variable
@@ -386,7 +386,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set6(obj, istart, iend, stride, VALUE, &
-    & scale, addContribution)
+                             scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
@@ -407,7 +407,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set7(obj, istart, iend, stride, VALUE, &
-    & scale, addContribution)
+                             scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
@@ -475,7 +475,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set11(obj, ivar, idof, VALUE, ivar_value, &
-    & idof_value, scale, addContribution)
+                              idof_value, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -492,8 +492,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
-    & spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
+                                      spaceCompo, timeCompo)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
