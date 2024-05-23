@@ -270,8 +270,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 # # AbstractMatrixField
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 #
-# # ScalarField include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
-#
+# ScalarField
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
+
 # # ScalarFieldLis
 # include(${CMAKE_CURRENT_LIST_DIR}/ScalarFieldLis/CMakeLists.txt)
 #

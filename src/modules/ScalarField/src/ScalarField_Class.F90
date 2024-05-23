@@ -19,23 +19,23 @@
 ! summary: Scalar field data type is defined
 
 MODULE ScalarField_Class
-USE GlobalData
-USE String_Class
-USE BaSetype
-USE AbstractField_Class
-USE AbstractNodeField_Class
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE String_Class, ONLY: String
+USE Basetype, ONLY: FEVariable_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE HDF5File_Class
-USE VTKFile_Class
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
-USE DirichletBC_Class
-USE FiniteElement_Class
-USE UserFunction_Class
+USE HDF5File_Class, ONLY: HDF5File_
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
+
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: SetScalarFieldParam
@@ -45,7 +45,6 @@ PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
 PUBLIC :: ScalarFieldDeallocate
-PUBLIC :: TypeScalarField
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -60,10 +59,11 @@ PUBLIC :: TypeScalarField
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
   PRIVATE
+
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   FINAL :: obj_Final
 
@@ -92,8 +92,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set11 => obj_Set11
     !! Set selected values using FEVariable
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  !! Set scalar field using a function
+
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
-    & Set5, Set6, Set7, Set8, Set9, Set10, Set11
+    Set5, Set6, Set7, Set8, Set9, Set10, Set11
+
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set8
     !! Set values to a vector
 
@@ -127,13 +130,6 @@ CONTAINS
   !! Apply Dirichlet Boundary Condition
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
 END TYPE ScalarField_
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-TYPE(ScalarField_), PARAMETER :: TypeScalarField =  &
-  & ScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_
@@ -204,10 +200,10 @@ END INTERFACE ScalarFieldCheckEssentialParam
 ! Essential information are described below.
 
 INTERFACE ScalarFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE ScalarFieldInitiate1
 
@@ -250,9 +246,9 @@ END INTERFACE ScalarFieldDeallocate
 ! summary:         This function returns an instance of [[ScalarField_]]
 
 INTERFACE ScalarField
-  MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     TYPE(ScalarField_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE ScalarField
@@ -266,9 +262,9 @@ END INTERFACE ScalarField
 ! summary:         This function returns an instance of [[ScalarField_]]
 
 INTERFACE ScalarField_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(ScalarField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE ScalarField_Pointer
@@ -282,12 +278,12 @@ END INTERFACE ScalarField_Pointer
 ! summary: This routine Imports the content
 
 INTERFACE ScalarFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
 
@@ -301,7 +297,7 @@ END INTERFACE ScalarFieldImport
 
 INTERFACE
   MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, scale, &
-    & addContribution)
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     REAL(DFP), INTENT(IN) :: VALUE
