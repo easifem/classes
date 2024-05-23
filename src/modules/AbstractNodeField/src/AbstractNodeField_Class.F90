@@ -13,11 +13,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractNodeField_Class
-USE GlobalData
-USE Basetype
-USE RealVector_Method
-USE DOF_Method
-USE AbstractField_Class
+USE GlobalData, ONLY: DFP, LGT, I4B, NODES_FMT
+USE Basetype, ONLY: RealVector_, DOF_, FEVariable_
+USE AbstractField_Class, ONLY: AbstractField_
 USE FPL, ONLY: ParameterList_
 USE AbstractDomain_Class, ONLY: AbstractDomainPointer_, AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
@@ -26,8 +24,10 @@ USE ExceptionHandler_Class, ONLY: e
 USE AbstractBC_Class, ONLY: AbstractBC_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 USE UserFunction_Class, ONLY: UserFunction_
+
 IMPLICIT NONE
 PRIVATE
+
 PUBLIC :: AbstractNodeFieldDisplay
 PUBLIC :: AbstractNodeField_
 PUBLIC :: AbstractNodeFieldPointer_
@@ -58,30 +58,40 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
   !! Total number of physical variables
   !! NOTE: This variable is only for internal use
+
   INTEGER(I4B) :: dof_storageFMT = NODES_FMT
   !! Storage format
   !! NOTE: This variable is only for internal use
+
   INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
   !! Spatial components
   !! NOTE: This variable is only for internal use
+
   INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
   !! NOTE: This variable is only for internal use
+
   INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
   !! Total number of nodes
   !! NOTE: This variable is only for internal use
+
   CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
   !! Single character name of physical variable
   !! NOTE: This variable is only for internal use
+
   INTEGER(I4B) :: tSize = 0
   !! Total length of the nodal field = tdof * tNodes
   !! NOTE: This variable is only for internal use
+
   TYPE(RealVector_) :: realVec
   !! Vector of reals to contains the nodes
   !! NOTE: This variable is only for internal use
+
   TYPE(DOF_) :: dof
-  !! Degree of freedom object, which contains the information about
-  !! how the different components are stored inside the realVec
+  !! Degree of freedom object,
+  !! which contains the information about how the different
+  !! components of the fields are stored inside the realVec
   !! NOTE: This variable is only for internal use
+
 CONTAINS
   PRIVATE
 
@@ -396,12 +406,19 @@ INTERFACE AbstractNodeFieldSetParam
       & dof_tNodes, dof_names_char, tSize)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    !! total number of physical variables
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    !! Storage pattern, FMT_DOF or FMT_NODES
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    !! Space components of each physical variable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    !! Time components of each physical variable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    !! Total number of nodes in each physical variable
     CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    !! single character name of each physical varible
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! Total size of the field
   END SUBROUTINE obj_SetParam
 END INTERFACE AbstractNodeFieldSetParam
 
