@@ -20,7 +20,7 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/AbstractNodeField_Class@ConstructorMethods.F90
           # ${src_path}/AbstractNodeField_Class@GetMethods.F90
-          # ${src_path}/AbstractNodeField_Class@SetMethods.F90
+          ${src_path}/AbstractNodeField_Class@SetMethods.F90
           # ${src_path}/AbstractNodeField_Class@DBCMethods.F90
           # ${src_path}/AbstractNodeField_Class@BlasMethods.F90
           ${src_path}/AbstractNodeField_Class@IOMethods.F90)
