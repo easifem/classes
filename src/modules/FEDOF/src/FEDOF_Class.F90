@@ -152,6 +152,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get the mesh pointer
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+ !! Get the base interpolation
+
 END TYPE FEDOF_
 
 !----------------------------------------------------------------------------
@@ -500,6 +504,21 @@ INTERFACE
     CLASS(FEDOF_), INTENT(IN) :: obj
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetBaseInterpolation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the base interpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetBaseInterpolation
 END INTERFACE
 
 END MODULE FEDOF_Class

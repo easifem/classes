@@ -191,6 +191,14 @@ ans => obj%mesh
 END PROCEDURE obj_GetMeshPointer
 
 !----------------------------------------------------------------------------
+!                                                       GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseInterpolation
+ans = obj%baseInterpolation
+END PROCEDURE obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
