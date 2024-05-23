@@ -193,7 +193,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 
 # AbstractNodeField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 
 # # AbstractMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)

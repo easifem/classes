@@ -36,6 +36,8 @@ USE ArangeUtility, ONLY: Arange
 
 USE AppendUtility, ONLY: Append
 
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -266,6 +268,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc1()"
 INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
 INTEGER(I4B) :: ivar0, tsize, itime, ttime
 TYPE(IntVector_), ALLOCATABLE :: int_vec_list(:)
+CLASS(AbstractMesh_), POINTER :: mesh
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -301,28 +304,30 @@ ALLOCATE (int_vec_list(ttime))
 tsize = SIZE(globalNode)
 ALLOCATE (localNode(tsize))
 
-IF (ASSOCIATED(obj%domain)) THEN
+IF (ASSOCIATED(obj%fedof)) THEN
 
-  localNode = obj%domain%GetLocalNodeNumber(globalNode=globalNode)
+  mesh => obj%fedof%GetMeshPointer()
+  localNode = mesh%GetLocalNodeNumber(globalNode=globalNode)
 
-ELSEIF (ALLOCATED(obj%domains)) THEN
+ELSEIF (ALLOCATED(obj%fedofs)) THEN
 
-  tsize = SIZE(obj%domains)
+  tsize = SIZE(obj%fedofs)
 
   IF (ivar0 .GT. tsize) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: ivar is greater than size of '// &
-                      ' AbstractNodeField_::obj%domains.')
+                      ' AbstractNodeField_::obj%fedofs.')
     RETURN
   END IF
 
-  localNode = obj%domains(ivar0)%ptr%GetLocalNodeNumber(globalNode)
+  mesh => obj%fedofs(ivar0)%ptr%GetMeshPointer()
+  localNode = mesh%GetLocalNodeNumber(globalNode)
 
 ELSE
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: AbstractNodeField_::obj%domain '// &
-                    ' obj%domains are not allocated.')
+                    '[INTERNAL ERROR] :: AbstractNodeField_::obj%fedof'// &
+                    ' obj%fedofs are not allocated.')
   RETURN
 
 END IF

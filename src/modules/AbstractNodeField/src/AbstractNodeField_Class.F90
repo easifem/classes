@@ -17,13 +17,13 @@ USE GlobalData, ONLY: DFP, LGT, I4B, NODES_FMT
 USE Basetype, ONLY: RealVector_, DOF_, FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE FPL, ONLY: ParameterList_
-USE AbstractDomain_Class, ONLY: AbstractDomainPointer_, AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractBC_Class, ONLY: AbstractBC_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 USE UserFunction_Class, ONLY: UserFunction_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -220,13 +220,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
-! summary: Initiate the field by reading param and given domain
+! summary: Initiate the field by reading param and given fdof
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -244,7 +244,7 @@ END INTERFACE AbstractNodeFieldInitiate
 ! by copying all or some contents from another instance of AbstractNodeField_
 !
 ! If obj is not initiated then we copy everything
-! For domain and domains we always use pointers
+! For fedof and fedofs we always use pointers
 !
 ! If obj is initiated then we only copy the data stored in realvec
 !
@@ -269,13 +269,13 @@ END INTERFACE AbstractNodeFieldInitiate2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Sept 2021
-! summary: Initiates AbstractNodeField_ from parameters and domain
+! summary: Initiates AbstractNodeField_ from parameters and fedof
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -318,12 +318,12 @@ END INTERFACE AbstractNodeFieldDisplay
 ! summary:  Import data into HDF5File_
 
 INTERFACE AbstractNodeFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE AbstractNodeFieldImport
 

@@ -39,7 +39,7 @@ CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldCheckError()"
 INTEGER(I4B) :: ivar, tvar
 LOGICAL(LGT) :: problem
 
-#ifdef DEBUG_VER
+#ifdef DEBUG_VER)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
@@ -144,7 +144,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 prefix = obj%GetPrefix()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, dom=dom)
+CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof)
 
 CALL AbstractNodeFieldCheckError(obj)
 
@@ -225,7 +225,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 prefix = obj%GetPrefix()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, dom=dom)
+CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
