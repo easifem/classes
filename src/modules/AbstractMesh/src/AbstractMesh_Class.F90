@@ -209,7 +209,12 @@ CONTAINS
   !! Get node coord from the HDF5File
   PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
   !! Get node coord in a 2D array, stored inside nodedata
-  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2
+  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
+  !! Get node coord of an element
+  PROCEDURE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
+  !! Get node coord of specified nodes
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
+    GetNodeCoord3, GetNodeCoord4
 
     !! Read the nodeCoords from the hdf5file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
@@ -1014,31 +1019,66 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Reads hdf5File for nodecoord of the mesh
-!
-!# Introduction
-!
-! This routine reads [[HDFFile_]] instance for constructing nodeCoord of mesh
-!
-! - Rows of `nodeCoord` represents the spatial component
-! - Columns of `nodeCoord` retpresents the node number
-! - Total number of columns in `nodeCoord` is equal to the number of
-! nodes present in the mesh object.
-!
-!@note
-! The nodeCoord returned by this routine should be used by the mesh object
-! itself. This is because, in nodeCoords the nodes are arranged locally.
-! However, if you wish to use nodeCoord, then Get the localNodeNumber of a
-! global node by calling the mesh methods, and use this localNodeNumber to
-! extract the coordinates.
-!@endnote
+! date: 2024-05-24
+! summary: Get All the NodeCoord of  the mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! Abstract mesh object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! All node coordinates of the mesh in xiJ format
+    !! The nodes are arranged in local order
+    !! So to get the global node coord, first you need to convert
+    !! the global node number to local node number. Then, use this local
+    !! node number to extract the node coordinates
   END SUBROUTINE obj_GetNodeCoord2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the nodecoord of an element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! Abstract mesh object
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! node coordinates of an element in xiJ format
+    !! The nodes are arranged in local order
+    !! The global nodes can be obtianed by calling the GetVertexConnectivity
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local
+  END SUBROUTINE obj_GetNodeCoord3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the nodecoord of an element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord4(obj, nodeCoord, globalNode, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! Abstract mesh object
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! node coordinates of an element in xiJ format
+    !! The nodes are arranged in local order
+    !! The global nodes can be obtianed by calling the GetVertexConnectivity
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node numbers
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalNode is local
+  END SUBROUTINE obj_GetNodeCoord4
 END INTERFACE
 
 !----------------------------------------------------------------------------

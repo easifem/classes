@@ -1593,4 +1593,24 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNodeCoord2
 
+!----------------------------------------------------------------------------
+!                                                           GetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord3
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNodeCoord3
+
+!----------------------------------------------------------------------------
+!                                                           GetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord4
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord4()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNodeCoord4
+
 END SUBMODULE GetMethods
