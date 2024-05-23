@@ -40,7 +40,6 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 
 IMPLICIT NONE
@@ -138,15 +137,7 @@ TYPE, ABSTRACT :: AbstractField_
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
-  CLASS(AbstractDomain_), POINTER :: domain => NULL()
-  !! Domain contains the information of the finite element meshes.
-  TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
-  !! Domain for each physical variables
-  !! The size of `domains` should be equal to the total number of
-  !! physical variables.
-  !! It is used in the case of BlockNodeField
-  !! and BlockMatrixField
-  TYPE(FEDOF_) :: fedof
+  CLASS(FEDOF_), POINTER :: fedof => NULL()
   !! pointer to FEDOF
   TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
   !! pointer to FEDOF
@@ -326,10 +317,10 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractFieldInitiate
 
@@ -361,10 +352,10 @@ END INTERFACE AbstractFieldInitiate2
 ! summary: Initiate by reading options from [[ParameterList_]]
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractFieldInitiate
 
@@ -417,12 +408,12 @@ END INTERFACE AbstractFieldDisplay
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE AbstractFieldImport
 
@@ -476,7 +467,7 @@ END INTERFACE AbstractFieldWriteData
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, isInitiated, fieldType, name, &
          engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
-         domain, domains, tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
+                          tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
@@ -490,14 +481,12 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: is
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: lis_ptr
-    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: domain
-    TYPE(AbstractDomainPointer_), OPTIONAL, INTENT(IN) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(IN) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(IN) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPMatInitiated
-    TYPE(FEDOF_), OPTIONAL, INTENT(in) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(in) :: fedofs(:)
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -512,7 +501,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, fieldType, name, &
          engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
-         domain, domains, tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
+                          tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
@@ -526,14 +515,12 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: is
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(OUT) :: lis_ptr
-    CLASS(AbstractDomain_), OPTIONAL, POINTER, INTENT(OUT) :: domain
-    TYPE(AbstractDomainPointer_), OPTIONAL, INTENT(OUT) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(OUT) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(OUT) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isPMatInitiated
-    TYPE(FEDOF_), OPTIONAL, INTENT(INOUT) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(out) :: fedofs(:)
+    CLASS(FEDOF_), OPTIONAL, POINTER, INTENT(OUT) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(OUT) :: fedofs(:)
   END SUBROUTINE obj_GetParam
 END INTERFACE
 

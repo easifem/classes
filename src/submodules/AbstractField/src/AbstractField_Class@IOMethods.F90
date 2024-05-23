@@ -54,24 +54,23 @@ CALL Display(obj%is, msg='is: ', unitNo=unitNo)
 CALL Display(obj%ie, msg='ie: ', unitNo=unitNo)
 CALL Display(obj%lis_ptr, msg='lis_ptr: ', unitNo=unitNo)
 
-isok = ASSOCIATED(obj%domain)
-CALL Display(isok, "domain ASSOCIATED: ", unitNo=unitNo)
+isok = ASSOCIATED(obj%fedof)
+CALL Display(isok, "fedof ASSOCIATED: ", unitNo=unitNo)
 
-IF (ALLOCATED(obj%domains)) THEN
-  CALL Display("domains : ALLOCATED [" &
-               //TOSTRING(SIZE(obj%domains)) &
+IF (ALLOCATED(obj%fedofs)) THEN
+  CALL Display("fedofs : ALLOCATED [" &
+               //TOSTRING(SIZE(obj%fedofs)) &
                //"]", unitNo=unitNo)
-  DO ii = 1, SIZE(obj%domains)
-    IF (ASSOCIATED(obj%domains(ii)%ptr)) THEN
-      CALL Display("domains("//TOSTRING(ii) &
-                   //")%ptr : ASSOCIATED", unitNo=unitNo)
-    ELSE
-      CALL Display("domains("//TOSTRING(ii) &
-                   //")%ptr : NOT ASSOCIATED", unitNo=unitNo)
-    END IF
+  DO ii = 1, SIZE(obj%fedofs)
+
+    isok = ASSOCIATED(obj%fedofs(ii)%ptr)
+    CALL Display(isok, "fedofs("//TOSTRING(ii) &
+                 //")%ptr ASSOCIATED: ", unitNo=unitNo)
+
   END DO
+
 ELSE
-  CALL Display("domains : NOT ALLOCATED", unitNo=unitNo)
+  CALL Display("fedofs : NOT ALLOCATED", unitNo=unitNo)
 END IF
 
 END PROCEDURE obj_Display
@@ -183,6 +182,8 @@ END PROCEDURE obj_Export
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: strval, dsetname
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -193,18 +194,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     '[INTERNAL ERROR] :: The instance of AbstractField_ is already initiated')
+  RETURN
 END IF
 
 ! Check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: HDF5 file is not opened')
+  RETURN
 END IF
 
 ! Check
 IF (.NOT. hdf5%isRead()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                 '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+  RETURN
 END IF
 
 ! fieldType
@@ -218,7 +222,8 @@ END IF
 
 ! name
 dsetname = TRIM(group)//"/name"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: The dataset name should be present')
 ELSE
@@ -227,7 +232,8 @@ END IF
 
 ! engine
 dsetname = TRIM(group)//"/engine"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%engine = "NATIVE_SERIAL"
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%engine)
@@ -235,7 +241,8 @@ END IF
 
 ! comm
 dsetname = TRIM(group)//"/comm"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%comm = 0
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%comm)
@@ -243,7 +250,8 @@ END IF
 
 ! myRank
 dsetname = TRIM(group)//"/myRank"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%myRank = 0
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%myRank)
@@ -251,7 +259,8 @@ END IF
 
 ! numProcs
 dsetname = TRIM(group)//"/numProcs"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%numProcs = 1
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%numProcs)
@@ -259,7 +268,8 @@ END IF
 
 ! global_n
 dsetname = TRIM(group)//"/global_n"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%global_n = 1
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%global_n)
@@ -267,7 +277,8 @@ END IF
 
 ! local_n
 dsetname = TRIM(group)//"/local_n"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%local_n = 1
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%local_n)
@@ -275,7 +286,8 @@ END IF
 
 ! is
 dsetname = TRIM(group)//"/is"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%is = 1
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%is)
@@ -283,32 +295,45 @@ END IF
 
 ! ie
 dsetname = TRIM(group)//"/ie"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
   obj%ie = 1
 ELSE
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%ie)
 END IF
 
-IF (ASSOCIATED(obj%domain)) THEN
+IF (ASSOCIATED(obj%fedof)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: obj%domain is associated, deallocate first')
+              '[INTERNAL ERROR] :: obj%fedof is associated, deallocate first')
+  RETURN
 END IF
 
-IF (ALLOCATED(obj%domains)) THEN
+IF (ALLOCATED(obj%fedofs)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: obj%domains is allocated, deallocate first')
+              '[INTERNAL ERROR] :: obj%fedofs is allocated, deallocate first')
+  RETURN
 END IF
 
-IF (PRESENT(dom)) THEN
-  obj%domain => dom
-ELSE IF (PRESENT(domains)) THEN
-  ALLOCATE (obj%domains(2))
-  obj%domains(1)%ptr => domains(1)%ptr
-  obj%domains(2)%ptr => domains(2)%ptr
+IF (PRESENT(fedof)) THEN
+  obj%fedof => fedof
+
+ELSE IF (PRESENT(fedofs)) THEN
+
+  tsize = SIZE(fedofs)
+
+  ALLOCATE (obj%fedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%fedofs(ii)%ptr => fedofs(ii)%ptr
+  END DO
+
 ELSE
+
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     "[INTERNAL ERROR] :: For non-rectangle matrix dom should be present, "// &
-                    "for rectangle matrix matrix domains should be present")
+                    "for rectangle matrix matrix fedofs should be present")
+  RETURN
+
 END IF
 
 obj%isInitiated = .TRUE.

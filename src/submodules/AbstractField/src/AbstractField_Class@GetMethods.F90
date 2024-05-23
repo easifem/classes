@@ -42,28 +42,8 @@ IF (PRESENT(local_n)) local_n = obj%local_n
 IF (PRESENT(is)) is = obj%is
 IF (PRESENT(ie)) ie = obj%ie
 IF (PRESENT(lis_ptr)) lis_ptr = obj%lis_ptr
-IF (PRESENT(domain)) domain => obj%domain
 
-IF (PRESENT(domains)) THEN
-  IF (.NOT. ALLOCATED(obj%domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: AbstractField_::obj%domains is not allocated ')
-    RETURN
-  END IF
-
-  IF (SIZE(obj%domains) .NE. SIZE(domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-     '[INTERNAL ERROR] :: AbstractField_::obj%domains size is not same as size of domains')
-    RETURN
-  END IF
-
-  DO ii = 1, SIZE(domains)
-    domains(ii)%ptr => obj%domains(ii)%ptr
-  END DO
-
-END IF
-
-IF (PRESENT(fedof)) fedof = obj%fedof
+IF (PRESENT(fedof)) fedof => obj%fedof
 
 IF (PRESENT(fedofs)) THEN
 
@@ -226,9 +206,9 @@ END PROCEDURE obj_isConstant
 
 MODULE PROCEDURE obj_GetPrefix
 CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+ans = ""
 CALL e%RaiseError(modName//'::'//myName//' - '// &
 '[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
-ans = ""
 END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

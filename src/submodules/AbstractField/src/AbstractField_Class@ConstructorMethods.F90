@@ -181,7 +181,8 @@ IF (.NOT. ASSOCIATED(sublist)) THEN
 END IF
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
-obj%domain => dom
+obj%fedof => fedof
+
 sublist => NULL()
 
 #ifdef DEBUG_VER
@@ -224,17 +225,7 @@ obj%is = obj2%is
 obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
 
-obj%domain => obj2%domain
-
-IF (ALLOCATED(obj2%domains)) THEN
-  tsize = SIZE(obj2%domains)
-  ALLOCATE (obj%domains(tsize))
-  DO ii = 1, tsize
-    obj%domains(ii)%ptr => obj2%domains(ii)%ptr
-  END DO
-END IF
-
-obj%fedof = obj2%fedof
+obj%fedof => obj2%fedof
 
 IF (ALLOCATED(obj2%fedofs)) THEN
 
@@ -251,6 +242,7 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -296,16 +288,16 @@ END IF
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
 
-tsize = SIZE(dom)
-ALLOCATE (obj%domains(tsize))
+tsize = SIZE(fedof)
+ALLOCATE (obj%fedofs(tsize))
 DO ii = 1, tsize
-  isOK = ASSOCIATED(dom(ii)%ptr)
+  isOK = ASSOCIATED(fedof(ii)%ptr)
   IF (.NOT. isOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: dom('//ToString(ii)//') is not ASSOCIATED.')
+           '[INTERNAL ERROR] :: fedof('//ToString(ii)//') is not ASSOCIATED.')
     RETURN
   END IF
-  obj%domains(ii)%ptr => dom(ii)%ptr
+  obj%fedofs(ii)%ptr => fedof(ii)%ptr
 END DO
 
 sublist => NULL()
@@ -336,22 +328,17 @@ obj%is = 0
 obj%ie = 0
 obj%lis_ptr = 0
 
-obj%domain => NULL()
-
-IF (ALLOCATED(obj%domains)) THEN
-  DO ii = 1, SIZE(obj%domains)
-    obj%domains(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%domains)
-END IF
-
-CALL obj%fedof%DEALLOCATE()
+IF (ASSOCIATED(obj%fedof)) CALL obj%fedof%DEALLOCATE()
+obj%fedof => NULL()
 
 IF (ALLOCATED(obj%fedofs)) THEN
 
   DO ii = 1, SIZE(obj%fedofs)
-    CALL obj%fedofs(ii)%ptr%DEALLOCATE()
+
+    IF (ASSOCIATED(obj%fedofs(ii)%ptr)) CALL obj%fedofs(ii)%ptr%DEALLOCATE()
+
     obj%fedofs(ii)%ptr => NULL()
+
   END DO
 
   DEALLOCATE (obj%fedofs)

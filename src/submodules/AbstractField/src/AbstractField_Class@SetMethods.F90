@@ -43,25 +43,7 @@ IF (PRESENT(is)) obj%is = is
 IF (PRESENT(ie)) obj%ie = ie
 IF (PRESENT(lis_ptr)) obj%lis_ptr = lis_ptr
 
-IF (PRESENT(domain)) obj%domain => domain
-IF (PRESENT(fedof)) obj%fedof = fedof
-
-IF (PRESENT(domains)) THEN
-  IF (.NOT. ALLOCATED(obj%domains)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[CONFIG ERROR] :: AbstractField_::Obj%domains is not allocated ')
-  END IF
-
-  IF (SIZE(obj%domains) .NE. SIZE(domains)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[CONFIG ERROR] :: AbstractField_::Obj%domains '// &
-                      CHAR_LF//'size is not same as size of domains')
-  END IF
-
-  DO ii = 1, SIZE(domains)
-    obj%domains(ii)%ptr => domains(ii)%ptr
-  END DO
-END IF
+IF (PRESENT(fedof)) obj%fedof => fedof
 
 IF (PRESENT(fedofs)) THEN
   IF (.NOT. ALLOCATED(obj%fedofs)) THEN
