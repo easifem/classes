@@ -71,7 +71,6 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: abool
-TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -79,7 +78,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                         dom=dom, domains=domains)
+                         fedof=fedof, fedofs=fedofs)
 
 dsetname = TRIM(group)//"/tSize"
 abool = hdf5%pathExists(dsetname%chars())
@@ -113,7 +112,7 @@ END PROCEDURE obj_Import
 
 MODULE PROCEDURE obj_Export
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-TYPE(String) :: strval, dsetname
+TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -231,22 +230,20 @@ END SUBROUTINE ExportFieldToVTK
 
 MODULE PROCEDURE obj_WriteData1_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData1_vtk()"
-LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
-CLASS(AbstractDomain_), POINTER :: dom
-CLASS(AbstractMesh_), POINTER :: meshPtr
-INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
-                tnodes, var_rank, var_vartype, itime
+LOGICAL(LGT) :: isOK, isSingleFEDOF, isMultiFEDOF
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: nsd, tPhysicalVars, tnodes
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
-REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
 CHARACTER(1), ALLOCATABLE :: dofNames(:)
-TYPE(FEVariable_) :: fevar
+CLASS(FEDOF_), POINTER :: fedof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-NULLIFY (dom, meshPtr)
+NULLIFY (meshptr, fedof)
 
 isOK = obj%isInitiated
 IF (.NOT. isOK) THEN
@@ -262,13 +259,13 @@ IF (.NOT. isOK) THEN
   RETURN
 END IF
 
-isSingleDomain = ASSOCIATED(obj%domain)
-isMultiDomain = ALLOCATED(obj%domains)
-isOK = isSingleDomain .OR. isMultiDomain
+isSingleFEDOF = ASSOCIATED(obj%fedof)
+isMultiFEDOF = ALLOCATED(obj%fedofs)
+isOK = isSingleFEDOF .OR. isMultiFEDOF
 IF (.NOT. isOK) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%domain, '// &
-                    ' ot AbstractNodeField_::obj%domains not allocated.')
+              '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%fedof, '// &
+                    ' ot AbstractNodeField_::obj%fedofs not allocated.')
   RETURN
 END IF
 
@@ -280,43 +277,39 @@ CALL obj%GetPhysicalNames(dofNames)
 spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
 timeCompo = obj%GetTimeCompo(tPhysicalVars)
 
-IF (.NOT. isSingleDomain) THEN
+IF (.NOT. isSingleFEDOF) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: Multi-domain is not implemented yet')
+                    '[INTERNAL ERROR] :: Multi-FEDOF is not implemented yet')
   RETURN
 END IF
 
-dom => obj%domain
-nsd = dom%GetNSD()
-tMesh = dom%GetTotalEntities(dim=nsd)
+fedof => obj%fedof
+meshptr => fedof%GetMeshPointer()
+nsd = meshptr%GetNSD()
 
-DO imesh = 1, tMesh
-  meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+CALL meshptr%GetNodeCoord(nodeCoord=xij)
 
-  CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
+                         openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
 
-  CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
-                           openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
+CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
 
-  CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+nptrs = meshptr%GetNptrs()
+tnodes = meshptr%GetTotalNodes()
 
-  nptrs = meshPtr%GetNptrs()
-  tnodes = meshPtr%GetTotalNodes()
+CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
+                      spaceCompo, timeCompo)
 
-  CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
-                        spaceCompo, timeCompo)
+CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
 
-  CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
-
-  CALL vtk%WritePiece()
-END DO
+CALL vtk%WritePiece()
 
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(dofNames)) DEALLOCATE (dofNames)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
-NULLIFY (meshPtr, dom)
+NULLIFY (meshptr, fedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -330,32 +323,27 @@ END PROCEDURE obj_WriteData1_vtk
 
 MODULE PROCEDURE obj_WriteData2_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData2_vtk()"
-LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
-CLASS(AbstractDomain_), POINTER :: dom
-CLASS(AbstractMesh_), POINTER :: meshPtr
-INTEGER(I4B) :: imesh, tMesh, nsd, ivar, &
-& tnodes, var_rank, var_vartype, itime
+LOGICAL(LGT) :: isOK
+INTEGER(I4B) :: tnodes
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
-TYPE(IntVector_), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
-REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
 CHARACTER(1), ALLOCATABLE :: dofNames(:), dofNames_sub(:)
-TYPE(FEVariable_) :: fevar
 INTEGER(I4B) :: tfield, iobj, tsize, aint
-TYPE(AbstractDomainPointer_), ALLOCATABLE :: domains(:)
+TYPE(IntVector_), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
 CLASS(AbstractNodeField_), POINTER :: obj0
-
-tfield = SIZE(obj)
-ALLOCATE (domains(tfield))
-ALLOCATE (tPhysicalVars(tfield))
-ALLOCATE (spaceCompo(tfield))
-ALLOCATE (timeCompo(tfield))
+CLASS(FEDOF_), POINTER :: fedof
+CLASS(AbstractMesh_), POINTER :: meshptr, meshptr2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-NULLIFY (dom, meshPtr, obj0)
+tfield = SIZE(obj)
+ALLOCATE (tPhysicalVars(tfield), spaceCompo(tfield), &
+          timeCompo(tfield))
+
+NULLIFY (fedof, meshptr, obj0, meshptr2)
 
 isOK = vtk%isOpen()
 IF (.NOT. isOK) THEN
@@ -376,31 +364,33 @@ DO iobj = 1, tfield
     RETURN
   END IF
 
-  isOK = ASSOCIATED(obj0%domain)
+  isOK = ASSOCIATED(obj0%fedof)
   IF (.NOT. isOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: AbstractNodeField_::'// &
-                      'obj('//ToString(iobj)//')%domain is not associated')
+                      'obj('//ToString(iobj)//')%fedof is not associated')
     RETURN
   END IF
 
-  IF (.NOT. ASSOCIATED(dom)) THEN
-    dom => obj0%domain
+  ! FIXME: I think this should be meshptr instead of fedof
+  ! We want mesh to be same for all fields
+  IF (.NOT. ASSOCIATED(fedof)) THEN
+    fedof => obj0%fedof
+    meshptr => fedof%GetMeshPointer()
   ELSE
-    isOK = ASSOCIATED(dom, obj0%domain)
+    meshptr2 => obj0%fedof%GetMeshPointer()
+    isOK = ASSOCIATED(meshptr, meshptr2)
     IF (.NOT. isOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: AbstractNodeField_ :: '// &
-                        'associated domain should  be the same ')
+                        'associated mesh should  be the same ')
     END IF
   END IF
 END DO
 
-nsd = dom%GetNSD()
-tMesh = dom%GetTotalEntities(dim=nsd)
-
 tsize = 0
 DO iobj = 1, tfield
+
   obj0 => obj(iobj)%ptr
   IF (.NOT. ASSOCIATED(obj0)) THEN
     tPhysicalVars(iobj) = 0
@@ -414,9 +404,11 @@ DO iobj = 1, tfield
   END IF
 
   tsize = tsize + tPhysicalVars(iobj)
+
 END DO
 
 ALLOCATE (dofNames(tsize))
+
 tsize = 0
 DO iobj = 1, tfield
   obj0 => obj(iobj)%ptr
@@ -429,42 +421,38 @@ DO iobj = 1, tfield
   DEALLOCATE (dofNames_sub)
 END DO
 
-DO imesh = 1, tMesh
-  meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+CALL meshptr%GetNodeCoord(nodeCoord=xij)
 
-  CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
+                         openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
 
-  CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
-                           openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
+CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
 
-  CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+nptrs = meshptr%GetNptrs()
+tnodes = meshptr%GetTotalNodes()
 
-  nptrs = meshPtr%GetNptrs()
-  tnodes = meshPtr%GetTotalNodes()
+tsize = 0
+DO iobj = 1, tfield
+  obj0 => obj(iobj)%ptr
+  IF (.NOT. ASSOCIATED(obj0)) CYCLE
 
-  tsize = 0
-  DO iobj = 1, tfield
-    obj0 => obj(iobj)%ptr
-    IF (.NOT. ASSOCIATED(obj0)) CYCLE
-
-    aint = tsize + tPhysicalVars(iobj)
-    CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars(iobj), &
+  aint = tsize + tPhysicalVars(iobj)
+  CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars(iobj), &
           dofNames(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val)
-    tsize = aint
+  tsize = aint
 
-  END DO
-
-  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-  IF (ALLOCATED(xij)) DEALLOCATE (xij)
-  CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
-  CALL vtk%WritePiece()
 END DO
 
+CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+CALL vtk%WritePiece()
+
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
 DEALLOCATE (tPhysicalVars)
 DEALLOCATE (dofNames)
 DEALLOCATE (spaceCompo)
 DEALLOCATE (timeCompo)
-NULLIFY (meshPtr, dom, obj0)
+NULLIFY (meshptr, fedof, obj0, meshptr2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
