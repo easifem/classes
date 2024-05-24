@@ -483,11 +483,17 @@ END INTERFACE AbstractNodeFieldGetSingle
 ! summary: Set single entry
 
 INTERFACE AbstractNodeFieldGetFEVariable
-  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, VALUE, ivar)
+  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! abstract node field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node numbers
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is local node number
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! value to be returned
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable nubmer
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE AbstractNodeFieldGetFEVariable
 

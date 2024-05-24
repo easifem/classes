@@ -147,13 +147,15 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
-                            spaceCompo, timeCompo)
+                            spaceCompo, timeCompo, islocal)
   IMPLICIT NONE
   CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(VTKFile_), INTENT(INOUT) :: vtk
   INTEGER(I4B), INTENT(IN) :: nptrs(:), spaceCompo(:), timeCompo(:)
   INTEGER(I4B), INTENT(IN) :: tPhysicalVars
   CHARACTER(1), INTENT(IN) :: dofNames(:)
+  LOGICAL(LGT), INTENT(IN) :: islocal
+  !! is nptrs local or global
 
   ! internal variables
   INTEGER(I4B) :: ivar, var_rank, var_vartype, itime
@@ -163,7 +165,8 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
   CHARACTER(:), ALLOCATABLE :: name
 
   DO ivar = 1, tPhysicalVars
-    CALL obj%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar)
+    CALL obj%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar, &
+                           islocal=islocal)
 
     name = obj%name%chars()//"_"//dofNames(ivar)
     var_rank = .RANK.fevar
@@ -298,7 +301,7 @@ nptrs = meshptr%GetNptrs()
 tnodes = meshptr%GetTotalNodes()
 
 CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
-                      spaceCompo, timeCompo)
+                      spaceCompo, timeCompo, .FALSE.)
 
 CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
 
@@ -438,7 +441,8 @@ DO iobj = 1, tfield
 
   aint = tsize + tPhysicalVars(iobj)
   CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars(iobj), &
-          dofNames(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val)
+        dofNames(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val, &
+                        .FALSE.)
   tsize = aint
 
 END DO
