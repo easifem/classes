@@ -46,7 +46,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-INTEGER(I4B) :: localNode
+INTEGER(I4B) :: localNode(1)
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
@@ -66,28 +66,30 @@ abool = Input(option=AddContribution, default=.FALSE.)
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
 
   IF (abool) THEN
+    localNode(1) = 1
     areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, nodenum=[1], VALUE=[VALUE], scale=areal)
+    CALL Add(obj%realVec, nodenum=localnode, VALUE=[VALUE], scale=areal)
     RETURN
   END IF
 
-  CALL Set(obj%realVec, nodenum=[1], VALUE=[VALUE])
+  localnode(1) = 1
+  CALL Set(obj%realVec, nodenum=localnode, VALUE=[VALUE])
   RETURN
 
 END IF
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+localNode(1) = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
+                                                 islocal=islocal)
 
-IF (localNode .EQ. 0) RETURN
+IF (localNode(1) .EQ. 0) RETURN
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, nodenum=[localNode], VALUE=[VALUE], scale=areal)
+  CALL Add(obj%realVec, nodenum=localNode, VALUE=[VALUE], scale=areal)
   RETURN
 END IF
 
-CALL Set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
+CALL Set(obj%realVec, nodenum=localNode, VALUE=[VALUE])
 
 END PROCEDURE obj_Set1
 
@@ -130,9 +132,11 @@ LOGICAL(LGT) :: abool
 #ifdef DEBUG_VER
 
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     'Scalar field object is not initiated')
+  RETURN
 END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -157,8 +161,10 @@ abool = Input(option=AddContribution, default=.FALSE.)
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
   CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
+
 ELSE
   CALL Set(obj%realVec, VALUE=VALUE)
+
 END IF
 
 END PROCEDURE obj_Set3
@@ -412,7 +418,7 @@ INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 REAL(DFP) :: args(4), VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
-CLASS(AbstractMesh_), POINTER :: dom
+CLASS(AbstractMesh_), POINTER :: meshptr
 CHARACTER(:), ALLOCATABLE :: baseInterpolation
 
 #ifdef DEBUG_VER
@@ -456,22 +462,22 @@ IF (problem) THEN
   RETURN
 END IF
 
-dom => NULL()
-dom => obj%fedof%GetMeshPointer()
-problem = .NOT. ASSOCIATED(dom)
+meshptr => NULL()
+meshptr => obj%fedof%GetMeshPointer()
+problem = .NOT. ASSOCIATED(meshptr)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: domain is not ASSOCIATED.')
+                    '[INTERNAL ERROR] ::  mesh in fedof is not ASSOCIATED.')
   RETURN
 END IF
 
-nsd = dom%GetNSD()
-tnodes = dom%GetTotalNodes()
+nsd = meshptr%GetNSD()
+tnodes = meshptr%GetTotalNodes()
 CALL Reallocate(xij, nsd, 1)
 
 DO ii = 1, tnodes
   globalNode = ii
-  CALL dom%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE.)
+  CALL meshptr%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE.)
   args(1:nsd) = xij(1:nsd, 1)
   CALL func%Get(val=VALUE, args=args)
   CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)

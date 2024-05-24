@@ -582,10 +582,15 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, islocal)
     CLASS(ScalarField_), INTENT(IN) :: obj
+    !! Scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE
+    !! value to be returned
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if present and true then globalNode is a local node
   END SUBROUTINE obj_Get1
 END INTERFACE
 
@@ -601,6 +606,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    !! real vector which contains the values stored in scalar field
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -613,10 +619,14 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, islocal)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    !! values to be returned
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local nodes
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
   END SUBROUTINE obj_Get3
 END INTERFACE
 
@@ -629,12 +639,18 @@ END INTERFACE
 ! summary: returns the value using triplet
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride, islocal)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    !! values to be returned
     INTEGER(I4B), INTENT(IN) :: istart
+    !! istart of global or local node
     INTEGER(I4B), INTENT(IN) :: iend
+    !! end of global or local node
     INTEGER(I4B), INTENT(IN) :: stride
+    !! stride of global or local node
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
   END SUBROUTINE obj_Get4
 END INTERFACE
 
@@ -647,11 +663,14 @@ END INTERFACE
 ! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal)
     CLASS(ScalarField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-  !! Scalar Nodal FEVariable
+    !! FEVariable, which contains nodal value of scalar
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local nodes
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNodes are local nodes
   END SUBROUTINE obj_Get5
 END INTERFACE
 
@@ -694,11 +713,17 @@ END INTERFACE
 ! summary: Set single entry
 
 INTERFACE ScalarFieldGetFEVariable
-  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, VALUE, ivar)
+  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(ScalarField_), INTENT(IN) :: obj
+    !! scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is a local node
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! returned value in fevariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE ScalarFieldGetFEVariable
 

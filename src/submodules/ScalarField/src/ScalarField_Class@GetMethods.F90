@@ -16,7 +16,20 @@
 !
 
 SUBMODULE(ScalarField_Class) GetMethods
-USE BaseMethod
+USE RealVector_Method, ONLY: Get, GetValue
+
+USE ArangeUtility, ONLY: Arange
+
+USE FEVariable_Method, ONLY: NodalVariable
+
+USE BaseType, ONLY: TypeFEVariableScalar, &
+                    TypeFEVariableSpace
+
+USE DOF_Method, ONLY: GetNodeLoc, &
+                      OPERATOR(.tNodes.)
+
+USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,17 +38,18 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
+INTEGER(I4B) :: localnode
+
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=1, &
-    & dataType=1.0_DFP)
-ELSE
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & dataType=1.0_DFP)
+  VALUE = Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
+  RETURN
 END IF
+
+localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
+                                              islocal=islocal)
+
+VALUE = Get(obj=obj%realVec, nodenum=localnode, dataType=1.0_DFP)
+
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -43,19 +57,15 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
+
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL reallocate(VALUE, obj%tsize)
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=1, &
-    & dataType=1.0_DFP)
-ELSE
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & VALUE=VALUE, &
-    & idof=1)
+  VALUE = Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
+  RETURN
 END IF
+
+CALL GetValue(obj=obj%realvec, dofobj=obj%dof, VALUE=VALUE, idof=1)
+
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -63,10 +73,13 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-VALUE = Get( &
-  & obj=obj%realVec, &
-  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-  & dataType=1.0_DFP)
+INTEGER(I4B) :: localNode(SIZE(globalNode))
+
+localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
+                                              islocal=islocal)
+
+VALUE = Get(obj=obj%realVec, nodenum=localNode, dataType=1.0_DFP)
+
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
@@ -74,13 +87,8 @@ END PROCEDURE obj_Get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
-INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalNode(jj) = ii
-END DO
-CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+CALL obj%Get(globalNode=Arange(istart, iend, stride), &
+             VALUE=VALUE, islocal=islocal)
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -89,12 +97,13 @@ END PROCEDURE obj_Get4
 
 MODULE PROCEDURE obj_Get5
 VALUE = NodalVariable( &
-  & Get( &
-  & obj=obj%realVec, &
-  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-  & dataType=1.0_DFP), &
-  & TypeFEVariableScalar, &
-  & TypeFEVariableSpace)
+        Get( &
+        obj=obj%realVec, &
+        nodenum=obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
+                                                  islocal=islocal), &
+        dataType=1.0_DFP), &
+        TypeFEVariableScalar, &
+        TypeFEVariableSpace)
 END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
@@ -110,7 +119,7 @@ END PROCEDURE obj_Get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get7
-CHARACTER(*), PARAMETER :: myName = "obj_Get7"
+CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -119,34 +128,33 @@ INTEGER(I4B) :: indx2
 REAL(DFP) :: avar
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'ScalarField_::obj is not initiated')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: ScalarField_::obj is not initiated')
+  RETURN
 END IF
 
 IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractNodeField_ ::value is not initiated')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+            '[INTERNAL ERROR] :: AbstractNodeField_ ::value is not initiated')
+  RETURN
 END IF
 
 tsize = obj%dof.tNodes. [ivar, idof]
 tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
 IF (tsize .NE. tsize_value) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: size mismatch between obj and VALUE')
+  RETURN
 END IF
 
 DO ii = 1, tsize
-  indx1 = GetNodeLoc(&
-    & obj=obj%dof, &
-    & nodenum=ii, &
-    & ivar=ivar, &
-    & idof=idof)
+  indx1 = GetNodeLoc(obj=obj%dof, nodenum=ii, ivar=ivar, idof=idof)
+
   CALL obj%GetSingle(VALUE=avar, indx=indx1)
-  indx2 = GetNodeLoc(&
-    & obj=VALUE%dof, &
-    & nodenum=ii, &
-    & ivar=ivar_value, &
-    & idof=idof_value)
+
+  indx2 = GetNodeLoc(obj=VALUE%dof, nodenum=ii, ivar=ivar_value, &
+                     idof=idof_value)
+
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
@@ -157,8 +165,7 @@ END PROCEDURE obj_Get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFEVariable
-CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
-CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
+CALL obj%Get(VALUE=VALUE, globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
