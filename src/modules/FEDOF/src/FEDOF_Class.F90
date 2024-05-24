@@ -103,7 +103,10 @@ CONTAINS
   !! Initiate FEDOF by using inhomogeneous order
   PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate FEDOF from ParameterList
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate FEDOF from order vector defined for global elements
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
+    Initiate4
   !! Generic method for initiating FEDOF
 
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -238,6 +241,39 @@ INTERFACE
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+!
+!# Introduction
+!
+! This routine is similar to the obj_Initiate2, but the order of the
+! element is defined for global element numbers.
+! The number of rows in order is equal to 2
+! the first row contains the global element number
+! the second row contains the order.
+!
+! This routine will make order0(:) from order(:,:) and call initiate2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, baseContinuity, baseInterpolation, &
+                                  order, mesh)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    INTEGER(I4B), INTENT(IN) :: order(:, :)
+    !! the number of columns in order is equal to total number of elements
+    !! the number of rows in order is equal to 2
+    !! the first row contains the global element number
+    !! the second rows contains the order of that element
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------

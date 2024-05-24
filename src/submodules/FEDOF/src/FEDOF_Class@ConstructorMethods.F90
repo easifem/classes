@@ -46,7 +46,7 @@ CONTAINS
 MODULE PROCEDURE SetFEDOFParam
 CHARACTER(*), PARAMETER :: myName = "SetFEDOFParam()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE SetFEDOFParam
 
 !----------------------------------------------------------------------------
@@ -78,13 +78,21 @@ obj%mesh => mesh
 obj%baseContinuity = baseContinuity
 obj%baseInterpolation = baseInterpolation
 
-CALL FEDOF_Initiate_Before(obj=obj)
+CALL FEDOF_Initiate_Before(obj=obj, isLagrange=isLagrange)
 
-obj%cellOrder = INT(order, kind=INT8)
-obj%faceOrder = INT(order, kind=INT8)
-obj%edgeOrder = INT(order, kind=INT8)
+DO CONCURRENT(ii=1:obj%tCells)
+  obj%cellOrder(ii) = INT(order, kind=INT8)
+END DO
 
-CALL FEDOF_Initiate_After(obj)
+DO CONCURRENT(ii=1:obj%tFaces)
+  obj%faceOrder(ii) = INT(order, kind=INT8)
+END DO
+
+DO CONCURRENT(ii=1:obj%tEdges)
+  obj%edgeOrder(ii) = INT(order, kind=INT8)
+END DO
+
+CALL FEDOF_Initiate_After(obj=obj, isLagrange=isLagrange)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -100,6 +108,7 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ent(4)
+LOGICAL(LGT) :: isLaGrange
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -107,16 +116,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
+
+IF (baseInterpolation(1:3) == "Lag") THEN
+  isLagrange = .TRUE.
+ELSE
+  isLagrange = .FALSE.
+END IF
+
 obj%mesh => mesh
 obj%baseContinuity = baseContinuity
 obj%baseInterpolation = baseInterpolation
-CALL FEDOF_Initiate_Before(obj=obj)
+CALL FEDOF_Initiate_Before(obj=obj, isLagrange=isLagrange)
 
 CALL obj%SetCellOrder(cellOrder=order)
 CALL obj%SetFaceOrder(cellOrder=order)
 CALL obj%SetEdgeOrder(cellOrdeR=order)
 
-CALL FEDOF_Initiate_After(obj=obj)
+CALL FEDOF_Initiate_After(obj=obj, isLagrange=isLagrange)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -132,22 +148,89 @@ END PROCEDURE obj_Initiate2
 MODULE PROCEDURE obj_Initiate3
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+INTEGER(I4B), ALLOCATABLE :: order0(:)
+INTEGER(I4B) :: telems, tsize, globalElement, localElement, ii
+LOGICAL(LGT) :: problem
+
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+telems = mesh%GetTotalElements()
+tsize = SIZE(order, 2)
+
+problem = SIZE(order, 1) .NE. 2
+IF (problem) THEN
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[INTERNAL ERROR] :: number of rows of order array is not equal to 2')
+  RETURN
+END IF
+
+problem = tsize .NE. telems
+IF (problem) THEN
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                   '[INTERNAL ERROR] :: number of cols of order array is '// &
+                    'not equal to number of elements')
+  RETURN
+END IF
+
+ALLOCATE (order0(telems))
+
+DO ii = 1, telems
+  globalElement = order(1, ii)
+  localElement = mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                         islocal=.FALSE.)
+  order0(localElement) = order(2, ii)
+END DO
+
+CALL obj%Initiate(mesh=mesh, baseContinuity=baseContinuity, &
+                  baseInterpolation=baseInterpolation, order=order0)
+
+DEALLOCATE (order0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                     FEDOF_Initiate_Help
 !----------------------------------------------------------------------------
 
-SUBROUTINE FEDOF_Initiate_Before(obj)
+SUBROUTINE FEDOF_Initiate_Before(obj, isLagrange)
   CLASS(FEDOF_), INTENT(INOUT) :: obj
+  LOGICAL(LGT), INTENT(IN) :: isLagrange
+
+  !! internal variables
   INTEGER(I4B) :: ent(4)
 
   ent = obj%mesh%GetTotalEntities()
   obj%tNodes = ent(1)
-  obj%tEdges = ent(2)
-  obj%tFaces = ent(3)
-  obj%tCells = ent(4)
+
+  IF (isLagrange) THEN
+    obj%tEdges = 0
+    obj%tFaces = 0
+    obj%tCells = 0
+  ELSE
+    obj%tEdges = ent(2)
+    obj%tFaces = ent(3)
+    obj%tCells = ent(4)
+  END IF
 
   CALL Reallocate(obj%cellOrder, obj%tCells)
   CALL Reallocate(obj%faceOrder, obj%tFaces)
@@ -163,8 +246,9 @@ END SUBROUTINE FEDOF_Initiate_Before
 !                                                     FEDOF_Initiate_Help
 !----------------------------------------------------------------------------
 
-SUBROUTINE FEDOF_Initiate_After(obj)
+SUBROUTINE FEDOF_Initiate_After(obj, isLagrange)
   CLASS(FEDOF_), INTENT(INOUT) :: obj
+  LOGICAL(LGT), INTENT(IN) :: isLagrange
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "FEDOF_Initiate_After()"
@@ -172,7 +256,7 @@ SUBROUTINE FEDOF_Initiate_After(obj)
                   tdof, myorder
   LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
   TYPE(ElemData_), POINTER :: elemdata
-  LOGICAL(LGT) :: isok, isLagrange
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
