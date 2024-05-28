@@ -18,6 +18,10 @@
 SUBMODULE(ScalarFieldLis_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
+                                   AbstractNodeFieldDisplay, &
+                                   AbstractNodeFieldExport, &
+                                   AbstractNodeFieldImport
 IMPLICIT NONE
 CONTAINS
 
@@ -26,24 +30,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-CHARACTER(*), PARAMETER :: myName = "obj_Display"
+#include "lisf.h"
+
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
-#include "lisf.h"
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
-  CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-  ! CALL lis_vector_print(obj%lis_ptr, ierr)
-  ! CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'ScalarFieldLis_ is NOT AVAILABLE')
+
+IF (ierr .NE. LIS_FALSE) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'ScalarFieldLis_ is NOT AVAILABLE')
+  RETURN
 END IF
+
+realvec => AbstractNodeFieldGetPointer(obj)
+CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+CALL CHKERR(ierr)
+
+NULLIFY (realvec)
+CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -52,27 +59,34 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_Export
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Export()')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
-  CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'ScalarFieldLis_ is NOT AVAILABLE')
+IF (ierr .NE. LIS_FALSE) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'ScalarFieldLis_ is NOT AVAILABLE')
+  RETURN
 END IF
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Export()")
+realvec => AbstractNodeFieldGetPointer(obj)
+CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+CALL CHKERR(ierr)
+NULLIFY (realvec)
+CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
@@ -81,23 +95,22 @@ END PROCEDURE obj_Export
 
 MODULE PROCEDURE obj_Import
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3)
+LOGICAL(LGT) :: bools(3), isok
 TYPE(ParameterList_) :: param
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
 ! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Import()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AbstractNodeFieldImport( &
-  & obj=obj, &
-  & hdf5=hdf5, &
-  & group=group, &
-  & dom=dom, &
-  & domains=domains)
+CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
+                             fedofs=fedofs)
 
 dsetname = TRIM(group)//"/tSize"
 bools(1) = hdf5%pathExists(dsetname%chars())
@@ -106,50 +119,52 @@ bools(2) = hdf5%pathExists(dsetname%chars())
 dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
-IF (.NOT. ALL(bools)) THEN
+isok = ALL(bools)
+
+IF (.NOT. isok) THEN
 
   ! Initiate
   CALL param%initiate()
-  CALL SetScalarFieldParam( &
-    & param=param, &
-    & name=obj%name%chars(), &
-    & engine=obj%engine%chars(), &
-    & fieldType=obj%fieldType)
+
+  CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
+                           engine=obj%engine%chars(), fieldType=obj%fieldType)
+
   obj%isInitiated = .FALSE.
-  CALL obj%initiate(param=param, dom=dom)
+
+  CALL obj%Initiate(param=param, dom=dom)
+
   CALL param%DEALLOCATE()
 
-ELSE
+  RETURN
 
-  ! till now we have read tSize, dof, and realVec
-  ! but we have not created lis vector
-  ! so we create lis_vector
-  ! then we update values from realvec to lis_vector using scatter methods
-
-  CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-  & obj%global_n, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_get_range( &
-  & obj%lis_ptr, &
-  & obj%is, &
-  & obj%ie, &
-  & ierr &
-  & )
-  CALL CHKERR(ierr)
-
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_scatter(realvec, obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
 END IF
 
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Import()")
+! till now we have read tSize, dof, and realVec
+! but we have not created lis vector
+! so we create lis_vector
+! then we update values from realvec to lis_vector using scatter methods
+
+CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+CALL CHKERR(ierr)
+
+CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
+                         obj%global_n, ierr)
+CALL CHKERR(ierr)
+
+CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+CALL CHKERR(ierr)
+
+realvec => AbstractNodeFieldGetPointer(obj)
+CALL lis_vector_scatter(realvec, obj%lis_ptr, ierr)
+CALL CHKERR(ierr)
+
+NULLIFY (realvec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

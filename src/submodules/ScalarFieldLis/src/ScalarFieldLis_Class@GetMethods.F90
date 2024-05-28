@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) GetMethods
-USE BaseMethod
+USE AbstractField_Class, ONLY: TypeField
+USE BaseType, ONLY: TypeFEVariableScalar, TypeFEVariableSpace
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,27 +30,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSingle
-#include "lisf.h"
 INTEGER(I4B) :: ierr
-CHARACTER(*), PARAMETER :: myName = "obj_GetSingle()"
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
-  CALL CHKERR(ierr)
-  RETURN
+ELSE
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
 END IF
 
-CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
-CALL CHKERR(ierr)
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+CALL CHKERR(ierr)
 #endif
 
 END PROCEDURE obj_GetSingle
@@ -57,7 +51,7 @@ END PROCEDURE obj_GetSingle
 MODULE PROCEDURE obj_GetPointer
 CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: This method is not available for ScalarFieldLis_')
+       '[INTERNAL ERROR] :: This method is not available for ScalarFieldLis_')
 END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
@@ -65,46 +59,54 @@ END PROCEDURE obj_GetPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-INTEGER(I4B) :: localNode, tSize, ierr
+INTEGER(I4B) :: localnode
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: problem
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-problem = .NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE
+problem = .NOT. obj%isInitiated .OR. (ierr .EQ. LIS_TRUE)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[INTERNAL ERROR] :: Either ScalarField object is not initiated'// &
   & " or, lis_ptr is not available")
   RETURN
 END IF
+
 #endif
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
   RETURN
 END IF
 
-localNode = obj%domain%GetLocalNodeNumber(globalNode)
-tSize = obj%SIZE()
+localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
+                                              islocal=islocal)
 
 #ifdef DEBUG_VER
-problem = localNode .EQ. 0_I4B .OR. localNode .GT. tSize
+
+tsize = obj%SIZE()
+problem = localnode .EQ. 0_I4B .OR. localNode .GT. tsize
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: localNode is either 0 or greater than size of '// &
-    & " scalarFieldLis_::obj")
+      '[INTERNAL ERROR] :: localnode is either 0 or greater than size of '// &
+                    " scalarFieldLis_::obj")
+  RETURN
 END IF
+
 #endif
 
-CALL lis_vector_get_value(obj%lis_ptr, localNode, VALUE, ierr)
+CALL lis_vector_get_value(obj%lis_ptr, localnode, VALUE, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 END PROCEDURE obj_Get1
 
@@ -113,37 +115,43 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Get1"
 INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tSize
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'Either ScalarField object is not initiated'// &
-  & " or, lis_ptr is not available")
+          '[INTERNAL ERROR] :: Either ScalarField object is not initiated'// &
+                    " or, lis_ptr is not available")
+  RETURN
 END IF
 
-tSize = obj%SIZE()
-CALL Reallocate(VALUE, tSize)
+#endif
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+tsize = obj%SIZE()
+
+IF (obj%fieldType .EQ. TypeField%constant) THEN
 
   CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE(1), ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
-  DO ii = 2, tSize
-    VALUE(ii) = VALUE(1)
-  END DO
+#endif
 
-ELSE
+  DO CONCURRENT(ii=2:tsize); VALUE(ii) = VALUE(1); END DO
 
-  CALL lis_vector_gather(obj%lis_ptr, VALUE, ierr)
-  CALL CHKERR(ierr)
-
+  RETURN
 END IF
+
+CALL lis_vector_gather(obj%lis_ptr, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
 END PROCEDURE obj_Get2
 
@@ -152,102 +160,77 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Get3"
+INTEGER(I4B) :: localnode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-INTEGER(I4B) :: tSize
-INTEGER(I4B) :: n
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'Either ScalarField object is not initiated'// &
-  & " or, lis_ptr is not available")
+          '[INTERNAL ERROR] :: Either ScalarField object is not initiated'// &
+                    " or, lis_ptr is not available")
+  RETURN
 END IF
 
-tSize = obj%SIZE()
-n = SIZE(globalNode)
-CALL Reallocate(VALUE, n)
+#endif
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+tsize = SIZE(globalNode)
+
+IF (obj%fieldType .EQ. TypeField%constant) THEN
 
   CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE(1), ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
-  DO ii = 2, n
-    VALUE(ii) = VALUE(1)
-  END DO
+#endif
 
-ELSE
+  DO CONCURRENT(ii=2:tsize); VALUE(ii) = VALUE(1); END DO
 
-  localNode = obj%domain%GetLocalNodeNumber(globalNode)
-
-  DO ii = 1, n
-    CALL lis_vector_get_value( &
-    & obj%lis_ptr, &
-    & localNode(ii), &
-    & VALUE(ii), &
-    & ierr)
-    CALL CHKERR(ierr)
-  END DO
+  RETURN
 
 END IF
 
-END PROCEDURE obj_Get3
+localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode)
 
-!----------------------------------------------------------------------------
-!                                                                   Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get4
-INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalNode(jj) = ii
+DO ii = 1, tsize
+  CALL lis_vector_get_value(obj%lis_ptr, localnode(ii), VALUE(ii), ierr)
 END DO
-CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE obj_Get4
 
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
-MODULE PROCEDURE obj_Get5
-REAL(DFP), ALLOCATABLE :: value0(:)
-CALL obj%Get(VALUE=value0, globalNode=globalNode)
-VALUE = NodalVariable( &
-  & value0, &
-  & TypeFEVariableScalar, &
-  & TypeFEVariableSpace)
-IF (ALLOCATED(value0)) DEALLOCATE (value0)
-END PROCEDURE obj_Get5
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get6
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Get6"
+CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 INTEGER(I4B) :: ierr
-INTEGER(I4B) :: size1, size2
 REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+INTEGER(I4B) :: size1, size2
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'Either ScalarField_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
+           '[INTERNAL ERROR] :: Either ScalarField_::obj is not initiated'// &
+                    " or, obj%lis_ptr is not available")
+  RETURN
 END IF
 
 IF (.NOT. VALUE%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'Either ScalarFieldLis_::value is not initiated'// &
-  & "")
+                   '[INTERNAL ERROR] ScalarFieldLis_::value is not initiated')
+  RETURN
 END IF
 
 size1 = obj%SIZE()
@@ -258,25 +241,36 @@ IF (size1 .NE. size2) THEN
     & 'Size of obj and value are not same')
 END IF
 
-SELECT TYPE (VALUE)
-TYPE is (ScalarField_)
+#endif
 
-  realvec => NULL()
+realvec => NULL()
+
+SELECT TYPE (VALUE)
+
+TYPE IS (ScalarField_)
+
   realvec => VALUE%GetPointer()
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-  CALL CHKERR(ierr)
   realvec => NULL()
 
-TYPE is (ScalarFieldLis_)
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+TYPE IS (ScalarFieldLis_)
 
   CALL lis_vector_copy(obj%lis_ptr, VALUE%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'No case found for type of value [ScalarField_, ScalarFieldLis_] '// &
-  & ' are supported')
+                    '[INTERNAL ERROR] :: No case found for type value')
+  RETURN
 END SELECT
+
 END PROCEDURE obj_Get6
 
 END SUBMODULE GetMethods
