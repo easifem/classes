@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(ScalarField_Class) DBCMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -33,7 +33,7 @@ INTEGER(I4B) :: idof, aint
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -44,9 +44,9 @@ IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
@@ -57,21 +57,24 @@ CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 IF (istimes) THEN
   aint = SIZE(nodalvalue, 2)
   DO idof = 1, aint
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof))
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                 islocal=.FALSE.)
   END DO
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
   RETURN
 END IF
 
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
+CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), islocal=.FALSE.)
+
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
+
 END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -87,7 +90,7 @@ LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -98,9 +101,9 @@ IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
@@ -110,11 +113,12 @@ tsize = SIZE(dbc)
 
 IF (istimes) THEN
   DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
-      & times=times)
+    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
+                          times=times)
     aint = SIZE(nodalvalue, 2)
     DO idof = 1, aint
-      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof))
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                   islocal=.FALSE.)
     END DO
   END DO
 
@@ -125,7 +129,8 @@ END IF
 
 DO ibc = 1, tsize
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+               islocal=.FALSE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -133,7 +138,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_ApplyDirichletBC2
 

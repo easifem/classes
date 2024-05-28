@@ -603,10 +603,12 @@ END INTERFACE
 ! summary: This routine returns all the entries by using given scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, tsize)
     CLASS(ScalarField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! real vector which contains the values stored in scalar field
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size written in Value
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -619,14 +621,16 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, islocal)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, islocal, tsize)
     CLASS(ScalarField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local nodes
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true, then globalNodes are local nodes
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size written in Value
   END SUBROUTINE obj_Get3
 END INTERFACE
 
@@ -639,9 +643,9 @@ END INTERFACE
 ! summary: returns the value using triplet
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride, islocal)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride, islocal, tsize)
     CLASS(ScalarField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
     INTEGER(I4B), INTENT(IN) :: istart
     !! istart of global or local node
@@ -651,6 +655,8 @@ INTERFACE
     !! stride of global or local node
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true, then globalNodes are local nodes
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size written in Value
   END SUBROUTINE obj_Get4
 END INTERFACE
 

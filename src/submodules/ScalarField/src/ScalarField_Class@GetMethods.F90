@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(ScalarField_Class) GetMethods
-USE RealVector_Method, ONLY: Get, GetValue
+USE RealVector_Method, ONLY: GetValue_, Get, GetValue
 
 USE ArangeUtility, ONLY: Arange
 
@@ -29,6 +29,8 @@ USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.)
 
 USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
+
+USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
 CONTAINS
@@ -59,12 +61,13 @@ END PROCEDURE obj_Get1
 MODULE PROCEDURE obj_Get2
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL reallocate(VALUE, obj%tsize)
+  tsize = obj%tSize
   VALUE = Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
   RETURN
 END IF
 
-CALL GetValue(obj=obj%realvec, dofobj=obj%dof, VALUE=VALUE, idof=1)
+CALL GetValue_(obj=obj%realvec, dofobj=obj%dof, VALUE=VALUE, idof=1, &
+               tsize=tsize)
 
 END PROCEDURE obj_Get2
 
@@ -78,7 +81,8 @@ INTEGER(I4B) :: localNode(SIZE(globalNode))
 localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
                                               islocal=islocal)
 
-VALUE = Get(obj=obj%realVec, nodenum=localNode, dataType=1.0_DFP)
+CALL GetValue_(obj=obj%realVec, nodenum=localNode, VALUE=VALUE, &
+               tsize=tsize, dofobj=obj%dof, ivar=1_I4B, idof=1_I4B)
 
 END PROCEDURE obj_Get3
 
@@ -88,7 +92,7 @@ END PROCEDURE obj_Get3
 
 MODULE PROCEDURE obj_Get4
 CALL obj%Get(globalNode=Arange(istart, iend, stride), &
-             VALUE=VALUE, islocal=islocal)
+             VALUE=VALUE, islocal=islocal, tsize=tsize)
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -127,6 +131,8 @@ INTEGER(I4B) :: indx1
 INTEGER(I4B) :: indx2
 REAL(DFP) :: avar
 
+#ifdef DEBUG_VER
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: ScalarField_::obj is not initiated')
@@ -139,13 +145,21 @@ IF (.NOT. VALUE%isInitiated) THEN
   RETURN
 END IF
 
+#endif
+
 tsize = obj%dof.tNodes. [ivar, idof]
+
+#ifdef DEBUG_VER
+
 tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+
 IF (tsize .NE. tsize_value) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: size mismatch between obj and VALUE')
   RETURN
 END IF
+
+#endif
 
 DO ii = 1, tsize
   indx1 = GetNodeLoc(obj=obj%dof, nodenum=ii, ivar=ivar, idof=idof)
