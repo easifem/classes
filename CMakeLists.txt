@@ -285,6 +285,8 @@ install(
   COMPONENT "${PROJECT_NAME}-dev")
 
 # Find external dependency of the project FIXME:
+# # needed for python-baesd cli
+# # will deprecate in future
 if(NOT CMAKE_PREFIX_PATH)
   list(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}" "$ENV{EASIFEM_BASE}")
 endif()
