@@ -253,7 +253,7 @@ END INTERFACE AbstractNodeFieldInitiate
 
 INTERFACE AbstractNodeFieldInitiate2
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+                                  usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
