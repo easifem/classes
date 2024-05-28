@@ -21,4 +21,5 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/FEDOF_Class@ConstructorMethods.F90
           ${src_path}/FEDOF_Class@GetMethods.F90
+          ${src_path}/FEDOF_Class@SetMethods.F90
           ${src_path}/FEDOF_Class@IOMethods.F90)
