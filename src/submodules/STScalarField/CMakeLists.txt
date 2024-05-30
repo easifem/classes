@@ -20,7 +20,7 @@ TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/STScalarField_Class@ConstructorMethods.F90
   ${src_path}/STScalarField_Class@IOMethods.F90
-  # ${src_path}/STScalarField_Class@SetMethods.F90
+  ${src_path}/STScalarField_Class@SetMethods.F90
   # ${src_path}/STScalarField_Class@DBCMethods.F90
   # ${src_path}/STScalarField_Class@GetMethods.F90
 )

@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(STScalarField_Class) ConstructorMethods
-USE GlobalData, ONLY: STORAGE_FMT => NODES_FMT
+USE GlobalData
 USE FPL_Method, ONLY: GetValue, Set
 USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
@@ -124,9 +124,8 @@ tNodes(1) = fedof%GetTotalDOF()
 tdof = tNodes(1) * obj%timeCompo
 names(1) (:) = astr%slice(1, 1)
 
-!NOTE: STORAGE_FMT is defined at the top of this file
 CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
-                         dof_storageFMT=STORAGE_FMT, dof_spaceCompo=[1_I4B], &
+                     dof_storageFMT=mystorageformat, dof_spaceCompo=[1_I4B], &
                            dof_timeCompo=[obj%timeCompo], dof_tNodes=tNodes, &
                                dof_names_char=names, tSize=tdof)
 
