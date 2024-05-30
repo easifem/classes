@@ -16,12 +16,12 @@
 !
 
 SUBMODULE(STScalarField_Class) DBCMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                                 ApplyDBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_applyDirichletBC1
@@ -33,42 +33,48 @@ LOGICAL(LGT) :: problem, istimes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
 
 #ifdef DEBUG_VER
+
 aint = 0
 IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. obj%timeCompo
   IF (problem) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to obj%timeCompo '//  &
-      & ' which is '//tostring(obj%timeCompo))
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                   ToString(aint)//' which is not equal to obj%timeCompo '// &
+                      ' which is '//ToString(obj%timeCompo))
     RETURN
   END IF
 END IF
+
 #endif
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 
 IF (istimes) THEN
+
   aint = SIZE(nodalvalue, 2)
+
   DO idof = 1, aint
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-      & timecompo=idof)
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                 timecompo=idof, islocal=.TRUE.)
   END DO
 
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+
   RETURN
 END IF
 
 DO idof = 1, obj%timecompo
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), timecompo=idof)
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+               timecompo=idof, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -76,9 +82,8 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -94,7 +99,7 @@ LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -105,10 +110,10 @@ IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. obj%timeCompo
   IF (problem) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to obj%timeCompo '//  &
-      & ' which is '//tostring(obj%timeCompo))
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                   ToString(aint)//' which is not equal to obj%timeCompo '// &
+                      ' which is '//ToString(obj%timeCompo))
     RETURN
   END IF
 END IF
@@ -122,8 +127,8 @@ IF (istimes) THEN
       & times=times)
     aint = SIZE(nodalvalue, 2)
     DO idof = 1, aint
-      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-        & timecompo=idof)
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                   timecompo=idof, islocal=.TRUE.)
     END DO
   END DO
 
@@ -135,13 +140,19 @@ END IF
 DO ii = 1, tsize
   CALL dbc(ii)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
   DO idof = 1, obj%timecompo
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-      & timecompo=idof)
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+                 timecompo=idof, islocal=.TRUE.)
   END DO
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------

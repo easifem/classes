@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(STScalarField_Class) ConstructorMethods
-USE GlobalData
 USE FPL_Method, ONLY: GetValue, Set
 USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
@@ -26,6 +25,10 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
 
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
                                SetAbstractFieldParam
+
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
+USE ArangeUtility, ONLY: Arange
 
 IMPLICIT NONE
 
@@ -131,6 +134,9 @@ CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
 
 CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof)
 
+CALL Reallocate(obj%idofs, obj%timeCompo)
+obj%idofs = Arange(1_I4B, obj%timeCompo)
+
 astr = ""
 sublist => NULL()
 
@@ -146,10 +152,17 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+INTEGER(I4B) :: tsize, ii
 CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 SELECT TYPE (obj2); CLASS IS (STScalarField_)
   obj%timeCompo = obj2%timeCompo
+
+  tsize = SafeSize(obj2%idofs)
+  CALL Reallocate(obj%idofs, tsize)
+  DO ii = 1, tsize
+    obj%idofs(ii) = obj2%idofs(ii)
+  END DO
 END SELECT
 END PROCEDURE obj_Initiate2
 
@@ -159,6 +172,7 @@ END PROCEDURE obj_Initiate2
 
 MODULE PROCEDURE obj_Deallocate
 obj%timeCompo = 0_I4B
+IF (ALLOCATED(obj%idofs)) DEALLOCATE (obj%idofs)
 CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
 

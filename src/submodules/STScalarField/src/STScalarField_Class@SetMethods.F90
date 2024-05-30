@@ -41,6 +41,8 @@ USE BaseType, ONLY: TypeFEVariableScalar, &
 
 USE FEVariable_Method, ONLY: Get
 
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 
 CONTAINS
@@ -329,7 +331,6 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-INTEGER(I4B) :: idof
 REAL(DFP) :: areal, breal
 LOGICAL(LGT) :: abool
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
@@ -448,7 +449,7 @@ END DO
 
 CALL obj%Set(VALUE=val, globalNode=globalNode, islocal=islocal, &
              scale=scale, addContribution=addContribution, &
-             storageFormat=NODES_FMT)
+             storageFMT=NODES_FMT)
 
 END PROCEDURE obj_Set7
 
@@ -457,13 +458,13 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 REAL(DFP) :: val(SIZE(VALUE))
 INTEGER(I4B) :: conversion(1)
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 LOGICAL(LGT) :: problem
 
 IF (.NOT. obj%isInitiated) THEN
@@ -489,7 +490,7 @@ END IF
 
 #endif
 
-IF (storageFormat .EQ. mystorageformat) THEN
+IF (storageFMT .EQ. mystorageformat) THEN
   conversion(1) = NONE
 ELSE
   conversion(1) = myconversion
@@ -644,7 +645,7 @@ SELECT CASE (VALUE%vartype); CASE (SpaceTime)
                          TypeFEVariableSpaceTime), &
                globalNode=globalNode, scale=scale, &
                addContribution=addContribution, islocal=islocal, &
-               storageFormat=NODES_FMT)
+               storageFMT=NODES_FMT)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -747,7 +748,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
 INTEGER(I4B) :: ttime, nsd, tnodes, ii, itime, i1(1)
 REAL(DFP) :: args(4), VALUE(obj%timeCompo), aval, xij(3, 1)
-INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
+! INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
 CLASS(AbstractMesh_), POINTER :: meshptr
 CHARACTER(:), ALLOCATABLE :: baseInterpolation
 
@@ -794,7 +795,6 @@ END IF
 
 nsd = meshptr%GetNSD()
 tnodes = meshptr%GetTotalNodes()
-CALL Reallocate(xij, nsd, 1)
 
 IF (istimes) THEN
 

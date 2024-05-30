@@ -16,13 +16,17 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) IOMethods
-USE BaseMethod
-USE HDF5File_Method
+USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
                                    AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldExport, &
                                    AbstractNodeFieldImport
+
+USE ScalarField_Class, ONLY: SetScalarFieldParam
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,8 +34,6 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-#include "lisf.h"
-
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
@@ -58,8 +60,6 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-#include "lisf.h"
-
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
@@ -94,8 +94,6 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-#include "lisf.h"
-
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3), isok
@@ -131,7 +129,7 @@ IF (.NOT. isok) THEN
 
   obj%isInitiated = .FALSE.
 
-  CALL obj%Initiate(param=param, dom=dom)
+  CALL obj%Initiate(param=param, fedof=fedof)
 
   CALL param%DEALLOCATE()
 
