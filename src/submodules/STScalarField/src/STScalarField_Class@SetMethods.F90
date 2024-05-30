@@ -18,6 +18,8 @@
 SUBMODULE(STScalarField_Class) SetMethods
 USE InputUtility, ONLY: Input
 
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
 USE AbstractField_Class, ONLY: TypeField
 
 USE ScalarField_Class, ONLY: ScalarField_
@@ -26,7 +28,7 @@ USE RealVector_Method, ONLY: Set, Add, GetPointer
 
 USE Display_Method, ONLY: tostring
 
-USE GlobalData, ONLY: NONE, SpaceTime
+USE GlobalData, ONLY: NONE, SpaceTime, Scalar
 
 USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.), &
@@ -82,17 +84,6 @@ IF (obj%fieldType .EQ. TypeField%constant) THEN
 ELSE
 
   localNode(1) = globalNode
-
-#ifdef DEBUG_VER
-
-  isok = obj%tSize .GE. localNode(1)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: global nodes are out of bound')
-    RETURN
-  END IF
-
-#endif
 
 END IF
 
@@ -466,15 +457,13 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-! FIXME: remove this allocation
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 REAL(DFP) :: val(SIZE(VALUE))
 INTEGER(I4B) :: conversion(1)
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 LOGICAL(LGT) :: problem
 
 IF (.NOT. obj%isInitiated) THEN
@@ -500,20 +489,6 @@ END IF
 
 #endif
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
-
-#ifdef DEBUG_VER
-
-problem = ANY(localNode .GT. obj%tSize)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: Some of the globalNode are out of bound')
-  RETURN
-END IF
-
-#endif
-
 IF (storageFormat .EQ. mystorageformat) THEN
   conversion(1) = NONE
 ELSE
@@ -527,13 +502,13 @@ abool = Input(option=addContribution, default=.FALSE.)
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
 
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
            VALUE=val, conversion=conversion, scale=areal)
   RETURN
 
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
          VALUE=val, conversion=conversion)
 
 END PROCEDURE obj_Set8
@@ -543,12 +518,11 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -576,27 +550,18 @@ END IF
 
 #endif
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
-
-#ifdef DEBUG_VER
-IF (ANY(localNode .GT. obj%fedof%GetTotalDOF())) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: global nodes are out of bound')
-  RETURN
-END IF
-#endif
+#include "./localNodeError.inc"
 
 abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
            VALUE=VALUE, idof=timeCompo, scale=areal)
   RETURN
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
          VALUE=VALUE, idof=timeCompo)
 
 END PROCEDURE obj_Set9
@@ -606,12 +571,11 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set10
-INTEGER(I4B) :: localNode
+CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -633,29 +597,18 @@ END IF
 
 #endif
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
-
-#ifdef DEBUG_VER
-
-IF (localNode .GT. obj%fedof%GetTotalDOF()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: global node num are out of bound')
-  RETURN
-END IF
-
-#endif
+#include "./localNodeError.inc"
 
 abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
            VALUE=VALUE, scale=areal, idof=timeCompo)
   RETURN
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
+CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
          VALUE=VALUE, idof=timeCompo)
 
 END PROCEDURE obj_Set10
@@ -664,11 +617,8 @@ END PROCEDURE obj_Set10
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set13
-CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
-! INTEGER(I4B) :: localNode(SIZE(globalNode))
-
-#include "./localNodeError.inc"
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 
 #ifdef DEBUG_VER
 
@@ -686,6 +636,8 @@ END IF
 
 #endif
 
+#include "./localNodeError.inc"
+
 SELECT CASE (VALUE%vartype); CASE (SpaceTime)
 
   CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableScalar, &
@@ -700,13 +652,13 @@ CASE DEFAULT
   RETURN
 END SELECT
 
-END PROCEDURE obj_Set13
+END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set14
+MODULE PROCEDURE obj_Set12
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
@@ -720,13 +672,13 @@ END IF
 
 CALL Set(obj=obj%realVec, VALUE=VALUE)
 
-END PROCEDURE obj_Set14
+END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set15
+MODULE PROCEDURE obj_Set13
 INTEGER(I4B) :: idof1
 INTEGER(I4B) :: idof2
 REAL(DFP) :: areal
@@ -734,7 +686,7 @@ LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
 
-CHARACTER(*), PARAMETER :: myName = "obj_Set15()"
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 
@@ -776,94 +728,110 @@ END IF
 CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
          obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
 
-END PROCEDURE obj_Set15
+END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set16
+MODULE PROCEDURE obj_Set14
 CALL Set(obj=obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE obj_Set16
+END PROCEDURE obj_Set14
 
-!!----------------------------------------------------------------------------
-!!                                                               SetByFunction
-!!----------------------------------------------------------------------------
-!
-!MODULE PROCEDURE obj_SetByFunction
-!CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
-!LOGICAL(LGT) :: istimes, problem
-!INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), itime
-!REAL(DFP) :: args(4), VALUE(obj%timeCompo), aval, xij(3, 1)
-!INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
-!CLASS(AbstractDomain_), POINTER :: dom
-!
-!#ifdef DEBUG_VER
-!CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!  & '[START] ')
-!#endif
-!
-!istimes = PRESENT(times)
-!problem = .FALSE.
-!
-!args = 0.0_DFP
-!IF (istimes) THEN
-!  ttime = SIZE(times)
-!  problem = ttime .NE. obj%timeCompo
-!END IF
-!
-!IF (problem) THEN
-!  CALL e%RaiseError(modName//'::'//myName//' - '// &
-!    & '[INTERNAL ERROR] :: size of times should be obj%timeCompo='// &
-!    & tostring(obj%timeCompo))
-!  RETURN
-!END IF
-!
-!dom => NULL()
-!dom => obj%domain
-!problem = .NOT. ASSOCIATED(dom)
-!IF (problem) THEN
-!  CALL e%RaiseError(modName//'::'//myName//' - '// &
-!    & '[INTERNAL ERROR] :: domain is not ASSOCIATED.')
-!  RETURN
-!END IF
-!
-!nsd = dom%GetNSD()
-!tnodes = dom%GetTotalNodes()
-!
-!IF (istimes) THEN
-!
-!  DO ii = 1, tnodes
-!    globalNode = ii
-!    CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij(1:nsd, 1:1))
-!    args(1:nsd) = xij(1:nsd, 1)
-!
-!    DO itime = 1, obj%timeCompo
-!      args(4) = times(itime)
-!      CALL func%Get(val=VALUE(itime), args=args)
-!    END DO
-!
-!    CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE)
-!  END DO
-!
-!END IF
-!
-!IF (.NOT. istimes) THEN
-!  DO ii = 1, tnodes
-!    globalNode = ii
-!    CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij(1:nsd, 1:1))
-!    args(1:nsd) = xij(1:nsd, 1)
-!    CALL func%Get(val=aval, args=args)
-!    VALUE = aval
-!    CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE)
-!  END DO
-!END IF
-!
-!#ifdef DEBUG_VER
-!CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!  & '[END] ')
-!#endif
-!END PROCEDURE obj_SetByFunction
+!----------------------------------------------------------------------------
+!                                                               SetByFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: ttime, nsd, tnodes, ii, itime, i1(1)
+REAL(DFP) :: args(4), VALUE(obj%timeCompo), aval, xij(3, 1)
+INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
+CLASS(AbstractMesh_), POINTER :: meshptr
+CHARACTER(:), ALLOCATABLE :: baseInterpolation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+baseInterpolation = obj%fedof%GetBaseInterpolation()
+
+IF (baseInterpolation(1:3) .NE. "Lag") THEN
+
+  baseInterpolation = ""
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+ '[INTERNAL ERROR] :: This routine is only valid for Lagrange interpolation.')
+  RETURN
+
+END IF
+
+istimes = PRESENT(times)
+problem = .FALSE.
+
+args = 0.0_DFP
+IF (istimes) THEN
+  ttime = SIZE(times)
+  problem = ttime .NE. obj%timeCompo
+END IF
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+              '[INTERNAL ERROR] :: size of times should be obj%timeCompo='// &
+                    tostring(obj%timeCompo))
+  RETURN
+END IF
+
+meshptr => NULL()
+meshptr => obj%fedof%GetMeshPointer()
+problem = .NOT. ASSOCIATED(meshptr)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: meshptrain is not ASSOCIATED.')
+  RETURN
+END IF
+
+nsd = meshptr%GetNSD()
+tnodes = meshptr%GetTotalNodes()
+CALL Reallocate(xij, nsd, 1)
+
+IF (istimes) THEN
+
+  DO ii = 1, tnodes
+    i1(1) = ii
+    CALL meshptr%GetNodeCoord(globalNode=i1, nodeCoord=xij, islocal=.TRUE.)
+
+    args(1:nsd) = xij(1:nsd, 1)
+
+    DO itime = 1, obj%timeCompo
+      args(4) = times(itime)
+      CALL func%Get(val=VALUE(itime), args=args)
+    END DO
+
+    CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)
+
+  END DO
+
+  RETURN
+
+END IF
+
+DO ii = 1, tnodes
+  i1(1) = ii
+  CALL meshptr%GetNodeCoord(globalNode=i1, nodeCoord=xij, &
+                            islocal=.TRUE.)
+  args(1:nsd) = xij(1:nsd, 1)
+  CALL func%Get(val=aval, args=args)
+  VALUE = aval
+  CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetByFunction
 
 !----------------------------------------------------------------------------
 !

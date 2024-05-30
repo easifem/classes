@@ -103,7 +103,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
     !! Set single entry
   PROCEDURE, PASS(obj) :: Set2 => obj_Set2
-    !! Set all values to a STScalar values
+    !! Set all values to a constant time node values
   PROCEDURE, PASS(obj) :: Set3 => obj_Set3
     !! Set all values to a given STScalar
   PROCEDURE, PASS(obj) :: Set4 => obj_Set4
@@ -120,17 +120,17 @@ CONTAINS
     !! Set values to a STScalar by using triplet
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
     !! Set values to a STScalar by using triplet
+  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
+    !! Set values using FEVariable
+  PROCEDURE, PASS(obj) :: Set12 => obj_Set12
+    !! Set values using FEVariable
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-    !! Set values using FEVariable
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
-    !! Set values using FEVariable
-  PROCEDURE, PASS(obj) :: Set15 => obj_Set15
-  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    & Set7, Set8, Set9, Set10, Set13, Set14, Set15,  &
-    & Set16
+    & Set7, Set8, Set9, Set10, Set11, Set12, Set13,  &
+    & Set14
 
   ! GET:
   ! @GetMethods
@@ -809,7 +809,7 @@ END INTERFACE
 ! Set entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, VALUE, globalNode, islocal, scale, &
+  MODULE SUBROUTINE obj_Set11(obj, VALUE, globalNode, islocal, scale, &
                               addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
@@ -819,6 +819,52 @@ INTERFACE
     !! global or local node numbers
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then global node number is local node number
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_Set11
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: Set the STScalar values
+!
+!# Introduction
+! Set entries using the selected nodes using triplet.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set12(obj, VALUE, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
+    REAL(DFP), INTENT(IN) :: VALUE
+    !! scalar value to be set
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_Set12
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Set the STScalarField
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
+                              idof_value, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set13
@@ -836,56 +882,10 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE, scale, addContribution)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    !! space-time scalar field
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! scalar value to be set
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set14
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set15(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set15
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: Set the STScalar values
-!
-!# Introduction
-! Set entries using the selected nodes using triplet.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+  MODULE SUBROUTINE obj_Set14(obj, VALUE)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(STScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set16
+  END SUBROUTINE obj_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
