@@ -479,13 +479,28 @@ IF (obj%fieldType .EQ. TypeField%constant) THEN
   RETURN
 END IF
 
-problem = (SIZE(VALUE, 1) .NE. obj%timeCompo) .OR. &
-          (SIZE(VALUE, 2) .NE. SIZE(globalNode))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
+IF (storageFMT .EQ. NODES_FMT) THEN
+  problem = (SIZE(VALUE, 1) .NE. obj%timeCompo) .OR. &
+            (SIZE(VALUE, 2) .NE. SIZE(globalNode))
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: SIZE(value,1) not equal timeCompo ' &
-                    //'or SIZE( value, 2 ) not equal to the SIZE(globalNode)')
-  RETURN
+                      //'or SIZE(value, 2) not equal to the SIZE(globalNode)')
+    RETURN
+  END IF
+END IF
+
+IF (storageFMT .EQ. DOF_FMT) THEN
+  problem = (SIZE(VALUE, 2) .NE. obj%timeCompo) .OR. &
+            (SIZE(VALUE, 1) .NE. SIZE(globalNode))
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: SIZE(value,2) not equal timeCompo ' &
+                      //'or SIZE(value, 1) not equal to the SIZE(globalNode)')
+    RETURN
+  END IF
 END IF
 
 #endif

@@ -19,7 +19,7 @@ SUBMODULE(ScalarField_Class) SetMethods
 USE GlobalData, ONLY: Constant, Space, Scalar
 USE InputUtility, ONLY: Input
 
-USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
+USE AbstractField_Class, ONLY: TypeField
 
 USE RealVector_Method, ONLY: Set, Add
 
@@ -28,7 +28,8 @@ USE Display_Method, ONLY: ToString
 USE ArangeUtility, ONLY: Arange
 
 USE DOF_Method, ONLY: GetNodeLoc, &
-                      OPERATOR(.tNodes.)
+                      OPERATOR(.tNodes.), &
+                      GetIDOF
 
 USE BaseType, ONLY: TypeFEVariableScalar, &
                     TypeFEVariableConstant, &
@@ -48,13 +49,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-INTEGER(I4B) :: localNode(1)
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                    '[INTERNAL ERROR] :: Scalar field object is not initiated')
@@ -63,35 +62,30 @@ END IF
 
 #endif
 
-abool = Input(option=AddContribution, default=.FALSE.)
+#include "./localNodeError.inc"
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (obj%fieldType .EQ. TypeField%constant) THEN
 
   IF (abool) THEN
-    localNode(1) = 1
     areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, nodenum=localnode, VALUE=[VALUE], scale=areal)
+    CALL Add(obj%realVec, nodenum=[1_I4B], VALUE=[VALUE], scale=areal)
     RETURN
   END IF
 
-  localnode(1) = 1
-  CALL Set(obj%realVec, nodenum=localnode, VALUE=[VALUE])
+  CALL Set(obj%realVec, nodenum=[1_I4B], VALUE=[VALUE])
   RETURN
 
 END IF
-
-localNode(1) = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                                 islocal=islocal)
-
-IF (localNode(1) .EQ. 0) RETURN
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, nodenum=localNode, VALUE=[VALUE], scale=areal)
+  CALL Add(obj%realVec, nodenum=[globalNode], VALUE=[VALUE], scale=areal)
   RETURN
 END IF
 
-CALL Set(obj%realVec, nodenum=localNode, VALUE=[VALUE])
+CALL Set(obj%realVec, nodenum=[globalNode], VALUE=[VALUE])
 
 END PROCEDURE obj_Set1
 
@@ -112,7 +106,7 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 #endif
 
-abool = Input(option=AddContribution, default=.FALSE.)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
@@ -141,7 +135,7 @@ IF (.NOT. obj%isInitiated) THEN
   RETURN
 END IF
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: This routine should not be '// &
                     'called for constant field type.')
@@ -158,7 +152,7 @@ END IF
 
 #endif
 
-abool = Input(option=AddContribution, default=.FALSE.)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
@@ -176,13 +170,11 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-
-CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -190,7 +182,7 @@ IF (.NOT. obj%isInitiated) THEN
   RETURN
 END IF
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                  'This routine should not be called for constant field type.')
   RETURN
@@ -198,27 +190,17 @@ END IF
 
 #endif
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+#include "./localNodeError.inc"
 
-#ifdef DEBUG_VER
-
-IF (ANY(localNode .GT. obj%tSize)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'Some of the globalNode are out of bound')
-  RETURN
-END IF
-
-#endif
-
-abool = Input(option=AddContribution, default=.FALSE.)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, nodenum=localNode, VALUE=VALUE, scale=areal)
-ELSE
-  CALL Set(obj%realVec, nodenum=localNode, VALUE=VALUE)
+  CALL Add(obj%realVec, nodenum=globalNode, VALUE=VALUE, scale=areal)
+  RETURN
 END IF
+
+CALL Set(obj%realVec, nodenum=globalNode, VALUE=VALUE)
 
 END PROCEDURE obj_Set4
 
@@ -227,13 +209,11 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-
-CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -241,7 +221,7 @@ IF (.NOT. obj%isInitiated) THEN
   RETURN
 END IF
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     '[INTERNAL ERROR] :: Not valid for constant field type.')
   RETURN
@@ -249,40 +229,26 @@ END IF
 
 #endif
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+#include "./localNodeError.inc"
 
-#ifdef DEBUG_VER
-
-IF (ANY(localNode .GT. obj%tSize)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: Some of the globalNode are out of bound')
-  RETURN
-END IF
-
-#endif
-
-abool = Input(option=AddContribution, default=.FALSE.)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, nodenum=localNode, VALUE=VALUE, scale=areal)
-
-ELSE
-
-  CALL Set(obj%realVec, nodenum=localNode, VALUE=VALUE)
+  CALL Add(obj=obj%realVec, nodenum=globalNode, VALUE=VALUE, scale=areal)
+  RETURN
 END IF
+
+CALL Set(obj%realVec, nodenum=globalNode, VALUE=VALUE)
 
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
-!                                                                        Set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-CALL obj%Set(globalNode=Arange(istart, iend, stride), &
-             VALUE=VALUE, scale=scale, &
-             AddContribution=addContribution, islocal=islocal)
+CALL Set(obj%realVec, VALUE=VALUE%realVec)
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -290,41 +256,21 @@ END PROCEDURE obj_Set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set7
-CALL obj%Set(globalNode=Arange(istart, iend, stride), &
-             VALUE=VALUE, scale=scale, &
-             AddContribution=addContribution, islocal=islocal)
-END PROCEDURE obj_Set7
-
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set8
-CALL Set(obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE obj_Set8
-
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set9
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
 
 SELECT CASE (VALUE%vartype)
 
 CASE (Constant)
 
-  CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableConstant), &
-    globalNode=globalNode, scale=scale, AddContribution=addContribution, &
-    islocal=islocal)
+CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableConstant), &
+        globalNode=globalNode, scale=scale, addContribution=addContribution, &
+               islocal=islocal)
 
 CASE (Space)
 
-  CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableSpace), &
-    globalNode=globalNode, scale=scale, AddContribution=addContribution, &
-    islocal=islocal)
+  CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableSpace), &
+        globalNode=globalNode, scale=scale, addContribution=addContribution, &
+               islocal=islocal)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -332,28 +278,28 @@ CASE DEFAULT
   RETURN
 END SELECT
 
-END PROCEDURE obj_Set9
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set10
-CALL Add(obj%realVec, VALUE=obj2%realVec, scale=scale)
-END PROCEDURE obj_Set10
+MODULE PROCEDURE obj_Set8
+CALL Add(obj=obj%realVec, VALUE=obj2%realVec, scale=scale)
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
 !                                                                      Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set11
-INTEGER(I4B) :: tsize, tsize_value, ii, indx1, indx2, ivar_idof(2)
-REAL(DFP) :: avar
+MODULE PROCEDURE obj_Set9
+INTEGER(I4B) :: idof1, idof2
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+INTEGER(I4B) :: tsize, tsize_value, ivar_idof(2)
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -367,18 +313,12 @@ IF (.NOT. VALUE%isInitiated) THEN
   RETURN
 END IF
 
-#endif
-
-ivar_idof(1) = ivar
-ivar_idof(2) = idof
+ivar_idof(1:2) = [ivar, idof]
 
 tsize = obj%dof.tNodes.ivar_idof
 
-ivar_idof(1) = ivar_value
-ivar_idof(2) = idof_value
+ivar_idof(1:2) = [ivar_value, idof_value]
 tsize_value = VALUE%dof.tNodes.ivar_idof
-
-#ifdef DEBUG_VER
 
 IF (tsize .NE. tsize_value) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -388,26 +328,28 @@ END IF
 
 #endif
 
-DO ii = 1, tsize
+abool = Input(option=addContribution, default=.FALSE.)
 
-  indx1 = GetNodeLoc(obj=VALUE%dof, nodenum=ii, ivar=ivar_value, &
-                     idof=idof_value)
+idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
+idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
 
-  CALL VALUE%GetSingle(VALUE=avar, indx=indx1)
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2, scale=areal)
+  RETURN
+END IF
 
-  indx2 = GetNodeLoc(obj=obj%dof, nodenum=ii, ivar=ivar, idof=idof)
-
-  CALL obj%SetSingle(VALUE=avar, indx=indx2, scale=scale, &
-                     addContribution=addContribution)
-
-END DO
+CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+         obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
 
 #ifdef DEBUG_VER
+
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Set11
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
 !                                                             SetByFunction
@@ -425,7 +367,7 @@ CHARACTER(:), ALLOCATABLE :: baseInterpolation
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+                        '[START]')
 #endif
 
 baseInterpolation = obj%fedof%GetBaseInterpolation()
@@ -444,9 +386,11 @@ problem = .FALSE.
 
 args = 0.0_DFP
 IF (istimes) THEN
+
   ttime = SIZE(times)
   args(4) = times(1)
   problem = ttime .NE. 1_I4B
+
 END IF
 
 IF (problem) THEN

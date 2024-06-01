@@ -80,24 +80,20 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set5 => obj_Set5
     !! Set selected values to given vector
   PROCEDURE, PASS(obj) :: Set6 => obj_Set6
-    !! Set values to a scalar by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
     !! This method is used for assignment operator
+  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
+    !! Set selected values using FEVariable
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+    !! Set selected values using FEVariable
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-    !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-    !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
     !! Set selected values using FEVariable
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set scalar field using a function
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
-    Set5, Set6, Set7, Set8, Set9, Set10, Set11
+    Set5, Set6, Set7, Set8, Set9
 
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set8
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set6
     !! Set values to a vector
 
   ! GET:
@@ -109,12 +105,10 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Get3 => obj_Get3
     !! Get selected values
   PROCEDURE, PASS(obj) :: Get4 => obj_Get4
-    !! Get values from triplet
   PROCEDURE, PASS(obj) :: Get5 => obj_Get5
   PROCEDURE, PASS(obj) :: Get6 => obj_Get6
-  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
     !! Get selected values in FEVariable
-  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
   !! Get the entries of scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
@@ -406,73 +400,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine Sets the selected entries using triplet
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, istart, iend, stride, islocal, VALUE, &
-                             scale, addContribution)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: istart
-    !! global/local node start
-    INTEGER(I4B), INTENT(IN) :: iend
-    !! global/local node end
-    INTEGER(I4B), INTENT(IN) :: stride
-    !! global/local node stride
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true, then globalNodes are local nodes
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! value to be assigned on globalNode
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale (if we are adding)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Set the vector vals using triplet
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, istart, iend, stride, islocal, VALUE, &
-                             scale, addContribution)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    !! Scalar field
-    INTEGER(I4B), INTENT(IN) :: istart
-    !! global/local node start
-    INTEGER(I4B), INTENT(IN) :: iend
-    !! global/local node end
-    INTEGER(I4B), INTENT(IN) :: stride
-    !! global/local node stride
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true, then globalNodes are local nodes
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! value to be assigned on globalNode
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale (if we are adding)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-
-  END SUBROUTINE obj_Set7
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
 ! summary: used for assignment operator
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, VALUE)
+  MODULE SUBROUTINE obj_Set6(obj, VALUE)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set8
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -484,7 +418,7 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, globalNode, islocal, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set7(obj, globalNode, islocal, VALUE, scale, &
                              addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
@@ -498,7 +432,7 @@ INTERFACE
     !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
-  END SUBROUTINE obj_Set9
+  END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -510,12 +444,12 @@ END INTERFACE
 ! summary: obj=obj+scalar*obj2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, obj2, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8(obj, obj2, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: obj2
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set10
+  END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -527,17 +461,24 @@ END INTERFACE
 ! summary: Set
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, ivar, idof, VALUE, ivar_value, &
+                             idof_value, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable of obj
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom of physical variable ivar
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    !! right hand side in obj = value
     INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable of value
     INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom of physical variable ivar_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set11
+    !! add or set
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -640,23 +581,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: returns the value using triplet
+! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride, islocal, tsize)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, islocal)
     CLASS(ScalarField_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: VALUE(:)
-    !! values to be returned
-    INTEGER(I4B), INTENT(IN) :: istart
-    !! istart of global or local node
-    INTEGER(I4B), INTENT(IN) :: iend
-    !! end of global or local node
-    INTEGER(I4B), INTENT(IN) :: stride
-    !! stride of global or local node
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! FEVariable, which contains nodal value of scalar
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local nodes
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true, then globalNodes are local nodes
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! total size written in Value
   END SUBROUTINE obj_Get4
 END INTERFACE
 
@@ -669,30 +604,10 @@ END INTERFACE
 ! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    !! FEVariable, which contains nodal value of scalar
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    !! global or local nodes
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true, then globalNodes are local nodes
-  END SUBROUTINE obj_Get5
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: returns the selected values in FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, VALUE)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE)
     CLASS(ScalarField_), INTENT(IN) :: obj
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get6
+  END SUBROUTINE obj_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -700,14 +615,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(ScalarField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE obj_Get7
+  END SUBROUTINE obj_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------

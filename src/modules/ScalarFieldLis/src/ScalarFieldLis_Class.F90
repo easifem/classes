@@ -80,10 +80,12 @@ CONTAINS
     !! Set selected values to given scalar
   PROCEDURE, PASS(obj) :: Set5 => obj_Set5
     !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
     !! This method is used for assignment operator
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-    !! Set selected values using FEVariable
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+    !! obj = obj + scalar*obj2
+  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
+    !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
 
   ! GET:
   ! @GetMethods
@@ -99,7 +101,7 @@ CONTAINS
   !! Get all values in Real vector
   PROCEDURE, PASS(obj) :: Get3 => obj_Get3
   !! Get selected values
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
     !! Get selected values in FEVariable
 
 END TYPE ScalarFieldLis_
@@ -413,10 +415,10 @@ END INTERFACE
 ! summary: used for assignment operator
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, VALUE)
+  MODULE SUBROUTINE obj_Set6(obj, VALUE)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set8
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -424,16 +426,45 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
+! date: 2024-05-31
 ! summary: obj=obj+scalar*obj2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, obj2, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8(obj, obj2, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: obj2
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set10
+  END SUBROUTINE obj_Set8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set9(obj, ivar, idof, VALUE, ivar_value, &
+                             idof_value, scale, addContribution)
+    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable of obj
+    INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom of physical variable ivar
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    !! right hand side in obj = value
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable of value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom of physical variable ivar_value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -528,10 +559,10 @@ END INTERFACE
 ! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, VALUE)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get6
+  END SUBROUTINE obj_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------

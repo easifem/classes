@@ -28,7 +28,7 @@ USE BaseType, ONLY: TypeFEVariableScalar, &
 USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.)
 
-USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
+USE AbstractField_Class, ONLY: TypeField
 
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -40,17 +40,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
-INTEGER(I4B) :: localnode
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   VALUE = Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
   RETURN
 END IF
 
-localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+#include "./localNodeError.inc"
 
-VALUE = Get(obj=obj%realVec, nodenum=localnode, dataType=1.0_DFP)
+VALUE = Get(obj=obj%realVec, nodenum=globalNode, dataType=1.0_DFP)
 
 END PROCEDURE obj_Get1
 
@@ -60,7 +59,7 @@ END PROCEDURE obj_Get1
 
 MODULE PROCEDURE obj_Get2
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   tsize = obj%tSize
   VALUE = Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
   RETURN
@@ -76,23 +75,32 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 
-localNode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+#include "./localNodeError.inc"
 
-CALL GetValue_(obj=obj%realVec, nodenum=localNode, VALUE=VALUE, &
+CALL GetValue_(obj=obj%realVec, nodenum=globalNode, VALUE=VALUE, &
                tsize=tsize, dofobj=obj%dof, ivar=1_I4B, idof=1_I4B)
 
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
-!                                                                   Get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
-CALL obj%Get(globalNode=Arange(istart, iend, stride), &
-             VALUE=VALUE, islocal=islocal, tsize=tsize)
+CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+
+#include "./localNodeError.inc"
+
+VALUE = NodalVariable( &
+        Get( &
+        obj=obj%realVec, &
+        nodenum=globalNode, &
+        dataType=1.0_DFP), &
+        TypeFEVariableScalar, &
+        TypeFEVariableSpace)
+
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -100,14 +108,7 @@ END PROCEDURE obj_Get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get5
-VALUE = NodalVariable( &
-        Get( &
-        obj=obj%realVec, &
-        nodenum=obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                                  islocal=islocal), &
-        dataType=1.0_DFP), &
-        TypeFEVariableScalar, &
-        TypeFEVariableSpace)
+CALL GetValue_(obj=obj%realVec, VALUE=VALUE%realVec)
 END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
@@ -115,15 +116,7 @@ END PROCEDURE obj_Get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get6
-CALL GetValue(obj=obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE obj_Get6
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get7
-CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
+CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -172,7 +165,7 @@ DO ii = 1, tsize
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
-END PROCEDURE obj_Get7
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                              GetFeVariable

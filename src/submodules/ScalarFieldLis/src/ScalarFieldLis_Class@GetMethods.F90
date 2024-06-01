@@ -59,7 +59,6 @@ END PROCEDURE obj_GetPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
-INTEGER(I4B) :: localnode
 INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
@@ -86,23 +85,9 @@ IF (obj%fieldType .EQ. TypeField%constant) THEN
   RETURN
 END IF
 
-localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode=globalNode, &
-                                              islocal=islocal)
+#include "./localNodeError.inc"
 
-#ifdef DEBUG_VER
-
-tsize = obj%SIZE()
-problem = localnode .EQ. 0_I4B .OR. localNode .GT. tsize
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-      '[INTERNAL ERROR] :: localnode is either 0 or greater than size of '// &
-                    " scalarFieldLis_::obj")
-  RETURN
-END IF
-
-#endif
-
-CALL lis_vector_get_value(obj%lis_ptr, localnode, VALUE, ierr)
+CALL lis_vector_get_value(obj%lis_ptr, globalNode, VALUE, ierr)
 
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
@@ -160,7 +145,6 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-INTEGER(I4B) :: localnode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 
@@ -194,10 +178,8 @@ IF (obj%fieldType .EQ. TypeField%constant) THEN
 
 END IF
 
-localnode = obj%fedof%mesh%GetLocalNodeNumber(globalNode)
-
 DO ii = 1, tsize
-  CALL lis_vector_get_value(obj%lis_ptr, localnode(ii), VALUE(ii), ierr)
+  CALL lis_vector_get_value(obj%lis_ptr, globalNode(ii), VALUE(ii), ierr)
 END DO
 
 #ifdef DEBUG_VER
@@ -210,8 +192,8 @@ END PROCEDURE obj_Get3
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get6
-CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
+MODULE PROCEDURE obj_Get5
+CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -271,6 +253,6 @@ CLASS DEFAULT
   RETURN
 END SELECT
 
-END PROCEDURE obj_Get6
+END PROCEDURE obj_Get5
 
 END SUBMODULE GetMethods

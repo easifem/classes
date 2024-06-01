@@ -28,9 +28,8 @@ USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE DirichletBC_Class
-USE FiniteElement_Class
-USE UserFunction_Class
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_
 
 IMPLICIT NONE
@@ -444,7 +443,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
-    CLASS(STScalarField_), TARGET, INTENT(INOUT) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be set, obj = value
     !! the size of value should be equal to obj%timeCompo
@@ -517,8 +516,8 @@ INTERFACE
     !! obj = value
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values to be set obj = value
-    !! number of rows in value should be equal to obj%timeCompo
-    !! number of columns in value should be equal to fedof%tdof
+    !! number of cols in value should be equal to obj%timeCompo
+    !! number of rows in value should be equal to fedof%tdof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
