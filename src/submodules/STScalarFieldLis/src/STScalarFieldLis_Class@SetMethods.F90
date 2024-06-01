@@ -191,6 +191,7 @@ MODULE PROCEDURE obj_Set2
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 INTEGER(I4B) :: ii, tsize, ierr, s(3), code
 LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
 
@@ -212,33 +213,23 @@ END IF
 
 #endif
 
-tsize = obj%fedof%GetTotalDOF()
-abool = obj%timeCompo .LE. TEMP_INTVEC_LEN
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
 
-IF (abool) THEN
-  DO ii = 1, tsize
-    CALL GetIndex_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, &
-                   tsize=ierr)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 
-    CALL obj%SetMultiple(indx=TEMP_INTVEC(1:ierr), VALUE=VALUE, scale=scale, &
-                         addContribution=addContribution)
+DO ii = 1, obj%timeCompo
+  tsize = obj%dof.tNodes.ii
+  s = GetNodeLoc(obj=obj%dof, idof=ii)
+  ! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+  ! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+  ! LIS_INT *ierr)
+  CALL lis_vector_set_values6(code, s(1), s(3), tsize, VALUE(ii) * areal, &
+                              obj%lis_ptr, ierr)
 
-  END DO
-  RETURN
-END IF
-
-ierr = SafeSize(TEMP_DYNA_INTVEC)
-
-IF (obj%timeCompo .GT. ierr) THEN
-  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * obj%timeCompo)
-END IF
-
-DO ii = 1, tsize
-  CALL GetIndex_(obj=obj%dof, nodenum=ii, ans=TEMP_DYNA_INTVEC, &
-                 tsize=ierr)
-
-  CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:ierr), VALUE=VALUE, scale=scale, &
-                       addContribution=addContribution)
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
 
 END DO
 
@@ -250,9 +241,9 @@ END PROCEDURE obj_Set2
 
 MODULE PROCEDURE obj_Set3
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: tsize, ierr, s(3), code
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
 
@@ -274,15 +265,17 @@ END IF
 
 #endif
 
-tsize = obj%fedof%GetTotalDOF()
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+areal = Input(option=scale, default=1.0_DFP)
+tsize = obj%dof.tNodes.timeCompo
+s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
+! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+! LIS_INT *ierr)
+areal = areal * VALUE
+CALL lis_vector_set_values6(code, s(1), s(3), tsize, areal, &
+                            obj%lis_ptr, ierr)
 
-DO ii = 1, tsize
-  ierr = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=timeCompo)
-
-  CALL obj%SetSingle(indx=ierr, VALUE=VALUE, scale=scale, &
-                     addContribution=addContribution)
-
-END DO
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -291,7 +284,9 @@ END PROCEDURE obj_Set3
 
 MODULE PROCEDURE obj_Set4
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
-INTEGER(I4B) :: ii, tsize, aa, jj, ierr
+INTEGER(I4B) :: ii, tsize, ierr, code, s(3)
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
 
@@ -324,18 +319,25 @@ END IF
 
 #endif
 
-aa = 0
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 
-DO jj = 1, obj%timeCompo
+DO ii = 1, obj%timeCompo
+  tsize = obj%dof.tNodes.ii
+  s = GetNodeLoc(obj=obj%dof, idof=ii)
+  ! void lis_vector_set_values5_f(LIS_INT *flag, LIS_INT *start,
+  ! LIS_INT *stride,
+  ! LIS_INT *count, LIS_SCALAR *values,
+  ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+  ! LIS_INT *ierr) {
+  CALL lis_vector_set_values5(code, s(1), s(3), tsize, VALUE(:, ii), &
+                              obj%lis_ptr, areal, ierr)
 
-  tsize = obj%dof.tNodes.jj
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
 
-  DO ii = 1, tsize
-    aa = aa + 1
-    CALL obj%SetSingle(indx=aa, VALUE=VALUE(ii, jj), &
-                       scale=scale, &
-                       addContribution=addContribution)
-  END DO
 END DO
 
 END PROCEDURE obj_Set4
@@ -346,10 +348,9 @@ END PROCEDURE obj_Set4
 
 MODULE PROCEDURE obj_Set5
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tsize
+INTEGER(I4B) :: ierr, tsize, s(3), code
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
 
@@ -384,13 +385,21 @@ IF (tsize .NE. (obj%dof.tNodes.timeCompo)) THEN
 END IF
 #endif
 
-tsize = SIZE(VALUE)
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 
-DO ii = 1, tsize
-  indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=timeCompo)
-  CALL obj%SetSingle(indx=indx, VALUE=VALUE(ii), scale=scale, &
-                     addContribution=addContribution)
-END DO
+tsize = obj%dof.tNodes.timeCompo
+s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
+! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+! LIS_INT *ierr)
+CALL lis_vector_set_values3(code, s(1), s(3), tsize, VALUE, &
+                            obj%lis_ptr, areal, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
 END PROCEDURE obj_Set5
 
