@@ -61,17 +61,10 @@ LOGICAL(LGT) :: abool
 
 LOGICAL(LGT) :: isok
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: STScalarField_::obj is not initiated')
-  RETURN
-END IF
-
-IF (SIZE(VALUE) .NE. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: Size of value should be equal to obj%timeCompo')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
+CALL AssertError2(SIZE(VALUE), obj%timeCompo, myName, &
+                  "a=Value, b=obj%timeCompo")
 
 #endif
 
@@ -113,17 +106,8 @@ LOGICAL(LGT) :: abool
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: STScalarField_::obj is not initiated')
-  RETURN
-END IF
-
-IF (SIZE(VALUE) .NE. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: size(value) should be same as obj%timeCompo')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
 
 #endif
 
@@ -179,17 +163,11 @@ LOGICAL(LGT) :: abool
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-     '[INTERNAL ERROR] :: timeCompo should be less or equal to obj%timeCompo')
-  RETURN
-END IF
+CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
+                  'timeCompo should be less or equal to obj%timeCompo')
 
 #endif
 
@@ -235,27 +213,19 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tnodes
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField::obj is not initiated')
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: Not callable for constant STScalar field')
-  RETURN
-END IF
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  'Not callable for constant STScalar field')
+
+CALL AssertError2(SIZE(VALUE, 2), obj%timeCompo, myName, &
+                  'a=SIZE(VALUE, 2), b=obj%timeCompo')
 
 tnodes = obj%fedof%GetTotalDOF()
 
-isok = (SIZE(VALUE, 2) .NE. obj%timeCompo) .OR. (SIZE(VALUE, 1) .NE. tnodes)
-IF (isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: The shape of value should be [ ' &
-                    //tostring(tnodes)//', '//tostring(obj%timeCompo)//' ]')
-  RETURN
-END IF
+CALL AssertError2(SIZE(VALUE, 1), tNodes, myName, &
+                  'a=SIZE(VALUE, 1), b=tNodes')
 
 #endif
 
@@ -852,4 +822,5 @@ END PROCEDURE obj_SetByFunction
 !
 !----------------------------------------------------------------------------
 
+#include "../../include/errors.F90"
 END SUBMODULE SetMethods
