@@ -1107,9 +1107,13 @@ INTERFACE
     CLASS(STScalarField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in obj
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom in obj
     INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable in VALUE
     INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom in VALUE
   END SUBROUTINE obj_Get8
 END INTERFACE
 

@@ -671,31 +671,17 @@ REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-
 CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: tsize_value
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: STScalarField_::obj is not initiated')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'ScalarField_::obj is not initiated')
 
-IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: AbstractNodeField_ ::value is not initiated')
-  RETURN
-END IF
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  'AbstractNodeField_::value is not initiated')
 
-tsize = obj%dof.tNodes. [ivar, idof]
-tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
-IF (tsize .NE. tsize_value) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[INTERNAL ERROR] :: tSize of obj(ivar, idof) NOT equal '// &
-                    'to value(ivar_value, idof_value)')
-  RETURN
-END IF
+CALL AssertError2(obj%dof.tNodes. [ivar, idof], &
+                  VALUE%dof.tNodes. [ivar_value, idof_value], myName, &
+ 'a=obj%dof.tNodes. [ivar, idof], VALUE%dof.tNodes. [ivar_value, idof_value]')
 
 #endif
 
