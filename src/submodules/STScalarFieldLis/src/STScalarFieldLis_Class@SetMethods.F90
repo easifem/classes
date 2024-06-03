@@ -30,11 +30,14 @@ USE InputUtility, ONLY: Input
 
 USE SafeSizeUtility, ONLY: SafeSize
 
+USE ReallocateUtility, ONLY: Reallocate
+
 USE DOF_Method, ONLY: GetIndex, &
                       GetIndex_, &
                       GetNodeLoc, &
                       GetNodeLoc_, &
-                      OPERATOR(.tNodes.)
+                      OPERATOR(.tNodes.), &
+                      GetIDOF
 
 IMPLICIT NONE
 
@@ -410,15 +413,12 @@ END PROCEDURE obj_Set5
 MODULE PROCEDURE obj_Set6
 REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tsize1
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: indx
-REAL(DFP) :: avar
+INTEGER(I4B) :: ierr, tsize, s(3), code
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
+INTEGER(I4B) :: tsize1
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
@@ -476,18 +476,23 @@ TYPE IS (ScalarFieldLis_)
 
 #endif
 
+  abool = Input(option=addContribution, default=.FALSE.)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+  areal = Input(option=scale, default=1.0_DFP)
   tsize = obj%dof.tNodes.timeCompo
+  s = GetNodeLoc(obj=VALUE%dof, idof=1)
 
-  DO ii = 1, tsize
+  ! void lis_vector_set_values7_f(LIS_INT *flag, LIS_INT *start, LIS_INT *stride,
+  ! LIS_INT *count, LIS_VECTOR_F *values,
+  ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+  ! LIS_INT *ierr)
 
-    CALL VALUE%get(VALUE=avar, globalNode=jj, islocal=.TRUE.)
+  CALL lis_vector_set_values7(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, ierr)
 
-    indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=timeCompo)
-
-    CALL obj%SetSingle(VALUE=avar, indx=indx, scale=scale, &
-                       addContribution=addContribution)
-
-  END DO
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -503,9 +508,8 @@ END PROCEDURE obj_Set6
 
 MODULE PROCEDURE obj_Set8
 CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
-REAL(DFP) :: val(SIZE(VALUE))
-INTEGER(I4B) :: indx(SIZE(VALUE))
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, nrow, ncol, jj
+INTEGER(I4B), ALLOCATABLE :: indx(:, :)
 
 #ifdef DEBUG_VER
 LOGICAL(LGT) :: problem
@@ -552,22 +556,17 @@ END IF
 
 #include "./localNodeError.inc"
 
-val = RESHAPE(VALUE, [SIZE(VALUE)])
+CALL Reallocate(indx, SHAPE(VALUE))
+CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, ans=indx, nrow=nrow, &
+                 ncol=ncol, storageFMT=storageFMT, nodenum=globalNode)
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+DO jj = 1, obj%timeCompo
+  CALL obj%SetMultiple(VALUE=VALUE(:, jj), &
+                       indx=indx(:, jj), scale=scale, &
+                       addContribution=addContribution)
+END DO
 
-indx = GetNodeLoc( &
-       obj=obj%dof, &
-       nodenum=globalNode, &
-       ivar=1_I4B, &
-       spaceCompo=1_I4B, &
-       timeCompo=obj%idofs)
-
-CALL obj%SetMultiple(VALUE=val, &
-                     indx=indx, &
-                     scale=scale, &
-                     addContribution=addContribution)
+DEALLOCATE (indx)
 
 END PROCEDURE obj_Set8
 
@@ -644,11 +643,11 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set10
-CHARACTER(*), PARAMETER :: myName = "obj_Set10"
+CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 INTEGER(I4B) :: indx
-INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
+INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
@@ -673,7 +672,7 @@ END IF
 
 #include "./localNodeError.inc"
 
-indx = getNodeLoc(obj=obj%dof, idof=timeCompo, nodenum=globalNode)
+indx = GetNodeLoc(obj=obj%dof, idof=timeCompo, nodenum=globalNode)
 
 CALL obj%SetSingle(indx=indx, VALUE=VALUE, scale=scale, &
                    addContribution=addContribution)
@@ -685,16 +684,16 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set12
-CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
-INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
+INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'Either STScalarFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
+      '[INTERNAL ERROR] :: Either STScalarFieldLis_::obj is not initiated'// &
+                    " or, obj%lis_ptr is not available")
 END IF
 
 #endif
@@ -702,6 +701,70 @@ END IF
 CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_Set12
+
+!----------------------------------------------------------------------------
+!                                                                        Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set13
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: ierr, tsize, s(3), p(3), code
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+
+s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
+p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                           ivar=ivar_value, idof=idof_value))
+
+tsize = obj%dof.tNodes. [ivar, idof]
+
+SELECT TYPE (VALUE)
+
+TYPE IS (ScalarField_)
+
+  realvec => VALUE%GetPointer()
+
+  ! void lis_vector_set_values8_f(LIS_INT *flag, LIS_INT *start,
+  ! LIS_INT *stride,
+  ! LIS_INT *count, LIS_SCALAR *values,
+  ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+  ! LIS_INT *start_value, LIS_INT *stride_value,
+  ! LIS_INT *ierr)
+
+  CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
+                              areal, p(1), p(3), ierr)
+
+  realvec => NULL()
+
+TYPE IS (ScalarFieldLis_)
+
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+TYPE IS (STScalarField_)
+
+  realvec => VALUE%GetPointer()
+  CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
+                              areal, p(1), p(3), ierr)
+  realvec => NULL()
+
+TYPE IS (STScalarFieldLis_)
+
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
+  RETURN
+
+END SELECT
+END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                                        Set
@@ -736,7 +799,6 @@ END IF
 
 SELECT TYPE (VALUE)
 TYPE IS (STScalarField_)
-  realvec => NULL()
   realvec => VALUE%GetPointer()
 
 #ifdef DEBUG_VER
