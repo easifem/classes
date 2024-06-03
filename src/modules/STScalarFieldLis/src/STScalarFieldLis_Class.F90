@@ -110,12 +110,21 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
 
+  PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  !! get many values from indices
+  PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  !! get many values from trides
+  PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  !! get many values from trides
+
+  GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
+    GetMultiple3
+
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
   PROCEDURE, PASS(obj) :: Get2 => obj_Get2
   PROCEDURE, PASS(obj) :: Get3 => obj_Get3
   PROCEDURE, PASS(obj) :: Get4 => obj_Get4
   PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
   PROCEDURE, PASS(obj) :: Get7 => obj_Get7
   PROCEDURE, PASS(obj) :: Get8 => obj_Get8
   !! Get the entries of STScalar field
@@ -583,8 +592,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution, storageFMT)
+  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, &
+                             storageFMT, scale, addContribution)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -756,6 +765,85 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE obj_GetSingle
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(:)
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-06-02
+! summary: Get multiple entries using trides
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
+                                istart_value, iend_value, stride_value, tsize)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -780,6 +868,7 @@ INTERFACE
     CLASS(STScalarFieldLis_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! Value to be returned
+    !! The size should be obj%timeCompo
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total size of data written in value
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
@@ -803,7 +892,7 @@ END INTERFACE
 ! summary: This routine Get all the entries by using given STScalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT)
     CLASS(STScalarFieldLis_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! Number of rows in value equals to the timeCompo
@@ -812,6 +901,11 @@ INTERFACE
     !! number of rows written in value
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of cols written in value
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! if storageFMT is NODES_FMT then
+    !! nrow = obj%timeCompo, ncol = size(globalNode)
+    !! if stroageFMT is DOF_FMT then
+    !! nrow = size(globalNode), ncol = obj%timeCompo
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -902,33 +996,18 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, VALUE, globalNode, islocal)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    !! space-time scalar field
-    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    !! returned value in FEVariable format
-    !! Space-time nodal values of scalar field
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    !! global or local node numbers
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true then global node number is local node number
-  END SUBROUTINE obj_Get6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine return value in FEVariable
-
-INTERFACE
   MODULE SUBROUTINE obj_Get7(obj, VALUE, timeCompo)
     CLASS(STScalarFieldLis_), INTENT(IN) :: obj
     !! space-time scalar field
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     !! returned value in AbstractNodeField format
+    !! value can be an instance of
+    !! ScalarField_, ScalarFieldLis_
+    !!   In this case obj@timeCompo will be returned
+    !! value can be an instance of
+    !! STScalarField_, STScalarFieldLis_
+    !!   In this case obj@timeCompo will be returned
+    !!  in value@timeCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component, it should be less than obj%timeCompo
   END SUBROUTINE obj_Get7
@@ -963,22 +1042,6 @@ INTERFACE
     CLASS(STScalarFieldLis_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION obj_GetPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Get single entry
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: indx
-    REAL(DFP), INTENT(OUT) :: VALUE
-  END SUBROUTINE obj_GetSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------
