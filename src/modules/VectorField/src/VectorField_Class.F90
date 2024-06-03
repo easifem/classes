@@ -139,12 +139,14 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get nodal values of a vector in FEVariable
 
-  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get value of vector field in the ScalarField or another VectorField
   !! value = obj@spaceCompo (if value is ScalarField_)
   !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
 
-  PROCEDURE, PASS(obj) :: Get8 => obj_Get8
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
+  !! Copy  value=obj
+
   PROCEDURE, PASS(obj) :: Get9 => obj_Get9
 
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &

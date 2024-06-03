@@ -158,43 +158,8 @@ END PROCEDURE obj_Get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get7
-CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
-INTEGER(I4B) :: n
-
-#ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
-                  'VectorField_::obj is not initiated')
-
-CALL AssertError1(VALUE%isInitiated, myName, &
-                  'VectorField_::value is not initiated')
-
-CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
-            'given spaceCompo should be less than or equal to obj%spaceCompo')
-
-#endif
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-  CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, VALUE=VALUE%realVec, &
-                 idof=spaceCompo)
-
-  ! TYPE IS(ScalarFieldLis_)
-
-TYPE IS (VectorField_)
-  CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idofobj=spaceCompo, &
-                 VALUE=VALUE%realVec, dofvalue=VALUE%dof, &
-                 idofvalue=spaceCompo)
-
-  ! TYPE IS(STScalarFieldLis_)
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for type of value')
-  RETURN
-
-END SELECT
-
+CALL obj%Get(idof=spaceCompo, ivar=1_I4B, VALUE=VALUE, &
+             idof_value=spaceCompo, ivar_value=1_I4B)
 END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
@@ -202,7 +167,18 @@ END PROCEDURE obj_Get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get8
-CALL GetValue_(obj=obj%realvec, VALUE=VALUE%realvec)
+#ifdef DEBUG_VER
+
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+
+CALL AssertError1(obj%isInitiated, myName, &
+                  'VectorField_::obj is not initiated')
+
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  'VectorField_::value is not initiated')
+#endif
+
+CALL VALUE%Copy(obj)
 END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
