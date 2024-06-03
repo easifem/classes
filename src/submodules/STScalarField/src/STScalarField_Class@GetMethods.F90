@@ -93,7 +93,6 @@ END PROCEDURE obj_Get1
 
 MODULE PROCEDURE obj_Get2
 CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
-INTEGER(I4B) :: idofs(obj%timeCompo)
 
 #ifdef DEBUG_VER
 
@@ -105,9 +104,8 @@ END IF
 
 #endif
 
-idofs = Arange(1, obj%timeCompo)
-CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idof=idofs, VALUE=VALUE, &
-               nrow=nrow, ncol=ncol)
+CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idof=obj%idofs, &
+               VALUE=VALUE, nrow=nrow, ncol=ncol, storageFMT=storageFMT)
 
 END PROCEDURE obj_Get2
 
@@ -189,9 +187,13 @@ TYPE IS (ScalarField_)
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, VALUE=VALUE%realVec, &
                  idof=timeCompo)
 
+  ! TYPE IS(ScalarFieldLis_)
+
 TYPE IS (STScalarField_)
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idofobj=timeCompo, &
                  VALUE=VALUE%realVec, dofvalue=VALUE%dof, idofvalue=timeCompo)
+
+  ! TYPE IS(STScalarFieldLis_)
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
