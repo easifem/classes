@@ -683,8 +683,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution, storageFMT)
+  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, &
+                             storageFMT, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -957,7 +957,7 @@ END INTERFACE
 ! summary: This routine Get all the entries by using given STScalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT)
     CLASS(STScalarField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! Number of rows in value equals to the timeCompo
@@ -966,6 +966,11 @@ INTERFACE
     !! number of rows written in value
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of cols written in value
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! if storageFMT is NODES_FMT then
+    !! nrow = obj%timeCompo, ncol = size(globalNode)
+    !! if stroageFMT is DOF_FMT then
+    !! nrow = size(globalNode), ncol = obj%timeCompo
   END SUBROUTINE obj_Get2
 END INTERFACE
 
