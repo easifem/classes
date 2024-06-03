@@ -95,16 +95,16 @@ CONTAINS
   !! Set selected values to given vector
   PROCEDURE, PASS(obj) :: Set6 => obj_Set6
   !! Set values to a Vector by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a vector by using triplet
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-  !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-  !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
-  !! Set values to a vector by using triplet
+  !! Set nodal values of a space component
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
+  !! Set a single value
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
+  !! Set values by using a FEVariable
   PROCEDURE, PASS(obj) :: Set12 => obj_Set12
   !! Set values to a vector by using triplet
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
@@ -912,8 +912,13 @@ INTERFACE
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written in value
+    !! if globalNode is present then tsize = obj%spaceCompo
+    !! if spaceCompo is present then tsize = tNodes
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
+    !! This should be a local node
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space component
   END SUBROUTINE obj_Get1
 END INTERFACE
 
