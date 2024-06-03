@@ -16,8 +16,10 @@
 !
 
 SUBMODULE(VectorField_Class) DBCMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -31,22 +33,18 @@ INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 LOGICAL(LGT) :: istimes, problem
 INTEGER(I4B) :: aint, spaceCompo
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
 istimes = PRESENT(times)
 
 aint = 0
+
 #ifdef DEBUG_VER
 IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
@@ -54,15 +52,15 @@ END IF
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 spaceCompo = dbc%GetDOFNo()
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-  & spaceCompo=spaceCompo)
+CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+             spaceCompo=spaceCompo, islocal=.TRUE.)
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_applyDirichletBC1
@@ -80,7 +78,7 @@ LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -90,8 +88,8 @@ IF (istimes) THEN
   problem = aint .NE. 1
   IF (problem) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
@@ -102,11 +100,11 @@ tsize = SIZE(dbc)
 DO idof = 1, tsize
   spaceCompo = dbc(idof)%ptr%GetDOFNo()
 
-  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
-    & times=times)
+  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
+                         times=times)
 
   CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
-    & spaceCompo=spaceCompo)
+               spaceCompo=spaceCompo, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -114,7 +112,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_applyDirichletBC2
 

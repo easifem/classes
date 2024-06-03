@@ -30,7 +30,8 @@ USE BaseType, ONLY: TypeFEVariableVector, TypeFEVariableSpace
 USE FEVariable_Method, ONLY: NodalVariable
 
 USE DOF_Method, ONLY: GetIDOF, &
-                      OPERATOR(.tnodes.)
+                      OPERATOR(.tnodes.), &
+                      GetNodeLoc
 
 USE Display_Method, ONLY: ToString
 IMPLICIT NONE
@@ -127,11 +128,21 @@ END PROCEDURE obj_Get4
 
 MODULE PROCEDURE obj_Get5
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
+INTEGER(I4B) :: indx
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, &
+                  'VectorField_::obj is not initiated')
+
+CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
+            'given spaceCompo should be less than or equal to obj%spaceCompo')
+
+#endif
 
 #include "./localNodeError.inc"
 
-CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, ivar=1_I4B, idof=spaceCompo, &
-               VALUE=VALUE, nodenum=globalnode)
+indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=spaceCompo)
+CALL obj%GetSingle(VALUE=VALUE, indx=indx)
 END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
@@ -139,24 +150,7 @@ END PROCEDURE obj_Get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get6
-CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
-REAL(DFP), ALLOCATABLE :: v(:, :)
-INTEGER(I4B) :: nrow, ncol
-
-#include "./localNodeError.inc"
-
-nrow = obj%spaceCompo
-ncol = SIZE(globalNode)
-
-ALLOCATE (v(nrow, ncol))
-
-CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, VALUE=v, &
-               idof=obj%idofs, nodenum=globalNode, nrow=nrow, ncol=ncol, &
-               storageFMT=NODES_FMT)
-
-VALUE = NodalVariable(v, TypeFEVariableVector, TypeFEVariableSpace)
-
-DEALLOCATE (v)
+CALL obj%GetFEVariable(VALUE=VALUE, globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
@@ -269,7 +263,16 @@ END PROCEDURE obj_Get9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFEVariable
-CALL obj%Get(VALUE=VALUE, globalNode=globalNode, islocal=islocal)
+REAL(DFP) :: v(obj%spaceCompo, SIZE(globalNode))
+INTEGER(I4B) :: nrow, jj
+
+!$OMP PARALLEL DO PRIVATE(jj)
+DO jj = 1, SIZE(v, 2)
+  CALL obj%Get(VALUE=v(:, jj), globalNode=globalNode(jj), tsize=nrow)
+END DO
+!$OMP END PARALLEL DO
+
+VALUE = NodalVariable(v, TypeFEVariableVector, TypeFEVariableSpace)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------

@@ -119,23 +119,41 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
-  !! returns the single entry
+  !! returns vector values at single node or
+  !! get all nodal values of a space-components
+
   PROCEDURE, PASS(obj) :: Get2 => obj_Get2
   !! returns all entries in rank2 array of real
+
   PROCEDURE, PASS(obj) :: Get3 => obj_Get3
-  !! returns selected values in XiJ format
+  !! returns selected values in rank2 aray of real
+
   PROCEDURE, PASS(obj) :: Get4 => obj_Get4
-  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  !! returns selected values of a space components
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
+  !! Get a single value
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
+  !! Get nodal values of a vector in FEVariable
+
   PROCEDURE, PASS(obj) :: Get7 => obj_Get7
+  !! Get value of vector field in the ScalarField or another VectorField
+  !! value = obj@spaceCompo (if value is ScalarField_)
+  !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
+
   PROCEDURE, PASS(obj) :: Get8 => obj_Get8
   PROCEDURE, PASS(obj) :: Get9 => obj_Get9
+
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     & Get5, Get6, Get7, Get8, Get9
   !! Get the entries of Vector field
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   ! SET:
@@ -1093,8 +1111,11 @@ INTERFACE
     CLASS(VectorField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in obj
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom in obj
     INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable in val
     INTEGER(I4B), INTENT(IN) :: idof_value
   END SUBROUTINE obj_Get9
 END INTERFACE
