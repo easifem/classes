@@ -67,23 +67,16 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
-  PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
-  PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
-    !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all nodal values to a scalar constant values
+
+  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
     !! Set all values to a scalar values
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
-    !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
-    !! Set selected values to given scalar
-  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
-    !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
+
     !! This method is used for assignment operator
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
-    !! obj = obj + scalar*obj2
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
     !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
 
@@ -284,7 +277,7 @@ END INTERFACE
 ! summary: Set multiple entries in the Scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple(obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! indices to be set
@@ -294,148 +287,7 @@ INTERFACE
     !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
-  END SUBROUTINE obj_SetMultiple
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the single entry of the scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    !! global node
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! global or local nodes
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets all the entries of a scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all the entries by using a fortran vector
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, VALUE, scale, addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the multiple entries to a constant value
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    !! global or local nodes
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true then the global nodes are local nodes
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! scalar value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the multiple entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    !! global or local nodes
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! If true then the global nodes are local nodes
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! values to be set in the field
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set5
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: used for assignment operator
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-05-31
-! summary: obj=obj+scalar*obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, obj2, scale, addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: obj2
-    REAL(DFP), INTENT(IN) :: scale
-    LOGICAL(LGT), INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set8
+  END SUBROUTINE obj_SetMultiple1
 END INTERFACE
 
 !----------------------------------------------------------------------------
