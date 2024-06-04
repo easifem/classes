@@ -69,24 +69,36 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
-    !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+    !! Set single entry, we call SetSingle method
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
     !! Set all values to a scalar values
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
+    !! We call SetAll method here
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
     !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
     !! Set selected values to given scalar
-  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
     !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
     !! This method is used for assignment operator
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
+    !! WE call copy method
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
     !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
     !! Set selected values using FEVariable
+
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
     !! Set selected values using FEVariable
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set scalar field using a function
 
