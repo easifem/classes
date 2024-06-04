@@ -16,9 +16,9 @@
 !
 
 SUBMODULE(AbstractMesh_Class) FaceDataMethods
-USE ReferenceElement_Method, ONLY: &
-  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES,  &
-  & REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS,  &
+
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES,  &
+  & PARAM_REFELEM_MAX_POINTS,  &
   & RefElemGetGeoParam,  &
   & IsQuadrangle
 
@@ -41,9 +41,9 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateFaceConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFaceConnectivity()"
 INTEGER(I4B) :: tElements, iel, elemType, tFaces,  &
-  & localFaces(4_I4B, REFELEM_MAX_FACES), face(4), sorted_face(4),  &
+  & localFaces(4_I4B, PARAM_REFELEM_MAX_FACES), face(4), sorted_face(4),  &
   & tNodes, tsize1, tsize2, iface,  &
-  & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
+  & faceElemType(PARAM_REFELEM_MAX_FACES), tFaceNodes(PARAM_REFELEM_MAX_FACES),  &
   & aint, faceOrient(3_I4B)
 LOGICAL(LGT) :: problem, abool
 TYPE(FaceDataBinaryTree_) :: faceTree

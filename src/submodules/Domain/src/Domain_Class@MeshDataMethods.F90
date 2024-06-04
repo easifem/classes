@@ -313,7 +313,8 @@ DO ii = 1, tsize
 
   DO iel = 1, tDomFacet
 
-    faceNptrs = masterMesh%GetFacetConnectivity( &
+    faceNptrs = MeshGetFacetConnectivity( &
+      & obj=masterMesh, &
       & facetElement=iel, &
       & elementType=DOMAIN_BOUNDARY_ELEMENT, &
       & isMaster=.TRUE.)
@@ -407,7 +408,8 @@ DO ii = 1, tsize
       IF (masterMesh%boundaryFacetData(iel)%elementType &
         & .EQ. BOUNDARY_ELEMENT) THEN
 
-        nptrs = masterMesh%GetFacetConnectivity( &
+        nptrs = MeshGetFacetConnectivity( &
+          & obj=masterMesh, &
           & facetElement=iel, &
           & elementType=BOUNDARY_ELEMENT, &
           & isMaster=.TRUE.)
@@ -500,7 +502,8 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
     IF (masterMesh%boundaryFacetData(iface_master)%elementType .EQ. &
       & DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
-    faceNptrs_master = masterMesh%GetFacetConnectivity( &
+    faceNptrs_master = MeshGetFacetConnectivity( &
+      & obj=masterMesh, &
       & facetElement=iface_master, &
       & elementType=BOUNDARY_ELEMENT, &
       & isMaster=.TRUE.)
@@ -520,7 +523,8 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
     IF (masterMesh%boundaryFacetData(iface_master)%elementType .EQ. &
       & DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
-    faceNptrs_master = masterMesh%GetFacetConnectivity( &
+    faceNptrs_master = MeshGetFacetConnectivity( &
+      & obj=masterMesh, &
       & facetElement=iface_master, &
       & elementType=BOUNDARY_ELEMENT, &
       & isMaster=.TRUE.)
@@ -532,7 +536,8 @@ DO imeshfacet = 1, SIZE(obj%meshFacetData)
         IF (slaveMesh%boundaryFacetData(iface_slave)%elementType .EQ. &
           & DOMAIN_BOUNDARY_ELEMENT) CYCLE
 
-        faceNptrs_slave = slaveMesh%GetFacetConnectivity( &
+        faceNptrs_slave = MeshGetFacetConnectivity( &
+          & obj=slaveMesh, &
           & facetElement=iface_slave, &
           & elementType=BOUNDARY_ELEMENT, &
           & isMaster=.TRUE.)

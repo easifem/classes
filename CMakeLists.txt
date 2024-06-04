@@ -18,6 +18,7 @@
 cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 set(PROJECT_NAME "easifemClasses")
 project(${PROJECT_NAME})
+
 enable_language(Fortran C CXX)
 
 set(VERSION_MAJOR "24")

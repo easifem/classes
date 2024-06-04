@@ -48,6 +48,7 @@ PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
 PUBLIC :: meshPointerDeallocate
 PUBLIC :: MeshDisplay
+PUBLIC :: MeshGetFacetConnectivity
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 
@@ -71,6 +72,18 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
+
+  INTEGER(I4B), ALLOCATABLE :: material(:)
+    !! materials mapped to the mesh
+    !! material(1) is the material id of medium 1
+    !! material(2) is the material id of medium 2
+    !! ...
+    !! material(n) is the material id of medium n
+    !!
+    !! For example, soil is a porous medium n = 1,
+    !! fluid is a medium n =2
+    !! then material(1) denotes the type of soil => clay, sand, silt
+    !! and material(2) denotes the type of fluid, water, oil, air
 
 CONTAINS
   PRIVATE
@@ -118,6 +131,7 @@ CONTAINS
 
   !  GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
@@ -126,13 +140,21 @@ CONTAINS
     & obj_GetOrder
   !! Returns the order ofthe element of mesh
 
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity1
-  !! Return the node nubmers in the facet element
-  PROCEDURE, PASS(obj) :: obj_GetFacetConnectivity2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity =>  &
+    & obj_GetFacetConnectivity
   !! Return the node nubmers in the facet element of a cellElement
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial2 => obj_GetMaterial2
+  !! returns the material id of a given medium
+  !! this is a backward compatibility only
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial2 => &
+    obj_GetTotalMaterial2
+  !! returns the total number of material this is for
+  !! backward compatibility only
 
   ! SET:
   ! @SetMethods
@@ -141,11 +163,16 @@ CONTAINS
   PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
   PROCEDURE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-    & obj_SetFacetElementType
-  !! Set the facet element type of a given cell number
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
   !! Set mesh quality
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial2 => &
+    obj_SetTotalMaterial2
+  !! Set total materials in materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial2 => &
+    obj_SetMaterial2
+  !! Set total materials in materials
 
 END TYPE Mesh_
 
@@ -401,7 +428,7 @@ END INTERFACE
 ! - facetElement is local facet element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
+  MODULE FUNCTION MeshGetFacetConnectivity(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -414,7 +441,7 @@ INTERFACE
       !! Currently, we do not support slave-cell for meshFacet because
       !! the slave of meshFacet lives in different instance of obj_
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity1
+  END FUNCTION MeshGetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -432,13 +459,14 @@ END INTERFACE
 ! - iface is the local face number in globalElement
 
 INTERFACE
-  MODULE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
-    & iface) RESULT(ans)
+  MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
+    & iface, islocal) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetFacetConnectivity2
+  END FUNCTION obj_GetFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -470,6 +498,37 @@ INTERFACE
       & minY, minZ, maxX, maxY, maxZ, &
       & x, y, z
   END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaterial2(obj, medium) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMaterial2(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -697,24 +756,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            SetFacetElementType@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2022-04-14
-! summary: Set the facet element type of a given cell number
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
-    & iface, facetElementType)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    INTEGER(I4B), INTENT(IN) :: iface
-    INTEGER(I4B), INTENT(IN) :: facetElementType
-  END SUBROUTINE obj_SetFacetElementType
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   SetQuality@setMethods
 !----------------------------------------------------------------------------
 
@@ -732,6 +773,37 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
   END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE obj_SetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterial2(obj, medium, material)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE obj_SetMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------

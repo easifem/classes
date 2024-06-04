@@ -25,8 +25,26 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateBoundaryData
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: This routine should be implemented by subclass.')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+! check
+IF (obj%isBoundaryDataInitiated) THEN
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Boundary data information is already initiated.")
+  RETURN
+END IF
+
+CALL obj%InitiateElementToElements()
+
+obj%isBoundaryDataInitiated = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE obj_InitiateBoundaryData
 
 !----------------------------------------------------------------------------

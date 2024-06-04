@@ -18,13 +18,12 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => &
-                                   PARAM_REFELEM_MAX_FACES, &
-                             REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
-                                   RefElemGetGeoParam, ElementName
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES,  &
+  & PARAM_REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
 USE SortUtility
+USE ReallocateUtility
 IMPLICIT NONE
 PRIVATE
 
@@ -41,13 +40,14 @@ PUBLIC :: ElemData_eq
 PUBLIC :: ElemData_SetID
 PUBLIC :: ElemData_Copy
 PUBLIC :: ElemData_GetGlobalFaceCon
+PUBLIC :: ElemData_SetTotalMaterial
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 
-INTEGER(I4B), PARAMETER :: MAX_NUM_OVERLAPPED_CONTINNUM = 4
+! INTEGER(I4B), PARAMETER :: MAX_NUM_OVERLAPPED_CONTINNUM = 4
 
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
@@ -85,7 +85,7 @@ TYPE :: ElemData_
   INTEGER(I4B) :: meshID = 0
     !! ID of mesh to which the element belong
     !! This is a gmsh concept
-  INTEGER(INT8) :: material(MAX_NUM_OVERLAPPED_CONTINNUM) = 0
+  INTEGER(INT8), ALLOCATABLE :: material(:)
     !! materials mapped to the mesh
     !! material(1) is the material-id (type of material) of medium 1
     !! material(2) is the material-id (type of material) of medium 2
@@ -203,6 +203,11 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     & unitno=unitno)
   CALL Display(ElementName(obj%name), "elementName: ", unitno=unitno)
 
+  ! display material if it is allocated
+  IF (ALLOCATED(obj%material)) THEN
+    CALL Display(obj%material, msg="material: ", unitno=unitno)
+  END IF
+
   ! globalNodes
   IF (ALLOCATED(obj%globalNodes)) THEN
     CALL Display(obj%globalNodes, msg="globalNodes: ", unitno=unitno)
@@ -276,7 +281,7 @@ SUBROUTINE ElemData_Deallocate(obj)
   obj%elementType = INTERNAL_ELEMENT
   obj%name = 0
   obj%meshID = 0
-  obj%material = 0
+  IF (ALLOCATED(obj%material)) DEALLOCATE (obj%material)
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
   IF (ALLOCATED(obj%globalEdges)) DEALLOCATE (obj%globalEdges)
   IF (ALLOCATED(obj%edgeOrient)) DEALLOCATE (obj%edgeOrient)
@@ -287,12 +292,42 @@ SUBROUTINE ElemData_Deallocate(obj)
 END SUBROUTINE ElemData_Deallocate
 
 !----------------------------------------------------------------------------
+!                                                         SetTotalMaterial
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-12
+! summary:  Set total number of materials
+!
+! this subroutine allocates materials in obj
+
+PURE SUBROUTINE ElemData_SetTotalMaterial(obj, n)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: n
+
+  ! internal variables
+  INTEGER(INT8), ALLOCATABLE :: temp_material(:)
+  INTEGER(I4B) :: n0
+
+  IF (ALLOCATED(obj%material)) THEN
+    n0 = SIZE(obj%material)
+    CALL Reallocate(temp_material, n0 + n)
+    temp_material(1:n0) = obj%material(1:n0)
+    CALL MOVE_ALLOC(from=temp_material, to=obj%material)
+
+  ELSE
+    CALL Reallocate(obj%material, n)
+  END IF
+
+END SUBROUTINE ElemData_SetTotalMaterial
+
+!----------------------------------------------------------------------------
 !                                                           ElemDataInitiate
 !----------------------------------------------------------------------------
 
 PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
-  & globalFaces, name, isActive, meshID)
+  & globalFaces, name, isActive, meshID, medium, material, materials)
   ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
   ! obj%elementData(ii)%localElemNum = ii
   ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
@@ -319,6 +354,12 @@ PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isActive
   !! is element active
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: medium
+  !! medium id like soil,water, etc
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: material
+  !! material like soil1, soil2, wate1, water2, etc
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: materials(:)
+  !! materials
 
   IF (PRESENT(globalElemNum)) obj%globalElemNum = globalElemNum
   IF (PRESENT(localElemNum)) obj%localElemNum = localElemNum
@@ -331,6 +372,17 @@ PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
   IF (PRESENT(name)) obj%name = name
   IF (PRESENT(isActive)) obj%isActive = isActive
   IF (PRESENT(meshID)) obj%meshID = meshID
+
+  ! set obj%material(medium) to material if present
+  IF (PRESENT(medium) .AND. PRESENT(material)) THEN
+    obj%material(medium) = INT(material, kind=INT8)
+  END IF
+
+  ! set materials to obj%material if materials is present
+  IF (PRESENT(materials)) THEN
+    obj%material = INT(materials, kind=INT8)
+  END IF
+
 END SUBROUTINE ElemDataSet
 
 !----------------------------------------------------------------------------
@@ -387,8 +439,8 @@ SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
   INTEGER(I4B), INTENT(INOUT) :: globalFaceCon(:, :)
   INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
 
-  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, REFELEM_MAX_FACES),  &
-    & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
+  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, PARAM_REFELEM_MAX_FACES),  &
+    & faceElemType(PARAM_REFELEM_MAX_FACES), tFaceNodes(PARAM_REFELEM_MAX_FACES),  &
     & iface, face_temp(4), aint
 
   CALL RefElemGetGeoParam(elemType=obj%name,  &

@@ -40,8 +40,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 IF (obj%isNodeToElementsInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "NodeToElements is already initiated.")
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "[INFO] :: NodeToElements is already initiated.")
   RETURN
 END IF
 

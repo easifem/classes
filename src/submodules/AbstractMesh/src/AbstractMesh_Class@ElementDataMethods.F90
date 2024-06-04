@@ -18,8 +18,7 @@
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
 USE ReallocateUtility
 USE Display_Method
-USE ReferenceElement_Method, ONLY: &
-  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
   & InitiateElementToElements2D, &
   & InitiateElementToElements1D
@@ -50,6 +49,8 @@ END IF
 #endif
 
 SELECT CASE (obj%xidim)
+CASE (0_I4B)
+
 CASE (1_I4B)
 
   CALL InitiateElementToElements1D( &
@@ -78,10 +79,13 @@ CASE (3_I4B)
   CALL InitiateElementToElements3D(elementData=obj%elementData,  &
     & tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
-CASE default
+CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found.')
+    & '[INTERNAL ERROR] :: No case found for xidim '  &
+    & //tostring(obj%xidim))
 END SELECT
+
+CALL MarkInternalNodes(obj=obj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -89,6 +93,51 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_InitiateElementToElements
+
+!----------------------------------------------------------------------------
+!                                                         MarkInternalNodes
+!----------------------------------------------------------------------------
+
+SUBROUTINE MarkInternalNodes(obj)
+  CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
+  IF (obj%xidim .EQ. 0) RETURN
+
+  tElements = obj%GetTotalElements()
+
+  DO ii = 1, tElements
+
+    isok = .NOT. (obj%isBoundaryElement(ii, isLocal=.TRUE.))
+    IF (isok) CYCLE
+
+    tsize = SIZE(obj%elementData(ii)%boundaryData)
+    DO jj = 1, tsize
+      nptrs = obj%GetFacetConnectivity(globalElement=ii,  &
+        & iface=obj%elementData(ii)%boundaryData(jj),  &
+        & isLocal=.TRUE.)
+      DO kk = 1, SIZE(nptrs)
+        obj%nodeData(nptrs(kk))%nodeType = TypeNode%domainBoundary
+      END DO
+    END DO
+
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
+END SUBROUTINE MarkInternalNodes
 
 !----------------------------------------------------------------------------
 !
