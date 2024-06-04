@@ -74,9 +74,15 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
-  PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
-  PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
+  !! Set a single value
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all the values
+
+  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  !! Set multiple values
 
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
     !! Set single entry
@@ -116,9 +122,6 @@ CONTAINS
   !! get many values from trides
   PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values from trides
-
-  GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
-    GetMultiple3
 
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
   PROCEDURE, PASS(obj) :: Get2 => obj_Get2
@@ -317,14 +320,18 @@ END INTERFACE
 !                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-04
+! summary: Set multiple entries by using indices
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple(obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_SetMultiple
+  END SUBROUTINE obj_SetMultiple1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -469,13 +476,15 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, VALUE, storageFMT, scale, addContribution)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     !! obj = value
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values to be set obj = value
     !! number of cols in value should be equal to obj%timeCompo
     !! number of rows in value should be equal to fedof%tdof
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! NODES_FMT or DOF_FMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -786,7 +795,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-28
-! summary: Get single entry
+! summary: Get multiple entries using indices
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
@@ -806,7 +815,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-28
-! summary: Get single entry
+! summary: Get multiple enties using range
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
