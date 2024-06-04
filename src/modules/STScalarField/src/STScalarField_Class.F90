@@ -511,13 +511,15 @@ END INTERFACE
 ! STScalar( :, : ) = value( :, : )
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, VALUE, storageFMT, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! obj = value
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values to be set obj = value
     !! number of cols in value should be equal to obj%timeCompo
     !! number of rows in value should be equal to fedof%tdof
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! NODES_FMT or DOF_FMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
