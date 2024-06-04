@@ -231,9 +231,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/STScalarFieldLis/CMakeLists.txt)
 # VectorField
 include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 
-# # VectorFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/VectorFieldLis/CMakeLists.txt)
-#
+# VectorFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/VectorFieldLis/CMakeLists.txt)
+
 # # STVectorField
 # include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
 #
