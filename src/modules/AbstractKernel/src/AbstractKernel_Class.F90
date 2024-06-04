@@ -151,6 +151,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! algorithm
   INTEGER(I4B) :: vtkOutputFreq = 0
   !! frequency of output with WriteData_vtk
+  INTEGER(I4B) :: hdfOutputFreq = 0
+  !! frequency of output with WriteData_vtk
   TYPE(String) :: name
   !! This is the name of the kernel. It can be anything you want.
   TYPE(String) :: engine

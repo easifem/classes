@@ -16,8 +16,8 @@
 !
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_EDGES,  &
-  & REFELEM_MAX_POINTS, RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_EDGES,  &
+  & PARAM_REFELEM_MAX_POINTS, RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
 USE ReallocateUtility, ONLY: Reallocate
 USE EdgeData_Class
@@ -34,7 +34,7 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
 INTEGER(I4B) :: tElements, iel, elemType, tEdges,  &
-  & localEdges(MaxOrder_Line + 1, REFELEM_MAX_EDGES), &
+  & localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
   & edge(2), sorted_edge(2), &
   & tNodes, tsize1, tsize2, iedge
 LOGICAL(LGT) :: problem
