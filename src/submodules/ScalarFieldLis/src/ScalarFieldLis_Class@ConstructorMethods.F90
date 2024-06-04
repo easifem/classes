@@ -20,6 +20,9 @@ USE ScalarField_Class, ONLY: ScalarFieldInitiate1
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -52,7 +55,6 @@ END PROCEDURE obj_Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
-#include "lisf.h"
 INTEGER(I4B) :: ierr
 
 CALL ScalarFieldInitiate1(obj=obj, param=param, fedof=fedof)
@@ -74,7 +76,6 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-#include "lisf.h"
 INTEGER(I4B) :: ierr
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
