@@ -50,42 +50,17 @@ CONTAINS
 
 MODULE PROCEDURE obj_Set1
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: Scalar field object is not initiated')
-  RETURN
-END IF
-
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, nodenum=[1_I4B], VALUE=[VALUE], scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj%realVec, nodenum=[1_I4B], VALUE=[VALUE])
-  RETURN
-
-END IF
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, nodenum=[globalNode], VALUE=[VALUE], scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj%realVec, nodenum=[globalNode], VALUE=[VALUE])
+indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=1_I4B)
+CALL obj%SetSingle(indx=indx, VALUE=VALUE, scale=scale, &
+                   addContribution=addContribution)
 
 END PROCEDURE obj_Set1
 
@@ -94,27 +69,7 @@ END PROCEDURE obj_Set1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: Scalar field object is not initiated')
-  RETURN
-END IF
-#endif
-
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
-ELSE
-  CALL Set(obj%realVec, VALUE=VALUE)
-END IF
-
+CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
@@ -122,46 +77,29 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'Scalar field object is not initiated')
-  RETURN
-END IF
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, "Not callable for Constant field")
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: This routine should not be '// &
-                    'called for constant field type.')
-  RETURN
-END IF
-
-IF (obj%tSize .NE. SIZE(VALUE)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: Size of value ('//ToString(SIZE(VALUE))// &
-                    ') is not equal to size of scalarfield ('// &
-                    ToString(obj%tSize)//')')
-  RETURN
-END IF
+isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
+CALL AssertError1(isok, myName, "Size of value is not enought")
 
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
+s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
-
-ELSE
-  CALL Set(obj%realVec, VALUE=VALUE)
-
-END IF
+CALL obj%SetMultiple(value=value, scale=scale, addContribution=addContribution, &
+                     istart=s(1), iend=s(2), stride=s(3))
 
 END PROCEDURE obj_Set3
 
@@ -170,37 +108,25 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+REAL(DFP) :: value0(SIZE(globalNode))
 
 #ifdef DEBUG_VER
-
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'Scalar field object is not initiated')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 'This routine should not be called for constant field type.')
-  RETURN
-END IF
-
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, "Not callable for Constant field")
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
+value0 = VALUE
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, nodenum=globalNode, VALUE=VALUE, scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj%realVec, nodenum=globalNode, VALUE=VALUE)
+CALL obj%SetMultiple(indx=globalNode, VALUE=value0, scale=scale, &
+                     addContribution=addContribution)
 
 END PROCEDURE obj_Set4
 
@@ -209,37 +135,28 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: Scalar field object is not initiated')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: Not valid for constant field type.')
-  RETURN
-END IF
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, "Not callable for Constant field")
+
+isok = SIZE(VALUE) .GE. SIZE(globalNode)
+CALL AssertError1(isok, myName, "Size of value is not enought")
 
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, nodenum=globalNode, VALUE=VALUE, scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj%realVec, nodenum=globalNode, VALUE=VALUE)
+CALL obj%SetMultiple(indx=globalNode, VALUE=VALUE, scale=scale, &
+                     addContribution=addContribution)
 
 END PROCEDURE obj_Set5
 
@@ -248,7 +165,8 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-CALL Set(obj%realVec, VALUE=VALUE%realVec)
+CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=VALUE, ivar_value=1_I4B, &
+             idof_value=1_I4B)
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -285,7 +203,8 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-CALL Add(obj=obj%realVec, VALUE=obj2%realVec, scale=scale)
+CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=obj2, ivar_value=1_I4B, &
+             idof_value=1_I4B, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
@@ -293,61 +212,55 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
-INTEGER(I4B) :: idof1, idof2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: idof1, idof2, s(3), p(3)
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
-INTEGER(I4B) :: tsize, tsize_value, ivar_idof(2)
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: ScalarNodeField_::obj is not initiated')
-  RETURN
-END IF
-
-IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: AbstractNodeField_ ::value is not initiated')
-  RETURN
-END IF
-
-ivar_idof(1:2) = [ivar, idof]
-
-tsize = obj%dof.tNodes.ivar_idof
-
-ivar_idof(1:2) = [ivar_value, idof_value]
-tsize_value = VALUE%dof.tNodes.ivar_idof
-
-IF (tsize .NE. tsize_value) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: size mismatch between obj and value.')
-  RETURN
-END IF
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(value%isInitiated, myName, "AbstractNodeField_::value not initiated")
+CALL AssertError2(obj%dof.tNodes. [ivar, idof], &
+                  VALUE%dof.tNodes. [ivar_value, idof_value], myName, &
+ "a=obj%dof.tNodes.[ivar, idof], b=value%dof.tNodes.[ivar_value, idof_value]")
 
 #endif
 
 abool = Input(option=addContribution, default=.FALSE.)
 
-idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
-idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
+SELECT TYPE (VALUE)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2, scale=areal)
+TYPE IS (ScalarField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof2)
+
+! TYPE is (STScalarField_)
+!
+! TYPE is (VectorField_)
+!
+! TYPE is (STVectorField_)
+!
+! TYPE is (ScalarFieldLis_)
+!
+! TYPE is (VectorFieldLis_)
+!
+! TYPE is (STScalarFieldLis_)
+!
+! TYPE is (STVectorFieldLis_)
+
+CLASS DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found')
   RETURN
-END IF
 
-CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-         obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
-
-#ifdef DEBUG_VER
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+END SELECT
 
 END PROCEDURE obj_Set9
 
@@ -441,5 +354,7 @@ END PROCEDURE obj_SetByFunction
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
