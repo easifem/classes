@@ -630,7 +630,7 @@ SUBROUTINE fpl_Get_Bool(obj, prefix, key, VALUE)
   TYPE(ParameterList_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: prefix
   CHARACTER(*), INTENT(IN) :: key
-  LOGICAL(LGT), INTENT(OUT) :: VALUE
+  LOGICAL(LGT), INTENT(INOUT) :: VALUE
   ! Internal variable
   INTEGER(I4B) :: ierr
   TYPE(String) :: varname

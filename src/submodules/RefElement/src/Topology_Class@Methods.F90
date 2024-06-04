@@ -231,6 +231,14 @@ CASE (Quadrangle9)
   ans(4)%nptrs = nptrs([4, 1, 8])
   ans(1:)%xidimension = 1
   ans(1:)%name = line3
+CASE (Quadrangle16)
+  ! ALLOCATE (ans(4))
+  ans(1)%nptrs = nptrs([1, 2, 5, 6])
+  ans(2)%nptrs = nptrs([2, 3, 7, 8])
+  ans(3)%nptrs = nptrs([3, 4, 9, 10])
+  ans(4)%nptrs = nptrs([4, 1, 11, 12])
+  ans(1:)%xidimension = 1
+  ans(1:)%name = line4
 CASE (Quadrangle8)
   ! ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2, 5])

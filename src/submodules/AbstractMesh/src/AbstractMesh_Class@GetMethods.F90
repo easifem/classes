@@ -21,7 +21,7 @@ USE AppendUtility
 USE BoundingBox_Method
 USE InputUtility
 USE Display_Method
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
   & GetEdgeConnectivity,  &
   & GetFaceConnectivity,  &
   & ElementOrder, &
@@ -1315,8 +1315,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
 #endif
 
 INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
-  & con(MaxNodesInElement, REFELEM_MAX_FACES), &
-  & ii, tFaceNodes(REFELEM_MAX_FACES)
+  & con(MaxNodesInElement, PARAM_REFELEM_MAX_FACES), &
+  & ii, tFaceNodes(PARAM_REFELEM_MAX_FACES)
 
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 

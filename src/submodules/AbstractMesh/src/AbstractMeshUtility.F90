@@ -58,7 +58,7 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements3D()"
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
-    & temp1(3 * REFELEM_MAX_FACES), cint, bndyflag(REFELEM_MAX_FACES)
+ & temp1(3 * PARAM_REFELEM_MAX_FACES), cint, bndyflag(PARAM_REFELEM_MAX_FACES)
   INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
   TYPE(CPUTime_) :: TypeCPUTime

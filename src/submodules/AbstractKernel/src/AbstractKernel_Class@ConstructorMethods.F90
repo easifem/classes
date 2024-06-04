@@ -777,6 +777,7 @@ CALL AbstractMeshFieldDeallocate(obj%dampCoeff_beta)
 CALL AbstractMeshFieldDeallocate(obj%Cijkl)
 CALL AbstractMeshFieldDeallocate(obj%stress)
 CALL AbstractMeshFieldDeallocate(obj%strain)
+CALL AbstractMeshFieldDeallocate(obj%scalarCoefficient)
 
 NULLIFY (obj%bodySourceFunc)
 

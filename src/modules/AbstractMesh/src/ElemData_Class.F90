@@ -18,8 +18,8 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
-  & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES,  &
+  & PARAM_REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
 USE SortUtility
@@ -439,8 +439,8 @@ SUBROUTINE ElemData_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
   INTEGER(I4B), INTENT(INOUT) :: globalFaceCon(:, :)
   INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
 
-  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, REFELEM_MAX_FACES),  &
-    & faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES),  &
+  INTEGER(I4B) :: tFaces, tNodes, localFaces0(4_I4B, PARAM_REFELEM_MAX_FACES),  &
+    & faceElemType(PARAM_REFELEM_MAX_FACES), tFaceNodes(PARAM_REFELEM_MAX_FACES),  &
     & iface, face_temp(4), aint
 
   CALL RefElemGetGeoParam(elemType=obj%name,  &
