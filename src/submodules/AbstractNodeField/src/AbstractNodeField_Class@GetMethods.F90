@@ -16,7 +16,8 @@
 
 SUBMODULE(AbstractNodeField_Class) GetMethods
 USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer, &
-                             RealVector_Get => Get
+                             RealVector_Get => Get, &
+                             GetValue_
 
 USE BaseType, ONLY: IntVector_
 
@@ -37,6 +38,10 @@ USE ArangeUtility, ONLY: Arange
 USE AppendUtility, ONLY: Append
 
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+#ifdef USE_LIS
+#include "lisf.h"
+#endif
 
 IMPLICIT NONE
 CONTAINS
@@ -243,10 +248,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_size
 
 !----------------------------------------------------------------------------
-!                                                                     Norm2
-!----------------------------------------------------------------------------
-
-!----------------------------------------------------------------------------
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
@@ -258,6 +259,100 @@ END IF
 
 VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=1.0_DFP)
 END PROCEDURE obj_GetSingle
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple1
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+! NATIVE_SERIAL
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, nodenum=indx, VALUE=VALUE, tsize=tsize)
+  RETURN
+END IF
+! end of NATIVE_SERIAL
+
+! USE_LIS
+#ifdef USE_LIS
+tsize = SIZE(indx)
+
+CALL lis_vector_get_values_from_index(obj%lis_ptr, tsize, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#endif
+!end USE_LIS
+
+END PROCEDURE obj_GetMultiple1
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple2
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize)
+  RETURN
+END IF
+
+! USE_LIS
+
+#ifdef USE_LIS
+tsize = (iend - istart) / stride + 1
+CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#endif
+! end of USE_LIS
+
+END PROCEDURE obj_GetMultiple2
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple3
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize, istart_value=istart_value, &
+                 iend_value=iend_value, stride_value=stride_value)
+  RETURN
+END IF
+
+! USE_LIS
+#ifdef USE_LIS
+
+tsize = (iend - istart) / stride + 1
+
+CALL lis_vector_get_values_from_range2(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, istart_value, stride_value, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#endif
+! end of USE_LIS
+
+END PROCEDURE obj_GetMultiple3
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeLoc
