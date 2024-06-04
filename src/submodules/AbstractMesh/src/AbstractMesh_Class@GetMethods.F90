@@ -21,7 +21,8 @@ USE AppendUtility
 USE BoundingBox_Method
 USE InputUtility
 USE Display_Method
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES, &
+USE ReferenceElement_Method, ONLY: &
+  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
   & GetEdgeConnectivity,  &
   & GetFaceConnectivity,  &
   & ElementOrder, &

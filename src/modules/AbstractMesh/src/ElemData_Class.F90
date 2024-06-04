@@ -18,8 +18,10 @@
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE Display_Method, ONLY: Display
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES,  &
-  & REFELEM_MAX_POINTS, RefElemGetGeoParam, ElementName
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => &
+                                   PARAM_REFELEM_MAX_FACES, &
+                             REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
+                                   RefElemGetGeoParam, ElementName
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
   & FaceShapeMetaData_Quadrangle
 USE SortUtility
