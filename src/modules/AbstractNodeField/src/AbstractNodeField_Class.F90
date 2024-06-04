@@ -127,29 +127,50 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! GetPointer to the fortran vector stored inside the realvec
   !! This function should be called for Native engine only
+
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the length of data stored inside the fortran vector
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
+
+  PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  !! get many values from indices
+  PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  !! get many values from trides
+  PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  !! get many values from trides
+
+  GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
+    GetMultiple3
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Get physical names
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars =>  &
-    & obj_GetTotalPhysicalVars
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
+    obj_GetTotalPhysicalVars
   !! Get total physical variables
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Get GetSpaceCompo
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Get the time components
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
   !! Get location of global node number
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
   !! Get location of global node number from AbstractBC
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
   !! Get location of global node number from DirichletBCPointer
-  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2,  &
-    & GetNodeLoc3
+
+  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
+    GetNodeLoc3
   !! Generic method for getting location of nodes
 
   ! SET:
@@ -157,8 +178,25 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all the values to a constant scalar value
+
+  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  !! Set multiple entries using indices
+
+  PROCEDURE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
+  !! Set multiple entries using range
+
+  PROCEDURE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
+  !! Set multiple entries using range
+
+  GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
+    SetMultiple3
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set by user function
+
   GENERIC, PUBLIC :: Set => SetByFunction
 
   ! SET:
@@ -442,8 +480,165 @@ INTERFACE AbstractNodeFieldSetSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
 !----------------------------------------------------------------------------
+!                                                       SetAll@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-03
+! summary: Set all the values
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be set or add
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetAll
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set multiple entries using indices
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(:)
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! values which will be use din obj=value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetMultiple1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple2(obj, istart, iend, stride, VALUE, &
+                                     scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! obj = value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetMultiple2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-06-02
+! summary: Get multiple entries using trides
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple3(obj, istart, iend, stride, VALUE, &
+               istart_value, iend_value, stride_value, scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of values
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get multiple entries using indices
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(:)
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get multiple enties using range
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-06-02
+! summary: Get multiple entries using trides
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
+                                istart_value, iend_value, stride_value, tsize)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   SetByFunction@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-04
+! summary: Set values of field by user function
 
 INTERFACE
   MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
