@@ -115,7 +115,7 @@ END PROCEDURE obj_SetAll
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMultiple
+MODULE PROCEDURE obj_SetMultiple1
 INTEGER(I4B) :: ierr, n
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
@@ -138,7 +138,7 @@ END IF
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
-END PROCEDURE obj_SetMultiple
+END PROCEDURE obj_SetMultiple1
 
 !----------------------------------------------------------------------------
 !                                                                   Set
@@ -148,24 +148,15 @@ MODULE PROCEDURE obj_Set1
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 INTEGER(I4B) :: ierr, tsize
 
+#include "./lis_null_error.F90"
+
 #ifdef DEBUG_VER
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
 
-CALL CHKERR(ierr)
-
-IF (.NOT. obj%IsInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-      '[INTERNAL ERROR] :: Either STScalarFieldLis_::obj is not initiated'// &
-                    " or, obj%lis_ptr is not available")
-  RETURN
-END IF
-
-IF (SIZE(VALUE) .NE. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: Size of value should be equal to obj%timeCompo')
-  RETURN
-END IF
+CALL AssertError2(SIZE(VALUE), obj%timeCompo, myName, &
+                  "a=SIZE(VALUE), b=obj%timeCompo")
 
 #endif
 
@@ -291,57 +282,67 @@ INTEGER(I4B) :: ii, tsize, ierr, code, s(3)
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
+#include "./lis_null_error.inc"
+
 #ifdef DEBUG_VER
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-      '[INTERNAL ERROR] :: Either STScalarFieldLis_::obj is not initiated'// &
-                    " or, obj%lis_ptr is not available")
-END IF
+IF (storageFMT .EQ. NODES_FMT) THEN
+  CALL AssertError2(SIZE(VALUE, 1), obj%timeCompo, myName, &
+                    "a=SIZE(VALUE, 1), b=obj%timeCompo")
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: NOT callable for constant STScalar field')
-  RETURN
-END IF
+  CALL AssertError2(SIZE(VALUE, 2), obj%dof.tNodes.1, myName, &
+                    "a=SIZE(VALUE, 2), b=obj%dof.tNodes.1")
+ELSE
 
-tsize = obj%fedof%GetTotalDOF()
+  CALL AssertError2(SIZE(VALUE, 2), obj%timeCompo, myName, &
+                    "a=SIZE(VALUE, 2), b=obj%timeCompo")
 
-IF ((SIZE(VALUE, 1) .NE. tsize) &
-    .OR. (SIZE(VALUE, 2) .NE. obj%timeCompo)) THEN
-
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTENRAL ERROR] :: The shape of value should be [ '// &
-                    ToString(obj%timeCompo)//', '//ToString(tsize)//' ]')
-
-  RETURN
+  CALL AssertError2(SIZE(VALUE, 1), obj%dof.tNodes.1, myName, &
+                    "a=SIZE(VALUE, 1), b=obj%dof.tNodes.1")
 
 END IF
 
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
-areal = Input(option=scale, default=1.0_DFP)
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+IF (storageFMT .EQ. DOF_FMT) THEN
 
-DO ii = 1, obj%timeCompo
-  tsize = obj%dof.tNodes.ii
-  s = GetNodeLoc(obj=obj%dof, idof=ii)
-  ! void lis_vector_set_values5_f(LIS_INT *flag, LIS_INT *start,
-  ! LIS_INT *stride,
-  ! LIS_INT *count, LIS_SCALAR *values,
-  ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
-  ! LIS_INT *ierr) {
-  CALL lis_vector_set_values5(code, s(1), s(3), tsize, VALUE(:, ii), &
-                              obj%lis_ptr, areal, ierr)
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+
+  !$OMP PARALLEL DO PRIVATE(ii, tsize, s, ierr)
+  DO ii = 1, obj%timeCompo
+    tsize = obj%dof.tNodes.ii
+    s = GetNodeLoc(obj=obj%dof, idof=ii)
+    ! void lis_vector_set_values5_f(LIS_INT *flag, LIS_INT *start,
+    ! LIS_INT *stride,
+    ! LIS_INT *count, LIS_SCALAR *values,
+    ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+    ! LIS_INT *ierr) {
+    CALL lis_vector_set_values5(code, s(1), s(3), tsize, VALUE(:, ii), &
+                                obj%lis_ptr, areal, ierr)
 
 #ifdef DEBUG_VER
-  CALL CHKERR(ierr)
+    CALL CHKERR(ierr)
 #endif
 
+  END DO
+  !$OMP END PARALLEL DO
+
+  RETURN
+END IF
+
+tsize = obj%dof.tNodes.1
+
+!$OMP PARALLEL DO PRIVATE(ii, tsize)
+DO ii = 1, tsize
+  CALL obj%Set(VALUE=VALUE(:, ii), globalNode=ii, islocal=.TRUE., &
+               addContribution=addContribution, scale=scale)
 END DO
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Set4
 
@@ -355,37 +356,19 @@ INTEGER(I4B) :: ierr, tsize, s(3), code
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
+#include "./lis_null_error.F90"
+
 #ifdef DEBUG_VER
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
+                  "timeCompo is out of bound")
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-      '[INTERNAL ERROR] :: Either STScalarFieldLis_::obj is not initiated'// &
-                    " or, obj%lis_ptr is not available")
-END IF
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERORR] :: timeCompo is out of bound')
-  RETURN
-END IF
+CALL AssertError2(SIZE(VALUE), obj%dof.tNodes.timeCompo, myName, &
+                  "a=SIZE(VALUE), b=obj%dof.tNodes.timeCompo ")
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: NOT callable for constant STScalar field')
-
-  RETURN
-
-END IF
-
-tsize = SIZE(VALUE)
-
-IF (tsize .NE. (obj%dof.tNodes.timeCompo)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: Size of value not correct')
-  RETURN
-END IF
 #endif
 
 abool = Input(option=addContribution, default=.FALSE.)
@@ -420,37 +403,16 @@ LOGICAL(LGT) :: abool
 #ifdef DEBUG_VER
 INTEGER(I4B) :: tsize1
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#include "./lis_null_error.F90"
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE &
-    .OR. .NOT. VALUE%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-   '[INTERNAL ERROR] :: Either STScalarFieldLis_::object is not initiated'// &
-                    ', or, ScalarField::value is not initiated'// &
-                    ", or, obj%lis_ptr is not available")
-END IF
+CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
+                  "timeCompo is out of bound")
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: out of bound timeCompo')
-  RETURN
-END IF
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: NOT callable for constant STScalar field')
-  RETURN
-END IF
-
-tsize = obj%dof.tNodes.timeCompo
-tsize1 = VALUE%dof.tNodes.1
-
-IF (tsize .NE. tsize1) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: Size of obj and value not correct')
-  RETURN
-END IF
-
+CALL AssertError2(obj%dof.tNodes.timeCompo, VALUE%dof.tNodes.1, myName, &
+                  "a=obj%dof.tNodes.timeCompo, b=VALUE%dof.tNodes.1 ")
 #endif
 
 SELECT TYPE (VALUE)
@@ -579,38 +541,22 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
 
+#include "./lis_null_error.F90"
+
 #ifdef DEBUG_VER
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
+                  "timeCompo is out of bound")
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'Either STScalarFieldLis_::obj is not initiated'// &
-                    " or, obj%lis_ptr is not available")
-  RETURN
-END IF
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "NOT callable for constant field")
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-              'given timeCompo should be less than or equal to obj%timeCompo')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                'This subroutine is not callable for constant STScalar field')
-  RETURN
-END IF
-
-IF (SIZE(VALUE) .NE. SIZE(globalNode)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'Size of value should be equal to size of globalNode')
-  RETURN
-END IF
+CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
+                  "a=SIZE(VALUE), b=size(globalNode)")
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 tsize = SIZE(globalNode)
 
@@ -718,8 +664,13 @@ areal = Input(option=scale, default=1.0_DFP)
 IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 
 s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
-p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
-                                           ivar=ivar_value, idof=idof_value))
+
+! void lis_vector_set_values8_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride,
+! LIS_INT *count, LIS_SCALAR *values,
+! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+! LIS_INT *start_value, LIS_INT *stride_value,
+! LIS_INT *ierr)
 
 tsize = obj%dof.tNodes. [ivar, idof]
 
@@ -727,14 +678,9 @@ SELECT TYPE (VALUE)
 
 TYPE IS (ScalarField_)
 
-  realvec => VALUE%GetPointer()
+  p = GetNodeLoc(obj=VALUE%dof, idof=1_I4B)
 
-  ! void lis_vector_set_values8_f(LIS_INT *flag, LIS_INT *start,
-  ! LIS_INT *stride,
-  ! LIS_INT *count, LIS_SCALAR *values,
-  ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
-  ! LIS_INT *start_value, LIS_INT *stride_value,
-  ! LIS_INT *ierr)
+  realvec => VALUE%GetPointer()
 
   CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
                               areal, p(1), p(3), ierr)
@@ -743,10 +689,14 @@ TYPE IS (ScalarField_)
 
 TYPE IS (ScalarFieldLis_)
 
+  p = GetNodeLoc(obj=VALUE%dof, idof=1_I4B)
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
 
 TYPE IS (STScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                            ivar=ivar_value, idof=idof_value))
 
   realvec => VALUE%GetPointer()
   CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
@@ -754,6 +704,9 @@ TYPE IS (STScalarField_)
   realvec => NULL()
 
 TYPE IS (STScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                            ivar=ivar_value, idof=idof_value))
 
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
@@ -849,5 +802,7 @@ END PROCEDURE obj_Set14
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

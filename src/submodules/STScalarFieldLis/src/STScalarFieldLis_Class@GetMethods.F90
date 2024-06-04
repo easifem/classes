@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(STScalarFieldLis_Class) GetMethods
+USE Display_Method, ONLY: ToString
+
 USE GlobalData, ONLY: DOF_FMT, NODES_FMT
 
 USE DOF_Method, ONLY: GetNodeLoc_, &
@@ -58,7 +60,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
 
 INTEGER(I4B) :: ierr
 
-#include "./lis_null_error.inc"
+#include "./lis_null_error.F90"
 
 tsize = SIZE(indx)
 
@@ -81,7 +83,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
 
 INTEGER(I4B) :: ierr
 
-#include "./lis_null_error.inc"
+#include "./lis_null_error.F90"
 
 tsize = (iend - istart) / stride + 1
 
@@ -106,7 +108,7 @@ LOGICAL(LGT) :: problem
 
 INTEGER(I4B) :: ii, jj, ierr, kk
 
-#include "./lis_null_error.inc"
+#include "./lis_null_error.F90"
 
 tsize = (iend - istart) / stride + 1
 
@@ -230,7 +232,7 @@ IF (storageFMT .EQ. DOF_FMT) THEN
   ncol = obj%timeCompo
   nrow = obj%dof.tNodes.1
 
-  !$OMP DO PRIVATE(jj, mynrow, s)
+  !$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
   DO jj = 1, ncol
     s = GetNodeLoc(obj=obj%dof, idof=jj)
 
@@ -238,7 +240,7 @@ IF (storageFMT .EQ. DOF_FMT) THEN
                          VALUE=VALUE(:, jj), tsize=mynrow)
 
   END DO
-  !$OMP END DO
+  !$OMP END PARALLEL DO
 
   RETURN
 END IF
@@ -246,13 +248,13 @@ END IF
 nrow = obj%timeCompo
 ncol = obj%dof.tNodes.1
 
-!$OMP DO PRIVATE(jj, indx, mynrow)
+!$OMP PARALLEL DO PRIVATE(jj, indx, mynrow)
 DO jj = 1, ncol
   CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=jj, ans=indx, &
                    tsize=mynrow)
   CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=nrow)
 END DO
-!$OMP END DO
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Get2
 
@@ -261,51 +263,44 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 INTEGER(I4B) :: jj, mynrow
 INTEGER(I4B), ALLOCATABLE :: indx(:, :)
 
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: problem
-#endif
+#include "./localNodeError.F90"
 
-#include "./localNodeError.inc"
-
-#ifdef DEBUG_VER
 IF (storageFMT .EQ. NODES_FMT) THEN
-  nrow = obj%timeCompo
-  ncol = SIZE(globalNode)
-  problem = (SIZE(VALUE, 1) .LT. nrow) .OR. (SIZE(VALUE, 2) .LT. ncol)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: (NODES_FMT) size of value is not enough.')
-    RETURN
-  END IF
+  nrow = obj%timeCompo; ncol = SIZE(globalNode)
+ELSE
+  nrow = SIZE(globalNode); ncol = obj%timeCompo
 END IF
 
-IF (storageFMT .EQ. DOF_FMT) THEN
-  ncol = obj%timeCompo
-  nrow = SIZE(globalNode)
-  problem = (SIZE(VALUE, 1) .LT. nrow) .OR. (SIZE(VALUE, 2) .LT. ncol)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[INTERNAL ERROR] :: (DOF_FMT)  size of value is not enough.')
-    RETURN
-  END IF
-END IF
+#ifdef DEBUG_VER
+isok = SIZE(VALUE, 1) .GE. nrow
+CALL AssertError1(isok, myName, "number of rows in value is not enough")
 
+isok = SIZE(VALUE, 2) .GE. ncol
+CALL AssertError1(isok, myName, "number of cols in value is not enough")
 #endif
+
+ALLOCATE (indx(nrow, ncol))
 
 CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=globalNode, &
                  ans=indx, nrow=nrow, ncol=ncol, storageFMT=storageFMT)
 
-!$OMP DO PRIVATE(jj, mynrow)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow)
 
 DO jj = 1, ncol
   CALL obj%GetMultiple(indx=indx(:, jj), VALUE=VALUE(:, jj), tsize=mynrow)
 END DO
 
-!$OMP END DO
+!$OMP END PARALLEL DO
+
+DEALLOCATE (indx)
 
 END PROCEDURE obj_Get3
 
@@ -317,7 +312,7 @@ MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, idof=timeCompo, &
                  ans=indx, tsize=tsize)
@@ -333,7 +328,7 @@ MODULE PROCEDURE obj_Get5
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: indx
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=timeCompo)
 CALL obj%GetSingle(indx=indx, VALUE=VALUE)
@@ -348,7 +343,7 @@ MODULE PROCEDURE obj_Get7
 CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
 INTEGER(I4B) :: tsize, s(3), p(3), ierr
 
-#include "./lis_null_error.inc"
+#include "./lis_null_error.F90"
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
@@ -390,7 +385,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
 INTEGER(I4B) :: tsize, s(3), p(3), ierr
 REAL(DFP), POINTER :: realvec(:)
 
-#include "./lis_null_error.inc"
+#include "./lis_null_error.F90"
 
 s = GetNodeLoc(obj=obj%dof, idof=idof)
 
@@ -453,5 +448,11 @@ ans => NULL()
 CALL e%RaiseError(modName//'::'//myName//' - '// &
      '[INTERNAL ERROR] :: This method is not available for STScalarFieldLis_')
 END PROCEDURE obj_GetPointer
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
