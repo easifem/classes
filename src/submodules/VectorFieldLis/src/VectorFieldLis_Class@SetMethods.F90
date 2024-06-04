@@ -16,10 +16,42 @@
 !
 
 SUBMODULE(VectorFieldLis_Class) SetMethods
-USE BaseMethod
-USE ScalarFieldLis_Class
-USE ScalarField_Class
+USE InputUtility, ONLY: Input
+
+USE SafeSizeUtility, ONLY: SafeSize
+
+USE Display_Method, ONLY: ToString
+
+USE AbstractField_Class, ONLY: TypeField
+
+USE ScalarField_Class, ONLY: ScalarField_
+
+USE STScalarField_Class, ONLY: STScalarField_
+
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
+USE DOF_Method, ONLY: GetIndex_, &
+                      GetIndex, &
+                      GetNodeLoc, &
+                      GetNodeLoc_, &
+                      GetIDOF, &
+                      OPERATOR(.tNodes.)
+
 IMPLICIT NONE
+
+INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
+
+INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
+INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
+!$OMP THREADPRIVATE(TEMP_INTVEC)
+
+INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
+!$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -27,37 +59,24 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSingle
-#include "lisf.h"
-INTEGER(I4B) :: i, ierr
+INTEGER(I4B) :: ierr
 REAL(DFP) :: value0
+LOGICAL(LGT) :: abool
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  i = 1
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (abool) THEN
+  value0 = Input(option=scale, default=1.0_DFP) * VALUE
+  CALL lis_vector_set_value(LIS_ADD_VALUE, indx, value0, obj%lis_ptr, ierr)
+
 ELSE
-  i = indx
+  CALL lis_vector_set_value(LIS_INS_VALUE, indx, VALUE, obj%lis_ptr, ierr)
+
 END IF
 
-value0 = INPUT(option=scale, default=1.0_DFP) * VALUE
-
-IF (PRESENT(addContribution)) THEN
-  CALL lis_vector_set_value( &
-    & LIS_ADD_VALUE, &
-    & i, &
-    & value0, &
-    & obj%lis_ptr, &
-    & ierr &
-    & )
-  CALL CHKERR(ierr)
-ELSE
-  CALL lis_vector_set_value( &
-    & LIS_INS_VALUE, &
-    & i, &
-    & value0, &
-    & obj%lis_ptr, &
-    & ierr &
-    & )
-  CALL CHKERR(ierr)
-END IF
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
 END PROCEDURE obj_SetSingle
 
@@ -65,615 +84,427 @@ END PROCEDURE obj_SetSingle
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMultiple
-#include "lisf.h"
-INTEGER(I4B) :: i(SIZE(indx)), ierr, n
-REAL(DFP) :: value0(SIZE(VALUE))
+MODULE PROCEDURE obj_SetMultiple1
+INTEGER(I4B) :: ierr, n
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
-i = indx
 n = SIZE(indx)
 
-value0 = INPUT(option=scale, default=1.0_DFP) * VALUE
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (PRESENT(addContribution)) THEN
-  CALL lis_vector_set_values( &
-    & LIS_ADD_VALUE, &
-    & n, &
-    & i, &
-    & value0, &
-    & obj%lis_ptr, &
-    & ierr &
-    & )
-  CALL CHKERR(ierr)
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL lis_vector_set_values4(LIS_ADD_VALUE, n, indx, VALUE, obj%lis_ptr, &
+                              areal, ierr)
+
 ELSE
-  CALL lis_vector_set_values( &
-    & LIS_INS_VALUE, &
-    & n, &
-    & i, &
-    & value0, &
-    & obj%lis_ptr, &
-    & ierr &
-    & )
-  CALL CHKERR(ierr)
+  CALL lis_vector_set_values(LIS_INS_VALUE, n, indx, VALUE, obj%lis_ptr, &
+                             ierr)
+
 END IF
-END PROCEDURE obj_SetMultiple
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+END PROCEDURE obj_SetMultiple1
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetAll
-#include "lisf.h"
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
+LOGICAL(LGT) :: abool
 
-value0 = INPUT(option=scale, default=1.0_DFP) * VALUE
+value0 = Input(option=scale, default=1.0_DFP) * VALUE
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (PRESENT(addContribution)) THEN
-  n = obj%SIZE()
-  DO ii = 1, n
-    CALL lis_vector_set_value( &
-      & LIS_ADD_VALUE, &
-      & ii, &
-      & value0, &
-      & obj%lis_ptr, &
-      & ierr &
-      & )
-    CALL CHKERR(ierr)
-  END DO
-ELSE
-  CALL lis_vector_set_all( &
-    & value0, &
-    & obj%lis_ptr, &
-    & ierr &
-    & )
+IF (.NOT. abool) THEN
+  CALL lis_vector_set_all(value0, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
+
+  RETURN
 END IF
+
+n = obj%SIZE()
+DO ii = 1, n
+  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, value0, obj%lis_ptr, ierr)
+END DO
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
 END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
-!                                                                   set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-CHARACTER(*), PARAMETER :: myName = "obj_Set1"
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: indx(obj%spaceCompo)
-INTEGER(I4B) :: ierr
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+INTEGER(I4B) :: ierr, tsize
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
+#include "./lis_null_error.F90"
+#include "./localNodeError.F90"
+
+#ifdef DEBUG_VER
+
+CALL AssertError2(SIZE(VALUE), obj%spaceCompo, myName, &
+                  "a=size(value), b=obj%spaceCompo")
+
+#endif
+
+IF (obj%spaceCompo .LE. TEMP_INTVEC_LEN) THEN
+  CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
+                 tsize=tsize)
+
+  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
+                       addContribution=addContribution)
+
+  RETURN
 END IF
 
-IF (SIZE(VALUE) .NE. obj%spaceCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to obj%spaceCompo')
-END IF
-
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF (localNode .EQ. 0_I4B) THEN
-  CALL e%raiseError(modName//'::'//myName//" - " &
-    & //'globalNode :: '//tostring(globalNode) &
-    & //" is out of bound for the domain.")
-END IF
-
-indx = GetIndex(obj=obj%dof, nodenum=localNode)
-
-CALL obj%SetMultiple(&
-  & indx=indx, &
-  & VALUE=VALUE, &
-  & scale=scale, &
-  & addContribution=addContribution)
+CALL obj%SetMultiple(indx=GetIndex(obj=obj%dof, nodenum=globalNode), &
+                    VALUE=VALUE, scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
-REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_Set2"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: indx(obj%spaceCompo)
-INTEGER(I4B) :: ierr
+CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+INTEGER(I4B) :: ii, tsize, ierr, s(3), code
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
+#include "./lis_null_error.F90"
 
-IF (SIZE(VALUE) .NE. obj%spaceCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'size(value) should be same as obj%spaceCompo')
-END IF
+#ifdef DEBUG_VER
 
-tsize = obj%domain%getTotalNodes()
+CALL AssertError2(SIZE(VALUE), obj%spaceCompo, myName, &
+                  "size(value), obj%spaceCompo")
 
-DO ii = 1, tsize
-  indx = GetIndex(obj=obj%dof, nodenum=ii)
-  CALL obj%SetMultiple(&
-    & indx=indx, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+#endif
+
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+
+!$OMP PARALLEL DO PRIVATE(ii, tsize, s, ierr)
+DO ii = 1, obj%spaceCompo
+  tsize = obj%dof.tNodes.ii
+  s = GetNodeLoc(obj=obj%dof, idof=ii)
+  ! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+  ! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+  ! LIS_INT *ierr)
+  CALL lis_vector_set_values6(code, s(1), s(3), tsize, VALUE(ii) * areal, &
+                              obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
 END DO
-
+!$OMP END PARALLEL DO
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
-CHARACTER(*), PARAMETER :: myName = "obj_Set3"
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: ierr
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+INTEGER(I4B) :: tsize, ierr, s(3), code
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
+#include "./lis_null_error.F90"
 
-IF (spaceCompo .GT. obj%spaceCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
-END IF
+#ifdef DEBUG_VER
 
-tsize = obj%domain%getTotalNodes()
+CALL AssertError2(spaceCompo, obj%spaceCompo, myName, &
+                  "spaceCompo, obj%spaceCompo")
+#endif
 
-DO ii = 1, tsize
-  indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=spaceCompo)
-  CALL obj%SetSingle(&
-    & indx=indx, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
-END DO
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+areal = Input(option=scale, default=1.0_DFP)
+tsize = obj%dof.tNodes.spaceCompo
+s = GetNodeLoc(obj=obj%dof, idof=spaceCompo)
+! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+! LIS_INT *ierr)
+areal = areal * VALUE
+CALL lis_vector_set_values6(code, s(1), s(3), tsize, areal, &
+                            obj%lis_ptr, ierr)
 
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
-CHARACTER(*), PARAMETER :: myName = "obj_Set4"
-INTEGER(I4B) :: ii, tnodes, aa, jj
-INTEGER(I4B) :: ierr
+CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+INTEGER(I4B) :: ii, tsize, ierr, code, s(3)
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#include "./lis_null_error.F90"
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Either ScalarField object is not initiated'// &
-    & " or, lis_ptr is not available")
-END IF
+#ifdef DEBUG_VER
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'This subroutine is not callable for constant STScalar field')
-END IF
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
 
-tnodes = obj%domain%getTotalNodes()
+IF (storageFMT .EQ. NODES_FMT) THEN
+  CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
+                    "a=SIZE(VALUE, 1), b=obj%spaceCompo")
 
-IF ( &
-  &      SIZE(VALUE, 1) .NE. obj%spaceCompo &
-  & .OR. SIZE(VALUE, 2) .NE. tnodes) THEN
+  CALL AssertError2(SIZE(VALUE, 2), obj%dof.tNodes.1, myName, &
+                    "a=SIZE(VALUE, 2), b=obj%dof.tNodes.1")
+ELSE
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'The shape of value should be [ ' &
-    & //tostring(obj%spaceCompo) &
-    & //', ' &
-    & //tostring(tnodes) &
-    & //' ]')
+  CALL AssertError2(SIZE(VALUE, 2), obj%spaceCompo, myName, &
+                    "a=SIZE(VALUE, 2), b=obj%spaceCompo")
+
+  CALL AssertError2(SIZE(VALUE, 1), obj%dof.tNodes.1, myName, &
+                    "a=SIZE(VALUE, 1), b=obj%dof.tNodes.1")
 
 END IF
 
-aa = 0
-DO jj = 1, tnodes
+#endif
+
+IF (storageFMT .EQ. DOF_FMT) THEN
+
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+
+  !$OMP PARALLEL DO PRIVATE(ii, tsize, s, ierr)
   DO ii = 1, obj%spaceCompo
-    aa = aa + 1
-    CALL obj%SetSingle(&
-      & indx=aa, &
-      & VALUE=VALUE(ii, jj), &
-      & scale=scale, &
-      & addContribution=addContribution)
+    tsize = obj%dof.tNodes.ii
+    s = GetNodeLoc(obj=obj%dof, idof=ii)
+    ! void lis_vector_set_values5_f(LIS_INT *flag, LIS_INT *start,
+    ! LIS_INT *stride,
+    ! LIS_INT *count, LIS_SCALAR *values,
+    ! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+    ! LIS_INT *ierr) {
+    CALL lis_vector_set_values5(code, s(1), s(3), tsize, VALUE(:, ii), &
+                                obj%lis_ptr, areal, ierr)
+
+#ifdef DEBUG_VER
+    CALL CHKERR(ierr)
+#endif
+
   END DO
+  !$OMP END PARALLEL DO
+
+  RETURN
+END IF
+
+tsize = obj%dof.tNodes.1
+
+!$OMP PARALLEL DO PRIVATE(ii, tsize)
+DO ii = 1, tsize
+  CALL obj%Set(VALUE=VALUE(:, ii), globalNode=ii, islocal=.TRUE., &
+               addContribution=addContribution, scale=scale)
 END DO
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
-CHARACTER(*), PARAMETER :: myName = "obj_Set5"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tsize
+CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+INTEGER(I4B) :: ierr, tsize, s(3), code
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#include "./lis_null_error.F90"
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
+#ifdef DEBUG_VER
 
-IF (spaceCompo .GT. obj%spaceCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
+CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
+                  "spaceCompo is out of bound")
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This subroutine is not callable for constant STScalar field')
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "NOT callable for constant field")
 
-tsize = SIZE(VALUE)
+CALL AssertError2(SIZE(VALUE), obj%dof.tNodes.spaceCompo, myName, &
+                  "a=SIZE(VALUE), b=obj%dof.tNodes.spaceCompo")
 
-IF (tsize .NE. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to the total number of nodes')
+#endif
 
-DO ii = 1, tsize
-  indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=spaceCompo)
-  CALL obj%SetSingle(&
-    & indx=indx, &
-    & VALUE=VALUE(ii), &
-    & scale=scale, &
-    & addContribution=addContribution)
-END DO
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+
+tsize = obj%dof.tNodes.spaceCompo
+s = GetNodeLoc(obj=obj%dof, idof=spaceCompo)
+! void lis_vector_set_values6_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride, LIS_INT *count, LIS_SCALAR *values, LIS_VECTOR *v,
+! LIS_INT *ierr)
+CALL lis_vector_set_values3(code, s(1), s(3), tsize, VALUE, &
+                            obj%lis_ptr, areal, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
-!                                                                        set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set6
-REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_Set5"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tsize1
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: indx
-REAL(DFP) :: avar
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE &
-  & .OR. .NOT. VALUE%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::object is not initiated'// &
-  & ', or, ScalarField::value is not initiated'// &
-  & ", or, obj%lis_ptr is not available")
-END IF
-
-IF (spaceCompo .GT. obj%spaceCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This subroutine is not callable for constant STScalar field')
-
-tsize = obj%domain%getTotalNodes()
-tsize1 = VALUE%domain%getTotalNodes()
-
-IF (tsize .NE. tsize1) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to the total number of nodes')
-END IF
-
-SELECT TYPE (VALUE)
-TYPE is (ScalarField_)
-
-  IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-    vecPointer => VALUE%getPointer()
-    CALL obj%set(VALUE=vecPointer(1), spaceCompo=spaceCompo, &
-      & scale=scale, addContribution=addContribution)
-    vecPointer => NULL()
-  ELSE
-    vecPointer => VALUE%getPointer()
-    CALL obj%set(VALUE=vecPointer, spaceCompo=spaceCompo, &
-      & scale=scale, addContribution=addContribution)
-    vecPointer => NULL()
-  END IF
-
-TYPE is (ScalarFieldLis_)
-
-  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
-
-  IF (ierr .EQ. LIS_TRUE) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & "ScalarFieldLis_::value%lis_ptr is not available")
-  END IF
-
-  IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-
-    CALL VALUE%get(VALUE=avar, globalNode=1)
-    CALL obj%set( &
-      & VALUE=avar, &
-      & spaceCompo=spaceCompo, &
-      & scale=scale, &
-      & addContribution=addContribution)
-
-  ELSE
-
-    DO ii = 1, tsize
-      jj = obj%domain%getGlobalNodeNumber(localNode=ii)
-
-      IF (jj .GT. 0) THEN
-        CALL VALUE%get(VALUE=avar, globalNode=jj)
-
-        ! CALL Display(avar, "avar = ")
-        indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=spaceCompo)
-
-        CALL obj%setSingle( &
-          & VALUE=avar, &
-          & indx=indx, &
-          & scale=scale, &
-          & addContribution=addContribution)
-
-      END IF
-
-    END DO
-
-  END IF
-
-CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'No case found for the type of value')
-
-END SELECT
-
-END PROCEDURE obj_Set6
-
-!----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set7
-REAL(DFP) :: val(SIZE(VALUE), SIZE(globalNode))
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(globalNode)
-  val(:, ii) = VALUE(:)
-END DO
-CALL obj%set(VALUE=val, globalNode=globalNode, scale=scale, &
-  & addContribution=addContribution)
-END PROCEDURE obj_Set7
-
-!----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set8
-CHARACTER(*), PARAMETER :: myName = "obj_Set8"
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-REAL(DFP) :: val(SIZE(VALUE))
-INTEGER(I4B) :: indx(SIZE(VALUE))
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine should not be called for constant STScalar field')
-
-IF (SIZE(VALUE, 1) .NE. obj%spaceCompo .OR. &
-  & SIZE(VALUE, 2) .NE. SIZE(globalNode)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'SIZE( value, 1 ) not equal to spaceCompo'// &
-  & 'or SIZE( value, 2 ) not equal to'// &
-  & ' the SIZE(globalNode)')
-END IF
-
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF (ANY(localNode .EQ. 0_I4B)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Some of the globalNode are out of bound')
-END IF
-
-val = RESHAPE(VALUE, [SIZE(VALUE)])
-indx = GetNodeLoc( &
-& obj=obj%dof, &
-& nodenum=localNode, &
-& ivar=1_I4B, &
-& timeCompo=1_I4B, &
-& spaceCompo=arange(1, obj%spaceCompo))
-
-CALL obj%SetMultiple(&
-& VALUE=val, &
-& indx=indx, &
-& scale=scale, &
-& addContribution=addContribution)
-
-END PROCEDURE obj_Set8
-
-!----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
-CHARACTER(*), PARAMETER :: myName = "obj_Set9"
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-INTEGER(I4B) :: indx(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 INTEGER(I4B) :: ierr
+INTEGER(I4B) :: tsize
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#include "./lis_null_error.F90"
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
+#ifdef DEBUG_VER
+
+CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
+                  "spaceCompo is out of bound")
+
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "NOT callable for constant field")
+
+CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
+                  "a=SIZE(VALUE), b=size(globalNode)")
+
+#endif
+
+#include "./localNodeError.F90"
+
+tsize = SIZE(globalNode)
+
+IF (tsize .LE. TEMP_INTVEC_LEN) THEN
+  CALL GetNodeLoc_(obj=obj%dof, idof=spaceCompo, &
+                   nodenum=globalNode, ans=TEMP_INTVEC, tsize=tsize)
+
+  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
+                       addContribution=addContribution)
+
+  RETURN
+
 END IF
 
-IF (spaceCompo .GT. obj%spaceCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
+ierr = SafeSize(TEMP_DYNA_INTVEC)
+IF (tsize .GT. ierr) THEN
+  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * tsize)
+END IF
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This subroutine is not callable for constant STScalar field')
+CALL GetNodeLoc_(obj=obj%dof, ivar=1, spaceCompo=spaceCompo, &
+                 timeCompo=1_I4B, &
+                 nodenum=globalNode, ans=TEMP_DYNA_INTVEC, tsize=tsize)
 
-IF (SIZE(VALUE) .NE. SIZE(globalNode)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to size of globalNode')
-
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF (ANY(localNode .EQ. 0_I4B)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Some of the global node num are out of bound')
-
-indx = GetNodeLoc(&
-& obj=obj%dof, &
-& ivar=1, &
-& timeCompo=1, &
-& spaceCompo=spaceCompo, &
-& nodenum=localNode &
-& )
-
-CALL obj%SetMultiple(&
-  & indx=indx, &
-  & VALUE=VALUE, &
-  & scale=scale, &
-  & addContribution=addContribution)
+CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+                     scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set10
-CHARACTER(*), PARAMETER :: myName = "obj_Set10"
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
-
-IF (spaceCompo .GT. obj%spaceCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This subroutine is not callable for constant STScalar field')
-
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF (localNode .EQ. 0_I4B) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The given global node num are out of bound')
-
-indx = getNodeLoc( &
-  & obj=obj%dof, &
-  & ivar=1, &
-  & timeCompo=1, &
-  & spaceCompo=spaceCompo, &
-  & nodenum=localNode)
-
-CALL obj%setSingle(&
-  & indx=indx, &
-  & VALUE=VALUE, &
-  & scale=scale, &
-  & addContribution=addContribution)
-
-END PROCEDURE obj_Set10
-
-!----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set11
-CHARACTER(*), PARAMETER :: myName = "obj_Set11"
-INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalNode(jj) = ii
-END DO
-CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
-  & addContribution=addContribution)
-END PROCEDURE obj_Set11
-
-!----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set12
-CHARACTER(*), PARAMETER :: myName = "obj_Set12"
-INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalNode(jj) = ii
-END DO
-CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
-  & addContribution=addContribution)
-END PROCEDURE obj_Set12
-
-!----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set13
-CHARACTER(*), PARAMETER :: myName = "obj_Set13"
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: ierr, tsize, s(3), p(3), code
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Scalar field object is not initiated')
+! void lis_vector_set_values8_f(LIS_INT *flag, LIS_INT *start,
+! LIS_INT *stride,
+! LIS_INT *count, LIS_SCALAR *values,
+! LIS_VECTOR_F *v, LIS_SCALAR *scale,
+! LIS_INT *start_value, LIS_INT *stride_value,
+! LIS_INT *ierr)
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine should not be called for constant vector field')
+abool = Input(option=addContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 
-SELECT CASE (VALUE%vartype)
-CASE (Constant)
-  CALL obj%Set( &
-    & VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableConstant), &
-    & globalNode=globalNode, &
-    & scale=scale, &
-    & addContribution=addContribution)
-CASE (Space)
-  CALL obj%Set( &
-    & VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableSpace), &
-    & globalNode=globalNode, &
-    & scale=scale, &
-    & addContribution=addContribution)
+s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
+
+tsize = obj%dof.tNodes. [ivar, idof]
+
+SELECT TYPE (VALUE)
+
+TYPE IS (ScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=1_I4B)
+
+  realvec => VALUE%GetPointer()
+
+  CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
+                              areal, p(1), p(3), ierr)
+
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  realvec => VALUE%GetPointer()
+
+  CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
+                              areal, p(1), p(3), ierr)
+
+TYPE IS (VectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                            ivar=ivar_value, idof=idof_value))
+
+  realvec => VALUE%GetPointer()
+
+  CALL lis_vector_set_values8(code, s(1), s(3), tsize, realvec, obj%lis_ptr, &
+                              areal, p(1), p(3), ierr)
+
+  realvec => NULL()
+
+TYPE IS (ScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=1_I4B)
+
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+TYPE IS (STScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+TYPE IS (VectorFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                            ivar=ivar_value, idof=idof_value))
+
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
+  RETURN
+
 END SELECT
 END PROCEDURE obj_Set13
 
@@ -681,95 +512,6 @@ END PROCEDURE obj_Set13
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set14
-CHARACTER(*), PARAMETER :: myName = "obj_Set14"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
-
-CALL obj%setAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
-
-END PROCEDURE obj_Set14
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set16
-CHARACTER(*), PARAMETER :: myName = "obj_Set16()"
-INTEGER(I4B) :: ierr
-REAL(DFP), POINTER :: realvec(:)
-LOGICAL(LGT) :: problem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-problem = .NOT. obj%isInitiated .OR. (ierr .EQ. LIS_TRUE)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj is not initiated'// &
-  & " or, lis_ptr is not available")
-  RETURN
-END IF
-
-problem = .NOT. VALUE%isInitiated
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: Either VectorField_::value is not initiated')
-  RETURN
-END IF
-#endif
-
-SELECT TYPE (VALUE)
-TYPE is (VectorField_)
-  realvec => NULL()
-  realvec => VALUE%GetPointer()
-  CALL obj%Set(VALUE=realvec)
-  realvec => NULL()
-
-TYPE is (VectorFieldLis_)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
-  problem = ierr .EQ. LIS_TRUE
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj%lis_ptr'// &
-    & " is not available")
-  END IF
-
-  problem = obj%SIZE() .NE. VALUE%SIZE()
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Size of obj and value are not same')
-    RETURN
-  END IF
-#endif
-
-  CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Unknown type of VectorField_::value')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE obj_Set16
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

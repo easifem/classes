@@ -15,434 +15,400 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(VectorFieldLis_Class) GetMethods
-USE BaseMethod
+USE GlobalData, ONLY: DOF_FMT, NODES_FMT
+
+USE DOF_Method, ONLY: GetNodeLoc_, &
+                      OPERATOR(.tNodes.), &
+                      GetNodeLoc, &
+                      GetIDOF
+
 USE ScalarField_Class, ONLY: ScalarField_
+
+USE STScalarField_Class, ONLY: STScalarField_
+
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                GetPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
+ans => NULL()
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+     '[INTERNAL ERROR] :: This method is not available for STScalarFieldLis_')
+END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSingle
-#include "lisf.h"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple1()"
+#endif
+
 INTEGER(I4B) :: ierr
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
-  CALL CHKERR(ierr)
-END IF
+
+#include "./lis_null_error.F90"
+
+CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple1()"
+#endif
+
+INTEGER(I4B) :: ierr
+
+#include "./lis_null_error.F90"
+
+tsize = SIZE(indx)
+
+CALL lis_vector_get_values_from_index(obj%lis_ptr, tsize, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+END PROCEDURE obj_GetMultiple1
+
+!----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple2()"
+#endif
+
+INTEGER(I4B) :: ierr
+
+#include "./lis_null_error.F90"
+
+tsize = (iend - istart) / stride + 1
+
+CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+END PROCEDURE obj_GetMultiple2
+
+!----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: ii, jj, ierr, kk
+
+#include "./lis_null_error.F90"
+
+tsize = (iend - istart) / stride + 1
+
+#ifdef DEBUG_VER
+ii = (iend_value - istart_value) / stride_value + 1
+CALL AssertError1(ii .GE. tsize, myName, "size of value not enought")
+
+ii = SIZE(VALUE)
+jj = istart_value + (tsize - 1) * stride_value
+CALL AssertError1(ii .GE. jj, myName, "size of value not enought")
+#endif
+
+CALL lis_vector_get_values_from_range2(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, istart_value, stride_value, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+END PROCEDURE obj_GetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
-CHARACTER(*), PARAMETER :: myName = "obj_Get1"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+#endif
+
 LOGICAL(LGT) :: bool1, bool2
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: indx(obj%spaceCompo)
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
-  & " or, obj%lis_ptr is not available")
-END IF
+INTEGER(I4B) :: s(3), indx(obj%spaceCompo)
 
 bool1 = PRESENT(globalNode)
 bool2 = PRESENT(spaceCompo)
 
-IF (bool1 .AND. bool2) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Both globalNode and spaceCompo cannot be present')
-END IF
+#ifdef DEBUG_VER
 
-IF (.NOT. bool1 .AND. .NOT. bool2) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Either globalNode and spaceCompo should be present')
-END IF
+CALL AssertError1(.NOT. (bool1 .AND. bool2), myName, &
+                  "Both globalNode and spaceCompo are present")
+
+CALL AssertError1(bool1 .OR. bool2, myName, &
+                  "Both globalNode and spaceCompo are absent")
+
+IF (bool1) CALL AssertError1(SIZE(VALUE) .GE. obj%spaceCompo, myName, &
+                             "size of value is not enough")
+
+IF (bool2) CALL AssertError1(SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B), &
+                             myName, "size of value is not enough")
+#endif
 
 ! globalnode present
 IF (bool1) THEN
-  SELECT CASE (obj%fieldType)
-  CASE (FIELD_TYPE_CONSTANT)
+  CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=globalNode, &
+                   ans=indx, tsize=tsize)
 
-    CALL Reallocate(VALUE, obj%spaceCompo)
-    CALL lis_vector_get_values(obj%lis_ptr, 1, obj%spaceCompo, &
-      & VALUE, ierr)
-    CALL CHKERR(ierr)
+  CALL obj%GetMultiple(indx=indx, VALUE=VALUE, tsize=tsize)
 
-  CASE (FIELD_TYPE_NORMAL)
-
-    localNode = obj%domain%getLocalNodeNumber(globalNode=globalNode)
-    CALL Reallocate(VALUE, obj%spaceCompo)
-    indx = GetNodeLoc(&
-      & obj=obj%dof, &
-      & nodenum=localNode, &
-      & ivar=1, &
-      & timeCompo=1, &
-      & spaceCompo=arange(1_I4B, obj%spaceCompo) &
-      & )
-
-    DO ii = 1, obj%spaceCompo
-      CALL lis_vector_get_value( &
-        & obj%lis_ptr, indx(ii), &
-        & VALUE(ii), ierr)
-      CALL CHKERR(ierr)
-    END DO
-
-  END SELECT
+  RETURN
 END IF
 
-!> get all values of spaceCompo
-IF (bool2) THEN
+!> Get all values of spaceCompo
+! IF (bool2) THEN
 
-  ii = obj%domain%getTotalNodes()
-  CALL Reallocate(VALUE, ii)
+s = GetNodeLoc(obj=obj%dof, idof=spaceCompo)
+CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, &
+                     tsize=tsize)
 
-  DO ii = 1, SIZE(VALUE)
-
-    indx(1) = getNodeLoc(&
-      & obj=obj%dof, &
-      & nodenum=ii, &
-      & idof=spaceCompo)
-
-    CALL lis_vector_get_value( &
-      & obj%lis_ptr, &
-      & indx(1), &
-      & VALUE(ii), &
-      & ierr)
-
-    CALL CHKERR(ierr)
-
-  END DO
-
-END IF
+! END IF
 
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
-!                                                                       get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
-CHARACTER(*), PARAMETER :: myName = "obj_Get2"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: indx
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
+LOGICAL(LGT) :: isok
+#endif
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+INTEGER(I4B) :: s(3), jj, mynrow
+INTEGER(I4B) :: indx(obj%spaceCompo)
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Either VectorFieldLis_::obj is not initiated'// &
-    & " or, obj%lis_ptr is not available")
-END IF
+#ifdef DEBUG_VER
+IF (storageFMT .EQ. NODES_FMT) THEN
 
-!> get all values of spaceCompo
-ii = obj%domain%getTotalNodes()
+  isok = SIZE(VALUE, 1) .GE. obj%spaceCompo
+  CALL AssertError1(isok, myName, "number of rows in value is not enough")
 
-IF (PRESENT(force3D)) THEN
-  CALL Reallocate(VALUE, 3_I4B, ii)
+  isok = SIZE(VALUE, 2) .GE. (obj%dof.tNodes.1)
+  CALL AssertError1(isok, myName, "number of cols in value is not enough")
+
 ELSE
-  CALL Reallocate(VALUE, obj%spaceCompo, ii)
+
+  isok = SIZE(VALUE, 1) .GE. (obj%dof.tNodes.1)
+  CALL AssertError1(isok, myName, "number of rows in value is not enough")
+
+  isok = SIZE(VALUE, 2) .GE. obj%spaceCompo
+  CALL AssertError1(isok, myName, "number of cols in value is not enough")
+
 END IF
+#endif
 
-indx = 0
-DO jj = 1, SIZE(VALUE, 2)
+IF (storageFMT .EQ. DOF_FMT) THEN
+  ncol = obj%spaceCompo
+  nrow = obj%dof.tNodes.1
 
-  DO ii = 1, obj%spaceCompo
-    indx = indx + 1
+  !$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
+  DO jj = 1, ncol
+    s = GetNodeLoc(obj=obj%dof, idof=jj)
 
-    CALL lis_vector_get_value( &
-      & obj%lis_ptr, &
-      & indx, &
-      & VALUE(ii, jj), &
-      & ierr)
-
-    CALL CHKERR(ierr)
+    CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                         VALUE=VALUE(:, jj), tsize=mynrow)
 
   END DO
+  !$OMP END PARALLEL  DO
+
+  RETURN
+END IF
+
+nrow = obj%spaceCompo
+ncol = obj%dof.tNodes.1
+
+!$OMP PARALLEL DO PRIVATE(jj, indx, mynrow)
+DO jj = 1, ncol
+  CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=jj, ans=indx, &
+                   tsize=mynrow)
+  CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=nrow)
 END DO
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-CHARACTER(*), PARAMETER :: myName = "obj_Get3"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-INTEGER(I4B) :: indx(obj%spaceCompo * SIZE(globalNode))
-REAL(DFP) :: val(obj%spaceCompo * SIZE(globalNode))
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
+INTEGER(I4B) :: jj, mynrow
+INTEGER(I4B), ALLOCATABLE :: indx(:, :)
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Either VectorFieldLis_::obj is not initiated'// &
-    & " or, obj%lis_ptr is not available")
-END IF
+#include "./localNodeError.F90"
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-ii = obj%domain%getTotalNodes()
-
-IF (ANY(localNode .EQ. 0_I4B)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'localNode is either 0 or greater than size of '// &
-    & " VectorFieldLis_::obj")
-END IF
-
-!> get all values of spaceCompo
-IF (PRESENT(force3D)) THEN
-  CALL Reallocate(VALUE, 3_I4B, SIZE(globalNode))
+IF (storageFMT .EQ. NODES_FMT) THEN
+  nrow = obj%spaceCompo; ncol = SIZE(globalNode)
 ELSE
-  CALL Reallocate(VALUE, obj%spaceCompo, SIZE(globalNode))
+  nrow = SIZE(globalNode); ncol = obj%spaceCompo
 END IF
 
-indx = getNodeLoc(&
-  & obj=obj%dof, &
-  & nodenum=localNode, &
-  & ivar=1, &
-  & timeCompo=1, &
-  & spaceCompo=arange(1, obj%spaceCompo) &
-  & )
+#ifdef DEBUG_VER
+isok = SIZE(VALUE, 1) .GE. nrow
+CALL AssertError1(isok, myName, "number of rows in value is not enough")
 
-DO ii = 1, SIZE(indx)
+isok = SIZE(VALUE, 2) .GE. ncol
+CALL AssertError1(isok, myName, "number of cols in value is not enough")
+#endif
 
-  CALL lis_vector_get_value( &
-    & obj%lis_ptr, &
-    & indx(ii), &
-    & val(ii), &
-    & ierr)
+ALLOCATE (indx(nrow, ncol))
 
-  CALL CHKERR(ierr)
+CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=globalNode, &
+                 ans=indx, nrow=nrow, ncol=ncol, storageFMT=storageFMT)
 
+!$OMP PARALLEL DO PRIVATE(jj, mynrow)
+
+DO jj = 1, ncol
+  CALL obj%GetMultiple(indx=indx(:, jj), VALUE=VALUE(:, jj), tsize=mynrow)
 END DO
 
-VALUE(1:obj%spaceCompo, :) = &
-& RESHAPE(val, [obj%spaceCompo, SIZE(globalnode)])
+!$OMP END PARALLEL DO
+
+DEALLOCATE (indx)
 
 END PROCEDURE obj_Get3
 
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
+! ----------------------------------------------------------------------------
+!                                                                         Get
+! ----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
-CHARACTER(*), PARAMETER :: myName = "obj_Get2"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: localNode(SIZE(globalNode))
+CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#include "./localNodeError.F90"
 
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Either VectorFieldLis_::obj is not initiated'// &
-    & " or, obj%lis_ptr is not available")
-END IF
+CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, idof=spaceCompo, &
+                 ans=indx, tsize=tsize)
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF (ANY(localNode .EQ. 0_I4B)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'localNode is either 0 or greater than size of '// &
-    & " VectorFieldLis_::obj")
-END IF
-
-!> get all values of spaceCompo
-CALL Reallocate(VALUE, SIZE(globalNode))
-
-indx = getNodeLoc(&
-  & obj=obj%dof, &
-  & nodenum=localNode, &
-  & ivar=1, &
-  & timeCompo=1, &
-  & spaceCompo=spaceCompo &
-  & )
-
-DO ii = 1, SIZE(indx)
-
-  CALL lis_vector_get_value( &
-    & obj%lis_ptr, &
-    & indx(ii), &
-    & VALUE(ii), &
-    & ierr)
-
-  CALL CHKERR(ierr)
-
-END DO
-
+CALL obj%GetMultiple(indx=indx, VALUE=VALUE, tsize=tsize)
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get5
-CHARACTER(*), PARAMETER :: myName = "obj_Get2"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Either VectorFieldLis_::obj is not initiated'// &
-    & " or, obj%lis_ptr is not available")
-END IF
-
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-IF ((localNode .EQ. 0_I4B)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'localNode is either 0 or greater than size of '// &
-    & " VectorFieldLis_::obj")
-END IF
-
-indx = getNodeLoc(&
-  & obj=obj%dof, &
-  & nodenum=localNode, &
-  & ivar=1, &
-  & timeCompo=1, &
-  & spaceCompo=spaceCompo &
-  & )
-
-CALL lis_vector_get_value( &
-  & obj%lis_ptr, &
-  & indx, &
-  & VALUE, &
-  & ierr)
-
-CALL CHKERR(ierr)
-
-END PROCEDURE obj_Get5
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get6
-INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalnode(jj) = ii
-END DO
-CALL obj%get(globalnode=globalnode, VALUE=VALUE)
-END PROCEDURE obj_Get6
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get7
-INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalnode(jj) = ii
-END DO
-CALL obj%get(globalnode=globalnode, VALUE=VALUE, spaceCompo=spaceCompo)
-END PROCEDURE obj_Get7
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get8
-REAL(DFP), ALLOCATABLE :: val(:, :)
-CALL obj%get(globalNode=globalNode, VALUE=val)
-VALUE = NodalVariable( &
-  & val, &
-  & TypeFEVariableScalar, &
-  & TypeFEVariableSpaceTime)
-DEALLOCATE (val)
-END PROCEDURE obj_Get8
-
-!----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get9
-CHARACTER(*), PARAMETER :: myName = "obj_Get9"
-REAL(DFP) :: aval
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: tsize
+CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
+INTEGER(I4B) :: tsize, s(3), p(3), ierr
+REAL(DFP), POINTER :: realvec(:)
 
-tsize = obj%domain%getTotalNodes()
+#include "./lis_null_error.F90"
+
+s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
 
 SELECT TYPE (VALUE)
-CLASS is (ScalarField_)
-  DO ii = 1, tsize
-    jj = obj%domain%getGlobalNodeNumber(ii)
-    CALL obj%get(VALUE=aval, globalNode=jj, spaceCompo=spaceCompo)
-    CALL VALUE%set(VALUE=aval, globalNode=jj)
-  END DO
-CLASS default
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'No case found for type of value')
+
+TYPE IS (ScalarField_)
+
+  realvec => VALUE%GetPointer()
+  CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
+                       tsize=tsize)
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+  realvec => VALUE%GetPointer()
+
+  CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                       tsize=tsize)
+  realvec => NULL()
+
+TYPE IS (VectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
+                                            ivar=ivar_value, idof=idof_value))
+
+  realvec => VALUE%GetPointer()
+
+  CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                       tsize=tsize)
+  realvec => NULL()
+
+TYPE IS (ScalarFieldLis_)
+
+  tsize = obj%dof.tNodes.idof
+  CALL lis_vector_get_values_from_range3(obj%lis_ptr, s(1), s(3), tsize, &
+                                         VALUE%lis_ptr, ierr)
+
+  CALL check_lis_error
+
+TYPE IS (STScalarFieldLis_)
+
+  tsize = obj%dof.tNodes.idof
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  CALL lis_vector_get_values_from_range4(obj%lis_ptr, s(1), s(3), tsize, &
+                                         VALUE%lis_ptr, p(1), p(3), ierr)
+
+  CALL check_lis_error
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTENRAL ERROR] :: No case found for the type of value')
+  RETURN
 END SELECT
+
+CONTAINS
+
+SUBROUTINE check_lis_error
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+END SUBROUTINE check_lis_error
 
 END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get10
-CHARACTER(*), PARAMETER :: myName = "obj_Get10"
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: tsize
-REAL(DFP), ALLOCATABLE :: aval(:)
-
-tsize = obj%domain%getTotalNodes()
-
-DO ii = 1, tsize
-  jj = obj%domain%getGlobalNodeNumber(ii)
-  CALL obj%get(VALUE=aval, globalNode=jj)
-  CALL VALUE%set(VALUE=aval, globalNode=jj)
-END DO
-
-END PROCEDURE obj_Get10
-
-!----------------------------------------------------------------------------
-!                                                     getPointerOfComponent
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method is not available for VectorFieldLis_')
-END PROCEDURE obj_GetPointerOfComponent
-
-!----------------------------------------------------------------------------
-!                                                                getPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPointer
-CHARACTER(*), PARAMETER :: myName = "obj_GetPointer"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method is not available for VectorFieldLis_')
-END PROCEDURE obj_GetPointer
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
