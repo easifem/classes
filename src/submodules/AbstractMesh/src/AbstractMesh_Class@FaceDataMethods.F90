@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(AbstractMesh_Class) FaceDataMethods
+
 USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES,  &
   & PARAM_REFELEM_MAX_POINTS,  &
   & RefElemGetGeoParam,  &
