@@ -128,7 +128,7 @@ tdof = tNodes(1) * obj%spaceCompo
 names(1) (:) = astr%slice(1, 1)
 
 CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
-                  dof_storageFMT=NODES_FMT, dof_spaceCompo=[obj%spaceCompo], &
+            dof_storageFMT=mystorageformat, dof_spaceCompo=[obj%spaceCompo], &
                                dof_timeCompo=[1_I4B], dof_tNodes=tNodes, &
                                dof_names_char=names, tSize=tdof)
 

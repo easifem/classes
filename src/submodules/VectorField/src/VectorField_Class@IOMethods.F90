@@ -71,7 +71,10 @@ dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
 isok = ALL(bools)
-IF (isok) CALL FinishMe
+IF (isok) THEN
+  CALL FinishMe
+  RETURN
+END IF
 
 CALL param%initiate()
 

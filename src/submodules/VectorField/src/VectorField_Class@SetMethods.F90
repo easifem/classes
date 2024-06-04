@@ -279,67 +279,8 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
-                  'VectorField_::obj is not initiated')
-
-CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
-            'given spaceCompo should be less than or equal to obj%spaceCompo')
-
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
-                  'Not callable for constant vector field')
-
-#endif
-
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-END IF
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-
-#ifdef DEBUG_VER
-
-  CALL AssertError2(VALUE%dof.tNodes.1, obj%dof.tNodes.spaceCompo, myName, &
-                    "a=value%dof .tNodes. 1, b=obj%dof .tNodes. spaceCompo")
-
-#endif
-
-  IF (abool) THEN
-    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=spaceCompo, &
-             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B, scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=spaceCompo, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B)
-
-TYPE IS (VectorField_)
-
-  IF (abool) THEN
-    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=spaceCompo, &
-             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=spaceCompo, &
-             scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=spaceCompo, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=spaceCompo)
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERORR] :: No case found for the type of value.')
-  RETURN
-END SELECT
-
+CALL obj%Set(ivar=1, idof=spaceCompo, VALUE=VALUE, ivar_value=1, &
+          idof_value=spaceCompo, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -531,27 +472,7 @@ END PROCEDURE obj_Set11
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set12
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-
-CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
-
-CALL AssertError1(obj%isInitiated, myName, &
-                  'VectorField_::obj is not initiated')
-
-#endif
-
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realvec, VALUE=VALUE, scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj=obj%realvec, VALUE=VALUE)
+CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
@@ -571,27 +492,50 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(VALUE%isInitiated, myName, &
                   'VectorField_::value is not initiated')
 
-CALL AssertError2(obj%dof.tNodes. [ivar, idof], &
-                  VALUE%dof.tNodes. [ivar_value, idof_value], myName, &
- 'a=obj%dof.tNodes. [ivar, idof], VALUE%dof.tNodes. [ivar_value, idof_value]')
-
 #endif
 
 abool = Input(option=addContribution, default=.FALSE.)
 
-idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
-idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
-
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2, scale=areal)
-
-  RETURN
 END IF
 
-CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-         obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
+idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
+
+SELECT TYPE (VALUE)
+
+TYPE IS (ScalarField_)
+
+  IF (abool) THEN
+    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B, scale=areal)
+    RETURN
+  END IF
+
+  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B)
+
+TYPE IS (VectorField_)
+
+  idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
+  IF (abool) THEN
+    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2, &
+             scale=areal)
+    RETURN
+  END IF
+
+  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
+           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
+
+! TYPE IS (ScalarFieldLis_)
+! TYPE IS (VectorFieldLis_)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                   '[INTERNAL ERORR] :: No case found for the type of value.')
+  RETURN
+END SELECT
 
 END PROCEDURE obj_Set13
 
@@ -600,7 +544,7 @@ END PROCEDURE obj_Set13
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set14
-CALL Set(obj=obj%realVec, VALUE=VALUE%realVec)
+CALL obj%Copy(VALUE)
 END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
