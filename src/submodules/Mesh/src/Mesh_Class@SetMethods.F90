@@ -178,17 +178,6 @@ END SELECT
 END PROCEDURE obj_setSparsity4
 
 !----------------------------------------------------------------------------
-!                                                        setFacetElementType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_setFacetElementType
-INTEGER(I4B) :: localElem
-localElem = obj%getLocalElemNumber(globalElement=globalElement)
-obj%facetElementType(iface, localElem) = facetElementType
-obj%elementData(localElem)%elementType = facetElementType
-END PROCEDURE obj_setFacetElementType
-
-!----------------------------------------------------------------------------
 !                                                           setQuality
 !----------------------------------------------------------------------------
 
@@ -253,6 +242,33 @@ IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 
 END PROCEDURE obj_setQuality
+
+!----------------------------------------------------------------------------
+!                                                          SetTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetTotalMaterial2
+INTEGER(I4B), ALLOCATABLE :: temp_material(:)
+INTEGER(I4B) :: n0
+
+IF (ALLOCATED(obj%material)) THEN
+  n0 = SIZE(obj%material)
+  CALL Reallocate(temp_material, n0 + n)
+  temp_material(1:n0) = obj%material(1:n0)
+  CALL MOVE_ALLOC(from=temp_material, to=obj%material)
+  RETURN
+END IF
+
+CALL Reallocate(obj%material, n)
+END PROCEDURE obj_SetTotalMaterial2
+
+!----------------------------------------------------------------------------
+!                                                                setMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterial2
+obj%material(medium) = material
+END PROCEDURE obj_SetMaterial2
 
 !----------------------------------------------------------------------------
 !

@@ -127,12 +127,6 @@ CALL Display(obj%Y, "Y: ", unitno=unitno)
 
 CALL Display(obj%Z, "Z: ", unitno=unitno)
 
-abool = ALLOCATED(obj%material)
-CALL Display(abool, "materialALLOCATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL Display(obj%material, "material: ", unitno=unitno)
-END IF
-
 abool = ALLOCATED(obj%boundingEntity)
 CALL Display(abool, "boundingEntity ALLOCATED: ", unitno=unitno)
 IF (abool) THEN
@@ -197,14 +191,18 @@ ELSEIF (cases(2)) THEN
 ELSEIF (cases(3)) THEN
   CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim,  &
     & tEntities=tEntities, myName=myName, modName=modName)
-  entities0 = arange(1_I4B, tEntities)
-  CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+  IF (tEntities .GT. 0_I4B) THEN
+    entities0 = arange(1_I4B, tEntities)
+    CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+  END IF
 
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: No case found')
   RETURN
 END IF
+
+CALL obj%InitiateElementToElements()
 
 IF (ALLOCATED(entities0)) DEALLOCATE (entities0)
 group0 = ""

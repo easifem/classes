@@ -69,6 +69,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/FEMesh/CMakeLists.txt)
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 
+# MeshFacetData
+include(${CMAKE_CURRENT_LIST_DIR}/MeshFacetData/CMakeLists.txt)
+
+# AbstractDomain
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractDomain/CMakeLists.txt)
+
+# FEDomain
+include(${CMAKE_CURRENT_LIST_DIR}/FEDomain/CMakeLists.txt)
+
+# FEDomainConnectivity
+include(${CMAKE_CURRENT_LIST_DIR}/FEDomainConnectivity/CMakeLists.txt)
+
 # Domain
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
 
