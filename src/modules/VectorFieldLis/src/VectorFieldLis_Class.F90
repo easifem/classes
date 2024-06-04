@@ -19,23 +19,25 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorFieldLis_Class
-USE GlobalData
-USE BaSetype
-USE String_Class
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE VectorField_Class
+USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE BaseType, ONLY: FEVariable_
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE VectorField_Class, ONLY: VectorField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE HDF5File_Class
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
-USE DirichletBC_Class
+USE HDF5File_Class, ONLY: HDF5File_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "VectorFieldLis_Class"
 CHARACTER(*), PARAMETER :: myprefix = "VectorField"
+
 PUBLIC :: VectorFieldLis_
-PUBLIC :: TypeVectorFieldLis
 PUBLIC :: VectorFieldLisPointer_
 PUBLIC :: VectorFieldLis
 PUBLIC :: VectorFieldLis_Pointer
@@ -57,76 +59,95 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  !! Get the size of the vector field
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate the vector field
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the vector field
+
   FINAL :: obj_Final
+  !! Finalizer
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of vector field
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import the vector field
+
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export the vector field
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
-  PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
-  PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
+  !! Set a single entry
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all the entries
+
+  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  !! Set multiple entries
+
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
-    !! Set single entry
+  !! Set single entry
+
   PROCEDURE, PASS(obj) :: Set2 => obj_Set2
-    !! Set all values to a Vector values
+  !! Set all values to a Vector values
+
   PROCEDURE, PASS(obj) :: Set3 => obj_Set3
-    !! Set all values to a given vector
+  !! Set all values to a given vector
+
   PROCEDURE, PASS(obj) :: Set4 => obj_Set4
-    !! Set selected values to given Vector
+  !! Set selected values to given Vector
+
   PROCEDURE, PASS(obj) :: Set5 => obj_Set5
-    !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
-    !! Set values to a Vector by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
-    !! Set values to a vector by using triplet
+  !! Set selected values to given vector
+
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set12 => obj_Set12
-    !! Set values to a vector by using triplet
+  !! Set nodal values of a space component
+
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
-    !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
+  !! obj@[ivar, idof] = value@[ivar, idof]
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
-    & obj_GetPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent => &
-    & obj_GetPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
+  !! Get pointer of the vector field
+  !! This method is not callable
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
+  !! Get a single entry
+
+  PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  !! get many values from indices
+  PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  !! get many values from trides
+  PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  !! get many values from trides
+
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
-    !! returns the single entry
+  !! returns vector values at single node or
+  !! get all nodal values of a space-components
+
   PROCEDURE, PASS(obj) :: Get2 => obj_Get2
-    !! returns all entries in rank2 array of real
+  !! returns all entries in rank2 array of real
+
   PROCEDURE, PASS(obj) :: Get3 => obj_Get3
-    !! returns selected values in XiJ format
+  !! returns selected values in rank2 aray of real
+
   PROCEDURE, PASS(obj) :: Get4 => obj_Get4
-  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
-  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
-  PROCEDURE, PASS(obj) :: Get8 => obj_Get8
+  !! returns selected values of a space components
+
   PROCEDURE, PASS(obj) :: Get9 => obj_Get9
-  PROCEDURE, PASS(obj) :: Get10 => obj_Get10
-    !! Get the entries of Vector field
+  !! value@[ivar, idof] = obj@[ivar, idof]
 
 END TYPE VectorFieldLis_
-
-TYPE(VectorFieldLis_), PARAMETER :: TypeVectorFieldLis =  &
-  & VectorFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                     VectorFieldLisPointer_
@@ -142,12 +163,12 @@ END TYPE VectorFieldLisPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary:         This function returns an instance of [[VectorFieldLis_]]
+! summary: This function returns an instance of [[VectorFieldLis_]]
 
 INTERFACE VectorFieldLis
-  MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     TYPE(VectorFieldLis_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE VectorFieldLis
@@ -158,12 +179,12 @@ END INTERFACE VectorFieldLis
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary:         This function returns an instance of [[VectorFieldLis_]]
+! summary: This function returns an instance of [[VectorFieldLis_]]
 
 INTERFACE VectorFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(VectorFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE VectorFieldLis_Pointer
@@ -202,10 +223,10 @@ END INTERFACE
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -242,10 +263,10 @@ END INTERFACE
 ! summary: Display the content of [[VectorFieldLis_]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -258,12 +279,12 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -288,8 +309,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
@@ -315,14 +335,23 @@ END INTERFACE
 !                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-04
+! summary: Set multiple entries by using indices
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple(obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+    !! vector field object
     INTEGER(I4B), INTENT(IN) :: indx(:)
+    !! indices
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! obj = value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_SetMultiple
+    !! add or set
+  END SUBROUTINE obj_SetMultiple1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -330,7 +359,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Sets the single entry of the Vector field
 !
 !# Introduction
@@ -338,7 +367,7 @@ END INTERFACE
 ! be a vector representing the components of a vector. The size of `value`
 ! should be same as `obj%spaceCompo`. In simple words it does following.
 !
-! vector(:, globalNode) = value(:)
+! vector( :, globalNode ) = value( : )
 !
 !
 !### Usage
@@ -349,13 +378,20 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, &
-    & scale, addContribution)
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, &
+                             scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+    !! vector field object
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! vector value, size of value should be obj%spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set1
 END INTERFACE
 
@@ -364,7 +400,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Sets all the entries of a Vector field
 !
 !# Introduction
@@ -383,10 +419,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
-    CLASS(VectorFieldLis_), TARGET, INTENT(INOUT) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! vector value, size of value should be obj%spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set2
 END INTERFACE
 
@@ -395,7 +434,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Sets all the entries of a Vector field
 !
 !# Introduction
@@ -417,10 +456,15 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Set3(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+    !! vector field object
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value (all values are set to value)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set3
 END INTERFACE
 
@@ -429,7 +473,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Set all the entries by using given Vector field
 !
 !# Introduction
@@ -449,11 +493,23 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, VALUE, storageFMT, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
+    !! size(value, 1) should be obj%spaceCompo
+    !! size(value, 2) should be tNodes
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! if storageFMT is NODES_FMT then:
+    !! size(value, 1) should be obj%spaceCompo
+    !! size(value, 2) should be tNodes
+    !!
+    !! if storageFMT is NODES_FMT then:
+    !! size(value, 2) should be obj%spaceCompo
+    !! size(value, 1) should be tNodes
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set4
 END INTERFACE
 
@@ -462,7 +518,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Set all the entries by using given Vector field
 !
 !# Introduction
@@ -485,9 +541,13 @@ INTERFACE
   MODULE SUBROUTINE obj_Set5(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! size of value should be tNodes
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set5
 END INTERFACE
 
@@ -496,117 +556,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Set all the entries by using given Vector field
-!
-!# Introduction
-! This routine Set all entries of the component `spaceCompo` vector
-! field  to given scalar field `value`
-!
-! vector( spaceCompo, : ) = value
-!
-!
-!### Usage
-!
-!```fortran
-! call scalarObj%initiate( param, dom )
-! call scalarObj%Set( value = 2.0_DFP )
-! call obj%Set( value=scalarObj, spaceCompo=2 )
-! call obj%display( "test-6: vector field = ")
-! ierr = param%Set( key="fieldType", value=FIELD_TYPE_CONSTANT)
-! call scalarObj%Deallocate()
-! call scalarObj%initiate( param, dom )
-! call scalarObj%Set( value=10.0_DFP )
-! call obj%Set( value=scalarObj, spaceCompo=1 )
-! call obj%display( "test-7: vector field = ")
-!```
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE, spaceCompo, scale, addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-!
-!# Introduction
-! This soubroutine Sets the selected enties to a vector entry value( : )
-! Effectively it does the following:
-!
-! vector( :, globalNode ) = value( : ), for entries in global nodes
-!
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real2, 3, 4)
-! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-! real2( :, 4 ) = -4.0
-! call obj%Set( value=real2, globalNode=[1,3,5,7] )
-! call obj%display( "test-8: vector field = ")
-!```
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, scale, addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set7
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-!
-!# Introduction
-! This routine Sets all selected entries.
-! vector( :, globalNode ) = value( :, : )
-!
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real2, 3, 4)
-! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-! real2( :, 4 ) = -4.0
-! call obj%Set( value=real2, globalNode=[1,3,5,7] )
-! call obj%display( "test-8: vector field = ")
-!```
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, VALUE, scale, &
-    & addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: VALUE(:, :)
-  !! value is in value(i,J) format.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
+! date: 25 June 2021
 ! summary: This routine Sets the selected entries
 !
 !# Introduction
@@ -625,124 +575,22 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, spaceCompo, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, spaceCompo, &
+                             scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! values to be used in obj = value
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set9
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-!
-!# Introduction
-! selected components, selected nodes
-!
-! vector( spaceCompo, globalNode ) = value
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, spaceCompo, scale, &
-    & addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set10
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-!
-!# Introduction
-! Set entries using the selected nodes using triplet.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, VALUE, istart, iend, stride, scale, &
-    & addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: istart
-    INTEGER(I4B), INTENT(IN) :: iend
-    INTEGER(I4B), INTENT(IN) :: stride
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set11
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: Set the vector values using triplet
-!
-!# Introduction
-! Set entries using the selected nodes using triplet.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set12(obj, VALUE, istart, iend, stride, scale, &
-    & addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(IN) :: istart
-    INTEGER(I4B), INTENT(IN) :: iend
-    INTEGER(I4B), INTENT(IN) :: stride
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set12
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: Set the values using FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, VALUE, globalNode, scale, &
-    & addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    TYPE(FEVariable_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set13
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: Set the values using FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE, scale, addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -754,202 +602,24 @@ END INTERFACE
 ! summary: Set values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
+                              idof_value, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(VectorField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set16
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine returns the single entry of the Vector field
-!
-!# Introduction
-!
-! If globalnode is present then this routine returns all spatial components
-! at the globalnode
-!
-! If spacecompo is present then `globalnode` should not be present
-! In this case this routine returns the entire vector of spacecompo.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, spaceCompo)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-  END SUBROUTINE obj_Get1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Get all the entries by using given Vector field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE, force3D)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE obj_Get2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine returns the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, force3D)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE obj_Get3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine returns the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, spaceCompo)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE obj_Get4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine returns the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, spaceCompo)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE obj_Get5
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, VALUE, istart, iend, stride)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(IN) :: istart
-    INTEGER(I4B), INTENT(IN) :: iend
-    INTEGER(I4B), INTENT(IN) :: stride
-  END SUBROUTINE obj_Get6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine Sets the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, istart, iend, stride, spaceCompo)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(IN) :: istart
-    INTEGER(I4B), INTENT(IN) :: iend
-    INTEGER(I4B), INTENT(IN) :: stride
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE obj_Get7
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine returns the selected entries in FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, VALUE, globalNode)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE obj_Get8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine return value in FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get9(obj, VALUE, spaceCompo)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE obj_Get9
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine return value in FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get10(obj, VALUE)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    CLASS(VectorField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get10
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetPointerOfComponent@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This routine cannot be called
-
-INTERFACE
-  MODULE FUNCTION obj_GetPointerOfComponent(obj, spaceCompo) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    REAL(DFP), POINTER :: ans(:)
-  END FUNCTION obj_GetPointerOfComponent
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! Physical variable in obj
+    INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom of ivar
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    !! value
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! Physical variable in VALUE
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom of ivar in VALUE
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -981,6 +651,202 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE obj_GetSingle
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(:)
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-06-02
+! summary: Get multiple entries using trides
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
+                                istart_value, iend_value, stride_value, tsize)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    !! returned vlaue
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total number of data written in value
+  END SUBROUTINE obj_GetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine returns the single entry of the Vector field
+!
+!# Introduction
+!
+! If globalnode is present then this routine returns all spatial components
+! at the globalnode
+!
+! If spacecompo is present then `globalnode` should not be present
+! In this case this routine returns the entire vector of spacecompo.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, spaceCompo)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written in value
+    !! if globalNode is present then tsize = obj%spaceCompo
+    !! if spaceCompo is present then tsize = tNodes
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
+    !! This should be a local node
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space component
+  END SUBROUTINE obj_Get1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine Get all the entries by using given Vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT, force3D)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in value
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written in value
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! NODES_FMT:: nrow is obj%spaceCompo or 3, ncol is tNodes
+    !! DOF_FMT:: nrow is tNodes, ncol is obj%spaceCompo or 3
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
+  END SUBROUTINE obj_Get2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine returns the selected entries
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, storageFMT, &
+                             globalNode, islocal, force3D)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    !! The number of columns in value is same as the
+    !! the size of globalNode
+    !! The number of rows in columns is equal to the
+    !! spaceCompo
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in value
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! The number of columns in value is same as the
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! NODES_FMT:: nrow is obj%spaceCompo or 3, ncol is size(globalNode)
+    !! DOF_FMT:: nrow is size(globalNode), ncol is obj%spaceCompo or 3
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is local node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
+    !! if true then minimum 3 components are returned in value
+  END SUBROUTINE obj_Get3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine returns the selected entries
+
+INTERFACE
+MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, spaceCompo)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    !! the size of value should be same as globalNode
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in value
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global node number is local node number
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component
+  END SUBROUTINE obj_Get4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Get value
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in obj
+    INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom in obj
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable in val
+    INTEGER(I4B), INTENT(IN) :: idof_value
+  END SUBROUTINE obj_Get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
