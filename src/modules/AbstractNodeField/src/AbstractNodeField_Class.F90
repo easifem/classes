@@ -191,8 +191,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
   !! Set multiple entries using range
 
+  PROCEDURE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
+  !! Set multiple entries using range
+
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
-    SetMultiple3
+    SetMultiple3, SetMultiple4
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set by user function
@@ -567,6 +570,29 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple4(obj, istart, iend, stride, VALUE, &
+                                     scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! index, size(indx) = size(value) = tsize
+    REAL(DFP), INTENT(IN) :: VALUE
+    !! obj = value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetMultiple4
 END INTERFACE
 
 !----------------------------------------------------------------------------
