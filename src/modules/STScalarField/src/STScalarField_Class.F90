@@ -101,48 +101,87 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
-    !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
-    !! Set all values to a constant time node values
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
-    !! Set all values to a given STScalar
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
-    !! Set selected values to given STScalar
-  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
-    !! Set selected values to given STScalar
-  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
-    !! Set values to a STScalar by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
-    !! Set values to a STScalar by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
-    !! Set values to a STScalar by using triplet
-  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-    !! Set values to a STScalar by using triplet
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-    !! Set values to a STScalar by using triplet
-  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
-    !! Set values using FEVariable
-  PROCEDURE, PASS(obj) :: Set12 => obj_Set12
-    !! Set values using FEVariable
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+  !! Set single entry
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
+  !! Set all values to a constant time node values
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
+  !! Set all values to a given STScalar
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
+  !! Set selected values to given STScalar
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  !! Set selected values to given STScalar
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  !! obj@timeCompo=obj@timeCompo+scale*value
+  !! (value is an instance of abstract noe field)
+  !! if value is space-time field, then
+  !! value@timeCompo is used
+  !! This method calls Set13
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  !! Set values to a STScalar by using triplet
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
+  !! Set values to a STScalar by using triplet
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
+  !! Set values to a STScalar by using triplet
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
+  !! Set values to a STScalar by using triplet
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
+  !! Set values using FEVariable
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
+  !! Set all the value to a constant
+  !! WE call setall method here
+
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
+  !! obj@[ivar, idof] = value@[ivar, idof]
+
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
-  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  !! Copy
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    & Set7, Set8, Set9, Set10, Set11, Set12, Set13,  &
-    & Set14
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13, &
+    Set14
+
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => obj_SetByFunction
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
-  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
-  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
-  PROCEDURE, PASS(obj) :: Get4 => obj_Get4
-  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
-  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
-  PROCEDURE, PASS(obj) :: Get8 => obj_Get8
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
+  !! Get all components at a given node
+  !! Get all values of a given component
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  !! Get all values in a rank  array
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
+  !! Get selected many values in a rank-2 array
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
+  !! Get selected many values in a rank-1 array
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
+  !! Get single entry; call GetSingle method
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
+  !! Get value in FEVariable
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
+  !! Get by copy, value is an instance of AbstractNodeField_
+  !! We call Get8
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
   !! Get a single value of time component at a global/local node
 
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7, Get8
@@ -519,7 +558,10 @@ INTERFACE
     !! number of cols in value should be equal to obj%timeCompo
     !! number of rows in value should be equal to fedof%tdof
     INTEGER(I4B), INTENT(IN) :: storageFMT
-    !! NODES_FMT or DOF_FMT
+    !! Storage format of value,
+    !! How the dta is stored in value, NODES_FMT or DOF_FMT
+    !! For NODES_FMT, nrow in value = timeCompo
+    !! For DOF_FMT, nrow in value = nodes
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
