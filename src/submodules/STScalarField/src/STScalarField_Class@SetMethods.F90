@@ -24,6 +24,10 @@ USE AbstractField_Class, ONLY: TypeField
 
 USE ScalarField_Class, ONLY: ScalarField_
 
+USE VectorField_Class, ONLY: VectorField_
+
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
 USE RealVector_Method, ONLY: Set, Add, GetPointer
 
 USE Display_Method, ONLY: tostring
@@ -32,7 +36,9 @@ USE GlobalData, ONLY: NONE, SpaceTime, Scalar
 
 USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.), &
-                      GetIDOF
+                      GetIDOF, &
+                      GetIndex_, &
+                      GetNodeLoc_
 
 USE ArangeUtility, ONLY: Arange
 
@@ -43,7 +49,18 @@ USE FEVariable_Method, ONLY: Get
 
 USE ReallocateUtility, ONLY: Reallocate
 
+USE SafeSizeUtility, ONLY: SafeSize
+
 IMPLICIT NONE
+
+INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
+
+INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
+INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
+!$OMP THREADPRIVATE(TEMP_INTVEC)
+
+INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
+!$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
 
 CONTAINS
 
@@ -52,46 +69,34 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-INTEGER(I4B) :: localNode(1)
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+INTEGER(I4B) :: ierr, tsize
 
 #ifdef DEBUG_VER
 
-LOGICAL(LGT) :: isok
+CALL AssertError1(obj%isInitiated, myName, "STScalarField_::obj not initiated")
 
-CALL AssertError1(obj%isInitiated, myName, &
-                  'STScalarField_::obj is not initiated')
+CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+                  "Not callable for constant STScalar field")
+
 CALL AssertError2(SIZE(VALUE), obj%timeCompo, myName, &
-                  "a=Value, b=obj%timeCompo")
+                  "a=SIZE(VALUE), b=obj%timeCompo")
 
+isok = obj%timeCompo .LE. TEMP_INTVEC_LEN
+CALL AssertError1(isok, myName, "size of TEMP_INTVEC is not enough")
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
+CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
+               tsize=tsize)
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-
-  localNode(1) = 1
-
-ELSE
-
-  localNode(1) = globalNode
-
-END IF
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
-           VALUE=VALUE, conversion=[NONE], scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=localNode, &
-         VALUE=VALUE, conversion=[NONE])
-
+CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
+                     addContribution=addContribution)
 END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
@@ -99,54 +104,25 @@ END PROCEDURE obj_Set1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
-INTEGER(I4B) :: idof, s(3)
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+#endif
+
+INTEGER(I4B) :: idof, s(3)
+
+#ifdef DEBUG_VER
 
 CALL AssertError1(obj%isInitiated, myName, &
                   'STScalarField_::obj is not initiated')
+CALL AssertError1(obj%fieldType .EQ. TypeField%constant, myName, &
+                  'Not callable for constant STScalar field')
 
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=[1], VALUE=VALUE, &
-             conversion=[NONE], scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=[1], VALUE=VALUE, &
-           conversion=[NONE])
-
-  RETURN
-END IF
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-
-  DO idof = 1, obj%timeCompo
-
-    s = GetNodeLoc(obj=obj%dof, idof=idof)
-    CALL Add(obj=obj%realVec, VALUE=VALUE(idof), scale=areal, &
-             istart=s(1), iend=s(2), stride=s(3))
-
-  END DO
-  RETURN
-END IF
-
 DO idof = 1, obj%timeCompo
-
   s = GetNodeLoc(obj=obj%dof, idof=idof)
-  CALL Set(obj=obj%realVec, VALUE=VALUE(idof), istart=s(1), iend=s(2), &
-           stride=s(3))
-
+  CALL obj%SetMultiple(VALUE=VALUE(idof), istart=s(1), iend=s(2), &
+                    stride=s(3), scale=scale, addContribution=addContribution)
 END DO
 
 END PROCEDURE obj_Set2
@@ -156,12 +132,16 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
+#ifdef DEBUG_VER
+
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+LOGICAL(LGT) :: isok
+
+#endif
+
 INTEGER(I4B) :: s(3)
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 
 CALL AssertError1(obj%isInitiated, myName, &
                   'STScalarField_::obj is not initiated')
@@ -169,34 +149,14 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
                   'timeCompo should be less or equal to obj%timeCompo')
 
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant field')
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=[1], VALUE=[VALUE], &
-             idof=timeCompo, scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=[1], VALUE=[VALUE], &
-           idof=timeCompo)
-  RETURN
-
-END IF
-
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, VALUE=VALUE, scale=areal, istart=s(1), &
-           iend=s(2), stride=s(3))
-  RETURN
-END IF
-
-CALL Set(obj=obj%realVec, VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3))
+CALL obj%SetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
+                     scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_Set3
 
@@ -205,13 +165,15 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tnodes
+INTEGER(I4B) :: nrow
+#endif
+
+INTEGER(I4B) :: jj, ncol
+
+#ifdef DEBUG_VER
 
 CALL AssertError1(obj%isInitiated, myName, &
                   'STScalarField::obj is not initiated')
@@ -219,25 +181,34 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
                   'Not callable for constant STScalar field')
 
-CALL AssertError2(SIZE(VALUE, 2), obj%timeCompo, myName, &
-                  'a=SIZE(VALUE, 2), b=obj%timeCompo')
+IF (storageFMT .EQ. NODES_FMT) THEN
+  nrow = obj%timeCompo
+  ncol = obj%dof.tNodes.1
+ELSE
+  nrow = obj%dof.tNodes.1
+  ncol = obj%timeCompo
+END IF
 
-tnodes = obj%fedof%GetTotalDOF()
-
-CALL AssertError2(SIZE(VALUE, 1), tNodes, myName, &
-                  'a=SIZE(VALUE, 1), b=tNodes')
+CALL AssertError2(SIZE(VALUE, 1), nrow, myName, 'a=SIZE(VALUE, 1), b=nrow')
+CALL AssertError2(SIZE(VALUE, 2), ncol, myName, 'a=SIZE(VALUE, 2), b=ncol')
 
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, VALUE=VALUE, scale=areal)
+IF (storageFMT .EQ. DOF_FMT) THEN
+  DO jj = 1, obj%timeCompo
+    CALL obj%Set(VALUE=VALUE(:, jj), timeCompo=jj, scale=scale, &
+                 addContribution=addContribution)
+  END DO
   RETURN
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, VALUE=VALUE)
+ncol = obj%dof.tNodes.1
+!$OMP PARALLEL DO PRIVATE(jj)
+DO jj = 1, ncol
+  CALL obj%Set(VALUE=VALUE(:, jj), scale=scale, &
+               addContribution=addContribution, globalNode=jj, islocal=.TRUE.)
+END DO
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Set4
 
@@ -246,53 +217,33 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 INTEGER(I4B) :: tsize
-
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
-
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: timeCompo is more than obj%timeCompo')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: not callable for constant STScalar field')
-  RETURN
-END IF
-
-tsize = obj%fedof%GetTotalDOF()
-
-IF (SIZE(VALUE) .NE. tsize) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: Size of value is out of bound')
-  RETURN
-END IF
-
+LOGICAL(LGT) :: isok
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
+INTEGER(I4B) :: s(3)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, VALUE=VALUE, scale=areal, idof=timeCompo, &
-           dofobj=obj%dof)
+#ifdef DEBUG_VER
 
-  RETURN
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
 
-END IF
+isok = timeCompo .LE. obj%timeCompo
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 
-CALL Set(obj=obj%realVec, VALUE=VALUE, idof=timeCompo, dofobj=obj%dof)
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, "Not callable for constant field")
+
+tsize = obj%dof.tNodes.timeCompo
+CALL AssertError2(SIZE(VALUE), tsize, myName, &
+                  "a=SIZE(VALUE), b=obj%dof.tNodes.timeCompo")
+#endif
+
+s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
+CALL obj%SetMultiple(VALUE=VALUE, scale=scale, istart=s(1), &
+                     iend=s(2), stride=s(3), addContribution=addContribution)
 
 END PROCEDURE obj_Set5
 
@@ -301,107 +252,8 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-REAL(DFP) :: areal, breal
-LOGICAL(LGT) :: abool
-CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
-
-#ifdef DEBUG_VER
-
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tnodes
-
-IF (.NOT. obj%isInitiated .OR. .NOT. VALUE%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
-
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  '[INTERNAL ERROR] ::  timeCompo is more than obj%timeCompo')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: not callable for constant STScalar field')
-  RETURN
-END IF
-
-#endif
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-
-#ifdef DEBUG_VER
-
-  isok = VALUE%fedof%GetTotalDOF() .EQ. obj%fedof%GetTotalDOF()
-
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: Size of value .NE. total number of nodes')
-    RETURN
-  END IF
-
-#endif
-
-  IF (VALUE%fieldType .EQ. TypeField%constant) THEN
-
-    CALL VALUE%Get(VALUE=breal, globalNode=1_I4B, islocal=.TRUE.)
-
-    CALL obj%Set(VALUE=breal, timeCompo=timeCompo, scale=scale, &
-                 addContribution=addContribution)
-
-    RETURN
-
-  END IF
-
-  abool = Input(option=addContribution, default=.FALSE.)
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=timeCompo, &
-             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B, scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=timeCompo, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=1_I4B)
-
-TYPE IS (STScalarField_)
-
-  IF (VALUE%fieldType .EQ. TypeField%constant) THEN
-
-    CALL VALUE%Get(VALUE=breal, globalNode=1_I4B, islocal=.TRUE., &
-                   timeCompo=timeCompo)
-
-    CALL obj%Set(VALUE=breal, timeCompo=timeCompo, scale=scale, &
-                 addContribution=addContribution)
-
-    RETURN
-
-  END IF
-
-  abool = Input(option=addContribution, default=.FALSE.)
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=timeCompo, &
-             obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=timeCompo, &
-             scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=timeCompo, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=timeCompo)
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for the type of value')
-  RETURN
-END SELECT
-
+CALL obj%Set(ivar=1, idof=timeCompo, VALUE=VALUE, ivar_value=1_I4B, &
+           idof_value=timeCompo, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -409,17 +261,14 @@ END PROCEDURE obj_Set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set7
-! FIXME: remove this allocation
-REAL(DFP) :: val(SIZE(VALUE), SIZE(globalNode))
 INTEGER(I4B) :: ii
 
+!$OMP PARALLEL DO PRIVATE(ii)
 DO ii = 1, SIZE(globalNode)
-  val(:, ii) = VALUE(:)
+  CALL obj%Set(VALUE=VALUE, globalNode=globalNode(ii), &
+               islocal=islocal, scale=scale, addContribution=addContribution)
 END DO
-
-CALL obj%Set(VALUE=val, globalNode=globalNode, islocal=islocal, &
-             scale=scale, addContribution=addContribution, &
-             storageFMT=NODES_FMT)
+!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Set7
 
@@ -428,74 +277,52 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-REAL(DFP) :: val(SIZE(VALUE))
-INTEGER(I4B) :: conversion(1)
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
-LOGICAL(LGT) :: problem
-
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: Scalar field object is not initiated')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: Nor callable for constant STScalar field')
-  RETURN
-END IF
-
-IF (storageFMT .EQ. NODES_FMT) THEN
-  problem = (SIZE(VALUE, 1) .NE. obj%timeCompo) .OR. &
-            (SIZE(VALUE, 2) .NE. SIZE(globalNode))
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: SIZE(value,1) not equal timeCompo ' &
-                      //'or SIZE(value, 2) not equal to the SIZE(globalNode)')
-    RETURN
-  END IF
-END IF
-
-IF (storageFMT .EQ. DOF_FMT) THEN
-  problem = (SIZE(VALUE, 2) .NE. obj%timeCompo) .OR. &
-            (SIZE(VALUE, 1) .NE. SIZE(globalNode))
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: SIZE(value,2) not equal timeCompo ' &
-                      //'or SIZE(value, 1) not equal to the SIZE(globalNode)')
-    RETURN
-  END IF
-END IF
-
+INTEGER(I4B) :: nrow, ncol
+LOGICAL(LGT) :: isok
 #endif
 
-IF (storageFMT .EQ. mystorageformat) THEN
-  conversion(1) = NONE
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STSCalarField_::obj is not initiated')
+
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
+
+IF (storageFMT .EQ. NODES_FMT) THEN
+  nrow = obj%timeCompo
+  ncol = SIZE(globalNode)
 ELSE
-  conversion(1) = myconversion
+  nrow = SIZE(globalNode)
+  ncol = obj%timeCompo
 END IF
 
-val = RESHAPE(VALUE, [SIZE(VALUE)])
+CALL AssertError2(SIZE(VALUE, 1), nrow, myName, &
+                  'a=SIZE(VALUE, 1), b=nrow')
 
-abool = Input(option=addContribution, default=.FALSE.)
+CALL AssertError2(SIZE(VALUE, 2), ncol, myName, &
+                  'a=SIZE(VALUE, 2), b=ncol')
+#endif
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-           VALUE=val, conversion=conversion, scale=areal)
+IF (storageFMT .EQ. NODES_FMT) THEN
+  DO ii = 1, SIZE(globalNode)
+    CALL obj%Set(VALUE=VALUE(:, ii), globalNode=globalNode(ii), &
+                 scale=scale, addContribution=addContribution, &
+                 islocal=islocal)
+  END DO
   RETURN
-
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-         VALUE=val, conversion=conversion)
+DO ii = 1, obj%timeCompo
+  CALL obj%Set(VALUE=VALUE(:, ii), globalNode=globalNode, &
+               scale=scale, addContribution=addContribution, &
+               islocal=islocal, timeCompo=ii)
+END DO
 
 END PROCEDURE obj_Set8
 
@@ -504,51 +331,53 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: tsize
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, &
+                  "STScalarField_::obj not initiated")
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
+isok = timeCompo .LE. obj%timeCompo
+CALL AssertError1(isok, myName, "timeCompo is out of bound")
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: timeCompo is out of bound')
-  RETURN
-END IF
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: Not callable for constant STScalar field')
-  RETURN
-END IF
-
-IF (SIZE(VALUE) .NE. SIZE(globalNode)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: The size of value is not correct')
-  RETURN
-END IF
+CALL AssertError2(SIZE(VALUE), SIZE(globalNode), &
+                  myName, 'a=SIZE(VALUE), b=size(globalNode)')
 
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
+tsize = SIZE(globalNode)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-           VALUE=VALUE, idof=timeCompo, scale=areal)
+IF (tsize .LE. TEMP_INTVEC_LEN) THEN
+  CALL GetNodeLoc_(obj=obj%dof, idof=timeCompo, &
+                   nodenum=globalNode, ans=TEMP_INTVEC, tsize=tsize)
+
+  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
+                       addContribution=addContribution)
+
   RETURN
+
 END IF
 
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-         VALUE=VALUE, idof=timeCompo)
+IF (tsize .GT. SafeSize(TEMP_DYNA_INTVEC)) THEN
+  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * tsize)
+END IF
+
+CALL GetNodeLoc_(obj=obj%dof, idof=timeCompo, nodenum=globalNode, &
+                 ans=TEMP_DYNA_INTVEC, tsize=tsize)
+
+CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+                     scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_Set9
 
@@ -557,45 +386,30 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set10
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: STScalar field object is not initiated')
-  RETURN
-END IF
+isok = timeCompo .LE. obj%timeCompo
+CALL AssertError1(isok, myName, "timeCompo is out of bound")
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR]:: timeCompo out of bound.')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: NOT Callable for constant STScalar field')
-  RETURN
-END IF
-
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, 'Not callable for constant STScalar field')
 #endif
 
 #include "./localNodeError.inc"
 
-abool = Input(option=addContribution, default=.FALSE.)
+indx = GetNodeLoc(obj=obj%dof, idof=timeCompo, nodenum=globalNode)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-           VALUE=VALUE, scale=areal, idof=timeCompo)
-  RETURN
-END IF
-
-CALL Set(obj=obj%realVec, dofobj=obj%dof, nodenum=globalNode, &
-         VALUE=VALUE, idof=timeCompo)
+CALL obj%SetSingle(indx=indx, VALUE=VALUE, scale=scale, &
+                   addContribution=addContribution)
 
 END PROCEDURE obj_Set10
 
@@ -604,22 +418,19 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set11
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, &
+                  'STScalarField_::obj is not initiated')
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: Scalar field object is not initiated')
-  RETURN
-END IF
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: Not callable for constant STScalar field')
-  RETURN
-END IF
-
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
 #endif
 
 #include "./localNodeError.inc"
@@ -645,19 +456,7 @@ END PROCEDURE obj_Set11
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set12
-LOGICAL(LGT) :: abool
-REAL(DFP) :: areal
-
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj=obj%realVec, VALUE=VALUE, scale=areal)
-  RETURN
-END IF
-
-CALL Set(obj=obj%realVec, VALUE=VALUE)
-
+CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
@@ -665,40 +464,70 @@ END PROCEDURE obj_Set12
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set13
-INTEGER(I4B) :: idof1
-INTEGER(I4B) :: idof2
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+INTEGER(I4B) :: s(3), p(3)
+REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
-
 CALL AssertError1(obj%isInitiated, myName, &
                   'ScalarField_::obj is not initiated')
 
 CALL AssertError1(VALUE%isInitiated, myName, &
                   'AbstractNodeField_::value is not initiated')
-
-CALL AssertError2(obj%dof.tNodes. [ivar, idof], &
-                  VALUE%dof.tNodes. [ivar_value, idof_value], myName, &
- 'a=obj%dof.tNodes. [ivar, idof], VALUE%dof.tNodes. [ivar_value, idof_value]')
-
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
+s = GetNodeLoc(obj=obj%dof, idof=idof)
 
-idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
-idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
+SELECT TYPE (VALUE)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-           obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2, scale=areal)
+TYPE IS (ScalarField_)
+
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+                       istart=s(1), iend=s(2), stride=s(3))
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+                       istart=s(1), iend=s(2), stride=s(3), &
+                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
+
+TYPE IS (VectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+                       istart=s(1), iend=s(2), stride=s(3), &
+                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
+
+! TYPE IS (STVectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+
+! TYPE IS (ScalarFieldLis_)
+
+! TYPE IS (STScalarFieldLis_)
+!
+! TYPE IS (VectorFieldLis_)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for the type of value')
   RETURN
-END IF
-
-CALL Set(obj1=obj%realVec, dofobj1=obj%dof, idof1=idof1, &
-         obj2=VALUE%realVec, dofobj2=VALUE%dof, idof2=idof2)
+END SELECT
 
 END PROCEDURE obj_Set13
 
@@ -707,7 +536,34 @@ END PROCEDURE obj_Set13
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set14
-CALL Set(obj=obj%realVec, VALUE=VALUE%realVec)
+CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
+INTEGER(I4B) :: ierr
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, &
+                  "STScalarFieldLis_::obj is not initiated")
+#endif
+
+SELECT TYPE (VALUE)
+
+TYPE IS (STScalarField_)
+  CALL obj%Copy(VALUE)
+
+! TYPE is (STScalarFieldLis_)
+!
+!   DO ierr = 1, obj%timeCompo
+!     CALL VALUE%Get(VALUE=obj, timeCompo=ierr)
+!   END DO
+
+CLASS DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
+  RETURN
+
+END SELECT
+
 END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
