@@ -16,11 +16,30 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) SetMethods
-USE AbstractField_Class, ONLY: TypeField
+
+USE Display_Method, ONLY: ToString
+
+USE STScalarField_Class, ONLY: STScalarField_
+
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
+USE VectorField_Class, ONLY: VectorField_
+
+USE VectorFieldLis_Class, ONLY: VectorFieldLis_
+
+#ifdef _TODO_
+USE STVectorField_Class, ONLY: STVectorField_
+
+USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
+#endif
+
 USE InputUtility, ONLY: Input
+
 USE RealVector_Method, ONLY: GetPointer
+
 USE DOF_Method, ONLY: OPERATOR(.tNodes.), &
-                      GetIDOF
+                      GetIDOF, &
+                      GetNodeLoc
 
 #include "lisf.h"
 
@@ -28,161 +47,139 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 SetSingle
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetSingle
-INTEGER(I4B) :: i, ierr
-REAL(DFP) :: value0
-LOGICAL(LGT) :: abool
-
-IF (obj%fieldType .EQ. TypeField%constant) THEN; i = 1; ELSE; i = indx; END IF
-
-value0 = Input(option=scale, default=1.0_DFP) * VALUE
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  CALL lis_vector_set_value(LIS_ADD_VALUE, i, value0, obj%lis_ptr, ierr)
-
-ELSE
-  CALL lis_vector_set_value(LIS_INS_VALUE, i, value0, obj%lis_ptr, ierr)
-
-END IF
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-END PROCEDURE obj_SetSingle
-
-!----------------------------------------------------------------------------
-!                                                                     SetAll
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetAll
-INTEGER(I4B) :: ierr, ii, n
-REAL(DFP) :: value0
-LOGICAL(LGT) :: abool
-
-value0 = Input(option=scale, default=1.0_DFP) * VALUE
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (.NOT. abool) THEN
-  CALL lis_vector_set_all(value0, obj%lis_ptr, ierr)
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-  RETURN
-END IF
-
-n = obj%SIZE()
-DO ii = 1, n
-  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, value0, obj%lis_ptr, ierr)
-END DO
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-END PROCEDURE obj_SetAll
-
-!----------------------------------------------------------------------------
-!                                                               SetMultiple
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetMultiple1
-INTEGER(I4B) :: ierr, n
-LOGICAL(LGT) :: abool
-REAL(DFP) :: areal
-
-n = SIZE(indx)
-
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL lis_vector_set_values4(LIS_ADD_VALUE, n, indx, VALUE, obj%lis_ptr, &
-                              areal, ierr)
-
-ELSE
-  CALL lis_vector_set_values(LIS_INS_VALUE, n, indx, VALUE, obj%lis_ptr, &
-                             ierr)
-
-END IF
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-END PROCEDURE obj_SetMultiple1
-
-!----------------------------------------------------------------------------
 !                                                                       Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
-! INTEGER(I4B) :: idof1, idof2
-! LOGICAL(LGT) :: abool
-! REAL(DFP) :: areal
-
 #ifdef DEBUG_VER
-
-INTEGER(I4B) :: tsize, tsize_value, ivar_idof(2)
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: ScalarNodeField_::obj is not initiated')
-  RETURN
-END IF
-
-IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: AbstractNodeField_ ::value is not initiated')
-  RETURN
-END IF
-
-ivar_idof(1:2) = [ivar, idof]
-tsize = obj%dof.tNodes.ivar_idof
-
-ivar_idof(1:2) = [ivar_value, idof_value]
-tsize_value = VALUE%dof.tNodes.ivar_idof
-
-IF (tsize .NE. tsize_value) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: size mismatch between obj and value.')
-  RETURN
-END IF
-
+LOGICAL(LGT) :: isok
 #endif
 
-! abool = Input(option=addContribution, default=.FALSE.)
-! idof1 = GetIDOF(obj=obj%dof, ivar=ivar, idof=idof)
-! idof2 = GetIDOF(obj=VALUE%dof, ivar=ivar_value, idof=idof_value)
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+INTEGER(I4B) :: s(3), p(3), code, tsize, ierr
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  "AbstractNodeField_::value not initiated")
+#endif
+
+s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
 
 SELECT TYPE (VALUE)
 
-CLASS IS (ScalarField_)
-  CALL obj%Set(obj2=VALUE, scale=scale, addContribution=addContribution)
+TYPE IS (ScalarField_)
+
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+TYPE IS (VectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+#ifdef _TODO_
+
+TYPE is (STVectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+#endif
+
+TYPE is (ScalarFieldLis_)
+
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+  p = GetNodeLoc(obj=VALUE%dof, idof=1_I4B)
+  tsize = obj%dof.tNodes.1
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+TYPE IS (STScalarFieldLis_)
+
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  tsize = obj%dof.tNodes.1
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+TYPE IS (VectorFieldLis_)
+
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  tsize = obj%dof.tNodes.1
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+
+#ifdef _TODO_
+
+TYPE IS (STVectorFieldLis_)
+
+  abool = Input(option=addContribution, default=.FALSE.)
+  areal = Input(option=scale, default=1.0_DFP)
+  IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  tsize = obj%dof.tNodes.1
+  CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
+                              obj%lis_ptr, areal, p(1), p(3), ierr)
+#endif
 
 CLASS DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: Unknown type of ScalarField_::obj2')
+                    '[INTERNAL ERROR] :: No case found')
+  RETURN
 
 END SELECT
-
-#ifdef DEBUG_VER
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 
 END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
