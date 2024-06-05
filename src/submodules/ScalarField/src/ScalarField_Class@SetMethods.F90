@@ -21,6 +21,10 @@ USE InputUtility, ONLY: Input
 
 USE AbstractField_Class, ONLY: TypeField
 
+USE STScalarField_Class, ONLY: STScalarField_
+
+USE VectorField_Class, ONLY: VectorField_
+
 USE RealVector_Method, ONLY: Set, Add
 
 USE Display_Method, ONLY: ToString
@@ -217,42 +221,64 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: idof1, idof2, s(3), p(3)
-LOGICAL(LGT) :: abool
-REAL(DFP) :: areal
+INTEGER(I4B) :: s(3), p(3)
+REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 CALL AssertError1(value%isInitiated, myName, "AbstractNodeField_::value not initiated")
-CALL AssertError2(obj%dof.tNodes. [ivar, idof], &
-                  VALUE%dof.tNodes. [ivar_value, idof_value], myName, &
- "a=obj%dof.tNodes.[ivar, idof], b=value%dof.tNodes.[ivar_value, idof_value]")
-
 #endif
-
-abool = Input(option=addContribution, default=.FALSE.)
 
 SELECT TYPE (VALUE)
 
 TYPE IS (ScalarField_)
 
   s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof2)
+  realvec => VALUE%GetPointer()
 
-! TYPE is (STScalarField_)
-!
-! TYPE is (VectorField_)
-!
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
+TYPE IS (VectorField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => VALUE%GetPointer()
+
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+                  VALUE=realvec, scale=scale, addContribution=addContribution)
+
+  realvec => NULL()
+
 ! TYPE is (STVectorField_)
-!
-! TYPE is (ScalarFieldLis_)
-!
-! TYPE is (VectorFieldLis_)
-!
-! TYPE is (STScalarFieldLis_)
-!
-! TYPE is (STVectorFieldLis_)
+
+  ! s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
+  ! p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+  !                                            idof=idof_value))
+  ! realvec => VALUE%GetPointer()
+  !
+  ! CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+  !                     istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+  !                 VALUE=realvec, scale=scale, addContribution=addContribution)
+  !
+  ! realvec => NULL()
 
 CLASS DEFAULT
 
