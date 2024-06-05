@@ -54,48 +54,45 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the object
+
   FINAL :: obj_Final
+  !! Finalizer
+
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  !! Get the size of the object
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate an instance of ScalarFieldLis_
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the object
+
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export the object
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import the object
 
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
-  !! Set all nodal values to a scalar constant values
-
-  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
-    !! Set all values to a scalar values
-
-    !! This method is used for assignment operator
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-    !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
+  !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
 
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! This method is not avaiable in ScalarFieldList
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
-  !! Get single entry
-
-  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
-  !! Get single entry
-  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
-  !! Get all values in Real vector
-  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
-  !! Get selected values
-  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-    !! Get selected values in FEVariable
+  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  !! value@[ivar, idof] = obj@[ivar, idof]
 
 END TYPE ScalarFieldLis_
 
@@ -226,71 +223,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      SetSingle@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-28
-! summary: Set a single entry in the Scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, &
-                                  addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: indx
-    !! index to be set
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! a scalar value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add contribution
-  END SUBROUTINE obj_SetSingle
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          SetAll@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-28
-! summary: Set all the values of the Scalar field to a scalar value
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: VALUE
-    !! scalar value to be set
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_SetAll
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetMultiple@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-28
-! summary: Set multiple entries in the Scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: indx(:)
-    !! indices to be set
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! values
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_SetMultiple1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -331,90 +263,27 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Get single entry
+! date: 2024-06-05
+! summary: value@[ivar, idof] = obj@[ivar, idof]
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
+  MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: indx
-    !! index
-    REAL(DFP), INTENT(OUT) :: VALUE
-    !! scalar value
-  END SUBROUTINE obj_GetSingle
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the single entry of the scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, islocal)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: VALUE
-    !! single returned entry
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    !! global or local node
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    !! if true then the global nodes are local nodes
-  END SUBROUTINE obj_Get1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns all the entries by using given scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE, tsize)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_Get2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the selected entries
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, islocal, tsize)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    LOGICAL(LGT), INTENT(IN) :: islocal
-    INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_Get3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: returns the selected values in FEVariable
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get5
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    !! obj = value
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in obj
+    INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom in obj (physical variable)
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable in value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom in value (physical variable)
+  END SUBROUTINE obj_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
