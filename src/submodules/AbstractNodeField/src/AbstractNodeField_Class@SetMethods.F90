@@ -135,7 +135,8 @@ END IF
 #ifdef USE_LIS
 areal = Input(option=scale, default=1.0_DFP)
 IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-CALL lis_vector_set_values4(code, size(indx), indx, VALUE, obj%lis_ptr, areal, ierr)
+CALL lis_vector_set_values4(code, SIZE(indx), indx, VALUE, obj%lis_ptr, &
+                            areal, ierr)
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -183,7 +184,8 @@ END IF
 IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 areal = Input(option=scale, default=1.0_DFP)
 tsize = (iend - istart) / stride + 1
-CALL lis_vector_set_values5(code, istart, stride, tsize, value, obj%lis_ptr, areal)
+CALL lis_vector_set_values5(code, istart, stride, tsize, VALUE, obj%lis_ptr, &
+                            areal, ierr)
 #endif
 
 END PROCEDURE obj_SetMultiple2
@@ -231,9 +233,50 @@ IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
 areal = Input(option=scale, default=1.0_DFP)
 tsize = (iend - istart) / stride + 1
 CALL lis_vector_set_values8(code, istart, stride, tsize, VALUE, obj%lis_ptr, &
-                            areal, istart_value, stride_value)
+                            areal, istart_value, stride_value, ierr)
 #endif
 END PROCEDURE obj_SetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                                 SetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple4
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr, code, tsize
+#endif
+
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+
+  IF (abool) THEN
+    areal = Input(option=scale, default=1.0_DFP)
+    CALL Add(obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
+             iend=iend, stride=stride)
+    RETURN
+  END IF
+
+  CALL Set(obj%realVec, VALUE=VALUE, istart=istart, &
+           iend=iend, stride=stride)
+
+  RETURN
+END IF
+
+! LIS_OMP engine
+#ifdef USE_LIS
+IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
+areal = Input(option=scale, default=1.0_DFP)
+areal = areal * VALUE
+tsize = (iend - istart) / stride + 1
+CALL lis_vector_set_values6(code, istart, stride, tsize, areal, &
+                            obj%lis_ptr, ierr)
+#endif
+
+END PROCEDURE obj_SetMultiple4
 
 !----------------------------------------------------------------------------
 !                                                                 SetAll
