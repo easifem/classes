@@ -140,6 +140,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
