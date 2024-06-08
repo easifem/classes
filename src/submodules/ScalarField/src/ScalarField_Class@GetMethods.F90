@@ -165,7 +165,7 @@ TYPE IS (VectorField_)
                        stride_value=p(3))
   realvec => NULL()
 
-! TYPE IS (VectorField_)
+! TYPE IS (STVectorField_)
 !
 !   s = GetNodeLoc(obj=obj%dof, idof=1)
 !   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
@@ -221,6 +221,14 @@ END PROCEDURE obj_GetFEVariable
 MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Size
+ans = obj%local_n
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !

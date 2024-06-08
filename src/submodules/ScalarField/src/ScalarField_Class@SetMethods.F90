@@ -21,9 +21,15 @@ USE InputUtility, ONLY: Input
 
 USE AbstractField_Class, ONLY: TypeField
 
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+
 USE STScalarField_Class, ONLY: STScalarField_
 
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
 USE VectorField_Class, ONLY: VectorField_
+
+USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 
 USE RealVector_Method, ONLY: Set, Add
 
@@ -46,6 +52,13 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
+
+#ifdef USE_LIS
+
+#include "lisf.h"
+
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -169,16 +182,7 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=VALUE, ivar_value=1_I4B, &
-             idof_value=1_I4B)
-END PROCEDURE obj_Set6
-
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set7
-CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
 
 SELECT CASE (VALUE%vartype)
 
@@ -200,6 +204,15 @@ CASE DEFAULT
   RETURN
 END SELECT
 
+END PROCEDURE obj_Set6
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set7
+CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=VALUE, ivar_value=1_I4B, &
+             idof_value=1_I4B)
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
@@ -207,7 +220,7 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=obj2, ivar_value=1_I4B, &
+CALL obj%Set(ivar=1_I4B, idof=1_I4B, VALUE=VALUE, ivar_value=1_I4B, &
              idof_value=1_I4B, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set8
 
@@ -218,22 +231,23 @@ END PROCEDURE obj_Set8
 MODULE PROCEDURE obj_Set9
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
-LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), p(3)
+INTEGER(I4B) :: s(3), p(3), ierr, tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
-CALL AssertError1(value%isInitiated, myName, "AbstractNodeField_::value not initiated")
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  "AbstractNodeField_::value not initiated")
 #endif
+
+s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
 
 SELECT TYPE (VALUE)
 
 TYPE IS (ScalarField_)
 
-  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
   realvec => VALUE%GetPointer()
 
   CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
@@ -243,7 +257,6 @@ TYPE IS (ScalarField_)
 
 TYPE IS (STScalarField_)
 
-  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
                                              idof=idof_value))
   realvec => VALUE%GetPointer()
@@ -256,7 +269,6 @@ TYPE IS (STScalarField_)
 
 TYPE IS (VectorField_)
 
-  s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
                                              idof=idof_value))
   realvec => VALUE%GetPointer()
@@ -267,18 +279,40 @@ TYPE IS (VectorField_)
 
   realvec => NULL()
 
-! TYPE is (STVectorField_)
+#if USE_LIS
 
-  ! s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
-  ! p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-  !                                            idof=idof_value))
-  ! realvec => VALUE%GetPointer()
-  !
-  ! CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
-  !                     istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-  !                 VALUE=realvec, scale=scale, addContribution=addContribution)
-  !
-  ! realvec => NULL()
+TYPE IS (ScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=1)
+  tsize = obj%dof.tNodes.1
+
+  realvec => obj%GetPointer()
+  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
+                                        tsize, realvec, ierr)
+  realvec => NULL()
+
+TYPE IS (STScalarFieldLis_)
+
+  tsize = obj%dof.tNodes.1
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+
+  realvec => obj%GetPointer()
+  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
+                                        tsize, realvec, ierr)
+  realvec => NULL()
+
+TYPE IS (VectorFieldLis_)
+
+  tsize = obj%dof.tNodes.1
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  realvec => obj%GetPointer()
+  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
+                                        tsize, realvec, ierr)
+  realvec => NULL()
+
+#endif
 
 CLASS DEFAULT
 
@@ -303,11 +337,6 @@ REAL(DFP) :: args(4), VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
 CLASS(AbstractMesh_), POINTER :: meshptr
 CHARACTER(:), ALLOCATABLE :: baseInterpolation
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
 
 baseInterpolation = obj%fedof%GetBaseInterpolation()
 
@@ -369,11 +398,6 @@ END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 baseInterpolation = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 
 END PROCEDURE obj_SetByFunction
 
