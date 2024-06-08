@@ -129,6 +129,7 @@ TYPE is (ScalarFieldLis_)
   tsize = obj%dof.tNodes.1
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
+  CALL CHKERR(ierr)
 
 TYPE IS (STScalarFieldLis_)
 
@@ -140,6 +141,7 @@ TYPE IS (STScalarFieldLis_)
   tsize = obj%dof.tNodes.1
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
+  CALL CHKERR(ierr)
 
 TYPE IS (VectorFieldLis_)
 
@@ -151,6 +153,7 @@ TYPE IS (VectorFieldLis_)
   tsize = obj%dof.tNodes.1
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
+  CALL CHKERR(ierr)
 
 #ifdef _TODO_
 
@@ -164,6 +167,7 @@ TYPE IS (STVectorFieldLis_)
   tsize = obj%dof.tNodes.1
   CALL lis_vector_set_values9(code, s(1), s(3), tsize, VALUE%lis_ptr, &
                               obj%lis_ptr, areal, p(1), p(3), ierr)
+  CALL CHKERR(ierr)
 #endif
 
 CLASS DEFAULT
