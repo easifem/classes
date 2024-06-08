@@ -98,7 +98,8 @@ CONTAINS
   !! Set selected values using FEVariable
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
-  !! ojb = obj + scale*obj2 (we call Set9 method here)
+  !! obj = obj + scale*obj2
+  !! (we call Set9 method here)
 
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   !! obj@[ivar, idof] = value@[ivar, idof
@@ -109,7 +110,7 @@ CONTAINS
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
     Set5, Set6, Set7, Set8, Set9
 
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set6
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
   !! Set values to a vector
 
   ! GET:
@@ -131,7 +132,7 @@ CONTAINS
   !! Get values in ScalarField by copy
   !! We call Get6 here
 
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! value@[ivar, idof] = obj@[ivar, idof]
 
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
@@ -142,6 +143,8 @@ CONTAINS
   !! Get Finite Element variable
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
 
   ! SET:
   ! @DirichletBCMethods
@@ -434,25 +437,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: used for assignment operator
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
 ! summary: This routine Sets the selected entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, globalNode, islocal, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set6(obj, globalNode, islocal, VALUE, scale, &
                              addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
@@ -466,6 +454,21 @@ INTERFACE
     !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
+  END SUBROUTINE obj_Set6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: used for assignment operator
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set7(obj, VALUE)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set7
 END INTERFACE
 
@@ -478,9 +481,9 @@ END INTERFACE
 ! summary: obj=obj+scalar*obj2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, obj2, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: obj2
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set8
@@ -704,6 +707,22 @@ INTERFACE
     CLASS(ScalarField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Size@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: This function returns the size of the field
+
+INTERFACE
+  MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
+    CLASS(ScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
