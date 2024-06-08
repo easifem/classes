@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(STScalarField_Class) GetMethods
+USE Display_Method, ONLY: ToString
+
 USE AbstractField_Class, ONLY: TypeField
 
 USE RealVector_Method, ONLY: GetValue_
@@ -40,7 +42,6 @@ USE DOF_Method, ONLY: GetIDOF, &
                       GetNodeLoc, &
                       GetNodeLoc_
 
-! USE ScalarField_Class, ONLY: ScalarField_
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
@@ -400,10 +401,12 @@ TYPE IS (ScalarFieldLis_)
   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
 
 TYPE IS (STScalarFieldLis_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, idof_value=idof)
+  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+                 idof_value=idof)
 
 TYPE IS (VectorFieldLis_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, idof_value=idof)
+  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+                 idof_value=idof)
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -436,5 +439,11 @@ END PROCEDURE obj_GetFEVariable
 MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
