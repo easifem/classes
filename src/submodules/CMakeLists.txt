@@ -234,12 +234,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 # VectorFieldLis
 include(${CMAKE_CURRENT_LIST_DIR}/VectorFieldLis/CMakeLists.txt)
 
-# # STVectorField
-# include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
-#
-# # STVectorFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
-#
+# STVectorField
+include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
+
+# STVectorFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
+
 # # BlockNodeField
 # include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 #
