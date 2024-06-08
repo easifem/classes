@@ -68,8 +68,9 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & obj_checkEssentialParam
+    obj_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -84,26 +85,20 @@ CONTAINS
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
 
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a Vector values
 
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
 
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given Vector
 
-  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-
-  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-  !! Set nodal values of a space component
-
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! obj@[ivar, idof] = value@[ivar, idof]
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@spaceCompo = value (if value is a scalar)
@@ -115,6 +110,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a vector by using triplet
 
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
+  !! Set nodal values of a space component
+
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set a single value
 
@@ -125,39 +123,39 @@ CONTAINS
   !! Set all values to the constant value
   !! WE call SetAll method here
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
+  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
+  !! obj@[ivar, idof] = value@[ivar, idof]
+
+  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! obj = value (we call copy method here)
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
+    obj_SetByFunction
   !! Set values from the user function
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTVectorField => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetFromSTVectorField => &
     obj_SetFromSTVectorField
   !! Set values from the STVectorField_
 
   !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, &
-    Set13, Set14
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
 
   ! GET:
   ! @GetMethods
 
-  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! returns vector values at single node or
   !! get all nodal values of a space-components
 
-  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! returns all entries in rank2 array of real
 
-  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! returns selected values in rank2 aray of real
 
-  PROCEDURE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! returns selected values of a space components
-
-  PROCEDURE, PASS(obj) :: Get9 => obj_Get9
-  !! value@[ivar, idof] = obj@[ivar, idof]
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get a single value
@@ -173,8 +171,11 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
   !! Copy  value=obj
 
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get9 => obj_Get9
+  !! value@[ivar, idof] = obj@[ivar, idof]
+
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
-    & Get5, Get6, Get7, Get8, Get9
+    Get5, Get6, Get7, Get8, Get9
   !! Get the entries of Vector field
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
@@ -184,6 +185,7 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
+
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 END TYPE VectorField_
