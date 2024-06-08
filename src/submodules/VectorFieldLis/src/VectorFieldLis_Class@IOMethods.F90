@@ -45,7 +45,7 @@ CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (ierr .NE. LIS_FALSE) THEN
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'VectorFieldLis_ is NOT AVAILABLE')
+                          'VectorFieldLis_::obj is NOT AVAILABLE')
   RETURN
 END IF
 
@@ -75,7 +75,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractNodeFieldImport( obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs)
+CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
+                             fedofs=fedofs)
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
@@ -84,7 +85,6 @@ IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                '[INTERNAL ERROR] :: The dataset spaceCompo should be present')
 END IF
-
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 dsetname = TRIM(group)//"/tSize"
@@ -100,11 +100,12 @@ IF (.NOT. isok) THEN
 
   CALL param%initiate()
 
-  CALL SetVectorFieldParam( param=param, name=obj%name%chars(), fieldType=obj%fieldType, &
-                         spaceCompo=obj%spaceCompo, engine=obj%engine%chars())
+  CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
+                         fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
+                           engine=obj%engine%chars())
 
   obj%isInitiated = .FALSE.
-  CALL obj%initiate(param=param, fedof=fedof)
+  CALL obj%Initiate(param=param, fedof=fedof)
   CALL param%DEALLOCATE()
 
   CALL FinishMe
@@ -155,8 +156,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
@@ -168,8 +171,11 @@ IF (ierr .EQ. LIS_FALSE) THEN
   CALL VectorFieldExport(obj=obj, hdf5=hdf5, group=group)
 END IF
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-                        "[END]")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
