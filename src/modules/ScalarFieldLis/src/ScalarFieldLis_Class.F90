@@ -91,9 +91,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! This method is not avaiable in ScalarFieldList
 
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
-  !! value@[ivar, idof] = obj@[ivar, idof]
-
 END TYPE ScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -181,18 +178,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Size@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
 !----------------------------------------------------------------------------
 
@@ -263,27 +248,15 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
+!                                                   Size@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-05
-! summary: value@[ivar, idof] = obj@[ivar, idof]
-
 INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! obj = value
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj (physical variable)
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom in value (physical variable)
-  END SUBROUTINE obj_Get6
+    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
