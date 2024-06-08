@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(STVectorField_Class) DBCMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -31,11 +31,6 @@ INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, aint
 LOGICAL(LGT) :: istimes, problem
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
 istimes = PRESENT(times)
 
 #ifdef DEBUG_VER
@@ -44,9 +39,9 @@ IF (istimes) THEN
   problem = aint .NE. obj%timeCompo
   IF (problem) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-     & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-     & tostring(aint)//' which is not equal to obj%timeCompo '//  &
-     & ' which is '//tostring(obj%timeCompo))
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                   ToString(aint)//' which is not equal to obj%timeCompo '// &
+                      ' which is '//ToString(obj%timeCompo))
     RETURN
   END IF
 END IF
@@ -57,8 +52,8 @@ CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 IF (istimes) THEN
   aint = dbc%GetDOFNo()
   DO idof = 1, obj%timeCompo
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-      & timeCompo=idof, spacecompo=aint)
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                 timeCompo=idof, spacecompo=aint, islocal=.TRUE.)
   END DO
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
@@ -68,7 +63,7 @@ END IF
 DO idof = 1, obj%timecompo
   aint = dbc%GetDOFNo()
   CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
-    & timecompo=idof, spacecompo=aint)
+               timecompo=idof, spacecompo=aint, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -76,7 +71,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_applyDirichletBC1
 
@@ -91,11 +86,6 @@ INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: ibc, idof, aint, tsize
 LOGICAL(LGT) :: istimes
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
 istimes = PRESENT(times)
 
 #ifdef DEBUG_VER
@@ -103,9 +93,9 @@ IF (istimes) THEN
   aint = SIZE(times)
   IF (aint .NE. obj%timeCompo) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-     & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-     & tostring(aint)//' which is not equal to obj%timeCompo '//  &
-     & ' which is '//tostring(obj%timeCompo))
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                   ToString(aint)//' which is not equal to obj%timeCompo '// &
+                      ' which is '//ToString(obj%timeCompo))
     RETURN
   END IF
 END IF
@@ -115,13 +105,13 @@ tsize = SIZE(dbc)
 
 IF (istimes) THEN
   DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
-      & times=times)
+    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
+                          times=times)
     aint = dbc(ibc)%ptr%GetDOFNo()
 
     DO idof = 1, obj%timecompo
-      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-        & timecompo=idof, spacecompo=aint)
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+                   timecompo=idof, spacecompo=aint, islocal=.TRUE.)
     END DO
   END DO
 
@@ -134,18 +124,14 @@ DO ibc = 1, tsize
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
   aint = dbc(ibc)%ptr%GetDOFNo()
   DO idof = 1, obj%timecompo
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-      & timecompo=idof, spacecompo=aint)
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+                 timecompo=idof, spacecompo=aint, islocal=.TRUE.)
   END DO
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
 END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------
