@@ -252,12 +252,27 @@ END PROCEDURE obj_size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSingle
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  VALUE = RealVector_Get(obj=obj%realVec, nodenum=1, dataType=1.0_DFP)
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=1.0_DFP)
   RETURN
 END IF
 
-VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=1.0_DFP)
+#ifdef USE_LIS
+
+CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+RETURN
+
+#endif
+
 END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
@@ -285,6 +300,8 @@ CALL lis_vector_get_values_from_index(obj%lis_ptr, tsize, indx, VALUE, ierr)
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
+
+RETURN
 
 #endif
 !end USE_LIS
@@ -315,6 +332,8 @@ CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
+
+RETURN
 
 #endif
 ! end of USE_LIS
@@ -348,6 +367,8 @@ CALL lis_vector_get_values_from_range2(obj%lis_ptr, istart, stride, tsize, &
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
+
+RETURN
 
 #endif
 ! end of USE_LIS

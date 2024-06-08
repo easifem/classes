@@ -326,7 +326,7 @@ END IF
 n = obj%SIZE()
 
 DO ii = 1, n
-  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, scale, obj%lis_ptr, ierr)
+  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, areal, obj%lis_ptr, ierr)
 END DO
 
 #ifdef DEBUG_VER
