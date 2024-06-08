@@ -101,7 +101,7 @@ CONTAINS
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
-!                                                     STScalarFieldLisPointer_
+!                                                    STScalarFieldLisPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: STScalarFieldLisPointer_
