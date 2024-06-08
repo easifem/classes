@@ -46,9 +46,10 @@ INTEGER(I4B) :: fieldType, spaceCompo
 TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: bools(3), isok
 
-! info
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[START]")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
                              fedof=fedof, fedofs=fedofs)
@@ -93,8 +94,11 @@ CALL finishMe
 CONTAINS
 SUBROUTINE finishMe
 
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                          "[END]")
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
 END SUBROUTINE finishMe
 
 END PROCEDURE obj_Import
@@ -107,8 +111,10 @@ MODULE PROCEDURE obj_Export
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dsetname
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+                        '[START] ')
+#endif
 
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
@@ -116,8 +122,11 @@ CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 dsetname = TRIM(group)//"/spaceCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[END]")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
