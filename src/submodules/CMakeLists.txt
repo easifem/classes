@@ -195,9 +195,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 # AbstractNodeField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 
-# # AbstractMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
-#
+# AbstractMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
+
 # # ScalarMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
 #
@@ -240,26 +240,27 @@ include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
 # STVectorFieldLis
 include(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
 
-# # BlockNodeField
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
-#
-# # BlockNodeFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
-#
-# # AbstractMatrixField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
-#
-# # MatrixField include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
-#
-# # MatrixFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
-#
-# # BlockMatrixField
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
-#
-# # BlockMatrixFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
-#
+# BlockNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
+
+# BlockNodeFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
+
+# AbstractMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
+
+# MatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
+
+# MatrixFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
+
+# BlockMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+
+# BlockMatrixFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
+
 # # FieldFactory include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 #
 # # AbstractLinSolver
