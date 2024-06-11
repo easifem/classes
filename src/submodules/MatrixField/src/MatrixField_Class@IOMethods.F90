@@ -20,9 +20,22 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) IOMethods
-USE BaseMethod
-USE HDF5File_Method
-USE MatrixFieldUtility
+USE MatrixFieldUtility, ONLY: Export_Header, Import_Header, &
+                              Import_CheckError, &
+                              Import_PhysicalVar
+
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
+USE AbstractField_Class, ONLY: AbstractFieldExport
+
+USE HDF5File_Method, ONLY: ExportCSRMatrix, ImportCSRMatrix
+
+USE Display_Method, ONLY: Display, Tostring
+
+USE BaseType, ONLY: DOF_
+USE String_Class, ONLY: String
+
+USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
+
 IMPLICIT NONE
 CONTAINS
 
@@ -35,9 +48,9 @@ MODULE PROCEDURE obj_Display
 CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
 IF (obj%isRectangle) THEN
-  CALL Display("# Shape: Rectangle", unitNo=unitNo)
+  CALL Display("Shape: Rectangle", unitNo=unitNo)
 ELSE
-  CALL Display("# Shape: Square", unitNo=unitNo)
+  CALL Display("Shape: Square", unitNo=unitNo)
 END IF
 END PROCEDURE obj_Display
 
@@ -46,16 +59,16 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dname, matprop
 TYPE(DOF_), POINTER :: dofobj
 INTEGER(I4B) :: ii
 
 CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
 
-! export header from MatrixFieldUtility
+! INFO: From MatrixFieldUtility
 CALL Export_Header(obj=obj, hdf5=hdf5, group=group, &
-  & dname=dname, matprop=matprop)
+                   dname=dname, matprop=matprop)
 
 ! mat
 CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM(group)//"/mat")
@@ -71,102 +84,101 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExportPmat
-CHARACTER(*), PARAMETER :: myName = "obj_ExportPmat"
+CHARACTER(*), PARAMETER :: myName = "obj_ExportPmat()"
 TYPE(String) :: dname
-IF (obj%isPmatInitiated) THEN
 
-  ! pmat/pmatName
-  dname = TRIM(group)//"/pmat/pmatName"
+IF (.NOT. obj%isPmatInitiated) RETURN
+
+! pmat/pmatName
+dname = TRIM(group)//"/pmat/pmatName"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%pmatName)
+
+! pmat/nnz
+dname = TRIM(group)//"/pmat/nnz"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%nnz)
+
+! pmat/ncol
+dname = TRIM(group)//"/pmat/ncol"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%ncol)
+
+! pmat/nrow
+dname = TRIM(group)//"/pmat/nrow"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%nrow)
+
+! pmat/isInitiated
+dname = TRIM(group)//"/pmat/isInitiated"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%isInitiated)
+
+! pmat/lfil
+dname = TRIM(group)//"/pmat/lfil"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%lfil)
+
+! pmat/mbloc
+dname = TRIM(group)//"/pmat/mbloc"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%mbloc)
+
+! pmat/alpha
+dname = TRIM(group)//"/pmat/alpha"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%alpha)
+
+! pmat/droptol
+dname = TRIM(group)//"/pmat/droptol"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%droptol)
+
+! pmat/permtol
+dname = TRIM(group)//"/pmat/permtol"
+CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
+                vals=obj%pmat%permtol)
+
+! pmat/A
+IF (ALLOCATED(obj%pmat%A)) THEN
+  dname = TRIM(group)//"/pmat/A"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%pmatName)
+                  vals=obj%pmat%A)
+END IF
 
-  ! pmat/nnz
-  dname = TRIM(group)//"/pmat/nnz"
+! pmat/JA
+IF (ALLOCATED(obj%pmat%JA)) THEN
+  dname = TRIM(group)//"/pmat/JA"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%nnz)
+                  vals=obj%pmat%JA)
+END IF
 
-  ! pmat/ncol
-  dname = TRIM(group)//"/pmat/ncol"
+! pmat/IA
+IF (ALLOCATED(obj%pmat%IA)) THEN
+  dname = TRIM(group)//"/pmat/IA"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%ncol)
+                  vals=obj%pmat%IA)
+END IF
 
-  ! pmat/nrow
-  dname = TRIM(group)//"/pmat/nrow"
+! pmat/JU
+IF (ALLOCATED(obj%pmat%JU)) THEN
+  dname = TRIM(group)//"/pmat/JU"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%nrow)
+                  vals=obj%pmat%JU)
+END IF
 
-  ! pmat/isInitiated
-  dname = TRIM(group)//"/pmat/isInitiated"
+! pmat/IPERM
+IF (ALLOCATED(obj%pmat%IPERM)) THEN
+  dname = TRIM(group)//"/pmat/IPERM"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%isInitiated)
+                  vals=obj%pmat%IPERM)
+END IF
 
-  ! pmat/lfil
-  dname = TRIM(group)//"/pmat/lfil"
+! pmat/LEVS
+IF (ALLOCATED(obj%pmat%LEVS)) THEN
+  dname = TRIM(group)//"/pmat/LEVS"
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%lfil)
-
-  ! pmat/mbloc
-  dname = TRIM(group)//"/pmat/mbloc"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%mbloc)
-
-  ! pmat/alpha
-  dname = TRIM(group)//"/pmat/alpha"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%alpha)
-
-  ! pmat/droptol
-  dname = TRIM(group)//"/pmat/droptol"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%droptol)
-
-  ! pmat/permtol
-  dname = TRIM(group)//"/pmat/permtol"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%pmat%permtol)
-
-  ! pmat/A
-  IF (ALLOCATED(obj%pmat%A)) THEN
-    dname = TRIM(group)//"/pmat/A"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%A)
-  END IF
-
-  ! pmat/JA
-  IF (ALLOCATED(obj%pmat%JA)) THEN
-    dname = TRIM(group)//"/pmat/JA"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%JA)
-  END IF
-
-  ! pmat/IA
-  IF (ALLOCATED(obj%pmat%IA)) THEN
-    dname = TRIM(group)//"/pmat/IA"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%IA)
-  END IF
-
-  ! pmat/JU
-  IF (ALLOCATED(obj%pmat%JU)) THEN
-    dname = TRIM(group)//"/pmat/JU"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%JU)
-  END IF
-
-  ! pmat/IPERM
-  IF (ALLOCATED(obj%pmat%IPERM)) THEN
-    dname = TRIM(group)//"/pmat/IPERM"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%IPERM)
-  END IF
-
-  ! pmat/LEVS
-  IF (ALLOCATED(obj%pmat%LEVS)) THEN
-    dname = TRIM(group)//"/pmat/LEVS"
-    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-    & vals=obj%pmat%LEVS)
-  END IF
-
+                  vals=obj%pmat%LEVS)
 END IF
 
 END PROCEDURE obj_ExportPmat
@@ -176,7 +188,7 @@ END PROCEDURE obj_ExportPmat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: strval, dsetname, name, matrixProp, engine
 INTEGER(I4B) :: timeCompo1, spaceCompo1
 INTEGER(I4B) :: timeCompo2, spaceCompo2
@@ -187,28 +199,22 @@ INTEGER(I4B) :: fieldType
 LOGICAL(LGT) :: isRectangle0
 TYPE(ParameterList_) :: param
 
-! main program
+! INFO: From MatrixFieldUtility
 CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, &
-  & myName=myName, modName=modName)
+                       myName=myName, modName=modName)
 
-! Import header
-CALL Import_Header( &
-  & obj=obj, &
-  & hdf5=hdf5, &
-  & group=group, &
-  & modName=modName, &
-  & myName=myName, &
-  & fieldType=fieldType, &
-  & name=name, &
-  & engine=engine, &
-  & matrixProp=matrixProp, &
-  & isRectangle=isRectangle0)
+! INFO: From MatrixFieldUtility
+CALL Import_Header(obj=obj, hdf5=hdf5, group=group, modName=modName, &
+               myName=myName, fieldType=fieldType, name=name, engine=engine, &
+                   matrixProp=matrixProp, isRectangle=isRectangle0)
 
 ! mat
 dsetname = TRIM(group)//"/mat"
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "Importing "//dsetname%chars())
+                        "Importing "//dsetname%chars())
+#endif
 
 IF (hdf5%PathExists(dsetname%chars())) THEN
 
@@ -217,26 +223,26 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
   obj%fieldType = fieldType
   obj%isRectangle = isRectangle0
 
-  IF (ASSOCIATED(obj%domain)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'obj%domain is associated, deallocate first')
+  IF (ASSOCIATED(obj%fedof)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'obj%fedof is associated, deallocate first')
   END IF
 
-  IF (ALLOCATED(obj%domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'obj%domains is allocated, deallocate first')
+  IF (ALLOCATED(obj%fedofs)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'obj%fedofs is allocated, deallocate first')
   END IF
 
-  IF (PRESENT(dom)) THEN
-    obj%domain => dom
-  ELSE IF (PRESENT(domains)) THEN
-    ALLOCATE (obj%domains(2))
-    obj%domains(1)%ptr => domains(1)%ptr
-    obj%domains(2)%ptr => domains(2)%ptr
+  IF (PRESENT(fedof)) THEN
+    obj%fedof => fedof
+  ELSE IF (PRESENT(fedofs)) THEN
+    ALLOCATE (obj%fedofs(2))
+    obj%fedofs(1)%ptr => fedofs(1)%ptr
+    obj%fedofs(2)%ptr => fedofs(2)%ptr
   ELSE
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "For non-rectangle matrix dom should be present, "// &
-      & "for rectangle matrix matrix domains should be present")
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & "For non-rectangle matrix fedof should be present, "// &
+      & "for rectangle matrix matrix fedofsshould be present")
   END IF
 
   CALL ImportCSRMatrix(obj=obj%mat, &
@@ -248,15 +254,10 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
 ELSE
 
   ! Import Physical Variables
-  CALL Import_PhysicalVar( &
-    & obj=obj, hdf5=hdf5, &
-    & group=group, myName=myName, &
-    & modName=modName, matrixProp=matrixProp, &
-    & tvar1=tvar1, tvar2=tvar2, name1=name1, &
-    & name2=name2, spaceCompo1=spaceCompo1, &
-    & spaceCompo2=spaceCompo2, &
-    & timeCompo1=timeCompo1, &
-    & timeCompo2=timeCompo2)
+  CALL Import_PhysicalVar(obj=obj, hdf5=hdf5, group=group, myName=myName, &
+           modName=modName, matrixProp=matrixProp, tvar1=tvar1, tvar2=tvar2, &
+                          name1=name1, name2=name2, spaceCompo1=spaceCompo1, &
+        spaceCompo2=spaceCompo2, timeCompo1=timeCompo1, timeCompo2=timeCompo2)
 
   varnames(1) = name1%chars()
   varnames(2) = name2%chars()
@@ -265,29 +266,20 @@ ELSE
 
   IF (matrixProp .EQ. "RECTANGLE") THEN
 
-    CALL SetRectangleMatrixFieldParam( &
-      & param=param, &
-      & name=name%chars(), &
-      & matrixProp=matrixProp%chars(), &
-      & engine=engine%chars(), &
-      & physicalVarNames=varnames, &
-      & spaceCompo=[spaceCompo1, spaceCompo2], &
-      & timeCompo=[timeCompo1, timeCompo2], &
-      & fieldType=fieldType)
+    CALL SetRectangleMatrixFieldParam(param=param, name=name%chars(), &
+                       matrixProp=matrixProp%chars(), engine=engine%chars(), &
+           physicalVarNames=varnames, spaceCompo=[spaceCompo1, spaceCompo2], &
+                      timeCompo=[timeCompo1, timeCompo2], fieldType=fieldType)
 
-    CALL obj%Initiate(param=param, dom=domains)
+    CALL obj%Initiate(param=param, fedof=fedofs)
 
   ELSE
 
-    CALL SetMatrixFieldParam(param=param, &
-      & name=name%chars(), &
-      & matrixProp=matrixProp%chars(), &
-      & engine=engine%chars(), &
-      & spaceCompo=spaceCompo1, &
-      & timeCompo=timeCompo1, &
-      & fieldType=fieldType)
+    CALL SetMatrixFieldParam(param=param, name=name%chars(), &
+                       matrixProp=matrixProp%chars(), engine=engine%chars(), &
+            spaceCompo=spaceCompo1, timeCompo=timeCompo1, fieldType=fieldType)
 
-    CALL obj%Initiate(param=param, dom=dom)
+    CALL obj%Initiate(param=param, fedof=fedof)
 
   END IF
 
@@ -297,18 +289,20 @@ END IF
 
 dsetname = TRIM(group)//"/pmat"
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "Importing "//dsetname%chars())
+                        "Importing "//dsetname%chars())
+#endif
 
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL obj%ImportPmat(hdf5=hdf5, group=dsetname%chars(), &
-    & dom=dom, domains=domains)
+                      fedof=fedof, fedofs=fedofs)
 ELSE
   !Issue: #70
-  CALL e%raiseDebug(modName//"::"//myName//" - "// &
-    & "Issue #70: At this moment, we cannot "// &
-    & "create preconditioning matrix, when /pmat is absent. "// &
-    & "This routine needs further attention")
+  CALL e%RaiseDebug(modName//"::"//myName//" - "// &
+                    "Issue #70: At this moment, we cannot "// &
+                   "create preconditioning matrix, when /pmat is absent. "// &
+                    "This routine needs further attention")
 END IF
 
 END PROCEDURE obj_Import
@@ -321,121 +315,123 @@ MODULE PROCEDURE obj_ImportPmat
 CHARACTER(*), PARAMETER :: myName = "obj_ImportPmat"
 TYPE(String) :: dsetname
 
-! info
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "Importing an Instance of MatrixFieldPrecondition_")
+                        "Importing an Instance of MatrixFieldPrecondition_")
+#endif
+
 obj%isPmatInitiated = .TRUE.
 
 ! pmatName
 dsetname = TRIM(group)//"/pmatName"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%pmatName)
+                 vals=obj%pmat%pmatName)
 END IF
 
 ! nnz
 dsetname = TRIM(group)//"/nnz"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%nnz)
+                 vals=obj%pmat%nnz)
 END IF
 
 ! ncol
 dsetname = TRIM(group)//"/ncol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%ncol)
+                 vals=obj%pmat%ncol)
 END IF
 
 ! nrow
 dsetname = TRIM(group)//"/nrow"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%nrow)
+                 vals=obj%pmat%nrow)
 END IF
 
 ! isInitiated
 dsetname = TRIM(group)//"/isInitiated"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%isInitiated)
+                 vals=obj%pmat%isInitiated)
 END IF
 
 ! lfil
 dsetname = TRIM(group)//"/lfil"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%lfil)
+                 vals=obj%pmat%lfil)
 END IF
 
 ! mbloc
 dsetname = TRIM(group)//"/mbloc"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%mbloc)
+                 vals=obj%pmat%mbloc)
 END IF
 
 ! alpha
 dsetname = TRIM(group)//"/alpha"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%alpha)
+                 vals=obj%pmat%alpha)
 END IF
 
 ! droptol
 dsetname = TRIM(group)//"/droptol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%droptol)
+                 vals=obj%pmat%droptol)
 END IF
 
 ! permtol
 dsetname = TRIM(group)//"/permtol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%permtol)
+                 vals=obj%pmat%permtol)
 END IF
 
 ! A
 dsetname = TRIM(group)//"/A"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%A)
+                 vals=obj%pmat%A)
 END IF
 
 ! JA
 dsetname = TRIM(group)//"/JA"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%JA)
+                 vals=obj%pmat%JA)
 END IF
 
 ! IA
 dsetname = TRIM(group)//"/IA"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%IA)
+                 vals=obj%pmat%IA)
 END IF
 
 ! JU
 dsetname = TRIM(group)//"/JU"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%JU)
+                 vals=obj%pmat%JU)
 END IF
 
 ! IPERM
 dsetname = TRIM(group)//"/IPERM"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%IPERM)
+                 vals=obj%pmat%IPERM)
 END IF
 
 ! LEVS
 dsetname = TRIM(group)//"/LEVS"
 IF (hdf5%PathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-  & vals=obj%pmat%LEVS)
+                 vals=obj%pmat%LEVS)
 END IF
 
 END PROCEDURE obj_ImportPmat
@@ -445,7 +441,7 @@ END PROCEDURE obj_ImportPmat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SPY
-CALL SPY(obj=obj%mat, filename=filename, ext=ext)
+CALL CSRMatrix_SPY(obj=obj%mat, filename=filename, ext=ext)
 END PROCEDURE obj_SPY
 
 END SUBMODULE IOMethods
