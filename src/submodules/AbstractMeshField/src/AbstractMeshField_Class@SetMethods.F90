@@ -15,61 +15,74 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) SetMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
+
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                       Set
+!                                                             MasterSet
+!----------------------------------------------------------------------------
+
+SUBROUTINE MasterSet(val, set_val, indx)
+  REAL(DFP), INTENT(INOUT) :: val(:, :)
+  REAL(DFP), INTENT(IN) :: set_val(:)
+  INTEGER(I4B), INTENT(IN) :: indx
+
+  INTEGER(I4B) :: ii, tsize
+
+  tsize = MIN(SIZE(val, 1), SIZE(set_val))
+
+  DO CONCURRENT(ii=1:tsize)
+    val(ii, indx) = set_val(ii)
+  END DO
+
+END SUBROUTINE MasterSet
+
+!----------------------------------------------------------------------------
+!                                                                        Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-INTEGER(I4B) :: iel, telem
-
 #ifdef DEBUG_VER
-LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: size1, size2
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 #endif DEBUG_VER
+
+INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-#ifdef DEBUG_VER
+                        '[START] ')
 
 size1 = SIZE(obj%val, 1)
 size2 = SIZE(fevar%val)
-problem = size1 .NE. size2
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR]  the size of obj%val is '//tostring(size1)//  &
-    & ' size of fevar%val is '//tostring(size2))
+isok = size1 .EQ. size2
+CALL AssertError1(isok, myName, &
+                  'the size of obj%val is '//tostring(size1)// &
+                  ' size of fevar%val is '//tostring(size2))
+
+#endif
+
+IF (obj%fieldType .EQ. TypeField%Constant) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
 END IF
 
-#endif DEBUG_VER
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  obj%val(:, 1) = fevar%val(:)
-  RETURN
-END IF
-
-IF (PRESENT(globalElement)) THEN
-  iel = obj%mesh%GetLocalElemNumber(globalElement)
-  obj%val(:, iel) = fevar%val(:)
-  RETURN
-END IF
-
-telem = obj%mesh%GetTotalElements()
-DO iel = 1, telem
-  obj%val(:, iel) = fevar%val(:)
-END DO
+CALL MasterSet(obj%val, fevar%val, iel)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Set1
 
@@ -79,58 +92,56 @@ END PROCEDURE obj_Set1
 
 MODULE PROCEDURE obj_Set2
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
-INTEGER(I4B) :: iel, telem, minelem, maxelem, nns, nsd
+INTEGER(I4B) :: iel, telem, nns, nsd, tsize
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-CLASS(ReferenceElement_), POINTER :: refelem
-CLASS(Mesh_), POINTER :: mesh
+CLASS(AbstractMesh_), POINTER :: mesh
 TYPE(FEVariable_) :: fevar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-bool1 = obj%fieldType .EQ. FIELD_TYPE_CONSTANT
+bool1 = obj%fieldType .EQ. TypeField%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
-  obj%val(:, 1) = fevar%val(:)
+  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
   RETURN
 END IF
 
 mesh => obj%mesh
 telem = mesh%GetTotalElements()
 
-refelem => NULL()
-refelem => mesh%GetRefElemPointer()
-nns = .NNE.refelem
+nns = mesh%GetMaxNNE()
 CALL Reallocate(nptrs, nns)
-nsd = dom%GetNSD()
+
+nsd = mesh%GetNSD()
 CALL Reallocate(xij, nsd, nns)
 
-minelem = mesh%GetMinElemNumber()
-maxelem = mesh%GetMaxElemNumber()
+DO iel = 1, telem
+  CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+                             ans=nptrs, tsize=tsize)
 
-DO iel = minelem, maxelem
-  bool1 = mesh%IsElementPresent(iel)
-  IF (.NOT. bool1) CYCLE
+  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), &
+                         globalNode=nptrs(1:tsize), islocal=.FALSE.)
 
-  nptrs = mesh%GetConnectivity(globalElement=iel)
-  CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
-  CALL func%Get(fevar=fevar, xij=xij, times=times)
-  CALL obj%Set(fevar=fevar, globalElement=iel)
+  CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
+
+  CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-CALL DEALLOCATE (fevar)
-refelem => NULL()
+
+CALL FEVariable_Deallocate(fevar)
+
 mesh => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_Set2
 
@@ -145,38 +156,84 @@ CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
+#ifdef DEBUG_VER
 isok = material%IsMaterialPresent(name)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: material name = '//name//" not found.")
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'material name = '//name//" not found.")
+#endif
+
+#ifdef DEBUG_VER
+func => NULL()
+#endif
+
+func => material%GetMaterialPointer(name)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(func)
+CALL AssertError1(isok, myName, &
+                  'material pointer not found.')
+#endif
+
+CALL obj%Set(func=func, times=times)
 
 func => NULL()
-func => material%GetMaterialPointer(name)
-isok = ASSOCIATED(func)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: material pointer not found.')
-  RETURN
-END IF
-
-CALL obj%Set(func=func, dom=dom, times=times)
-
-NULLIFY (func)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set4
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: size1, size2
+CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+#endif
+
+INTEGER(I4B) :: iel, telem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+
+size1 = SIZE(obj%val, 1)
+size2 = SIZE(fevar%val)
+isok = size1 .EQ. size2
+CALL AssertError1(isok, myName, &
+                  'the size of obj%val is '//tostring(size1)// &
+                  ' size of fevar%val is '//tostring(size2))
+#endif
+
+IF (obj%fieldType .EQ. TypeField%Constant) THEN
+  telem = 1
+ELSE
+  telem = obj%mesh%GetTotalElements()
+END IF
+
+DO iel = 1, telem
+  CALL MasterSet(obj%val, fevar%val, iel)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Set4
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
