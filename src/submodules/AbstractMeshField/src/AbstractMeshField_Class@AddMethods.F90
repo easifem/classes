@@ -15,32 +15,53 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) AddMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 MasterAdd
+!----------------------------------------------------------------------------
+
+SUBROUTINE MasterAdd(val, add_val, scale, iel)
+  REAL(DFP), INTENT(INOUT) :: val(:, :)
+  REAL(DFP), INTENT(IN) :: add_val(:)
+  REAL(DFP), INTENT(IN) :: scale
+  INTEGER(I4B), INTENT(IN) :: iel
+
+  val(:, iel) = val(:, iel) + scale * add_val(:)
+END SUBROUTINE MasterAdd
 
 !----------------------------------------------------------------------------
 !                                                                       Add
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Add
-  !!
+MODULE PROCEDURE obj_Add1
 INTEGER(I4B) :: iel
-  !!
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  obj%val(:, 1) = obj%val(:, 1) + scale * fevar%val(:)
+
+IF (obj%fieldType .EQ. TypeField%Constant) THEN
+  iel = 1
 ELSE
-  IF (PRESENT(globalElement)) THEN
-    iel = obj%mesh%getLocalElemNumber(globalElement)
-    obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
-  ELSE
-    DO iel = 1, obj%mesh%getTotalElements()
-      obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
-    END DO
-  END IF
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
 END IF
-  !!
-END PROCEDURE obj_Add
+
+CALL MasterAdd(obj%val, fevar%val, scale, iel)
+END PROCEDURE obj_Add1
+
+!----------------------------------------------------------------------------
+!                                                                        Add
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Add2
+INTEGER(I4B) :: iel, telem
+
+telem = obj%mesh%GetTotalElements()
+
+DO iel = 1, telem
+  CALL MasterAdd(obj%val, fevar%val, scale, iel)
+END DO
+
+END PROCEDURE obj_Add2
 
 !----------------------------------------------------------------------------
 !
