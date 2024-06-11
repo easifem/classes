@@ -22,6 +22,8 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 USE AbstractField_Class, ONLY: TypeField
 
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 
@@ -31,7 +33,7 @@ USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 
-! USE STVectorField_Class, ONLY: STVectorField_
+USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
 
 USE RealVector_Method, ONLY: Set, Add, GetPointer
 
@@ -623,6 +625,7 @@ SELECT TYPE (VALUE); TYPE IS (STVectorField_)
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found for the type of VALUE')
+  RETURN
 END SELECT
 END PROCEDURE obj_Set15
 
@@ -632,7 +635,7 @@ END PROCEDURE obj_Set15
 
 MODULE PROCEDURE obj_Set16
 CHARACTER(*), PARAMETER :: myName = "obj_Set16()"
-INTEGER(I4B) :: s(3), p(3)
+INTEGER(I4B) :: s(3), p(3), tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
@@ -684,16 +687,57 @@ TYPE IS (STVectorField_)
                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
   realvec => NULL()
 
-! TYPE IS (ScalarFieldLis_)
+TYPE IS (ScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=1)
+  realvec => AbstractNodeFieldGetPointer(VALUE)
+  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                         stride_value=p(3))
+
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+                    addContribution=addContribution, istart=s(1), iend=s(2), &
+           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
+
+TYPE IS (STScalarFieldLis_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+  realvec => AbstractNodeFieldGetPointer(VALUE)
+  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                         stride_value=p(3))
+
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+                    addContribution=addContribution, istart=s(1), iend=s(2), &
+           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
 
 ! TYPE IS (STScalarFieldLis_)
 
-! TYPE IS (VectorFieldLis_)
+TYPE IS (VectorFieldLis_)
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+  realvec => AbstractNodeFieldGetPointer(VALUE)
+  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                         stride_value=p(3))
 
-! TYPE IS (STVectorFieldLis_)
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+                    addContribution=addContribution, istart=s(1), iend=s(2), &
+           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
 
-!   idof_value = GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
-!                        tspaceCompo=VALUE%spaceCompo)
+TYPE IS (STVectorFieldLis_)
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+  realvec => AbstractNodeFieldGetPointer(VALUE)
+  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                         stride_value=p(3))
+
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+                    addContribution=addContribution, istart=s(1), iend=s(2), &
+           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
