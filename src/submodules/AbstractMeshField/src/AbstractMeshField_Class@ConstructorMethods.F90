@@ -15,17 +15,22 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
-USE UserFunction_Class
-USE ScalarMeshField_Class, ONLY: SetScalarMeshFieldParam
-USE VectorMeshField_Class, ONLY: SetVectorMeshFieldParam
-USE TensorMeshField_Class, ONLY: SetTensorMeshFieldParam
-USE STScalarMeshField_Class, ONLY: SetSTScalarMeshFieldParam
-USE STVectorMeshField_Class, ONLY: SetSTVectorMeshFieldParam
-USE STTensorMeshField_Class, ONLY: SetSTTensorMeshFieldParam
+USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
+                      Scalar, Vector, Matrix
+
+USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
+
+USE ReallocateUtility, ONLY: Reallocate
+
+! USE ScalarMeshField_Class, ONLY: SetScalarMeshFieldParam
+! USE VectorMeshField_Class, ONLY: SetVectorMeshFieldParam
+! USE TensorMeshField_Class, ONLY: SetTensorMeshFieldParam
+! USE STScalarMeshField_Class, ONLY: SetSTScalarMeshFieldParam
+! USE STVectorMeshField_Class, ONLY: SetSTVectorMeshFieldParam
+! USE STTensorMeshField_Class, ONLY: SetSTTensorMeshFieldParam
 
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,15 +38,23 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractMeshFieldParam
-INTEGER(I4B) :: ierr
-ierr = param%Set(key=prefix//"/name", VALUE=name)
-ierr = param%Set(key=prefix//"/fieldType", VALUE=fieldType)
-ierr = param%Set(key=prefix//"/engine", VALUE=engine)
-ierr = param%Set(key=prefix//"/defineOn", VALUE=defineOn)
-ierr = param%Set(key=prefix//"/varType", VALUE=varType)
-ierr = param%Set(key=prefix//"/rank", VALUE=rank)
-ierr = param%Set(key=prefix//"/s", VALUE=s)
-ierr = param%Set(key=prefix//"/totalShape", VALUE=SIZE(s))
+INTEGER(I4B) :: tsize
+
+CALL Set(obj=param, prefix=prefix, key="name", VALUE=name, dataType=name)
+CALL Set(obj=param, prefix=prefix, key="fieldType", VALUE=fieldType, &
+         dataType=fieldType)
+CALL Set(obj=param, prefix=prefix, key="engine", VALUE=engine, dataType=engine)
+CALL Set(obj=param, prefix=prefix, key="defineOn", VALUE=defineOn, &
+         dataType=defineOn)
+CALL Set(obj=param, prefix=prefix, key="varType", VALUE=varType, &
+         dataType=varType)
+CALL Set(obj=param, prefix=prefix, key="rank", VALUE=rank, dataType=rank)
+CALL Set(obj=param, prefix=prefix, key="s", VALUE=s, dataType=s)
+
+tsize = SIZE(s)
+CALL Set(obj=param, prefix=prefix, key="totalShape", VALUE=tsize, &
+         dataType=tsize)
+
 END PROCEDURE SetAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -49,12 +62,10 @@ END PROCEDURE SetAbstractMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
-CALL CheckEssentialParam(obj=param,  &
-  & keys=AbstractMeshFieldEssential,  &
-  & prefix=obj%GetPrefix(),  &
-  & myName=myName,  &
-  & modName=modName)
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+
+CALL CheckEssentialParam(obj=param, keys=AbstractMeshFieldEssential, &
+                       prefix=obj%GetPrefix(), myName=myName, modName=modName)
 !NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
 END PROCEDURE obj_CheckEssentialParam
 
@@ -134,7 +145,7 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 
 MODULE PROCEDURE obj_Deallocate
 obj%isInitiated = .FALSE.
-obj%fieldType = FIELD_TYPE_NORMAL
+obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
 obj%tSize = 0
@@ -158,15 +169,8 @@ CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
-
-IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: MeshField object is already Initiated, '//  &
-    & ' deallocate first.')
-  RETURN
-END IF
 
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
@@ -174,7 +178,7 @@ obj%isInitiated = .TRUE.
 prefix = obj%GetPrefix()
 
 ! fieldType
-obj%fieldType = FIELD_TYPE_NORMAL
+obj%fieldType = TypeField%normal
 CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
 
 ! name
@@ -199,8 +203,8 @@ CALL GetValue(obj=param, prefix=prefix, key="totalShape", VALUE=totalShape)
 
 IF (totalShape .GT. SIZE(obj%s)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: The size of s in param is '//  &
-    & ' more than the size of s in obj')
+                    '[INTERNAL ERROR] :: The size of s in param is '// &
+                    ' more than the size of s in obj')
   RETURN
 END IF
 
@@ -208,14 +212,15 @@ dsetname = TRIM(prefix)//"/s"
 ierr = param%Get(key=dsetname%chars(), VALUE=obj%s(1:totalShape))
 
 ! tSize
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   obj%tSize = 1
 ELSE
   obj%tSize = mesh%GetTotalElements()
 END IF
 
 ! val
-CALL Reallocate(obj%val, PRODUCT(obj%s(1:nrow)), obj%tSize)
+ierr = PRODUCT(obj%s(1:nrow))
+CALL Reallocate(obj%val, ierr, obj%tSize)
 
 ! mesh
 obj%mesh => mesh
@@ -224,7 +229,7 @@ prefix = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate1
@@ -258,13 +263,13 @@ CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 isok = material%IsMaterialPresent(name)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: material name = '//name//" not found.")
+                  '[INTERNAL ERROR] :: material name = '//name//" not found.")
   RETURN
 END IF
 
@@ -273,7 +278,7 @@ func => material%GetMaterialPointer(name)
 isok = ASSOCIATED(func)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: material pointer not found.')
+                    '[INTERNAL ERROR] :: material pointer not found.')
   RETURN
 END IF
 
@@ -283,7 +288,7 @@ NULLIFY (func)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate3
@@ -295,7 +300,7 @@ END PROCEDURE obj_Initiate3
 MODULE PROCEDURE obj_Initiate4
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by subprocess.')
+           '[WIP ERROR] :: This routine should be implemented by subprocess.')
 END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
