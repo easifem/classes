@@ -22,12 +22,15 @@ USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
+USE BaseType, ONLY: CSRMatrix_
 
 IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
+PUBLIC :: FEDOFSetSparsity
+
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
 CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
 
@@ -157,7 +160,14 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
- !! Get the base interpolation
+  !! Get the base interpolation
+
+  !SET:
+  !@SetSparsityMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSparsity => obj_SetSparsity1
+  !! Set sparsity in the CSRMatrix by using single FEDOF
+  !! This is for non block matrix
 
 END TYPE FEDOF_
 
@@ -556,5 +566,36 @@ INTERFACE
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetBaseInterpolation
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-09
+! summary: Set sparsity in CSRMatrix_ from AbstractDomain_
+
+INTERFACE FEDOFSetSparsity
+
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity1
+END INTERFACE FEDOFSetSparsity
+
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
+
+INTERFACE FEDOFSetSparsity
+  MODULE SUBROUTINE obj_SetSparsity2(fedofs, mat)
+    CLASS(FEDOFPointer_), INTENT(INOUT) :: fedofs(:)
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity2
+END INTERFACE FEDOFSetSparsity
 
 END MODULE FEDOF_Class
