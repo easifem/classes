@@ -1,5 +1,7 @@
-if(.NOT. islocal) then
+#ifdef DEBUG_VER
+IF (.NOT. islocal) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                   '[INTERNAL ERROR] :: global nodes are not local nodes')
+                    '[INTERNAL ERROR] :: global nodes are not local nodes')
   RETURN
-end if
+END IF
+#endif 
