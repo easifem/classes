@@ -144,6 +144,26 @@ IF (PRESENT(tsize)) tsize = n
 END PROCEDURE obj_GetNptrs_
 
 !----------------------------------------------------------------------------
+!                                                               GetNptrsInBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrsInBox
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNptrsInBox
+
+!----------------------------------------------------------------------------
+!                                                           GetNptrsInBox_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrsInBox_
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNptrsInBox_
+
+!----------------------------------------------------------------------------
 !                                                          GetInternalNptrs
 !----------------------------------------------------------------------------
 
@@ -1615,5 +1635,25 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord4()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNodeCoord4
+
+!----------------------------------------------------------------------------
+!                                                             GetNearestNode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNearestNode1
+CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNearestNode1
+
+!----------------------------------------------------------------------------
+!                                                             GetNearestNode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNearestNode2
+CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode2()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetNearestNode2
 
 END SUBMODULE GetMethods
