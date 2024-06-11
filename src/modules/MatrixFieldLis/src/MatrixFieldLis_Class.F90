@@ -15,24 +15,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE MatrixFieldLis_Class
-USE GlobalData
-USE BaseType
-USE String_Class, ONLY: String
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE FPL, ONLY: ParameterList_
-USE FPL_Method
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE AbstractMatrixField_Class
-USE MatrixField_Class
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE MatrixField_Class, ONLY: MatrixField_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
 CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
+
 PUBLIC :: MatrixFieldLis_
-PUBLIC :: TypeMatrixFieldLis
 PUBLIC :: MatrixFieldLisInitiate2
 PUBLIC :: MatrixFieldLisDeallocate
 
@@ -54,6 +54,7 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from the parameter list
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -66,6 +67,7 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -75,12 +77,11 @@ CONTAINS
 
   ! GET:
   ! @MatvecMethods
+
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
-END TYPE MatrixFieldLis_
 
-TYPE(MatrixFieldLis_), PARAMETER :: TypeMatrixFieldLis = &
-& MatrixFieldLis_(domains=NULL())
+END TYPE MatrixFieldLis_
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -125,10 +126,10 @@ END INTERFACE
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -169,7 +170,7 @@ END INTERFACE
 
 INTERFACE MatrixFieldLisInitiate2
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+                                  usePointer)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be an instance of MatrixField_
@@ -188,10 +189,10 @@ END INTERFACE MatrixFieldLisInitiate2
 ! summary: This routine initiates the Matrix Field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE
 
@@ -234,12 +235,12 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -277,7 +278,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, &
-    & addContribution, scale)
+                                addContribution, scale)
     CLASS(MatrixFieldLis_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
