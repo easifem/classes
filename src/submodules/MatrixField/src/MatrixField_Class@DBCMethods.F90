@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(MatrixField_Class) DBCMethods
-USE BaseMethod
+USE ReallocateUtility, ONLY: Reallocate
+USE CSRMatrix_Method, ONLY: GetSubMatrix, Matvec, ApplyDBC
+
 IMPLICIT NONE
 CONTAINS
 
@@ -31,7 +33,7 @@ INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 case1 = PRESENT(dbcPtrs)
@@ -40,8 +42,8 @@ IF (case1) THEN
   tsize = SIZE(dbcPtrs)
   CALL Reallocate(obj%dbcPtrs, tsize)
   obj%dbcPtrs = dbcPtrs
-  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcPtrs, submat=obj%submat,  &
-    & subIndices=obj%subIndices)
+  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcPtrs, submat=obj%submat, &
+                    subIndices=obj%subIndices)
 ELSE
   CALL GetSubMatrix(obj=obj%mat, subIndices=obj%subIndices, submat=obj%submat)
 END IF
@@ -50,7 +52,7 @@ CALL ApplyDBC(obj=obj%mat, dbcPtrs=dbcPtrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_ApplyDBC
@@ -62,7 +64,7 @@ END PROCEDURE obj_ApplyDBC
 MODULE PROCEDURE obj_GetDBCSubMat
 CHARACTER(*), PARAMETER :: myName = "obj_GetDBCSubMat()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetDBCSubMat
 
 !----------------------------------------------------------------------------
@@ -76,25 +78,20 @@ REAL(DFP), POINTER :: yvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 xvec => x%GetPointer()
 yvec => y%GetPointer()
 
-CALL Matvec( &
-  & obj=obj%submat, &
-  & y=yvec, &
-  & x=xvec, &
-  & isTranspose=isTranspose, &
-  & addContribution=addContribution, &
-  & scale=scale)
+CALL Matvec(obj=obj%submat, y=yvec, x=xvec, isTranspose=isTranspose, &
+            addContribution=addContribution, scale=scale)
 
 NULLIFY (xvec, yvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_ApplyDBCToRHS
