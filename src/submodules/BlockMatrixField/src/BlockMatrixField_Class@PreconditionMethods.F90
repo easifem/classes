@@ -16,7 +16,5 @@
 !
 
 ! SUBMODULE(BlockMatrixField_Class) PreconditionMethods
-! USE BaseMethod
-! IMPLICIT NONE
-! CONTAINS
+!
 ! END SUBMODULE PreconditionMethods
