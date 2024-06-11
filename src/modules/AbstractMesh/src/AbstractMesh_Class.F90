@@ -205,18 +205,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
 
-  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
-  !! Get node coord from the HDF5File
-  PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
-  !! Get node coord in a 2D array, stored inside nodedata
-  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
-  !! Get node coord of an element
-  PROCEDURE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
-  !! Get node coord of specified nodes
-  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
-    GetNodeCoord3, GetNodeCoord4
-
-    !! Read the nodeCoords from the hdf5file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
     !! Export mesh to an hdf5 file
 
@@ -323,6 +311,12 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
   !! This is a subroutine which returns the node number of mesh
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
+  !! Get node number in a box
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
+  !! Get node number in a box without allocation
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => obj_GetInternalNptrs
   !! Returns a vector of internal node numbers
@@ -585,6 +579,21 @@ CONTAINS
   !! Get total entities (VEFC) in the mesh
   GENERIC, PUBLIC :: GetTotalEntities => GetTotalEntities1, GetTotalEntities2
   !! Generic method for getting total enttiies in mesh and an element
+
+  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
+  !! Get node coord from the HDF5File
+  PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
+  !! Get node coord in a 2D array, stored inside nodedata
+  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
+  !! Get node coord of an element
+  PROCEDURE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
+  !! Get node coord of specified nodes
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
+    GetNodeCoord3, GetNodeCoord4
+
+  PROCEDURE, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
+  PROCEDURE, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
+  GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
 
   ! SET:
   ! @SetMethods
@@ -1082,6 +1091,49 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  GetNearestNode@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-06-10
+! summary:  Get nearest node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNearestNode1(obj, qv, x, globalNode)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: qv(:)
+    !! Query vector
+    REAL(DFP), INTENT(INOUT) :: x(:)
+    !! node coord of nearest node
+    INTEGER(I4B), INTENT(OUT) :: globalNode
+    !! globalNode number
+  END SUBROUTINE obj_GetNearestNode1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetNearestNode@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-11
+! summary:  Get nearest node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNearestNode2(obj, qv, x, globalNode, nn)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: qv(:)
+    !! Query vector
+    REAL(DFP), INTENT(INOUT) :: x(:, :)
+    !! node coord of nearest node
+    !! the size(x, 2) should be atleast nn
+    INTEGER(I4B), INTENT(INOUT) :: globalNode(:)
+    !! globalNode number, size of globalNode should be atleast nn
+    INTEGER(I4B), INTENT(IN) :: nn
+    !! number of nearest points
+  END SUBROUTINE obj_GetNearestNode2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     GetElemData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1223,6 +1275,55 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
   END SUBROUTINE obj_GetNptrs_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-10
+! summary: this routine returns the global node number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrsInBox(obj, box, nptrs, isStrict)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+      !! If Kdtree is not init then we init it
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nptrs(:)
+    TYPE(BoundingBox_), INTENT(IN) :: box
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isStrict
+    !! Default is true
+    !! If it is true the returned points are strictly inside or on the
+    !! box, but not outside of it
+    !! This is because we use radius of bounding box to find the points
+    !! this is over estimation.
+  END SUBROUTINE obj_GetNptrsInBox
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-10
+! summary: this routine returns the global node number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrsInBox_(obj, box, nptrs, tnodes, isStrict)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+      !! If Kdtree is not init then we init it
+    TYPE(BoundingBox_), INTENT(IN) :: box
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! it should allocated, size of nptrs should be .ge. tnodes
+    INTEGER(I4B), INTENT(INOUT) :: tnodes
+    !! total nodes found
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isStrict
+    !! Default is true
+    !! If it is true the returned points are strictly inside or on the
+    !! box, but not outside of it
+    !! This is because we use radius of bounding box to find the points
+    !! this is over estimation.
+  END SUBROUTINE obj_GetNptrsInBox_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2502,28 +2603,26 @@ END INTERFACE
 
 INTERFACE AbstractMeshGetParam
   MODULE SUBROUTINE obj_GetParam(obj, &
-    & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-    & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-    & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-    & xidim, elemType, nsd, maxNptrs, minNptrs, &
-    & maxElemNum, minElemNum, tNodes, tElements, &
-    & minX, minY, minZ, maxX, maxY, maxZ, &
-    & x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
+                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
+                                 maxElemNum, minElemNum, tNodes, tElements, &
+                                 minX, minY, minZ, maxX, maxY, maxZ, &
+            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated, &
-      & isNodeToElementsInitiated, isNodeToNodesInitiated, &
-      & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-      & isBoundaryDataInitiated, isFacetDataInitiated
+                          isNodeToElementsInitiated, isNodeToNodesInitiated, &
+                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+                                 isBoundaryDataInitiated, isFacetDataInitiated
 
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, &
-      & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, &
-      & tElements, tElements_topology_wise(8), tElemTopologies,  &
-      & elemTopologies(8)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, xidim, elemType, nsd, &
+                         maxNptrs, minNptrs, maxElemNum, minElemNum, tNodes, &
+     tElements, tElements_topology_wise(8), tElemTopologies, elemTopologies(8)
 
-    REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, &
-      & minY, minZ, maxX, maxY, maxZ, &
-      & x, y, z
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, minY, minZ, maxX, maxY, maxZ, &
+                                        x, y, z
   END SUBROUTINE obj_GetParam
 END INTERFACE AbstractMeshGetParam
 
