@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(MatrixField_Class) UnaryMethods
-USE BaseMethod, ONLY: Scal
+USE CSRMatrix_Method, ONLY: Scal
+
 IMPLICIT NONE
 CONTAINS
 
