@@ -16,12 +16,14 @@
 !
 
 SUBMODULE(FEDomainConnectivity_Class) NodeMethods
-! USE BaseMethod
 USE BaseType, ONLY: BoundingBox_
-USE BoundingBox_Method
-USE ReallocateUtility
-USE ApproxUtility
-USE Display_Method
+
+USE BoundingBox_Method, ONLY: OPERATOR(.isIntersect.), &
+                              OPERATOR(.INTERSECTION.)
+
+USE ReallocateUtility, ONLY: Reallocate
+USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
+USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -40,30 +42,27 @@ REAL(DFP) :: x1(3), x2(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-#ifdef DEBUG_VER
+                        '[START] ')
 
 CALL domain1%GetParam(isInitiated=isok)
 ! check domain1 initiated
 IF (.NOT. isok) THEN
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: domain1 is not initiated, first initiate it")
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+            "[INTERNAL ERROR] :: domain1 is not initiated, first initiate it")
   RETURN
 END IF
 
 CALL domain2%GetParam(isInitiated=isok)
 IF (.NOT. isok) THEN
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: domain2 is not initiated, first initiate it")
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+            "[INTERNAL ERROR] :: domain2 is not initiated, first initiate it")
   RETURN
 END IF
 
 isok = obj%isNodeToNode
 IF (isok) THEN
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-   & "[INFO] :: It seems, obj%nodeToNode data is already initiated")
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+               "[INFO] :: It seems, obj%nodeToNode data is already initiated")
   RETURN
 END IF
 
@@ -82,7 +81,7 @@ isvar = box1.isIntersect.box2
 
 IF (.NOT. isvar) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & '[INTERNAL ERROR] :: The two mesh does not overlap each other.')
+              '[INTERNAL ERROR] :: The two mesh does not overlap each other.')
   RETURN
 END IF
 
@@ -113,9 +112,100 @@ IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateNodeToNodeData1
+
+!----------------------------------------------------------------------------
+!                                                    InitiateNodeToNodeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateNodeToNodeData2
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToNodeData2()"
+TYPE(BoundingBox_) :: box, box1, box2
+LOGICAL(LGT) :: isvar, isok
+INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
+INTEGER(I4B) :: ii, jj, nsd, tnodes1, node1(1), node2(2)
+REAL(DFP) :: x1(3, 1), x2(3, 1)
+
+#ifdef DEBUG_VER
+
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+
+CALL mesh1%GetParam(isInitiated=isok)
+! check mesh1 initiated
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+            "[INTERNAL ERROR] :: domain1 is not initiated, first initiate it")
+  RETURN
+END IF
+
+CALL mesh2%GetParam(isInitiated=isok)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+            "[INTERNAL ERROR] :: domain2 is not initiated, first initiate it")
+  RETURN
+END IF
+
+isok = obj%isNodeToNode
+IF (isok) THEN
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+               "[INFO] :: It seems, obj%nodeToNode data is already initiated")
+  RETURN
+END IF
+
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+isok = obj%isNodeToNode
+IF (isok) RETURN
+
+ii = mesh1%GetTotalNodes()
+CALL Reallocate(obj%nodeToNode, ii)
+obj%isNodeToNode = .TRUE.
+
+box1 = mesh1%GetBoundingBox()
+box2 = mesh2%GetBoundingBox()
+isvar = box1.isIntersect.box2
+
+CALL AssertError1(isvar, myName, &
+                  'The two mesh does not overlap each other.')
+
+box = box1.INTERSECTION.box2
+
+CALL mesh1%GetNptrsInBox(nptrs=nptrs1, box=box, isStrict=.FALSE.)
+nsd = mesh1%GetNSD()
+
+tnodes1 = SIZE(nptrs1)
+
+DO ii = 1, tnodes1
+  node1(1) = nptrs1(ii)
+  CALL mesh1%GetNodeCoord(globalNode=node1, nodeCoord=x1, &
+                          islocal=.TRUE.)
+
+  CALL mesh2%GetNearestNode(qv=x1(:, 1), x=x2(:, 1), globalNode=node2(1))
+
+  isok = ALL(x1.APPROXEQ.x2)
+  jj = mesh1%GetGlobalNodeNumber(node1(1))
+
+  IF (isok) THEN
+    obj%nodeToNode(jj) = node2(1)
+  ELSE
+    obj%nodeToNode(jj) = 0_I4B
+  END IF
+
+END DO
+
+IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_InitiateNodeToNodeData2
 
 !----------------------------------------------------------------------------
 !                                                       GetNodeToNodePointer
@@ -128,5 +218,7 @@ END PROCEDURE obj_GetNodeToNodePointer
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE NodeMethods
