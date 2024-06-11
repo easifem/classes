@@ -237,6 +237,50 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 
+# Materials library here
+
+# AbstractMaterialModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
+
+# # AbstractSolidMechanicsModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
+#
+# # AbstractPoroMechanicsModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
+#
+# # AbstractFluidMechanicsModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
+#
+# # LinearElasticModel
+# include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
+#
+# # LinearPoroElasticModel
+# include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
+#
+# # NewtonianFluidModel
+# include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
+#
+# # MaterialFactory
+# include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
+
+# AbstractMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
+
+# # SolidMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
+#
+# # fluidMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
+#
+# # porousMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+#
+# # SolidMechanicsModel
+# include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
+#
+# # easifemMaterials
+# include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
+
 # AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 
@@ -244,8 +288,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 
 # AbstractMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
-#
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
+
 # # ScalarMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
 #
@@ -263,13 +307,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 #
 # # STTensorMeshField
 # include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
-#
-# # AbstractElementField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
-#
-# # AbstractMatrixField
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
-#
+
+# AbstractElementField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
+
+# AbstractMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
+
 # ScalarField
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 
@@ -294,23 +338,24 @@ include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
 # STVectorFieldLis
 include(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
 
-# # BlockNodeField
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
-#
-# # BlockNodeFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
-#
-# # MatrixField include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
-#
-# # MatrixFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
-#
-# # BlockMatrixField
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
-#
-# # BlockMatrixFieldLis
-# include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
-#
+# BlockNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
+
+# BlockNodeFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
+
+# MatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
+
+# MatrixFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
+
+# BlockMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+
+# BlockMatrixFieldLis
+include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
+
 # # AbstractLinSolver
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 #
@@ -337,50 +382,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
 #
 # # easifemClasses
 # include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
-#
-# # Materials library here
-#
-# # AbstractMaterialModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
-#
-# # AbstractSolidMechanicsModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
-#
-# # AbstractPoroMechanicsModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
-#
-# # AbstractFluidMechanicsModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
-#
-# # LinearElasticModel
-# include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
-#
-# # LinearPoroElasticModel
-# include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
-#
-# # NewtonianFluidModel
-# include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
-#
-# # MaterialFactory
-# include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
-#
-# # AbstractMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
-#
-# # SolidMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
-#
-# # fluidMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
-#
-# # porousMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
-#
-# # SolidMechanicsModel
-# include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
-#
-# # easifemMaterials
-# include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
 # KERNELS
