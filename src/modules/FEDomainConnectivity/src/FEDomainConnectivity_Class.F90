@@ -124,8 +124,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate1
   !! Deallocate data stored in the object
+
   FINAL :: obj_Final
   !! finalizer
 
@@ -135,12 +137,17 @@ CONTAINS
   PROCEDURE, PASS(obj) :: InitiateNodeToNodeData1 => &
     obj_InitiateNodeToNodeData1
   !! Initiate [[FEDomainConnectivity_:nodeToNode]]
+
+  PROCEDURE, PASS(obj) :: InitiateNodeToNodeData2 => &
+    obj_InitiateNodeToNodeData2
+  !! Initiate [[FEDomainConnectivity_:nodeToNode]]
+
   GENERIC, PUBLIC :: InitiateNodeToNodeData => &
-    InitiateNodeToNodeData1
+    InitiateNodeToNodeData1, InitiateNodeToNodeData2
   !! Initiate [[FEDomainConnectivity_:nodeToNode]]
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeToNodePointer => &
-    & obj_GetNodeToNodePointer
+    obj_GetNodeToNodePointer
   !! Return pointer to the [[FEDomainConnectivity_:nodeToNode]]
 
   ! SET:
@@ -149,30 +156,32 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: obj_InitiateCellToCellData1
   !! Initiates [[FEDomainConnectivity_:cellToCell]] data
   GENERIC, PUBLIC :: InitiateCellToCellData => &
-    & obj_InitiateCellToCellData1
+    obj_InitiateCellToCellData1
   !! Initiates [[FEDomainConnectivity_:cellToCell]] data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellToCellPointer => &
     obj_GetCellToCellPointer
   !! Return pointer to the [[FEDomainConnectivity_:CellToCell]]
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => &
-    & obj_GetDimEntityNum
+    obj_GetDimEntityNum
   !! Returns the dim and entity num of mesh which contains
   !! the element (in domain2) which is connected to element
   !! in domain 1.
 
+  ! SET:
   ! @FacetMethods
+
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData1
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData2
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData3
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[FEDomainConnectivity_:facetToCell]]
-  GENERIC, PUBLIC :: InitiateFacetToCellData =>  &
-    & obj_InitiateFacetToCellData1, &
-    & obj_InitiateFacetToCellData2, &
-    & obj_InitiateFacetToCellData3, &
-    & obj_InitiateFacetToCellData4
+  GENERIC, PUBLIC :: InitiateFacetToCellData => &
+    obj_InitiateFacetToCellData1, &
+    obj_InitiateFacetToCellData2, &
+    obj_InitiateFacetToCellData3, &
+    obj_InitiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[FEDomainConnectivity_:facetToCell]]
 
@@ -182,10 +191,10 @@ CONTAINS
   !! Return the masterCell numbers of given facet elements
   PROCEDURE, PASS(obj) :: MasterCellNumber3 => obj_MasterCellNumber3
   !! Return the masterCell numbers of given facet elements
-  GENERIC, PUBLIC :: MasterCellNumber =>  &
-    & MasterCellNumber1, &
-    & MasterCellNumber2, &
-    & MasterCellNumber3
+  GENERIC, PUBLIC :: MasterCellNumber => &
+    MasterCellNumber1, &
+    MasterCellNumber2, &
+    MasterCellNumber3
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
     obj_GetMasterCellNumber
@@ -269,18 +278,19 @@ CONTAINS
   PROCEDURE, PRIVATE, PASS(obj) :: GlobalFacetID3 => obj_GlobalFacetID3
   !! global facet id of local facet id is returned
   GENERIC, PUBLIC :: GlobalFacetID => &
-    & GlobalFacetID1, &
-    & GlobalFacetID2, &
-    & GlobalFacetID3
+    GlobalFacetID1, &
+    GlobalFacetID2, &
+    GlobalFacetID3
   !! global facet id of local facet id is returned
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetID => obj_GetGlobalFacetID
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => &
-    & obj_GetTotalFacet
+    obj_GetTotalFacet
   !! returns size of facetToCell
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetToCellData => &
-    & obj_DisplayFacetToCellData
+    obj_DisplayFacetToCellData
+
 END TYPE FEDomainConnectivity_
 
 !----------------------------------------------------------------------------
@@ -397,6 +407,40 @@ INTERFACE
     !! Secondary domain => nodeToNode(i) denotes the
     !! global node number in domain2 domain.
   END SUBROUTINE obj_InitiateNodeToNodeData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         InitiateNodeToNodeData@NodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-09
+! summary: Generate node to node connectivity
+!
+!# Introduction
+!
+!  This subroutine generates the node to node connectivity between two domains
+!
+!@note
+!In this routine nodeToNode connectivity info of all meshes in domain1 to
+!all meshes in the domain2 will be generated!
+!@endnote
+!
+! - `obj%nodeToNode` will be Initiated
+! - `mesh1` main mesh
+! - `mesh2` secondary mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToNodeData2(obj, mesh1, mesh2)
+    CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
+    !! FEDomain connectivity object
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh1
+    !! Primary domain, in nodeToNode(i), i denotes the
+    !! global node number in domain1 domain.
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh2
+    !! Secondary domain => nodeToNode(i) denotes the
+    !! global node number in domain2 domain.
+  END SUBROUTINE obj_InitiateNodeToNodeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
