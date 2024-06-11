@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) IOMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -25,8 +25,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This routine is under construction!')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[INTERNAL ERROR] :: This routine is under construction!')
 ! TYPE(String) :: dsetname
 ! LOGICAL(LGT) :: bools(3)
 ! TYPE(ParameterList_) :: param
