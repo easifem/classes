@@ -102,7 +102,7 @@ CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
              VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
-             VALUE=input(option=fieldType, default=0_I4B))
+             VALUE=input(option=comm, default=0_I4B))
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
              VALUE=input(option=local_n, default=0_I4B))
