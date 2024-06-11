@@ -31,7 +31,9 @@ USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
 INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
@@ -909,8 +911,19 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-29
+! date: 2024-06-08
 ! summary: Set values
+!
+!# Introduction
+!
+! obj@[ivar, idof] = value@[ivar_value, idof_value]
+!
+! value can be any field. The conversion rule are defined as follows:
+!
+! If value is scalr, vector stscalr or stvector field then
+! We first get the pointer to the value by calling GetPointer method
+! Then we call setMultiple method on obj to set the multiple values
+! using the range.
 
 INTERFACE
   MODULE SUBROUTINE obj_Set16(obj, ivar, idof, VALUE, ivar_value, &
