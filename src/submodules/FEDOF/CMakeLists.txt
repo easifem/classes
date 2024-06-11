@@ -22,4 +22,5 @@ target_sources(
   PRIVATE ${src_path}/FEDOF_Class@ConstructorMethods.F90
           ${src_path}/FEDOF_Class@GetMethods.F90
           ${src_path}/FEDOF_Class@SetMethods.F90
-          ${src_path}/FEDOF_Class@IOMethods.F90)
+          ${src_path}/FEDOF_Class@IOMethods.F90
+          ${src_path}/FEDOF_Class@SetSparsityMethods.F90)
