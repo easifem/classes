@@ -29,25 +29,28 @@
 !@endnote
 
 MODULE MatrixField_Class
-USE GlobalData
-USE BaseType
-USE String_Class, ONLY: String
+USE GlobalData, ONLY: I4B, DFP, LGT, DOF_FMT
 USE FPL, ONLY: ParameterList_
-USE FPL_Method
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE AbstractMatrixField_Class
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
+USE BaseType, ONLY: CSRMatrix_
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
 CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
+CHARACTER(*), PRIVATE, PARAMETER :: precondPrefix = "Precond"
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
+INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
+
 PUBLIC :: SetMatrixFieldParam
-PUBLIC :: TypeMatrixField
 PUBLIC :: MatrixField_
 PUBLIC :: MatrixFieldPointer_
 PUBLIC :: SetMatrixFieldPrecondParam
@@ -120,6 +123,17 @@ TYPE :: MatrixFieldPrecondition_
 END TYPE MatrixFieldPrecondition_
 
 !----------------------------------------------------------------------------
+!                                               MatrixFieldPreconditionCopy
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE MatrixFieldPreconditionCopy(obj, obj2)
+    TYPE(MatrixFieldPrecondition_), INTENT(INOUT) :: obj
+    TYPE(MatrixFieldPrecondition_), INTENT(IN) :: obj2
+  END SUBROUTINE MatrixFieldPreconditionCopy
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                              MatrixField_
 !----------------------------------------------------------------------------
 
@@ -149,142 +163,232 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & MatrixFieldCheckEssentialParam
+    MatrixFieldCheckEssentialParam
+  !! Check essential parameters
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from the parameter list
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other object
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate for block matrices
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
+
   FINAL :: obj_Final
   !! Deallocate the field
 
   ! IO:
-  ! @IOMethods
+  !@IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: ImportPmat => obj_ImportPmat
   !! Import from hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! export matrix field in hdf5file_
+
   PROCEDURE, PUBLIC, PASS(obj) :: ExportPmat => obj_ExportPmat
   !! export PMat
+
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   !! Get the sparsity pattern in various file formats
 
-  ! @GetMethods
+  ! GET:
+  !@GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the size of the matrix
+
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Returns the shape of the matrix
 
-  ! @MatvecMethods
-  PROCEDURE, PASS(obj) :: Matvec1 => obj_Matvec1
-  !! Matrix vector multiplication
-  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
-  !! Matrix vector multiplication
+  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
+  !! Get the matrix in rank-2 array
+  !! filter: globalNode(:)
 
-  ! @LUSolveMethods
-  PROCEDURE, PASS(obj) :: ILUSOLVE1 => obj_ILUSOLVE1
-  !! Solve (LU) sol = rhs
-  PROCEDURE, PASS(obj) :: ILUSOLVE2 => obj_ILUSOLVE2
-  !! Solve (LU) sol = rhs
+  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
+  !! Get a single value
+  !! filter: idof, jdof, iNodeNum, jNodeNum
 
-  ! @PreconditionMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => &
-    & obj_SetPrecondition
-  !! Building precondition matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => &
-    & obj_GetPrecondition
-  !! Get the precondition matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
-    & obj_ReversePermutation
+  PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
+  !! Get the multiple values
+  !! Filter: iNodeNum(:), jNodeNum(:), ivar, jvar
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get4 => obj_Get4
+  !! Get the multiple values
+  !! Filter: iNodeNum(:), jNodeNum(:), ivar, jvar
+  !! idof, jdof
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get5 => obj_Get5
+  !! Get a single value
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get6 => obj_Get6
+  !! Get a single value
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get7 => obj_Get7
+  !! Get multiple values
+
+  ! GET:
+  ! @GetRowMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRow2 => obj_GetRow2
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRow3 => obj_GetRow3
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow4 => obj_GetRow4
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => obj_GetRow5
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => obj_GetRow6
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => obj_GetRow7
+
+  ! GET:
+  ! @GetColMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => obj_GetColumn3
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn4 => obj_GetColumn4
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => obj_GetColumn5
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
+  !! Set multiple value by using a rank-2 matrix
+
   PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+  !! Set multiple value by using a constant scalar
+
   PROCEDURE, PASS(obj) :: Set3 => obj_Set3
+  !! Set a single value
+
   PROCEDURE, PASS(obj) :: Set4 => obj_Set4
+  !! Set multiple values by using rank-2 array
+
   PROCEDURE, PASS(obj) :: Set5 => obj_Set5
+  !! Set multiple values by using rank-2 array
+
   PROCEDURE, PASS(obj) :: Set6 => obj_Set6
+  !! Set a single value
+
   PROCEDURE, PASS(obj) :: Set7 => obj_Set7
+  !! Set a single value
+
   PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  !! Set multiple values by using a scalar value
+
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
+  !! Set multiple values by using a scalar value
+
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
+  !! Set multiple values by using a scalar value
+
   PROCEDURE, PASS(obj) :: Set11 => obj_Set11
+  !! Add or set by using a MatrixField_
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTMatrix => obj_SetFromSTMatrix
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetToSTMatrix => obj_SetToSTMatrix
 
   ! SET:
-  ! @SetColMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn2 => obj_SetColumn2
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn3 => obj_SetColumn3
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn4 => obj_SetColumn4
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => obj_SetColumn5
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
-  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
-
-  ! SET:
   ! @SetRowMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => obj_SetRow1
-  PROCEDURE, PUBLIC, PASS(obj) :: SetRow2 => obj_SetRow2
-  PROCEDURE, PUBLIC, PASS(obj) :: SetRow3 => obj_SetRow3
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetRow2 => obj_SetRow2
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetRow3 => obj_SetRow3
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow4 => obj_SetRow4
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => obj_SetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => obj_SetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => obj_SetRow7
 
-  ! GET:
-  ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
-  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
-  PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
-  PROCEDURE, PUBLIC, PASS(obj) :: Get4 => obj_Get4
-  PROCEDURE, PUBLIC, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PUBLIC, PASS(obj) :: Get6 => obj_Get6
-  PROCEDURE, PUBLIC, PASS(obj) :: Get7 => obj_Get7
+  ! SET:
+  ! @SetColMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetColumn2 => &
+    obj_SetColumn2
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetColumn3 => &
+    obj_SetColumn3
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn4 => obj_SetColumn4
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => obj_SetColumn5
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
 
   ! GET:
-  ! @GetColMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => obj_GetColumn3
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn4 => obj_GetColumn4
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => obj_GetColumn5
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
+  ! @MatvecMethods
+
+  PROCEDURE, PASS(obj) :: Matvec1 => obj_Matvec1
+  !! Matrix vector multiplication
+
+  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
+  !! Matrix vector multiplication
 
   ! GET:
-  ! @GetRowMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow2 => obj_GetRow2
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow3 => obj_GetRow3
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow4 => obj_GetRow4
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => obj_GetRow5
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => obj_GetRow6
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => obj_GetRow7
+  ! @LUSolveMethods
+  PROCEDURE, PASS(obj) :: ILUSOLVE1 => obj_ILUSOLVE1
+  !! Solve (LU) sol = rhs
 
+  PROCEDURE, PASS(obj) :: ILUSOLVE2 => obj_ILUSOLVE2
+  !! Solve (LU) sol = rhs
+
+  ! SET:
+  ! @PreconditionMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => obj_SetPrecondition
+  !! Building precondition matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => obj_GetPrecondition
+  !! Get the precondition matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => obj_ReversePermutation
+
+  ! GET:
   ! @DiagonalMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDiagonal => &
-    & obj_GetDiagonal
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDiagonal => obj_GetDiagonal
 
+  ! GET:
   ! @DiagonalScalingMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: DiagonalScaling => &
-    & obj_DiagonalScaling
+  PROCEDURE, PUBLIC, PASS(obj) :: DiagonalScaling => obj_DiagonalScaling
 
+  ! GET:
   ! @SpectralMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymSchurLargestEigenVal => obj_SymSchurLargestEigenVal
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymLargestEigenVal => obj_SymLargestEigenVal
+  PROCEDURE, PUBLIC, PASS(obj) :: SymSchurLargestEigenVal => &
+    obj_SymSchurLargestEigenVal
 
+  PROCEDURE, PUBLIC, PASS(obj) :: SymLargestEigenVal => &
+    obj_SymLargestEigenVal
+
+  ! SET:
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => obj_ApplyDBC
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBCtoRHS => obj_ApplyDBCToRHS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDBCSubMat => obj_GetDBCSubMat
@@ -295,13 +399,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Scal => obj_Scal
 
 END TYPE MatrixField_
-
-!----------------------------------------------------------------------------
-!                                                           TypeMatrixField
-!----------------------------------------------------------------------------
-
-TYPE(MatrixField_), PARAMETER :: TypeMatrixField =  &
-  & MatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                     MatrixFieldPointer_
@@ -551,10 +648,10 @@ END INTERFACE
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
 INTERFACE MatrixFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE MatrixFieldInitiate1
 
@@ -595,7 +692,7 @@ END INTERFACE MatrixFieldInitiate1
 
 INTERFACE MatrixFieldInitiate2
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+                                  usePointer)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be an instance of MatrixField_
@@ -614,10 +711,10 @@ END INTERFACE MatrixFieldInitiate2
 ! summary: This routine initiates the Matrix Field
 
 INTERFACE MatrixFieldInitiate3
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(AbstractDomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE MatrixFieldInitiate3
 
@@ -670,12 +767,12 @@ END INTERFACE MatrixFieldDisplay
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE MatrixFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE MatrixFieldImport
 
@@ -688,12 +785,12 @@ END INTERFACE MatrixFieldImport
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportPmat(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_ImportPmat(obj, hdf5, group, fedof, fedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(AbstractDomain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(AbstractDomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_ImportPmat
 END INTERFACE
 
@@ -793,7 +890,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Matvec1(obj, x, y, isTranspose, &
-    & addContribution, scale)
+                                addContribution, scale)
     CLASS(MatrixField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     !! Input vector in y=Ax
@@ -823,7 +920,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, &
-    & addContribution, scale)
+                                addContribution, scale)
     CLASS(MatrixField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
@@ -1019,7 +1116,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
+                                              maxIter, tol) RESULT(ans)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! CSRMatrix, symmetric
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
@@ -1053,7 +1150,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_SymLargestEigenVal(obj, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
+                                         maxIter, tol) RESULT(ans)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! CSRMatrix, symmetric
     INTEGER(I4B), INTENT(IN) :: nev
@@ -1099,8 +1196,8 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose,  &
-    & scale, addContribution)
+  MODULE SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose, &
+                                      scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     CLASS(AbstractNodeField_), INTENT(INOUT) :: y
@@ -1159,10 +1256,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, storageFMT, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, storageFMT, scale, &
+                             addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: storageFMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
@@ -1208,11 +1306,14 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set2(obj, globalNode, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set2(obj, VALUE, globalNode, islocal, scale, &
+                             addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is present then it is local node number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set2
@@ -1243,11 +1344,12 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, iNodeNum, jNodeNum, idof, &
-    & jdof, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set3(obj, iNodeNum, jNodeNum, islocal, idof, &
+                             jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
     REAL(DFP), INTENT(IN) :: VALUE
@@ -1265,11 +1367,12 @@ END INTERFACE
 ! summary: This routine Sets data to matrix field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, islocal, ivar, &
+                             jvar, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
@@ -1289,11 +1392,12 @@ END INTERFACE
 ! summary: This routine Sets data to matrix field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, idof, jdof, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, islocal, ivar, &
+                             jvar, idof, jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -1331,11 +1435,12 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & idof, jdof, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                             idof, jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -1373,12 +1478,13 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set7(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
+                             addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo
@@ -1414,12 +1520,13 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set8(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
+                             addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo
@@ -1455,12 +1562,13 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
+                             addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo
@@ -1496,12 +1604,13 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set10(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
+                              addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(in) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo(:)
@@ -1612,10 +1721,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow1(obj, globalNode, idof, scalarVal, vecVal, &
-    & nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow1(obj, globalNode, islocal, idof, scalarVal, vecVal, &
+                                nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
@@ -1643,10 +1753,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow2(obj, globalNode, ivar, idof, &
-    & scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow2(obj, globalNode, islocal, ivar, idof, &
+                                scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
@@ -1675,10 +1786,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow3(obj, globalNode, ivar, spacecompo, &
-    & timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow3(obj, globalNode, islocal, ivar, spacecompo, &
+                                timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -1708,10 +1820,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow4(obj, globalNode, ivar, spacecompo, &
-    & timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow4(obj, globalNode, islocal, ivar, spacecompo, &
+                                timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -1741,10 +1854,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow5(obj, globalNode, ivar, spacecompo, &
-    & timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow5(obj, globalNode, islocal, ivar, spacecompo, &
+                                timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -1774,10 +1888,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow6(obj, globalNode, ivar, spacecompo, &
-    & timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow6(obj, globalNode, islocal, ivar, spacecompo, &
+                                timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -1807,10 +1922,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow7(obj, globalNode, ivar, spacecompo, &
-    & timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow7(obj, globalNode, islocal, ivar, spacecompo, &
+                                timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -1840,10 +1956,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn1(obj, globalNode, idof, scalarVal, &
-    & vecVal, nodeFieldVal)
+ MODULE SUBROUTINE obj_SetColumn1(obj, globalNode, islocal, idof, scalarVal, &
+                                   vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
@@ -1871,10 +1988,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn2(obj, globalNode, ivar, idof, &
-    & scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn2(obj, globalNode, islocal, ivar, idof, &
+                                   scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
@@ -1903,10 +2021,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn3(obj, globalNode, ivar, &
-    & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn3(obj, globalNode, islocal, ivar, &
+                       spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -1936,10 +2055,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn4(obj, globalNode, ivar, &
-    & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn4(obj, globalNode, islocal, ivar, &
+                       spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -1969,10 +2089,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn5(obj, globalNode, ivar, &
-    & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn5(obj, globalNode, islocal, ivar, &
+                       spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -2002,10 +2123,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn6(obj, globalNode, ivar, &
-    & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn6(obj, globalNode, islocal, ivar, &
+                       spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -2035,10 +2157,11 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetColumn7(obj, globalNode, ivar, &
-    & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
+  MODULE SUBROUTINE obj_SetColumn7(obj, globalNode, islocal, ivar, &
+                       spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -2053,13 +2176,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, globalNode, VALUE, storageFMT)
+  MODULE SUBROUTINE obj_Get1(obj, globalNode, islocal, VALUE, nrow, ncol, &
+                             storageFMT)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global node are local node
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! returned value
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in value
+    INTEGER(I4B), INTENT(IN) :: storageFMT
     !! Storage format of value, if the storageFMT is not
     !! present then we use same storage format as matrixfield
+    !! Format  can be NODES_FMT or DOF_FMT
   END SUBROUTINE obj_Get1
 END INTERFACE
 
@@ -2068,13 +2199,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, iNodeNum, jNodeNum, idof, jdof, VALUE)
+  MODULE SUBROUTINE obj_Get2(obj, iNodeNum, jNodeNum, islocal, idof, &
+                             jdof, VALUE)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
+    !! global or local node number
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global node are local node
     INTEGER(I4B), INTENT(IN) :: idof
+    !! degree of freedom number for row
     INTEGER(I4B), INTENT(IN) :: jdof
+    !! degree of freedom number for column
     REAL(DFP), INTENT(INOUT) :: VALUE
+    !! returned value
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -2083,13 +2222,23 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, iNodeNum, jNodeNum, ivar, jvar, VALUE)
+  MODULE SUBROUTINE obj_Get3(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                             VALUE, nrow, ncol)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    !! global or local nodes in row direction
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    !! global or local nodes in column direction
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global node are local node
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number for row
     INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable number for column
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    !! returned values
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in value
   END SUBROUTINE obj_Get3
 END INTERFACE
 
@@ -2098,16 +2247,27 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
-    & jdof, VALUE)
+  MODULE SUBROUTINE obj_Get4(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                             idof, jdof, VALUE, nrow, ncol)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    !! global node number in row direction
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    !! global node number in column direction
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global node are local node
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number for row
     INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable number for column
     INTEGER(I4B), INTENT(IN) :: idof
+    !! degree of freedom number for row
     INTEGER(I4B), INTENT(IN) :: jdof
+    !! degree of freedom number for column
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    !! returned values
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in value
   END SUBROUTINE obj_Get4
 END INTERFACE
 
@@ -2116,11 +2276,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & idof, jdof, VALUE)
+  MODULE SUBROUTINE obj_Get5(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                             idof, jdof, VALUE)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -2134,12 +2295,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
-    & VALUE)
+  MODULE SUBROUTINE obj_Get6(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                      ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo
@@ -2155,12 +2316,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
-    & VALUE)
+  MODULE SUBROUTINE obj_Get7(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
+                           ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+                             VALUE, nrow, ncol)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: ispacecompo
@@ -2168,6 +2330,8 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in value
   END SUBROUTINE obj_Get7
 END INTERFACE
 
@@ -2192,11 +2356,13 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow1(obj, globalNode, idof, VALUE, &
-    & nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow1(obj, globalNode, islocal, idof, VALUE, &
+                                nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: idof
+    !! global degree of freedom number
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
@@ -2225,10 +2391,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow2(obj, globalNode, ivar, idof, VALUE, &
-    & nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow2(obj, globalNode, islocal, ivar, idof, VALUE, &
+                                nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
@@ -2259,10 +2426,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow3(obj, globalNode, ivar, spacecompo, &
-    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow3(obj, globalNode, islocal, ivar, spacecompo, &
+                       timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -2294,10 +2462,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow4(obj, globalNode, ivar, spacecompo, &
-    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow4(obj, globalNode, islocal, ivar, spacecompo, &
+                       timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -2329,10 +2498,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow5(obj, globalNode, ivar, spacecompo, &
-    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow5(obj, globalNode, islocal, ivar, spacecompo, &
+                       timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -2364,10 +2534,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow6(obj, globalNode, ivar, spacecompo, &
-    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow6(obj, globalNode, islocal, ivar, spacecompo, &
+                       timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
@@ -2399,10 +2570,11 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetRow7(obj, globalNode, ivar, spacecompo, &
-    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetRow7(obj, globalNode, islocal, ivar, spacecompo, &
+                       timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
@@ -2432,10 +2604,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn1(obj, globalNode, idof, VALUE, &
-    & nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetColumn1(obj, globalNode, islocal, idof, VALUE, &
+                                   nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
@@ -2463,10 +2636,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn2(obj, globalNode, ivar, idof, VALUE, &
-    & nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetColumn2(obj, globalNode, islocal, ivar, idof, VALUE, &
+                                   nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
@@ -2495,10 +2669,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn3(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetColumn3(obj, globalNode, islocal, ivar, &
+           spaceCompo, timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -2528,10 +2703,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn4(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
+  MODULE SUBROUTINE obj_GetColumn4(obj, globalNode, islocal, ivar, &
+           spaceCompo, timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -2561,10 +2737,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn5(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
+MODULE SUBROUTINE obj_GetColumn5(obj, globalNode, islocal, ivar, spaceCompo, &
+                       timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -2594,10 +2771,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn6(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
+MODULE SUBROUTINE obj_GetColumn6(obj, globalNode, islocal, ivar, spaceCompo, &
+                       timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -2627,10 +2805,11 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetColumn7(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
+MODULE SUBROUTINE obj_GetColumn7(obj, globalNode, islocal, ivar, spaceCompo, &
+                       timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
