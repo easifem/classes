@@ -290,23 +290,23 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 # AbstractMeshField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 
-# # ScalarMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
-#
-# # STScalarMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
-#
-# # VectorMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
-#
-# # STVectorMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
-#
-# # TensorMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
-#
-# # STTensorMeshField
-# include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
+# ScalarMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
+
+# STScalarMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
+
+# VectorMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
+
+# STVectorMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
+
+# TensorMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
+
+# STTensorMeshField
+include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
 
 # AbstractElementField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
