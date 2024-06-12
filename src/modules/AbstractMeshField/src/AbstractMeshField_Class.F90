@@ -112,17 +112,23 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and a given mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
+
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from Abstract materials
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+
+  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
+
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4
   !! Generic initiate
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
 
@@ -131,10 +137,13 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
+
   PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
   !! Export data in vtkFile
 
@@ -143,10 +152,13 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns size
+
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
+
   PROCEDURE, PUBLIC, PASS(obj) :: Get => obj_Get
   !! Getting the value
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   ! SET:
@@ -163,14 +175,14 @@ CONTAINS
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
   !! Setting the value by using FEVariable_
-  PROCEDURE, PUBLIC, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
   !! Setting the value by using UserFunction_
-  PROCEDURE, PUBLIC, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
   !! Setting the value by using material
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
   !! Setting the value by using material
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4
