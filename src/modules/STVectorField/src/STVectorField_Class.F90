@@ -73,14 +73,14 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! check the essential parameter in param
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by using param
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
 
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -207,10 +207,12 @@ CONTAINS
   ! SET:
   ! @DirichletBCMethods
 
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
+    obj_ApplyDirichletBC1
   !! Appply dirichlet boundary condition
 
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
+    obj_ApplyDirichletBC2
   !! Apply dirichlet boundary condition
 
 END TYPE STVectorField_
