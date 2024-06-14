@@ -223,4 +223,10 @@ SUBROUTINE part2_obj_Set_sparsity2(fedofs, mat)
 
 END SUBROUTINE part2_obj_Set_sparsity2
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
 END SUBMODULE SetSparsityMethods
