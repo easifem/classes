@@ -37,7 +37,8 @@ USE InputUtility, ONLY: Input
 USE BaseType, ONLY: DOF_
 
 USE DOF_Method, ONLY: DOF_Initiate => Initiate, &
-                      OPERATOR(.tNodes.)
+                      OPERATOR(.tNodes.), &
+                      DOF_Deallocate => DEALLOCATE
 
 USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate
 
@@ -327,7 +328,7 @@ IF (obj%global_n .EQ. 0) obj%global_n = nrow
 
 !cleanup
 
-CALL DEALLOCATE (dofobj)
+CALL DOF_Deallocate(dofobj)
 IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
