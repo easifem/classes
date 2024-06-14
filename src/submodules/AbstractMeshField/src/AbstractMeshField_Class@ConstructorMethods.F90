@@ -22,12 +22,9 @@ USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 
 USE ReallocateUtility, ONLY: Reallocate
 
-! USE ScalarMeshField_Class, ONLY: SetScalarMeshFieldParam
-! USE VectorMeshField_Class, ONLY: SetVectorMeshFieldParam
-! USE TensorMeshField_Class, ONLY: SetTensorMeshFieldParam
-! USE STScalarMeshField_Class, ONLY: SetSTScalarMeshFieldParam
-! USE STVectorMeshField_Class, ONLY: SetSTVectorMeshFieldParam
-! USE STTensorMeshField_Class, ONLY: SetSTTensorMeshFieldParam
+USE SafeSizeUtility, ONLY: SafeSize
+
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 
@@ -144,7 +141,7 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
@@ -154,6 +151,7 @@ obj%defineOn = 0
 obj%varType = 0
 obj%rank = 0
 IF (ALLOCATED(obj%val)) DEALLOCATE (obj%val)
+IF (ALLOCATED(obj%indxVal)) DEALLOCATE (obj%indxVal)
 obj%mesh => NULL()
 END PROCEDURE obj_Deallocate
 
@@ -166,6 +164,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(String) :: dSetname
 INTEGER(I4B) :: ierr, nrow, totalShape
 CHARACTER(:), ALLOCATABLE :: prefix
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -174,7 +173,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 prefix = obj%GetPrefix()
 
 ! fieldType
@@ -201,12 +200,9 @@ nrow = GetTotalRow(rank=obj%rank, varType=obj%varType)
 
 CALL GetValue(obj=param, prefix=prefix, key="totalShape", VALUE=totalShape)
 
-IF (totalShape .GT. SIZE(obj%s)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: The size of s in param is '// &
-                    ' more than the size of s in obj')
-  RETURN
-END IF
+isok = totalShape .LE. SIZE(obj%s)
+CALL AssertError1(isok, myName, &
+                  'The size of s in param is more than the size of s in obj.')
 
 dsetname = TRIM(prefix)//"/s"
 ierr = param%Get(key=dsetname%chars(), VALUE=obj%s(1:totalShape))
@@ -219,8 +215,11 @@ ELSE
 END IF
 
 ! val
+CALL Reallocate(obj%indxVal, obj%tSize + 1)
+obj%indxVal = 1
+
 ierr = PRODUCT(obj%s(1:nrow))
-CALL Reallocate(obj%val, ierr, obj%tSize)
+CALL Reallocate(obj%val, ierr * obj%tSize)
 
 ! mesh
 obj%mesh => mesh
@@ -239,7 +238,9 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-obj%isInitiated = obj2%isInitiated
+INTEGER(I4B) :: ii, tsize
+
+obj%isInit = obj2%isInit
 obj%fieldType = obj2%fieldType
 obj%name = obj2%name
 obj%engine = obj2%engine
@@ -249,7 +250,17 @@ obj%defineOn = obj2%defineOn
 obj%varType = obj2%varType
 obj%rank = obj2%rank
 obj%mesh => obj2%mesh
-IF (ALLOCATED(obj2%val)) obj%val = obj2%val
+tsize = SafeSize(obj2%val)
+CALL Reallocate(obj%val, tsize)
+DO CONCURRENT(ii=1:tsize)
+  obj%val(ii) = obj2%val(ii)
+END DO
+
+tsize = SafeSize(obj2%indxVal)
+CALL Reallocate(obj%indxVal, tsize)
+DO CONCURRENT(ii=1:tsize)
+  obj%indxVal(ii) = obj2%indxVal(ii)
+END DO
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -267,20 +278,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 isok = material%IsMaterialPresent(name)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[INTERNAL ERROR] :: material name = '//name//" not found.")
-  RETURN
-END IF
+CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
 
 func => NULL()
 func => material%GetMaterialPointer(name)
 isok = ASSOCIATED(func)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: material pointer not found.')
-  RETURN
-END IF
+CALL AssertError1(isok, myname, 'Material pointer not found.')
 
 CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
 
@@ -300,7 +303,7 @@ END PROCEDURE obj_Initiate3
 MODULE PROCEDURE obj_Initiate4
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[WIP ERROR] :: This routine should be implemented by subprocess.')
+          '[WIP ERROR] :: This routine should be implemented by child class.')
 END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
@@ -356,5 +359,11 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 END PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods
