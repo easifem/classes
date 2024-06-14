@@ -22,8 +22,6 @@ USE Display_Method, ONLY: Display
 
 USE AbstractField_Class, ONLY: FIELD_TYPE_NAME
 
-USE SafeSizeUtility, ONLY: SafeSize
-
 IMPLICIT NONE
 
 CONTAINS
@@ -35,61 +33,55 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 
-CALL Display(obj%isInit, 'Object INITIATED: ', unitno=unitno)
+CALL Display(obj%isInitiated, 'Object INITIATED: ', unitNo=unitNo)
 
-IF (.NOT. obj%isInit) RETURN
+IF (.NOT. obj%isInitiated) RETURN
 
-CALL Display('name: '//obj%name%chars(), unitno=unitno)
-CALL Display('prefix: '//obj%GetPrefix(), unitno=unitno)
+CALL Display('name: '//obj%name%chars(), unitNo=unitNo)
+CALL Display('prefix: '//obj%GetPrefix(), unitNo=unitNo)
 
-CALL Display('fieldType: '//FIELD_TYPE_NAME(obj%fieldType), unitno=unitno)
+CALL Display('fieldType: '//FIELD_TYPE_NAME(obj%fieldType), unitNo=unitNo)
 
-CALL Display('engine: '//obj%engine%chars(), unitno=unitno)
+CALL Display('engine: '//obj%engine%chars(), unitNo=unitNo)
 
-CALL Display(obj%tSize, 'tSize: ', unitno=unitno)
+CALL Display(obj%tSize, 'tSize: ', unitNo=unitNo)
 
 IF (obj%defineOn .EQ. Nodal) THEN
-  CALL Display('defineOn: Nodal', unitno=unitno)
+  CALL Display('defineOn: Nodal', unitNo=unitNo)
 ELSE
-  CALL Display('defineOn: Quadrature', unitno=unitno)
+  CALL Display('defineOn: Quadrature', unitNo=unitNo)
 END IF
 
 SELECT CASE (obj%rank)
 CASE (Scalar)
-  CALL Display('rank: Scalar', unitno=unitno)
+  CALL Display('rank: Scalar', unitNo=unitNo)
 CASE (Vector)
-  CALL Display('rank: Vector', unitno=unitno)
+  CALL Display('rank: Vector', unitNo=unitNo)
 CASE (Matrix)
-  CALL Display('rank: Matrix', unitno=unitno)
-CASE DEFAULT
-  CALL Display('rank: Unknown', unitno=unitno)
+  CALL Display('rank: Matrix', unitNo=unitNo)
 END SELECT
 
 SELECT CASE (obj%varType)
 CASE (Constant)
-  CALL Display('varType: Constant', unitno=unitno)
+  CALL Display('varType: Constant', unitNo=unitNo)
 CASE (Space)
-  CALL Display('varType: Space', unitno=unitno)
+  CALL Display('varType: Space', unitNo=unitNo)
 CASE (Time)
-  CALL Display('varType: Time', unitno=unitno)
+  CALL Display('varType: Time', unitNo=unitNo)
 CASE (SpaceTime)
-  CALL Display('varType: SpaceTime', unitno=unitno)
-CASE DEFAULT
-  CALL Display('varType: Unknown', unitno=unitno)
+  CALL Display('varType: SpaceTime', unitNo=unitNo)
 END SELECT
 
-bool1 = ALLOCATED(obj%val)
-CALL Display(bool1, 'val ALLOCATED: ', unitno=unitno)
-CALL Display(SafeSize(obj%val), "Size of val:", unitno=unitno)
+CALL Display(obj%SHAPE(), 'shape: ', unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%indxVal)
-CALL Display(bool1, 'indxVal ALLOCATED: ', unitno=unitno)
-CALL Display(SafeSize(obj%indxVal), "Size of indxVal:", unitno=unitno)
+bool1 = ALLOCATED(obj%val)
+CALL Display(bool1, 'val ALLOCATED: ', unitNo=unitNo)
+! IF (bool1) THEN
+!   CALL Display(obj%val, 'val: ', unitNo=unitNo)
+! END IF
 
 bool1 = ASSOCIATED(obj%mesh)
-CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)
-
-CALL Display(obj%SHAPE(), 'shape: ', unitno=unitno)
+CALL Display(bool1, 'mesh ASSOCIATED: ', unitNo=unitNo)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -110,7 +102,7 @@ MODULE PROCEDURE obj_Export
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: strval, dsetname
 
-IF (.NOT. obj%isInit) THEN
+IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     'MeshField object is not initiated initiated')
 END IF
@@ -153,11 +145,6 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%s)
 IF (ALLOCATED(obj%val)) THEN
   dsetname = TRIM(group)//"/val"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
-END IF
-
-IF (ALLOCATED(obj%indxVal)) THEN
-  dsetname = TRIM(group)//"/indxVal"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
 END IF
 
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &

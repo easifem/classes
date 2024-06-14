@@ -15,17 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeFieldLis_Class) IOMethods
-
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
-                                   AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldExport
-
-USE BlockNodeField_Class, ONLY: BlockNodeFieldExport
-
+USE BaseMethod
 IMPLICIT NONE
-
-#include "lisf.h"
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,18 +24,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#include "lisf.h"
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
 IF (ierr .EQ. LIS_FALSE) THEN
   realvec => AbstractNodeFieldGetPointer(obj)
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
   CALL CHKERR(ierr)
   NULLIFY (realvec)
   CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+ELSE
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'BlockNodeFieldLis_::obj is NOT AVAILABLE')
 END IF
 
 END PROCEDURE obj_Display
@@ -54,9 +48,9 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%raiseError(modName//'::'//myName//' - '// &
-                  'This routine is under construction!')
+  & 'This routine is under construction!')
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -64,14 +58,12 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Export()')
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -79,14 +71,14 @@ IF (ierr .EQ. LIS_FALSE) THEN
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
   CALL CHKERR(ierr)
   NULLIFY (realvec)
-  CALL BlockNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
+  CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
+ELSE
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & 'BlockNodeFieldLis_::obj%lis_ptr is NOT AVAILABLE')
 END IF
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[END] Export()")
 END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods
