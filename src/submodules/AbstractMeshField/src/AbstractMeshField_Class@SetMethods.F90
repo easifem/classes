@@ -17,7 +17,8 @@
 SUBMODULE(AbstractMeshField_Class) SetMethods
 USE Display_Method, ONLY: ToString
 
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
+                             FEVariable_SIZE => Size
 
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -29,18 +30,15 @@ CONTAINS
 !                                                             MasterSet
 !----------------------------------------------------------------------------
 
-SUBROUTINE MasterSet(val, set_val, indx)
-  REAL(DFP), INTENT(INOUT) :: val(:, :)
+SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize)
+  REAL(DFP), INTENT(INOUT) :: val(:)
+  INTEGER(I4B), INTENT(INOUT) :: indxVal(:)
   REAL(DFP), INTENT(IN) :: set_val(:)
   INTEGER(I4B), INTENT(IN) :: indx
+  INTEGER(I4B), INTENT(IN) :: tsize
 
-  INTEGER(I4B) :: ii, tsize
-
-  tsize = MIN(SIZE(val, 1), SIZE(set_val))
-
-  DO CONCURRENT(ii=1:tsize)
-    val(ii, indx) = set_val(ii)
-  END DO
+  indxVal(indx + 1) = indxVal(indx) + tsize
+  val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
 
 END SUBROUTINE MasterSet
 
@@ -49,26 +47,7 @@ END SUBROUTINE MasterSet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: size1, size2
-CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-#endif DEBUG_VER
-
-INTEGER(I4B) :: iel
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-
-size1 = SIZE(obj%val, 1)
-size2 = SIZE(fevar%val)
-isok = size1 .EQ. size2
-CALL AssertError1(isok, myName, &
-                  'the size of obj%val is '//tostring(size1)// &
-                  ' size of fevar%val is '//tostring(size2))
-
-#endif
+INTEGER(I4B) :: iel, tsize
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
   iel = 1
@@ -77,12 +56,10 @@ ELSE
                                     islocal=islocal)
 END IF
 
-CALL MasterSet(obj%val, fevar%val, iel)
+tsize = FEVariable_SIZE(fevar)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
+               tsize=tsize)
 
 END PROCEDURE obj_Set1
 
@@ -120,6 +97,7 @@ CALL Reallocate(nptrs, nns)
 nsd = mesh%GetNSD()
 CALL Reallocate(xij, nsd, nns)
 
+!$OMP PARALLEL DO PRIVATE(iel, tsize, nptrs, xij, fevar)
 DO iel = 1, telem
   CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
                              ans=nptrs, tsize=tsize)
@@ -131,10 +109,10 @@ DO iel = 1, telem
 
   CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
 END DO
+!$OMP END PARALLEL DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-
 CALL FEVariable_Deallocate(fevar)
 
 mesh => NULL()
@@ -193,25 +171,7 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: size1, size2
-CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
-#endif
-
-INTEGER(I4B) :: iel, telem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-
-size1 = SIZE(obj%val, 1)
-size2 = SIZE(fevar%val)
-isok = size1 .EQ. size2
-CALL AssertError1(isok, myName, &
-                  'the size of obj%val is '//tostring(size1)// &
-                  ' size of fevar%val is '//tostring(size2))
-#endif
+INTEGER(I4B) :: iel, telem, tsize
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
   telem = 1
@@ -219,14 +179,12 @@ ELSE
   telem = obj%mesh%GetTotalElements()
 END IF
 
-DO iel = 1, telem
-  CALL MasterSet(obj%val, fevar%val, iel)
-END DO
+tsize = FEVariable_Size(fevar)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif DEBUG_VER
+DO iel = 1, telem
+  CALL MasterSet(val=obj%val, set_val=fevar%val, indx=iel, &
+                 indxVal=obj%indxVal, tsize=tsize)
+END DO
 
 END PROCEDURE obj_Set4
 
