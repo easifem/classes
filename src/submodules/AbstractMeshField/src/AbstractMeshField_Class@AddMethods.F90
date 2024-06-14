@@ -15,20 +15,30 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) AddMethods
+USE FEVariable_Method, ONLY: FEVariable_Size => Size
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 MasterAdd
+!                                                             MasterAdd
 !----------------------------------------------------------------------------
 
-SUBROUTINE MasterAdd(val, add_val, scale, iel)
-  REAL(DFP), INTENT(INOUT) :: val(:, :)
+SUBROUTINE MasterAdd(val, indxVal, add_val, indx, tsize, scale)
+  REAL(DFP), INTENT(INOUT) :: val(:)
+  INTEGER(I4B), INTENT(INOUT) :: indxVal(:)
   REAL(DFP), INTENT(IN) :: add_val(:)
+  INTEGER(I4B), INTENT(IN) :: indx
+  INTEGER(I4B), INTENT(IN) :: tsize
   REAL(DFP), INTENT(IN) :: scale
-  INTEGER(I4B), INTENT(IN) :: iel
 
-  val(:, iel) = val(:, iel) + scale * add_val(:)
+  INTEGER(I4B) :: ii
+
+  indxVal(indx + 1) = indxVal(indx) + tsize
+
+  DO ii = indxVal(indx), indxVal(indx + 1) - 1
+    val(ii) = val(ii) + scale * add_val(ii - indxVal(indx) + 1)
+  END DO
+
 END SUBROUTINE MasterAdd
 
 !----------------------------------------------------------------------------
@@ -36,7 +46,7 @@ END SUBROUTINE MasterAdd
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Add1
-INTEGER(I4B) :: iel
+INTEGER(I4B) :: iel, tsize
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
   iel = 1
@@ -45,7 +55,10 @@ ELSE
                                     islocal=islocal)
 END IF
 
-CALL MasterAdd(obj%val, fevar%val, scale, iel)
+tsize = FEVariable_Size(fevar)
+
+CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
+               scale=scale, indx=iel, tsize=tsize)
 END PROCEDURE obj_Add1
 
 !----------------------------------------------------------------------------
@@ -53,12 +66,14 @@ END PROCEDURE obj_Add1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Add2
-INTEGER(I4B) :: iel, telem
+INTEGER(I4B) :: iel, telem, tsize
 
 telem = obj%mesh%GetTotalElements()
+tsize = FEVariable_Size(fevar)
 
 DO iel = 1, telem
-  CALL MasterAdd(obj%val, fevar%val, scale, iel)
+  CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
+                 scale=scale, indx=iel, tsize=tsize)
 END DO
 
 END PROCEDURE obj_Add2
