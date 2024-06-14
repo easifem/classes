@@ -142,4 +142,6 @@ END PROCEDURE obj_GetPrefix
 !
 !----------------------------------------------------------------------------
 
+#include "../../include/errors.F90"
+
 END SUBMODULE ConstructorMethods
