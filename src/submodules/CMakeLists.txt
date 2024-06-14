@@ -189,6 +189,38 @@ include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 
+# materials here
+
+# # AbstractMaterialModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
+#
+# # AbstractSolidMechanicsModel
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
+#
+# # LinearElasticModel
+# include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
+#
+# # LinearPoroElasticModel
+# include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
+#
+# # NewtonianFluidModel
+# include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
+#
+# # MaterialFactory
+# include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
+
+# AbstractMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
+
+# # SolidMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
+#
+# # fluidMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
+#
+# # porousMaterial
+# include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+
 # AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 
@@ -278,38 +310,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 # # VTKPlot include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 #
 # # PLPlot include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
-#
-# # materials here
-#
-# # AbstractMaterialModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
-#
-# # AbstractSolidMechanicsModel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
-#
-# # LinearElasticModel
-# include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
-#
-# # LinearPoroElasticModel
-# include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
-#
-# # NewtonianFluidModel
-# include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
-#
-# # MaterialFactory
-# include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
-#
-# # AbstractMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
-#
-# # SolidMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
-#
-# # fluidMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
-#
-# # porousMaterial
-# include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
 # KERNELS
