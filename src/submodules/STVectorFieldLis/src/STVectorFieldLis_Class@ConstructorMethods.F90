@@ -47,7 +47,7 @@ END PROCEDURE obj_Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+! CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr
 
 CALL STVectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
