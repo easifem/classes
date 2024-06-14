@@ -64,7 +64,7 @@ PUBLIC :: AbstractTensorMeshFieldPointer_
 TYPE, ABSTRACT :: AbstractMeshField_
   PRIVATE
 
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
@@ -95,7 +95,13 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Constant
   INTEGER(I4B) :: s(MAX_RANK_FEVARIABLE) = 1
   !! shape of the data
-  REAL(DFP), ALLOCATABLE :: val(:, :)
+  INTEGER(I4B), ALLOCATABLE :: indxVal(:)
+  !! Index for value
+  !! The size of indxVal is equal to tElements+1
+  !! indxVal(iel) gives the starting index of the element iel
+  !! indxVal(iel+1)-indxVal(iel) gives the total number of values in element
+  !! iel
+  REAL(DFP), ALLOCATABLE :: val(:)
   !! values, val( :, iel ) corresponds to element number iel
   !! iel is local element number
   !! also, note that val( :, iel ) will be decoded
@@ -109,54 +115,56 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
 
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and a given mesh
 
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
 
-  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from Abstract materials
 
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
+  !! This routine should be implemened by the child class
 
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4
   !! Generic initiate
 
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
   !! Deallocate the field
 
   ! IO:
   ! @IOMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
 
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from hdf5 file
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
 
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
   !! Export data in vtkFile
 
   ! GET:
   ! @GetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns size
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Get => obj_Get
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get => obj_Get
   !! Getting the value
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
@@ -164,10 +172,10 @@ CONTAINS
   ! SET:
   ! @AddMethods
 
-  PROCEDURE, PASS(obj) :: Add1 => obj_Add1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add1 => obj_Add1
   !! Adding a value to an element
 
-  PROCEDURE, PASS(obj) :: Add2 => obj_Add2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add2 => obj_Add2
   !! Add a value to all the elements
 
   GENERIC, PUBLIC :: Add => Add1, Add2
@@ -175,14 +183,14 @@ CONTAINS
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Setting the value by using FEVariable_
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Setting the value by using UserFunction_
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Setting the value by using material
 
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Setting the value by using material
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4
@@ -255,13 +263,21 @@ INTERFACE
                                 fieldType, engine, defineOn, varType, rank, s)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
+    !! prefix
     CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
     INTEGER(I4B), INTENT(IN) :: fieldType
+    !! field type
     CHARACTER(*), INTENT(IN) :: engine
+    !! engine
     INTEGER(I4B), INTENT(IN) :: defineOn
+    !! define on Nodal or Quadrature
     INTEGER(I4B), INTENT(IN) :: varType
+    !! variable type, space, time, spaceTime, constant
     INTEGER(I4B), INTENT(IN) :: rank
+    !! rank of the field, scalar, vector, matrix
     INTEGER(I4B), INTENT(IN) :: s(:)
+    !! shape of the field
   END SUBROUTINE SetAbstractMeshFieldParam
 END INTERFACE
 
@@ -322,6 +338,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Initiate from abstractMaterials
+!
+!# Introduction
+!
+! We first search the name in material
+! If the name is found in the material  then we get the pointer to
+! user function corresponding to the material name.
+! Then we call Initiate4 method
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
@@ -332,7 +355,7 @@ INTERFACE
     CLASS(AbstractMaterial_), INTENT(INOUT) :: material
     !! Abstract material
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the AbstractMeshField
+    !! name of the material
     CHARACTER(*), INTENT(IN) :: engine
     !! engine of the AbstractMeshField
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
@@ -596,8 +619,11 @@ INTERFACE
   MODULE SUBROUTINE obj_Set1(obj, globalElement, islocal, fevar)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
     LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global element is local element
     TYPE(FEVariable_), INTENT(IN) :: fevar
+    !! FEVariable
   END SUBROUTINE obj_Set1
 END INTERFACE
 
