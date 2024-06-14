@@ -15,9 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) GetMethods
+
 USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
                       Scalar, Vector, Matrix
+
 USE Display_Method, ONLY: ToString
+
+USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
 CONTAINS
@@ -116,32 +120,31 @@ END PROCEDURE obj_Shape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get
-CHARACTER(*), PARAMETER :: myName = "obj_Get()"
-INTEGER(I4B) :: iel
-LOGICAL(LGT) :: isok
+INTEGER(I4B) :: iel, ii
 
 IF (obj%fieldType .EQ. TypeField%constant) THEN
-  fevar%val = obj%val(:, 1)
-  fevar%s = obj%s
-  fevar%defineOn = obj%defineOn
-  fevar%varType = obj%varType
-  fevar%rank = obj%rank
-  RETURN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+
 END IF
 
-#ifdef DEBUG_VER
-isok = obj%mesh%IsElementPresent(globalElement=globalElement, islocal=islocal)
-CALL AssertError1(isok, myName, &
-   'globalElement = '//tostring(globalElement)//'is not present in the mesh.')
-#endif
+fevar%len = obj%indxVal(iel + 1) - obj%indxVal(iel)
+fevar%capacity = MAX(fevar%len, fevar%capacity)
 
-iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                  islocal=islocal)
+CALL Reallocate(fevar%val, fevar%capacity)
 
-fevar%val = obj%val(:, iel)
+DO ii = obj%indxVal(iel), obj%indxVal(iel + 1) - 1
+  fevar%val(ii - obj%indxVal(iel) + 1) = obj%val(ii)
+END DO
+
 fevar%s = obj%s
+
 fevar%defineOn = obj%defineOn
+
 fevar%varType = obj%varType
+
 fevar%rank = obj%rank
 
 END PROCEDURE obj_Get
@@ -151,7 +154,7 @@ END PROCEDURE obj_Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 ans = ""
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
