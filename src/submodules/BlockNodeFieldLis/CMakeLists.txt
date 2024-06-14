@@ -20,7 +20,7 @@ if(USE_LIS)
   target_sources(
     ${PROJECT_NAME}
     PRIVATE ${src_path}/BlockNodeFieldLis_Class@ConstructorMethods.F90
-            # ${src_path}/BlockNodeFieldLis_Class@IOMethods.F90
+            ${src_path}/BlockNodeFieldLis_Class@IOMethods.F90
             ${src_path}/BlockNodeFieldLis_Class@SetMethods.F90
             # ${src_path}/BlockNodeFieldLis_Class@GetMethods.F90
             # ${src_path}/BlockNodeFieldLis_Class@OperatorMethods.F90
