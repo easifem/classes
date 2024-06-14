@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) IOMethods
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -23,7 +24,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[INTERNAL ERROR] :: This routine is under construction!')
 ! TYPE(String) :: dsetname
@@ -94,15 +95,5 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !   & "[END] Import()")
 !
 END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods
