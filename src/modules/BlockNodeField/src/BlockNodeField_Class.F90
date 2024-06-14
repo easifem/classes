@@ -45,6 +45,7 @@ PUBLIC :: SetBlockNodeFieldParam
 PUBLIC :: BlockNodeFieldInitiate1
 PUBLIC :: BlockNodeFieldInitiate3
 PUBLIC :: BlockNodeFieldDeallocate
+PUBLIC :: BlockNodeFieldExport
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -64,11 +65,11 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethod
 
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     obj_checkEssentialParam
   !! Check essential parameter
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by using parameter list
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
@@ -80,6 +81,8 @@ CONTAINS
   ! @IOMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
 
   ! SET:
   ! @SetMethods
@@ -374,6 +377,22 @@ INTERFACE
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data into HDF5File_
+
+INTERFACE BlockNodeFieldExport
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_Export
+END INTERFACE BlockNodeFieldExport
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
