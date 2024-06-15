@@ -20,6 +20,11 @@ USE Display_Method, ONLY: Display, tostring
 USE IntegerUtility, ONLY: RemoveDuplicates, OPERATOR(.ISIN.)
 USE GlobalData, ONLY: stdout
 USE AppendUtility, ONLY: Append, Expand
+USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements, &
+                          NodeData_GetTotalGlobalElements, &
+                          NodeData_GetPointerToGlobalElements, &
+                          NodeData_ExpandGlobalNodes, &
+                          NodeData_SetExtraGlobalNodes
 IMPLICIT NONE
 CONTAINS
 
@@ -56,9 +61,8 @@ DO ii = 1, obj%tElements
     globalNodeNum = obj%elementData(ii)%globalNodes(jj)
     localNodeNum = obj%local_nptrs(globalNodeNum)
 
-    CALL Expand(vec=obj%nodeData(localNodeNum)%ptr%globalElements, &
-                n=nodewise_size(localNodeNum), chunk_size=chunk_size, &
-                val=globalElemNum)
+    CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(localNodeNum)%ptr, &
+      n=nodewise_size(localNodeNum), chunk_size=chunk_size, val=globalElemNum)
 
   END DO
 
@@ -66,8 +70,8 @@ END DO
 
 ! Now we have to fix the size of `nodeData%globalElements`
 DO ii = 1, obj%tNodes
-  CALL Expand(vec=obj%nodeData(ii)%ptr%globalElements, &
-              n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
+  CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(ii)%ptr, &
+                  n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
 END DO
 
 IF (obj%showTime) THEN
@@ -95,6 +99,7 @@ INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
 INTEGER(I4B), PARAMETER :: chunk_size = 64
 LOGICAL(LGT) :: found(obj%tNodes), skip
 TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B), POINTER :: globalElements(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -112,10 +117,12 @@ obj%isNodeToNodesInitiated = .TRUE.
 DO inode = 1, obj%tNodes
   nodewise_size = 0
   found = .FALSE.
-  telem = SIZE(obj%nodeData(inode)%ptr%globalElements)
+  telem = NodeData_GetTotalGlobalElements(obj%nodeData(inode)%ptr)
+  globalElements => NodeData_GetPointerToGlobalElements( &
+                    obj%nodeData(inode)%ptr)
 
   DO iel = 1, telem
-    global_elem_num = obj%nodeData(inode)%ptr%globalElements(iel)
+    global_elem_num = globalElements(iel)
     local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
     tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
@@ -126,9 +133,9 @@ DO inode = 1, obj%tNodes
 
       skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
       IF (.NOT. skip) THEN
-        CALL Expand(vec=obj%nodeData(inode)%ptr%globalNodes, &
-          & n=nodewise_size, chunk_size=chunk_size, &
-          & val=global_node_num)
+        CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                     n=nodewise_size, chunk_size=chunk_size, &
+                                        val=global_node_num)
         found(local_node_num) = .TRUE.
       END IF
 
@@ -136,22 +143,24 @@ DO inode = 1, obj%tNodes
 
   END DO
 
-  CALL Expand(vec=obj%nodeData(inode)%ptr%globalNodes, &
-    & n=nodewise_size, chunk_size=chunk_size, &
-    & finished=.TRUE.)
+  CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                  n=nodewise_size, chunk_size=chunk_size, &
+                                  finished=.TRUE.)
 
 END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time : "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
+
+globalElements => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodetoNodes
@@ -164,14 +173,14 @@ MODULE PROCEDURE obj_InitiateExtraNodetoNodes
 ! Define internal  variables
 INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
 INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
-  & indx(:)
+                             indx(:), extraGlobalNodes(:)
 LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
 LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ! problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
@@ -187,13 +196,16 @@ IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 IF (.NOT. obj%isElementToElementsInitiated) CALL obj%InitiateElementToElements()
 
 DO iLocalNode = 1, obj%tNodes
+
   iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
   n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
   n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
 
   DO iel = 1, SIZE(n2e)
+    CALL Reallocate(extraGlobalNodes, 0_I4B)
+
     e2e = obj%GetElementToElements(globalElement=n2e(iel), &
-      & onlyElements=.TRUE.)
+                                   onlyElements=.TRUE.)
 
     mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
 
@@ -203,14 +215,17 @@ DO iLocalNode = 1, obj%tNodes
 
         indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
         mask_nptrs = .NOT. (indx.ISIN.n2n)
-        CALL APPEND(obj%nodeData(iLocalNode)%ptr%extraGlobalNodes, &
-          & indx, mask_nptrs)
+
+        CALL APPEND(extraGlobalNodes, indx, mask_nptrs)
 
       END IF
 
     END DO
 
-    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%ptr%extraGlobalNodes)
+    CALL RemoveDuplicates(extraGlobalNodes)
+
+    CALL NodeData_SetExtraGlobalNodes(obj%nodeData(iLocalNode)%ptr, &
+                                      extraGlobalNodes)
 
   END DO
 
@@ -224,6 +239,7 @@ IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
 IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
+IF (ALLOCATED(extraGlobalNodes)) DEALLOCATE (extraGlobalNodes)
 
 END PROCEDURE obj_InitiateExtraNodetoNodes
 

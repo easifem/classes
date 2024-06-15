@@ -17,19 +17,36 @@
 
 SUBMODULE(AbstractMesh_Class) ImportMethods
 USE ReallocateUtility, ONLY: Reallocate
-USE HDF5File_Method, ONLY: HDF5GetEntities, HDF5ReadScalar, HDF5ReadVector, &
+
+USE HDF5File_Method, ONLY: HDF5GetEntities, &
+                           HDF5ReadScalar, &
+                           HDF5ReadVector, &
                            HDF5ReadMatrix
+
 USE ArangeUtility, ONLY: Arange
+
 USE InputUtility, ONLY: Input
-USE ReferenceElement_Method, ONLY: GetElementIndex, GetTotalNodes, &
+
+USE ReferenceElement_Method, ONLY: GetElementIndex, &
+                                   GetTotalNodes, &
                                    ReferenceElementInfo
-USE Display_Method, ONLY: Display, EqualLine, ToString
+
+USE Display_Method, ONLY: Display, &
+                          EqualLine, &
+                          ToString
+
 USE AssertUtility, ONLY: Assert
-USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE
+
+USE NodeData_Class, ONLY: INTERNAL_NODE, &
+                          BOUNDARY_NODE, &
+                          NodeData_Set
+
 USE ElemData_Class, ONLY: ElemDataSet
+
 USE GlobalData, ONLY: stdout
 
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -63,16 +80,20 @@ ELSEIF (cases(2)) THEN
   CALL MeshImportFromDim(obj, hdf5, group0, dim, entities, SIZE(entities))
 
 ELSEIF (cases(3)) THEN
+
   CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim, &
                        tEntities=tEntities, myName=myName, modName=modName)
+
   IF (tEntities .GT. 0_I4B) THEN
     entities0 = Arange(1_I4B, tEntities)
     CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
   END IF
 
 ELSE
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found')
+
   RETURN
 END IF
 
@@ -425,19 +446,22 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
 
   dummy = 0
   DO ii = 1, obj%maxNptrs
-    IF (obj%local_nptrs(ii) .NE. 0) THEN
-      dummy = dummy + 1
-      obj%nodeData(dummy)%ptr%globalNodeNum = obj%local_Nptrs(ii)
-      obj%nodeData(dummy)%ptr%localNodeNum = dummy
+    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE
 
-      IF (mask(ii)) THEN
-        obj%nodeData(dummy)%ptr%nodeType = INTERNAL_NODE
-      ELSE
-        obj%nodeData(dummy)%ptr%nodeType = BOUNDARY_NODE
-      END IF
+    dummy = dummy + 1
 
-      obj%local_nptrs(ii) = dummy
+    IF (mask(ii)) THEN
+      aint = INTERNAL_NODE
+    ELSE
+      aint = BOUNDARY_NODE
     END IF
+
+    CALL NodeData_Set(obj=obj%nodeData(dummy)%ptr, &
+                      globalNodeNum=obj%local_nptrs(ii), &
+                      localNodeNum=dummy, &
+                      nodeType=aint)
+
+    obj%local_nptrs(ii) = dummy
   END DO
 
   IF (ALLOCATED(mask)) DEALLOCATE (mask)
@@ -475,9 +499,12 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
     IF (obj%local_nptrs(ii) .EQ. 0) CYCLE
 
     dummy = dummy + 1
-    obj%nodeData(dummy)%ptr%globalNodeNum = obj%local_nptrs(ii)
-    obj%nodeData(dummy)%ptr%localNodeNum = dummy
-    obj%nodeData(dummy)%ptr%nodeType = INTERNAL_NODE
+
+    CALL NodeData_Set(obj=obj%nodeData(dummy)%ptr, &
+                      globalNodeNum=obj%local_nptrs(ii), &
+                      localNodeNum=dummy, &
+                      nodeType=INTERNAL_NODE)
+
     obj%local_nptrs(ii) = dummy
   END DO
 

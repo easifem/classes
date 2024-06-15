@@ -17,12 +17,19 @@
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
 USE ReallocateUtility, ONLY: Reallocate
+
 USE Display_Method, ONLY: Display, ToString
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES
+
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => &
+                                   PARAM_REFELEM_MAX_FACES
+
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
                                InitiateElementToElements2D, &
                                InitiateElementToElements1D
-USE NodeData_Class, ONLY: TypeNode
+
+USE NodeData_Class, ONLY: TypeNode, &
+                          NodeData_SetNodeType
+
 IMPLICIT NONE
 CONTAINS
 
@@ -123,7 +130,9 @@ SUBROUTINE MarkInternalNodes(obj)
                                        isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
-        obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
+        ! obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
+        CALL NodeData_SetNodeType(obj%nodeData(ll)%ptr, &
+                                  TypeNode%domainBoundary)
       END DO
     END DO
 

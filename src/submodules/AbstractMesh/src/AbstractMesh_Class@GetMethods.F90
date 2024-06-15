@@ -36,8 +36,17 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetConnectivity, &
                           ElemData_GetElementToElements
-USE NodeData_Class, ONLY: INTERNAL_NODE, &
-                          BOUNDARY_NODE
+
+USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
+                          NodeData_GetNodeType, &
+                          NodeData_GetGlobalNodeNum, &
+                          NodeData_GetTotalGlobalElements, &
+                          NodeData_GetGlobalElements, &
+                          NodeData_GetTotalGlobalNodes, &
+                          NodeData_GetGlobalNodes, &
+                          NodeData_GetGlobalNodes2, &
+                          NodeData_GetExtraGlobalNodes, &
+                          NodeData_GetTotalExtraGlobalNodes
 
 IMPLICIT NONE
 
@@ -126,7 +135,7 @@ END PROCEDURE obj_GetBoundingEntity
 MODULE PROCEDURE obj_GetNptrs
 INTEGER(I4B) :: ii
 DO CONCURRENT(ii=1:SIZE(ans))
-  ans(ii) = obj%nodeData(ii)%ptr%globalNodeNum
+  ans(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
 END DO
 END PROCEDURE obj_GetNptrs
 
@@ -138,7 +147,7 @@ MODULE PROCEDURE obj_GetNptrs_
 INTEGER(I4B) :: ii, n
 n = SIZE(obj%nodeData)
 DO CONCURRENT(ii=1:n)
-  nptrs(ii) = obj%nodeData(ii)%ptr%globalNodeNum
+  nptrs(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
 END DO
 IF (PRESENT(tsize)) tsize = n
 END PROCEDURE obj_GetNptrs_
@@ -168,14 +177,15 @@ END PROCEDURE obj_GetNptrsInBox_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInternalNptrs
-INTEGER(I4B) :: ii, dummy
+INTEGER(I4B) :: ii, dummy, nodeType
 dummy = obj%GetTotalInternalNodes()
 ALLOCATE (ans(dummy))
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
+  nodeType = NodeData_GetNodeType(obj%nodeData(ii)%ptr)
+  IF (nodeType .EQ. INTERNAL_NODE) THEN
     dummy = dummy + 1
-    ans(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
+    ans(dummy) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
   END IF
 END DO
 END PROCEDURE obj_GetInternalNptrs
@@ -189,7 +199,8 @@ MODULE PROCEDURE obj_GetInternalNptrs_
 CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs_()"
 LOGICAL(LGT) :: problem
 #endif
-INTEGER(I4B) :: ii, dummy
+
+INTEGER(I4B) :: ii, dummy, nodeType
 
 dummy = obj%GetTotalInternalNodes()
 
@@ -197,17 +208,18 @@ dummy = obj%GetTotalInternalNodes()
 problem = dummy .GT. SIZE(nptrs)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: size of nptrs is not enough '//  &
-    & 'it should be ateast '//ToString(dummy))
+                    '[INTERNAL ERROR] :: size of nptrs is not enough '// &
+                    'it should be ateast '//ToString(dummy))
   RETURN
 END IF
 #endif
 
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
+  nodeType = NodeData_GetNodeType(obj%nodeData(ii)%ptr)
+  IF (nodeType .EQ. INTERNAL_NODE) THEN
     dummy = dummy + 1
-    nptrs(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
+    nptrs(dummy) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
   END IF
 END DO
 END PROCEDURE obj_GetInternalNptrs_
@@ -217,15 +229,20 @@ END PROCEDURE obj_GetInternalNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryNptrs
-INTEGER(I4B) :: ii, dummy
+INTEGER(I4B) :: ii, dummy, nodeType
 
 dummy = obj%GetTotalBoundaryNodes()
 CALL Reallocate(ans, dummy)
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%ptr%nodeType .EQ. BOUNDARY_NODE) THEN
+
+  nodeType = NodeData_GetNodeType(obj%nodeData(ii)%ptr)
+
+  IF (nodeType .EQ. BOUNDARY_NODE) THEN
     dummy = dummy + 1
-    ans(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
+    ans(dummy) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
+    ! ans(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
+
   END IF
 END DO
 END PROCEDURE obj_GetBoundaryNptrs
@@ -235,9 +252,10 @@ END PROCEDURE obj_GetBoundaryNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryNode
-INTEGER(I4B) :: localnode
+INTEGER(I4B) :: localnode, nodeType
 localnode = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-ans = obj%nodeData(localnode)%ptr%nodeType .NE. INTERNAL_NODE
+nodeType = NodeData_GetNodeType(obj%nodeData(localnode)%ptr)
+ans = nodeType .NE. INTERNAL_NODE
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
@@ -290,7 +308,8 @@ IF (isok) THEN
 
   tsize = SIZE(obj%nodeData)
   DO CONCURRENT(ii=1:tsize)
-    jj = obj%nodeData(ii)%ptr%globalNodeNum
+    ! jj = obj%nodeData(ii)%ptr%globalNodeNum
+    jj = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
     mask(jj) = .TRUE.
   END DO
 
@@ -300,7 +319,8 @@ END IF
 
 tsize = SIZE(obj%nodeData)
 DO CONCURRENT(ii=1:tsize)
-  jj = obj%nodeData(ii)%ptr%globalNodeNum
+  ! jj = obj%nodeData(ii)%ptr%globalNodeNum
+  jj = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
   kk = local_nptrs(jj)
   mask(kk) = .TRUE.
 END DO
@@ -401,10 +421,11 @@ END PROCEDURE obj_isDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalNodes
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, nodeType
 ans = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
+  nodeType = NodeData_GetNodeType(obj%nodeData(ii)%ptr)
+  IF (nodeType .EQ. INTERNAL_NODE) THEN
     ans = ans + 1
   END IF
 END DO
@@ -633,7 +654,8 @@ IF (problem) THEN
 END IF
 #endif
 
-ans = obj%nodeData(localNode)%ptr%globalNodeNum
+! ans = obj%nodeData(localNode)%ptr%globalNodeNum
+ans = NodeData_GetGlobalNodeNum(obj%nodeData(localNode)%ptr)
 END PROCEDURE obj_GetglobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -720,7 +742,7 @@ END PROCEDURE obj_GetLocalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
@@ -737,7 +759,12 @@ END IF
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-ans = obj%nodeData(ii)%ptr%globalElements
+! ans = obj%nodeData(ii)%ptr%globalElements
+
+tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
+ALLOCATE (ans(tsize))
+CALL NodeData_GetGlobalElements(obj=obj%nodeData(ii)%ptr, ans=ans, tsize=tsize)
+
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -745,8 +772,8 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
-INTEGER(I4B) :: ii, jj, kk, n, lnode(SIZE(globalNode)),  &
-  & nn(SIZE(globalNode) + 1)
+INTEGER(I4B) :: ii, jj, n, lnode(SIZE(globalNode)), &
+                nn(SIZE(globalNode) + 1)
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -755,17 +782,16 @@ n = SIZE(globalNode)
 
 DO ii = 1, n
   lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%ptr%globalElements)
+  ! nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%ptr%globalElements)
+  nn(ii + 1) = nn(ii) + &
+               NodeData_GetTotalGlobalElements(obj%nodeData(lnode(ii))%ptr)
 END DO
 
 CALL Reallocate(ans, nn(n + 1) - 1)
 
 DO ii = 1, n
-  kk = 0
-  DO jj = nn(ii), nn(ii + 1) - 1
-    kk = kk + 1
-    ans(jj) = obj%nodeData(lnode(ii))%ptr%globalElements(kk)
-  END DO
+  CALL NodeData_GetGlobalElements(obj=obj%nodeData(lnode(ii))%ptr, &
+                                  ans=ans(nn(ii):), tsize=jj)
 END DO
 
 CALL RemoveDuplicates(ans)
@@ -786,11 +812,9 @@ IF (problem) RETURN
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-tsize = SIZE(obj%nodeData(ii)%ptr%globalElements)
 
-DO jj = 1, tsize
-  ans(jj) = obj%nodeData(ii)%ptr%globalElements(jj)
-END DO
+CALL NodeData_GetGlobalElements(obj=obj%nodeData(ii)%ptr, &
+                                ans=ans, tsize=tsize)
 END PROCEDURE obj_GetNodeToElements1_
 
 !----------------------------------------------------------------------------
@@ -798,7 +822,7 @@ END PROCEDURE obj_GetNodeToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2_
-INTEGER(I4B) :: ii, jj, kk, n, lnode, a, b
+INTEGER(I4B) :: ii, n, lnode, a, b
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -807,19 +831,15 @@ n = SIZE(globalNode)
 
 DO ii = 1, n
   lnode = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  b = a + SIZE(obj%nodeData(lnode)%ptr%globalElements)
 
-  kk = 0
-  DO jj = a, b - 1
-    kk = kk + 1
-    ans(jj) = obj%nodeData(lnode)%ptr%globalElements(kk)
-  END DO
+  CALL NodeData_GetGlobalElements(obj=obj%nodeData(lnode)%ptr, &
+                                  ans=ans(a:), tsize=b)
 
-  b = a
+  a = a + b
 
 END DO
 
-tsize = b - 1
+tsize = a - 1
 
 IF (tsize .LE. 1) RETURN
 
@@ -845,45 +865,45 @@ problem = .NOT. obj%isNodePresent(globalNode=globalNode, islocal=islocal)
 IF (problem) THEN
   ALLOCATE (ans(0))
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode is out of bound.')
+                    '[INTERNAL ERROR] :: globalNode is out of bound.')
   RETURN
 END IF
 #endif
 
 i = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 
-#ifdef DEBUG_VER
-IF (obj%isExtraNodeToNodesInitiated) THEN
-  problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
-  END IF
-END IF
-#endif
-
 abool = obj%isExtraNodeToNodesInitiated .AND. IncludeSelf
+
 IF (abool) THEN
-  j = obj%GetglobalNodeNumber(i)
-  CALL Append(ans, [j], obj%nodeData(i)%ptr%globalNodes,  &
-    & obj%nodeData(i)%ptr%extraglobalNodes)
+  j = NodeData_GetTotalGlobalNodes(obj%nodeData(i)%ptr) + &
+      NodeData_GetTotalExtraGlobalNodes(obj%nodeData(i)%ptr)
+  ALLOCATE (ans(j + 1))
+  ans(1) = obj%GetGlobalNodeNumber(i)
+  CALL NodeData_GetGlobalNodes2(obj%nodeData(i)%ptr, ans(2:), j)
   RETURN
 END IF
 
 abool = obj%isExtraNodeToNodesInitiated .AND. (.NOT. IncludeSelf)
 IF (abool) THEN
-  CALL Append(ans, obj%nodeData(i)%ptr%globalNodes,  &
-    & obj%nodeData(i)%ptr%extraglobalNodes)
+  j = NodeData_GetTotalGlobalNodes(obj%nodeData(i)%ptr) + &
+      NodeData_GetTotalExtraGlobalNodes(obj%nodeData(i)%ptr)
+  ALLOCATE (ans(j))
+  CALL NodeData_GetGlobalNodes2(obj%nodeData(i)%ptr, ans(1:), j)
   RETURN
 END IF
 
 IF (IncludeSelf) THEN
-  j = obj%GetglobalNodeNumber(i)
-  CALL Append(ans, [j], obj%nodeData(i)%ptr%globalNodes)
+  j = NodeData_GetTotalGlobalNodes(obj%nodeData(i)%ptr)
+  ALLOCATE (ans(j + 1))
+  ans(1) = obj%GetGlobalNodeNumber(i)
+  CALL NodeData_GetGlobalNodes(obj%nodeData(i)%ptr, ans(2:), j)
   RETURN
 END IF
 
-ans = obj%nodeData(i)%ptr%globalNodes
+j = NodeData_GetTotalGlobalNodes(obj%nodeData(i)%ptr)
+ALLOCATE (ans(j))
+CALL NodeData_GetGlobalNodes(obj%nodeData(i)%ptr, ans(1:), j)
+RETURN
 
 END PROCEDURE obj_GetNodeToNodes1
 
@@ -899,7 +919,8 @@ n = SIZE(globalNode)
 tsize = 0
 DO ii = 1, n
   lnode = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  tsize = tsize + SIZE(obj%nodeData(lnode)%ptr%globalNodes)
+  ! tsize = tsize + SIZE(obj%nodeData(lnode)%ptr%globalNodes)
+  tsize = tsize + NodeData_GetTotalGlobalNodes(obj%nodeData(lnode)%ptr)
 END DO
 
 IF (includeSelf) THEN
@@ -927,7 +948,7 @@ LOGICAL(LGT) :: problem
 
 LOGICAL(LGT) :: abool
 
-INTEGER(I4B) :: i, a
+INTEGER(I4B) :: i, a, aint
 
 tsize = 0
 #ifdef DEBUG_VER
@@ -944,16 +965,6 @@ END IF
 i = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 
 #ifdef DEBUG_VER
-IF (obj%isExtraNodeToNodesInitiated) THEN
-  problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
-  END IF
-END IF
-#endif
-
-#ifdef DEBUG_VER
 
 a = 0
 IF (IncludeSelf) THEN
@@ -964,7 +975,7 @@ IF (IncludeSelf) THEN
   problem = SIZE(ans) .LT. 1
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: size of ans is not enough')
+                      '[INTERNAL ERROR] :: size of ans is not enough')
     RETURN
   END IF
 
@@ -985,7 +996,8 @@ END IF
 
 #endif
 
-tsize = a + SIZE(obj%nodeData(i)%ptr%globalNodes)
+! tsize = a + SIZE(obj%nodeData(i)%ptr%globalNodes)
+tsize = a + NodeData_GetTotalGlobalNodes(obj%nodeData(i)%ptr)
 
 #ifdef DEBUG_VER
 
@@ -994,15 +1006,17 @@ problem = SIZE(ans) .LT. tsize
 ! call raiseError if problem is true
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: size of ans is not enough')
+                    '[INTERNAL ERROR] :: size of ans is not enough')
   RETURN
 END IF
 
-ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
+! ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
+CALL NodeData_GetGlobalNodes(obj%nodeData(i)%ptr, ans(a + 1:), aint)
 
 #else
 
-ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
+! ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
+CALL NodeData_GetGlobalNodes(obj%nodeData(i)%ptr, ans(a + 1:), aint)
 
 #endif
 
@@ -1015,7 +1029,8 @@ abool = obj%isExtraNodeToNodesInitiated
 IF (abool) THEN
 
   a = tsize
-  tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
+  ! tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
+  tsize = tsize + NodeData_GetTotalExtraGlobalNodes(obj%nodeData(i)%ptr)
 
   problem = SIZE(ans) .LT. tsize
   IF (problem) THEN
@@ -1024,7 +1039,8 @@ IF (abool) THEN
     RETURN
   END IF
 
-  ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
+  ! ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
+  CALL NodeData_GetExtraGlobalNodes(obj%nodeData(i)%ptr, ans(a + 1:), aint)
 
 END IF
 
@@ -1033,8 +1049,10 @@ END IF
 IF (abool) THEN
 
   a = tsize
-  tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
-  ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
+  ! tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
+  tsize = tsize + NodeData_GetTotalExtraGlobalNodes(obj%nodeData(i)%ptr)
+  ! ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
+  CALL NodeData_GetExtraGlobalNodes(obj%nodeData(i)%ptr, ans(a + 1:), aint)
 
 END IF
 
@@ -1052,49 +1070,37 @@ LOGICAL(LGT) :: problem
 
 LOGICAL(LGT) :: abool
 
-INTEGER(I4B) :: i, a, jj
+INTEGER(I4B) :: i, jj, b
 
 tsize = 0
-a = 0
 
 DO jj = 1, SIZE(globalNode)
 
  problem = .NOT. obj%isNodePresent(globalNode=globalNode(jj), islocal=islocal)
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: globalNode node present.')
+                      '[INTERNAL ERROR] :: globalNode node present.')
     RETURN
   END IF
 
   i = obj%GetLocalNodeNumber(globalNode=globalNode(jj), islocal=islocal)
 
-  IF (obj%isExtraNodeToNodesInitiated) THEN
-    problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
-    IF (problem) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
-    END IF
-    RETURN
-  END IF
-
   IF (IncludeSelf) THEN
 
     ans(tsize + 1) = obj%GetglobalNodeNumber(i)
-    a = a + 1
     tsize = tsize + 1
 
   END IF
 
-  tsize = a + SIZE(obj%nodeData(i)%ptr%globalNodes)
-  ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
-  a = tsize
+  CALL NodeData_GetGlobalNodes(obj%nodeData(i)%ptr, ans(tsize + 1:), b)
+  tsize = tsize + b
 
   abool = obj%isExtraNodeToNodesInitiated
   IF (abool) THEN
 
-    tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
-    ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
-    a = tsize
+    CALL NodeData_GetExtraGlobalNodes(obj%nodeData(i)%ptr, &
+                                      ans(tsize + 1:), b)
+    tsize = tsize + b
 
   END IF
 
