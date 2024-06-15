@@ -130,7 +130,7 @@ END SUBROUTINE Help_GetFacetDataFromElemData
 !----------------------------------------------------------------------------
 
 SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
-  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+  TYPE(ElemDataPointer_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tFaceInMesh
   LOGICAL(LGT), INTENT(IN) :: showTime
 
@@ -166,12 +166,12 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    tfaces = SIZE(elementData(iel)%globalFaces)
+    tfaces = SIZE(elementData(iel)%ptr%globalFaces)
     DO ii = 1, tfaces
-      aint = ABS(elementData(iel)%globalFaces(ii))
+      aint = ABS(elementData(iel)%ptr%globalFaces(ii))
       IF (amask(aint)) THEN
         face2elem(2, aint) = iel
         face2elem(4, aint) = ii
@@ -187,15 +187,15 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    tfaces = SIZE(elementData(iel)%globalFaces)
+    tfaces = SIZE(elementData(iel)%ptr%globalFaces)
     jj = 0
     temp1 = 0
     bndyflag = 0
     DO ii = 1, tfaces
-      aint = ABS(elementData(iel)%globalFaces(ii))
+      aint = ABS(elementData(iel)%ptr%globalFaces(ii))
       bint = face2elem(1, aint)
       isok1 = bint .NE. iel
       isok2 = bint .NE. 0
@@ -204,7 +204,7 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
-        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%ptr%globalElemNum
         temp1(2 + (jj - 1) * 3) = face2elem(4, aint)
         temp1(3 + (jj - 1) * 3) = face2elem(3, aint)
 
@@ -213,7 +213,7 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
         IF (cint .NE. 0) THEN
           jj = jj + 1
           temp1(1 + (jj - 1) * 3) =  &
-            & elementData(cint)%globalElemNum
+            & elementData(cint)%ptr%globalElemNum
           temp1(2 + (jj - 1) * 3) = face2elem(3, aint)
           temp1(3 + (jj - 1) * 3) = face2elem(4, aint)
         END IF
@@ -221,24 +221,24 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
     END DO
 
     aint = jj * 3
-    CALL Reallocate(elementData(iel)%globalElements, aint)
-    elementData(iel)%globalElements = temp1(1:aint)
+    CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
+    elementData(iel)%ptr%globalElements = temp1(1:aint)
 
     aint = tfaces - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    CALL Reallocate(elementData(iel)%ptr%boundaryData, aint)
     isbndy = jj .NE. tfaces
 
     IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
+      elementData(iel)%ptr%elementType = TypeElem%domainBoundary
       jj = 0
       DO ii = 1, tfaces
         IF (bndyflag(ii) .NE. 0) THEN
           jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
+          elementData(iel)%ptr%boundaryData(jj) = ii
         END IF
       END DO
     ELSE
-      elementData(iel)%elementType = TypeElem%internal
+      elementData(iel)%ptr%elementType = TypeElem%internal
     END IF
 
   END DO
@@ -264,7 +264,7 @@ END SUBROUTINE InitiateElementToElements3D
 ! summary: This routine uses the edge data in 2d to form element to element
 
 SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
-  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+  TYPE(ElemDataPointer_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tEdgeInMesh
   LOGICAL(LGT), INTENT(IN) :: showTime
 
@@ -301,12 +301,12 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    tedges = SIZE(elementData(iel)%globalEdges)
+    tedges = SIZE(elementData(iel)%ptr%globalEdges)
     DO ii = 1, tedges
-      aint = ABS(elementData(iel)%globalEdges(ii))
+      aint = ABS(elementData(iel)%ptr%globalEdges(ii))
       IF (amask(aint)) THEN
         edge2elem(2, aint) = iel
         edge2elem(4, aint) = ii
@@ -322,15 +322,15 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    tedges = SIZE(elementData(iel)%globalEdges)
+    tedges = SIZE(elementData(iel)%ptr%globalEdges)
     jj = 0
     temp1 = 0
     bndyflag = 0
     DO ii = 1, tedges
-      aint = ABS(elementData(iel)%globalEdges(ii))
+      aint = ABS(elementData(iel)%ptr%globalEdges(ii))
       bint = edge2elem(1, aint)
       isok1 = bint .NE. iel
       isok2 = bint .NE. 0
@@ -339,7 +339,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
-        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%ptr%globalElemNum
         temp1(2 + (jj - 1) * 3) = edge2elem(4, aint)
         temp1(3 + (jj - 1) * 3) = edge2elem(3, aint)
 
@@ -347,7 +347,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
         cint = edge2elem(2, aint)
         IF (cint .NE. 0) THEN
           jj = jj + 1
-          temp1(1 + (jj - 1) * 3) = elementData(cint)%globalElemNum
+          temp1(1 + (jj - 1) * 3) = elementData(cint)%ptr%globalElemNum
           temp1(2 + (jj - 1) * 3) = edge2elem(3, aint)
           temp1(3 + (jj - 1) * 3) = edge2elem(4, aint)
         END IF
@@ -355,24 +355,24 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
     END DO
 
     aint = jj * 3
-    CALL Reallocate(elementData(iel)%globalElements, aint)
-    elementData(iel)%globalElements = temp1(1:aint)
+    CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
+    elementData(iel)%ptr%globalElements = temp1(1:aint)
 
     aint = tedges - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    CALL Reallocate(elementData(iel)%ptr%boundaryData, aint)
     isbndy = jj .NE. tedges
 
     IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
+      elementData(iel)%ptr%elementType = TypeElem%domainBoundary
       jj = 0
       DO ii = 1, tedges
         IF (bndyflag(ii) .NE. 0) THEN
           jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
+          elementData(iel)%ptr%boundaryData(jj) = ii
         END IF
       END DO
     ELSE
-      elementData(iel)%elementType = TypeElem%internal
+      elementData(iel)%ptr%elementType = TypeElem%internal
     END IF
 
   END DO
@@ -398,9 +398,9 @@ END SUBROUTINE InitiateElementToElements2D
 !                                               InitiateElementToElements1D
 !----------------------------------------------------------------------------
 
-SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
-  & showTime, local_nptrs)
-  TYPE(ElemData_), INTENT(INOUT) :: elementData(:)
+SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
+                                       showTime, local_nptrs)
+  TYPE(ElemDataPointer_), INTENT(INOUT) :: elementData(:)
   INTEGER(I4B), INTENT(IN) :: tNodesInMesh
   LOGICAL(LGT), INTENT(IN) :: showTime
   INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
@@ -418,12 +418,12 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+                          '[START] ')
 
   problem = tNodesInMesh .EQ. 0
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Total number of nodes are zero.')
+                      '[INTERNAL ERROR] :: Total number of nodes are zero.')
     RETURN
   END IF
 #endif
@@ -436,11 +436,11 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
     DO ii = 1, 2
-      aint = elementData(iel)%globalNodes(ii)
+      aint = elementData(iel)%ptr%globalNodes(ii)
       aint = local_nptrs(aint)
       IF (amask(aint)) THEN
         node2elem(2, aint) = iel
@@ -458,14 +458,14 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
   tNodes = 2
   DO iel = 1, telems
 
-    problem = .NOT. elementData(iel)%isActive
+    problem = .NOT. elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
     jj = 0
     temp1 = 0
     bndyflag = 0
     DO ii = 1, 2
-      aint = elementData(iel)%globalNodes(ii)
+      aint = elementData(iel)%ptr%globalNodes(ii)
       aint = local_nptrs(aint)
       bint = node2elem(1, aint)
       isok1 = bint .NE. iel
@@ -475,7 +475,7 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
       IF (isok1 .AND. isok2) THEN
         jj = jj + 1
-        temp1(1 + (jj - 1) * 3) = elementData(bint)%globalElemNum
+        temp1(1 + (jj - 1) * 3) = elementData(bint)%ptr%globalElemNum
         temp1(2 + (jj - 1) * 3) = node2elem(4, aint)
         temp1(3 + (jj - 1) * 3) = node2elem(3, aint)
 
@@ -483,7 +483,7 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
         cint = node2elem(2, aint)
         IF (cint .NE. 0) THEN
           jj = jj + 1
-          temp1(1 + (jj - 1) * 3) = elementData(cint)%globalElemNum
+          temp1(1 + (jj - 1) * 3) = elementData(cint)%ptr%globalElemNum
           temp1(2 + (jj - 1) * 3) = node2elem(3, aint)
           temp1(3 + (jj - 1) * 3) = node2elem(4, aint)
         END IF
@@ -491,24 +491,24 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
     END DO
 
     aint = jj * 3
-    CALL Reallocate(elementData(iel)%globalElements, aint)
-    elementData(iel)%globalElements = temp1(1:aint)
+    CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
+    elementData(iel)%ptr%globalElements = temp1(1:aint)
 
     aint = tNodes - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    CALL Reallocate(elementData(iel)%ptr%boundaryData, aint)
     isbndy = jj .NE. tNodes
 
     IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
+      elementData(iel)%ptr%elementType = TypeElem%domainBoundary
       jj = 0
       DO ii = 1, tNodes
         IF (bndyflag(ii) .NE. 0) THEN
           jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
+          elementData(iel)%ptr%boundaryData(jj) = ii
         END IF
       END DO
     ELSE
-      elementData(iel)%elementType = TypeElem%internal
+      elementData(iel)%ptr%elementType = TypeElem%internal
     END IF
 
   END DO
@@ -518,14 +518,14 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh,  &
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+                          '[END] ')
 #endif
 
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName//  &
-      & " : time : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName//" : "//myName// &
+                 " : time : "// &
+                 tostring(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
 END SUBROUTINE InitiateElementToElements1D
