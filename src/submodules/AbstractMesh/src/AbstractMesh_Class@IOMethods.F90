@@ -48,7 +48,7 @@ INTEGER(I4B) :: ii
 CALL Display(msg, unitno=unitno)
 
 CALL Display(obj%isInitiated, "Mesh object initiated: ", &
-  & unitno=unitno)
+             unitno=unitno)
 
 IF (.NOT. obj%isInitiated) RETURN
 
@@ -57,54 +57,54 @@ CALL Display(obj%showTime, "showTime: ", unitno=unitno)
 CALL Display(obj%readFromFile, "readFromFile: ", unitno=unitno)
 
 CALL Display(obj%isNodeToElementsInitiated, "isNodeToElementsInitiated: ", &
-  & unitno=unitno)
+             unitno=unitno)
 
 CALL Display(obj%isNodeToNodesInitiated, "isNodeToNodesInitiated: ", &
-  & unitno=unitno)
+             unitno=unitno)
 
-CALL Display(obj%isElementToElementsInitiated,&
-  & "isElementToElementsInitiated: ", unitno=unitno)
+CALL Display(obj%isElementToElementsInitiated, &
+             "isElementToElementsInitiated: ", unitno=unitno)
 
-CALL Display(obj%isEdgeConnectivityInitiated,&
-  & "isEdgeConnectivityInitiated: ", unitno=unitno)
+CALL Display(obj%isEdgeConnectivityInitiated, &
+             "isEdgeConnectivityInitiated: ", unitno=unitno)
 
-CALL Display(obj%isFaceConnectivityInitiated,&
-  & "isFaceConnectivityInitiated: ", unitno=unitno)
+CALL Display(obj%isFaceConnectivityInitiated, &
+             "isFaceConnectivityInitiated: ", unitno=unitno)
 
-CALL Display(obj%isBoundaryDataInitiated,  &
-  & "isBoundaryDataInitiated: ", unitno=unitno)
+CALL Display(obj%isBoundaryDataInitiated, &
+             "isBoundaryDataInitiated: ", unitno=unitno)
 
-CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ",  &
-  & unitno=unitno)
+CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ", &
+             unitno=unitno)
 
 CALL Display(obj%uid, "uid: ", unitno=unitno)
 
 CALL Display("Total elements (topology wise)", unitno=unitno)
 CALL EqualLine(unitno=unitno)
 CALL Display(obj%tElements_topology_wise(1), "point: ", &
-  & unitno=unitno)
+             unitno=unitno)
 CALL Display(obj%tElements_topology_wise(2), "line: ", &
-  & unitno=unitno)
+             unitno=unitno)
 CALL Display(obj%tElements_topology_wise(3), "triangle: ", &
-  & unitno=unitno)
-CALL Display(obj%tElements_topology_wise(4), "quadrangle: ",&
-  & unitno=unitno)
-CALL Display(obj%tElements_topology_wise(5), "tetrahedron: ",&
-  & unitno=unitno)
+             unitno=unitno)
+CALL Display(obj%tElements_topology_wise(4), "quadrangle: ", &
+             unitno=unitno)
+CALL Display(obj%tElements_topology_wise(5), "tetrahedron: ", &
+             unitno=unitno)
 CALL Display(obj%tElements_topology_wise(6), "hexahedron: ", &
-  & unitno=unitno)
-CALL Display(obj%tElements_topology_wise(7), "prism: ",  &
-  & unitno=unitno)
-CALL Display(obj%tElements_topology_wise(8), "pyramid: ",  &
-  & unitno=unitno)
+             unitno=unitno)
+CALL Display(obj%tElements_topology_wise(7), "prism: ", &
+             unitno=unitno)
+CALL Display(obj%tElements_topology_wise(8), "pyramid: ", &
+             unitno=unitno)
 CALL BlankLines(unitno=unitno)
 
-CALL Display(obj%tElemTopologies, "Total topologies: ",  &
-  & unitno=unitno)
+CALL Display(obj%tElemTopologies, "Total topologies: ", &
+             unitno=unitno)
 
 DO ii = 1, obj%tElemTopologies
-  CALL Display("Topologies("//ToString(ii)//"): "//  &
-    & ElementName(obj%elemTopologies(ii)), unitno=unitno)
+  CALL Display("Topologies("//ToString(ii)//"): "// &
+               ElementName(obj%elemTopologies(ii)), unitno=unitno)
 END DO
 
 CALL Display(obj%nsd, "nsd: ", unitno=unitno)
@@ -179,16 +179,16 @@ CALL Display(msg, unitno=unitno)
 
 IF (PRESENT(globalElement)) THEN
   ii = obj%GetLocalElemNumber(globalElement=globalElement, isLocal=isLocal)
-  CALL elemData_Display(obj=obj%elementData(ii),  &
-    & msg="elementData("//ToString(ii)//"): ", unitno=unitno)
+  CALL elemData_Display(obj=obj%elementData(ii)%ptr, &
+                       msg="elementData("//ToString(ii)//"): ", unitno=unitno)
   RETURN
 END IF
 
 telements = obj%GetTotalElements()
 
 DO ii = 1, telements
-  CALL elemData_Display(obj=obj%elementData(ii),  &
-    & msg="elementData("//ToString(ii)//"): ", unitno=unitno)
+  CALL elemData_Display(obj=obj%elementData(ii)%ptr, &
+                       msg="elementData("//ToString(ii)//"): ", unitno=unitno)
   CALL BlankLines(nol=1, unitno=unitno)
 END DO
 
