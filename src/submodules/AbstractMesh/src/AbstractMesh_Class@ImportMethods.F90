@@ -376,8 +376,9 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
 
   DO CONCURRENT(ii=1:obj%tElements)
     obj%local_elemNumber(elemNumber(ii)) = ii
-    CALL ElemDataSet(obj=obj%elementData(ii), globalElemNum=elemNumber(ii), &
-            localElemNum=ii, globalNodes=connectivity(:, ii), name=elemType, &
+    CALL ElemDataSet(obj=obj%elementData(ii)%ptr, &
+                     globalElemNum=elemNumber(ii), localElemNum=ii, &
+                     globalNodes=connectivity(:, ii), name=elemType, &
                      isActive=.TRUE., meshID=meshID)
   END DO
 
@@ -405,7 +406,7 @@ SUBROUTINE MeshImportElementDataFromDim(obj, elemType, meshID, &
   DO ii = istart, iend
     obj%local_elemNumber(elemNumber(ii)) = ii
     CALL ElemDataSet( &
-      obj=obj%elementData(ii), &
+      obj=obj%elementData(ii)%ptr, &
       globalElemNum=elemNumber(ii), &
       localElemNum=ii, &
       globalNodes=connectivity(1:nne, ii), &
