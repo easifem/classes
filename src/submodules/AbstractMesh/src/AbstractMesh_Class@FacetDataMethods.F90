@@ -33,7 +33,7 @@ LOGICAL(LGT), ALLOCATABLE :: masks(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 problem = obj%xidim .EQ. 0
@@ -53,7 +53,7 @@ tface = obj%tfaces
 problem = tface .EQ. 0
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ERROR] :: Facet elements not found in the mesh')
+                    '[ERROR] :: Facet elements not found in the mesh')
   RETURN
 END IF
 
@@ -68,7 +68,7 @@ telements = obj%GetTotalElements()
 DO iel = 1, telements
   problem = .NOT. obj%isElementActive(globalElement=iel, islocal=.TRUE.)
   IF (problem) CYCLE
-  CALL GetFacetDataFromElemData(elementData=obj%elementData(iel), &
+  CALL GetFacetDataFromElemData(elementData=obj%elementData(iel)%ptr, &
                             facetData=obj%facetData, masks=masks, nsd=obj%nsd)
 
 END DO
@@ -77,7 +77,7 @@ IF (ALLOCATED(masks)) DEALLOCATE (masks)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_InitiateFacetElements
