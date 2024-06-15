@@ -65,7 +65,7 @@ CONTAINS
 MODULE PROCEDURE obj_GetElemData
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-elemdata = obj%elementData(iel)
+elemdata = obj%elementData(iel)%ptr
 END PROCEDURE obj_GetElemData
 
 !----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ END PROCEDURE obj_GetElemData
 MODULE PROCEDURE obj_GetElemDataPointer
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans => obj%elementData(iel)
+ans => obj%elementData(iel)%ptr
 END PROCEDURE obj_GetElemDataPointer
 
 !----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ END PROCEDURE obj_GetElemDataPointer
 MODULE PROCEDURE obj_GetNNE
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = SIZE(obj%elementData(iel)%globalNodes)
+ans = SIZE(obj%elementData(iel)%ptr%globalNodes)
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
@@ -394,7 +394,7 @@ END PROCEDURE obj_isElementPresent
 MODULE PROCEDURE obj_isBoundaryElement
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(iel)%elementType .LE. BOUNDARY_ELEMENT
+ans = obj%elementData(iel)%ptr%elementType .LE. BOUNDARY_ELEMENT
 END PROCEDURE obj_isBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -404,7 +404,7 @@ END PROCEDURE obj_isBoundaryElement
 MODULE PROCEDURE obj_isDomainBoundaryElement
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(iel)%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
+ans = obj%elementData(iel)%ptr%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
 END PROCEDURE obj_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -470,7 +470,14 @@ END PROCEDURE obj_GetTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryElements
-ans = COUNT(obj%elementData(:)%elementType == BOUNDARY_ELEMENT)
+INTEGER(I4B) :: ii, tcells
+ans = 0
+tcells = obj%GetTotalElements()
+DO ii = 1, tcells
+  IF (obj%elementData(ii)%ptr%elementType == BOUNDARY_ELEMENT) THEN
+    ans = ans + 1
+  END IF
+END DO
 END PROCEDURE obj_GetTotalBoundaryElements
 
 !----------------------------------------------------------------------------
@@ -545,7 +552,7 @@ END IF
 
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 
-CALL ElemData_GetConnectivity(obj=obj%elementData(iel), con=ans, &
+CALL ElemData_GetConnectivity(obj=obj%elementData(iel)%ptr, con=ans, &
                               tsize=tsize, opt=opt)
 
 END PROCEDURE obj_GetConnectivity_
@@ -573,9 +580,9 @@ END IF
 #endif
 
 DO iel = 1, telem
-  nn = SIZE(obj%elementData(iel)%globalNodes)
+  nn = SIZE(obj%elementData(iel)%ptr%globalNodes)
   DO ii = 1, nn
-    VALUE(ii, iel) = obj%elementData(iel)%globalNodes(ii)
+    VALUE(ii, iel) = obj%elementData(iel)%ptr%globalNodes(ii)
   END DO
 END DO
 
@@ -685,7 +692,7 @@ IF (problem) THEN
 END IF
 #endif
 
-ans = obj%elementData(localElement)%globalElemNum
+ans = obj%elementData(localElement)%ptr%globalElemNum
 END PROCEDURE obj_GetglobalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -1143,7 +1150,7 @@ END PROCEDURE obj_GetElementToElements
 MODULE PROCEDURE obj_GetElementToElements1_
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-CALL ElemData_GetElementToElements(obj=obj%elementData(iel), ans=ans, &
+CALL ElemData_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
                                    tsize=tsize)
 END PROCEDURE obj_GetElementToElements1_
 
@@ -1154,7 +1161,7 @@ END PROCEDURE obj_GetElementToElements1_
 MODULE PROCEDURE obj_GetElementToElements2_
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-CALL ElemData_GetElementToElements(obj=obj%elementData(iel), ans=ans, &
+CALL ElemData_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
                                    nrow=nrow, ncol=ncol)
 END PROCEDURE obj_GetElementToElements2_
 
@@ -1165,10 +1172,10 @@ END PROCEDURE obj_GetElementToElements2_
 MODULE PROCEDURE obj_GetBoundaryElementData
 INTEGER(I4B) :: iel, tsize, ii
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-tsize = SIZE(obj%elementData(iel)%boundaryData)
+tsize = SIZE(obj%elementData(iel)%ptr%boundaryData)
 CALL Reallocate(ans, tsize)
 DO ii = 1, tsize
-  ans(ii) = obj%elementData(iel)%boundaryData(ii)
+  ans(ii) = obj%elementData(iel)%ptr%boundaryData(ii)
 END DO
 END PROCEDURE obj_GetBoundaryElementData
 
@@ -1206,7 +1213,7 @@ END PROCEDURE obj_GetXidimension
 MODULE PROCEDURE obj_GetMaterial1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(iel)%material(medium)
+ans = obj%elementData(iel)%ptr%material(medium)
 END PROCEDURE obj_GetMaterial1
 
 !----------------------------------------------------------------------------
@@ -1217,8 +1224,8 @@ MODULE PROCEDURE obj_GetTotalMaterial1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = 0 ! default value
-IF (ALLOCATED(obj%elementData(iel)%material)) THEN
-  ans = SIZE(obj%elementData(iel)%material)
+IF (ALLOCATED(obj%elementData(iel)%ptr%material)) THEN
+  ans = SIZE(obj%elementData(iel)%ptr%material)
 END IF
 END PROCEDURE obj_GetTotalMaterial1
 
@@ -1357,14 +1364,14 @@ SELECT CASE (obj%xidim)
 CASE (1_I4B)
   CALL Reallocate(ans, 1)
   IF (iface .EQ. 1) THEN
-    ans(1) = obj%elementData(iel)%globalNodes(1)
+    ans(1) = obj%elementData(iel)%ptr%globalNodes(1)
   ELSE
-    ans(1) = obj%elementData(iel)%globalNodes(2)
+    ans(1) = obj%elementData(iel)%ptr%globalNodes(2)
   END IF
 
 CASE (2_I4B)
 
-  elemType = obj%elementData(iel)%name
+  elemType = obj%elementData(iel)%ptr%name
   order = ElementOrder(elemType)
 
   CALL Reallocate(ans, order + 1)
@@ -1372,12 +1379,12 @@ CASE (2_I4B)
     & opt=1_I4B)
 
   DO ii = 1, order + 1
-    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
+    ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
   END DO
 
 CASE (3_I4B)
 
-  elemType = obj%elementData(iel)%name
+  elemType = obj%elementData(iel)%ptr%name
   temp4 = TotalEntities(elemType)
   order = ElementOrder(elemType)
 
@@ -1390,7 +1397,7 @@ CASE (3_I4B)
   CALL Reallocate(ans, tFaceNodes(iface))
 
   DO ii = 1, tFaceNodes(iface)
-    ans(ii) = obj%elementData(iel)%globalNodes(con(ii, iface))
+    ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
   END DO
 
 END SELECT
@@ -1579,7 +1586,7 @@ END PROCEDURE obj_isFacetData
 MODULE PROCEDURE obj_isElementActive
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = obj%elementData(iel)%isActive
+ans = obj%elementData(iel)%ptr%isActive
 END PROCEDURE obj_isElementActive
 
 !----------------------------------------------------------------------------
@@ -1598,7 +1605,7 @@ END PROCEDURE obj_GetFacetParam
 MODULE PROCEDURE obj_GetTotalEntities1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-ans = ElemData_GetTotalEntities(obj%elementData(iel))
+ans = ElemData_GetTotalEntities(obj%elementData(iel)%ptr)
 END PROCEDURE obj_GetTotalEntities1
 
 !----------------------------------------------------------------------------
