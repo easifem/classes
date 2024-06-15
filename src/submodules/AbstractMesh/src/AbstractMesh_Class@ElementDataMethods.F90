@@ -123,10 +123,10 @@ SUBROUTINE MarkInternalNodes(obj)
     isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
     IF (.NOT. isok) CYCLE
 
-    tsize = SIZE(obj%elementData(ii)%boundaryData)
+    tsize = SIZE(obj%elementData(ii)%ptr%boundaryData)
     DO jj = 1, tsize
       nptrs = obj%GetFacetConnectivity(globalElement=ii, &
-                                 iface=obj%elementData(ii)%boundaryData(jj), &
+                             iface=obj%elementData(ii)%ptr%boundaryData(jj), &
                                        isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
