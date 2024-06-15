@@ -22,6 +22,7 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: NodeData_
+PUBLIC :: NodeDataPointer_
 PUBLIC :: NodeData_Pointer
 PUBLIC :: NodeData_Display
 PUBLIC :: NodeData_Deallocate
@@ -52,11 +53,13 @@ END INTERFACE Display
 
 TYPE :: NodeData_
   INTEGER(I4B) :: globalNodeNum = 0
-    !! Global node number
+  !! Global node number
   INTEGER(I4B) :: localNodeNum = 0
-    !! local node number
+  !! local node number
   INTEGER(I4B) :: nodeType = INTERNAL_NODE
-    !! node type; INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE
+  !! node type; INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE
+  REAL(DFP) :: nodeCoord(3) = 0.0_DFP
+  !! node coordinates
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
     !! It contains the global node number surrouding the node
     !! It does not contain self global node number
@@ -65,6 +68,14 @@ TYPE :: NodeData_
   INTEGER(I4B), ALLOCATABLE :: extraGlobalNodes(:)
     !! These global nodes required in facet-element-data
 END TYPE NodeData_
+
+!----------------------------------------------------------------------------
+!                                                         NodeDataPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: NodeDataPointer_
+  CLASS(NodeData_), POINTER :: ptr => NULL()
+END TYPE NodeDataPointer_
 
 !----------------------------------------------------------------------------
 !                                                             NodeDataType_
@@ -100,11 +111,12 @@ SUBROUTINE NodeData_Copy(obj1, obj2)
   obj1%globalNodeNum = obj2%globalNodeNum
   obj1%localNodeNum = obj2%localNodeNum
   obj1%nodeType = obj2%nodeType
+  obj1%nodeCoord = obj2%nodeCoord
   IF (ALLOCATED(obj2%globalNodes)) obj1%globalNodes = obj2%globalNodes
-  IF (ALLOCATED(obj2%globalElements)) obj1%globalElements  &
-    & = obj2%globalElements
-  IF (ALLOCATED(obj2%extraGlobalNodes)) obj1%extraGlobalNodes  &
-    & = obj2%extraGlobalNodes
+  IF (ALLOCATED(obj2%globalElements)) obj1%globalElements = &
+    obj2%globalElements
+  IF (ALLOCATED(obj2%extraGlobalNodes)) obj1%extraGlobalNodes = &
+    obj2%extraGlobalNodes
 
 END SUBROUTINE NodeData_Copy
 
@@ -138,6 +150,10 @@ SUBROUTINE NodeData_Display(obj, msg, unitno)
 
   CALL Display(obj%localNodeNum, msg="localNodeNum: ", unitno=unitno)
 
+  CALL Display(obj%nodeCoord(1), msg="xCoord: ", unitno=unitno)
+  CALL Display(obj%nodeCoord(2), msg="yCoord: ", unitno=unitno)
+  CALL Display(obj%nodeCoord(3), msg="zCoord: ", unitno=unitno)
+
 ! globalNodes
   IF (ALLOCATED(obj%globalNodes)) THEN
     CALL Display(obj%globalNodes, msg="globalNodes: ", unitno=unitno)
@@ -146,7 +162,7 @@ SUBROUTINE NodeData_Display(obj, msg, unitno)
 ! extraGlobalNodes
   IF (ALLOCATED(obj%extraGlobalNodes)) THEN
     CALL Display(obj%extraGlobalNodes, msg="extraGlobalNodes: ", &
-      & unitno=unitno)
+                 unitno=unitno)
   END IF
 
 ! globalElements
@@ -168,6 +184,7 @@ SUBROUTINE NodeData_Deallocate(obj)
   obj%globalNodeNum = 0
   obj%localNodeNum = 0
   obj%nodeType = INTERNAL_NODE
+  obj%nodeCoord = 0.0_DFP
   IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
   IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
   IF (ALLOCATED(obj%extraGlobalNodes)) DEALLOCATE (obj%extraGlobalNodes)
@@ -238,8 +255,8 @@ END FUNCTION NodeData_Pointer
 ! date:  2024-01-29
 ! summary:  Set node data
 
-SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum,  &
-  & nodeType, globalNodes, globalElements, extraGlobalNodes)
+SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum, &
+           nodeType, globalNodes, globalElements, extraGlobalNodes, nodeCoord)
   TYPE(NodeData_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodeNum
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: localNodeNum
@@ -247,6 +264,7 @@ SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum,  &
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodes(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElements(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: extraGlobalNodes(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(3)
 
   IF (PRESENT(globalNodeNum)) obj%globalNodeNum = globalNodeNum
   IF (PRESENT(localNodeNum)) obj%localNodeNum = localNodeNum
@@ -254,6 +272,7 @@ SUBROUTINE NodeDataSet(obj, globalNodeNum, localNodeNum,  &
   IF (PRESENT(globalNodes)) obj%globalNodes = globalNodes
   IF (PRESENT(globalElements)) obj%globalElements = globalElements
   IF (PRESENT(extraGlobalNodes)) obj%extraGlobalNodes = extraGlobalNodes
+  IF (PRESENT(nodeCoord)) obj%nodeCoord = nodeCoord
 END SUBROUTINE NodeDataSet
 
 !----------------------------------------------------------------------------

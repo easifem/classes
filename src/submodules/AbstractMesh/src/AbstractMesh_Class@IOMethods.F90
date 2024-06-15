@@ -200,12 +200,17 @@ END PROCEDURE obj_DisplayElementData
 
 MODULE PROCEDURE obj_DisplayNodeData
 INTEGER(I4B) :: ii, tNodes
+LOGICAL(LGT) :: isok
+
 tNodes = obj%GetTotalNodes()
 CALL Display(msg, unitno=unitno)
 DO ii = 1, tNodes
-  CALL nodeData_Display(obj%nodeData(ii),  &
-    & msg="nodeData("//ToString(ii)//"): ", unitno=unitno)
+
+  CALL nodeData_Display(obj%nodeData(ii)%ptr, &
+                        msg="nodeData("//ToString(ii)//"): ", unitno=unitno)
+
   CALL BlankLines(nol=1, unitno=unitno)
+
 END DO
 END PROCEDURE obj_DisplayNodeData
 
@@ -226,12 +231,13 @@ CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
 DO ii = 1, n
 
-  CALL FacetData_Display(obj=obj%facetData(ii),  &
-    & msg="facetData("//ToString(ii)//"): ", unitno=unitno)
+  CALL FacetData_Display(obj=obj%facetData(ii), &
+                         msg="facetData("//ToString(ii)//"): ", unitno=unitno)
 
   CALL BlankLines(nol=1, unitno=unitno)
 
 END DO
+
 END PROCEDURE obj_DisplayFacetData
 
 !----------------------------------------------------------------------------
@@ -297,7 +303,7 @@ END PROCEDURE obj_DisplayBoundaryFacetData
 MODULE PROCEDURE obj_DisplayFacetElements
 CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetElements()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_DisplayFacetElements
 
 !----------------------------------------------------------------------------

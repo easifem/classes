@@ -128,17 +128,16 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateDynamicDataStructure()"
 INTEGER(I4B) :: ii
 TYPE(ElemData_), POINTER :: elemdata_ptr
-TYPE(NodeData_), POINTER :: nodedata_ptr
 TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
+                    '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
   RETURN
 END IF
 
@@ -150,8 +149,8 @@ CALL obj%nodeDataList%Initiate()
 CALL obj%nodeDataBinaryTree%Initiate()
 
 IF (obj%showTime) THEN
-  CALL Display("Showing Time States of InitiateDynamicDataStructure",  &
-    & unitno=stdout)
+  CALL Display("Showing Time States of InitiateDynamicDataStructure", &
+               unitno=stdout)
   CALL EqualLine(unitno=stdout)
   CALL TypeCPUTime%SetStartTime()
 END IF
@@ -165,34 +164,31 @@ END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time for making elementDataList: "//  &
-    & ToString(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time for making elementDataList: "// &
+               ToString(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 DO ii = 1, obj%tNodes
-  nodedata_ptr => NodeData_Pointer()
-  CALL NodeData_Copy(nodedata_ptr, obj%nodeData(ii))
-  CALL obj%nodeDataList%Add(nodedata_ptr)
-  CALL obj%nodeDataBinaryTree%Insert(nodedata_ptr)
+  CALL obj%nodeDataList%Add(obj%nodeData(ii)%ptr)
+  CALL obj%nodeDataBinaryTree%Insert(obj%nodeData(ii)%ptr)
 END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time for making nodeDataList: "//  &
-    & ToString(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time for making nodeDataList: "// &
+               ToString(TypeCPUTime%GetTime()), unitno=stdout)
   CALL EqualLine(unitno=stdout)
 END IF
 
 elemdata_ptr => NULL()
-nodedata_ptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateDynamicDataStructure

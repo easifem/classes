@@ -20,8 +20,8 @@ USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: Display, ToString
 USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
-  & InitiateElementToElements2D, &
-  & InitiateElementToElements1D
+                               InitiateElementToElements2D, &
+                               InitiateElementToElements1D
 USE NodeData_Class, ONLY: TypeNode
 IMPLICIT NONE
 CONTAINS
@@ -36,14 +36,14 @@ LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 problem = .NOT. ALLOCATED(obj%elementData)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
+        '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
   RETURN
 END IF
 
@@ -77,15 +77,15 @@ CASE (3_I4B)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for xidim '  &
-    & //ToString(obj%xidim))
+                    '[INTERNAL ERROR] :: No case found for xidim ' &
+                    //ToString(obj%xidim))
 END SELECT
 
 CALL MarkInternalNodes(obj=obj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateElementToElements
@@ -104,7 +104,7 @@ SUBROUTINE MarkInternalNodes(obj)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+                          '[START] ')
 #endif
 
   IF (obj%xidim .EQ. 0) RETURN
@@ -118,12 +118,12 @@ SUBROUTINE MarkInternalNodes(obj)
 
     tsize = SIZE(obj%elementData(ii)%boundaryData)
     DO jj = 1, tsize
-      nptrs = obj%GetFacetConnectivity(globalElement=ii,  &
-        & iface=obj%elementData(ii)%boundaryData(jj),  &
-        & isLocal=.TRUE.)
+      nptrs = obj%GetFacetConnectivity(globalElement=ii, &
+                                 iface=obj%elementData(ii)%boundaryData(jj), &
+                                       isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
-        obj%nodeData(ll)%nodeType = TypeNode%domainBoundary
+        obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
       END DO
     END DO
 
@@ -131,7 +131,7 @@ SUBROUTINE MarkInternalNodes(obj)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+                          '[END] ')
 #endif
 
 END SUBROUTINE MarkInternalNodes

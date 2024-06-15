@@ -24,7 +24,7 @@ USE CPUTime_Class, ONLY: CPUTime_
 USE ElemData_Class, ONLY: ElemData_
 USE ElemDataBinaryTree_Class, ONLY: ElemDataBinaryTree_
 USE ElemDataList_Class, ONLY: ElemDataList_
-USE NodeData_Class, ONLY: NodeData_
+USE NodeData_Class, ONLY: NodeData_, NodeDataPointer_
 USE NodeDataList_Class, ONLY: NodeDataList_
 USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
 USE FacetData_Class, ONLY: FacetData_
@@ -166,7 +166,7 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! If the face is a part of the mesh boundary then it will be called
     !! the BOUNDARY_ELEMENT
 
-  TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
+  TYPE(NodeDataPointer_), ALLOCATABLE :: nodeData(:)
     !! Node data
 
   TYPE(ElemData_), ALLOCATABLE :: elementData(:)

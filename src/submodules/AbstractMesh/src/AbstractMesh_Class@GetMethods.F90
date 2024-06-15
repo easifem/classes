@@ -126,7 +126,7 @@ END PROCEDURE obj_GetBoundingEntity
 MODULE PROCEDURE obj_GetNptrs
 INTEGER(I4B) :: ii
 DO CONCURRENT(ii=1:SIZE(ans))
-  ans(ii) = obj%nodeData(ii)%globalNodeNum
+  ans(ii) = obj%nodeData(ii)%ptr%globalNodeNum
 END DO
 END PROCEDURE obj_GetNptrs
 
@@ -138,7 +138,7 @@ MODULE PROCEDURE obj_GetNptrs_
 INTEGER(I4B) :: ii, n
 n = SIZE(obj%nodeData)
 DO CONCURRENT(ii=1:n)
-  nptrs(ii) = obj%nodeData(ii)%globalNodeNum
+  nptrs(ii) = obj%nodeData(ii)%ptr%globalNodeNum
 END DO
 IF (PRESENT(tsize)) tsize = n
 END PROCEDURE obj_GetNptrs_
@@ -173,9 +173,9 @@ dummy = obj%GetTotalInternalNodes()
 ALLOCATE (ans(dummy))
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
     dummy = dummy + 1
-    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+    ans(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
   END IF
 END DO
 END PROCEDURE obj_GetInternalNptrs
@@ -205,9 +205,9 @@ END IF
 
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
     dummy = dummy + 1
-    nptrs(dummy) = obj%nodeData(ii)%globalNodeNum
+    nptrs(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
   END IF
 END DO
 END PROCEDURE obj_GetInternalNptrs_
@@ -223,9 +223,9 @@ dummy = obj%GetTotalBoundaryNodes()
 CALL Reallocate(ans, dummy)
 dummy = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%nodeType .EQ. BOUNDARY_NODE) THEN
+  IF (obj%nodeData(ii)%ptr%nodeType .EQ. BOUNDARY_NODE) THEN
     dummy = dummy + 1
-    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+    ans(dummy) = obj%nodeData(ii)%ptr%globalNodeNum
   END IF
 END DO
 END PROCEDURE obj_GetBoundaryNptrs
@@ -237,7 +237,7 @@ END PROCEDURE obj_GetBoundaryNptrs
 MODULE PROCEDURE obj_isBoundaryNode
 INTEGER(I4B) :: localnode
 localnode = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-ans = obj%nodeData(localnode)%nodeType .NE. INTERNAL_NODE
+ans = obj%nodeData(localnode)%ptr%nodeType .NE. INTERNAL_NODE
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ IF (isok) THEN
 
   tsize = SIZE(obj%nodeData)
   DO CONCURRENT(ii=1:tsize)
-    jj = obj%nodeData(ii)%globalNodeNum
+    jj = obj%nodeData(ii)%ptr%globalNodeNum
     mask(jj) = .TRUE.
   END DO
 
@@ -300,7 +300,7 @@ END IF
 
 tsize = SIZE(obj%nodeData)
 DO CONCURRENT(ii=1:tsize)
-  jj = obj%nodeData(ii)%globalNodeNum
+  jj = obj%nodeData(ii)%ptr%globalNodeNum
   kk = local_nptrs(jj)
   mask(kk) = .TRUE.
 END DO
@@ -404,7 +404,7 @@ MODULE PROCEDURE obj_GetTotalInternalNodes
 INTEGER(I4B) :: ii
 ans = 0
 DO ii = 1, obj%tNodes
-  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+  IF (obj%nodeData(ii)%ptr%nodeType .EQ. INTERNAL_NODE) THEN
     ans = ans + 1
   END IF
 END DO
@@ -633,7 +633,7 @@ IF (problem) THEN
 END IF
 #endif
 
-ans = obj%nodeData(localNode)%globalNodeNum
+ans = obj%nodeData(localNode)%ptr%globalNodeNum
 END PROCEDURE obj_GetglobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -737,7 +737,7 @@ END IF
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-ans = obj%nodeData(ii)%globalElements
+ans = obj%nodeData(ii)%ptr%globalElements
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -755,7 +755,7 @@ n = SIZE(globalNode)
 
 DO ii = 1, n
   lnode(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%globalElements)
+  nn(ii + 1) = nn(ii) + SIZE(obj%nodeData(lnode(ii))%ptr%globalElements)
 END DO
 
 CALL Reallocate(ans, nn(n + 1) - 1)
@@ -764,7 +764,7 @@ DO ii = 1, n
   kk = 0
   DO jj = nn(ii), nn(ii + 1) - 1
     kk = kk + 1
-    ans(jj) = obj%nodeData(lnode(ii))%globalElements(kk)
+    ans(jj) = obj%nodeData(lnode(ii))%ptr%globalElements(kk)
   END DO
 END DO
 
@@ -786,10 +786,10 @@ IF (problem) RETURN
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-tsize = SIZE(obj%nodeData(ii)%globalElements)
+tsize = SIZE(obj%nodeData(ii)%ptr%globalElements)
 
 DO jj = 1, tsize
-  ans(jj) = obj%nodeData(ii)%globalElements(jj)
+  ans(jj) = obj%nodeData(ii)%ptr%globalElements(jj)
 END DO
 END PROCEDURE obj_GetNodeToElements1_
 
@@ -807,12 +807,12 @@ n = SIZE(globalNode)
 
 DO ii = 1, n
   lnode = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  b = a + SIZE(obj%nodeData(lnode)%globalElements)
+  b = a + SIZE(obj%nodeData(lnode)%ptr%globalElements)
 
   kk = 0
   DO jj = a, b - 1
     kk = kk + 1
-    ans(jj) = obj%nodeData(lnode)%globalElements(kk)
+    ans(jj) = obj%nodeData(lnode)%ptr%globalElements(kk)
   END DO
 
   b = a
@@ -854,7 +854,7 @@ i = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 
 #ifdef DEBUG_VER
 IF (obj%isExtraNodeToNodesInitiated) THEN
-  problem = .NOT. ALLOCATED(obj%nodeData(i)%extraglobalNodes)
+  problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
@@ -865,25 +865,25 @@ END IF
 abool = obj%isExtraNodeToNodesInitiated .AND. IncludeSelf
 IF (abool) THEN
   j = obj%GetglobalNodeNumber(i)
-  CALL Append(ans, [j], obj%nodeData(i)%globalNodes,  &
-    & obj%nodeData(i)%extraglobalNodes)
+  CALL Append(ans, [j], obj%nodeData(i)%ptr%globalNodes,  &
+    & obj%nodeData(i)%ptr%extraglobalNodes)
   RETURN
 END IF
 
 abool = obj%isExtraNodeToNodesInitiated .AND. (.NOT. IncludeSelf)
 IF (abool) THEN
-  CALL Append(ans, obj%nodeData(i)%globalNodes,  &
-    & obj%nodeData(i)%extraglobalNodes)
+  CALL Append(ans, obj%nodeData(i)%ptr%globalNodes,  &
+    & obj%nodeData(i)%ptr%extraglobalNodes)
   RETURN
 END IF
 
 IF (IncludeSelf) THEN
   j = obj%GetglobalNodeNumber(i)
-  CALL Append(ans, [j], obj%nodeData(i)%globalNodes)
+  CALL Append(ans, [j], obj%nodeData(i)%ptr%globalNodes)
   RETURN
 END IF
 
-ans = obj%nodeData(i)%globalNodes
+ans = obj%nodeData(i)%ptr%globalNodes
 
 END PROCEDURE obj_GetNodeToNodes1
 
@@ -899,7 +899,7 @@ n = SIZE(globalNode)
 tsize = 0
 DO ii = 1, n
   lnode = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
-  tsize = tsize + SIZE(obj%nodeData(lnode)%globalNodes)
+  tsize = tsize + SIZE(obj%nodeData(lnode)%ptr%globalNodes)
 END DO
 
 IF (includeSelf) THEN
@@ -945,7 +945,7 @@ i = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 
 #ifdef DEBUG_VER
 IF (obj%isExtraNodeToNodesInitiated) THEN
-  problem = .NOT. ALLOCATED(obj%nodeData(i)%extraglobalNodes)
+  problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
@@ -985,7 +985,7 @@ END IF
 
 #endif
 
-tsize = a + SIZE(obj%nodeData(i)%globalNodes)
+tsize = a + SIZE(obj%nodeData(i)%ptr%globalNodes)
 
 #ifdef DEBUG_VER
 
@@ -998,11 +998,11 @@ IF (problem) THEN
   RETURN
 END IF
 
-ans(a + 1:tsize) = obj%nodedata(i)%globalNodes
+ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
 
 #else
 
-ans(a + 1:tsize) = obj%nodedata(i)%globalNodes
+ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
 
 #endif
 
@@ -1015,7 +1015,7 @@ abool = obj%isExtraNodeToNodesInitiated
 IF (abool) THEN
 
   a = tsize
-  tsize = tsize + SIZE(obj%nodeData(i)%extraglobalNodes)
+  tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
 
   problem = SIZE(ans) .LT. tsize
   IF (problem) THEN
@@ -1024,7 +1024,7 @@ IF (abool) THEN
     RETURN
   END IF
 
-  ans(a + 1:tsize) = obj%nodedata(i)%extraglobalNodes
+  ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
 
 END IF
 
@@ -1033,8 +1033,8 @@ END IF
 IF (abool) THEN
 
   a = tsize
-  tsize = tsize + SIZE(obj%nodeData(i)%extraglobalNodes)
-  ans(a + 1:tsize) = obj%nodedata(i)%extraglobalNodes
+  tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
+  ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
 
 END IF
 
@@ -1069,7 +1069,7 @@ DO jj = 1, SIZE(globalNode)
   i = obj%GetLocalNodeNumber(globalNode=globalNode(jj), islocal=islocal)
 
   IF (obj%isExtraNodeToNodesInitiated) THEN
-    problem = .NOT. ALLOCATED(obj%nodeData(i)%extraglobalNodes)
+    problem = .NOT. ALLOCATED(obj%nodeData(i)%ptr%extraglobalNodes)
     IF (problem) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[INTERNAL ERROR] :: extraglobalNodes is not ALLOCATED.')
@@ -1085,15 +1085,15 @@ DO jj = 1, SIZE(globalNode)
 
   END IF
 
-  tsize = a + SIZE(obj%nodeData(i)%globalNodes)
-  ans(a + 1:tsize) = obj%nodedata(i)%globalNodes
+  tsize = a + SIZE(obj%nodeData(i)%ptr%globalNodes)
+  ans(a + 1:tsize) = obj%nodedata(i)%ptr%globalNodes
   a = tsize
 
   abool = obj%isExtraNodeToNodesInitiated
   IF (abool) THEN
 
-    tsize = tsize + SIZE(obj%nodeData(i)%extraglobalNodes)
-    ans(a + 1:tsize) = obj%nodedata(i)%extraglobalNodes
+    tsize = tsize + SIZE(obj%nodeData(i)%ptr%extraglobalNodes)
+    ans(a + 1:tsize) = obj%nodedata(i)%ptr%extraglobalNodes
     a = tsize
 
   END IF

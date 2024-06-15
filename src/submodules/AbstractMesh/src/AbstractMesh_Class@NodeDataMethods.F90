@@ -16,10 +16,10 @@
 !
 
 SUBMODULE(AbstractMesh_Class) NodeDataMethods
-USE Display_Method
-USE IntegerUtility
+USE Display_Method, ONLY: Display, tostring
+USE IntegerUtility, ONLY: RemoveDuplicates, OPERATOR(.ISIN.)
 USE GlobalData, ONLY: stdout
-USE AppendUtility
+USE AppendUtility, ONLY: Append, Expand
 IMPLICIT NONE
 CONTAINS
 
@@ -29,14 +29,14 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum,  &
-  & globalNodeNum, nodewise_size(obj%tNodes)
+INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum, &
+                globalNodeNum, nodewise_size(obj%tNodes)
 TYPE(CPUTime_) :: TypeCPUTime
 INTEGER(I4B), PARAMETER :: chunk_size = 32
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (obj%isNodeToElementsInitiated) RETURN
@@ -52,32 +52,34 @@ DO ii = 1, obj%tElements
   nn = SIZE(obj%elementData(ii)%globalNodes)
 
   DO jj = 1, nn
+
     globalNodeNum = obj%elementData(ii)%globalNodes(jj)
     localNodeNum = obj%local_nptrs(globalNodeNum)
 
-    CALL Expand(vec=obj%nodeData(localNodeNum)%globalElements, &
-      & n=nodewise_size(localNodeNum), chunk_size=chunk_size,  &
-      & val=globalElemNum)
+    CALL Expand(vec=obj%nodeData(localNodeNum)%ptr%globalElements, &
+                n=nodewise_size(localNodeNum), chunk_size=chunk_size, &
+                val=globalElemNum)
+
   END DO
 
 END DO
 
 ! Now we have to fix the size of `nodeData%globalElements`
 DO ii = 1, obj%tNodes
-  CALL Expand(vec=obj%nodeData(ii)%globalElements, &
-    & n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
+  CALL Expand(vec=obj%nodeData(ii)%ptr%globalElements, &
+              n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
 END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time : "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodeToElements
@@ -110,10 +112,10 @@ obj%isNodeToNodesInitiated = .TRUE.
 DO inode = 1, obj%tNodes
   nodewise_size = 0
   found = .FALSE.
-  telem = SIZE(obj%nodeData(inode)%globalElements)
+  telem = SIZE(obj%nodeData(inode)%ptr%globalElements)
 
   DO iel = 1, telem
-    global_elem_num = obj%nodeData(inode)%globalElements(iel)
+    global_elem_num = obj%nodeData(inode)%ptr%globalElements(iel)
     local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
     tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
@@ -124,7 +126,7 @@ DO inode = 1, obj%tNodes
 
       skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
       IF (.NOT. skip) THEN
-        CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+        CALL Expand(vec=obj%nodeData(inode)%ptr%globalNodes, &
           & n=nodewise_size, chunk_size=chunk_size, &
           & val=global_node_num)
         found(local_node_num) = .TRUE.
@@ -134,7 +136,7 @@ DO inode = 1, obj%tNodes
 
   END DO
 
-  CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
+  CALL Expand(vec=obj%nodeData(inode)%ptr%globalNodes, &
     & n=nodewise_size, chunk_size=chunk_size, &
     & finished=.TRUE.)
 
@@ -201,14 +203,14 @@ DO iLocalNode = 1, obj%tNodes
 
         indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
         mask_nptrs = .NOT. (indx.ISIN.n2n)
-        CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
+        CALL APPEND(obj%nodeData(iLocalNode)%ptr%extraGlobalNodes, &
           & indx, mask_nptrs)
 
       END IF
 
     END DO
 
-    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%extraGlobalNodes)
+    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%ptr%extraGlobalNodes)
 
   END DO
 
