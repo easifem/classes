@@ -93,8 +93,12 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Time
   !! SpaceTime
   !! Constant
-  INTEGER(I4B) :: s(MAX_RANK_FEVARIABLE) = 1
+  INTEGER(I4B), ALLOCATABLE :: ss(:)
   !! shape of the data
+
+  INTEGER(I4B), ALLOCATABLE :: indxShape(:)
+  !! Index for shape
+
   INTEGER(I4B), ALLOCATABLE :: indxVal(:)
   !! Index for value
   !! The size of indxVal is equal to tElements+1
@@ -158,9 +162,6 @@ CONTAINS
   ! GET:
   ! @GetMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Size => obj_Size
-  !! Returns size
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
 
@@ -191,9 +192,24 @@ CONTAINS
   !! Setting the value by using material
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
-  !! Setting the value by using material
+  !! Set all values by using the FEVariable
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4
+
+  ! SET:
+  ! @InsertMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert1 => obj_Insert1
+  !! Insertting the value by using FEVariable_
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert2 => obj_Insert2
+  !! Insertting the value by using UserFunction_
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert3 => obj_Insert3
+  !! Insertting the value by using material
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert4 => obj_Insert4
+  !! Insert all values by using the FEVariable
+
+  GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4
 
 END TYPE AbstractMeshField_
 
@@ -459,27 +475,6 @@ INTERFACE AbstractMeshFieldDeallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                                           Size@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This function returns the size of data
-
-INTERFACE
-  MODULE FUNCTION obj_Size(obj, dim) RESULT(ans)
-    CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dim
-    INTEGER(I4B) :: ans
-    !! if dim is present, then it returns obj%s(dim)
-    !! otherwise, it returns the following
-    !! for Scalar: return 1
-    !! for Vector: return obj%s(1)
-    !! for Matrix: return obj%s(1)*obj%s(2)
-  END FUNCTION obj_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Shape@GetMethods
 !----------------------------------------------------------------------------
 
@@ -488,8 +483,10 @@ END INTERFACE
 ! summary: This function returns the shape of data
 
 INTERFACE
-  MODULE FUNCTION obj_Shape(obj) RESULT(ans)
+  MODULE FUNCTION obj_Shape(obj, globalElement, islocal) RESULT(ans)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! Returned value depends upon the obj%vartype
     !! If constant then
@@ -678,6 +675,79 @@ INTERFACE
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: fevar
   END SUBROUTINE obj_Set4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-14
+! summary: Insert values in AbstractMeshField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert1(obj, globalElement, islocal, fevar)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global element is local element
+    TYPE(FEVariable_), INTENT(IN) :: fevar
+    !! FEVariable
+  END SUBROUTINE obj_Insert1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Insert values in AbstractMeshField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert2(obj, func, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Insert values in AbstractMeshField_ by AbstractMaterial
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert3(obj, material, name, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Insert values in AbstractMeshField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert4(obj, fevar)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(IN) :: fevar
+  END SUBROUTINE obj_Insert4
 END INTERFACE
 
 !----------------------------------------------------------------------------
