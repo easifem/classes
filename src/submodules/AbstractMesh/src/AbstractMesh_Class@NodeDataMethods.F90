@@ -25,6 +25,9 @@ USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements, &
                           NodeData_GetPointerToGlobalElements, &
                           NodeData_ExpandGlobalNodes, &
                           NodeData_SetExtraGlobalNodes
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -52,13 +55,13 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 nodewise_size = 0
 
 DO ii = 1, obj%tElements
-  globalElemNum = obj%elementData(ii)%globalElemNum
+  globalElemNum = obj%elementData(ii)%ptr%globalElemNum
 
-  nn = SIZE(obj%elementData(ii)%globalNodes)
+  nn = SIZE(obj%elementData(ii)%ptr%globalNodes)
 
   DO jj = 1, nn
 
-    globalNodeNum = obj%elementData(ii)%globalNodes(jj)
+    globalNodeNum = obj%elementData(ii)%ptr%globalNodes(jj)
     localNodeNum = obj%local_nptrs(globalNodeNum)
 
     CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(localNodeNum)%ptr, &
@@ -125,10 +128,10 @@ DO inode = 1, obj%tNodes
     global_elem_num = globalElements(iel)
     local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
-    tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
+    tnode = SIZE(obj%elementData(local_elem_num)%ptr%globalNodes)
     DO ii = 1, tnode
 
-      global_node_num = obj%elementData(local_elem_num)%globalNodes(ii)
+      global_node_num = obj%elementData(local_elem_num)%ptr%globalNodes(ii)
       local_node_num = obj%GetLocalNodeNumber(global_node_num)
 
       skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
