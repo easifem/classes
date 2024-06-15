@@ -26,12 +26,11 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "Field_AXPY"
+PUBLIC :: AXPY
 
 INTERFACE AXPY
   MODULE PROCEDURE AXPY1, AXPY2
 END INTERFACE AXPY
-
-PUBLIC :: AXPY
 
 CONTAINS
 
@@ -48,16 +47,14 @@ SUBROUTINE AXPY1(a1, v1, a2, v2)
   CLASS(AbstractNodeField_), INTENT(INOUT) :: v1
   REAL(DFP), INTENT(IN) :: a2
   CLASS(AbstractNodeField_), INTENT(IN) :: v2
-  !
-  !
-  !
+
   CHARACTER(*), PARAMETER :: myName = "AXPY1"
-  !
+
   IF (.NOT. v1%isInitiated) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'AbstractNodeField_::v1 is not initiated')
+                      'AbstractNodeField_::v1 is not initiated')
   END IF
-  !
+
   IF (.NOT. v2%isInitiated) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'AbstractNodeField_::v2 is not initiated')
