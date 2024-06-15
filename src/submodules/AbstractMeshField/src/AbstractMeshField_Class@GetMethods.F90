@@ -27,80 +27,104 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                      Size
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Size
-CHARACTER(*), PARAMETER :: myName = "obj_Size()"
-
-IF (PRESENT(dim)) THEN
-  ans = obj%s(dim)
-  RETURN
-END IF
-
-SELECT CASE (obj%rank)
-CASE (Scalar)
-  ans = 1
-CASE (Vector)
-  ans = obj%s(1)
-CASE (Matrix)
-  ans = obj%s(1) * obj%s(2)
-
-CASE DEFAULT
-  ans = 0
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for obj%rank')
-  RETURN
-END SELECT
-END PROCEDURE obj_Size
-
-!----------------------------------------------------------------------------
 !                                                                      Shape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Shape
+INTEGER(I4B) :: iel
+
+iel = obj%mesh%GetLocalElemNumber(globalelement=globalElement, &
+                                  islocal=islocal)
 
 SELECT CASE (obj%rank)
+
 CASE (Scalar)
+
   SELECT CASE (obj%vartype)
+
   CASE (Constant)
-    ans = [1]
+
+    ALLOCATE (ans(1))
+    ans(1) = obj%ss(obj%indxShape(iel))
+
   CASE (Space, Time)
-    ans = obj%s(1:1)
+
+    ALLOCATE (ans(1))
+    ans(1) = obj%ss(obj%indxShape(iel))
+
   CASE (SpaceTime)
-    ans = obj%s(1:2)
+
+    ALLOCATE (ans(2))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+
   CASE default
+
     CALL no_case_found_error
 
   END SELECT
 
 CASE (Vector)
+
   SELECT CASE (obj%vartype)
+
   CASE (Constant)
-    ans = obj%s(1:1)
+
+    ALLOCATE (ans(1))
+    ans(1) = obj%ss(obj%indxShape(iel))
+
   CASE (Space, Time)
-    ans = obj%s(1:2)
+
+    ALLOCATE (ans(2))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+
   CASE (SpaceTime)
-    ans = obj%s(1:3)
+
+    ALLOCATE (ans(3))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+    ans(3) = obj%ss(obj%indxShape(iel) + 2)
+
   CASE default
+
     CALL no_case_found_error
 
   END SELECT
 
 CASE (Matrix)
+
   SELECT CASE (obj%vartype)
+
   CASE (Constant)
-    ans = obj%s(1:2)
+
+    ALLOCATE (ans(2))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+
   CASE (Space, Time)
-    ans = obj%s(1:3)
+
+    ALLOCATE (ans(3))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+    ans(3) = obj%ss(obj%indxShape(iel) + 2)
+
   CASE (SpaceTime)
-    ans = obj%s(1:4)
+
+    ALLOCATE (ans(4))
+    ans(1) = obj%ss(obj%indxShape(iel))
+    ans(2) = obj%ss(obj%indxShape(iel) + 1)
+    ans(3) = obj%ss(obj%indxShape(iel) + 2)
+    ans(4) = obj%ss(obj%indxShape(iel) + 3)
+
   CASE default
+
     CALL no_case_found_error
 
   END SELECT
 
 CASE default
+
   CALL no_case_found_error
 
 END SELECT
@@ -108,9 +132,11 @@ END SELECT
 CONTAINS
 
 SUBROUTINE no_case_found_error
+
   CHARACTER(*), PARAMETER :: myName = "obj_Shape()"
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found')
+
 END SUBROUTINE no_case_found_error
 
 END PROCEDURE obj_Shape
@@ -120,7 +146,7 @@ END PROCEDURE obj_Shape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get
-INTEGER(I4B) :: iel, ii
+INTEGER(I4B) :: iel, ii, a, b
 
 IF (obj%fieldType .EQ. TypeField%constant) THEN
   iel = 1
@@ -130,21 +156,26 @@ ELSE
 
 END IF
 
-fevar%len = obj%indxVal(iel + 1) - obj%indxVal(iel)
+a = obj%indxVal(iel)
+b = obj%indxVal(iel + 1)
+
+fevar%len = b - a
 fevar%capacity = MAX(fevar%len, fevar%capacity)
 
 CALL Reallocate(fevar%val, fevar%capacity)
 
-DO ii = obj%indxVal(iel), obj%indxVal(iel + 1) - 1
-  fevar%val(ii - obj%indxVal(iel) + 1) = obj%val(ii)
+DO ii = a, b - 1
+  fevar%val(ii - a + 1) = obj%val(ii)
 END DO
 
-fevar%s = obj%s
+a = obj%indxShape(iel)
+b = obj%indxShape(iel + 1) - 1
+DO ii = a, b
+  fevar%s(ii - a + 1) = obj%ss(ii)
+END DO
 
 fevar%defineOn = obj%defineOn
-
 fevar%varType = obj%varType
-
 fevar%rank = obj%rank
 
 END PROCEDURE obj_Get

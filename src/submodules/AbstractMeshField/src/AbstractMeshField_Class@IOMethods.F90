@@ -89,7 +89,7 @@ CALL Display(SafeSize(obj%indxVal), "Size of indxVal:", unitno=unitno)
 bool1 = ASSOCIATED(obj%mesh)
 CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)
 
-CALL Display(obj%SHAPE(), 'shape: ', unitno=unitno)
+! CALL Display(obj%SHAPE(), 'shape: ', unitno=unitno)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -147,9 +147,6 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%rank)
 dsetname = TRIM(group)//"/varType"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%varType)
 
-dsetname = TRIM(group)//"/shape"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%s)
-
 IF (ALLOCATED(obj%val)) THEN
   dsetname = TRIM(group)//"/val"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
@@ -158,6 +155,16 @@ END IF
 IF (ALLOCATED(obj%indxVal)) THEN
   dsetname = TRIM(group)//"/indxVal"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
+END IF
+
+IF (ALLOCATED(obj%ss)) THEN
+  dsetname = TRIM(group)//"/shape"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ss)
+END IF
+
+IF (ALLOCATED(obj%indxShape)) THEN
+  dsetname = TRIM(group)//"/indxShape"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxShape)
 END IF
 
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
@@ -170,7 +177,7 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExportInVTK
-CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK"
+CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[INTERNAL ERROR] :: This routine is under development.')
 END PROCEDURE obj_ExportInVTK

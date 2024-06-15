@@ -21,5 +21,7 @@ target_sources(
   PRIVATE ${src_path}/AbstractMeshField_Class@ConstructorMethods.F90
           ${src_path}/AbstractMeshField_Class@IOMethods.F90
           ${src_path}/AbstractMeshField_Class@SetMethods.F90
+          ${src_path}/AbstractMeshField_Class@InsertMethods.F90
           ${src_path}/AbstractMeshField_Class@AddMethods.F90
-          ${src_path}/AbstractMeshField_Class@GetMethods.F90)
+          ${src_path}/AbstractMeshField_Class@GetMethods.F90
+)

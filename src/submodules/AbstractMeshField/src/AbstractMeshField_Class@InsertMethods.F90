@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AbstractMeshField_Class) SetMethods
+SUBMODULE(AbstractMeshField_Class) InsertMethods
 USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
                       Scalar, Vector, Matrix
 
@@ -31,31 +31,34 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             MasterSet
+!                                                             MasterInsert
 !----------------------------------------------------------------------------
 
-SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
-                     tshape)
+SUBROUTINE MasterInsert(val, indxVal, set_val, indx, tsize, ss, &
+                        indxShape, s, tshape)
   REAL(DFP), INTENT(INOUT) :: val(:)
-  INTEGER(I4B), INTENT(IN) :: indxVal(:)
+  INTEGER(I4B), INTENT(INOUT) :: indxVal(:)
   REAL(DFP), INTENT(IN) :: set_val(:)
   INTEGER(I4B), INTENT(IN) :: indx
   INTEGER(I4B), INTENT(IN) :: tsize
   INTEGER(I4B), INTENT(INOUT) :: ss(:)
-  INTEGER(I4B), INTENT(IN) :: indxShape(:)
+  INTEGER(I4B), INTENT(INOUT) :: indxShape(:)
   INTEGER(I4B), INTENT(IN) :: s(:)
   INTEGER(I4B), INTENT(IN) :: tshape
 
+  indxVal(indx + 1) = indxVal(indx) + tsize
   val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
+
+  indxShape(indx + 1) = indxShape(indx) + tshape
   ss(indxShape(indx):indxShape(indx + 1) - 1) = s(1:tshape)
 
-END SUBROUTINE MasterSet
+END SUBROUTINE MasterInsert
 
 !----------------------------------------------------------------------------
-!                                                                        Set
+!                                                                        Insert
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set1
+MODULE PROCEDURE obj_Insert1
 INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
@@ -71,18 +74,18 @@ tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
 
 s(1:tshape) = FEVariable_Shape(fevar)
 
-CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
-               tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
-               s=s, tshape=tshape)
+CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
+                  tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
+                  s=s, tshape=tshape)
 
-END PROCEDURE obj_Set1
+END PROCEDURE obj_Insert1
 
 !----------------------------------------------------------------------------
-!                                                                       Set
+!                                                                       Insert
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set2
-CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+MODULE PROCEDURE obj_Insert2
+CHARACTER(*), PARAMETER :: myName = "obj_Insert2()"
 INTEGER(I4B) :: iel, telem, nns, nsd, tsize
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -98,7 +101,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 bool1 = obj%fieldType .EQ. TypeField%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
-  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
   RETURN
 END IF
 
@@ -121,7 +124,7 @@ DO iel = 1, telem
 
   CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
-  CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=.TRUE.)
 END DO
 !$OMP END PARALLEL DO
 
@@ -135,14 +138,14 @@ mesh => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif DEBUG_VER
-END PROCEDURE obj_Set2
+END PROCEDURE obj_Insert2
 
 !----------------------------------------------------------------------------
-!                                                               Set
+!                                                               Insert
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set3
-CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+MODULE PROCEDURE obj_Insert3
+CHARACTER(*), PARAMETER :: myName = "obj_Insert3()"
 LOGICAL(LGT) :: isok
 CLASS(UserFunction_), POINTER :: func
 
@@ -169,7 +172,7 @@ CALL AssertError1(isok, myName, &
                   'material pointer not found.')
 #endif
 
-CALL obj%Set(func=func, times=times)
+CALL obj%Insert(func=func, times=times)
 
 func => NULL()
 
@@ -178,13 +181,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_Set3
+END PROCEDURE obj_Insert3
 
 !----------------------------------------------------------------------------
-!                                                                       Set
+!                                                                       Insert
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set4
+MODULE PROCEDURE obj_Insert4
 INTEGER(I4B) :: iel, telem
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
@@ -194,10 +197,10 @@ ELSE
 END IF
 
 DO iel = 1, telem
-  CALL obj%Set(globalElement=iel, islocal=.TRUE., fevar=fevar)
+  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=.TRUE.)
 END DO
 
-END PROCEDURE obj_Set4
+END PROCEDURE obj_Insert4
 
 !----------------------------------------------------------------------------
 !
@@ -206,4 +209,4 @@ END PROCEDURE obj_Set4
 #include "../../include/errors.F90"
 #include "./include/GetTotalRow.F90"
 
-END SUBMODULE SetMethods
+END SUBMODULE InsertMethods
