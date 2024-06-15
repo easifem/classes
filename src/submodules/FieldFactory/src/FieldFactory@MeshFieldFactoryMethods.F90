@@ -21,8 +21,18 @@
 
 SUBMODULE(FieldFactory) MeshFieldFactoryMethods
 USE FPL, ONLY: ParameterList_
-USE BaseMethod
+
+USE StringUtility, ONLY: UpperCase
+
+USE ScalarMeshField_Class, ONLY: ScalarMeshField_
+USE STScalarMeshField_Class, ONLY: STScalarMeshField_
+USE VectorMeshField_Class, ONLY: VectorMeshField_
+USE STVectorMeshField_Class, ONLY: STVectorMeshField_
+USE TensorMeshField_Class, ONLY: TensorMeshField_
+USE STTensorMeshField_Class, ONLY: STTensorMeshField_
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,31 +40,45 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFieldFactory
-CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory"
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory()"
 ! TYPE(String) :: engine0
 CHARACTER(:), ALLOCATABLE :: name0
 
-name0 = UpperCase(TRIM(name))
+name0 = UpperCase(name)
 
 SELECT CASE (name0)
+
 CASE ("SCALAR")
+
   ALLOCATE (ScalarMeshField_ :: ans)
+
 CASE ("STSCALAR")
+
   ALLOCATE (STScalarMeshField_ :: ans)
+
 CASE ("VECTOR")
+
   ALLOCATE (VectorMeshField_ :: ans)
+
 CASE ("STVECTOR")
+
   ALLOCATE (STVectorMeshField_ :: ans)
+
 CASE ("TENSOR")
+
   ALLOCATE (TensorMeshField_ :: ans)
+
 CASE ("STTENSOR")
+
   ALLOCATE (STTensorMeshField_ :: ans)
+
 CASE DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given name'//  &
-    & " following values are accepted = "//  &
-    & "[Scalar, STScalar, Vector, STVector, Tensor, STTensor]"// &
-    & " but found "//TRIM(name))
+                    '[NO CASE FOUND] :: No case found for given name'// &
+                    " following values are accepted = "// &
+                  "[Scalar, STScalar, Vector, STVector, Tensor, STTensor]"// &
+                    " but found "//TRIM(name))
   ALLOCATE (ScalarMeshField_ :: ans)
   RETURN
 END SELECT
@@ -68,22 +92,29 @@ MODULE PROCEDURE ScalarMeshFieldFactory
 CHARACTER(*), PARAMETER :: myName = "ScalarMatrixFieldFactory()"
 CHARACTER(:), ALLOCATABLE :: name0
 
-name0 = UpperCase(TRIM(name))
+name0 = UpperCase(name)
 
 SELECT CASE (name0)
+
 CASE ("SCALAR")
+
   ALLOCATE (ScalarMeshField_ :: ans)
+
 CASE ("STSCALAR")
+
   ALLOCATE (STScalarMeshField_ :: ans)
+
 CASE DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given name'//  &
-    & " following values are accepted = "//  &
-    & "[Scalar, STScalar]"// &
-    & " but found "//TRIM(name))
+                    '[NO CASE FOUND] :: No case found for given name'// &
+                    " following values are accepted = "// &
+                    "[Scalar, STScalar]"// &
+                    " but found "//name)
   ALLOCATE (ScalarMeshField_ :: ans)
   RETURN
 END SELECT
+
 END PROCEDURE ScalarMeshFieldFactory
 
 !----------------------------------------------------------------------------
@@ -94,22 +125,29 @@ MODULE PROCEDURE VectorMeshFieldFactory
 CHARACTER(*), PARAMETER :: myName = "VectorMatrixFieldFactory()"
 CHARACTER(:), ALLOCATABLE :: name0
 
-name0 = UpperCase(TRIM(name))
+name0 = UpperCase(name)
 
 SELECT CASE (name0)
+
 CASE ("VECTOR")
+
   ALLOCATE (VectorMeshField_ :: ans)
+
 CASE ("STVECTOR")
+
   ALLOCATE (STVectorMeshField_ :: ans)
+
 CASE DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given name'//  &
-    & " following values are accepted = "//  &
-    & "[Vector, STVector]"// &
-    & " but found "//TRIM(name))
+                    '[NO CASE FOUND] :: No case found for given name'// &
+                    " following values are accepted = "// &
+                    "[Vector, STVector]"// &
+                    " but found "//name)
   ALLOCATE (VectorMeshField_ :: ans)
   RETURN
 END SELECT
+
 END PROCEDURE VectorMeshFieldFactory
 
 !----------------------------------------------------------------------------
@@ -120,22 +158,30 @@ MODULE PROCEDURE TensorMeshFieldFactory
 CHARACTER(*), PARAMETER :: myName = "TensorMatrixFieldFactory()"
 CHARACTER(:), ALLOCATABLE :: name0
 
-name0 = UpperCase(TRIM(name))
+name0 = UpperCase(name)
 
 SELECT CASE (name0)
+
 CASE ("TENSOR")
+
   ALLOCATE (TensorMeshField_ :: ans)
+
 CASE ("STTENSOR")
+
   ALLOCATE (STTensorMeshField_ :: ans)
+
 CASE DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given name'//  &
-    & " following values are accepted = "//  &
-    & "[Tensor, STTensor]"// &
-    & " but found "//TRIM(name))
+                    '[NO CASE FOUND] :: No case found for given name'// &
+                    " following values are accepted = "// &
+                    "[Tensor, STTensor]"// &
+                    " but found "//TRIM(name))
   ALLOCATE (TensorMeshField_ :: ans)
   RETURN
+
 END SELECT
+
 END PROCEDURE TensorMeshFieldFactory
 
 END SUBMODULE MeshFieldFactoryMethods

@@ -20,8 +20,21 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) MatrixFieldFactoryMethods
-USE BaseMethod, ONLY: UpperCase, Assert, Tostring
 USE FPL, ONLY: ParameterList_
+USE StringUtility, ONLY: UpperCase
+USE AssertUtility, ONLY: Assert
+USE Display_Method, ONLY: ToString
+
+USE MatrixField_Class, ONLY: MatrixField_, &
+                             SetMatrixFieldParam
+
+USE MatrixFieldLis_Class, ONLY: MatrixFieldLis_
+
+USE BlockMatrixField_Class, ONLY: BlockMatrixField_, &
+                                  SetBlockMatrixFieldParam
+
+USE BlockMatrixFieldLis_Class, ONLY: BlockMatrixFieldLis_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -51,11 +64,11 @@ CASE ("LIS_OMP:BLOCKMATRIX")
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given engine '//  &
-    & "following values are acceptable = "//  &
-    & "[NATIVE_SERIAL:MATRIX, NATIVE_SERIAL:BLOCKMATRIX, "//  &
-    & " LIS_OMP:MATRIX, LIS_OMP:BLOCKMATRIX]"// &
-    & " but found  = "//TRIM(case0))
+                    '[NO CASE FOUND] :: No case found for given engine '// &
+                    "following values are acceptable = "// &
+                    "[NATIVE_SERIAL:MATRIX, NATIVE_SERIAL:BLOCKMATRIX, "// &
+                    " LIS_OMP:MATRIX, LIS_OMP:BLOCKMATRIX]"// &
+                    " but found  = "//case0)
 
   ALLOCATE (MatrixField_ :: ans)
   RETURN
@@ -81,10 +94,10 @@ CASE ("LIS_OMP")
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] :: No case found for given engine '//  &
-    & "following values are acceptable = "//  &
-    & "[NATIVE_SERIAL, LIS_OMP]"// &
-    & " but found  = "//TRIM(case0))
+                    '[NO CASE FOUND] :: No case found for given engine '// &
+                    "following values are acceptable = "// &
+                    "[NATIVE_SERIAL, LIS_OMP]"// &
+                    " but found  = "//TRIM(case0))
   ALLOCATE (MatrixField_ :: ans)
   RETURN
 END SELECT
@@ -123,7 +136,7 @@ END PROCEDURE BlockMatrixFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate1"
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate1()"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
 
@@ -139,23 +152,18 @@ END IF
 DO ii = 1, tsize
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
-      & ") is already associated. We don't allocate like this"//  &
-      & " as it may cause memory leak.")
+                      '[ALLOCATION ERROR] :: obj('//tostring(ii)// &
+                    ") is already associated. We don't allocate like this"// &
+                      " as it may cause memory leak.")
   END IF
 
   obj(ii)%ptr => MatrixFieldFactory(engine)
 
-  CALL SetMatrixFieldParam( &
-    & param=param,  &
-    & name=names(ii)%Chars(), &
-    & matrixProp=matrixProps,  &
-    & spaceCompo=spaceCompo,  &
-    & timeCompo=timeCompo,  &
-    & fieldType=fieldType,  &
-    & engine=engine)
+  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
+                           matrixProp=matrixProps, spaceCompo=spaceCompo, &
+                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
 END DO
 
 CALL param%DEALLOCATE()
@@ -167,7 +175,7 @@ END PROCEDURE MatrixField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate2"
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate2()"
 INTEGER(I4B) :: tsize, ii, nn(8)
 TYPE(ParameterList_) :: param
 
@@ -176,40 +184,39 @@ CALL param%Initiate()
 tsize = SIZE(obj)
 
 nn = [tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType),  &
-    & SIZE(engine), SIZE(dom), SIZE(timeCompo), SIZE(matrixProps)]
+    & SIZE(engine), SIZE(fedof), SIZE(timeCompo), SIZE(matrixProps)]
 
-CALL Assert( &
-  & nn=nn,  &
-  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
-  & "timeCompo, engine, dom, matProps should be the same",  &
-  & file=__FILE__, line=__LINE__, routine=myName)
+CALL Assert(nn=nn, &
+      msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
+            "timeCompo, engine, fedof, matProps should be the same", &
+            file=__FILE__, line=__LINE__, routine=myName)
 
 DO ii = 1, tsize
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[ALLOCATION ERROR] :: MatrixField_::obj('//tostring(ii)//  &
-      & ") is already associated. We don't allocate like this"//  &
-      & ", as it may cause memory leak.")
+                  '[ALLOCATION ERROR] :: MatrixField_::obj('//tostring(ii)// &
+                    ") is already associated. We don't allocate like this"// &
+                      ", as it may cause memory leak.")
+    RETURN
   END IF
 
-  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
-      & ") is not associated. It will lead to segmentation fault.")
+                      '[POINTER ERROR] :: FEDOF_::fedof('//tostring(ii)// &
+                   ") is not associated. It will lead to segmentation fault.")
+    RETURN
   END IF
 
   obj(ii)%ptr => MatrixFieldFactory(engine(ii)%Chars())
 
-  CALL SetMatrixFieldParam( &
-    & param=param,  &
-    & name=names(ii)%Chars(), &
-    & matrixProp=matrixProps(ii)%chars(), &
-    & spaceCompo=spaceCompo(ii),  &
-    & timeCompo=timeCompo(ii),  &
-    & fieldType=fieldType(ii),  &
-    & engine=engine(ii)%Chars())
+  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
+                           matrixProp=matrixProps(ii)%Chars(), &
+                           spaceCompo=spaceCompo(ii), &
+                           timeCompo=timeCompo(ii), &
+                           fieldType=fieldType(ii), &
+                           engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
