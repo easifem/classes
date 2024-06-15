@@ -327,7 +327,7 @@ END PROCEDURE obj_SetSparsity4
 MODULE PROCEDURE obj_SetTotalMaterial1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
-CALL ElemData_SetTotalMaterial(obj%elementData(iel), n=n)
+CALL ElemData_SetTotalMaterial(obj%elementData(iel)%ptr, n=n)
 END PROCEDURE obj_SetTotalMaterial1
 
 !----------------------------------------------------------------------------
@@ -339,9 +339,9 @@ INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
 DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemData_SetTotalMaterial(obj%elementData(ii), n=n)
+  CALL ElemData_SetTotalMaterial(obj%elementData(ii)%ptr, n=n)
 END DO
 END PROCEDURE obj_SetTotalMaterial2
 
@@ -356,14 +356,14 @@ LOGICAL(LGT) :: isok
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
 DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
 
-  ! if obj%elementData(ii)%meshID is equal to entityNum then
+  ! if obj%elementData(ii)%ptr%meshID is equal to entityNum then
   ! set %material(medium) = material
-  isok = obj%elementData(ii)%meshID .EQ. entityNum
+  isok = obj%elementData(ii)%ptr%meshID .EQ. entityNum
   IF (isok) THEN
-    CALL ElemDataSet(obj%elementData(ii), material=material, &
+    CALL ElemDataSet(obj%elementData(ii)%ptr, material=material, &
                      medium=medium)
   END IF
 
@@ -382,9 +382,9 @@ LOGICAL(LGT) :: isok
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
 DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemDataSet(obj%elementData(ii), material=material, &
+  CALL ElemDataSet(obj%elementData(ii)%ptr, material=material, &
                    medium=medium)
 END DO
 END PROCEDURE obj_SetMaterial2
@@ -399,7 +399,7 @@ INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement=globalElement,  &
   & islocal=islocal)
 
-CALL ElemDataSet(obj%elementData(iel), material=material, &
+CALL ElemDataSet(obj%elementData(iel)%ptr, material=material, &
                  medium=medium)
 
 END PROCEDURE obj_SetMaterial3
@@ -413,7 +413,7 @@ INTEGER(I4B) :: localElem
 localElem = obj%GetLocalElemNumber(globalElement=globalElement,  &
   & islocal=islocal)
 obj%facetElementType(iface, localElem) = facetElementType
-obj%elementData(localElem)%elementType = facetElementType
+obj%elementData(localElem)%ptr%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------
