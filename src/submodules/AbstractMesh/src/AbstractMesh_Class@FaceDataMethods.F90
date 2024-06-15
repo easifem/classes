@@ -17,10 +17,10 @@
 
 SUBMODULE(AbstractMesh_Class) FaceDataMethods
 USE ReferenceElement_Method, ONLY: &
-REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES,  &
-  & REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS,  &
-  & RefElemGetGeoParam,  &
-  & IsQuadrangle
+  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
+  REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
+  RefElemGetGeoParam, &
+  IsQuadrangle
 
 USE ReferenceTriangle_Method, ONLY: FaceShapeMetaData_Triangle
 
@@ -103,21 +103,21 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   DO iel = 1, tElements
 
-    problem = .NOT. obj%elementData(iel)%isActive
+    problem = .NOT. obj%elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    elemType = obj%elementData(iel)%name
+    elemType = obj%elementData(iel)%ptr%name
 
     CALL RefElemGetGeoParam(elemType=elemType, tFaces=tFaces, &
                             faceCon=localFaces, faceOpt=1_I4B, order=1_I4B)
 
-    CALL Reallocate(obj%elementData(iel)%globalFaces, tFaces)
-    CALL Reallocate(obj%elementData(iel)%faceOrient, 1_I4B, tFaces)
+    CALL Reallocate(obj%elementData(iel)%ptr%globalFaces, tFaces)
+    CALL Reallocate(obj%elementData(iel)%ptr%faceOrient, 1_I4B, tFaces)
 
     DO iface = 1, tFaces
 
       face0 = &
-        obj%elementData(iel)%globalNodes(localFaces(:, iface))
+        obj%elementData(iel)%ptr%globalNodes(localFaces(:, iface))
 
       sorted_face = Sort(face0)
 
@@ -130,18 +130,18 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
       obj%tFaces = tsize2
 
       IF (face0(1) .GT. face0(2)) THEN
-        obj%elementData(iel)%faceOrient(1, iface) = -1_INT8
+        obj%elementData(iel)%ptr%faceOrient(1, iface) = -1_INT8
       ELSE
-        obj%elementData(iel)%faceOrient(1, iface) = 1_INT8
+        obj%elementData(iel)%ptr%faceOrient(1, iface) = 1_INT8
       END IF
 
       IF (tsize1 .NE. tsize2) THEN
-        obj%elementData(iel)%globalFaces(iface) = tsize2
+        obj%elementData(iel)%ptr%globalFaces(iface) = tsize2
         facePtr%id = tsize2
       ELSE
         CALL Initiate(faceValue, sorted_face)
         facePtr => faceTree%GetValuePointer(faceValue)
-        obj%elementData(iel)%globalFaces(iface) = facePtr%id
+        obj%elementData(iel)%ptr%globalFaces(iface) = facePtr%id
       END IF
 
     END DO
@@ -200,25 +200,25 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
   DO iel = 1, tElements
 
-    problem = .NOT. obj%elementData(iel)%isActive
+    problem = .NOT. obj%elementData(iel)%ptr%isActive
     IF (problem) CYCLE
 
-    elemType = obj%elementData(iel)%name
+    elemType = obj%elementData(iel)%ptr%name
 
     CALL RefElemGetGeoParam(elemType=elemType, &
       & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces, &
       & faceOpt=1_I4B, faceElemType=faceElemType, &
       & tFaceNodes=tFaceNodes, order=1_I4B)
 
-    CALL Reallocate(obj%elementData(iel)%globalFaces, tFaces)
-    CALL Reallocate(obj%elementData(iel)%faceOrient, 3_I4B, tFaces)
+    CALL Reallocate(obj%elementData(iel)%ptr%globalFaces, tFaces)
+    CALL Reallocate(obj%elementData(iel)%ptr%faceOrient, 3_I4B, tFaces)
 
     DO iface = 1, tFaces
 
       aint = tFaceNodes(iface)
 
       face0(1:aint) = &
-        obj%elementData(iel)%globalNodes(localFaces(1:aint, iface))
+        obj%elementData(iel)%ptr%globalNodes(localFaces(1:aint, iface))
 
       abool = IsQuadrangle(faceElemType(iface))
       IF (abool) THEN
@@ -235,16 +235,17 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
       CALL faceTree%Insert(facePtr)
       tsize2 = faceTree%SIZE()
 
-      obj%elementData(iel)%faceOrient(:, iface) = INT(faceOrient, kind=INT8)
+      obj%elementData(iel)%ptr%faceOrient(:, iface) = &
+        INT(faceOrient, kind=INT8)
       obj%tFaces = tsize2
 
       IF (tsize1 .NE. tsize2) THEN
-        obj%elementData(iel)%globalFaces(iface) = tsize2
+        obj%elementData(iel)%ptr%globalFaces(iface) = tsize2
         facePtr%id = tsize2
       ELSE
         CALL Initiate(faceValue, sorted_face)
         facePtr => faceTree%GetValuePointer(faceValue)
-        obj%elementData(iel)%globalFaces(iface) = facePtr%id
+        obj%elementData(iel)%ptr%globalFaces(iface) = facePtr%id
       END IF
 
     END DO
