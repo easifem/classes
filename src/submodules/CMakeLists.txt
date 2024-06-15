@@ -293,8 +293,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
 # BlockMatrixFieldLis
 include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 
-# # FieldFactory include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
-#
+# FieldFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
+
 # # AbstractLinSolver
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 #
