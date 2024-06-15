@@ -33,8 +33,11 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
@@ -45,7 +48,7 @@ obj%isInitiated = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -127,7 +130,6 @@ END PROCEDURE obj_isEmpty
 MODULE PROCEDURE obj_InitiateDynamicDataStructure
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateDynamicDataStructure()"
 INTEGER(I4B) :: ii
-TYPE(ElemData_), POINTER :: elemdata_ptr
 TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
@@ -156,10 +158,8 @@ IF (obj%showTime) THEN
 END IF
 
 DO ii = 1, obj%tElements
-  elemdata_ptr => ElemData_Pointer()
-  CALL ElemData_Copy(elemdata_ptr, obj%elementData(ii))
-  CALL obj%elementDataList%Add(elemdata_ptr)
-  CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
+  CALL obj%elementDataList%Add(obj%elementData(ii)%ptr)
+  CALL obj%elementDataBinaryTree%Insert(obj%elementData(ii)%ptr)
 END DO
 
 IF (obj%showTime) THEN
@@ -183,8 +183,6 @@ IF (obj%showTime) THEN
                ToString(TypeCPUTime%GetTime()), unitno=stdout)
   CALL EqualLine(unitno=stdout)
 END IF
-
-elemdata_ptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
