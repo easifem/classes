@@ -190,29 +190,29 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-    !!  Read the mesh by reading a hdf5 file
-    !! The hdf5 file format depends upon the mesh engine
+  !!  Read the mesh by reading a hdf5 file
+  !! The hdf5 file format depends upon the mesh engine
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-    !! Deallocate memory occupied by the mesh instance
+  !! Deallocate memory occupied by the mesh instance
   PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => obj_isEmpty
-    !! Returns true if the mesh is empty.
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDynamicDataStructure =>  &
-  & obj_InitiateDynamicDataStructure
-    !! Initiate DynamicDataStructure of mesh from static data
+  !! Returns true if the mesh is empty.
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDynamicDataStructure => &
+    obj_InitiateDynamicDataStructure
+  !! Initiate DynamicDataStructure of mesh from static data
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-    !! Read mesh from hdf5 file
+  !! Read mesh from hdf5 file
 
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-    !! Export mesh to an hdf5 file
+  !! Export mesh to an hdf5 file
 
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-    !! Export mesh to a VTKfile
+  !! Export mesh to a VTKfile
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
-    !! Display the mesh
+  !! Display the mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
     obj_DisplayNodeData
@@ -220,30 +220,31 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
     obj_DisplayElementData
-    !! Display element data
+  !! Display element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
     obj_DisplayFacetData
-    !! Display  facet data
+  !! Display  facet data
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
     obj_DisplayInternalFacetData
-    !! Display internal facet data
+  !! Display internal facet data
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
     obj_DisplayBoundaryFacetData
-    !! Display mesh facet data
+  !! Display mesh facet data
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     obj_DisplayFacetElements
-    !! Display facet element shape data
+  !! Display facet element shape data
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
     obj_DisplayMeshInfo
-    !! Display mesh statistics
+  !! Display mesh statistics
 
   ! SET:
   ! @NodeDataMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
   !! Initiate node to element data (mapping)
@@ -256,6 +257,7 @@ CONTAINS
 
   ! SET:
   ! @ElementDataMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & obj_InitiateElementToElements
   !! Initiate element to elements mapping
