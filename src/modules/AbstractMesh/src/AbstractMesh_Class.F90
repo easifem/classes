@@ -21,7 +21,7 @@ USE Files, ONLY: HDF5File_, VTKFile_
 USE BaSetype, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
 USE CPUTime_Class, ONLY: CPUTime_
-USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemData_, ElemDataPointer_
 USE ElemDataBinaryTree_Class, ONLY: ElemDataBinaryTree_
 USE ElemDataList_Class, ONLY: ElemDataList_
 USE NodeData_Class, ONLY: NodeData_, NodeDataPointer_
@@ -169,7 +169,7 @@ TYPE, ABSTRACT :: AbstractMesh_
   TYPE(NodeDataPointer_), ALLOCATABLE :: nodeData(:)
     !! Node data
 
-  TYPE(ElemData_), ALLOCATABLE :: elementData(:)
+  TYPE(ElemDataPointer_), ALLOCATABLE :: elementData(:)
     !! element data
 
   TYPE(FacetData_), ALLOCATABLE :: facetData(:)

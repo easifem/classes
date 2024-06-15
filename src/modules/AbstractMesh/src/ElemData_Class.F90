@@ -39,6 +39,7 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: ElemData_
+PUBLIC :: ElemDataPointer_
 PUBLIC :: Display
 PUBLIC :: TypeElem
 PUBLIC :: ElemDataDeallocate
@@ -167,6 +168,14 @@ TYPE :: ElemData_
     !! It may happen that a boundary element has no boundary face, in which
     !! case boundaryData will have zero size
 END TYPE ElemData_
+
+!----------------------------------------------------------------------------
+!                                                           ElemDataPointer_
+!----------------------------------------------------------------------------
+
+TYPE ElemDataPointer_
+  CLASS(ElemData_), POINTER :: ptr => NULL()
+END TYPE ElemDataPointer_
 
 !----------------------------------------------------------------------------
 !
