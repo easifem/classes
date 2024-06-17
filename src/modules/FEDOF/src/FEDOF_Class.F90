@@ -30,6 +30,7 @@ PRIVATE
 PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
 PUBLIC :: FEDOFSetSparsity
+PUBLIC :: SetFEDOFParam
 
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
 CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
@@ -43,6 +44,7 @@ CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
 ! summary: FEDOF data type
 
 TYPE :: FEDOF_
+  PRIVATE
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -191,7 +193,8 @@ END TYPE FEDOFPointer_
 ! summary: Set the essential parameters for constructing the FEDOF
 
 INTERFACE
-MODULE SUBROUTINE SetFEDOFParam( param, baseContinuity, baseInterpolation, orderFile )
+  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
+                                  orderFile)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity or conformity of basis defined on reference

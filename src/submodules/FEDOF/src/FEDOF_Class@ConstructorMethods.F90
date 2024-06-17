@@ -28,6 +28,8 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalFaceDOF, &
                           ElemData_GetTotalCellDOF
 
+USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
+
 IMPLICIT NONE
 CONTAINS
 
@@ -36,9 +38,17 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetFEDOFParam
-CHARACTER(*), PARAMETER :: myName = "SetFEDOFParam()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: tsize
+
+CALL Set(obj=param, prefix=myprefix, key="baseContinuity", &
+         VALUE=baseContinuity, dataType=baseContinuity)
+
+CALL Set(obj=param, prefix=myprefix, key="baseInterpolation", &
+         VALUE=baseInterpolation, dataType=baseInterpolation)
+
+CALL Set(obj=param, prefix=myprefix, key="orderFile", &
+         VALUE=orderFile, dataType=orderFile)
+
 END PROCEDURE SetFEDOFParam
 
 !----------------------------------------------------------------------------
