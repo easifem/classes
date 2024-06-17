@@ -716,6 +716,7 @@ TYPE IS (STScalarFieldLis_)
 ! TYPE IS (STScalarFieldLis_)
 
 TYPE IS (VectorFieldLis_)
+
   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
   realvec => AbstractNodeFieldGetPointer(VALUE)
   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
@@ -728,6 +729,7 @@ TYPE IS (VectorFieldLis_)
   realvec => NULL()
 
 TYPE IS (STVectorFieldLis_)
+
   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
   realvec => AbstractNodeFieldGetPointer(VALUE)
   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
@@ -740,6 +742,7 @@ TYPE IS (STVectorFieldLis_)
   realvec => NULL()
 
 CLASS DEFAULT
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found for the type of VALUE')
   RETURN
@@ -769,7 +772,8 @@ END PROCEDURE obj_SetFromVectorField
 MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), itime, ispace
+INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), itime, ispace, nrow, &
+                ncol
 REAL(DFP) :: args(4), xij(3, 1)
 REAL(DFP), ALLOCATABLE :: VALUE(:)
 CLASS(AbstractMesh_), POINTER :: meshptr
@@ -812,7 +816,7 @@ IF (istimes) THEN
   DO ii = 1, tnodes
     globalNode = ii
     CALL meshptr%GetNodeCoord(globalNode=globalNode, nodeCoord=xij, &
-                              islocal=.TRUE.)
+                              islocal=.TRUE., nrow=nrow, ncol=ncol)
     args(1:nsd) = xij(1:nsd, 1)
 
     DO itime = 1, obj%timeCompo
@@ -823,9 +827,7 @@ IF (istimes) THEN
                      timeCompo=itime, spaceCompo=ispace, islocal=.TRUE.)
       END DO
     END DO
-
   END DO
-
 END IF
 
 IF (.NOT. istimes) THEN
@@ -833,7 +835,7 @@ IF (.NOT. istimes) THEN
   DO ii = 1, tnodes
     globalNode = ii
     CALL meshptr%GetNodeCoord(globalNode=globalNode, nodeCoord=xij, &
-                              islocal=.TRUE.)
+                              islocal=.TRUE., nrow=nrow, ncol=ncol)
     args(1:nsd) = xij(1:nsd, 1)
     CALL func%Get(val=VALUE, args=args)
 
