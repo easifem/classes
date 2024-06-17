@@ -235,7 +235,7 @@ MODULE PROCEDURE obj_WriteData1_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData1_vtk()"
 LOGICAL(LGT) :: isOK, isSingleFEDOF, isMultiFEDOF
 CLASS(AbstractMesh_), POINTER :: meshptr
-INTEGER(I4B) :: nsd, tPhysicalVars, tnodes
+INTEGER(I4B) :: nsd, tPhysicalVars, tnodes, nrow, ncol
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 CHARACTER(1), ALLOCATABLE :: dofNames(:)
@@ -289,8 +289,11 @@ END IF
 fedof => obj%fedof
 meshptr => fedof%GetMeshPointer()
 nsd = meshptr%GetNSD()
+tnodes = meshptr%GetTotalNodes()
 
-CALL meshptr%GetNodeCoord(nodeCoord=xij)
+ALLOCATE (xij(3, tnodes))
+
+CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 
 CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
                          openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
@@ -298,7 +301,6 @@ CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
 CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
 
 nptrs = meshptr%GetNptrs()
-tnodes = meshptr%GetTotalNodes()
 
 CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
                       spaceCompo, timeCompo, .FALSE.)
@@ -331,7 +333,7 @@ INTEGER(I4B) :: tnodes
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 CHARACTER(1), ALLOCATABLE :: dofNames(:), dofNames_sub(:)
-INTEGER(I4B) :: tfield, iobj, tsize, aint
+INTEGER(I4B) :: tfield, iobj, tsize, aint, nrow, ncol
 TYPE(IntVector_), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
 CLASS(AbstractNodeField_), POINTER :: obj0
 CLASS(FEDOF_), POINTER :: fedof
@@ -424,7 +426,9 @@ DO iobj = 1, tfield
   DEALLOCATE (dofNames_sub)
 END DO
 
-CALL meshptr%GetNodeCoord(nodeCoord=xij)
+tnodes = meshptr%GetTotalNodes()
+ALLOCATE (xij(3, tnodes))
+CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 
 CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
                          openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
@@ -432,7 +436,6 @@ CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
 CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
 
 nptrs = meshptr%GetNptrs()
-tnodes = meshptr%GetTotalNodes()
 
 tsize = 0
 DO iobj = 1, tfield
