@@ -115,6 +115,10 @@ CONTAINS
     Initiate4
   !! Generic method for initiating FEDOF
 
+  PROCEDURE, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
+  !! Check essential parameters
+
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -203,6 +207,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: orderFile
     !! file containing the order of each element
   END SUBROUTINE SetFEDOFParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     CheckEssentialParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: This routine Check the essential parameters in param.
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

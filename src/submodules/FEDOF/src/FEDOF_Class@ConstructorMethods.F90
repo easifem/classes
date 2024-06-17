@@ -31,7 +31,23 @@ USE ElemData_Class, ONLY: ElemData_, &
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                       CheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+CHARACTER(:), ALLOCATABLE :: keys
+
+keys = "baseContinuity/baseInterpolation/orderFile"
+
+CALL CheckEssentialParam(obj=param, keys=keys, prefix=myprefix, &
+                         myName=myName, modName=modName)
+!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                             SetFEDOFParam
