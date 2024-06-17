@@ -17,24 +17,40 @@
 
 MODULE AbstractMesh_Class
 USE GlobalData, ONLY: LGT, I4B, DFP
+
 USE Files, ONLY: HDF5File_, VTKFile_
-USE BaSetype, ONLY: BoundingBox_, CSRMatrix_
+
+USE Basetype, ONLY: BoundingBox_, CSRMatrix_
+
 USE ExceptionHandler_Class, ONLY: e
+
 USE CPUTime_Class, ONLY: CPUTime_
+
 USE ElemData_Class, ONLY: ElemData_, ElemDataPointer_
+
 USE ElemDataBinaryTree_Class, ONLY: ElemDataBinaryTree_
+
 USE ElemDataList_Class, ONLY: ElemDataList_
+
 USE NodeData_Class, ONLY: NodeData_, NodeDataPointer_
+
 USE NodeDataList_Class, ONLY: NodeDataList_
+
 USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
+
 USE FacetData_Class, ONLY: FacetData_
+
 USE AbstractMeshParam, ONLY: PARAM_MAX_NODE_TO_NODE, &
                              PARAM_MAX_NODE_TO_ELEM, &
                              PARAM_MAX_CONNECTIVITY_SIZE, &
                              PARAM_MAX_NNE
+
+USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
+
 IMPLICIT NONE
 
 PRIVATE
+
 PUBLIC :: AbstractMesh_
 PUBLIC :: AbstractMeshPointer_
 PUBLIC :: AbstractMeshDeallocate
@@ -61,147 +77,165 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 TYPE, ABSTRACT :: AbstractMesh_
   PRIVATE
   LOGICAL(LGT) :: showTime = .FALSE.
-    !! If true, then we show the time taken by various mesh operations
-    !! This is for checking the performance of a subclass
+  !! If true, then we show the time taken by various mesh operations
+  !! This is for checking the performance of a subclass
   LOGICAL(LGT) :: readFromFile = .TRUE.
-    !! True if the mesh is read from a file
+  !! True if the mesh is read from a file
   LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! logical flag denoting for whether mesh data is Initiated or not
+  !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: isNodeToElementsInitiated = .FALSE.
-    !! Node to elements mapping
+  !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
-    !! Node to nodes mapping
+  !! Node to nodes mapping
   LOGICAL(LGT) :: isExtraNodeToNodesInitiated = .FALSE.
-    !! Node to nodes mapping
+  !! Node to nodes mapping
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
-    !! Element to elements mapping
+  !! Element to elements mapping
   LOGICAL(LGT) :: isEdgeConnectivityInitiated = .FALSE.
-    !! This is Set to true when edge connectivity is initiated
-    !! See InitiateEdgeConnectivity method
+  !! This is Set to true when edge connectivity is initiated
+  !! See InitiateEdgeConnectivity method
   LOGICAL(LGT) :: isFaceConnectivityInitiated = .FALSE.
-    !! This is Set to true when face connectivity is initiated
-    !! See InitiateFaceConnectivity method
+  !! This is Set to true when face connectivity is initiated
+  !! See InitiateFaceConnectivity method
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
-    !! Boundary data
+  !! Boundary data
   LOGICAL(LGT) :: isFacetDataInitiated = .FALSE.
-    !! FacetData
+  !! FacetData
   INTEGER(I4B) :: uid = 0
-    !! Unique id of the mesh
-    !! In case of Mesh_ it is entityNumber of the mesh
+  !! Unique id of the mesh
+  !! In case of Mesh_ it is entityNumber of the mesh
   INTEGER(I4B) :: tElements_topology_wise(8) = 0
-    !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
-    !! pyramid (it is calculated in the postprocessing step)
+  !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
+  !! pyramid (it is calculated in the postprocessing step)
   INTEGER(I4B) :: tElemTopologies = 0, elemTopologies(8) = 0
-    !! total element topologies, name of element topologies are stored in
-    !! elemTopologies(1:tElemTopologies)
-    !! this info is computed in a postprocessing step
+  !! total element topologies, name of element topologies are stored in
+  !! elemTopologies(1:tElemTopologies)
+  !! this info is computed in a postprocessing step
   INTEGER(I4B) :: maxNNE = 0
-    !! maximum number of nodes in element
+  !! maximum number of nodes in element
   INTEGER(I4B) :: nsd = 0
-    !! number of spatial dimension of the mesh
+  !! number of spatial dimension of the mesh
   INTEGER(I4B) :: xidim = 0
-    !! xidimension of elements present inside the mesh
-    !! for point xidim = 0
-    !! for line/curve xidim = 1
-    !! for surface xidim = 2
-    !! for volume xidim = 3
+  !! xidimension of elements present inside the mesh
+  !! for point xidim = 0
+  !! for line/curve xidim = 1
+  !! for surface xidim = 2
+  !! for volume xidim = 3
   INTEGER(I4B) :: maxNptrs = 0
-    !! largest node number present inside the mesh
+  !! largest node number present inside the mesh
   INTEGER(I4B) :: minNptrs = 0
-    !! minimum node number present inside the mesh
+  !! minimum node number present inside the mesh
   INTEGER(I4B) :: maxElemNum = 0
-    !! largest element number present inside the mesh
+  !! largest element number present inside the mesh
   INTEGER(I4B) :: minElemNum = 0
-    !! minimum element number present inside the mesh
+  !! minimum element number present inside the mesh
   INTEGER(I4B) :: tNodes = 0
-    !! total number of nodes present inside the mesh
+  !! total number of nodes present inside the mesh
   INTEGER(I4B) :: tEdges = 0
-    !! total number of internal nodes inside the mesh
+  !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tFaces = 0
-    !! total number of internal nodes inside the mesh
+  !! total number of internal nodes inside the mesh
   INTEGER(I4B) :: tElements = 0
-    !! total number of elements present inside the mesh
-    !! It is the size of elemNumber vector
+  !! total number of elements present inside the mesh
+  !! It is the size of elemNumber vector
   REAL(DFP) :: minX = 0.0
-    !! minimum value of x coordinate
+  !! minimum value of x coordinate
   REAL(DFP) :: maxX = 0.0
-    !! maximum value of x coordinate
+  !! maximum value of x coordinate
   REAL(DFP) :: minY = 0.0
-    !! minimum value of y coordinate
+  !! minimum value of y coordinate
   REAL(DFP) :: maxY = 0.0
-    !! maximum value of y coordinate
+  !! maximum value of y coordinate
   REAL(DFP) :: minZ = 0.0
-    !! minimum value of z coordinate
+  !! minimum value of z coordinate
   REAL(DFP) :: maxZ = 0.0
-    !! maximum value of z coordinate
+  !! maximum value of z coordinate
   REAL(DFP) :: x = 0.0
-    !! x coorindate of centroid
+  !! x coorindate of centroid
   REAL(DFP) :: y = 0.0
-    !! y coordinate of centroid
+  !! y coordinate of centroid
   REAL(DFP) :: z = 0.0
-    !! z coordinate of centroid
+  !! z coordinate of centroid
+
   INTEGER(I4B), ALLOCATABLE :: boundingEntity(:)
-    !! Bounding entity numbers of the current entity
+  !! Bounding entity numbers of the current entity
+
   INTEGER(I4B), ALLOCATABLE :: local_elemNumber(:)
-    !! List of local element numbers, the lowerbound is `minElemNum`
-    !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
-    !! returns the local element number of global element number iel.
+  !! List of local element numbers, the lowerbound is `minElemNum`
+  !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
+  !! returns the local element number of global element number iel.
 
   INTEGER(I4B), ALLOCATABLE :: local_Nptrs(:)
-    !! Returns local node number from a global node number
-    !! Its length is from 1 to maxNptrs
-    !! Helpul in finding if a global node is present inside the mesh or not
+  !! Returns local node number from a global node number
+  !! Its length is from 1 to maxNptrs
+  !! Helpul in finding if a global node is present inside the mesh or not
 
   REAL(DFP), ALLOCATABLE :: quality(:, :)
-    !! number of rows are meshquality
-    !! number of columns are elements
+  !! number of rows are meshquality
+  !! number of columns are elements
 
   INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
-    !! Number of rows of this array is same as the total number of
-    !! facets present in the mesh-reference elements
-    !! Number of columns of this array is equal to the total number of
-    !! elements inside the mesh
-    !! facetElementType(ii, iel) can be
-    !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
-    !! If the face is a part of the mesh boundary then it will be called
-    !! the BOUNDARY_ELEMENT
+  !! Number of rows of this array is same as the total number of
+  !! facets present in the mesh-reference elements
+  !! Number of columns of this array is equal to the total number of
+  !! elements inside the mesh
+  !! facetElementType(ii, iel) can be
+  !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
+  !! If the face is a part of the mesh boundary then it will be called
+  !! the BOUNDARY_ELEMENT
 
   TYPE(NodeDataPointer_), ALLOCATABLE :: nodeData(:)
-    !! Node data
+  !! Node data
 
   TYPE(ElemDataPointer_), ALLOCATABLE :: elementData(:)
-    !! element data
+  !! element data
 
   TYPE(FacetData_), ALLOCATABLE :: facetData(:)
   !! facet data
 
   TYPE(ElemDataList_) :: elementDataList
   !! ElemData list
+
   TYPE(ElemDataBinaryTree_) :: elementDataBinaryTree
   !! ElemData binary tree
+
   TYPE(NodeDataList_) :: nodeDataList
   !! NodeData list
+
   TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
   !! NodeData binary tree
+
+  TYPE(Kdtree2_), POINTER :: kdtree => NULL()
+  !!
+
+  TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
 
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !!  Read the mesh by reading a hdf5 file
   !! The hdf5 file format depends upon the mesh engine
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by the mesh instance
+
   PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => obj_isEmpty
   !! Returns true if the mesh is empty.
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateDynamicDataStructure => &
     obj_InitiateDynamicDataStructure
   !! Initiate DynamicDataStructure of mesh from static data
 
+  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
+  !! Deallocate the kdtree
+
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Read mesh from hdf5 file
 
@@ -245,14 +279,19 @@ CONTAINS
   ! SET:
   ! @NodeDataMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
+  !! Initiate Kdtree
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-    & obj_InitiateNodeToElements
+    obj_InitiateNodeToElements
   !! Initiate node to element data (mapping)
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-    & obj_InitiateNodetoNodes
+    obj_InitiateNodetoNodes
   !! Initiate Node to nodes data
+
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-    & obj_InitiateExtraNodetoNodes
+    obj_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping (used in jump based FEM)
 
   ! SET:
@@ -729,6 +768,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-10
+! summary: Deallocate kdtree related data
+
+INTERFACE
+  MODULE SUBROUTINE obj_DeallocateKdtree(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! AbstractDomain object
+  END SUBROUTINE obj_DeallocateKdtree
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -861,7 +915,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ExportToVTK(obj, vtkFile, nodeCoord, filename, &
-    & OpenTag, Content, CloSetag)
+                                    OpenTag, Content, CloSetag)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtkFile
     REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
@@ -1034,7 +1088,7 @@ END INTERFACE
 ! summary: Get All the NodeCoord of  the mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord)
+  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, nrow, ncol)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! Abstract mesh object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
@@ -1043,6 +1097,10 @@ INTERFACE
     !! So to get the global node coord, first you need to convert
     !! the global node number to local node number. Then, use this local
     !! node number to extract the node coordinates
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in nodecoord
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written in nodecoord
   END SUBROUTINE obj_GetNodeCoord2
 END INTERFACE
 
@@ -1055,13 +1113,16 @@ END INTERFACE
 ! summary: Get the nodecoord of an element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalElement, islocal)
+  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, nrow, &
+                                      ncol, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! Abstract mesh object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! node coordinates of an element in xiJ format
     !! The nodes are arranged in local order
     !! The global nodes can be obtianed by calling the GetVertexConnectivity
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in nodecoord
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global or local element
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1078,13 +1139,16 @@ END INTERFACE
 ! summary: Get the nodecoord of an element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord4(obj, nodeCoord, globalNode, islocal)
+  MODULE SUBROUTINE obj_GetNodeCoord4(obj, nodeCoord, nrow, ncol, &
+                                      globalNode, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! Abstract mesh object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! node coordinates of an element in xiJ format
     !! The nodes are arranged in local order
     !! The global nodes can be obtianed by calling the GetVertexConnectivity
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in nodecoord
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node numbers
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1656,7 +1720,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            GetBoundingBox@MeshDataMethods
+!                                                  GetBoundingBox@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1679,8 +1743,8 @@ END INTERFACE
 ! summary: returns bounding box of the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetBoundingBox2(obj, nodes, local_nptrs)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox2(obj, nodes, local_nptrs) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: nodes(:, :)
     !! Nodal coordinates in XiJ format
@@ -1709,7 +1773,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
-    !! Vertex, Edge, Face, Cell
+    !! Vertex, Edge, Face, Cell, All
     !! Default is Vertex
   END FUNCTION obj_GetConnectivity
 END INTERFACE
@@ -2838,6 +2902,20 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(4)
   END FUNCTION obj_GetTotalEntities2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           InitiateKdtree@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-10
+! summary: Initiate the kd tree
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateKdtree(obj)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateKdtree
 END INTERFACE
 
 !----------------------------------------------------------------------------
