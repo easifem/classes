@@ -26,9 +26,12 @@ USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements, &
                           NodeData_ExpandGlobalNodes, &
                           NodeData_SetExtraGlobalNodes
 
+USE Kdtree2_Module, ONLY: Kdtree2_create
+
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -245,6 +248,57 @@ IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
 IF (ALLOCATED(extraGlobalNodes)) DEALLOCATE (extraGlobalNodes)
 
 END PROCEDURE obj_InitiateExtraNodetoNodes
+
+!----------------------------------------------------------------------------
+!                                                            InitiateKdtree
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateKdtree
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: nsd, nrow, ncol
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+TYPE(CPUTime_) :: TypeCPUTime
+REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DeallocateKdtree()
+
+nsd = obj%GetNSD()
+
+ncol = obj%GetTotalNodes()
+ALLOCATE (nodeCoord(3, ncol))
+CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol)
+
+! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
+obj%kdtree => Kdtree2_Create(input_data=nodeCoord(1:nsd, :), &
+                             dim=nsd, sort=.FALSE., rearrange=.TRUE.)
+
+ALLOCATE (obj%kdresult(ncol))
+
+DEALLOCATE (nodeCoord)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               ToString(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+END PROCEDURE obj_InitiateKdtree
 
 !----------------------------------------------------------------------------
 !
