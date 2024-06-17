@@ -125,7 +125,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToNodeData2()"
 TYPE(BoundingBox_) :: box, box1, box2
 LOGICAL(LGT) :: isvar, isok
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
-INTEGER(I4B) :: ii, jj, nsd, tnodes1, node1(1), node2(2)
+INTEGER(I4B) :: ii, jj, nsd, tnodes1, node1(1), node2(2), nrow, ncol
 REAL(DFP) :: x1(3, 1), x2(3, 1)
 
 #ifdef DEBUG_VER
@@ -184,7 +184,7 @@ tnodes1 = SIZE(nptrs1)
 DO ii = 1, tnodes1
   node1(1) = nptrs1(ii)
   CALL mesh1%GetNodeCoord(globalNode=node1, nodeCoord=x1, &
-                          islocal=.TRUE.)
+                          islocal=.TRUE., nrow=nrow, ncol=ncol)
 
   CALL mesh2%GetNearestNode(qv=x1(:, 1), x=x2(:, 1), globalNode=node2(1))
 
