@@ -28,8 +28,8 @@ USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
 USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
 
 USE InterpolationUtility, ONLY: GetTotalInDOF
-USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle,  &
-  & FaceShapeMetaData_Quadrangle
+USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle, &
+                                      FaceShapeMetaData_Quadrangle
 USE SortUtility, ONLY: Sort
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
@@ -42,8 +42,7 @@ PUBLIC :: ElemData_
 PUBLIC :: ElemDataPointer_
 PUBLIC :: Display
 PUBLIC :: TypeElem
-PUBLIC :: ElemDataDeallocate
-PUBLIC :: ElemDataSet
+PUBLIC :: ElemData_Set
 PUBLIC :: ElemData_Pointer
 PUBLIC :: ElemData_Deallocate
 PUBLIC :: ElemData_Display
@@ -65,6 +64,28 @@ PUBLIC :: ElemData_GetTotalFaceDOF
 PUBLIC :: ElemData_GetTotalCellDOF
 PUBLIC :: ElemData_GetElementToElements
 PUBLIC :: ElemData_GetEdgeConnectivity
+PUBLIC :: ElemData_isActive
+PUBLIC :: ElemData_globalElemNum
+PUBLIC :: ElemData_localElemNum
+PUBLIC :: ElemData_elementType
+PUBLIC :: ElemData_name
+PUBLIC :: ElemData_meshID
+PUBLIC :: ElemData_GetTotalMaterial
+PUBLIC :: ElemData_GetTotalGlobalNodes
+PUBLIC :: ElemData_GetTotalEdgeOrient
+PUBLIC :: ElemData_GetTotalGlobalFaces
+PUBLIC :: ElemData_GetTotalFaceOrient
+PUBLIC :: ElemData_GetTotalGlobalElements
+PUBLIC :: ElemData_GetTotalBoundaryData
+PUBLIC :: ElemData_GetMaterial
+PUBLIC :: ElemData_GetGlobalNodes
+PUBLIC :: ElemData_GetGlobalEdges
+PUBLIC :: ElemData_GetEdgeOrient
+PUBLIC :: ElemData_GetGlobalFaces
+PUBLIC :: ElemData_GetFaceOrient
+PUBLIC :: ElemData_GetGlobalElements
+PUBLIC :: ElemData_GetBoundaryData
+PUBLIC :: ElemData_GetGlobalNodesPointer
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -78,10 +99,6 @@ CHARACTER(*), PARAMETER :: modName = "ElemData_Class"
 INTERFACE Display
   MODULE PROCEDURE ElemData_Display
 END INTERFACE Display
-
-INTERFACE ElemDataDeallocate
-  MODULE PROCEDURE ElemData_Deallocate
-END INTERFACE ElemDataDeallocate
 
 INTERFACE ASSIGNMENT(=)
   MODULE PROCEDURE ElemData_Copy
@@ -392,9 +409,9 @@ END SUBROUTINE ElemData_SetTotalMaterial
 !                                                           ElemDataInitiate
 !----------------------------------------------------------------------------
 
-PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
-  & elementType, globalNodes, globalElements, boundaryData, globalEdges,  &
-  & globalFaces, name, isActive, meshID, medium, material, materials)
+PURE SUBROUTINE ElemData_Set(obj, globalElemNum, localElemNum, &
+        elementType, globalNodes, globalElements, boundaryData, globalEdges, &
+             globalFaces, name, isActive, meshID, medium, material, materials)
   ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
   ! obj%elementData(ii)%localElemNum = ii
   ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
@@ -450,7 +467,7 @@ PURE SUBROUTINE ElemDataSet(obj, globalElemNum, localElemNum,  &
     obj%material = INT(materials, kind=INT8)
   END IF
 
-END SUBROUTINE ElemDataSet
+END SUBROUTINE ElemData_Set
 
 !----------------------------------------------------------------------------
 !                                                          ElemData_Pointer
@@ -877,5 +894,310 @@ SUBROUTINE ElemData_GetEdgeConnectivity(obj, ans, tsize, ii)
     ans(jj) = con(jj, ii)
   END DO
 END SUBROUTINE ElemData_GetEdgeConnectivity
+
+!----------------------------------------------------------------------------
+!                                                                  isActive
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_isActive(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  LOGICAL(LGT) :: ans
+  ans = obj%isActive
+END FUNCTION ElemData_isActive
+
+!----------------------------------------------------------------------------
+!                                                              globalElemNum
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_globalElemNum(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%globalElemNum
+END FUNCTION ElemData_globalElemNum
+
+!----------------------------------------------------------------------------
+!                                                              localElemNum
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_localElemNum(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%localElemNum
+END FUNCTION ElemData_localElemNum
+
+!----------------------------------------------------------------------------
+!                                                              localElemNum
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_elementType(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%elementType
+END FUNCTION ElemData_elementType
+
+!----------------------------------------------------------------------------
+!                                                              localElemNum
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_name(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%name
+END FUNCTION ElemData_name
+
+!----------------------------------------------------------------------------
+!                                                              localElemNum
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_meshid(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%meshid
+END FUNCTION ElemData_meshid
+
+!----------------------------------------------------------------------------
+!                                                                GetMaterial
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalMaterial(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%material)
+END FUNCTION ElemData_GetTotalMaterial
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalGlobalNodes(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%globalNodes)
+END FUNCTION ElemData_GetTotalGlobalNodes
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalGlobalEdges
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalGlobalEdges(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%globalEdges)
+END FUNCTION ElemData_GetTotalGlobalEdges
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalEdgeOrient
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalEdgeOrient(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%edgeOrient)
+END FUNCTION ElemData_GetTotalEdgeOrient
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalEdgeOrient
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalGlobalFaces(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%globalFaces)
+END FUNCTION ElemData_GetTotalGlobalFaces
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalEdgeOrient
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalFaceOrient(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%faceOrient)
+END FUNCTION ElemData_GetTotalFaceOrient
+
+!----------------------------------------------------------------------------
+!                                                     GetTotalGlobalElements
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalGlobalElements(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%globalElements)
+END FUNCTION ElemData_GetTotalGlobalElements
+
+!----------------------------------------------------------------------------
+!                                                     GetTotalBoundaryData
+!----------------------------------------------------------------------------
+
+PURE FUNCTION ElemData_GetTotalBoundaryData(obj) RESULT(ans)
+  TYPE(ElemData_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = SIZE(obj%boundaryData)
+END FUNCTION ElemData_GetTotalBoundaryData
+
+!----------------------------------------------------------------------------
+!                                                               GetMaterial
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetMaterial(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%material)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%material(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetMaterial
+
+!----------------------------------------------------------------------------
+!                                                            GetGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetGlobalNodes(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%globalNodes)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%globalNodes(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalNodes
+
+!----------------------------------------------------------------------------
+!                                                            GetGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetGlobalEdges(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%globalNodes)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%globalNodes(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalEdges
+
+!----------------------------------------------------------------------------
+!                                                            GetGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetEdgeOrient(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%edgeOrient)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%edgeOrient(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetEdgeOrient
+
+!----------------------------------------------------------------------------
+!                                                            GetGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetGlobalFaces(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%globalFaces)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%globalFaces(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalFaces
+
+!----------------------------------------------------------------------------
+!                                                            GetGlobalNodes
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetFaceOrient(obj, ans, nrow, ncol)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+  INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+
+  INTEGER(I4B) :: ii, jj
+
+  nrow = SIZE(obj%faceOrient, 1)
+  ncol = SIZE(obj%faceOrient, 2)
+
+  DO jj = 1, ncol
+    DO ii = 1, nrow
+      ans(ii, jj) = INT(obj%faceOrient(ii, jj), kind=I4B)
+    END DO
+  END DO
+
+END SUBROUTINE ElemData_GetFaceOrient
+
+!----------------------------------------------------------------------------
+!                                                          GetGlobalElements
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetGlobalElements(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%globalElements)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%globalElements(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetGlobalElements
+
+!----------------------------------------------------------------------------
+!                                                          GetBoundaryData
+!----------------------------------------------------------------------------
+
+PURE SUBROUTINE ElemData_GetBoundaryData(obj, ans, tsize)
+  TYPE(ElemData_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  INTEGER(I4B) :: ii
+
+  tsize = SIZE(obj%boundaryData)
+
+  DO ii = 1, tsize
+    ans(ii) = obj%boundaryData(ii)
+  END DO
+
+END SUBROUTINE ElemData_GetBoundaryData
+
+!----------------------------------------------------------------------------
+!                                                     GetGlobalNodesPointer
+!----------------------------------------------------------------------------
+
+FUNCTION ElemData_GetGlobalNodesPointer(obj) RESULT(ans)
+  TYPE(ElemData_), TARGET, INTENT(IN) :: obj
+  INTEGER(I4B), POINTER :: ans(:)
+  ans => obj%globalNodes
+END FUNCTION ElemData_GetGlobalNodesPointer
 
 END MODULE ElemData_Class
