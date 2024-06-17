@@ -17,7 +17,7 @@
 
 SUBMODULE(AbstractDomain_Class) MeshDataMethods
 USE GlobalData, ONLY: stdout
-USE Display_Method
+USE Display_Method, ONLY: Display, ToString
 USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
 USE CPUTime_Class, ONLY: CPUTime_
@@ -44,7 +44,7 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 CALL obj%DeallocateKdtree()
@@ -54,7 +54,7 @@ CALL obj%DeallocateKdtree()
 isok = ALLOCATED(obj%nodeCoord)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractDomain_::obj%nodeCoord not allocated')
+           '[INTERNAL ERROR] :: AbstractDomain_::obj%nodeCoord not allocated')
   RETURN
 END IF
 
@@ -69,14 +69,14 @@ ALLOCATE (obj%kdresult(obj%tNodes))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time : "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               ToString(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 END PROCEDURE obj_InitiateKdtree
@@ -88,8 +88,8 @@ END PROCEDURE obj_InitiateKdtree
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
 END PROCEDURE obj_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
@@ -99,8 +99,8 @@ END PROCEDURE obj_InitiateNodeToElements
 MODULE PROCEDURE obj_InitiateNodeToNodes
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
 END PROCEDURE obj_InitiateNodeToNodes
 
 !----------------------------------------------------------------------------
