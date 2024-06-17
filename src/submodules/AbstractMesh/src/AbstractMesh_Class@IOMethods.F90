@@ -166,6 +166,12 @@ CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
 abool = ALLOCATED(obj%facetData)
 CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
+abool = ASSOCIATED(obj%kdtree)
+CALL Display(abool, "kdtree Associated: ", unitno=unitno)
+
+abool = ALLOCATED(obj%kdresult)
+CALL Display(abool, "kdresult Allocated: ", unitno=unitno)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
