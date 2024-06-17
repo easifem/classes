@@ -15,12 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
+USE GlobalData, ONLY: MaxDFP, MinDFP
+
 USE ReallocateUtility, ONLY: Reallocate
+
 USE IntegerUtility, ONLY: RemoveDuplicates, RemoveDuplicates_
+
 USE AppendUtility, ONLY: Append
-USE BoundingBox_Method, ONLY: InitBox => Initiate
+
+USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
+                              BoundingBox_Initiate => Initiate
+
 USE InputUtility, ONLY: Input
+
 USE Display_Method, ONLY: Display, ToString
+
 USE ReferenceElement_Method, ONLY: &
   REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
   GetEdgeConnectivity, &
@@ -28,6 +37,7 @@ USE ReferenceElement_Method, ONLY: &
   ElementOrder, &
   TotalEntities, &
   RefElemGetGeoParam
+
 USE FacetData_Class, ONLY: FacetData_Iselement, &
                            FacetData_GetParam
 USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
@@ -35,7 +45,8 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           DOMAIN_BOUNDARY_ELEMENT, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetConnectivity, &
-                          ElemData_GetElementToElements
+                          ElemData_GetElementToElements, &
+                          ElemData_GetGlobalNodesPointer
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -46,7 +57,10 @@ USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetGlobalNodes, &
                           NodeData_GetGlobalNodes2, &
                           NodeData_GetExtraGlobalNodes, &
-                          NodeData_GetTotalExtraGlobalNodes
+                          NodeData_GetTotalExtraGlobalNodes, &
+                          NodeData_GetNodeCoord
+
+USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 
 IMPLICIT NONE
 
@@ -157,9 +171,19 @@ END PROCEDURE obj_GetNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: tnodes, ii
+INTEGER(I4B), ALLOCATABLE :: nptrs0(:)
+
+tnodes = obj%GetTotalNodes()
+ALLOCATE (nptrs0(tnodes))
+CALL obj%GetNptrsInBox_(box=box, nptrs=nptrs0, tnodes=tnodes, &
+                        isStrict=isStrict)
+
+ALLOCATE (nptrs(tnodes))
+DO CONCURRENT(ii=1:tnodes)
+  nptrs(ii) = nptrs0(ii)
+END DO
+DEALLOCATE (nptrs0)
 END PROCEDURE obj_GetNptrsInBox
 
 !----------------------------------------------------------------------------
@@ -167,9 +191,51 @@ END PROCEDURE obj_GetNptrsInBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox_
+! nptrs = box.Nptrs.obj%nodeCoord
+REAL(DFP) :: qv(3), r2
+INTEGER(I4B) :: ii, jj, kk, nsd, tsize
 CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: isok, abool
+
+isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
+IF (.NOT. isok) THEN
+  CALL obj%InitiateKdtree()
+END IF
+
+qv = Center(box)
+r2 = GetRadiusSqr(box)
+nsd = obj%GetNSD()
+
+CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
+               nfound=tnodes, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
+
+isok = Input(default=.TRUE., option=isStrict)
+
+IF (.NOT. isok) THEN
+  !$OMP PARALLEL DO PRIVATE(ii)
+  DO ii = 1, tnodes
+    nptrs(ii) = obj%GetGlobalNodeNumber(obj%kdresult(ii)%idx)
+  END DO
+  !$OMP END PARALLEL DO
+  RETURN
+END IF
+
+jj = 0
+qv = 0.0_DFP
+DO ii = 1, tnodes
+
+  kk = obj%kdresult(ii)%idx
+  CALL NodeData_GetNodeCoord(obj=obj%nodeData(kk)%ptr, ans=qv, tsize=tsize)
+  abool = IsInside(box, qv(1:nsd))
+  IF (abool) THEN
+    jj = jj + 1
+    nptrs(jj) = obj%GetGlobalNodeNumber(kk)
+  END IF
+
+END DO
+
+tnodes = jj
+
 END PROCEDURE obj_GetNptrsInBox_
 
 !----------------------------------------------------------------------------
@@ -485,14 +551,40 @@ END PROCEDURE obj_GetTotalBoundaryElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox1
-REAL(DFP) :: lim(6)
-lim(1) = obj%minX
-lim(2) = obj%maxX
-lim(3) = obj%minY
-lim(4) = obj%maxY
-lim(5) = obj%minZ
-lim(6) = obj%maxZ
-CALL InitBox(obj=ans, nsd=3_I4B, lim=lim)
+! REAL(DFP) :: lim(6)
+! lim(1) = obj%minX
+! lim(2) = obj%maxX
+! lim(3) = obj%minY
+! lim(4) = obj%maxY
+! lim(5) = obj%minZ
+! lim(6) = obj%maxZ
+! CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox1()"
+REAL(DFP) :: lim(6), x(3)
+INTEGER(I4B) :: nsd, tnodes, ii, tsize
+
+!> main
+
+nsd = obj%GetNSD()
+tnodes = obj%GetTotalNodes()
+
+lim(1:nsd * 2:2) = MinDFP
+lim(2:nsd * 2:2) = MaxDFP
+
+DO ii = 1, tnodes
+  CALL NodeData_GetNodeCoord(obj%nodeData(ii)%ptr, ans=x, tsize=tsize)
+  lim(1) = MIN(lim(1), x(1))
+  lim(2) = MAX(lim(2), x(1))
+
+  lim(3) = MIN(lim(3), x(2))
+  lim(4) = MAX(lim(4), x(2))
+
+  lim(5) = MIN(lim(5), x(3))
+  lim(6) = MAX(lim(6), x(3))
+END DO
+
+CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
+
 END PROCEDURE obj_GetBoundingBox1
 
 !----------------------------------------------------------------------------
@@ -516,7 +608,7 @@ END DO
 lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, :), dim=2, mask=mask)
 lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, :), dim=2, mask=mask)
 
-CALL InitBox(obj=ans, nsd=nsd, lim=lim)
+CALL BoundingBox_Initiate(obj=ans, nsd=nsd, lim=lim)
 END PROCEDURE obj_GetBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -608,26 +700,12 @@ END PROCEDURE obj_GetLocalNodeNumber1
 MODULE PROCEDURE obj_GetLocalNodeNumber2
 LOGICAL(LGT) :: islocal0
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
-LOGICAL(LGT) :: problem
-#endif
-
 islocal0 = Input(option=islocal, default=.FALSE.)
 
 IF (islocal0) THEN
   ans = globalNode
   RETURN
 END IF
-
-#ifdef DEBUG_VER
-problem = .NOT. obj%isNodePresent(globalnode, islocal=.FALSE.)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: globalNode '//ToString(globalNode)// &
-                    ' is out of bound')
-END IF
-#endif
 
 ans = obj%local_nptrs(globalNode)
 
@@ -809,7 +887,7 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1_
-INTEGER(I4B) :: ii, jj
+INTEGER(I4B) :: ii
 LOGICAL(LGT) :: problem
 
 tsize = 0
@@ -1187,7 +1265,7 @@ MODULE PROCEDURE obj_GetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
 ans = 0
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is not available')
+                  '[WIP ERROR] :: This routine is not available')
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
@@ -1624,9 +1702,17 @@ END PROCEDURE obj_GetTotalEntities2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord2
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: tsize, ii
+
+nrow = 3_I4B
+ncol = obj%GetTotalNodes()
+
+!$OMP PARALLEL DO PRIVATE(ii, tsize)
+DO ii = 1, ncol
+  CALL NodeData_GetNodeCoord(obj=obj%nodeData(ii)%ptr, &
+                             ans=nodeCoord(:, ii), tsize=tsize)
+END DO
+!$OMP END PARALLEL DO
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
@@ -1634,9 +1720,16 @@ END PROCEDURE obj_GetNodeCoord2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord3
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord3()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B), POINTER :: globalNode(:)
+INTEGER(I4B) :: iel
+
+iel = obj%GetLocalElemNumber(globalelement=globalelement, islocal=islocal)
+globalNode => ElemData_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
+
+CALL obj%GetNodeCoord(nodeCoord=nodeCoord, globalNode=globalNode, &
+                      islocal=.FALSE., nrow=nrow, ncol=ncol)
+
+globalNode => NULL()
 END PROCEDURE obj_GetNodeCoord3
 
 !----------------------------------------------------------------------------
@@ -1644,9 +1737,17 @@ END PROCEDURE obj_GetNodeCoord3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord4
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeeCoord4()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: ii, jj
+
+nrow = 3
+ncol = SIZE(globalNode)
+
+DO ii = 1, SIZE(globalNode)
+  jj = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
+  CALL NodeData_GetNodeCoord(obj=obj%nodeData(jj)%ptr, &
+                             ans=nodeCoord(:, ii), tsize=nrow)
+END DO
+
 END PROCEDURE obj_GetNodeCoord4
 
 !----------------------------------------------------------------------------
@@ -1654,9 +1755,35 @@ END PROCEDURE obj_GetNodeCoord4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+
+isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
+IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                   'AbstractMesh_::obj%kdtree is not initiating, initing it.')
+#endif
+
+  CALL obj%InitiateKdtree()
+
+END IF
+
+CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=1, &
+                       results=obj%kdresult)
+
+! INFO: This is a local node number
+globalNode = obj%kdresult(1)%idx
+
+CALL NodeData_GetNodeCoord(obj=obj%nodeData(globalNode)%ptr, &
+                           ans=x, tsize=tsize)
+
+globalNode = obj%GetGlobalNodeNumber(globalNode)
 END PROCEDURE obj_GetNearestNode1
 
 !----------------------------------------------------------------------------
@@ -1664,9 +1791,36 @@ END PROCEDURE obj_GetNearestNode1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
+
+isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
+IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                   'AbstractMesh_::obj%kdtree is not initiating, initing it.')
+#endif
+
+  CALL obj%InitiateKdtree()
+END IF
+
+CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=nn, &
+                       results=obj%kdresult)
+
+DO ii = 1, nn
+  globalNode(ii) = obj%kdresult(ii)%idx
+
+  CALL NodeData_GetNodeCoord(obj=obj%nodeData(globalNode(ii))%ptr, &
+                             ans=x(:, ii), tsize=tsize)
+
+  globalNode(ii) = obj%GetGlobalNodeNumber(localnode=globalNode(ii))
+END DO
+
 END PROCEDURE obj_GetNearestNode2
 
 END SUBMODULE GetMethods
