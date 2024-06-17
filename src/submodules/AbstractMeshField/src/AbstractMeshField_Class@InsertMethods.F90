@@ -86,7 +86,7 @@ END PROCEDURE obj_Insert1
 
 MODULE PROCEDURE obj_Insert2
 CHARACTER(*), PARAMETER :: myName = "obj_Insert2()"
-INTEGER(I4B) :: iel, telem, nns, nsd, tsize
+INTEGER(I4B) :: iel, telem, nns, nsd, tsize, nrow, ncol
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -119,8 +119,8 @@ DO iel = 1, telem
   CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
                              ans=nptrs, tsize=tsize)
 
-  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), &
-                         globalNode=nptrs(1:tsize), islocal=.FALSE.)
+  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
+                        ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
 
   CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
