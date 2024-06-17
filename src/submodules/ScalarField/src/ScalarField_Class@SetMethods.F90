@@ -331,7 +331,7 @@ END PROCEDURE obj_Set9
 MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii
+INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, nrow, ncol
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 REAL(DFP) :: args(4), VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
@@ -390,7 +390,8 @@ tnodes = meshptr%GetTotalNodes()
 CALL Reallocate(xij, nsd, 1)
 
 DO ii = 1, tnodes
-  CALL meshptr%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE.)
+  CALL meshptr%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE., &
+                            nrow=nrow, ncol=ncol)
   args(1:nsd) = xij(1:nsd, 1)
   CALL func%Get(val=VALUE, args=args)
   CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)
