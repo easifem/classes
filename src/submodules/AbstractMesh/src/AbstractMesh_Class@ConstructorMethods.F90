@@ -23,7 +23,11 @@ USE ElemData_Class, ONLY: ElemData_Pointer, &
                           ElemData_Copy
 USE NodeData_Class, ONLY: NodeData_Pointer, &
                           NodeData_Copy
+
+USE Kdtree2_Module, ONLY: Kdtree2_Destroy
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -218,5 +222,18 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 END PROCEDURE AbstractMeshPointerDeallocate
+
+!----------------------------------------------------------------------------
+!                                                           DeallocateKdtree
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DeallocateKdtree
+IF (ASSOCIATED(obj%kdtree)) THEN
+  CALL Kdtree2_Destroy(obj%kdtree)
+  obj%kdtree => NULL()
+END IF
+
+IF (ALLOCATED(obj%kdresult)) DEALLOCATE (obj%kdresult)
+END PROCEDURE obj_DeallocateKdtree
 
 END SUBMODULE ConstructorMethods
