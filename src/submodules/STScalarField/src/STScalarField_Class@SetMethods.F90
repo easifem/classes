@@ -573,7 +573,7 @@ END PROCEDURE obj_Set14
 MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: ttime, nsd, tnodes, ii, itime, i1(1)
+INTEGER(I4B) :: ttime, nsd, tnodes, ii, itime, i1(1), nrow, ncol
 REAL(DFP) :: args(4), VALUE(obj%timeCompo), aval, xij(3, 1)
 ! INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
 CLASS(AbstractMesh_), POINTER :: meshptr
@@ -627,7 +627,8 @@ IF (istimes) THEN
 
   DO ii = 1, tnodes
     i1(1) = ii
-    CALL meshptr%GetNodeCoord(globalNode=i1, nodeCoord=xij, islocal=.TRUE.)
+    CALL meshptr%GetNodeCoord(globalNode=i1, nodeCoord=xij, &
+                              islocal=.TRUE., nrow=nrow, ncol=ncol)
 
     args(1:nsd) = xij(1:nsd, 1)
 
@@ -647,7 +648,7 @@ END IF
 DO ii = 1, tnodes
   i1(1) = ii
   CALL meshptr%GetNodeCoord(globalNode=i1, nodeCoord=xij, &
-                            islocal=.TRUE.)
+                            islocal=.TRUE., nrow=nrow, ncol=ncol)
   args(1:nsd) = xij(1:nsd, 1)
   CALL func%Get(val=aval, args=args)
   VALUE = aval
