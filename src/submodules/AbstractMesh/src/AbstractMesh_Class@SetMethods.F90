@@ -15,7 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
+
 USE GlobalData, ONLY: INT8
+
 USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
                               OPERATOR(.Xmin.), &
                               OPERATOR(.Ymin.), &
@@ -23,10 +25,16 @@ USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
                               OPERATOR(.Xmax.), &
                               OPERATOR(.Ymax.), &
                               OPERATOR(.Zmax.)
+
 USE ReallocateUtility, ONLY: Reallocate
+
 USE CSRMatrix_Method, ONLY: SetSparsity
+
 USE FacetData_Class, ONLY: FacetData_SetParam
-USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, ElemDataSet
+
+USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, &
+                          ElemData_Set
+
 IMPLICIT NONE
 CONTAINS
 
@@ -363,8 +371,8 @@ DO CONCURRENT(ii=1:obj%tElements)
   ! set %material(medium) = material
   isok = obj%elementData(ii)%ptr%meshID .EQ. entityNum
   IF (isok) THEN
-    CALL ElemDataSet(obj%elementData(ii)%ptr, material=material, &
-                     medium=medium)
+    CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
+                      medium=medium)
   END IF
 
 END DO
@@ -384,8 +392,8 @@ LOGICAL(LGT) :: isok
 DO CONCURRENT(ii=1:obj%tElements)
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemDataSet(obj%elementData(ii)%ptr, material=material, &
-                   medium=medium)
+  CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
+                    medium=medium)
 END DO
 END PROCEDURE obj_SetMaterial2
 
@@ -399,8 +407,8 @@ INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement=globalElement,  &
   & islocal=islocal)
 
-CALL ElemDataSet(obj%elementData(iel)%ptr, material=material, &
-                 medium=medium)
+CALL ElemData_Set(obj%elementData(iel)%ptr, material=material, &
+                  medium=medium)
 
 END PROCEDURE obj_SetMaterial3
 
