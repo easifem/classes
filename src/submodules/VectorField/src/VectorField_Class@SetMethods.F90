@@ -624,7 +624,8 @@ END PROCEDURE obj_SetFromSTVectorField
 MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
+INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1), nrow, &
+                ncol
 REAL(DFP) :: args(4), xij(3, 1)
 REAL(DFP), ALLOCATABLE :: VALUE(:)
 INTEGER(I4B), PARAMETER :: needed_returnType = Vector
@@ -687,7 +688,7 @@ tnodes = meshptr%GetTotalNodes()
 DO ii = 1, tnodes
   globalNode(1) = ii
   CALL meshptr%GetNodeCoord(globalNode=globalNode, nodeCoord=xij, &
-                            islocal=.TRUE.)
+                            islocal=.TRUE., nrow=nrow, ncol=ncol)
 
   args(1:nsd) = xij(1:nsd, 1)
 
