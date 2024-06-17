@@ -100,6 +100,7 @@ CONTAINS
 
   !SET:
   !@ConstructorMethods
+
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate FEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -125,11 +126,13 @@ CONTAINS
 
   !IO:
   !@IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of FEDOF
 
   !GET:
   !@GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
 
