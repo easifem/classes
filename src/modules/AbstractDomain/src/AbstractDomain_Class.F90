@@ -118,8 +118,10 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of domain
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data stored inside an instance of domain
+
   PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
 
   ! IO:
@@ -1164,7 +1166,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode, &
-    & islocal)
+                                      islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! It should be allocated by the user.
