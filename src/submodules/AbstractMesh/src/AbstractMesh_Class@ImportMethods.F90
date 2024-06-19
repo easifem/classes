@@ -96,6 +96,10 @@ ELSEIF (cases(3)) THEN
   IF (tEntities .GT. 0_I4B) THEN
     entities0 = Arange(1_I4B, tEntities)
     CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+
+  ELSE
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            'tEntities is zero')
   END IF
 
 ELSE
@@ -788,6 +792,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
+
 #endif
 
   CALL obj%DEALLOCATE()
