@@ -751,6 +751,9 @@ FUNCTION ElemData_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
   INTEGER(I4B) :: faceElemType(PARAM_REFELEM_MAX_FACES)
 
   !! Get faceElemType
+
+  faceelemtype = 0
+
   CALL GetFaceElemType(elemType=obj%name, faceElemType=faceElemType)
 
   !! Get the
