@@ -1752,6 +1752,17 @@ END DO
 END PROCEDURE obj_GetNodeCoord4
 
 !----------------------------------------------------------------------------
+!                                                           GetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord5
+INTEGER(I4B) :: jj
+jj = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
+CALL NodeData_GetNodeCoord(obj=obj%nodeData(jj)%ptr, &
+                           ans=nodeCoord, tsize=tsize)
+END PROCEDURE obj_GetNodeCoord5
+
+!----------------------------------------------------------------------------
 !                                                             GetNearestNode
 !----------------------------------------------------------------------------
 

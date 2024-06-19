@@ -629,8 +629,11 @@ CONTAINS
   !! Get node coord of an element
   PROCEDURE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
   !! Get node coord of specified nodes
+  PROCEDURE, PASS(obj) :: GetNodeCoord5 => obj_GetNodeCoord5
+  !! Get node coord of a single node
+
   GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
-    GetNodeCoord3, GetNodeCoord4
+    GetNodeCoord3, GetNodeCoord4, GetNodeCoord5
 
   PROCEDURE, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
   PROCEDURE, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
@@ -1166,6 +1169,32 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then globalNode is local
   END SUBROUTINE obj_GetNodeCoord4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the nodecoord of a single node
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord5(obj, nodeCoord, tsize, &
+                                      globalNode, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! Abstract mesh object
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
+    !! node coordinates of an element in xiJ format
+    !! The nodes are arranged in local order
+    !! The global nodes can be obtianed by calling the GetVertexConnectivity
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of rows and columns written in nodecoord
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global or local node numbers
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalNode is local
+  END SUBROUTINE obj_GetNodeCoord5
 END INTERFACE
 
 !----------------------------------------------------------------------------
