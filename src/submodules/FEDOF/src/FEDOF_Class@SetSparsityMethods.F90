@@ -20,9 +20,15 @@
 SUBMODULE(FEDOF_Class) SetSparsityMethods
 USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
                             CSRMatrix_GetMatrixProp => GetMatrixProp
+
 USE Display_Method, ONLY: ToString, Display
 
 USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
+
+USE AbstractMeshParam, ONLY: PARAM_MAX_NODE_TO_NODE, &
+                             PARAM_MAX_NODE_TO_ELEM, &
+                             PARAM_MAX_CONNECTIVITY_SIZE, &
+                             PARAM_MAX_NNE
 
 IMPLICIT NONE
 CONTAINS
@@ -32,26 +38,156 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-CLASS(AbstractMesh_), POINTER :: meshptr
-meshptr => obj%GetMeshPointer()
-CALL meshptr%SetSparsity(mat=mat)
-CALL CSRMatrix_SetSparsity(mat)
-meshptr => NULL()
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+INTEGER(I4B) :: tsize, ii, tdof, iel, telements
+INTEGER(I4B), ALLOCATABLE :: conn(:)
+LOGICAL(LGT) :: isok
+CLASS(AbstractMesh_), POINTER :: mesh
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => obj%GetMeshPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(mesh)
+CALL AssertError1(isok, myName, 'obj%mesh NOT ASSOCIATED')
+
+tsize = mesh%GetTotalElements()
+isok = tsize .NE. 0_I4B
+CALL AssertError1(isok, myName, "Empty mesh found, returning")
+#endif
+
+tdof = obj%GetMaxTotalConnectivity()
+ALLOCATE (conn(tdof))
+
+telements = mesh%GetTotalElements()
+
+DO iel = 1, telements
+  CALL obj%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+                            ans=conn, tsize=tdof, opt="ALL")
+  DO ii = 1, tdof
+    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tdof))
+  END DO
+END DO
+
+CALL CSRMatrix_SetSparsity(mat)
+
+mesh => NULL()
+DEALLOCATE (conn)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetSparsity1
+
+!----------------------------------------------------------------------------
+!                                                                SetSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetSparsity2
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
+INTEGER(I4B) :: tsize, ii, tdof, iel, telements, col_telements, col_tdof, &
+                col_iel
+INTEGER(I4B), ALLOCATABLE :: conn(:), col_conn(:)
+LOGICAL(LGT) :: isok
+CLASS(AbstractMesh_), POINTER :: mesh, col_mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => obj%GetMeshPointer()
+col_mesh => col_fedof%GetMeshPointer()
+
+#ifdef DEBUG_VER
+
+isok = ASSOCIATED(mesh)
+CALL AssertError1(isok, myName, 'obj%mesh NOT ASSOCIATED')
+
+isok = ASSOCIATED(col_mesh)
+CALL AssertError1(isok, myName, 'col_fedof%mesh NOT ASSOCIATED')
+
+tsize = mesh%GetTotalElements()
+isok = tsize .NE. 0_I4B
+CALL AssertError1(isok, myName, "Empty mesh found, returning")
+
+tsize = col_mesh%GetTotalElements()
+isok = tsize .NE. 0_I4B
+CALL AssertError1(isok, myName, "Empty mesh found, returning")
+
+#endif
+
+tdof = obj%GetMaxTotalConnectivity()
+ALLOCATE (conn(tdof))
+
+col_tdof = col_fedof%GetMaxTotalConnectivity()
+ALLOCATE (col_conn(col_tdof))
+
+telements = mesh%GetTotalElements()
+
+#ifdef DEBUG_VER
+col_telements = SIZE(cellToCell)
+CALL AssertError2(telements, col_telements, myName, &
+                  "a=telements, b=size(cellToCell)")
+#endif
+
+DO iel = 1, telements
+
+  CALL obj%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+                            ans=conn, tsize=tdof, opt="ALL")
+
+  col_iel = cellToCell(iel)
+
+  CALL col_fedof%GetConnectivity_(globalElement=col_iel, islocal=.FALSE., &
+                                  ans=col_conn, tsize=col_tdof, opt="ALL")
+
+  DO ii = 1, tdof
+    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
+                               col=col_conn(1:col_tdof), ivar=ivar, jvar=jvar)
+
+  END DO
+
+END DO
+
+! CALL CSRMatrix_SetSparsity(mat)
+
+mesh => NULL()
+col_mesh => NULL()
+DEALLOCATE (conn)
+DEALLOCATE (col_conn)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
 !                                                               SetSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetSparsity2
-CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
-INTEGER(I4B) :: ivar, nsd(SIZE(fedofs))
-LOGICAL(LGT) :: problem, isok
-CLASS(AbstractMesh_), POINTER :: meshptr
-CHARACTER(:), ALLOCATABLE :: matProp
+MODULE PROCEDURE obj_SetSparsity3
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity3()"
+INTEGER(I4B) :: ivar, jvar, nsd(SIZE(fedofs))
+LOGICAL(LGT) :: isok
+CLASS(AbstractMesh_), POINTER :: meshptr, rowMesh, colMesh
+CLASS(FEDOF_), POINTER :: rowfedof, colfedof
+INTEGER(I4B), POINTER :: cellToCell(:)
+TYPE(FEDomainConnectivity_) :: domainConn
 
 #ifdef DEBUG_VER
+LOGICAL(LGT), PARAMETER :: isdebug = .TRUE.
+#else
+LOGICAL(LGT), PARAMETER :: isdebug = .FALSE.
+#endif
+
+#ifdef DEBUG_VER
+!-------------------------- debug (o) ---------------------------
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 DO ivar = 1, SIZE(fedofs)
@@ -73,155 +209,56 @@ END DO
 isok = ALL(nsd .EQ. nsd(1))
 CALL AssertError1(isok, myName, 'NSD of fedofsare not identical')
 
+!-------------------------- debug (x) ---------------------------
 #endif
 
-matProp = CSRMatrix_GetMatrixProp(mat)
+rowMesh => NULL()
+colMesh => NULL()
 
-IF (matProp .EQ. "RECTANGLE") THEN
-  CALL part2_obj_Set_sparsity2(fedofs=fedofs, mat=mat)
-ELSE
-  CALL part1_obj_Set_sparsity2(fedofs=fedofs, mat=mat)
-END IF
+DO ivar = 1, SIZE(fedofs)
 
-matProp = ""
+  IF (isdebug) CALL Display("row domain = "//tostring(ivar))
+
+  rowfedof => fedofs(ivar)%ptr
+  IF (.NOT. ASSOCIATED(rowfedof)) CYCLE
+
+  rowMesh => rowfedof%GetMeshPointer()
+  IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
+  IF (rowMesh%isEmpty()) CYCLE
+
+  DO jvar = 1, SIZE(fedofs)
+
+    IF (isdebug) CALL Display("col domain = "//tostring(jvar))
+
+    colfedof => fedofs(jvar)%ptr
+    IF (.NOT. ASSOCIATED(colfedof)) CYCLE
+
+    colMesh => colfedof%GetMeshPointer()
+    IF (.NOT. ASSOCIATED(colMesh)) CYCLE
+    IF (colMesh%isEmpty()) CYCLE
+
+    CALL domainConn%DEALLOCATE()
+    CALL domainConn%InitiateCellToCellData(mesh1=rowmesh, mesh2=colmesh)
+    cellToCell => domainConn%GetCellToCellPointer()
+
+    CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
+                              cellToCell=cellToCell, ivar=ivar, jvar=jvar)
+
+  END DO
+END DO
+
+CALL CSRMatrix_SetSparsity(mat)
+
+NULLIFY (rowMesh, colMesh, rowfedof, colfedof, cellToCell)
+
+CALL domainConn%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_SetSparsity2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE part1_obj_Set_sparsity2(fedofs, mat)
-  TYPE(FEDOFPointer_), INTENT(IN) :: fedofs(:)
-  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-
-  ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "part1_obj_Set_sparsity2()"
-  INTEGER(I4B) :: ivar, jvar
-  CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
-  CLASS(FEDOF_), POINTER :: rowfedof, colfedof
-
-  TYPE(FEDomainConnectivity_) :: domainConn
-  INTEGER(I4B), POINTER :: nodeToNode(:)
-  LOGICAL(LGT) :: isdebug
-
-  isdebug = .FALSE.
-
-#ifdef DEBUG_VER
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
-  isdebug = .TRUE.
-#endif
-
-  ! nullify first for safety
-  rowMesh => NULL()
-  colMesh => NULL()
-
-  DO ivar = 1, SIZE(fedofs)
-
-    IF (isdebug) CALL Display("row domain = "//tostring(ivar))
-
-    rowfedof => fedofs(ivar)%ptr
-    IF (.NOT. ASSOCIATED(rowfedof)) CYCLE
-
-    rowMesh => rowfedof%GetMeshPointer()
-    IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
-    IF (rowMesh%isEmpty()) CYCLE
-
-    DO jvar = 1, SIZE(fedofs)
-
-      IF (isdebug) CALL Display("col domain = "//tostring(jvar))
-
-      colfedof => fedofs(jvar)%ptr
-      IF (.NOT. ASSOCIATED(colfedof)) CYCLE
-
-      colMesh => colfedof%GetMeshPointer()
-      IF (.NOT. ASSOCIATED(colMesh)) CYCLE
-      IF (colMesh%isEmpty()) CYCLE
-
-      CALL domainConn%DEALLOCATE()
-      CALL domainConn%InitiateNodeToNodeData(mesh1=rowmesh, mesh2=colmesh)
-      nodeToNode => domainConn%GetNodeToNodePointer()
-
-      CALL rowMesh%SetSparsity(mat=mat, colMesh=colMesh, &
-                               nodeToNode=nodeToNode, ivar=ivar, jvar=jvar)
-
-    END DO
-  END DO
-
-  CALL CSRMatrix_SetSparsity(mat)
-  NULLIFY (rowMesh, colMesh, rowfedof, colfedof, nodeToNode)
-  CALL domainConn%DEALLOCATE()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE part1_obj_Set_sparsity2
-
-!----------------------------------------------------------------------------
-!                                                                SetSparsity
-!----------------------------------------------------------------------------
-
-SUBROUTINE part2_obj_Set_sparsity2(fedofs, mat)
-  CLASS(FEDOFPointer_), INTENT(IN) :: fedofs(2)
-  TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-
-  ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "part2_obj_Set_sparsity2()"
-  INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
-  INTEGER(I4B) :: ii
-  CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
-  CLASS(FEDOF_), POINTER :: rowfedof, colfedof
-  TYPE(FEDomainConnectivity_) :: domainConn
-  INTEGER(I4B), POINTER :: nodeToNode(:)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  rowfedof => NULL()
-  colfedof => NULL()
-  rowfedof => fedofs(1)%ptr
-  colfedof => fedofs(2)%ptr
-
-  isok = ASSOCIATED(rowfedof) .AND. ASSOCIATED(colfedof)
-  CALL AssertError1(isok, myName, 'rowfedof or colfedof NOT ASSOCIATED')
-
-  rowMesh => NULL()
-  colMesh => NULL()
-  rowMesh => rowfedof%GetMeshPointer()
-  colMesh => colfedof%GetMeshPointer()
-
-  isok = ASSOCIATED(rowMesh) .AND. ASSOCIATED(colMesh)
-  CALL AssertError1(isok, myName, 'rowMesh or colMesh NOT ASSOCIATED')
-
-  CALL domainConn%InitiateNodeToNodeData(mesh1=rowMesh, mesh2=colMesh)
-  nodeToNode => domainConn%GetNodeToNodePointer()
-
-  CALL rowMesh%SetSparsity(mat=mat, colMesh=colMesh, &
-                           nodeToNode=nodeToNode, ivar=ivar, jvar=jvar)
-
-  CALL CSRMatrix_SetSparsity(mat)
-
-  NULLIFY (rowMesh, colMesh, rowfedof, colfedof, nodeToNode)
-
-  CALL domainConn%DEALLOCATE()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE part2_obj_Set_sparsity2
+END PROCEDURE obj_SetSparsity3
 
 !----------------------------------------------------------------------------
 !
