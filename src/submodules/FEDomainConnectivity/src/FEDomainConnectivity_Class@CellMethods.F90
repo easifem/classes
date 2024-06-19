@@ -20,6 +20,7 @@ USE IntegerUtility, ONLY: OPERATOR(.in.)
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString
 USE AbstractMesh_Class, ONLY: PARAM_MAX_NNE, PARAM_MAX_NODE_TO_ELEM
+
 IMPLICIT NONE
 
 CONTAINS
@@ -52,14 +53,6 @@ IF (isok) THEN
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
                "[INFO] :: It seems, obj%cellToCell data is already initiated")
   RETURN
-END IF
-
-isok = obj%isNodeToNode
-
-IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                          '[INFO] :: NodeToNode data is not initiated!')
-  CALL obj%InitiateNodeToNodeData(domain1=domain1, domain2=domain2)
 END IF
 
 #endif
@@ -249,5 +242,11 @@ END PROCEDURE obj_GetCellToCellPointer
 MODULE PROCEDURE obj_GetDimEntityNum
 ans = obj%cellToCellExtraData(1:2, globalElement)
 END PROCEDURE obj_GetDimEntityNum
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE CellMethods

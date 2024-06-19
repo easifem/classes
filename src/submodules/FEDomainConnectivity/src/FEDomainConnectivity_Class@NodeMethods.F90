@@ -43,21 +43,16 @@ REAL(DFP) :: x1(3), x2(3)
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
 
+#ifdef DEBUG_VER
 CALL domain1%GetParam(isInitiated=isok)
-! check domain1 initiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-            "[INTERNAL ERROR] :: domain1 is not initiated, first initiate it")
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+               'AbstractDomain_::domain1 is not initiated, first initiate it')
 
 CALL domain2%GetParam(isInitiated=isok)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-            "[INTERNAL ERROR] :: domain2 is not initiated, first initiate it")
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+               'AbstractDomain_::domain2 is not initiated, first initiate it')
 
 isok = obj%isNodeToNode
 IF (isok) THEN
@@ -79,11 +74,8 @@ box1 = domain1%GetBoundingBox()
 box2 = domain2%GetBoundingBox()
 isvar = box1.isIntersect.box2
 
-IF (.NOT. isvar) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-              '[INTERNAL ERROR] :: The two mesh does not overlap each other.')
-  RETURN
-END IF
+CALL AssertError1(isvar, myName, &
+         'The two domains (domain1 and domain2) does not overlap each other.')
 
 box = box1.INTERSECTION.box2
 
@@ -99,13 +91,9 @@ DO ii = 1, tnodes1
   CALL domain2%GetNearestNode(qv=x1, x=x2, globalNode=node2)
 
   isok = ALL(x1.APPROXEQ.x2)
-  jj = domain1%GetGlobalNodeNumber(node1)
+  ! jj = domain1%GetGlobalNodeNumber(node1)
 
-  IF (isok) THEN
-    obj%nodeToNode(jj) = node2
-  ELSE
-    obj%nodeToNode(jj) = 0_I4B
-  END IF
+  IF (isok) obj%nodeToNode(node1) = node2
 END DO
 
 IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
@@ -132,21 +120,17 @@ REAL(DFP) :: x1(3, 1), x2(3, 1)
 
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
 
+#ifdef DEBUG_VER
 CALL mesh1%GetParam(isInitiated=isok)
 ! check mesh1 initiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-            "[INTERNAL ERROR] :: domain1 is not initiated, first initiate it")
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'The mesh1 is not initiated, first initiate it')
 
 CALL mesh2%GetParam(isInitiated=isok)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-            "[INTERNAL ERROR] :: domain2 is not initiated, first initiate it")
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'The mesh2 is not initiated, first initiate it')
 
 isok = obj%isNodeToNode
 IF (isok) THEN
@@ -156,9 +140,6 @@ IF (isok) THEN
 END IF
 
 #endif
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
 
 isok = obj%isNodeToNode
 IF (isok) RETURN
@@ -176,6 +157,7 @@ CALL AssertError1(isvar, myName, &
 
 box = box1.INTERSECTION.box2
 
+! INFO: These nptrs are global node number in mesh1
 CALL mesh1%GetNptrsInBox(nptrs=nptrs1, box=box, isStrict=.FALSE.)
 nsd = mesh1%GetNSD()
 
@@ -184,18 +166,16 @@ tnodes1 = SIZE(nptrs1)
 DO ii = 1, tnodes1
   node1(1) = nptrs1(ii)
   CALL mesh1%GetNodeCoord(globalNode=node1, nodeCoord=x1, &
-                          islocal=.TRUE., nrow=nrow, ncol=ncol)
+                          islocal=.FALSE., nrow=nrow, ncol=ncol)
 
-  CALL mesh2%GetNearestNode(qv=x1(:, 1), x=x2(:, 1), globalNode=node2(1))
+  !INFO: node2 is global node number in mesh2
+  CALL mesh2%GetNearestNode(qv=x1(:, 1), x=x2(:, 1), &
+                            globalNode=node2(1))
 
   isok = ALL(x1.APPROXEQ.x2)
-  jj = mesh1%GetGlobalNodeNumber(node1(1))
+  jj = mesh1%GetLocalNodeNumber(node1(1))
 
-  IF (isok) THEN
-    obj%nodeToNode(jj) = node2(1)
-  ELSE
-    obj%nodeToNode(jj) = 0_I4B
-  END IF
+  IF (isok) obj%nodeToNode(jj) = node2(1)
 
 END DO
 
