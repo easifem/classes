@@ -64,7 +64,8 @@ isok = obj%isNodeToNode
 IF (.NOT. isok) &
   CALL obj%InitiateNodeToNodeData(domain1=domain1, domain2=domain2)
 
-CALL domain1%GetParam(maxElemNum=maxelem, minElemNum=minelem)
+maxelem = domain1%GetTotalElements()
+! CALL domain1%GetParam(maxElemNum=maxelem, minElemNum=minelem)
 CALL Reallocate(obj%cellToCell, maxelem)
 
 obj%isCellToCell = .TRUE.
@@ -73,14 +74,14 @@ nsd = domain1%GetNSD()
 nodeToNode => obj%GetNodeToNodePointer()
 
 ! Get mesh pointer
-DO iel1 = minelem, maxelem
-  isok = domain1%isElementPresent(globalElement=iel1)
-  IF (.NOT. isok) CYCLE
+DO iel1 = 1, maxelem
 
  CALL domain1%GetConnectivity_(globalElement=iel1, ans=nptrs1, tsize=order1, &
-                                islocal=.FALSE., dim=nsd)
+                                islocal=.TRUE., dim=nsd)
   DO ii = 1, order1
-    nptrs2(ii) = nodeToNode(nptrs1(ii))
+    jj = domain1%GetLocalNodeNumber(globalNode=nptrs1(ii), &
+                                    islocal=.FALSE.)
+    nptrs2(ii) = nodeToNode(jj)
   END DO
 
   DO ii = 1, order1
@@ -127,104 +128,95 @@ END PROCEDURE obj_InitiateCellToCellData1
 
 MODULE PROCEDURE obj_InitiatecellToCellData2
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateCellToCellData2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-! INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
-! ! some counters and indices
-! ! element numbers in mesh2
-! INTEGER(I4B), POINTER :: nodeToNode(:)
-! LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: nptrs1(PARAM_MAX_NNE), nptrs2(PARAM_MAX_NNE), &
-!                 nptrs3(PARAM_MAX_NNE), elem2(PARAM_MAX_NODE_TO_ELEM)
-!
-! INTEGER(I4B) :: minelem, maxelem, telem2
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! #ifdef DEBUG_VER
-!
-! isok = obj%isCellToCell
-! IF (isok) THEN
-!   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-!                "[INFO] :: It seems, obj%cellToCell data is already initiated")
-!   RETURN
-! END IF
-!
-! isok = obj%isNodeToNode
-!
-! IF (.NOT. isok) THEN
-!   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-!                           '[INFO] :: NodeToNode data is not initiated!')
-!   CALL obj%InitiateNodeToNodeData(mesh1=mesh1, mesh2=mesh2)
-! END IF
-!
-! #endif
-!
-! isok = obj%isCellToCell
-! IF (isok) RETURN
-!
-! isok = obj%isNodeToNode
-! IF (.NOT. isok) &
-!   CALL obj%InitiateNodeToNodeData(mesh1=mesh1, mesh2=mesh2)
-!
-! maxelem = mesh1%GetTotalElements()
-! CALL Reallocate(obj%cellToCell, maxelem)
-!
-! obj%isCellToCell = .TRUE.
-! nsd = mesh1%GetNSD()
-!
-! nodeToNode => obj%GetNodeToNodePointer()
-!
-! ! Get mesh pointer
-! DO iel1 = 1, maxelem
-!   isok = mesh1%isElementActive(globalElement=iel1, islocal=.TRUE.)
-!   IF (.NOT. isok) CYCLE
-!
-!   CALL mesh1%GetConnectivity_(globalElement=iel1, ans=nptrs1, tsize=order1, &
-!                               islocal=.TRUE.)
-!   DO ii = 1, order1
-!     nptrs2(ii) = nodeToNode(nptrs1(ii))
-!   END DO
-!
-!   DO ii = 1, order1
-!     IF (nptrs2(ii) .EQ. 0) CYCLE
-!
-!     CALL domain2%GetNodeToElements_(GlobalNode=nptrs2(ii), ans=elem2, &
-!                                     tsize=telem2, islocal=.FALSE.)
-!
-!     DO jj = 1, telem2
-!
-!       CALL domain2%GetConnectivity_(globalElement=elem2(jj), &
-!                            ans=nptrs3, tsize=order2, dim=nsd, islocal=.FALSE.)
-!
-!       IF (order1 .GE. order2) THEN
-!         IF (nptrs3(1:order2) .in.nptrs2(1:order1)) THEN
-!           obj%cellToCell(iel1) = elem2(jj)
-!           EXIT
-!         END IF
-!       ELSE
-!         IF (nptrs2(1:order1) .in.nptrs3(1:order2)) THEN
-!           obj%cellToCell(iel1) = elem2(jj)
-!           EXIT
-!         END IF
-!       END IF
-!
-!     END DO
-!
-!   END DO
-!
-! END DO
-!
-! NULLIFY (nodeToNode)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[END] ')
-! #endif
-!
+INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
+! some counters and indices
+! element numbers in mesh2
+INTEGER(I4B), POINTER :: nodeToNode(:)
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: nptrs1(PARAM_MAX_NNE), nptrs2(PARAM_MAX_NNE), &
+                nptrs3(PARAM_MAX_NNE), elem2(PARAM_MAX_NODE_TO_ELEM)
+
+INTEGER(I4B) :: minelem, maxelem, telem2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+
+isok = obj%isCellToCell
+IF (isok) THEN
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+               "[INFO] :: It seems, obj%cellToCell data is already initiated")
+  RETURN
+END IF
+#endif
+
+isok = obj%isCellToCell
+IF (isok) RETURN
+
+isok = obj%isNodeToNode
+IF (.NOT. isok) &
+  CALL obj%InitiateNodeToNodeData(mesh1=mesh1, mesh2=mesh2)
+
+maxelem = mesh1%GetTotalElements()
+CALL Reallocate(obj%cellToCell, maxelem)
+
+obj%isCellToCell = .TRUE.
+nsd = mesh1%GetNSD()
+
+nodeToNode => obj%GetNodeToNodePointer()
+
+! Get mesh pointer
+DO iel1 = 1, maxelem
+  isok = mesh1%isElementActive(globalElement=iel1, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  CALL mesh1%GetConnectivity_(globalElement=iel1, ans=nptrs1, tsize=order1, &
+                              islocal=.TRUE.)
+  DO ii = 1, order1
+    jj = mesh1%GetLocalNodeNumber(globalNode=nptrs1(ii), &
+                                  islocal=.FALSE.)
+    nptrs2(ii) = nodeToNode(jj)
+  END DO
+
+  DO ii = 1, order1
+    IF (nptrs2(ii) .EQ. 0) CYCLE
+
+    CALL mesh2%GetNodeToElements_(GlobalNode=nptrs2(ii), ans=elem2, &
+                                  tsize=telem2, islocal=.FALSE.)
+
+    DO jj = 1, telem2
+
+      CALL mesh2%GetConnectivity_(globalElement=elem2(jj), &
+                                  ans=nptrs3, tsize=order2, islocal=.FALSE.)
+
+      IF (order1 .GE. order2) THEN
+        IF (nptrs3(1:order2) .in.nptrs2(1:order1)) THEN
+          obj%cellToCell(iel1) = elem2(jj)
+          EXIT
+        END IF
+      ELSE
+        IF (nptrs2(1:order1) .in.nptrs3(1:order2)) THEN
+          obj%cellToCell(iel1) = elem2(jj)
+          EXIT
+        END IF
+      END IF
+
+    END DO
+
+  END DO
+
+END DO
+
+NULLIFY (nodeToNode)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_InitiatecellToCellData2
 
 !----------------------------------------------------------------------------
