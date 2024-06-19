@@ -1165,13 +1165,15 @@ END INTERFACE
 ! number, and the rows correspond to the component.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, globalNode, &
+ MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, nrow, ncol, globalNode, &
                                       islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! It should be allocated by the user.
     !! SIZE(nodeCoord, 1) should be atleast obj%nsd
     !! Size(nodeCoord, 2) is equal to the size(globalNode)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and columns written in nodecoord
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node numbers (pointer to nodeCoord)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1194,12 +1196,14 @@ END INTERFACE
 ! - if islocal is true then globalNode is local node
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, globalNode, &
+  MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, tsize, globalNode, &
                                       islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
     !! It should be allocated by the user.
     !! SIZE(nodeCoord, 1) should be atleast nsd
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of data written in nodeCoord
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! globalNode number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal

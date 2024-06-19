@@ -346,7 +346,7 @@ CLASS(AbstractMesh_), POINTER :: meshptr
 isok = ALLOCATED(obj%nodeCoord)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
+                    "[INTERNAL ERROR] :: Nodecoord is not allocated.")
   RETURN
 END IF
 
@@ -383,9 +383,16 @@ END PROCEDURE obj_GetNodeCoord1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord2
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
-nodeCoord(1:obj%nsd, 1:SIZE(globalNode)) = obj%nodeCoord(1:obj%nsd, localNode)
+INTEGER(I4B) :: ii, localnode
+
+ncol = SIZE(globalNode)
+nrow = obj%nsd
+
+DO ii = 1, ncol
+  localnode = obj%GetLocalNodeNumber(globalNode=globalNode(ii), &
+                                     islocal=islocal)
+  nodeCoord(1:nrow, ii) = obj%nodeCoord(1:nrow, localNode)
+END DO
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
@@ -394,8 +401,9 @@ END PROCEDURE obj_GetNodeCoord2
 
 MODULE PROCEDURE obj_GetNodeCoord3
 INTEGER(I4B) :: localNode
+tsize = obj%nsd
 localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
-nodeCoord(1:obj%nsd) = obj%nodeCoord(1:obj%nsd, localNode)
+nodeCoord(1:tsize) = obj%nodeCoord(1:tsize, localNode)
 END PROCEDURE obj_GetNodeCoord3
 
 !----------------------------------------------------------------------------
@@ -411,13 +419,23 @@ END PROCEDURE obj_GetNodeCoordPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode1
+#ifdef DEBUG_VER
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode1()"
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 LOGICAL(LGT) :: isok
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
 IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                  'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  END IF
+
   CALL obj%InitiateKdtree()
 END IF
 
@@ -435,14 +453,24 @@ END PROCEDURE obj_GetNearestNode1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode2()"
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
 IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                  'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  END IF
+
   CALL obj%InitiateKdtree()
 END IF
 
@@ -515,16 +543,25 @@ END PROCEDURE obj_GetNptrsInBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 ! nptrs = box.Nptrs.obj%nodeCoord
 REAL(DFP) :: qv(3), r2
 INTEGER(I4B) :: ii, jj, kk, nsd
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
 LOGICAL(LGT) :: isok, abool
 
 isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
 IF (isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+  END IF
 
   CALL obj%InitiateKdtree()
 END IF
@@ -541,7 +578,7 @@ isok = SIZE(nptrs) .LT. tnodes
 IF (isok) THEN
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: size of nptrs is not enough')
+                    '[INTERNAL ERROR] :: size of nptrs is not enough')
   RETURN
 
 END IF
@@ -577,13 +614,17 @@ END PROCEDURE obj_GetNptrsInBox_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox()"
+#endif
+
 LOGICAL(LGT) :: acase
 
 acase = (.NOT. PRESENT(entityNum)) .AND. (.NOT. PRESENT(dim))
 IF (acase) THEN; CALL case1; ELSE; CALL case2; END IF
 
 CONTAINS
+
 SUBROUTINE case1
   REAL(DFP) :: lim(6)
   INTEGER(I4B) :: nsd
@@ -600,12 +641,15 @@ SUBROUTINE case2
   LOGICAL(LGT) :: isok
 
   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+#ifdef DEBUG_VER
   isok = ASSOCIATED(meshptr)
   IF (.NOT. isok) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & 'meshptr is not initiated.')
+                      'meshptr is not initiated.')
     RETURN
   END IF
+#endif
 
   ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
   meshptr => NULL()
@@ -628,8 +672,8 @@ END PROCEDURE obj_GetNSD
 MODULE PROCEDURE obj_GetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
 ans = 0
 END PROCEDURE obj_GetOrder
 
@@ -640,7 +684,7 @@ END PROCEDURE obj_GetOrder
 MODULE PROCEDURE obj_GetTotalMeshFacetData
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMeshFacetData()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[DEPRECATED] :: We are working on alternative')
+                  '[DEPRECATED] :: We are working on alternative')
 ans = 0
 END PROCEDURE obj_GetTotalMeshFacetData
 
@@ -657,7 +701,7 @@ meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 isok = ASSOCIATED(meshptr)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::obj_GetTotalMaterial - '// &
-    & '[INTERNAL ERROR] :: meshptr is not initiated.')
+                    '[INTERNAL ERROR] :: meshptr is not initiated.')
   RETURN
 END IF
 
@@ -672,7 +716,7 @@ END PROCEDURE obj_GetTotalMaterial
 MODULE PROCEDURE obj_GetElemType
 CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
