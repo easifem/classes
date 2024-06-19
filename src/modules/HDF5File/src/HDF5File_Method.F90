@@ -67,8 +67,8 @@ CONTAINS
 !                                               obj_Import_GetEntities
 !----------------------------------------------------------------------------
 
-SUBROUTINE HDF5GetEntities(hdf5, group, dim, tEntities, myName,  &
-  & modName)
+SUBROUTINE HDF5GetEntities(hdf5, group, dim, tEntities, myName, &
+                           modName)
   CLASS(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
   INTEGER(I4B), INTENT(IN) :: dim
@@ -80,27 +80,27 @@ SUBROUTINE HDF5GetEntities(hdf5, group, dim, tEntities, myName,  &
 
   CASE (0)
     ! numPointEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numPointEntities",  &
-      & myName=myName, modName=modName)
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
+                        VALUE=tEntities, fieldname="numPointEntities", &
+                        myName=myName, modName=modName)
 
   CASE (1)
     ! numCurveEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numCurveEntities",  &
-      & myName=myName, modName=modName)
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
+                        VALUE=tEntities, fieldname="numCurveEntities", &
+                        myName=myName, modName=modName)
 
   CASE (2)
     ! numSurfaceEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numSurfaceEntities",  &
-      & myName=myName, modName=modName)
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
+                        VALUE=tEntities, fieldname="numSurfaceEntities", &
+                        myName=myName, modName=modName)
 
   CASE (3)
     ! numVolumeEntities
-    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
-      & VALUE=tEntities, fieldname="numVolumeEntities",  &
-      & myName=myName, modName=modName)
+    CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
+                        VALUE=tEntities, fieldname="numVolumeEntities", &
+                        myName=myName, modName=modName)
 
   CASE default
   END SELECT
