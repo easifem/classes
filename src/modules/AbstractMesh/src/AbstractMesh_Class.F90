@@ -636,6 +636,18 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
   GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
 
+  PROCEDURE, PASS(obj) :: GetMaxNodeToElements => &
+    obj_GetMaxNodeToElements
+  !! Get maximum number of node to elements
+
+  PROCEDURE, PASS(obj) :: GetMaxElementToElements => &
+    obj_GetMaxElementToElements
+  !! Get maximum number of element to elements
+
+  PROCEDURE, PASS(obj) :: GetMaxNodeToNodes => &
+    obj_GetMaxNodeToNodes
+  !! Get maximum number of node to nodes
+
   ! SET:
   ! @SetMethods
 
@@ -2239,7 +2251,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetElementToElements(obj, globalElement, &
-    & onlyElements, islocal) RESULT(ans)
+                                           onlyElements, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -2905,7 +2917,52 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           InitiateKdtree@MeshDataMethods
+!                                             GetMaxNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Return maximum size of node to elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxNodeToElements(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetMaxNodeToNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Return maximum size of node to nodes
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxNodeToNodes(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxElementToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Return maximum size of element to elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxElementToElements(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           InitiateKdtree@NodeDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -3186,13 +3243,15 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity1(obj, mat, localNodeNumber, lbound, &
-    & ubound)
+                                     ubound)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! [[CSRMatrix_]] object
     INTEGER(I4B), INTENT(IN) :: lbound
+    !! lower bound of localNodeNumber
     INTEGER(I4B), INTENT(IN) :: ubound
+    !! upper bound of localNodeNumber
     INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
     !! Global to local node number map
   END SUBROUTINE obj_SetSparsity1
@@ -3239,7 +3298,9 @@ INTERFACE
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! [[CSRMatrix_]] object
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in row
     INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable in column
   END SUBROUTINE obj_SetSparsity3
 END INTERFACE
 
@@ -3260,17 +3321,18 @@ INTERFACE
      rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
                                      colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
+    !! [[AbstractMesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
+    !! [[AbstractMesh_]] class
     INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
     !! node to node connectivity between obj and colMesh
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! [[CSRMatrix_]] object
     INTEGER(I4B), INTENT(IN) :: rowLBOUND
     INTEGER(I4B), INTENT(IN) :: rowUBOUND
+    !! lower bound of rowGlobalToLocalNodeNum
     INTEGER(I4B), INTENT(IN) :: rowGlobalToLocalNodeNum( &
-      & rowLBOUND:rowUBOUND)
+                                rowLBOUND:rowUBOUND)
     !! Global to local node number map
     INTEGER(I4B), INTENT(IN) :: colLBOUND
     INTEGER(I4B), INTENT(IN) :: colUBOUND
