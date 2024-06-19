@@ -83,12 +83,12 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
@@ -96,7 +96,7 @@ tsize = obj%GetTotalElements()
 problem = tsize .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+                      '[INTERNAL ERROR] :: Empty mesh found, returning')
   RETURN
 END IF
 
@@ -118,7 +118,7 @@ DO i = 1, tNodes
   IF (k .EQ. 0) CYCLE
 
   CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
-    & ans=n2n, tsize=tsize, islocal=.TRUE.)
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
 
   DO ii = 1, tsize
     n2n(ii) = localNodeNumber(n2n(ii))
@@ -130,7 +130,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_SetSparsity1
 
@@ -198,25 +198,25 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+          "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
   RETURN
 END IF
 
 problem = SIZE(nodeToNode) .NE. obj%maxNptrs
 IF (problem) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
+                    "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
   RETURN
 END IF
 
