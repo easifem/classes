@@ -199,6 +199,22 @@ ans = obj%baseInterpolation
 END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
+!                                                   GetMaxTotalConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalConnectivity
+INTEGER(I4B) :: ii, telems, tdof
+
+ans = 0
+telems = obj%mesh%GetTotalElements()
+
+DO ii = 1, telems
+  tdof = obj%GetTotalDOF(globalElement=ii, isLocal=.TRUE.)
+  ans = MAX(ans, tdof)
+END DO
+END PROCEDURE obj_GetMaxTotalConnectivity
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
