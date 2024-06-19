@@ -46,7 +46,8 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetConnectivity, &
                           ElemData_GetElementToElements, &
-                          ElemData_GetGlobalNodesPointer
+                          ElemData_GetGlobalNodesPointer, &
+                          ElemData_GetTotalGlobalElements
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -1822,5 +1823,50 @@ DO ii = 1, nn
 END DO
 
 END PROCEDURE obj_GetNearestNode2
+
+!----------------------------------------------------------------------------
+!                                                       GetMaxNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxNodeToElements
+INTEGER(I4B) :: ii, tsize, tnodes
+ans = 0
+tnodes = obj%GetTotalNodes()
+
+DO ii = 1, tnodes
+  tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
+  ans = MAX(ans, tsize)
+END DO
+END PROCEDURE obj_GetMaxNodeToElements
+
+!----------------------------------------------------------------------------
+!                                                       GetMaxNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxNodeToNodes
+INTEGER(I4B) :: ii, tsize, tnodes
+ans = 0
+tnodes = obj%GetTotalNodes()
+
+DO ii = 1, tnodes
+  tsize = NodeData_GetTotalGlobalNodes(obj%nodeData(ii)%ptr)
+  ans = MAX(ans, tsize)
+END DO
+END PROCEDURE obj_GetMaxNodeToNodes
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxElementToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxElementToElements
+INTEGER(I4B) :: ii, tsize, tElements
+ans = 0
+tElements = obj%GetTotalElements()
+
+DO ii = 1, tElements
+  tsize = ElemData_GetTotalGlobalElements(obj%ElementData(ii)%ptr)
+  ans = MAX(ans, tsize)
+END DO
+END PROCEDURE obj_GetMaxElementToElements
 
 END SUBMODULE GetMethods
