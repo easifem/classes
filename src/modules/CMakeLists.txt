@@ -371,17 +371,22 @@ include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 #
 # # LinSolverFactory
 # include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
-#
-# # AbstractPlot include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
-#
-# # VTKPlot include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
-#
-# # EasyPlplot include(${CMAKE_CURRENT_LIST_DIR}/EasyPlplot/CMakeLists.txt)
-#
-# # PLPlot include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
-#
-# # Plot include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
-#
+
+# AbstractPlot
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
+
+# VTKPlot
+include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
+
+# EasyPlplot
+include(${CMAKE_CURRENT_LIST_DIR}/EasyPlplot/CMakeLists.txt)
+
+# PLPlot
+include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
+
+# Plot
+include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
+
 # # easifemClasses
 # include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
 
