@@ -171,12 +171,22 @@ CONTAINS
     obj_GetBaseInterpolation
   !! Get the base interpolation
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
+    obj_GetMaxTotalConnectivity
+  !! Get the maximum size of connectivity
+
   !SET:
   !@SetSparsityMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetSparsity => obj_SetSparsity1
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set sparsity in the CSRMatrix by using single FEDOF
   !! This is for non block matrix
+
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
+  !! Set sparsity in the CSRMatrix by using single FEDOF
+  !! This is for non block matrix
+
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
 
 END TYPE FEDOF_
 
@@ -593,6 +603,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                         GetMaxTotalConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Get maximum size of connectivity
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalConnectivity(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             SetSparsity@SetSparsityMethods
 !----------------------------------------------------------------------------
 
@@ -609,7 +634,37 @@ INTERFACE FEDOFSetSparsity
 END INTERFACE FEDOFSetSparsity
 
 !----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethods
+!                                                      SetSparsity@SetMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity2(obj, col_fedof, cellToCell, mat, &
+                                     ivar, jvar)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! Abstract mesh class
+    CLASS(FEDOF_), INTENT(INOUT) :: col_fedof
+    !! Abstract mesh class
+    INTEGER(I4B), INTENT(IN) :: cellToCell(:)
+    !! cell To Cell connectivity between mesh of obj and col_fedof
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in row
+    INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable in column
+  END SUBROUTINE obj_SetSparsity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              SetSparsity@SetSparsityMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -617,10 +672,10 @@ END INTERFACE FEDOFSetSparsity
 ! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
 
 INTERFACE FEDOFSetSparsity
-  MODULE SUBROUTINE obj_SetSparsity2(fedofs, mat)
+  MODULE SUBROUTINE obj_SetSparsity3(fedofs, mat)
     CLASS(FEDOFPointer_), INTENT(INOUT) :: fedofs(:)
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity2
+  END SUBROUTINE obj_SetSparsity3
 END INTERFACE FEDOFSetSparsity
 
 END MODULE FEDOF_Class
