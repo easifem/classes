@@ -15,35 +15,42 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
-USE BaseMethod
-USE EasyPlplot
+SUBMODULE(GnuPlot_Class) PlotMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!                                                                 Plot1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE obj_plot1
+CHARACTER(*), PARAMETER :: myName = "obj_plot1"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement
+END PROCEDURE obj_plot1
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!                                                                 plot2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE obj_plot2
+CHARACTER(*), PARAMETER :: myName = "obj_plot2"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_plot2
+END PROCEDURE obj_plot2
 
 !----------------------------------------------------------------------------
-!                                                                 Subplot
+!                                                                 plot3
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
+MODULE PROCEDURE obj_plot3
+CHARACTER(*), PARAMETER :: myName = "obj_plot3"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_plot3
+END PROCEDURE obj_plot3
 
 END SUBMODULE PlotMethods
 

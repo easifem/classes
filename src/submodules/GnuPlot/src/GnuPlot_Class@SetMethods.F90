@@ -15,35 +15,42 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
-USE BaseMethod
-USE EasyPlplot
+SUBMODULE(GnuPlot_Class) SetMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE obj_setPm3dOpts
+obj%pm3dOpts_stmt = "set pm3d "//TRIM(opts)
+END PROCEDURE obj_setPm3dOpts
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE obj_setCBTicks
+obj%cbTicks_stmt = "set cbtics "//TRIM(opts)
+END PROCEDURE obj_setCBTicks
 
 !----------------------------------------------------------------------------
-!                                                                 Subplot
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
+MODULE PROCEDURE obj_setCntrLevels
+obj%cntrLevels_stmt = "set cntrparam levels "//TRIM(opts)
+END PROCEDURE obj_setCntrLevels
 
-END SUBMODULE PlotMethods
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_setCBLim
+obj%hasCBRange = .TRUE.
+obj%CBRange = avec
+END PROCEDURE obj_setCBLim
+
+END SUBMODULE SetMethods
 

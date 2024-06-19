@@ -15,35 +15,38 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
+SUBMODULE(PLPlot_Class) FillMethods
 USE BaseMethod
 USE EasyPlplot
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE plot_FillBetween
+  CALL FillBetween( &
+    & x=x, &
+    & y1=y1, &
+    & y0=y0, &
+    & fillColor=fillColor, &
+    & fillPattern=fillPattern, &
+    & lineWidth=lineWidth )
+END PROCEDURE plot_FillBetween
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE plot_FillBetweenx
+  CALL FillBetweenx( &
+    & y=y, &
+    & x1=x1, &
+    & x0=x0, &
+    & fillColor=fillColor, &
+    & fillPattern=fillPattern, &
+    & lineWidth=lineWidth )
+END PROCEDURE plot_FillBetweenx
 
-!----------------------------------------------------------------------------
-!                                                                 Subplot
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
-
-END SUBMODULE PlotMethods
-
+END SUBMODULE FillMethods

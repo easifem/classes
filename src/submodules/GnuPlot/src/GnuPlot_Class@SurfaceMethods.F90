@@ -15,35 +15,35 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
+SUBMODULE(PLPlot_Class) SurfaceMethods
 USE BaseMethod
 USE EasyPlplot
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE plot_Surface
+  CALL Surface( &
+    & x=x, &
+    & y=y, &
+    & z=z, &
+    & N=N, &
+    & lineStyle=lineType )
+END PROCEDURE plot_Surface
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE plot_Wireframe
+  CALL Wireframe( &
+    & x=x, &
+    & y=y, &
+    & z=z, &
+    & lineColor=lineColor )
+END PROCEDURE plot_Wireframe
 
-!----------------------------------------------------------------------------
-!                                                                 Subplot
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
-
-END SUBMODULE PlotMethods
-
+END SUBMODULE SurfaceMethods

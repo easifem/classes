@@ -15,35 +15,28 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
+SUBMODULE(PLPlot_Class) QuiverMethods
 USE BaseMethod
 USE EasyPlplot
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!                                                                 Scatter
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE plot_Quiver
+  CALL Quiver( &
+    & x=x, &
+    & y=y, &
+    & u=u, &
+    & v=v, &
+    & s=s, &
+    & c=c, &
+    & scaling=scaling, &
+    & lineColor=lineColor, &
+    & lineStyle=lineType, &
+    & lineWidth=lineWidth )
+END PROCEDURE plot_Quiver
 
-!----------------------------------------------------------------------------
-!                                                                 Figure
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
-
-!----------------------------------------------------------------------------
-!                                                                 Subplot
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
-
-END SUBMODULE PlotMethods
-
+END SUBMODULE QuiverMethods

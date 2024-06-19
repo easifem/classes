@@ -276,6 +276,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
 # AbstractPlot
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
 
+# PLPlot
+include(${CMAKE_CURRENT_LIST_DIR}/GnuPlot/CMakeLists.txt)
+
 # VTKPlot
 include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 
