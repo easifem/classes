@@ -21,8 +21,8 @@
 
 MODULE FEDomainConnectivity_Class
 USE GlobalData, ONLY: LGT, DFP, I4B
-USE AbstractMesh_Class
-USE AbstractDomain_Class
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
@@ -98,7 +98,7 @@ TYPE :: FEDomainConnectivity_
     !! Cell to cell connectivity
     !! CellToCell(ielem) => global elem number in domain-2,
     !! corresponding to
-    !! global node number `ielem` in domain-1
+    !! global elem number `ielem` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:, :)
     !! Currently, cellToCellExtraData has two rows
     !! the first row is dim
@@ -136,11 +136,11 @@ CONTAINS
 
   PROCEDURE, PASS(obj) :: InitiateNodeToNodeData1 => &
     obj_InitiateNodeToNodeData1
-  !! Initiate [[FEDomainConnectivity_:nodeToNode]]
+  !! Initiate [[FEDomainConnectivity_:nodeToNode]] between two domains
 
   PROCEDURE, PASS(obj) :: InitiateNodeToNodeData2 => &
     obj_InitiateNodeToNodeData2
-  !! Initiate [[FEDomainConnectivity_:nodeToNode]]
+  !! Initiate [[FEDomainConnectivity_:nodeToNode]] between two meshes
 
   GENERIC, PUBLIC :: InitiateNodeToNodeData => &
     InitiateNodeToNodeData1, InitiateNodeToNodeData2
@@ -153,15 +153,19 @@ CONTAINS
   ! SET:
   ! @CellMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: obj_InitiateCellToCellData1
-  !! Initiates [[FEDomainConnectivity_:cellToCell]] data
+  PROCEDURE, PASS(obj) :: obj_InitiateCellToCellData1
+  !! Initiates [[FEDomainConnectivity_:cellToCell]] data between two domains
+
+  PROCEDURE, PASS(obj) :: obj_InitiateCellToCellData2
+  !! Initiates [[FEDomainConnectivity_:cellToCell]] data between two meshes
+
   GENERIC, PUBLIC :: InitiateCellToCellData => &
-    obj_InitiateCellToCellData1
-  !! Initiates [[FEDomainConnectivity_:cellToCell]] data
+    obj_InitiateCellToCellData1, obj_InitiateCellToCellData2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellToCellPointer => &
     obj_GetCellToCellPointer
   !! Return pointer to the [[FEDomainConnectivity_:CellToCell]]
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => &
     obj_GetDimEntityNum
   !! Returns the dim and entity num of mesh which contains
@@ -285,9 +289,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetID => obj_GetGlobalFacetID
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => &
-    obj_GetTotalFacet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => obj_GetTotalFacet
   !! returns size of facetToCell
+
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetToCellData => &
     obj_DisplayFacetToCellData
 
@@ -470,7 +474,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
-! update: 2021-11-10
 ! summary: Generate cell to cell connectivity
 !
 !# Introduction
@@ -529,6 +532,65 @@ INTERFACE
     !! Secondary domain => CellToCell(i) denotes the
     !! global element number in domain2 domain.
   END SUBROUTINE obj_InitiateCellToCellData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        InitiateCellToCellData@NodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! summary: Generate cell to cell connectivity
+!
+!# Introduction
+!
+!This subroutine generates the cell to cell connectivity between
+!two meshes.
+!
+! - `obj%cellToCell` will be Initiated
+! - `mesh1` main mesh
+! - `mesh2` secondary mesh
+!
+!@note
+!All **CELL** elements in mesh-1 will be mapped to **CELL**
+!elements in mesh-2.
+!@endnote
+!
+!@note
+!If cellToCell(iel) is equal to zero then it means there is
+!no element found in mesh-2 corresponding to element number
+!iel in mesh-1.
+!@endnote
+!
+!@note
+!The size of [[FEmeshConnectivity_:cellToCell]] is total
+! number of elements in in mesh1.
+!@endnote
+!
+!@note
+!Following points should be noted before calling this routine
+!
+! - This routine provides map between cell elements of one mesh to
+! cell elements of another mesh.
+! - The topology of the both elements should be the same
+! - There is one to one mapping between elements of mesh 1
+! and elements of mesh2
+! - This routine works well for two meshs of same region
+! with same/different order. For example, mesh of tri3 and mesh
+! of tri6 elements.
+!@endnote
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateCellToCellData2(obj, mesh1, mesh2)
+    CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
+    !! FEDomain connectivity object
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh1
+    !! Primary domain, in CellToCell(i), i denotes the
+    !! global element number in domain1 domain.
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh2
+    !! Secondary domain => CellToCell(i) denotes the
+    !! global element number in domain2 domain.
+  END SUBROUTINE obj_InitiateCellToCellData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
