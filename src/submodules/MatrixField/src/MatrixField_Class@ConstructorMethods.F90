@@ -360,7 +360,6 @@ INTEGER(I4B) :: ierr, nrow, ncol, nnz, storageFMT, tNodes(1), timeCompo(1), &
 CHARACTER(1) :: names_char(1)
 TYPE(DOF_) :: dofobj
 TYPE(String) :: astr
-CLASS(AbstractMesh_), POINTER :: meshptr
 TYPE(ParameterList_), POINTER :: sublist
 LOGICAL(LGT) :: isok
 
@@ -414,8 +413,7 @@ obj%isPmatInitiated = .FALSE.
 obj%isRectangle = .FALSE.
 
 ! setting the sparsity
-meshptr => fedof%GetMeshPointer()
-CALL meshptr%SetSparsity(mat=obj%mat)
+CALL obj%fedof%SetSparsity(mat=obj%mat)
 
 IF (obj%local_n .EQ. 0) obj%local_n = nrow
 
