@@ -64,12 +64,12 @@ isok = obj%isNodeToNode
 IF (.NOT. isok) &
   CALL obj%InitiateNodeToNodeData(domain1=domain1, domain2=domain2)
 
-maxelem = domain1%GetTotalElements()
+nsd = domain1%GetNSD()
+maxelem = domain1%GetTotalElements(dim=nsd)
 ! CALL domain1%GetParam(maxElemNum=maxelem, minElemNum=minelem)
 CALL Reallocate(obj%cellToCell, maxelem)
 
 obj%isCellToCell = .TRUE.
-nsd = domain1%GetNSD()
 
 nodeToNode => obj%GetNodeToNodePointer()
 
@@ -79,8 +79,7 @@ DO iel1 = 1, maxelem
  CALL domain1%GetConnectivity_(globalElement=iel1, ans=nptrs1, tsize=order1, &
                                 islocal=.TRUE., dim=nsd)
   DO ii = 1, order1
-    jj = domain1%GetLocalNodeNumber(globalNode=nptrs1(ii), &
-                                    islocal=.FALSE.)
+    jj = domain1%GetLocalNodeNumber(globalNode=nptrs1(ii), islocal=.FALSE.)
     nptrs2(ii) = nodeToNode(jj)
   END DO
 

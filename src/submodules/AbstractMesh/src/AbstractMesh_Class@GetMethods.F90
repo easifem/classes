@@ -195,7 +195,7 @@ MODULE PROCEDURE obj_GetNptrsInBox_
 ! nptrs = box.Nptrs.obj%nodeCoord
 REAL(DFP) :: qv(3), r2
 INTEGER(I4B) :: ii, jj, kk, nsd, tsize
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+! CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
 LOGICAL(LGT) :: isok, abool
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
@@ -433,24 +433,19 @@ END PROCEDURE obj_isAllNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isElementPresent
-LOGICAL(LGT) :: isok
 LOGICAL(LGT) :: islocal0
 
 islocal0 = Input(default=.FALSE., option=islocal)
 
 IF (islocal0) THEN
   ans = (globalElement .GT. 0_I4B) .AND. (globalElement .LE. obj%tElements)
-
-ELSE
-  isok = (globalElement .GT. obj%maxElemNum) .OR.  &
-    & (globalElement .LT. obj%minElemNum)
-
-  ans = .NOT. isok
-
-  IF (ans) THEN
-    ans = .NOT. (isok .OR. obj%local_elemNumber(globalElement) .EQ. 0)
-  END IF
+  RETURN
 END IF
+
+ans = (globalElement .LE. obj%maxElemNum) &
+      .AND. (globalElement .GE. obj%minElemNum)
+
+IF (ans) ans = obj%local_elemNumber(globalElement) .NE. 0
 
 END PROCEDURE obj_isElementPresent
 
@@ -552,15 +547,7 @@ END PROCEDURE obj_GetTotalBoundaryElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox1
-! REAL(DFP) :: lim(6)
-! lim(1) = obj%minX
-! lim(2) = obj%maxX
-! lim(3) = obj%minY
-! lim(4) = obj%maxY
-! lim(5) = obj%minZ
-! lim(6) = obj%maxZ
-! CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
-CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox1()"
+! CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox1()"
 REAL(DFP) :: lim(6), x(3)
 INTEGER(I4B) :: nsd, tnodes, ii, tsize
 
@@ -630,16 +617,20 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
-INTEGER(I4B) :: iel
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
 LOGICAL(LGT) :: problem
+#endif
 
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
 problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: problem in getting localElement number')
+              '[INTERNAL ERROR] :: problem in getting localElement number'// &
+                    ' from globalElement = '//ToString(globalElement))
+  RETURN
 END IF
 #endif
 
