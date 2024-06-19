@@ -30,6 +30,8 @@ USE ElemData_Class, ONLY: ElemData_, &
 
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 
+USE Display_Method, ONLY: Display
+
 IMPLICIT NONE
 
 CONTAINS
@@ -295,12 +297,25 @@ SUBROUTINE FEDOF_Initiate_After(obj, isLagrange)
   obj%faceIA(1) = 1
   obj%cellIA(1) = 1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Cell loop')
+#endif
+
   DO iel = 1, obj%tCells
 
     isok = obj%mesh%IsElementActive(globalElement=iel, islocal=.TRUE.)
     IF (.NOT. isok) CYCLE
 
     elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+    isok = ASSOCIATED(elemdata)
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[INTERNAL ERROR] :: elemdata is not allocated')
+    END IF
+#endif
 
     ent = ElemData_GetTotalEntities(elemdata)
 
@@ -323,14 +338,18 @@ SUBROUTINE FEDOF_Initiate_After(obj, isLagrange)
 
     ! faces
     DO ii = 1, ent(3)
+
       jj = ElemData_GetFace(elemdata, ii)
 
       IF (.NOT. foundFaces(jj)) THEN
+
         myorder = INT(obj%faceOrder(jj), kind=INT8)
+
         tsize = ElemData_GetTotalFaceDOF(obj=elemdata, ii=ii, &
                                          order=myorder, &
                                          baseContinuity=obj%baseContinuity, &
                                       baseInterpolation=obj%baseInterpolation)
+
         tdof = tdof + tsize
         foundFaces(jj) = .TRUE.
 
@@ -338,6 +357,7 @@ SUBROUTINE FEDOF_Initiate_After(obj, isLagrange)
         tfacedof = tfacedof + tsize
 
       END IF
+
     END DO
 
     ! cell
@@ -359,15 +379,30 @@ SUBROUTINE FEDOF_Initiate_After(obj, isLagrange)
 
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Edge loop')
+#endif
+
   DO CONCURRENT(ii=1:obj%tEdges + 1)
     obj%edgeIA(ii) = obj%edgeIA(ii) + obj%tNodes
   END DO
 
   jj = obj%tNodes + tedgedof
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Face loop')
+#endif
+
   DO CONCURRENT(ii=1:obj%tFaces + 1)
     obj%faceIA(ii) = obj%faceIA(ii) + jj
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Cell loop')
+#endif
 
   jj = jj + tfacedof
   DO CONCURRENT(ii=1:obj%tCells + 1)
