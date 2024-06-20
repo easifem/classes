@@ -151,8 +151,8 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 
-  PROCEDURE(obj_CheckEssentialParam), PUBLIC, DEFERRED, PASS(obj) :: &
-    CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
   !! Check essential parameters
 
   PROCEDURE(obj_initiate), PUBLIC, DEFERRED, PASS(obj) :: Initiate
@@ -266,9 +266,8 @@ END TYPE
 ! date: 25 Aug 2021
 ! summary: This routine Checks the essential parameters
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_CheckEssentialParam(obj, param)
-    IMPORT :: AbstractLinSolver_, ParameterList_
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_CheckEssentialParam
@@ -683,10 +682,10 @@ END INTERFACE
 ! summary:  Set the linear solver
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_Set(obj, Amat)
+  SUBROUTINE obj_Set(obj, amat)
     IMPORT :: AbstractLinSolver_, AbstractMatrixField_
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
-    CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
+    CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: amat
   END SUBROUTINE obj_Set
 END INTERFACE
 
@@ -864,7 +863,7 @@ END INTERFACE AbstractLinSolverDeallocate
 ! summary: Returns the preconditionOption
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetPreconditionOption(obj) RESULT(Ans)
+  MODULE FUNCTION obj_GetPreconditionOption(obj) RESULT(Ans)
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetPreconditionOption
@@ -879,7 +878,7 @@ END INTERFACE
 ! summary: Returns the preconditionOption
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_SetTolerance(obj, atol, rtol)
+  MODULE SUBROUTINE obj_SetTolerance(obj, atol, rtol)
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: atol
     REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
@@ -965,7 +964,7 @@ END INTERFACE
 ! summary: Returns isInit
 
 INTERFACE
-  MODULE PURE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
     CLASS(AbstractLinSolver_), INTENT(in) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsInitiated

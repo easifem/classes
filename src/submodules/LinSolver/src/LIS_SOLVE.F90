@@ -19,31 +19,23 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   CLASS(LinSolver_), TARGET, INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: sol(:)
   REAL(DFP), INTENT(INOUT) :: rhs(:)
-  !
+
   ! Internal variables
-  !
   CHARACTER(*), PARAMETER :: myName = _MY_NAME
   INTEGER(I4B) :: n
   REAL(DFP), ALLOCATABLE :: diag(:)
-  CLASS(AbstractMatrixField_), POINTER :: Amat
+  CLASS(AbstractMatrixField_), POINTER :: amat
+  LOGICAL(LGT) :: isok
 
-  CALL Blanklines(nol=5)
-  CALL Display("File :: "//__FILE__)
-  CALL Display(modName//myName)
-  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
-  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
-  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
-  CALL Blanklines(nol=5)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   obj%IPAR(1) = 0
   obj%FPAR(11) = 0.0_DFP
-  CALL obj%GetParam(globalNumRow=n, Amat=Amat)
+  CALL obj%GetParam(globalNumRow=n, amat=amat)
   obj%IPAR(7) = 1
-
-  IF (.NOT. ASSOCIATED(Amat)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Amat is not ASSOCIATED')
-  END IF
 
   DO
 
@@ -51,42 +43,29 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
 
     IF (obj%IPAR(1) .GT. 0) THEN
 
-      CALL PERFORM_TASK( &
-        & Amat, &
-        & y=obj%W(obj%IPAR(9):obj%IPAR(9) + n - 1), &
-        & x=obj%W(obj%IPAR(8):obj%IPAR(8) + n - 1), &
-        & ierr=obj%IPAR(1), &
-        & myName=myName)
+      CALL PERFORM_TASK(amat, y=obj%W(obj%IPAR(9):obj%IPAR(9) + n - 1), &
+                   x=obj%W(obj%IPAR(8):obj%IPAR(8) + n - 1), ierr=obj%IPAR(1))
 
     ELSE IF (obj%IPAR(1) .LT. 0) THEN
 
-      CALL CHECKERROR( &
-        & IPAR=obj%IPAR, &
-        & FPAR=obj%FPAR, &
-        & myName=myName)
+      CALL CHECKERROR(IPAR=obj%IPAR, FPAR=obj%FPAR, myName=myName)
       EXIT
 
     ELSE IF (obj%IPAR(1) .EQ. 0) THEN
 
-      CALL obj%SetParam(ierr=obj%ipar(1), &
-        & iter=obj%ipar(7))
-      CALL DisplayConvergence( &
-        & myName, &
-        & obj%ipar(7), &
-        & obj%FPAR)
+      CALL obj%SetParam(ierr=obj%ipar(1), iter=obj%ipar(7))
+      CALL DisplayConvergence(myName, obj%ipar(7), obj%FPAR)
       EXIT
 
     END IF
+
   END DO
-  !
+
   ! Initial residual/error norm
-  !
-  CALL obj%SetParam(&
-    & error0=obj%fpar(3), &
-    & tol=obj%fpar(4), &
-    & error=obj%fpar(6), &
-    & normRes=obj%fpar(5) &
-    & )
+
+  CALL obj%SetParam(error0=obj%fpar(3), tol=obj%fpar(4), &
+                    error=obj%fpar(6), normRes=obj%fpar(5))
+
 END SUBROUTINE _SUBROUTINE_NAME
 
 #ifdef _SUBROUTINE_NAME

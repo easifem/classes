@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
+USE FPL_Method, ONLY: FPL_CheckEssentialParam => CheckEssentialParam
+
 IMPLICIT NONE
 CONTAINS
 
@@ -48,5 +50,22 @@ obj%numProcs = 1
 IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
 NULLIFY (obj%amat)
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                       AbstractLinSolverCheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myname = "ls_checkEssentialParam"
+CHARACTER(:), ALLOCATABLE :: keys, prefix
+
+prefix = obj%GetPrefix()
+keys = "solverName/preconditionOption/convergenceIn/convergenceType/maxIter/" // &
+       "relativeToRHS/KrylovSubspaceSize/rtol/atol"
+CALL FPL_CheckEssentialParam(obj=param, keys=keys, &
+                             prefix=prefix, myName=myname, modName=modName)
+prefix = ""
+keys = ""
+END PROCEDURE obj_CheckEssentialParam
 
 END SUBMODULE ConstructorMethods

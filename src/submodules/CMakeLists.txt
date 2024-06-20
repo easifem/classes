@@ -299,8 +299,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 # AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 
-# # LinSolver include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
-#
+# LinSolver
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
+
 # # LinSolverLis include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 #
 # # LinSolverFactory
