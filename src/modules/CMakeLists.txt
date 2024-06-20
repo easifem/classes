@@ -362,15 +362,19 @@ include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 # FieldFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
-# # AbstractLinSolver
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
-#
+# AbstractLinSolver
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
+
 # # LinSolver include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 #
 # # LinSolverLis include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 #
 # # LinSolverFactory
 # include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# Plotting
+# ----------------------------------------------------------------------------
 
 # AbstractPlot
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)

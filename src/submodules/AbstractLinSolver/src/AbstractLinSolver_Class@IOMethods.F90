@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) IOMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
@@ -24,29 +24,31 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_Display
+MODULE PROCEDURE obj_Display
+LOGICAL(LGT) :: isok
+
 CALL Display(msg, unitNo=unitno)
-CALL Display("engine : "//obj%engine%chars(), unitNo=unitno)
-CALL Display(obj%isInitiated, "isInitiated : ", unitNo=unitno)
-CALL Display(obj%solverName, "solverName : ", unitNo=unitno)
-CALL Display(obj%preconditionOption, "preconditionOption : ", unitNo=unitno)
-CALL Display(obj%convergenceIn, "convergenceIn : ", unitNo=unitno)
-CALL Display(obj%convergenceType, "convergenceType : ", unitNo=unitno)
-CALL Display(obj%maxIter, "maxIter : ", unitNo=unitno)
-CALL Display(obj%relativeToRHS, "relativeToRHS : ", unitNo=unitno)
-CALL Display(obj%KrylovSubspaceSize, "KrylovSubspaceSize : ", unitNo=unitno)
-CALL Display(obj%atol, "atol : ", unitNo=unitno)
-CALL Display(obj%rtol, "rtol : ", unitNo=unitno)
-CALL Display(obj%ierr, "ierr : ", unitNo=unitno)
-CALL Display(obj%iter, "iter : ", unitNo=unitno)
-IF (ASSOCIATED(obj%Amat)) THEN
-  CALL Display("Amat is ASSOCIATED", unitNo=unitno)
-ELSE
-  CALL Display("Amat is NOT ASSOCIATED", unitNo=unitno)
-END IF
-IF (ALLOCATED(obj%RES)) &
-  & CALL Display("obj%RES is ALLOCATED", unitNo=unitno)
-END PROCEDURE als_Display
+CALL Display("engine: "//obj%engine%chars(), unitNo=unitno)
+CALL Display(obj%isInit, "isInitiated: ", unitNo=unitno)
+CALL Display(obj%solverName, "solverName: ", unitNo=unitno)
+CALL Display(obj%preconditionOption, "preconditionOption: ", unitNo=unitno)
+CALL Display(obj%convergenceIn, "convergenceIn: ", unitNo=unitno)
+CALL Display(obj%convergenceType, "convergenceType: ", unitNo=unitno)
+CALL Display(obj%maxIter, "maxIter: ", unitNo=unitno)
+CALL Display(obj%relativeToRHS, "relativeToRHS: ", unitNo=unitno)
+CALL Display(obj%KrylovSubspaceSize, "KrylovSubspaceSize: ", unitNo=unitno)
+CALL Display(obj%atol, "atol: ", unitNo=unitno)
+CALL Display(obj%rtol, "rtol: ", unitNo=unitno)
+CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
+CALL Display(obj%iter, "iter: ", unitNo=unitno)
+
+isok = ALLOCATED(obj%res)
+CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
+
+isok = ASSOCIATED(obj%amat)
+CALL Display(isok, "amat is ASSOCIATED: ", unitNo=unitno)
+
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
