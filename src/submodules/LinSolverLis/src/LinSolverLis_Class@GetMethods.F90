@@ -15,12 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LinSolverLis_Class) GetMethods
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE GetMethods
+! SUBMODULE(LinSolverLis_Class) GetMethods
+! END SUBMODULE GetMethods

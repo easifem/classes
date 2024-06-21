@@ -35,6 +35,7 @@ PUBLIC :: LinSolverInitiate
 PUBLIC :: LinSolverDeallocate
 PUBLIC :: LinSolverPointer_
 PUBLIC :: LinSolver_
+PUBLIC :: TypeLinSolver
 
 CHARACTER(*), PARAMETER :: modName = "LinSolver_Class"
 CHARACTER(*), PARAMETER :: myprefix = "LinSolver"
@@ -93,13 +94,16 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_solve
   !! Solve the system of linear equation
 
+  ! GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+
   PROCEDURE, PUBLIC, NOPASS :: GetLinSolverCodeFromName => &
     obj_GetLinSolverCodeFromName
 
   PROCEDURE, PUBLIC, NOPASS :: GetLinSolverNameFromCode => &
     obj_GetLinSolverNameFromCode
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
 END TYPE LinSolver_
 
@@ -107,7 +111,7 @@ END TYPE LinSolver_
 !                                                              TypeLinSolver
 !----------------------------------------------------------------------------
 
-TYPE(LinSolver_), PUBLIC, PARAMETER :: TypeLinSolver = LinSolver_()
+TYPE(LinSolver_), PARAMETER :: TypeLinSolver = LinSolver_()
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverPointer_

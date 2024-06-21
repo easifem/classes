@@ -368,8 +368,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 # LinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 
-# # LinSolverLis include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
-#
+# LinSolverLis
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
+
 # # LinSolverFactory
 # include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 

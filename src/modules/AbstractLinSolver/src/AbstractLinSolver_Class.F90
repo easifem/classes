@@ -180,6 +180,10 @@ CONTAINS
     obj_IsInitiated
   !! returns isInit
 
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetMatrixPointer => &
+    obj_GetMatrixPointer
+  !! Get pointer to amat
+
   PROCEDURE(obj_GetLinSolverCodeFromName), DEFERRED, PUBLIC, NOPASS :: &
     GetLinSolverCodeFromName
 
@@ -968,6 +972,21 @@ INTERFACE
     CLASS(AbstractLinSolver_), INTENT(in) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMatrixPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-21
+! summary: Get pointer to amat
+
+INTERFACE
+  MODULE FUNCTION obj_GetMatrixPointer(obj) RESULT(ans)
+    CLASS(AbstractLinSolver_), INTENT(in) :: obj
+    CLASS(AbstractMatrixField_), POINTER :: ans
+  END FUNCTION obj_GetMatrixPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
