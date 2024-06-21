@@ -15,35 +15,33 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
-USE BaseMethod
-USE EasyPlplot
+SUBMODULE(GnuPlot_Class) ConstructorMethods
+USE BaseMethod, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE obj_Initiate
+obj%plotEngine = PLOT_ENGINE_GNUPLOT
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE obj_Deallocate
+obj%plotEngine = PLOT_ENGINE_PLPLOT
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Subplot
+!                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
+MODULE PROCEDURE obj_Display
+CALL Display("# PLOT ENGINE : GNUPLOT", msg, unitno)
+END PROCEDURE obj_Display
 
-END SUBMODULE PlotMethods
-
+END SUBMODULE ConstructorMethods

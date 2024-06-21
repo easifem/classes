@@ -15,35 +15,34 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) PlotMethods
+SUBMODULE(PLPlot_Class) ColorbarMethods
 USE BaseMethod
 USE EasyPlplot
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Show
+!                                                                 Colorbar
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Show
-CALL Show()
-END PROCEDURE plot_Show
+MODULE PROCEDURE plot_Colorbar
+  CALL Colorbar( &
+    & z=z, &
+    & N=N, &
+    & leftLabel=leftLabel, &
+    & rightLabel=rightLabel )
+END PROCEDURE plot_Colorbar
 
 !----------------------------------------------------------------------------
-!                                                                 Figure
+!                                                                 Colorbar
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Figure
-CALL Figure()
-END PROCEDURE plot_Figure
+MODULE PROCEDURE plot_Colorbar2
+  CALL Colorbar2( &
+    & z=z, &
+    & N=N, &
+    & leftLabel=leftLabel, &
+    & rightLabel=rightLabel )
+END PROCEDURE plot_Colorbar2
 
-!----------------------------------------------------------------------------
-!                                                                 Subplot
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
-END PROCEDURE plot_Subplot
-
-END SUBMODULE PlotMethods
-
+END SUBMODULE ColorbarMethods

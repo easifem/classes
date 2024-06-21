@@ -330,6 +330,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 # AbstractPlot
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
 
+# GnuPlot
+include(${CMAKE_CURRENT_LIST_DIR}/GnuPlot/CMakeLists.txt)
+
 # VTKPlot
 include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 
