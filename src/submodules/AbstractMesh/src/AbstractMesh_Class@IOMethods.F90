@@ -321,6 +321,8 @@ CALL Display(msg, unitno=unitno)
 CALL EqualLine(unitno=unitno)
 CALL Display(obj%GetTotalNodes(), "total nodes: ", unitno=unitno)
 CALL Display(obj%GetTotalElements(), "total elements: ", unitno=unitno)
+CALL Display(obj%GetTotalEdges(), "tEdges: ", unitno=unitno)
+CALL Display(obj%GetTotalFaces(), "tFaces: ", unitno=unitno)
 CALL EqualLine(unitno=unitno)
 END PROCEDURE obj_DisplayMeshInfo
 
