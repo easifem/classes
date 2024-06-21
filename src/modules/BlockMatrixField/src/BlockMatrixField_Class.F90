@@ -84,6 +84,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from hdf5 file
 
+  !GET:
+  !@GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix
+
 END TYPE BlockMatrixField_
 
 !----------------------------------------------------------------------------
@@ -267,6 +273,21 @@ INTERFACE
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(BlockMatrixField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

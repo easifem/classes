@@ -312,7 +312,7 @@ CASE (TypeSolverNameOpt%SUPERLU)
     CALL LinSolve(A=amat%mat, B=rhsvar, X=solvar, isTranspose=.FALSE., &
                   isFactored=.FALSE., PrintStat=yes_no_t%YES, info=info)
 
-    CALL NULLIFY (rhsvar, solvar)
+    NULLIFY (rhsvar, solvar)
 
     isok = info .EQ. 0
     CALL AssertError1(isok, myName, 'Failure in LinSolve()')

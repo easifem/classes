@@ -207,6 +207,9 @@ CONTAINS
   ! GET:
   !@GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix
+
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the size of the matrix
 
@@ -840,6 +843,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: filename
     CHARACTER(*), INTENT(IN) :: ext
   END SUBROUTINE obj_SPY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

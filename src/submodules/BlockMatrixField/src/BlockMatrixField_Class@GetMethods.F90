@@ -15,5 +15,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(BlockMatrixField_Class) GetMethods
-! END SUBMODULE GetMethods
+SUBMODULE(BlockMatrixField_Class) GetMethods
+CONTAINS
+!----------------------------------------------------------------------------
+!                                                                  GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
+
+END SUBMODULE GetMethods
