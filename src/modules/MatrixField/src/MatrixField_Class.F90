@@ -1274,8 +1274,8 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, storageFMT, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, storageFMT, &
+                             scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), INTENT(IN) :: islocal

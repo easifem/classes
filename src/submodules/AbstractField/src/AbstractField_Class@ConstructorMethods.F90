@@ -328,16 +328,13 @@ obj%is = 0
 obj%ie = 0
 obj%lis_ptr = 0
 
-IF (ASSOCIATED(obj%fedof)) CALL obj%fedof%DEALLOCATE()
-obj%fedof => NULL()
+IF (ASSOCIATED(obj%fedof)) obj%fedof => NULL()
 
 IF (ALLOCATED(obj%fedofs)) THEN
 
   DO ii = 1, SIZE(obj%fedofs)
 
-    IF (ASSOCIATED(obj%fedofs(ii)%ptr)) CALL obj%fedofs(ii)%ptr%DEALLOCATE()
-
-    obj%fedofs(ii)%ptr => NULL()
+    IF (ASSOCIATED(obj%fedofs(ii)%ptr)) obj%fedofs(ii)%ptr => NULL()
 
   END DO
 
