@@ -25,6 +25,10 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetFace, &
                           ElemData_GetCell
 
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 IMPLICIT NONE
 CONTAINS
 
@@ -78,53 +82,6 @@ END DO
 END PROCEDURE obj_GetCellDOF
 
 !----------------------------------------------------------------------------
-!                                                           GetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetConnectivity_
-INTEGER(I4B) :: ent(4)
-INTEGER(I4B) :: ii, jj, kk, a, b
-INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
-
-ent = obj%mesh%GetTotalEntities(globalElement, islocal=islocal)
-CALL obj%mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
-                               opt=opt, tsize=jj, ans=temp)
-
-! points
-a = 1; b = ent(1)
-jj = 1
-DO ii = a, b
-CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, islocal=.FALSE.)
-  jj = jj + kk
-END DO
-
-! edges
-a = b + 1; b = b + ent(2)
-DO ii = a, b
-  CALL obj%GetEdgeDOF(globalEdge=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
-
-! faces
-a = b + 1; b = b + ent(3)
-DO ii = a, b
-  CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
-
-! cell
-a = b + 1; b = b + ent(4)
-DO ii = a, b
-  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
-                      islocal=.FALSE.)
-  jj = jj + kk
-END DO
-
-tsize = jj - 1
-
-END PROCEDURE obj_GetConnectivity_
-
-!----------------------------------------------------------------------------
 !                                                           GetTotalDOF
 !----------------------------------------------------------------------------
 
@@ -146,6 +103,8 @@ elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
 ent = ElemData_GetTotalEntities(elemdata)
 
 ans = ent(1)
+
+IF (obj%isLagrange) RETURN
 
 DO ii = 1, ent(2)
   jj = ElemData_GetEdge(elemdata, ii)
@@ -173,6 +132,60 @@ ALLOCATE (ans(tdof))
 CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
                           globalElement=globalElement, islocal=islocal)
 END PROCEDURE obj_GetConnectivity
+
+!----------------------------------------------------------------------------
+!                                                           GetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity_
+INTEGER(I4B) :: ent(4)
+INTEGER(I4B) :: ii, jj, kk, a, b
+INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+
+ent = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
+
+CALL obj%mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
+                               opt=opt, tsize=jj, ans=temp)
+
+! points
+a = 1; b = ent(1)
+jj = 1
+DO ii = a, b
+  CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
+                        islocal=.FALSE.)
+  jj = jj + kk
+END DO
+
+IF (obj%isLagrange) THEN
+  tsize = jj - 1
+  RETURN
+END IF
+
+! edges
+a = b + 1; b = b + ent(2)
+DO ii = a, b
+  CALL obj%GetEdgeDOF(globalEdge=temp(ii), ans=ans(jj:), tsize=kk)
+  jj = jj + kk
+END DO
+
+! faces
+a = b + 1; b = b + ent(3)
+DO ii = a, b
+  CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
+  jj = jj + kk
+END DO
+
+! cell
+a = b + 1; b = b + ent(4)
+DO ii = a, b
+  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
+                      islocal=.FALSE.)
+  jj = jj + kk
+END DO
+
+tsize = jj - 1
+
+END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
@@ -203,7 +216,16 @@ END PROCEDURE obj_GetBaseInterpolation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxTotalConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalConnectivity()"
+#endif
+
 INTEGER(I4B) :: ii, telems, tdof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ans = 0
 telems = obj%mesh%GetTotalElements()
@@ -212,6 +234,12 @@ DO ii = 1, telems
   tdof = obj%GetTotalDOF(globalElement=ii, isLocal=.TRUE.)
   ans = MAX(ans, tdof)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetMaxTotalConnectivity
 
 !----------------------------------------------------------------------------

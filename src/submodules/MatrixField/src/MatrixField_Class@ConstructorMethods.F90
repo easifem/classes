@@ -412,12 +412,12 @@ obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
 obj%isRectangle = .FALSE.
 
-! setting the sparsity
-CALL obj%fedof%SetSparsity(mat=obj%mat)
-
 IF (obj%local_n .EQ. 0) obj%local_n = nrow
 
 IF (obj%global_n .EQ. 0) obj%global_n = nrow
+
+! setting the sparsity
+CALL obj%fedof%SetSparsity(mat=obj%mat)
 
 CALL DOF_Deallocate(dofobj)
 sublist => NULL()

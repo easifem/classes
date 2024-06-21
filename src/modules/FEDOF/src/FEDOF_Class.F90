@@ -45,6 +45,8 @@ CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
 
 TYPE :: FEDOF_
   PRIVATE
+  LOGICAL(LGT) :: isLagrange = .FALSE.
+  !! It is true when baseInterpolation is Lagrange
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0

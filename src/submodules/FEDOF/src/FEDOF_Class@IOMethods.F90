@@ -30,6 +30,7 @@ MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: isok
 
 CALL Display(msg, unitno=unitno)
+CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
 CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)

@@ -30,7 +30,9 @@ USE ElemData_Class, ONLY: ElemData_, &
 
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 
+#ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
+#endif
 
 IMPLICIT NONE
 
@@ -79,26 +81,26 @@ INTEGER(I4B) :: ent(4), tsize, iel, tedgedof, tfacedof, tcelldof, ii, jj, &
                 tdof, myorder
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
 TYPE(ElemData_), POINTER :: elemdata
-LOGICAL(LGT) :: isok, isLagrange
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (baseInterpolation(1:3) == "Lag") THEN
-  isLagrange = .TRUE.
-ELSE
-  isLagrange = .FALSE.
-END IF
-
 CALL obj%DEALLOCATE()
+
+IF (baseInterpolation(1:3) == "Lag") THEN
+  obj%isLagrange = .TRUE.
+ELSE
+  obj%isLagrange = .FALSE.
+END IF
 
 obj%mesh => mesh
 obj%baseContinuity = baseContinuity
 obj%baseInterpolation = baseInterpolation
 
-CALL FEDOF_Initiate_Before(obj=obj, isLagrange=isLagrange)
+CALL FEDOF_Initiate_Before(obj=obj, isLagrange=obj%isLagrange)
 
 DO CONCURRENT(ii=1:obj%tCells)
   obj%cellOrder(ii) = INT(order, kind=INT8)
@@ -112,7 +114,7 @@ DO CONCURRENT(ii=1:obj%tEdges)
   obj%edgeOrder(ii) = INT(order, kind=INT8)
 END DO
 
-CALL FEDOF_Initiate_After(obj=obj, isLagrange=isLagrange)
+CALL FEDOF_Initiate_After(obj=obj, isLagrange=obj%isLagrange)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -128,7 +130,6 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ent(4)
-LOGICAL(LGT) :: isLaGrange
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -138,21 +139,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 IF (baseInterpolation(1:3) == "Lag") THEN
-  isLagrange = .TRUE.
+  obj%isLagrange = .TRUE.
 ELSE
-  isLagrange = .FALSE.
+  obj%isLagrange = .FALSE.
 END IF
 
 obj%mesh => mesh
 obj%baseContinuity = baseContinuity
 obj%baseInterpolation = baseInterpolation
-CALL FEDOF_Initiate_Before(obj=obj, isLagrange=isLagrange)
+CALL FEDOF_Initiate_Before(obj=obj, isLagrange=obj%isLagrange)
 
 CALL obj%SetCellOrder(cellOrder=order)
 CALL obj%SetFaceOrder(cellOrder=order)
 CALL obj%SetEdgeOrder(cellOrdeR=order)
 
-CALL FEDOF_Initiate_After(obj=obj, isLagrange=isLagrange)
+CALL FEDOF_Initiate_After(obj=obj, isLagrange=obj%isLagrange)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -427,6 +428,7 @@ END SUBROUTINE FEDOF_Initiate_After
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+obj%isLagrange = .FALSE.
 obj%tdof = 0
 obj%tNodes = 0
 obj%tEdges = 0
@@ -448,6 +450,7 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Copy
+obj%isLagrange = obj2%isLagrange
 obj%tdof = obj2%tdof
 obj%tNodes = obj2%tNodes
 obj%tEdges = obj2%tEdges
