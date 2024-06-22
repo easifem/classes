@@ -698,7 +698,9 @@ CONTAINS
 
   ! GET:
   ! @RunMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
+  PROCEDURE, PASS(obj) :: Run1 => obj_Run1
+  PROCEDURE, PASS(obj) :: Run2 => obj_Run2
+  GENERIC, PUBLIC :: Run => Run1, Run2
   !! Run the kernel
 
   ! SET:
@@ -2295,10 +2297,25 @@ END INTERFACE
 ! summary: Run the simulation
 
 INTERFACE
-  MODULE SUBROUTINE obj_Run(obj, param)
+  MODULE SUBROUTINE obj_Run1(obj, param)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Run
+  END SUBROUTINE obj_Run1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Run@RunMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 10 May 2022
+! summary: Run the simulation
+
+INTERFACE
+  MODULE SUBROUTINE obj_Run2(obj, table)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_Run2
 END INTERFACE
 
 !----------------------------------------------------------------------------

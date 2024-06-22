@@ -24,11 +24,21 @@ CONTAINS
 !                                                                       Run
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Run
-CHARACTER(*), PARAMETER :: myName = "obj_Run"
+MODULE PROCEDURE obj_Run1
+CHARACTER(*), PARAMETER :: myName = "obj_Run1"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
-END PROCEDURE obj_Run
+END PROCEDURE obj_Run1
+
+!----------------------------------------------------------------------------
+!                                                                       Run
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Run2
+CHARACTER(*), PARAMETER :: myName = "obj_Run2"
+CALL e%raiseError(modName//'::'//myName//" - "// &
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
+END PROCEDURE obj_Run2
 
 !----------------------------------------------------------------------------
 !
