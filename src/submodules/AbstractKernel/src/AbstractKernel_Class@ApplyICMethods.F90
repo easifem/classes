@@ -17,6 +17,9 @@
 
 SUBMODULE(AbstractKernel_Class) ApplyICMethods
 USE BaseMethod
+USE tomlf, ONLY: toml_get => get_value, &
+                 toml_array, &
+                 toml_len => len
 IMPLICIT NONE
 CONTAINS
 
@@ -282,5 +285,97 @@ IF (obj%showTime) THEN
 END IF
 
 END PROCEDURE obj_ApplyIC
+
+!----------------------------------------------------------------------------
+!                                                      ApplyIC importFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyICFromToml
+CHARACTER(:), ALLOCATABLE :: tomlName0
+TYPE(toml_array), POINTER :: array
+TYPE(toml_table), POINTER :: node, subNode
+CLASS(UserFunction_), POINTER :: func
+INTEGER(I4B) :: stat, origin, tsize, ii
+TYPE(String) :: varName, astr
+REAL(DFP) :: areal
+INTEGER(I4B) :: idof, ivar, spaceCompo, timeCompo
+LOGICAL(LGT) :: isUserFunction
+CHARACTER(*), PARAMETER :: myName = "ApplyIC_importFromToml"
+
+IF (PRESENT(tomlName)) THEN
+  tomlName0 = tomlName
+ELSE
+  tomlName0 = "ApplyIC"
+END IF
+
+array => NULL()
+CALL toml_get(table, tomlName0, array, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(array)) THEN
+  CALL e%raiseWarning(modName//'::'//myName//' - '// &
+    & '[CONFIG WARN] :: There is no `ApplyIC` node in toml '//  &
+    & "so ApplyIC is skipped ")
+  RETURN
+END IF
+
+tsize = toml_len(array)
+
+DO ii = 1, tsize
+  node => NULL()
+
+  CALL toml_get(array, ii, node)
+  IF (.NOT. ASSOCIATED(node)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[CONFIG ERROR] :: ApplyIC '//tostring(ii)// &
+                      ' cannot be read from the toml file.')
+  END IF
+
+  CALL toml_get(node, "isUserFunction", isUserFunction, &
+                .FALSE., origin=origin, stat=stat)
+  CALL toml_get(node, "ivar", ivar, 1, origin=origin, stat=stat)
+  CALL toml_get(node, "idof", idof, 1, origin=origin, stat=stat)
+  CALL toml_get(node, "spaceCompo", spaceCompo, 1, origin=origin, stat=stat)
+  CALL toml_get(node, "timeCompo", timeCompo, 1, origin=origin, stat=stat)
+  CALL toml_get(node, "name", varName%raw, &
+                "PRE", origin=origin, stat=stat)
+  astr = varName%upper()
+
+  IF (isUserFunction) THEN
+    subNode => NULL()
+    CALL toml_get(node, "function", subNode, origin=origin, &
+                  requested=.FALSE., stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[CONFIG ERROR] :: following error occured while reading '//  &
+        & 'the toml file :: cannot find [function] table in config.')
+      RETURN
+    END IF
+
+    ALLOCATE (func)
+    CALL func%ImportFromToml(table=subNode)
+
+    CALL obj%ApplyIC(astr%chars(), func=func)
+
+    DEALLOCATE (func)
+
+  ELSE
+
+    CALL toml_get(node, "value", areal, 0.0_DFP, origin=origin,  &
+    & stat=stat)
+
+    CALL obj%ApplyIC(astr%chars())
+
+  END IF
+  astr = ""
+
+END DO
+
+node => NULL()
+array => NULL()
+tomlName0 = ""
+
+END PROCEDURE obj_ApplyICFromToml
 
 END SUBMODULE ApplyICMethods

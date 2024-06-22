@@ -626,7 +626,9 @@ CONTAINS
 
   ! SET:
   ! @ApplyICMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyIC => obj_ApplyIC
+  PROCEDURE, PASS(obj) :: ApplyIC1 => obj_ApplyIC
+  PROCEDURE, PASS(obj) :: ApplyIC2 => obj_ApplyICFromToml
+  GENERIC, PUBLIC :: ApplyIC => ApplyIC1, ApplyIC2
   !! Apply Dirichlet boundary condition
 
   ! SET:
@@ -1886,6 +1888,22 @@ INTERFACE AbstractKernelApplyIC
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
   END SUBROUTINE obj_ApplyIC
+END INTERFACE AbstractKernelApplyIC
+
+!----------------------------------------------------------------------------
+!                                                    ApplyIC@ApplyICMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-06-21
+! summary:  Apply initial conditions to the fields from toml
+
+INTERFACE AbstractKernelApplyIC
+  MODULE SUBROUTINE obj_ApplyICFromToml(obj, table, tomlName)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: tomlName
+  END SUBROUTINE obj_ApplyICFromToml
 END INTERFACE AbstractKernelApplyIC
 
 !----------------------------------------------------------------------------
