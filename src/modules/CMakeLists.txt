@@ -201,6 +201,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
+# ScalarFE
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
+
+# VectorFE
+include(${CMAKE_CURRENT_LIST_DIR}/VectorFE/CMakeLists.txt)
+
+# TensorFE
+include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
+
 # FiniteElement
 include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
 

@@ -1,5 +1,7 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
+! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,21 +15,29 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
 
-SUBMODULE(FiniteElement_Class) GetMethods
+SUBMODULE(ScalarFE_Class) Methods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
+MODULE PROCEDURE Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
 
-END SUBMODULE GetMethods
+END PROCEDURE Deallocate_Ptr_Vector
+
+END SUBMODULE Methods

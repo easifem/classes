@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <https: //www.gnu.org/licenses/>
+#
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(${PROJECT_NAME}
-               PRIVATE ${src_path}/FiniteElement_Class@Methods.F90)
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/TensorFE_Class.F90)

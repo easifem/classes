@@ -144,4 +144,8 @@ END PROCEDURE Deallocate_Ptr_Vector
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
+
 END SUBMODULE ConstructorMethods
