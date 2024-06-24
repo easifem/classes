@@ -207,7 +207,7 @@ END INTERFACE DirichletBCImportFromToml
 
 INTERFACE DirichletBCImportFromToml
  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, filename,  &
-       & printToml)
+        & printToml)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
