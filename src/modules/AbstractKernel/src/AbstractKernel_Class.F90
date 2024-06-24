@@ -626,7 +626,9 @@ CONTAINS
 
   ! SET:
   ! @ApplyICMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyIC => obj_ApplyIC
+  PROCEDURE, PASS(obj) :: ApplyIC1 => obj_ApplyIC
+  PROCEDURE, PASS(obj) :: ApplyIC2 => obj_ApplyICFromToml
+  GENERIC, PUBLIC :: ApplyIC => ApplyIC1, ApplyIC2
   !! Apply Dirichlet boundary condition
 
   ! SET:
@@ -698,7 +700,9 @@ CONTAINS
 
   ! GET:
   ! @RunMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
+  PROCEDURE, PASS(obj) :: Run1 => obj_Run1
+  PROCEDURE, PASS(obj) :: Run2 => obj_Run2
+  GENERIC, PUBLIC :: Run => Run1, Run2
   !! Run the kernel
 
   ! SET:
@@ -1887,6 +1891,22 @@ INTERFACE AbstractKernelApplyIC
 END INTERFACE AbstractKernelApplyIC
 
 !----------------------------------------------------------------------------
+!                                                    ApplyIC@ApplyICMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-06-21
+! summary:  Apply initial conditions to the fields from toml
+
+INTERFACE AbstractKernelApplyIC
+  MODULE SUBROUTINE obj_ApplyICFromToml(obj, table, tomlName)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: tomlName
+  END SUBROUTINE obj_ApplyICFromToml
+END INTERFACE AbstractKernelApplyIC
+
+!----------------------------------------------------------------------------
 !                                                   Assemble@AssembleMethods
 !----------------------------------------------------------------------------
 
@@ -2295,10 +2315,25 @@ END INTERFACE
 ! summary: Run the simulation
 
 INTERFACE
-  MODULE SUBROUTINE obj_Run(obj, param)
+  MODULE SUBROUTINE obj_Run1(obj, param)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Run
+  END SUBROUTINE obj_Run1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Run@RunMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 10 May 2022
+! summary: Run the simulation
+
+INTERFACE
+  MODULE SUBROUTINE obj_Run2(obj, table)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_Run2
 END INTERFACE
 
 !----------------------------------------------------------------------------

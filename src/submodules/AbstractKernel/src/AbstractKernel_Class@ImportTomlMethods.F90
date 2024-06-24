@@ -503,8 +503,10 @@ CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
 CALL obj%Set()
 
 !----------------------------------------------------------------------------
-!
+!                                                              ApplyIC
 !----------------------------------------------------------------------------
+
+CALL obj%ApplyIC(table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
