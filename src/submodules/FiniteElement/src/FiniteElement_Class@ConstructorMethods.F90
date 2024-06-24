@@ -16,56 +16,11 @@
 
 SUBMODULE(FiniteElement_Class) ConstructorMethods
 USE ExceptionHandler_Class, ONLY: e
-USE BaseMethod, ONLY: Reallocate
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
+
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                        InitiateLagrangeFE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateLagrangeFE
-TYPE(ParameterList_) :: param
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateLagrangeFE()"
-LOGICAL(LGT) :: problem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-problem = baseInterpolation(1:8) .NE. "Lagrange"
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: This routine is valid for baseInterpolation = '//  &
-    & 'LagrangePolynomial or LagrangeInterpolation '//  &
-    & ' given value of baseInterpolation is '//TRIM(baseInterpolation))
-  RETURN
-END IF
-
-CALL param%Initiate()
-CALL SetFiniteElementParam( &
-  & param=param,  &
-  & prefix=obj%GetPrefix(), &
-  & nsd=nsd,  &
-  & elemType=elemType,  &
-  & baseContinuity=baseContinuity,  &
-  & baseInterpolation=baseInterpolation,  &
-  & ipType=ipType,  &
-  & basisType=[basisType],  &
-  & alpha=[alpha],  &
-  & beta=[beta],  &
-  & lambda=[lambda],  &
-  & order=order)
-CALL obj%Initiate(param)
-CALL param%DEALLOCATE()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE obj_InitiateLagrangeFE
 
 !----------------------------------------------------------------------------
 !                                                 FiniteElementInitiate
@@ -79,7 +34,7 @@ INTEGER(I4B), ALLOCATABLE :: elemType(:), order(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 sublist => NULL()
@@ -90,8 +45,8 @@ ierr = param%GetSubList(key=myprefix, sublist=sublist)
 
 IF (ierr .NE. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured while getting'//  &
-    & ' the sublist from param.')
+                    '[INTERNAL ERROR] :: some error occured while getting'// &
+                    ' the sublist from param.')
   RETURN
 END IF
 
@@ -117,7 +72,7 @@ IF (ALLOCATED(order)) DEALLOCATE (order)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate1
@@ -127,12 +82,15 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
+
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 IF (ALLOCATED(obj)) THEN
@@ -144,7 +102,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE Deallocate_Vector
@@ -154,11 +112,15 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
+
 INTEGER(I4B) :: ii
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 IF (ALLOCATED(obj)) THEN
@@ -173,7 +135,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE Deallocate_Ptr_Vector

@@ -29,10 +29,9 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 
 IF (ASSOCIATED(obj%refelem)) THEN
-  CALL obj%refelem%Display( &
-    & msg="ReferenceElement: ",  &
-    & unitno=unitno, &
-    & notFull=notFull)
+  CALL obj%refelem%Display(msg="ReferenceElement: ", &
+                           unitno=unitno, &
+                           notFull=notFull)
 END IF
 
 CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)

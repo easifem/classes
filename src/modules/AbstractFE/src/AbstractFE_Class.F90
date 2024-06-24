@@ -17,20 +17,23 @@
 MODULE AbstractFE_Class
 USE GlobalData
 USE BaseType, ONLY: BaseInterpolation_, &
-  & BaseContinuity_,  &
-  & ElemShapeData_,  &
-  & QuadraturePoint_,  &
-  & LagrangeInterpolation_,  &
-  & OrthogonalInterpolation_,  &
-  & HierarchyInterpolation_,  &
-  & SerendipityInterpolation_,  &
-  & HermitInterpolation_,  &
-  & ReferenceElement_
+                    BaseContinuity_, &
+                    ElemShapeData_, &
+                    QuadraturePoint_, &
+                    LagrangeInterpolation_, &
+                    OrthogonalInterpolation_, &
+                    HierarchyInterpolation_, &
+                    SerendipityInterpolation_, &
+                    HermitInterpolation_, &
+                    ReferenceElement_
 USE String_Class, ONLY: String
-USE AbstractRefElement_Class
+USE AbstractRefElement_Class, ONLY: AbstractRefElement_, &
+                                    AbstractRefElementPointer_
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
+
 PRIVATE
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
@@ -44,11 +47,11 @@ PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
 CHARACTER(*), PARAMETER :: AbstractFEEssentialParams = &
-& "/nsd/order/anisoOrder/tEdgeOrder/edgeOrder/tFaceOrder"//  &
-& "/faceOrder/cellOrder/feType/elemType/ipType/dofType"//  &
-& "/transformType/refElemDomain/baseContinuity/baseInterpolation"//  &
-& "/isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder"//  &
-& "/isCellOrder/tCellOrder/basisType/alpha/beta/lambda"
+                   "/nsd/order/anisoOrder/tEdgeOrder/edgeOrder/tFaceOrder"// &
+                     "/faceOrder/cellOrder/feType/elemType/ipType/dofType"// &
+           "/transformType/refElemDomain/baseContinuity/baseInterpolation"// &
+            "/isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder"// &
+                         "/isCellOrder/tCellOrder/basisType/alpha/beta/lambda"
 
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
@@ -170,20 +173,31 @@ TYPE, ABSTRACT :: AbstractFE_
   TYPE(ReferenceElement_) :: facetElem0(MAX_NO_FACE)
   !! Facet elements
   REAL(DFP), ALLOCATABLE :: coeff(:, :)
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   !@ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Constructor method for AbstractFE element
   !! This method can be overloaded by Subclass of this abstract class.
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE => &
+    obj_InitiateLagrangeFE
+  !! Initiate Lagrange finite element method
+
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
+
+  !IO:
+  !@IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of a finite element
   PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
@@ -195,52 +209,55 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
 
   !GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get prefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData =>  &
-    &  obj_GetLocalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 =>  &
-    & obj_GetLocalElemShapeData_H1_Master
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 => &
+    obj_GetLocalElemShapeData_H1_Master
   !! Get local element shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv =>  &
-    & obj_GetLocalElemShapeData_HDiv_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv => &
+    obj_GetLocalElemShapeData_HDiv_Master
   !! Get local element shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl =>  &
-    & obj_GetLocalElemShapeData_HCurl_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl => &
+    obj_GetLocalElemShapeData_HCurl_Master
   !! Get local element shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG =>  &
-    & obj_GetLocalElemShapeData_DG_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG => &
+    obj_GetLocalElemShapeData_DG_Master
 
   ! GET:
   ! @Global element shapedata
 
   !! Get local element shape data for Discontinuous Galerkin
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData =>  &
-    &  obj_GetGlobalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 =>  &
-    & obj_GetGlobalElemShapeData_H1_Master
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 => &
+    obj_GetGlobalElemShapeData_H1_Master
   !! Get global shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv =>  &
-    & obj_GetGlobalElemShapeData_HDiv_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv => &
+    obj_GetGlobalElemShapeData_HDiv_Master
   !! Get global shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl =>  &
-    & obj_GetGlobalElemShapeData_HCurl_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl => &
+    obj_GetGlobalElemShapeData_HCurl_Master
   !! Get global shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG =>  &
-    & obj_GetGlobalElemShapeData_DG_Master
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG => &
+    obj_GetGlobalElemShapeData_DG_Master
   !! Get global shape data for Discontinuous Galerkin
 
   ! GET:
   ! @QuadratureMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints =>  &
-    & obj_GetQuadraturePoints1
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints1
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -274,12 +291,11 @@ END INTERFACE AbstractFECheckEssentialParam
 ! date:  2023-08-11
 ! summary:  Sets the parameters for initiating abstract finite element
 
-INTERFACE
-  MODULE SUBROUTINE SetAbstractFEParam( &
-    & param, prefix, nsd, elemType, baseContinuity, &
-    & baseInterpolation, ipType, basisType, alpha, &
-    & beta, lambda, order, anisoOrder, edgeOrder,  &
-    & faceOrder, cellOrder)
+INTERFACE SetFiniteElementParam
+  MODULE SUBROUTINE SetAbstractFEParam(param, prefix, nsd, elemType, &
+          baseContinuity, baseInterpolation, ipType, basisType, alpha, beta, &
+         lambda, order, anisoOrder, edgeOrder, faceOrder, cellOrder, feType, &
+                                       dofType, transformType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! ParameterList
     CHARACTER(*), INTENT(IN) :: prefix
@@ -309,6 +325,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
     !! baseInterpol is LagrangePolynomial
+    !! Default ipType is Equidistance
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
     !! Basis type: Legendre, Lobatto, Ultraspherical,
     !! Jacobi, Monomial
@@ -328,11 +345,15 @@ INTERFACE
     !! Order of approximation along face
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! Order of approximation along cell
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Finite element type
+    !! Default is Scalar
+    !! For HDiv and Hcurl it should be Vector
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    !! Degree of freedom type, default is nodal
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
   END SUBROUTINE SetAbstractFEParam
-END INTERFACE
-
-INTERFACE SetFiniteElementParam
-  MODULE PROCEDURE SetAbstractFEParam
 END INTERFACE SetFiniteElementParam
 
 !----------------------------------------------------------------------------
@@ -349,6 +370,49 @@ INTERFACE AbstractFEInitiate
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE AbstractFEInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstrucorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary: Initiates an instance of the finite element
+
+INTERFACE
+MODULE SUBROUTINE obj_InitiateLagrangeFE(obj, nsd, elemType, baseContinuity, &
+             baseInterpolation, ipType, basisType, alpha, beta, lambda, order)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nsd
+      !! Number of spatial dimension
+    INTEGER(I4B), INTENT(IN) :: elemType
+      !! Type of finite element
+      !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
+      !! Hexahedron
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+      !! Continuity or Conformity of basis function.
+      !! H1* (default), HDiv, HCurl, DG
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+      !! Basis function family used for interpolation.
+      !! LagrangeInterpolation, LagrangePolynomial
+    INTEGER(I4B), INTENT(IN) :: ipType
+      !! Interpolation point type, It is required when
+      !! baseInterpol is LagrangePolynomial. It can take following
+      !! values:
+      !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
+    INTEGER(I4B), INTENT(IN) :: basisType
+      !! Basis type:
+      !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
+    REAL(DFP), INTENT(IN) :: alpha
+      !! Jacobi parameter
+    REAL(DFP), INTENT(IN) :: beta
+      !! Jacobi parameter
+    REAL(DFP), INTENT(IN) :: lambda
+      !! Ultraspherical parameters
+    INTEGER(I4B), INTENT(IN) :: order
+      !! Isotropic Order of finite element
+  END SUBROUTINE obj_InitiateLagrangeFE
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -449,13 +513,11 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam( &
-    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
-    & cellOrder, feType, elemType, ipType, basisType, alpha, &
-    & beta, lambda, dofType, transformType, refElemDomain, &
-    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
-    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-    & tEdgeOrder, tFaceOrder, tCellOrder)
+  MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
+           faceOrder, cellOrder, feType, elemType, ipType, basisType, alpha, &
+        beta, lambda, dofType, transformType, refElemDomain, baseContinuity, &
+       baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+                 isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -531,12 +593,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam( &
-    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
-    & cellOrder, feType, elemType, ipType, basisType, alpha, &
-    & beta, lambda, dofType, transformType, refElemDomain, &
-    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
-    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-    & tEdgeOrder, tFaceOrder, tCellOrder)
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
+    cellOrder, feType, elemType, ipType, basisType, alpha, &
+    beta, lambda, dofType, transformType, refElemDomain, &
+    baseContinuity, baseInterpolation, isIsotropicOrder, &
+    isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
+    tEdgeOrder, tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -613,7 +675,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-    & facetElemsd, quad)
+                                                   facetElemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
       !! finite element
     CLASS(ElemShapedata_), INTENT(INOUT) :: cellElemsd
@@ -679,8 +741,8 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_H1_Master(obj, elemsd,   &
-    & xij, geoElemsd)
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData_H1_Master(obj, elemsd, &
+                                                         xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -768,7 +830,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
-    & xij, geoElemsd)
+                                                            xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -812,7 +874,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
-    & xij, geoElemsd)
+                                                         xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -839,8 +901,8 @@ END INTERFACE
 ! summary: Get quadrature points
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType,  &
-    & order, nips, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
+                                             order, nips, alpha, beta, lambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points

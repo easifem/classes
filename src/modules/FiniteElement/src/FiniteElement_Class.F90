@@ -43,8 +43,6 @@ CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
 TYPE, EXTENDS(AbstractFE_) :: FiniteElement_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE =>  &
-    & obj_InitiateLagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE FiniteElement_
 
@@ -55,50 +53,6 @@ END TYPE FiniteElement_
 TYPE :: FiniteElementPointer_
   CLASS(FiniteElement_), POINTER :: ptr => NULL()
 END TYPE FiniteElementPointer_
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstrucorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateLagrangeFE(obj, nsd,  &
-    & elemType, baseContinuity, baseInterpolation, ipType,  &
-    & basisType, alpha, beta, lambda, order)
-    CLASS(FiniteElement_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: nsd
-      !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: elemType
-      !! Type of finite element
-      !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-      !! Hexahedron
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-      !! Continuity or Conformity of basis function.
-      !! H1* (default), HDiv, HCurl, DG
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-      !! Basis function family used for interpolation.
-      !! LagrangeInterpolation, LagrangePolynomial
-    INTEGER(I4B), INTENT(IN) :: ipType
-      !! Interpolation point type, It is required when
-      !! baseInterpol is LagrangePolynomial. It can take following
-      !! values:
-      !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), INTENT(IN) :: basisType
-      !! Basis type:
-      !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), INTENT(IN) :: alpha
-      !! Jacobi parameter
-    REAL(DFP), INTENT(IN) :: beta
-      !! Jacobi parameter
-    REAL(DFP), INTENT(IN) :: lambda
-      !! Ultraspherical parameters
-    INTEGER(I4B), INTENT(IN) :: order
-      !! Isotropic Order of finite element
-  END SUBROUTINE obj_InitiateLagrangeFE
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
