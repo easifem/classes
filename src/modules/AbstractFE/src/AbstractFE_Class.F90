@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractFE_Class
-USE GlobalData
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseType, ONLY: BaseInterpolation_, &
                     BaseContinuity_, &
                     ElemShapeData_, &
@@ -32,9 +32,13 @@ USE AbstractRefElement_Class, ONLY: AbstractRefElement_, &
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 
-IMPLICIT NONE
+USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
+                                   PARAM_REFELEM_MAX_EDGES, &
+                                   PARAM_REFELEM_MAX_POINTS
 
+IMPLICIT NONE
 PRIVATE
+
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
 PUBLIC :: SetAbstractFEParam
@@ -57,11 +61,6 @@ INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
 INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
-
-INTEGER(I4B), PARAMETER :: MAX_NO_FACE = 6
-!! Maximum number of faces in an element
-INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 12
-!! Maximum number of edges in an element
 
 !----------------------------------------------------------------------------
 !                                                        AbstractRefElement_
@@ -88,13 +87,13 @@ TYPE, ABSTRACT :: AbstractFE_
   !! Order in x, y, and z direction
   LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
   !! True if the order is different in different directions
-  INTEGER(I4B) :: edgeOrder(MAX_NO_EDGE) = 0
+  INTEGER(I4B) :: edgeOrder(PARAM_REFELEM_MAX_EDGES) = 0
   !! Order on each edge of the element
   INTEGER(I4B) :: tEdgeOrder = 0
   !! The actual size of edgeOrder
   LOGICAL(LGT) :: isEdgeOrder = .FALSE.
   !! True if we set the edge order
-  INTEGER(I4B) :: faceOrder(MAX_NO_FACE)
+  INTEGER(I4B) :: faceOrder(3 * PARAM_REFELEM_MAX_FACES) = 0
   !! Order of approximation on each face of the element
   INTEGER(I4B) :: tFaceOrder = 0
   !! The actual size of faceOrder
@@ -170,7 +169,7 @@ TYPE, ABSTRACT :: AbstractFE_
   !! At the time of initiate we extract refelem0 from refelem
   !! This way we do not have to make copy every time we
   !! make quadrature points and shape function data
-  TYPE(ReferenceElement_) :: facetElem0(MAX_NO_FACE)
+  TYPE(ReferenceElement_) :: facetElem0(PARAM_REFELEM_MAX_FACES)
   !! Facet elements
   REAL(DFP), ALLOCATABLE :: coeff(:, :)
 
@@ -349,7 +348,7 @@ INTERFACE SetFiniteElementParam
     !! Finite element type
     !! Default is Scalar
     !! For HDiv and Hcurl it should be Vector
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
     !! Degree of freedom type, default is nodal
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type, from reference element to physical element

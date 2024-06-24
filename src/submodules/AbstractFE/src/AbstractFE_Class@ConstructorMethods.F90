@@ -15,6 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) ConstructorMethods
+USE BaseType, ONLY: TypeElemNameOpt, &
+                    TypePolynomialOpt, &
+                    TypeQuadratureOpt
+USE GlobalData, ONLY: Scalar
+
 USE StringUtility, ONLY: UpperCase
 
 USE Display_Method, ONLY: ToString
@@ -111,8 +116,9 @@ CALL Set(obj=sublist, prefix=prefix, key="baseInterpolation", &
 CALL Set(obj=sublist, prefix=prefix, key="feType", &
          datatype=1_I4B, VALUE=Input(option=feType, default=Scalar))
 
-! CALL Set(obj=sublist, prefix=prefix, key="dofType", &
-!         datatype=1_I4B, VALUE=Input(option=dofType, default=DEFAULT_DOF_TYPE))
+CALL Set(obj=sublist, prefix=prefix, key="dofType", &
+         datatype=DEFAULT_DOF_TYPE, &
+         VALUE=Input(option=dofType, default=DEFAULT_DOF_TYPE))
 
 CALL Set(obj=sublist, prefix=prefix, key="transformType", &
          datatype=1_I4B, VALUE=Input(option=transformType, &
@@ -123,7 +129,7 @@ IF (baseInterpolation0(1:4) .EQ. "LAGR") THEN
   CALL AssertError1(isok, myName, &
                   'In case of LAGRANGE polynomials ipType should be present.')
 END IF
-ipType0 = Input(default=Equidistance, option=ipType)
+ipType0 = Input(default=TypeQuadratureOpt%equidistance, option=ipType)
 CALL Set(obj=sublist, prefix=prefix, key="ipType", &
          datatype=ipType0, VALUE=ipType0)
 
@@ -167,21 +173,21 @@ END IF
 xidim = XiDimension(elemType)
 
 SELECT CASE (topoType)
-CASE (Triangle)
+CASE (TypeElemNameOpt%Triangle)
   CALL SetFEParam_Heirarchy2D(param=sublist, elemType=elemType, xidim=xidim, &
           isQuad=.FALSE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
                               prefix=prefix)
-CASE (Quadrangle)
+CASE (TypeElemNameOpt%Quadrangle)
   CALL SetFEParam_Heirarchy2D(param=sublist, elemType=elemType, xidim=xidim, &
            isQuad=.TRUE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
                               prefix=prefix)
 
-CASE (Tetrahedron)
+CASE (TypeElemNameOpt%Tetrahedron)
 CALL SetFEParam_Heirarchy3D(param=sublist, elemType=elemType, isHexa=.FALSE.,&
           isTetra=.TRUE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
                               cellOrder=cellOrder, prefix=prefix)
 
-CASE (Hexahedron)
+CASE (TypeElemNameOpt%Hexahedron)
 CALL SetFEParam_Heirarchy3D(param=sublist, elemType=elemType, isHexa=.TRUE., &
          isTetra=.FALSE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
                               cellOrder=cellOrder, prefix=prefix)
@@ -248,9 +254,9 @@ SUBROUTINE SetFEParam_BasisType_Line(param, elemType, nsd, baseContinuity0, &
 
     SELECT CASE (astr)
     CASE ("LAGR")
-      aint = Monomial
+      aint = TypePolynomialOpt%Monomial
     CASE ("ORTH")
-      aint = Legendre
+      aint = TypePolynomialOpt%Legendre
     CASE DEFAULT
       CALL e%RaiseError(modName//'::'//myName//' - '// &
        '[INTERNAL ERROR] :: No case found for baseInterpolation0(1:4)='//astr)
@@ -314,9 +320,9 @@ SUBROUTINE SetFEParam_BasisType_Simplex(param, elemType, nsd, &
 
     SELECT CASE (astr)
     CASE ("LAGR")
-      aint = Monomial
+      aint = TypePolynomialOpt%Monomial
     CASE ("ORTH")
-      aint = Legendre
+      aint = TypePolynomialOpt%Legendre
     CASE DEFAULT
       CALL e%RaiseError(modName//'::'//myName//' - '// &
        '[INTERNAL ERROR] :: No case found for baseInterpolation0(1:4)='//astr)
@@ -380,9 +386,9 @@ SUBROUTINE SetFEParam_BasisType_Cartesian(param, elemType, nsd, xidim, &
 
     SELECT CASE (astr)
     CASE ("LAGR")
-      aint = Monomial
+      aint = TypePolynomialOpt%Monomial
     CASE ("ORTH")
-      aint = Legendre
+      aint = TypePolynomialOpt%Legendre
     CASE DEFAULT
       CALL e%RaiseError(modName//'::'//myName//' - '// &
        '[INTERNAL ERROR] :: No case found for baseInterpolation0(1:4)='//astr)
@@ -460,27 +466,28 @@ SUBROUTINE SetFEParam_BasisType(param, elemType, nsd, baseContinuity0, &
 #endif
 
   SELECT CASE (topoType)
-  CASE (Line)
+  CASE (TypeElemNameOpt%Line)
     CALL SetFEParam_BasisType_Line(param=param, elemType=elemType, nsd=nsd, &
                                    baseContinuity0=baseContinuity0, &
                                    baseInterpolation0=baseInterpolation0, &
                                 basisType=basisType, alpha=alpha, beta=beta, &
                                    lambda=lambda, prefix=prefix)
 
-  CASE (Triangle, Tetrahedron, Prism, Pyramid)
+  CASE (TypeElemNameOpt%Triangle, TypeElemNameOpt%Tetrahedron, &
+        TypeElemNameOpt%Prism, TypeElemNameOpt%Pyramid)
     CALL SetFEParam_BasisType_Simplex(param=param, elemType=elemType, &
                                    nsd=nsd, baseContinuity0=baseContinuity0, &
                                       baseInterpolation0=baseInterpolation0, &
                                       basisType=basisType, prefix=prefix)
 
-  CASE (Quadrangle)
+  CASE (TypeElemNameOpt%Quadrangle)
     CALL SetFEParam_BasisType_Cartesian(param=param, elemType=elemType, &
                       nsd=nsd, xidim=2_I4B, baseContinuity0=baseContinuity0, &
                                       baseInterpolation0=baseInterpolation0, &
                                         basisType=basisType, alpha=alpha, &
                                       beta=beta, lambda=lambda, prefix=prefix)
 
-  CASE (Hexahedron)
+  CASE (TypeElemNameOpt%Hexahedron)
     CALL SetFEParam_BasisType_Cartesian(param=param, elemType=elemType, &
                       nsd=nsd, xidim=2_I4B, baseContinuity0=baseContinuity0, &
                  baseInterpolation0=baseInterpolation0, basisType=basisType, &
