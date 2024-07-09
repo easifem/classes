@@ -210,14 +210,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/VectorFE/CMakeLists.txt)
 # TensorFE
 include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
 
-# FiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
-
-# MixedFiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
-
-# FiniteElementFactory
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
+# # FiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+#
+# # MixedFiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+#
+# # FiniteElementFactory
+# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
 
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
