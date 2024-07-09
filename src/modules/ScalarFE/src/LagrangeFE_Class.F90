@@ -18,6 +18,11 @@ MODULE LagrangeFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE ScalarFE_Class, ONLY: ScalarFE_
 
+USE BaseType, ONLY: QuadraturePoint_, &
+                    ElemShapedata_
+
+USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
 
 PRIVATE
@@ -43,6 +48,10 @@ TYPE, EXTENDS(ScalarFE_) :: LagrangeFE_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
 END TYPE LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -135,6 +144,73 @@ INTERFACE
     CLASS(LagrangeFE_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data on facets
+
+INTERFACE
+  module SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, facetElemsd, &
+                                                   quad)
+    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+      !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
+      !! element shape data on cell
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+      !! element shapedata on facet element
+      !! The size of facetElemsd should be equal to total number of
+      !! facets in element.
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
+      !! Quadrature points on each facet element
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 END MODULE LagrangeFE_Class
