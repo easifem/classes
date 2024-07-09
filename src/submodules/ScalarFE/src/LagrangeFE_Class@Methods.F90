@@ -18,6 +18,10 @@
 !
 
 SUBMODULE(LagrangeFE_Class) Methods
+USE Display_Method, ONLY: ToString
+
+USE BaseType, ONLY: TypeElemNameOpt
+
 IMPLICIT NONE
 CONTAINS
 
@@ -63,5 +67,61 @@ IF (ALLOCATED(obj)) THEN
 END IF
 
 END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                     GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+! INTEGER(I4B) :: topoType
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+! topoType = obj%GetTopologyType()
+!
+! SELECT CASE (topoType)
+!
+! CASE (TypeElemNameOpt%line)
+! CASE (TypeElemNameOpt%triangle)
+! CASE (TypeElemNameOpt%quadrangle)
+! CASE (TypeElemNameOpt%tetrahedron)
+! CASE (TypeElemNameOpt%hexahedron)
+! CASE (TypeElemNameOpt%prism)
+! CASE (TypeElemNameOpt%pyramid)
+!
+! CASE DEFAULT
+!   CALL AssertError1(.FALSE., myname, &
+!                     'No case found for topoType = '//ToString(topoType))
+!   RETURN
+! END SELECT
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                     GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods
