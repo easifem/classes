@@ -42,7 +42,7 @@ MODULE PROCEDURE obj_InitiateFaceConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_IntiiateFaceConnectivity()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 SELECT CASE (obj%xidim)
@@ -82,7 +82,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+                          '[START] ')
 #endif
 
   problem = obj%isFaceConnectivityInitiated
@@ -91,7 +91,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   problem = .NOT. ALLOCATED(obj%elementData)
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+           '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
     RETURN
   END IF
 
