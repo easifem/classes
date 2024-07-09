@@ -132,11 +132,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 # ScalarFE
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
 
-# FiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
-
-# MixedFiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+# # FiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+#
+# # MixedFiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
 
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
