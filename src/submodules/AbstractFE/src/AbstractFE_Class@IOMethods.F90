@@ -15,8 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) IOMethods
-USE BaseMethod
+USE GlobalData, ONLY: char_lf
+
+USE Display_Method, ONLY: Display, ToString
+
+USE ReferenceElement_Method, ONLY: ElementName
+
+USE MdEncode_Method, ONLY: MdEncode, &
+                           React_StartTabs, &
+                           React_StartTabItem, &
+                           React_EndTabItem
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,12 +37,6 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 IF (.NOT. obj%isInitiated) THEN
   CALL Display("Element is Empty", unitno=unitno)
-END IF
-
-IF (ASSOCIATED(obj%refelem)) THEN
-  CALL obj%refelem%Display(msg="ReferenceElement: ", &
-                           unitno=unitno, &
-                           notFull=notFull)
 END IF
 
 CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)
@@ -44,8 +49,8 @@ CALL Display(obj%beta, msg="beta: ", unitno=unitno)
 CALL Display(obj%lambda, msg="lambda: ", unitno=unitno)
 CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)
 CALL Display(obj%transformType, msg="transformType: ", unitno=unitno)
-CALL Display(obj%baseContinuity0, msg="baseContinuity: ", unitno=unitno)
-CALL Display(obj%baseInterpolation0, msg="baseInterpolation: ", unitno=unitno)
+CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
+CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
 CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
 
 IF (obj%isIsotropicOrder) THEN
@@ -100,47 +105,44 @@ INTEGER(I4B), PARAMETER :: jj = 21
 TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
 colTitle(1) = ""
-rowTitle(1) = "**nsd**"; astr(1) = tostring(obj%nsd)
-rowTitle(2) = "**feType**"; astr(2) = tostring(obj%feType)
+rowTitle(1) = "**nsd**"; astr(1) = ToString(obj%nsd)
+rowTitle(2) = "**feType**"; astr(2) = ToString(obj%feType)
 rowTitle(3) = "**elemType**"; astr(3) = ElementName(obj%elemType)
-rowTitle(4) = "**ipType**"; astr(4) = tostring(obj%ipType)
-rowTitle(5) = "**basisType**"; astr(5) = tostring(obj%basisType)
-rowTitle(6) = "**alpha**"; astr(6) = tostring(obj%alpha)
-rowTitle(7) = "**beta**"; astr(7) = tostring(obj%beta)
-rowTitle(8) = "**lambda**"; astr(8) = tostring(obj%lambda)
-rowTitle(9) = "**dofType**"; astr(9) = tostring(obj%dofType)
-rowTitle(10) = "**transformType**"; astr(10) = tostring(obj%transformType)
-rowTitle(11) = "**baseContinuity**"; astr(11) = obj%baseContinuity0%chars()
-rowTitle(12) = "**baseInterpolion**"; astr(12) = obj%baseInterpolation0%chars()
-rowTitle(13) = "**refElemDomain**"; astr(13) = obj%refElemDomain%chars()
-rowTitle(14) = "**isIsotropicOrder**"; astr(14) = tostring(obj%isIsotropicOrder)
-rowTitle(15) = "**isAnisotropicOrder**"; astr(15) = tostring(obj%isAnisotropicOrder)
-rowTitle(16) = "**isEdgeOrder**"; astr(16) = tostring(obj%isEdgeOrder)
-rowTitle(17) = "**isFaceOrder**"; astr(17) = tostring(obj%isFaceOrder)
-rowTitle(18) = "**isCellOrder**"; astr(18) = tostring(obj%isCellOrder)
+rowTitle(4) = "**ipType**"; astr(4) = ToString(obj%ipType)
+rowTitle(5) = "**basisType**"; astr(5) = ToString(obj%basisType)
+rowTitle(6) = "**alpha**"; astr(6) = ToString(obj%alpha)
+rowTitle(7) = "**beta**"; astr(7) = ToString(obj%beta)
+rowTitle(8) = "**lambda**"; astr(8) = ToString(obj%lambda)
+rowTitle(9) = "**dofType**"; astr(9) = ToString(obj%dofType)
+rowTitle(10) = "**transformType**"; astr(10) = ToString(obj%transformType)
+rowTitle(11) = "**baseContinuity**"; astr(11) = obj%baseContinuity
+rowTitle(12) = "**baseInterpolion**"; astr(12) = obj%baseInterpolation
+rowTitle(13) = "**refElemDomain**"; astr(13) = obj%refElemDomain
+rowTitle(14) = "**isIsotropicOrder**"; astr(14) = ToString(obj%isIsotropicOrder)
+rowTitle(15) = "**isAnisotropicOrder**"; astr(15) = ToString(obj%isAnisotropicOrder)
+rowTitle(16) = "**isEdgeOrder**"; astr(16) = ToString(obj%isEdgeOrder)
+rowTitle(17) = "**isFaceOrder**"; astr(17) = ToString(obj%isFaceOrder)
+rowTitle(18) = "**isCellOrder**"; astr(18) = ToString(obj%isCellOrder)
+
 IF (obj%isEdgeOrder) THEN
-  rowTitle(19) = "**edgeOrder**"; astr(19) = tostring(obj%edgeOrder)
+  rowTitle(19) = "**edgeOrder**"; astr(19) = ToString(obj%edgeOrder)
 ELSE
   rowTitle(19) = "**edgeOrder**"; astr(19) = " "
 END IF
 
 IF (obj%isFaceOrder) THEN
-  rowTitle(20) = "**faceOrder**"; astr(20) = tostring(obj%faceOrder)
+  rowTitle(20) = "**faceOrder**"; astr(20) = ToString(obj%faceOrder)
 ELSE
   rowTitle(20) = "**faceOrder**"; astr(20) = " "
 END IF
 
 IF (obj%iscellOrder) THEN
-  rowTitle(21) = "**cellOrder**"; astr(21) = tostring(obj%cellOrder)
+  rowTitle(21) = "**cellOrder**"; astr(21) = ToString(obj%cellOrder)
 ELSE
   rowTitle(21) = "**cellOrder**"; astr(21) = " "
 END IF
 
-ans = MdEncode( &
-  & val=astr(1:21), &
-  & rh=rowTitle(1:21), &
-  & ch=colTitle)//char_lf//"**Reference Element**"// &
-  & char_lf//char_lf//obj%refelem%MdEncode()
+ans = MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf
 
 END PROCEDURE obj_MdEncode
 
@@ -155,62 +157,62 @@ TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
 colTitle(1) = ""
 rowTitle(1) = "**nsd**"
-astr(1) = tostring(obj%nsd)
+astr(1) = ToString(obj%nsd)
 
 rowTitle(2) = "**feType**"
-astr(2) = tostring(obj%feType)
+astr(2) = ToString(obj%feType)
 
 rowTitle(3) = "**elemType**"
 astr(3) = ElementName(obj%elemType)
 
 rowTitle(4) = "**ipType**"
-astr(4) = tostring(obj%ipType)
+astr(4) = ToString(obj%ipType)
 
 rowTitle(5) = "**basisType**"
-astr(5) = tostring(obj%basisType)
+astr(5) = ToString(obj%basisType)
 
 rowTitle(6) = "**alpha**"
-astr(6) = tostring(obj%alpha)
+astr(6) = ToString(obj%alpha)
 
 rowTitle(7) = "**beta**"
-astr(7) = tostring(obj%beta)
+astr(7) = ToString(obj%beta)
 
 rowTitle(8) = "**lambda**"
-astr(8) = tostring(obj%lambda)
+astr(8) = ToString(obj%lambda)
 
 rowTitle(9) = "**dofType**"
-astr(9) = tostring(obj%dofType)
+astr(9) = ToString(obj%dofType)
 
 rowTitle(10) = "**transformType**"
-astr(10) = tostring(obj%transformType)
+astr(10) = ToString(obj%transformType)
 
 rowTitle(11) = "**baseContinuity**"
-astr(11) = obj%baseContinuity0%chars()
+astr(11) = obj%baseContinuity
 
 rowTitle(12) = "**baseInterpolation**"
-astr(12) = obj%baseInterpolation0%chars()
+astr(12) = obj%baseInterpolation
 
 rowTitle(13) = "**refElemDomain**"
-astr(13) = obj%refElemDomain%chars()
+astr(13) = obj%refElemDomain
 
 rowTitle(14) = "**isIsotropicOrder**"
-astr(14) = tostring(obj%isIsotropicOrder)
+astr(14) = ToString(obj%isIsotropicOrder)
 
 rowTitle(15) = "**isAnisotropicOrder**"
-astr(15) = tostring(obj%isAnisotropicOrder)
+astr(15) = ToString(obj%isAnisotropicOrder)
 
 rowTitle(16) = "**isEdgeOrder**"
-astr(16) = tostring(obj%isEdgeOrder)
+astr(16) = ToString(obj%isEdgeOrder)
 
 rowTitle(17) = "**isFaceOrder**"
-astr(17) = tostring(obj%isFaceOrder)
+astr(17) = ToString(obj%isFaceOrder)
 
 rowTitle(18) = "**isCellOrder**"
-astr(18) = tostring(obj%isCellOrder)
+astr(18) = ToString(obj%isCellOrder)
 
 IF (obj%isEdgeOrder) THEN
   rowTitle(19) = "**edgeOrder**"
-  astr(19) = tostring(obj%edgeOrder)
+  astr(19) = ToString(obj%edgeOrder)
 ELSE
   rowTitle(19) = "**edgeOrder**"
   astr(19) = " "
@@ -218,7 +220,7 @@ END IF
 
 IF (obj%isFaceOrder) THEN
   rowTitle(20) = "**faceOrder**"
-  astr(20) = tostring(obj%faceOrder)
+  astr(20) = ToString(obj%faceOrder)
 ELSE
   rowTitle(20) = "**faceOrder**"
   astr(20) = " "
@@ -226,7 +228,7 @@ END IF
 
 IF (obj%iscellOrder) THEN
   rowTitle(21) = "**cellOrder**"
-  astr(21) = tostring(obj%cellOrder)
+  astr(21) = ToString(obj%cellOrder)
 ELSE
   rowTitle(21) = "**cellOrder**"
   astr(21) = " "
@@ -234,14 +236,8 @@ END IF
 
 ans = React_StartTabs()//char_lf
 ans = ans//React_StartTabItem(VALUE="0", label="Finite Element")//char_lf// &
-  & MdEncode( &
-  & val=astr(1:21), &
-  & rh=rowTitle(1:21), &
-  & ch=colTitle)//char_lf// &
-  & React_EndTabItem()//char_lf// &
-  & React_StartTabItem(VALUE="1", label="Reference Element")//char_lf// &
-  & char_lf//obj%refelem%ReactEncode()//char_lf// &
-  & React_EndTabItem()//char_lf//React_EndTabs()//char_lf
+      MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf// &
+      React_EndTabItem()//char_lf
 END PROCEDURE obj_ReactEncode
 
 END SUBMODULE IOMethods

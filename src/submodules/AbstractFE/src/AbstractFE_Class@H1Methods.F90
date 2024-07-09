@@ -89,27 +89,27 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
   CLASS(LagrangeInterpolation_), INTENT(IN) :: baseInterpolation
   CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Lagrange()"
 
-  IF (obj%isIsotropicOrder) THEN
-    CALL Initiate( &
-      & obj=elemsd,  &
-      & quad=quad,  &
-      & refelem=obj%refelem0,  &
-      & baseContinuity=TypeH1,  &
-      & baseInterpolation=baseInterpolation,  &
-      & order=obj%order,  &
-      & ipType=obj%ipType,  &
-      & basisType=obj%basisType(1),  &
-      & coeff=obj%coeff,  &
-      & firstCall=obj%firstCall,  &
-      & alpha=obj%alpha(1),  &
-      & beta=obj%beta(1), &
-      & lambda=obj%lambda(1))
-    obj%firstCall = .TRUE.
-    RETURN
-  END IF
+  ! IF (obj%isIsotropicOrder) THEN
+  !   CALL Initiate( &
+  !     & obj=elemsd,  &
+  !     & quad=quad,  &
+  !     & refelem=obj%refelem0,  &
+  !     & baseContinuity=TypeH1,  &
+  !     & baseInterpolation=baseInterpolation,  &
+  !     & order=obj%order,  &
+  !     & ipType=obj%ipType,  &
+  !     & basisType=obj%basisType(1),  &
+  !     & coeff=obj%coeff,  &
+  !     & firstCall=obj%firstCall,  &
+  !     & alpha=obj%alpha(1),  &
+  !     & beta=obj%beta(1), &
+  !     & lambda=obj%lambda(1))
+  !   obj%firstCall = .TRUE.
+  !   RETURN
+  ! END IF
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP ERROR] :: This routine is under development')
+                    '[WIP ERROR] :: This routine is under development')
 ! TODO: Implement GetLocalElemshapeData_H1_Lagrange for anisotropic order
 
 END SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange
@@ -125,24 +125,24 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Orthogonal(obj, elemsd, quad,  &
   CLASS(QuadraturePoint_), INTENT(IN) :: quad
   CLASS(OrthogonalInterpolation_), INTENT(IN) :: baseInterpolation
   CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Orthogonal"
-  TYPE(ReferenceElement_) :: refelem
+  ! TYPE(ReferenceElement_) :: refelem
 
-  CALL obj%refelem%GetParam(refelem=refelem)
-  IF (obj%isIsotropicOrder) THEN
-    CALL Initiate( &
-      & obj=elemsd,  &
-      & quad=quad,  &
-      & refelem=obj%refelem0,  &
-      & baseContinuity=TypeH1,  &
-      & baseInterpolation=baseInterpolation,  &
-      & order=obj%order,  &
-      & ipType=obj%ipType,  &
-      & basisType=obj%basisType(1),  &
-      & alpha=obj%alpha(1),  &
-      & beta=obj%beta(1), &
-      & lambda=obj%lambda(1))
-    RETURN
-  END IF
+  ! CALL obj%refelem%GetParam(refelem=refelem)
+  ! IF (obj%isIsotropicOrder) THEN
+  !   CALL Initiate( &
+  !     & obj=elemsd,  &
+  !     & quad=quad,  &
+  !     & refelem=obj%refelem0,  &
+  !     & baseContinuity=TypeH1,  &
+  !     & baseInterpolation=baseInterpolation,  &
+  !     & order=obj%order,  &
+  !     & ipType=obj%ipType,  &
+  !     & basisType=obj%basisType(1),  &
+  !     & alpha=obj%alpha(1),  &
+  !     & beta=obj%beta(1), &
+  !     & lambda=obj%lambda(1))
+  !   RETURN
+  ! END IF
 
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[WIP] This routine at present support isIsotropicOrder  &
@@ -163,25 +163,25 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Hierarchy(obj, elemsd, quad,  &
   CLASS(QuadraturePoint_), INTENT(IN) :: quad
   CLASS(HierarchyInterpolation_), INTENT(IN) :: baseInterpolation
   CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Hierarchy"
-  TYPE(ReferenceElement_) :: refelem
+  ! TYPE(ReferenceElement_) :: refelem
 
-  CALL obj%refelem%GetParam(refelem=refelem)
+  ! CALL obj%refelem%GetParam(refelem=refelem)
 
-  IF (obj%isIsotropicOrder) THEN
-    CALL Initiate( &
-      & obj=elemsd,  &
-      & quad=quad,  &
-      & refelem=obj%refelem0,  &
-      & baseContinuity=TypeH1,  &
-      & baseInterpolation=baseInterpolation,  &
-      & order=obj%order,  &
-      & ipType=obj%ipType,  &
-      & basisType=obj%basisType(1),  &
-      & alpha=obj%alpha(1),  &
-      & beta=obj%beta(1), &
-      & lambda=obj%lambda(1))
-    RETURN
-  END IF
+  ! IF (obj%isIsotropicOrder) THEN
+  !   CALL Initiate( &
+  !     & obj=elemsd,  &
+  !     & quad=quad,  &
+  !     & refelem=obj%refelem0,  &
+  !     & baseContinuity=TypeH1,  &
+  !     & baseInterpolation=baseInterpolation,  &
+  !     & order=obj%order,  &
+  !     & ipType=obj%ipType,  &
+  !     & basisType=obj%basisType(1),  &
+  !     & alpha=obj%alpha(1),  &
+  !     & beta=obj%beta(1), &
+  !     & lambda=obj%lambda(1))
+  !   RETURN
+  ! END IF
 
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[WIP] This routine at present support isIsotropicOrder  &
@@ -202,25 +202,25 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Serendipity(obj, elemsd, quad,  &
   CLASS(SerendipityInterpolation_), INTENT(IN) :: baseInterpolation
 
   CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Hermit"
-  TYPE(ReferenceElement_) :: refelem
+  ! TYPE(ReferenceElement_) :: refelem
 
-  CALL obj%refelem%GetParam(refelem=refelem)
+  ! CALL obj%refelem%GetParam(refelem=refelem)
 
-  IF (obj%isIsotropicOrder) THEN
-    CALL Initiate( &
-      & obj=elemsd,  &
-      & quad=quad,  &
-      & refelem=obj%refelem0,  &
-      & baseContinuity=TypeH1,  &
-      & baseInterpolation=baseInterpolation,  &
-      & order=obj%order,  &
-      & ipType=obj%ipType,  &
-      & basisType=obj%basisType(1),  &
-      & alpha=obj%alpha(1),  &
-      & beta=obj%beta(1), &
-      & lambda=obj%lambda(1))
-    RETURN
-  END IF
+  ! IF (obj%isIsotropicOrder) THEN
+  !   CALL Initiate( &
+  !     & obj=elemsd,  &
+  !     & quad=quad,  &
+  !     & refelem=obj%refelem0,  &
+  !     & baseContinuity=TypeH1,  &
+  !     & baseInterpolation=baseInterpolation,  &
+  !     & order=obj%order,  &
+  !     & ipType=obj%ipType,  &
+  !     & basisType=obj%basisType(1),  &
+  !     & alpha=obj%alpha(1),  &
+  !     & beta=obj%beta(1), &
+  !     & lambda=obj%lambda(1))
+  !   RETURN
+  ! END IF
 
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[WIP] This routine at present support isIsotropicOrder  &
@@ -242,23 +242,23 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Hermit(obj, elemsd, quad,  &
   CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Serendipity"
   TYPE(ReferenceElement_) :: refelem
 
-  CALL obj%refelem%GetParam(refelem=refelem)
+  ! CALL obj%refelem%GetParam(refelem=refelem)
 
-  IF (obj%isIsotropicOrder) THEN
-    CALL Initiate( &
-      & obj=elemsd,  &
-      & quad=quad,  &
-      & refelem=obj%refelem0,  &
-      & baseContinuity=TypeH1,  &
-      & baseInterpolation=baseInterpolation,  &
-      & order=obj%order,  &
-      & ipType=obj%ipType,  &
-      & basisType=obj%basisType(1),  &
-      & alpha=obj%alpha(1),  &
-      & beta=obj%beta(1), &
-      & lambda=obj%lambda(1))
-    RETURN
-  END IF
+  ! IF (obj%isIsotropicOrder) THEN
+  !   CALL Initiate( &
+  !     & obj=elemsd,  &
+  !     & quad=quad,  &
+  !     & refelem=obj%refelem0,  &
+  !     & baseContinuity=TypeH1,  &
+  !     & baseInterpolation=baseInterpolation,  &
+  !     & order=obj%order,  &
+  !     & ipType=obj%ipType,  &
+  !     & basisType=obj%basisType(1),  &
+  !     & alpha=obj%alpha(1),  &
+  !     & beta=obj%beta(1), &
+  !     & lambda=obj%lambda(1))
+  !   RETURN
+  ! END IF
 
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[WIP] This routine at present support isIsotropicOrder  &

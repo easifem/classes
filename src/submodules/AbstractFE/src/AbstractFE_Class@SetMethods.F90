@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) SetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -24,12 +23,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 IF (PRESENT(nsd)) obj%nsd = nsd
 IF (PRESENT(order)) obj%order = order
@@ -42,19 +43,11 @@ IF (PRESENT(elemType)) obj%elemType = elemType
 IF (PRESENT(ipType)) obj%ipType = ipType
 IF (PRESENT(dofType)) obj%dofType = dofType
 IF (PRESENT(transformType)) obj%transformType = transformType
-IF (PRESENT(baseContinuity)) THEN
-  CALL BaseContinuity_fromString( &
-    & obj=obj%baseContinuity, &
-    & name=baseContinuity)
-  obj%baseContinuity0 = baseContinuity
-END IF
-IF (PRESENT(baseInterpolation)) THEN
-  CALL BaseInterpolation_fromString( &
-    & obj=obj%baseInterpolation,   &
-    & name=baseInterpolation)
-  obj%baseInterpolation0 = baseInterpolation
-END IF
-IF (PRESENT(refElemDomain)) obj%refElemDomain = refElemDomain
+
+IF (PRESENT(baseContinuity)) obj%baseContinuity = baseContinuity(1:2)
+IF (PRESENT(baseInterpolation)) obj%baseInterpolation = baseInterpolation(1:4)
+IF (PRESENT(refElemDomain)) obj%refElemDomain = refElemDomain(1:1)
+
 IF (PRESENT(isIsotropicOrder)) obj%isIsotropicOrder = isIsotropicOrder
 IF (PRESENT(isAnisotropicOrder)) obj%isAnisotropicOrder = isAnisotropicOrder
 IF (PRESENT(isEdgeOrder)) obj%isEdgeOrder = isEdgeOrder
@@ -72,8 +65,8 @@ IF (PRESENT(lambda)) obj%lambda = lambda
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_SetParam
 

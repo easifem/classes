@@ -867,7 +867,6 @@ TYPE(String) :: baseInterpol, baseCont, refElemDomain0
 REAL(DFP) :: alpha(3), beta(3), lambda(3)
 LOGICAL(LGT) :: isEdgeOrder, isFaceOrder, isCellOrder, &
                 isIsotropicOrder, isAnisotropicOrder
-TYPE(AbstractRefElementPointer_), ALLOCATABLE :: facetElemPtrs(:)
 TYPE(ParameterList_), POINTER :: sublist
 CHARACTER(:), ALLOCATABLE :: prefix
 
@@ -978,30 +977,14 @@ IF (isCellOrder) THEN
   END IF
 END IF
 
-!! Initiate ReferenceElement
-obj%refelem => RefElement_Pointer(elemType)
-!! NOTE: RefElement_Pointer is defined in RefElementFactory
-CALL obj%refelem%Initiate(nsd=nsd, baseContinuity=baseCont%chars(), &
-                          baseInterpolation=baseInterpol%chars())
-
 !! Set parameters
 CALL obj%SetParam(nsd=nsd, elemType=elemType, feType=feType, &
     baseContinuity=baseCont%chars(), baseInterpolation=baseInterpol%chars(), &
-          refElemDomain=refElemDomain0%chars(), transformType=transformType, &
+                  transformType=transformType, &
            dofType=dofType, ipType=ipType, basisType=basisType, alpha=alpha, &
                   beta=beta, lambda=lambda)
 
 obj%isInitiated = .TRUE.
-CALL obj%refelem%GetParam(refelem=obj%refelem0)
-CALL obj%refelem%GetFacetElements(ans=facetElemPtrs)
-
-DO ii = 1, SIZE(facetElemPtrs)
-  CALL facetElemPtrs(ii)%ptr%GetParam(refelem=obj%facetElem0(ii))
-  CALL facetElemPtrs(ii)%ptr%DEALLOCATE()
-  facetElemPtrs(ii)%ptr => NULL()
-END DO
-
-DEALLOCATE (facetElemPtrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1091,41 +1074,17 @@ obj%elemType = obj2%elemType
 obj%ipType = obj2%ipType
 obj%dofType = obj2%dofType
 obj%transformType = obj2%transformType
-obj%baseContinuity0 = obj2%baseContinuity0
-obj%baseInterpolation0 = obj2%baseInterpolation0
+obj%baseContinuity = obj2%baseContinuity
+obj%baseInterpolation = obj2%baseInterpolation
 obj%basisType = obj2%basisType
 obj%alpha = obj2%alpha
 obj%beta = obj2%beta
 obj%lambda = obj2%lambda
 obj%refElemDomain = obj2%refElemDomain
-obj%refelem0 = obj2%refelem0
-
-IF (ALLOCATED(obj2%baseContinuity)) THEN
-  ALLOCATE (obj%baseContinuity, source=obj2%baseContinuity)
-END IF
-
-IF (ALLOCATED(obj2%baseInterpolation)) THEN
-  ALLOCATE (obj%baseInterpolation, source=obj2%baseInterpolation)
-END IF
-
-! obj%refelem
-IF (ASSOCIATED(obj2%refelem)) THEN
-  elemType = obj2%refelem%GetName()
-  obj%refelem => RefElement_Pointer(elemType)
-  CALL obj%refelem%Copy(obj2%refelem)
-END IF
-
-DO ii = 1, SIZE(obj2%facetElem0)
-  obj%facetElem0(ii) = obj2%facetElem0(ii)
-END DO
-
-IF (ALLOCATED(obj2%coeff)) THEN
-  obj%coeff = obj2%coeff
-END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Copy
@@ -1146,21 +1105,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-DO ii = 1, SIZE(obj%facetElem0)
-  CALL ReferenceElement_Deallocate(obj%facetElem0(ii))
-END DO
-
-CALL ReferenceElement_Deallocate(obj%refelem0)
-
-IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
-
 obj%firstCall = .TRUE.
-
-IF (ASSOCIATED(obj%refelem)) THEN
-  CALL obj%refelem%DEALLOCATE()
-  DEALLOCATE (obj%refelem)
-  obj%refelem => NULL()
-END IF
 
 obj%nsd = 0
 obj%order = 0
@@ -1181,16 +1126,14 @@ obj%elemType = 0
 obj%ipType = 0
 obj%dofType = 0
 obj%transformType = 0
-obj%baseContinuity0 = ""
-obj%baseInterpolation0 = ""
 obj%basisType = 0
 obj%alpha = 0.0
 obj%beta = 0.0
 obj%lambda = 0.0
-obj%refElemDomain = ""
+obj%baseContinuity = "  "
+obj%baseInterpolation = "    "
+obj%refElemDomain = " "
 
-IF (ALLOCATED(obj%baseContinuity)) DEALLOCATE (obj%baseContinuity)
-IF (ALLOCATED(obj%baseInterpolation)) DEALLOCATE (obj%baseInterpolation)
 obj%isInitiated = .FALSE.
 
 #ifdef DEBUG_VER

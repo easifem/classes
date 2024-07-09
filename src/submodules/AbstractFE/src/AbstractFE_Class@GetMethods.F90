@@ -15,111 +15,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                    GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-isok = obj%isInitiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractFE_::obj is not initiated.')
-  RETURN
-END IF
-
-SELECT TYPE (baseContinuity => obj%baseContinuity)
-CLASS IS (H1_)
-  CALL obj%GetLocalElemShapeData_H1(elemsd=elemsd, quad=quad)
-CLASS is (HDIV_)
-  CALL obj%GetLocalElemShapeData_HDiv(elemsd=elemsd, quad=quad)
-CLASS is (HCURL_)
-  CALL obj%GetLocalElemShapeData_HCurl(elemsd=elemsd, quad=quad)
-CLASS IS (DG_)
-  CALL obj%GetLocalElemShapeData_DG(elemsd=elemsd, quad=quad)
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for type of '//  &
-    & '  AbstractFE_::obj%baseContinuity')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                    GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-isok = obj%isInitiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: It seems AbstractFE_::obj is not initiated.')
-  RETURN
-END IF
-
-SELECT TYPE (baseContinuity => obj%baseContinuity)
-CLASS IS (H1_)
-  CALL obj%GetGlobalElemShapeData_H1(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS is (HDIV_)
-  CALL obj%GetGlobalElemShapeData_HDiv(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS is (HCURL_)
-  CALL obj%GetGlobalElemShapeData_HCurl(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS IS (DG_)
-  CALL obj%GetGlobalElemShapeData_DG(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  '//  &
-    & 'AbstractFE_::obj%baseContinuity.')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
-END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+#endif
+
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 IF (PRESENT(nsd)) nsd = obj%nsd
@@ -155,11 +67,11 @@ IF (PRESENT(dofType)) dofType = obj%dofType
 IF (PRESENT(transformType)) transformType = obj%transformType
 
 IF (PRESENT(baseContinuity)) THEN
-  baseContinuity = obj%baseContinuity0
+  baseContinuity = obj%baseContinuity
 END IF
 
 IF (PRESENT(baseInterpolation)) THEN
-  baseInterpolation = obj%baseInterpolation0
+  baseInterpolation = obj%baseInterpolation
 END IF
 
 IF (PRESENT(refElemDomain)) refElemDomain = obj%refElemDomain
@@ -180,20 +92,18 @@ IF (PRESENT(lambda)) lambda = obj%lambda
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                             GetPrefix
+!                                                            GetTopologyType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetPrefix
+MODULE PROCEDURE obj_GetTopologyType
+ans = obj%topoType
+END PROCEDURE obj_GetTopologyType
 
 !----------------------------------------------------------------------------
 !

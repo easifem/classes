@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractFE_Class) QuadratureMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -29,13 +28,23 @@ CHARACTER(*), PARAMETER :: myName = "GetQuadraturePoints1"
 INTEGER(I4B) :: order0(3), nips0(3), quadratureType0(3)
 REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+#ifdef DEBUG_VER
 IF (PRESENT(order) .AND. PRESENT(nips)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[WRONG ARGUMENTS] both nips and order cannot be present'//  &
-    & ' either give nips (number of integration points) or '//  &
-    & ' give order (order of integrand)')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                 '[WRONG ARGUMENTS] both nips and order cannot be present'// &
+                    ' either give nips (number of integration points) or '// &
+                    ' give order (order of integrand)')
   RETURN
 END IF
+#endif
 
 SELECT CASE (SIZE(quadratureType))
 CASE (1)
@@ -95,19 +104,19 @@ IF (PRESENT(order)) THEN
     order0 = order
   END SELECT
 
-  CALL Initiate( &
-    & obj=quad,  &
-    & refelem=obj%refelem0,  &
-    & p=order0(1),  &
-    & q=order0(2),  &
-    & r=order0(3),  &
-    & quadratureType1=quadratureType0(1),  &
-    & quadratureType2=quadratureType0(2),  &
-    & quadratureType3=quadratureType0(3),  &
-    & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
-    & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
-    & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
-    & )
+  ! CALL Initiate( &
+  !   & obj=quad,  &
+  !   & refelem=obj%refelem0,  &
+  !   & p=order0(1),  &
+  !   & q=order0(2),  &
+  !   & r=order0(3),  &
+  !   & quadratureType1=quadratureType0(1),  &
+  !   & quadratureType2=quadratureType0(2),  &
+  !   & quadratureType3=quadratureType0(3),  &
+  !   & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
+  !   & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
+  !   & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
+  !   & )
   RETURN
 END IF
 
@@ -123,21 +132,27 @@ IF (PRESENT(nips)) THEN
     nips0 = nips
   END SELECT
 
-  CALL Initiate( &
-    & obj=quad,  &
-    & refelem=obj%refelem0,  &
-    & nipsx=nips0(1:1),  &
-    & nipsy=nips0(2:2),  &
-    & nipsz=nips0(3:3),  &
-    & quadratureType1=quadratureType0(1),  &
-    & quadratureType2=quadratureType0(2),  &
-    & quadratureType3=quadratureType0(3),  &
-    & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
-    & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
-    & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
-    & )
+  ! CALL Initiate( &
+  !   & obj=quad,  &
+  !   & refelem=obj%refelem0,  &
+  !   & nipsx=nips0(1:1),  &
+  !   & nipsy=nips0(2:2),  &
+  !   & nipsz=nips0(3:3),  &
+  !   & quadratureType1=quadratureType0(1),  &
+  !   & quadratureType2=quadratureType0(2),  &
+  !   & quadratureType3=quadratureType0(3),  &
+  !   & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
+  !   & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
+  !   & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
+  !   & )
   RETURN
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetQuadraturePoints1
 
 END SUBMODULE QuadratureMethods
