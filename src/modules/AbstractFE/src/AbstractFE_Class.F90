@@ -108,6 +108,8 @@ TYPE, ABSTRACT :: AbstractFE_
   INTEGER(I4B) :: feType = 0
   !! Type of finite element
   !! Scalar, Vector, Matrix
+  INTEGER(I4B) :: topoType = 0
+  !! Topology type
   INTEGER(I4B) :: elemType = 0
   !! Topology type of reference elemtn
   !! Line, Triangle, Quadrangle, Tetrahedron, Hexahedron,
@@ -126,15 +128,6 @@ TYPE, ABSTRACT :: AbstractFE_
   !! Currently it is not used
   !! Type of Tranformation usef for polynomial space
   !! - FE_TRANSFORM_IDENTITY
-  TYPE(String) :: baseContinuity0
-  !! String name of base continuity
-  TYPE(String) :: baseInterpolation0
-  !! String name of base interpolation
-  !! LagrangePolynomial
-  !! SerendipityPolynomial
-  !! HermitPolynomial
-  !! OrthogonalPolynomial
-  !! HierarchyPolynomial
   INTEGER(I4B) :: basisType(3)
   !! Integer code for basis type in x, y, and z direction
   !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
@@ -145,16 +138,16 @@ TYPE, ABSTRACT :: AbstractFE_
   !! Jacobi parameters
   REAL(DFP) :: lambda(3)
   !! Ultraspherical parameters
-  TYPE(String) :: refElemDomain
+  CHARACTER(1) :: refelemDomain = "B"
   !! String name for reference element domain.
   !! It can take following values:
-  !! - UNIT
-  !! - BIUNIT
-  CLASS(BaseContinuity_), ALLOCATABLE :: baseContinuity
+  !! - UNIT "U"
+  !! - BIUNIT "B"
+  CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
   !! H1, HCurl, HDiv, DG
-  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpolation
+  CHARACTER(4) :: baseInterpolation = "Lagr"
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
   !! LagrangeInterpolation
@@ -162,16 +155,6 @@ TYPE, ABSTRACT :: AbstractFE_
   !! SerendipityInterpolation
   !! HierarchyInterpolation
   !! OrthogonalInterpolation
-  CLASS(AbstractRefElement_), POINTER :: refelem => NULL()
-  !! reference element
-  TYPE(ReferenceElement_) :: refelem0
-  !! This is only for internal use
-  !! At the time of initiate we extract refelem0 from refelem
-  !! This way we do not have to make copy every time we
-  !! make quadrature points and shape function data
-  TYPE(ReferenceElement_) :: facetElem0(PARAM_REFELEM_MAX_FACES)
-  !! Facet elements
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
 
 CONTAINS
   PRIVATE
@@ -179,83 +162,66 @@ CONTAINS
   ! CONSTRUCTOR:
   !@ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Constructor method for AbstractFE element
   !! This method can be overloaded by Subclass of this abstract class.
 
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: InitiateLagrangeFE => &
     obj_InitiateLagrangeFE
   !! Initiate Lagrange finite element method
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
+
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
 
   !IO:
   !@IOMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of a finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
   !! Deallocate the data stored in an instance
 
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
 
   !GET:
   ! @GetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
   !! Get prefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
-  !! Sets the parameters of finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
-    obj_GetLocalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 => &
-    obj_GetLocalElemShapeData_H1_Master
-  !! Get local element shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv => &
-    obj_GetLocalElemShapeData_HDiv_Master
-  !! Get local element shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl => &
-    obj_GetLocalElemShapeData_HCurl_Master
-  !! Get local element shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG => &
-    obj_GetLocalElemShapeData_DG_Master
 
-  ! GET:
-  ! @Global element shapedata
-
+  PROCEDURE(obj_GetLocalElemShapeData), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 => &
-    obj_GetGlobalElemShapeData_H1_Master
-  !! Get global shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv => &
-    obj_GetGlobalElemShapeData_HDiv_Master
-  !! Get global shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl => &
-    obj_GetGlobalElemShapeData_HCurl_Master
-  !! Get global shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG => &
-    obj_GetGlobalElemShapeData_DG_Master
-  !! Get global shape data for Discontinuous Galerkin
+
+  PROCEDURE(obj_GetGlobalElemShapeData), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetGlobalElemShapeData
+  !! Get global element shape data
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
+    obj_GetTopologyType
+  !! returns the topoType
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Sets the parameters of finite element
 
   ! GET:
   ! @QuadratureMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints1
 END TYPE AbstractFE_
 
@@ -575,8 +541,9 @@ END INTERFACE
 ! date:  2023-12-11
 ! summary:  Get prefix
 
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+ABSTRACT INTERFACE
+  FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    IMPORT :: AbstractFE_
     CLASS(AbstractFE_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
@@ -591,13 +558,12 @@ END INTERFACE
 ! summary: Get the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam( &
-    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
-    cellOrder, feType, elemType, ipType, basisType, alpha, &
-    beta, lambda, dofType, transformType, refElemDomain, &
-    baseContinuity, baseInterpolation, isIsotropicOrder, &
-    isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-    tEdgeOrder, tFaceOrder, tCellOrder)
+  MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
+           faceOrder, cellOrder, feType, elemType, ipType, basisType, alpha, &
+                        beta, lambda, dofType, transformType, refElemDomain, &
+                        baseContinuity, baseInterpolation, isIsotropicOrder, &
+                  isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
+                                 tEdgeOrder, tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -629,11 +595,11 @@ INTERFACE
     !! degree of freedom type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
     !! transformation type
-    TYPE(String), OPTIONAL, INTENT(OUT) :: baseContinuity
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
     !! String name of type of continuity used for basis functions
-    TYPE(String), OPTIONAL, INTENT(OUT) :: baseInterpolation
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
-    TYPE(String), OPTIONAL, INTENT(OUT) :: refElemDomain
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
     !! Domain of reference element
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isIsotropicOrder
     !! True if isotropic order
@@ -656,11 +622,12 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get local element shape data shape data
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    IMPORT :: AbstractFE_, ElemShapedata_, QuadraturePoint_
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -672,18 +639,19 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get local element shape data shape data on facets
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-                                                   facetElemsd, quad)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, facetElemsd, &
+                                            quad)
+    IMPORT :: AbstractFE_, ElemShapedata_, QuadraturePoint_
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
       !! finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: cellElemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
       !! element shape data on cell
-    CLASS(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
       !! element shapedata on facet element
       !! The size of facetElemsd should be equal to total number of
       !! facets in element.
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad(:)
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
       !! Quadrature points on each facet element
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
@@ -696,199 +664,24 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get Global element shape data shape data
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+    IMPORT :: AbstractFE_, ElemShapedata_, ElemShapeData_, DFP
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
     !! shape function data for geometry which contains local shape function
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        GetLocalElemShapeData_H1@H1Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemshapeData_H1_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@H1Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_H1_Master(obj, elemsd, &
-                                                         xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_H1_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    GetLocalElemShapeData_HDiv@HDivMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetGlobalElemShapeData@HDivMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master(obj, elemsd, &
-    & xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   GetLocalElemShapeData_HCurl@HCurlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       GetGlobalElemShapeData@HCurlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
-                                                            xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData_DG@DGMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_DG_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@DGMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
-                                                         xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_DG_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -903,7 +696,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
                                              order, nips, alpha, beta, lambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
     INTEGER(I4B), INTENT(IN) :: quadratureType(:)
     !! Type of quadrature points
@@ -930,6 +723,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTopologyType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary: Returns the topoType
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTopologyType
 END INTERFACE
 
 END MODULE AbstractFE_Class
