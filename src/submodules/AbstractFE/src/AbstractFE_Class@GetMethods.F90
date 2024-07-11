@@ -15,6 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) GetMethods
+USE ReallocateUtility, ONLY: Reallocate
+
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+
 IMPLICIT NONE
 CONTAINS
 
@@ -104,6 +108,18 @@ END PROCEDURE obj_GetParam
 MODULE PROCEDURE obj_GetTopologyType
 ans = obj%topoType
 END PROCEDURE obj_GetTopologyType
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLagrangeLocalElemShapeData
+CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
+           domainName=obj%refelemDomain, order=obj%order, ipType=obj%ipType, &
+       basisType=obj%basisType(1), coeff=obj%coeff, firstCall=obj%firstCall, &
+                   alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
+END PROCEDURE obj_GetLagrangeLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !
