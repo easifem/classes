@@ -29,6 +29,8 @@ PRIVATE
 
 PUBLIC :: LagrangeFE_
 PUBLIC :: LagrangeFEPointer_
+PUBLIC :: LagrangeFEPointer
+
 PUBLIC :: FiniteElementDeallocate
 
 CHARACTER(*), PARAMETER :: modName = "LagrangeFE_Class"
@@ -42,7 +44,7 @@ CHARACTER(*), PARAMETER :: myprefix = "LagrangeFE"
 ! date: 2023-08-13
 ! summary: Finite element class
 !
-!{!pages/docs-api/FiniteElement/FiniteElement_.md!}
+!{!pages/docs-api/LagrangeFE/LagrangeFE_.md!}
 
 TYPE, EXTENDS(ScalarFE_) :: LagrangeFE_
 CONTAINS
@@ -70,38 +72,39 @@ END TYPE LagrangeFEPointer_
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE LagrangeFE
-  MODULE FUNCTION obj_LagrangeFE(elemType, nsd, baseInterpolation, ipType, &
-                            basisType, alpha, beta, lambda, order) RESULT(ans)
+INTERFACE LagrangeFEPointer
+  MODULE FUNCTION obj_LagrangeFEPointer(elemType, nsd, baseContinuity, &
+                              ipType, basisType, alpha, beta, lambda, order, &
+                                        anisoOrder) RESULT(ans)
 
     INTEGER(I4B), INTENT(IN) :: elemType
-      !! Type of finite element
-      !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-      !! Hexahedron
+    !! Type of finite element
+    !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
+    !! Hexahedron
     INTEGER(I4B), INTENT(IN) :: nsd
-      !! Number of spatial dimension
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-      !! Basis function family used for interpolation.
-      !! LagrangeInterpolation, LagrangePolynomial
+    !! Number of spatial dimension
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !!
     INTEGER(I4B), INTENT(IN) :: ipType
-      !! Interpolation point type, It is required when
-      !! baseInterpol is LagrangePolynomial. It can take following
-      !! values:
-      !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), INTENT(IN) :: basisType
-      !! Basis type:
-      !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), INTENT(IN) :: alpha
-      !! Jacobi parameter
-    REAL(DFP), INTENT(IN) :: beta
-      !! Jacobi parameter
-    REAL(DFP), INTENT(IN) :: lambda
-      !! Ultraspherical parameters
-    INTEGER(I4B), INTENT(IN) :: order
-      !! Isotropic Order of finite element
+    !! Interpolation point type, It is required when
+    !! baseInterpol is LagrangePolynomial. It can take following
+    !! values:
+    !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! Basis type:
+    !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! Ultraspherical parameters
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Isotropic Order of finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     TYPE(LagrangeFE_), POINTER :: ans
-  END FUNCTION obj_LagrangeFE
-END INTERFACE LagrangeFE
+  END FUNCTION obj_LagrangeFEPointer
+END INTERFACE LagrangeFEPointer
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
