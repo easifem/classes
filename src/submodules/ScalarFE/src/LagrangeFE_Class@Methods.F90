@@ -20,10 +20,24 @@
 SUBMODULE(LagrangeFE_Class) Methods
 USE Display_Method, ONLY: ToString
 
-USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeElemNameOpt, TypeFeVariableOpt
+
+USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                         LagrangeFEPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_LagrangeFEPointer
+ALLOCATE (ans)
+CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
+                  nsd=nsd, baseContinuity=baseContinuity, &
+           baseInterpolation="LAGRANGE", ipType=ipType, basisType=basisType, &
+    alpha=alpha, beta=beta, lambda=lambda, order=order, anisoOrder=anisoOrder)
+END PROCEDURE obj_LagrangeFEPointer
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
@@ -73,29 +87,9 @@ END PROCEDURE Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-! INTEGER(I4B) :: topoType
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+CALL obj%GetLagrangeLocalElemShapeData(quad=quad, elemsd=elemsd)
 
-! topoType = obj%GetTopologyType()
-!
-! SELECT CASE (topoType)
-!
-! CASE (TypeElemNameOpt%line)
-! CASE (TypeElemNameOpt%triangle)
-! CASE (TypeElemNameOpt%quadrangle)
-! CASE (TypeElemNameOpt%tetrahedron)
-! CASE (TypeElemNameOpt%hexahedron)
-! CASE (TypeElemNameOpt%prism)
-! CASE (TypeElemNameOpt%pyramid)
-!
-! CASE DEFAULT
-!   CALL AssertError1(.FALSE., myname, &
-!                     'No case found for topoType = '//ToString(topoType))
-!   RETURN
-! END SELECT
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
