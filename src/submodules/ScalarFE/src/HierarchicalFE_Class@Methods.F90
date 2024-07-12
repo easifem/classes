@@ -17,27 +17,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LagrangeFE_Class) Methods
+SUBMODULE(HierarchicalFE_Class) Methods
 USE Display_Method, ONLY: ToString
 
-USE BaseType, ONLY: TypeElemNameOpt
-
-USE StringUtility, ONLY: UpperCase
+USE BaseType, ONLY: TypeElemNameOpt, TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         LagrangeFEPointer
+!                                                         HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LagrangeFEPointer
+MODULE PROCEDURE obj_HierarchicalFEPointer
 ALLOCATE (ans)
-CALL ans%Initiate(elemType=elemType, nsd=nsd, baseContinuity=baseContinuity, &
-    baseInterpolation=baseInterpolation, ipType=ipType, basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, order=order, &
-                  anisoOrder=anisoOrder)
-END PROCEDURE obj_LagrangeFEPointer
+CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
+                  nsd=nsd, baseContinuity=baseContinuity, &
+                  baseInterpolation="Hierarchical", cellOrder=cellOrder, &
+            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+                  faceOrient=faceOrient, edgeOrient=edgeOrient)
+END PROCEDURE obj_HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
@@ -87,29 +86,7 @@ END PROCEDURE Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-! INTEGER(I4B) :: topoType
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-
-! topoType = obj%GetTopologyType()
-!
-! SELECT CASE (topoType)
-!
-! CASE (TypeElemNameOpt%line)
-! CASE (TypeElemNameOpt%triangle)
-! CASE (TypeElemNameOpt%quadrangle)
-! CASE (TypeElemNameOpt%tetrahedron)
-! CASE (TypeElemNameOpt%hexahedron)
-! CASE (TypeElemNameOpt%prism)
-! CASE (TypeElemNameOpt%pyramid)
-!
-! CASE DEFAULT
-!   CALL AssertError1(.FALSE., myname, &
-!                     'No case found for topoType = '//ToString(topoType))
-!   RETURN
-! END SELECT
+CALL obj%GetHierarchicalLocalElemShapeData(quad=quad, elemsd=elemsd)
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
