@@ -95,18 +95,24 @@ TYPE, ABSTRACT :: AbstractFE_
   !! True if the order is different in different directions
   INTEGER(I4B) :: edgeOrder(PARAM_REFELEM_MAX_EDGES) = 0
   !! Order on each edge of the element
+  INTEGER(I4B) :: edgeOrient(PARAM_REFELEM_MAX_EDGES) = 0
+  !! Orientation on each edge of the element
   INTEGER(I4B) :: tEdgeOrder = 0
   !! The actual size of edgeOrder
   LOGICAL(LGT) :: isEdgeOrder = .FALSE.
   !! True if we set the edge order
-  INTEGER(I4B) :: faceOrder(3 * PARAM_REFELEM_MAX_FACES) = 0
+  INTEGER(I4B) :: faceOrder(3, PARAM_REFELEM_MAX_FACES) = 0
   !! Order of approximation on each face of the element
+  INTEGER(I4B) :: faceOrient(3, PARAM_REFELEM_MAX_FACES) = 0
+  !! orientation on each face
   INTEGER(I4B) :: tFaceOrder = 0
   !! The actual size of faceOrder
   LOGICAL(LGT) :: isFaceOrder = .FALSE.
   !! True if we set the face order
   INTEGER(I4B) :: cellOrder(3) = 0
   !! Order of approximation inside the element
+  INTEGER(I4B) :: cellOrient(3) = 0
+  !! Orientation of each cell
   INTEGER(I4B) :: tCellOrder = 0
   !! The actual size of cellOrder
   LOGICAL(LGT) :: isCellOrder = .FALSE.
@@ -224,6 +230,10 @@ CONTAINS
     obj_GetLagrangeLocalElemShapeData
   !! Get local shape data for lagrange element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetHierarchicalLocalElemShapeData => &
+    obj_GetHierarchicalLocalElemShapeData
+  !! Get local shape data for Hierarchical element
+
   PROCEDURE(obj_GetGlobalElemShapeData), DEFERRED, PUBLIC, PASS(obj) :: &
     GetGlobalElemShapeData
   !! Get global element shape data
@@ -237,8 +247,14 @@ CONTAINS
   ! GET:
   ! @QuadratureMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints1 => &
     obj_GetQuadraturePoints1
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints2 => &
+    obj_GetQuadraturePoints2
+
+  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
+    GetQuadraturePoints2
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -322,7 +338,7 @@ INTERFACE SetFiniteElementParam
     !! Anisotropic order, order in x, y, and z directions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! Order of approximation along edges
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! Order of approximation along face
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! Order of approximation along cell
@@ -619,7 +635,7 @@ INTERFACE
     !! order in x, y, and z directions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! order of approximation on the edges of element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! order of approximation on the faces of element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(3)
     !! order of approximation in the cell of element
@@ -698,11 +714,11 @@ INTERFACE
     !! order of element (isotropic order)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: anisoOrder(3)
     !! order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: edgeOrder(:)
     !! order of approximation on the edges of element
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: faceOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(:)
     !! order of approximation in the cell of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
     !! finite element type
@@ -771,6 +787,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-11
+! summary:  Local element shape data for hierarchical poly
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetHierarchicalLocalElemShapeData(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE obj_GetHierarchicalLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -831,37 +863,73 @@ END INTERFACE
 ! date:  2023-09-05
 ! summary: Get quadrature points
 
+! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
+! alpha, beta, lambda, xij)
+
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
-                                             order, nips, alpha, beta, lambda)
+                                             order, alpha, beta, lambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), INTENT(IN) :: quadratureType
     !! Type of quadrature points
-    !! GaussLegendre
-    !! GaussLegendreLobatto
+    !! GaussLegendre ! GaussLegendreLobatto
     !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight
-    !! GaussChebyshev
-    !! GaussChebyshevLobatto
-    !! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussLegendreRadauRight ! GaussChebyshev
+    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
     !! GaussChebyshevRadauRight
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), INTENT(IN) :: order
     !! Order of integrand
     !! either the order or the nips should be present
     !! Both nips and order should not be present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
-    !! Number of integration points required
-    !! Either order or nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
     !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               GetQuadraturePoints2@QuadraturePointsMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-11
+! summary:  Getting quadrature points in anisotropic order
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, p, q, r, &
+           quadratureType1, quadratureType2, quadratureType3, alpha1, beta1, &
+                      lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature point
+    INTEGER(I4B), INTENT(IN) :: p
+    !! order of integrand in x
+    INTEGER(I4B), INTENT(IN) :: q
+    !! order of integrand in y
+    INTEGER(I4B), INTENT(IN) :: r
+    !! order of integrand in z direction
+    INTEGER(I4B), INTENT(IN) :: quadratureType1
+    !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
+    !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
+    !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
+    INTEGER(I4B), INTENT(IN) :: quadratureType2
+    !! Type of quadrature points
+    INTEGER(I4B), INTENT(IN) :: quadratureType3
+    !! Type of quadrature points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
+    !! Jacobi parameter and Ultraspherical parameters
+  END SUBROUTINE obj_GetQuadraturePoints2
 END INTERFACE
 
 !----------------------------------------------------------------------------
