@@ -23,6 +23,7 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE BaseType, ONLY: CSRMatrix_
+USE AbstractFE_Class, ONLY: AbstractFE_
 
 IMPLICIT NONE
 PRIVATE
@@ -65,9 +66,9 @@ TYPE :: FEDOF_
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
   !! LagrangeInterpolation
+  !! HierarchyInterpolation
   !! HermitInterpolation
   !! SerendipityInterpolation
-  !! HierarchyInterpolation
   !! OrthogonalInterpolation
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
@@ -99,6 +100,9 @@ TYPE :: FEDOF_
   !! the size of cellIA is equal to the total number of cells + 1
   !! The degrees of freedom of icell is stored in
   !! cellJA(cellIA(icell):cellIA(icell+1)-1)
+
+  CLASS(AbstractFE_), POINTER :: fe => NULL()
+  !! pointer to finite element object
 
 CONTAINS
 
@@ -201,27 +205,6 @@ TYPE :: FEDOFPointer_
 END TYPE FEDOFPointer_
 
 !----------------------------------------------------------------------------
-!                                           SetFEDOFParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set the essential parameters for constructing the FEDOF
-
-INTERFACE
-  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
-                                  orderFile)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity or conformity of basis defined on reference
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Type of basis functions used for interpolation on reference
-    CHARACTER(*), INTENT(IN) :: orderFile
-    !! file containing the order of each element
-  END SUBROUTINE SetFEDOFParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -245,14 +228,20 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, baseContinuity, baseInterpolation, &
-                                  order, mesh)
+  MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
     INTEGER(I4B), INTENT(IN) :: order
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
   END SUBROUTINE obj_Initiate1
+
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -264,14 +253,50 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, baseContinuity, baseInterpolation, &
-                                  order, mesh)
+  MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, lambda, beta)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
     INTEGER(I4B), INTENT(IN) :: order(:)
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetFEDOFParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set the essential parameters for constructing the FEDOF
+
+INTERFACE
+  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
+                            orderFile, ipType, basisType, alpha, beta, lambda)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity or conformity of basis defined on reference
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Type of basis functions used for interpolation on reference
+    CHARACTER(*), INTENT(IN) :: orderFile
+    !! file containing the order of each element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! basis type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! ultraspherical parameter
+  END SUBROUTINE SetFEDOFParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -309,17 +334,29 @@ END INTERFACE
 ! This routine will make order0(:) from order(:,:) and call initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, baseContinuity, baseInterpolation, &
-                                  order, mesh)
+  MODULE SUBROUTINE obj_Initiate4(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! the number of columns in order is equal to total number of elements
     !! the number of rows in order is equal to 2
     !! the first row contains the global element number
     !! the second rows contains the order of that element
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity of basis function
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! interpolation of basis
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation point type, needed for Lagrange polynomial
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! basis type, needed for Lagrange polynomial only
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! alpha parameter for jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! beta parameter for jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
   END SUBROUTINE obj_Initiate4
 END INTERFACE
 
