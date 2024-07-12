@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE LagrangeFE_Class
+MODULE HierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE ScalarFE_Class, ONLY: ScalarFE_
 
@@ -27,24 +27,23 @@ IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: LagrangeFE_
-PUBLIC :: LagrangeFEPointer_
+PUBLIC :: HierarchicalFE_
+PUBLIC :: HierarchicalFEPointer_
 PUBLIC :: FiniteElementDeallocate
+PUBLIC :: HierarchicalFEPointer
 
-CHARACTER(*), PARAMETER :: modName = "LagrangeFE_Class"
-CHARACTER(*), PARAMETER :: myprefix = "LagrangeFE"
+CHARACTER(*), PARAMETER :: modName = "HierarchicalFE_Class"
+CHARACTER(*), PARAMETER :: myprefix = "HierarchicalFE"
 
 !----------------------------------------------------------------------------
-!                                                                LagrangeFE_
+!                                                                HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2023-08-13
+! date: 2024-07-11
 ! summary: Finite element class
-!
-!{!pages/docs-api/FiniteElement/FiniteElement_.md!}
 
-TYPE, EXTENDS(ScalarFE_) :: LagrangeFE_
+TYPE, EXTENDS(ScalarFE_) :: HierarchicalFE_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
@@ -52,28 +51,28 @@ CONTAINS
     obj_GetLocalElemShapeData
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-END TYPE LagrangeFE_
+END TYPE HierarchicalFE_
 
 !----------------------------------------------------------------------------
-!                                                         LagrangeFEPointer_
+!                                                         HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: LagrangeFEPointer_
-  CLASS(LagrangeFE_), POINTER :: ptr => NULL()
-END TYPE LagrangeFEPointer_
+TYPE :: HierarchicalFEPointer_
+  CLASS(HierarchicalFE_), POINTER :: ptr => NULL()
+END TYPE HierarchicalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                                       LagrangeFE@Methods
+!                                                       HierarchicalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE LagrangeFEPointer
-  MODULE FUNCTION obj_LagrangeFEPointer(elemType, nsd, baseContinuity, &
-           baseInterpolation, ipType, basisType, alpha, beta, lambda, order, &
-                                        anisoOrder) RESULT(ans)
+INTERFACE HierarchicalFEPointer
+  MODULE FUNCTION obj_HierarchicalFEPointer(elemType, nsd, baseContinuity, &
+                                cellOrder, faceOrder, edgeOrder, cellOrient, &
+                                           faceOrient, edgeOrient) RESULT(ans)
 
     INTEGER(I4B), INTENT(IN) :: elemType
     !! Type of finite element
@@ -83,29 +82,21 @@ INTERFACE LagrangeFEPointer
     !! Number of spatial dimension
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !!
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Basis function family used for interpolation.
-    !! LagrangeInterpolation, LagrangePolynomial
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type, It is required when
-    !! baseInterpol is LagrangePolynomial. It can take following
-    !! values:
-    !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type:
-    !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    TYPE(LagrangeFE_), POINTER :: ans
-  END FUNCTION obj_LagrangeFEPointer
-END INTERFACE LagrangeFEPointer
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! order on each cell
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! order on each face
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! order on each edge
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! orientation of each cell
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! orientation of each face
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orientation
+    TYPE(HierarchicalFE_), POINTER :: ans
+  END FUNCTION obj_HierarchicalFEPointer
+END INTERFACE HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
@@ -113,11 +104,11 @@ END INTERFACE LagrangeFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of LagrangeFE
+! summary:  Deallocate a vector of HierarchicalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(LagrangeFE_), ALLOCATABLE :: obj(:)
+    TYPE(HierarchicalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -127,11 +118,11 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of LagrangeFEPointer_
+! summary:  Deallocate the vector of HierarchicalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(LagrangeFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -145,7 +136,7 @@ END INTERFACE FiniteElementDeallocate
 
 INTERFACE
   MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(LagrangeFE_), INTENT(IN) :: obj
+    CLASS(HierarchicalFE_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
 END INTERFACE
@@ -160,7 +151,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
@@ -175,9 +166,9 @@ END INTERFACE
 ! summary:  Get local element shape data shape data on facets
 
 INTERFACE
-  module SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, facetElemsd, &
-                                                   quad)
-    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
+                                                   facetElemsd, quad)
+    CLASS(HierarchicalFE_), INTENT(INOUT) :: obj
       !! finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
       !! element shape data on cell
@@ -200,7 +191,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
-    CLASS(LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(HierarchicalFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
@@ -217,4 +208,8 @@ INTERFACE
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
-END MODULE LagrangeFE_Class
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE HierarchicalFE_Class
