@@ -16,143 +16,37 @@
 !
 
 SUBMODULE(AbstractFE_Class) QuadratureMethods
+USE QuadraturePoint_Method, ONLY: Initiate
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    GetQuadraturePoints1
+!
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetQuadraturePoints1
-CHARACTER(*), PARAMETER :: myName = "GetQuadraturePoints1"
-INTEGER(I4B) :: order0(3), nips0(3), quadratureType0(3)
-REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-
-#ifdef DEBUG_VER
-IF (PRESENT(order) .AND. PRESENT(nips)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[WRONG ARGUMENTS] both nips and order cannot be present'// &
-                    ' either give nips (number of integration points) or '// &
-                    ' give order (order of integrand)')
-  RETURN
-END IF
-#endif
-
-SELECT CASE (SIZE(quadratureType))
-CASE (1)
-  quadratureType0 = quadratureType(1)
-CASE (2)
-  quadratureType0(1) = quadratureType(1)
-  quadratureType0(2:) = quadratureType(2)
-CASE (3)
-  quadratureType0 = quadratureType
-END SELECT
-
-IF (PRESENT(alpha)) THEN
-  SELECT CASE (SIZE(alpha))
-  CASE (1)
-    alpha0 = alpha(1)
-  CASE (2)
-    alpha0(1) = alpha(1)
-    alpha0(2:) = alpha(2)
-  CASE (3)
-    alpha0 = alpha
-  END SELECT
-END IF
-
-IF (PRESENT(beta)) THEN
-  SELECT CASE (SIZE(beta))
-  CASE (1)
-    beta0 = beta(1)
-  CASE (2)
-    beta0(1) = beta(1)
-    beta0(2:) = beta(2)
-  CASE (3)
-    beta0 = beta
-  END SELECT
-END IF
-
-IF (PRESENT(lambda)) THEN
-  SELECT CASE (SIZE(lambda))
-  CASE (1)
-    lambda0 = lambda(1)
-  CASE (2)
-    lambda0(1) = lambda(1)
-    lambda0(2:) = lambda(2)
-  CASE (3)
-    lambda0 = lambda
-  END SELECT
-END IF
-
-IF (PRESENT(order)) THEN
-
-  SELECT CASE (SIZE(order))
-  CASE (1)
-    order0 = order(1)
-  CASE (2)
-    order0(1) = order(1)
-    order0(2:) = order(2)
-  CASE (3)
-    order0 = order
-  END SELECT
-
-  ! CALL Initiate( &
-  !   & obj=quad,  &
-  !   & refelem=obj%refelem0,  &
-  !   & p=order0(1),  &
-  !   & q=order0(2),  &
-  !   & r=order0(3),  &
-  !   & quadratureType1=quadratureType0(1),  &
-  !   & quadratureType2=quadratureType0(2),  &
-  !   & quadratureType3=quadratureType0(3),  &
-  !   & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
-  !   & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
-  !   & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
-  !   & )
-  RETURN
-END IF
-
-IF (PRESENT(nips)) THEN
-
-  SELECT CASE (SIZE(nips))
-  CASE (1)
-    nips0 = nips(1)
-  CASE (2)
-    nips0(1) = nips(1)
-    nips0(2:) = nips(2)
-  CASE (3)
-    nips0 = nips
-  END SELECT
-
-  ! CALL Initiate( &
-  !   & obj=quad,  &
-  !   & refelem=obj%refelem0,  &
-  !   & nipsx=nips0(1:1),  &
-  !   & nipsy=nips0(2:2),  &
-  !   & nipsz=nips0(3:3),  &
-  !   & quadratureType1=quadratureType0(1),  &
-  !   & quadratureType2=quadratureType0(2),  &
-  !   & quadratureType3=quadratureType0(3),  &
-  !   & alpha1=alpha0(1), beta1=beta0(1), lambda1=lambda0(1), &
-  !   & alpha2=alpha0(2), beta2=beta0(2), lambda2=lambda0(2), &
-  !   & alpha3=alpha0(3), beta3=beta0(3), lambda3=lambda0(3) &
-  !   & )
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
+CALL Initiate(obj=quad, elemType=obj%elemType, domainName=obj%refelemDomain, &
+              order=order, quadratureType=quadratureType, alpha=alpha, &
+              beta=beta, lambda=lambda, xij=obj%refelemCoord(1:obj%xidim, :))
 END PROCEDURE obj_GetQuadraturePoints1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadraturePoints2
+CALL Initiate(obj=quad, elemType=obj%elemType, domainName=obj%refelemDomain, &
+              p=p, q=q, r=r, quadratureType1=quadratureType1, &
+           quadratureType2=quadratureType2, quadratureType3=quadratureType3, &
+              alpha1=alpha1, alpha2=alpha2, alpha3=alpha3, &
+              beta1=beta1, beta2=beta2, beta3=beta3, &
+              lambda1=lambda1, lambda2=lambda2, lambda3=lambda3, &
+              xij=obj%refelemCoord(1:obj%xidim, :))
+END PROCEDURE obj_GetQuadraturePoints2
+
+!----------------------------------------------------------------------------
+!                                                    GetQuadraturePoints1
+!----------------------------------------------------------------------------
 
 END SUBMODULE QuadratureMethods
