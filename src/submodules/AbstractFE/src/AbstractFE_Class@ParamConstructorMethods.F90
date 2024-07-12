@@ -173,11 +173,11 @@ SELECT CASE (topoType)
 CASE (TypeElemNameOpt%Triangle)
   CALL SetFEParam_Heirarchy2D(param=sublist, elemType=elemType, xidim=xidim, &
           isQuad=.FALSE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
-                              prefix=prefix)
+                              cellOrder=cellOrder, prefix=prefix)
 CASE (TypeElemNameOpt%Quadrangle)
   CALL SetFEParam_Heirarchy2D(param=sublist, elemType=elemType, xidim=xidim, &
            isQuad=.TRUE., nsd=nsd, edgeOrder=edgeOrder, faceOrder=faceOrder, &
-                              prefix=prefix)
+                              cellOrder=cellOrder, prefix=prefix)
 
 CASE (TypeElemNameOpt%Tetrahedron)
 CALL SetFEParam_Heirarchy3D(param=sublist, elemType=elemType, isHexa=.FALSE.,&
@@ -515,7 +515,7 @@ SUBROUTINE SetFEParam_Order(param, order, elemType, prefix)
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "SetFEParam_Order()"
-  INTEGER(I4B) :: AINT(3)
+  INTEGER(I4B) :: AINT(3), bint(3, 1)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -547,13 +547,11 @@ SUBROUTINE SetFEParam_Order(param, order, elemType, prefix)
   CALL Set(obj=param, prefix=prefix, key="edgeOrder", datatype=aint, &
            VALUE=AINT(1:1))
 
-  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=aint, &
-           VALUE=AINT(1:1))
+  bint(1:3, 1) = -1
+  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=bint, &
+           VALUE=bint)
 
   CALL Set(obj=param, prefix=prefix, key="cellOrder", datatype=aint, &
-           VALUE=AINT(1:1))
-
-  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=aint, &
            VALUE=AINT(1:1))
 
   CALL Set(obj=param, prefix=prefix, key="tEdgeOrder", datatype=0_I4B, &
@@ -585,7 +583,7 @@ SUBROUTINE SetFEParam_AnisoOrder(param, anisoOrder, elemType, nsd, prefix)
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "SetFEParam_AnisoOrder()"
-  INTEGER(I4B) :: AINT(3)
+  INTEGER(I4B) :: AINT(3), bint(3, 1)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -617,13 +615,11 @@ SUBROUTINE SetFEParam_AnisoOrder(param, anisoOrder, elemType, nsd, prefix)
   CALL Set(obj=param, prefix=prefix, key="edgeOrder", datatype=aint, &
            VALUE=AINT(1:1))
 
-  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=aint, &
-           VALUE=AINT(1:1))
+  bint(1:3, 1) = -1
+  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=bint, &
+           VALUE=bint)
 
   CALL Set(obj=param, prefix=prefix, key="cellOrder", datatype=aint, &
-           VALUE=AINT(1:1))
-
-  CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=aint, &
            VALUE=AINT(1:1))
 
   CALL Set(obj=param, prefix=prefix, key="tEdgeOrder", datatype=0_I4B, &
@@ -647,14 +643,15 @@ END SUBROUTINE SetFEParam_AnisoOrder
 !----------------------------------------------------------------------------
 
 SUBROUTINE SetFEParam_Heirarchy2D(param, elemType, nsd, xidim, isQuad, edgeOrder, &
-                                  faceOrder, prefix)
+                                  faceOrder, cellOrder, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
   INTEGER(I4B), INTENT(IN) :: xidim
   LOGICAL(LGT), INTENT(IN) :: isQuad
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
   CHARACTER(*), INTENT(IN) :: prefix
 
   ! internal variables
@@ -673,24 +670,28 @@ SUBROUTINE SetFEParam_Heirarchy2D(param, elemType, nsd, xidim, isQuad, edgeOrder
 #endif
 
 #ifdef DEBUG_VER
-  isok = PRESENT(edgeOrder) .AND. PRESENT(faceOrder)
-  amsg = "For 2D elements, you should specify edgeOrder and faceOrder"
+  isok = PRESENT(cellOrder) .AND. PRESENT(faceOrder)
+  amsg = "For 2D elements, you should specify cellOrder and faceOrder"
   CALL AssertError1(isok, myname, amsg)
 
-  tSize = GetTotalEdges(elemType)
-  isok = SIZE(edgeOrder) .EQ. tSize
-  amsg = "Size of edgeOrder is not equal to total number of edges in element."
+  tSize = GetTotalFaces(elemType)
+  AINT(1) = SIZE(faceOrder, 2)
+  isok = AINT(1) .EQ. tSize
+  amsg = "Columns size in faceOrder is not equal to total number of faces in element."
   CALL AssertError1(isok, myname, amsg)
 
   IF (isQuad) THEN
-    isok = SIZE(faceOrder) .EQ. xidim
-    amsg = "In case of Quadrangle element size of faceOrder="// &
-           tostring(SIZE(faceOrder))//" should be equal to xidim=2"
+    AINT(1) = SIZE(cellOrder)
+    isok = AINT(1) .EQ. 2_I4B
+    amsg = "In case of Quadrangle element size of cellOrder="// &
+           tostring(AINT(1))//" should be equal to xidim=2"
     CALL AssertError1(isok, myname, amsg)
   ELSE
-    isok = SIZE(faceOrder) .EQ. 1
-    amsg = "In case of Triangle element size of faceOrder="// &
-           tostring(SIZE(faceOrder))//" should be equal to 1"
+
+    AINT(1) = SIZE(cellOrder)
+    isok = AINT(1) .EQ. 1_I4B
+    amsg = "In case of Triangle element size of cellOrder="// &
+           tostring(AINT(1))//" should be equal to 1"
 
     CALL AssertError1(isok, myname, amsg)
   END IF
@@ -725,7 +726,7 @@ SUBROUTINE SetFEParam_Heirarchy2D(param, elemType, nsd, xidim, isQuad, edgeOrder
 
   CALL Set(obj=param, prefix=prefix, key="isFaceOrder", datatype=.TRUE., &
            VALUE=.TRUE.)
-  tsize = SIZE(faceOrder)
+  tsize = SIZE(faceOrder, 2)
   CALL Set(obj=param, prefix=prefix, key="tFaceOrder", datatype=tsize, &
            VALUE=tsize)
   CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=faceOrder, &
@@ -750,7 +751,7 @@ SUBROUTINE SetFEParam_Heirarchy3D(param, elemType, nsd, isHexa, isTetra, &
   LOGICAL(LGT), INTENT(IN) :: isHexa
   LOGICAL(LGT), INTENT(IN) :: isTetra
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
   CHARACTER(*), INTENT(IN) :: prefix
 
@@ -773,22 +774,32 @@ SUBROUTINE SetFEParam_Heirarchy3D(param, elemType, nsd, isHexa, isTetra, &
   CALL AssertError1(isok, myname, amsg)
 
   tSize = GetTotalEdges(elemType)
-  isok = SIZE(edgeOrder) .EQ. tSize
+  AINT(1) = SIZE(edgeOrder)
+  isok = AINT(1) .EQ. tSize
   amsg = "Size of edgeOrder is not same as the total edges in element."
   CALL AssertError1(isok, myname, amsg)
 
   tSize = GetTotalFaces(elemType)
+  AINT(1:2) = SHAPE(faceOrder)
 
   IF (isHexa) THEN
-    tSize = tSize * 3
-    isok = SIZE(faceOrder) .EQ. tsize
-    amsg = "In Hexahedron element  size of faceOrder is not correct"
+    isok = AINT(2) .EQ. tsize
+    amsg = "In Hexahedron element  colsize of faceOrder is not correct"
+    CALL AssertError1(isok, myname, amsg)
+
+    isok = AINT(1) .EQ. 3
+    amsg = "In Hexahedron element  rowsize of faceOrder is not correct"
     CALL AssertError1(isok, myname, amsg)
   END IF
 
   IF (isTetra) THEN
-    isok = SIZE(faceOrder) .EQ. tsize
-    amsg = "In Tetrahedron element size of faceOrder is not correct"
+
+    isok = AINT(2) .EQ. tsize
+    amsg = "In Tetrahedron element  colsize of faceOrder is not correct"
+    CALL AssertError1(isok, myname, amsg)
+
+    isok = AINT(1) .EQ. 1
+    amsg = "In Tetrahedron element  rowsize of faceOrder is not correct"
     CALL AssertError1(isok, myname, amsg)
   END IF
 
@@ -829,7 +840,7 @@ SUBROUTINE SetFEParam_Heirarchy3D(param, elemType, nsd, isHexa, isTetra, &
 
   CALL Set(obj=param, prefix=prefix, key="isFaceOrder", datatype=.TRUE., &
            VALUE=.TRUE.)
-  tsize = SIZE(faceOrder)
+  tsize = SIZE(faceOrder, 2)
   CALL Set(obj=param, prefix=prefix, key="tFaceOrder", datatype=tsize, &
            VALUE=tsize)
   CALL Set(obj=param, prefix=prefix, key="faceOrder", datatype=faceOrder, &
@@ -859,7 +870,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr, nsd, elemType, order, anisoOrder(3), &
       cellOrder(3), feType, ipType, dofType(4), transformType, basisType(3), &
                 tEdgeOrder, tFaceOrder, tCellOrder, ii
-INTEGER(I4B), ALLOCATABLE :: edgeOrder(:), faceOrder(:)
+INTEGER(I4B), ALLOCATABLE :: edgeOrder(:), faceOrder(:, :)
 TYPE(String) :: baseInterpol, baseCont, refElemDomain0
 REAL(DFP) :: alpha(3), beta(3), lambda(3)
 LOGICAL(LGT) :: isEdgeOrder, isFaceOrder, isCellOrder, &
@@ -955,7 +966,7 @@ END IF
 
 IF (isFaceOrder) THEN
  CALL GetValue(obj=sublist, prefix=prefix, key="tFaceOrder", VALUE=tFaceOrder)
-  CALL Reallocate(faceOrder, tFaceOrder)
+  CALL Reallocate(faceOrder, 3, tFaceOrder)
 
   IF (tFaceOrder .GT. 0_I4B) THEN
    CALL GetValue(obj=sublist, prefix=prefix, key="faceOrder", VALUE=faceOrder)
