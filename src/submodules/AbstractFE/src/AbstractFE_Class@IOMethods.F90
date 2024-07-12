@@ -77,7 +77,7 @@ IF (obj%isFaceOrder) THEN
   CALL Display("isFaceOrder: TRUE", unitno=unitno)
   IF (obj%tFaceOrder .GT. 0_I4B) THEN
     CALL Display( &
-      & obj%faceOrder(:obj%tFaceOrder), &
+      & obj%faceOrder(1:3, 1:obj%tFaceOrder), &
       & msg="faceOrder: ", &
       & unitno=unitno)
   END IF
@@ -130,11 +130,11 @@ ELSE
   rowTitle(19) = "**edgeOrder**"; astr(19) = " "
 END IF
 
-IF (obj%isFaceOrder) THEN
-  rowTitle(20) = "**faceOrder**"; astr(20) = ToString(obj%faceOrder)
-ELSE
-  rowTitle(20) = "**faceOrder**"; astr(20) = " "
-END IF
+! IF (obj%isFaceOrder) THEN
+!   rowTitle(20) = "**faceOrder**"; astr(20) = ToString(obj%faceOrder)
+! ELSE
+rowTitle(20) = "**faceOrder**"; astr(20) = " "
+! END IF
 
 IF (obj%iscellOrder) THEN
   rowTitle(21) = "**cellOrder**"; astr(21) = ToString(obj%cellOrder)
@@ -218,13 +218,13 @@ ELSE
   astr(19) = " "
 END IF
 
-IF (obj%isFaceOrder) THEN
-  rowTitle(20) = "**faceOrder**"
-  astr(20) = ToString(obj%faceOrder)
-ELSE
-  rowTitle(20) = "**faceOrder**"
-  astr(20) = " "
-END IF
+! IF (obj%isFaceOrder) THEN
+!   rowTitle(20) = "**faceOrder**"
+!   astr(20) = ToString(obj%faceOrder)
+! ELSE
+rowTitle(20) = "**faceOrder**"
+astr(20) = " "
+! END IF
 
 IF (obj%iscellOrder) THEN
   rowTitle(21) = "**cellOrder**"
