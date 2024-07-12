@@ -157,6 +157,8 @@ IF (obj%isAnisotropicOrder) THEN
 
 END IF
 
+CALL Reallocate(obj%coeff, obj%tdof, obj%tdof)
+CALL Reallocate(obj%xij, 3, obj%tdof)
 obj%edgeOrder = 0
 obj%tEdgeOrder = 0
 obj%isEdgeOrder = .FALSE.
@@ -275,7 +277,7 @@ END SUBROUTINE obj_SetRealType
 
 MODULE PROCEDURE obj_HierarchicalFE
 CHARACTER(*), PARAMETER :: myname = "obj_HierarchicalFE()"
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, jj
 TYPE(String) :: mystr
 
 #ifdef DEBUG_VER
@@ -298,6 +300,9 @@ mystr = RefElemDomain(elemType=elemType, baseContinuity=baseContinuity, &
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
 
+CALL RefCoord_(elemType=elemType, ans=obj%refelemCoord, nrow=ii, ncol=jj, &
+               refelem=obj%refelemDomain)
+
 obj%xidim = XiDimension(elemType)
 
 ! For 1D elements cellOrder should be present
@@ -315,18 +320,20 @@ obj%isCellOrder = .TRUE.
 obj%tCellOrder = SIZE(cellOrder)
 DO ii = 1, obj%tCellOrder
   obj%cellOrder(ii) = cellOrder(ii)
+  obj%cellOrient(ii) = cellOrient(ii)
 END DO
 
-! IF (obj%xidim .GE. 2) THEN
-!
-!   obj%isFaceOrder = .TRUE.
-!   obj%tFaceOrder = SIZE(faceOrder)
-!
-!   DO ii = 1, obj%tFaceOrder
-!     obj%cellOrder(ii) = cellOrder(ii)
-!   END DO
-!
-! END IF
+IF (obj%xidim .GE. 2) THEN
+
+  obj%isFaceOrder = .TRUE.
+  obj%tFaceOrder = SIZE(faceOrder, 2)
+
+  DO ii = 1, obj%tFaceOrder
+    obj%faceOrder(1:3, ii) = faceOrder(1:3, ii)
+    obj%faceOrient(1:3, ii) = faceOrient(1:3, ii)
+  END DO
+
+END IF
 
 IF (obj%xidim .GE. 3) THEN
 
@@ -334,6 +341,7 @@ IF (obj%xidim .GE. 3) THEN
   obj%tEdgeOrder = SIZE(edgeOrder)
   DO ii = 1, obj%tEdgeOrder
     obj%edgeOrder(ii) = edgeOrder(ii)
+    obj%edgeOrient(ii) = edgeOrient(ii)
   END DO
 
 END IF
@@ -358,6 +366,20 @@ SUBROUTINE checkerror
     RETURN
   END IF
 
+  isok = PRESENT(cellOrient)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: cellOrient is not present.')
+    RETURN
+  END IF
+
+  isok = SIZE(cellOrder) .EQ. SIZE(cellOrient)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: size of cellOrder and cellOrient is not same.')
+    RETURN
+  END IF
+
   abool = obj%xidim .GE. 2
   IF (abool) THEN
     isok = PRESENT(faceOrder)
@@ -367,6 +389,36 @@ SUBROUTINE checkerror
                         '[INTERNAL ERROR] :: faceOrder is not present.')
       RETURN
     END IF
+
+    isok = SIZE(faceOrder, 1) .EQ. 3
+
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: rowsize in faceOrder should be 3.')
+      RETURN
+    END IF
+
+    isok = PRESENT(faceOrient)
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[INTERNAL ERROR] :: faceOrient is not present.')
+      RETURN
+    END IF
+
+    isok = SIZE(faceOrient, 1) .EQ. 3
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                     '[INTERNAL ERROR] :: rowsize in faceOrient should be 3.')
+      RETURN
+    END IF
+
+    isok = SIZE(faceOrder, 2) .EQ. SIZE(faceOrient, 2)
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: colsize in faceOrder and faceOrient not same.')
+      RETURN
+    END IF
+
   END IF
 
   abool = obj%xidim .GE. 3
@@ -376,6 +428,21 @@ SUBROUTINE checkerror
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: edgeOrder is not present.')
+      RETURN
+    END IF
+
+    isok = PRESENT(edgeOrient)
+
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[INTERNAL ERROR] :: edgeOrient is not present.')
+      RETURN
+    END IF
+
+    isok = SIZE(edgeOrient) .EQ. SIZE(edgeOrder)
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: size of edgeOrient and edgeOrder is not same.')
       RETURN
     END IF
   END IF
@@ -407,12 +474,15 @@ obj%isIsotropicOrder = obj2%isIsotropicOrder
 obj%anisoOrder = obj2%anisoOrder
 obj%isAnisotropicOrder = obj2%isAnisotropicOrder
 obj%edgeOrder = obj2%edgeOrder
+obj%edgeOrient = obj2%edgeOrient
 obj%tEdgeOrder = obj2%tEdgeOrder
 obj%isEdgeOrder = obj2%isEdgeOrder
+obj%faceOrient = obj2%faceOrient
 obj%faceOrder = obj2%faceOrder
 obj%tFaceOrder = obj2%tFaceOrder
 obj%isFaceOrder = obj2%isFaceOrder
 obj%cellOrder = obj2%cellOrder
+obj%cellOrient = obj2%cellOrient
 obj%tCellOrder = obj2%tCellOrder
 obj%isCellOrder = obj2%isCellOrder
 obj%feType = obj2%feType
@@ -450,35 +520,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%firstCall = .TRUE.
-
+obj%isInitiated = .FALSE.
+obj%tdof = 0
 obj%nsd = 0
+obj%xidim = 0
 obj%order = 0
 obj%isIsotropicOrder = .FALSE.
 obj%anisoOrder = 0_I4B
 obj%isAnisotropicOrder = .FALSE.
 obj%edgeOrder = 0_I4B
+obj%edgeOrient = 0_I4B
 obj%tEdgeOrder = 0_I4B
 obj%isEdgeOrder = .FALSE.
 obj%faceOrder = 0
+obj%faceOrient = 0
 obj%tFaceOrder = 0
 obj%isFaceOrder = .FALSE.
 obj%cellOrder = 0
+obj%cellOrient = 0
 obj%tCellOrder = 0
 obj%isCellOrder = .FALSE.
 obj%feType = 0
 obj%elemType = 0
+obj%topoType = 0
 obj%ipType = 0
 obj%dofType = 0
 obj%transformType = 0
 obj%basisType = 0
 obj%alpha = 0.0
 obj%beta = 0.0
-obj%lambda = 0.0
-obj%baseContinuity = "  "
-obj%baseInterpolation = "    "
-obj%refElemDomain = " "
-
-obj%isInitiated = .FALSE.
+obj%lambda = 0.5
+obj%baseContinuity = "H1"
+obj%baseInterpolation = "LAGR"
+obj%refElemDomain = "B"
+obj%refelemCoord = 0.0_DFP
+IF (ALLOCATED(obj%coeff)) THEN
+  DEALLOCATE (obj%coeff)
+END IF
+IF (ALLOCATED(obj%xij)) THEN
+  DEALLOCATE (obj%xij)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
