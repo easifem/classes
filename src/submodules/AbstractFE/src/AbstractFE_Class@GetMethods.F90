@@ -15,9 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) GetMethods
-USE ReallocateUtility, ONLY: Reallocate
-
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
+                                HierarchicalElemShapeData
 
 IMPLICIT NONE
 CONTAINS
@@ -43,21 +42,18 @@ IF (PRESENT(order)) order = obj%order
 IF (PRESENT(anisoOrder)) anisoOrder = obj%anisoOrder
 
 IF (PRESENT(edgeOrder)) THEN
-  CALL Reallocate(edgeOrder, obj%tEdgeOrder)
   DO ii = 1, obj%tEdgeOrder
     edgeOrder(ii) = obj%edgeOrder(ii)
   END DO
 END IF
 
 IF (PRESENT(faceOrder)) THEN
-  CALL Reallocate(faceOrder, obj%tfaceOrder)
   DO ii = 1, obj%tfaceOrder
-    faceOrder(ii) = obj%faceOrder(ii)
+    faceOrder(1:3, ii) = obj%faceOrder(1:3, ii)
   END DO
 END IF
 
 IF (PRESENT(cellOrder)) THEN
-  CALL Reallocate(cellOrder, obj%tcellOrder)
   DO ii = 1, obj%tcellOrder
     cellOrder(ii) = obj%cellOrder(ii)
   END DO
@@ -120,6 +116,19 @@ CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
        basisType=obj%basisType(1), coeff=obj%coeff, firstCall=obj%firstCall, &
                    alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
 END PROCEDURE obj_GetLagrangeLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHierarchicalLocalElemShapeData
+CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
+                      domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
+                           faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
+                       cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
+                               edgeOrient=obj%edgeOrient)
+END PROCEDURE obj_GetHierarchicalLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !
