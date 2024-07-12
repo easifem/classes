@@ -22,8 +22,6 @@ USE Display_Method, ONLY: ToString
 
 USE BaseType, ONLY: TypeElemNameOpt, TypeFeVariableOpt
 
-USE StringUtility, ONLY: UpperCase
-
 IMPLICIT NONE
 CONTAINS
 
@@ -87,9 +85,7 @@ END PROCEDURE Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
-
 CALL obj%GetLagrangeLocalElemShapeData(quad=quad, elemsd=elemsd)
-
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
