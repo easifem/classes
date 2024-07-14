@@ -44,7 +44,7 @@ INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
 
-tsize = SIZE(cellOrder)
+tsize = SIZE(order)
 
 isok = tsize .EQ. obj%tCells
 IF (.NOT. isok) THEN
@@ -55,8 +55,12 @@ END IF
 
 CALL Reallocate(obj%cellOrder, tsize)
 DO CONCURRENT(ii=1:tsize)
-  obj%cellOrder(ii) = INT(cellOrder(ii), kind=INT8)
+  obj%cellOrder(ii) = INT(order(ii), kind=INT8)
 END DO
+
+obj%maxCellOrder = MAXVAL(obj%cellOrder)
+obj%maxFaceOrder = obj%maxCellOrder
+obj%maxEdgeOrder = obj%maxFaceOrder
 
 END PROCEDURE obj_SetCellOrder
 
