@@ -93,14 +93,10 @@ END PROCEDURE obj_Initiate2
 MODULE PROCEDURE obj_LagrangeFE
 CHARACTER(*), PARAMETER :: myname = "obj_LagrangeFE()"
 
-INTEGER(I4B), PARAMETER :: default_basis(3) = [TypePolynomialOpt%Monomial, &
-                                               TypePolynomialOpt%Monomial, &
-                                               TypePolynomialOpt%Monomial]
-INTEGER(I4B), PARAMETER :: default_anisoOrder(3) = [0, 0, 0]
+INTEGER(I4B), PARAMETER :: default_basis(3) = TypePolynomialOpt%Monomial
 
-REAL(DFP), PARAMETER :: default_alpha(3) = [0.0_DFP, 0.0_DFP, 0.0_DFP]
-REAL(DFP), PARAMETER :: default_beta(3) = [0.0_DFP, 0.0_DFP, 0.0_DFP]
-REAL(DFP), PARAMETER :: default_lambda(3) = [0.5_DFP, 0.5_DFP, 0.5_DFP]
+REAL(DFP), PARAMETER :: three_zeros(3) = [0.0_DFP, 0.0_DFP, 0.0_DFP]
+REAL(DFP), PARAMETER :: three_half(3) = [0.5_DFP, 0.5_DFP, 0.5_DFP]
 TYPE(String) :: mystr
 INTEGER(I4B) :: ii, jj
 
@@ -131,45 +127,21 @@ CALL RefCoord_(elemType=elemType, ans=obj%refelemCoord, nrow=ii, ncol=jj, &
 CALL obj_SetIntegerType(a=obj%basisType, default_a=default_basis, b=basisType, &
                         n=obj%xidim)
 
-CALL obj_SetRealType(a=obj%alpha, default_a=default_alpha, b=alpha, &
+CALL obj_SetRealType(a=obj%alpha, default_a=three_zeros, b=alpha, &
                      n=obj%xidim)
 
-CALL obj_SetRealType(a=obj%beta, default_a=default_beta, b=beta, &
+CALL obj_SetRealType(a=obj%beta, default_a=three_zeros, b=beta, &
                      n=obj%xidim)
 
-CALL obj_SetRealType(a=obj%lambda, default_a=default_lambda, b=lambda, &
+CALL obj_SetRealType(a=obj%lambda, default_a=three_half, b=lambda, &
                      n=obj%xidim)
 
-obj%isIsotropicOrder = PRESENT(order)
-
-IF (obj%isIsotropicOrder) THEN
-  obj%order = order
-  obj%tdof = LagrangeDOF(order=order, elemType=elemType)
-END IF
-
-obj%isAnisotropicOrder = PRESENT(anisoOrder)
-IF (obj%isAnisotropicOrder) THEN
-  CALL obj_SetIntegerType(a=obj%anisoOrder, default_a=default_anisoOrder, &
-                          b=anisoOrder, n=obj%xidim)
-
-  obj%tdof = LagrangeDOF(p=obj%anisoOrder(1), q=obj%anisoOrder(2), &
-                         r=obj%anisoOrder(3), elemType=elemType)
-
-END IF
-
-CALL Reallocate(obj%coeff, obj%tdof, obj%tdof)
-CALL Reallocate(obj%xij, 3, obj%tdof)
-obj%edgeOrder = 0
-obj%tEdgeOrder = 0
-obj%isEdgeOrder = .FALSE.
-
-obj%faceOrder = 0
-obj%tFaceOrder = 0
-obj%isFaceOrder = .FALSE.
-
-obj%cellOrder = 0
-obj%tCellOrder = 0
-obj%isCellOrder = .FALSE.
+CALL obj%SetLagrangeOrder(order=order, anisoorder=anisoorder, &
+                          errCheck=.FALSE.)
+!NOTE: We have set errCheck = .false. because
+! in fedof when we construct shape function
+! we first call initiate method without specifying order.
+! So we want to skip the error check.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -181,95 +153,86 @@ END PROCEDURE obj_LagrangeFE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_SetIntegerType(a, default_a, n, b)
-  INTEGER(I4B), INTENT(INOUT) :: a(:)
-  INTEGER(I4B), INTENT(IN) :: default_a(:)
-  INTEGER(I4B), INTENT(IN) :: n
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: b(:)
+MODULE PROCEDURE obj_SetIntegerType
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
 
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: ii, tsize
+isok = PRESENT(b)
 
-  isok = PRESENT(b)
-
-  IF (.NOT. isok) THEN
-
-    DO ii = 1, n
-      a(ii) = default_a(ii)
-    END DO
-
-    RETURN
-
-  END IF
-
-  tsize = SIZE(b)
-
-  isok = tsize .EQ. 1
-  IF (isok) THEN
-    DO ii = 1, n
-      a(ii) = b(1)
-    END DO
-    RETURN
-  END IF
-
-  ! isok = tsize .EQ. n
-  ! IF (isok) THEN
+IF (.NOT. isok) THEN
 
   DO ii = 1, n
-    a(ii) = b(ii)
+    a(ii) = default_a(ii)
   END DO
-  ! RETURN
 
-  ! END IF
+  RETURN
 
-END SUBROUTINE obj_SetIntegerType
+END IF
+
+tsize = SIZE(b)
+
+isok = tsize .EQ. 1
+IF (isok) THEN
+  DO ii = 1, n
+    a(ii) = b(1)
+  END DO
+  RETURN
+END IF
+
+! isok = tsize .EQ. n
+! IF (isok) THEN
+
+DO ii = 1, n
+  a(ii) = b(ii)
+END DO
+! RETURN
+
+! END IF
+
+END PROCEDURE obj_SetIntegerType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_SetRealType(a, default_a, n, b)
-  REAL(DFP), INTENT(INOUT) :: a(:)
-  REAL(DFP), INTENT(IN) :: default_a(:)
-  INTEGER(I4B), INTENT(IN) :: n
-  REAL(DFP), OPTIONAL, INTENT(IN) :: b(:)
+MODULE PROCEDURE obj_SetRealType
 
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
 
-  isok = PRESENT(b)
+isok = PRESENT(b)
 
-  IF (.NOT. isok) THEN
-
-    DO ii = 1, n
-      a(ii) = default_a(ii)
-    END DO
-
-    RETURN
-
-  END IF
-
-  tsize = SIZE(b)
-
-  isok = tsize .EQ. 1
-  IF (isok) THEN
-    DO ii = 1, n
-      a(ii) = b(1)
-    END DO
-    RETURN
-  END IF
-
-  ! isok = tsize .EQ. n
-  ! IF (isok) THEN
+IF (.NOT. isok) THEN
 
   DO ii = 1, n
-    a(ii) = b(ii)
+    a(ii) = default_a(ii)
   END DO
-  ! RETURN
 
-  ! END IF
+  RETURN
 
-END SUBROUTINE obj_SetRealType
+END IF
+
+tsize = SIZE(b)
+
+isok = tsize .EQ. 1
+IF (isok) THEN
+  DO ii = 1, n
+    a(ii) = b(1)
+  END DO
+  RETURN
+END IF
+
+! isok = tsize .EQ. n
+! IF (isok) THEN
+
+DO ii = 1, n
+  a(ii) = b(ii)
+END DO
+! RETURN
+
+! END IF
+
+END PROCEDURE obj_SetRealType
 
 !----------------------------------------------------------------------------
 !
@@ -309,146 +272,18 @@ obj%xidim = XiDimension(elemType)
 ! For 2D elements cellOrder, faceOrder should be present
 ! For 3D elements cellOrder, faceOrder, and edgeOrder should should be present
 
-#ifdef DEBUG_VER
-CALL checkerror
-#endif
+CALL obj%SetHierarchicalOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
+          edgeOrder=edgeOrder, cellOrient=cellOrient, faceOrient=faceOrient, &
+                              edgeOrient=edgeOrient, errCheck=.FALSE.)
 
-obj%tdof = HierarchicalDOF(elemType=elemType, cellOrder=cellOrder, &
-                           faceOrder=faceOrder, edgeOrder=edgeOrder)
-
-obj%isCellOrder = .TRUE.
-obj%tCellOrder = SIZE(cellOrder)
-DO ii = 1, obj%tCellOrder
-  obj%cellOrder(ii) = cellOrder(ii)
-  obj%cellOrient(ii) = cellOrient(ii)
-END DO
-
-IF (obj%xidim .GE. 2) THEN
-
-  obj%isFaceOrder = .TRUE.
-  obj%tFaceOrder = SIZE(faceOrder, 2)
-
-  DO ii = 1, obj%tFaceOrder
-    obj%faceOrder(1:3, ii) = faceOrder(1:3, ii)
-    obj%faceOrient(1:3, ii) = faceOrient(1:3, ii)
-  END DO
-
-END IF
-
-IF (obj%xidim .GE. 3) THEN
-
-  obj%isEdgeOrder = .TRUE.
-  obj%tEdgeOrder = SIZE(edgeOrder)
-  DO ii = 1, obj%tEdgeOrder
-    obj%edgeOrder(ii) = edgeOrder(ii)
-    obj%edgeOrient(ii) = edgeOrient(ii)
-  END DO
-
-END IF
+!NOTE: We have set errCheck = .false. because
+! in fedof when we construct shape function
+! we first call initiate method without specifying order.
+! So we want to skip the error check.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif
-
-#ifdef DEBUG_VER
-
-CONTAINS
-
-SUBROUTINE checkerror
-
-  LOGICAL(LGT) :: isok, abool
-
-  isok = PRESENT(cellOrder)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: cellOrder is not present.')
-    RETURN
-  END IF
-
-  isok = PRESENT(cellOrient)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: cellOrient is not present.')
-    RETURN
-  END IF
-
-  isok = SIZE(cellOrder) .EQ. SIZE(cellOrient)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: size of cellOrder and cellOrient is not same.')
-    RETURN
-  END IF
-
-  abool = obj%xidim .GE. 2
-  IF (abool) THEN
-    isok = PRESENT(faceOrder)
-
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: faceOrder is not present.')
-      RETURN
-    END IF
-
-    isok = SIZE(faceOrder, 1) .EQ. 3
-
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: rowsize in faceOrder should be 3.')
-      RETURN
-    END IF
-
-    isok = PRESENT(faceOrient)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: faceOrient is not present.')
-      RETURN
-    END IF
-
-    isok = SIZE(faceOrient, 1) .EQ. 3
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                     '[INTERNAL ERROR] :: rowsize in faceOrient should be 3.')
-      RETURN
-    END IF
-
-    isok = SIZE(faceOrder, 2) .EQ. SIZE(faceOrient, 2)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: colsize in faceOrder and faceOrient not same.')
-      RETURN
-    END IF
-
-  END IF
-
-  abool = obj%xidim .GE. 3
-  IF (abool) THEN
-    isok = PRESENT(edgeOrder)
-
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: edgeOrder is not present.')
-      RETURN
-    END IF
-
-    isok = PRESENT(edgeOrient)
-
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: edgeOrient is not present.')
-      RETURN
-    END IF
-
-    isok = SIZE(edgeOrient) .EQ. SIZE(edgeOrder)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: size of edgeOrient and edgeOrder is not same.')
-      RETURN
-    END IF
-  END IF
-
-END SUBROUTINE checkerror
-
 #endif
 
 END PROCEDURE obj_HierarchicalFE
