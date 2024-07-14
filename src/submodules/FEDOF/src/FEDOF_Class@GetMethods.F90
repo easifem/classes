@@ -25,6 +25,8 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetFace, &
                           ElemData_GetCell
 
+USE ReferenceElement_Method, ONLY: ReferenceElementInfo
+
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
@@ -212,6 +214,42 @@ ans = obj%baseInterpolation
 END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
+!                                                                  GetOrders
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrders
+INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
+                faceCon(ReferenceElementInfo%maxEdges), &
+                edgeCon(ReferenceElementInfo%maxEdges), &
+                nodeCon(obj%maxTotalConnectivity)
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=.TRUE., &
+         cellCon=cellCon, faceCon=faceCon, edgeCon=edgeCon, nodeCon=nodeCon, &
+              tCellCon=tCellOrder, tFaceCon=tFaceOrder, tEdgeCon=tEdgeOrder, &
+                               tNodeCon=tNodeOrder)
+
+cellOrder(1) = obj%cellOrder(jj)
+
+DO jj = 1, tFaceOrder
+  ii = faceCon(jj)
+  faceOrder(1, jj) = obj%faceOrder(ii)
+  faceOrder(2:3, jj) = faceOrder(1, jj)
+END DO
+
+DO jj = 1, tEdgeOrder
+  ii = edgeCon(jj)
+  edgeOrder(jj) = obj%edgeOrder(ii)
+END DO
+
+CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
+    edgeOrient=edgeOrient, tCellOrient=tCellOrient, tFaceOrient=tFaceOrient, &
+         tEdgeOrient=tEdgeOrient, globalElement=globalElement, islocal=.TRUE.)
+
+END PROCEDURE obj_GetOrders
+
+!----------------------------------------------------------------------------
 !                                                   GetMaxTotalConnectivity
 !----------------------------------------------------------------------------
 
@@ -241,6 +279,70 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetMaxTotalConnectivity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadraturePoints1
+INTEGER(I4B) :: ii
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+
+CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad, order=order, &
+         quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+END PROCEDURE obj_GetQuadraturePoints1
+
+!----------------------------------------------------------------------------
+!                                                       GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadraturePoints2
+INTEGER(I4B) :: ii
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+
+CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad, p=p, q=q, r=r, &
+           quadratureType1=quadratureType1, quadratureType2=quadratureType2, &
+                quadratureType3=quadratureType3, alpha1=alpha1, beta1=beta1, &
+               lambda1=lambda1, alpha2=alpha2, beta2=beta2, lambda2=lambda2, &
+                                  alpha3=alpha3, beta3=beta3, lambda3=lambda3)
+END PROCEDURE obj_GetQuadraturePoints2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+INTEGER(I4B) :: ii, cellOrder(1), &
+                faceOrder(3, ReferenceElementInfo%maxEdges), &
+                edgeOrder(ReferenceElementInfo%maxEdges), &
+                faceOrient(3, ReferenceElementInfo%maxEdges), &
+                edgeOrient(ReferenceElementInfo%maxEdges), &
+                cellOrient(3), indx(10)
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+
+CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
+              cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
+        cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
+                 tcellorder=indx(1), tfaceorder=indx(2), tedgeorder=indx(3), &
+                   tcellorient=indx(4), tfaceorient=indx(5:6), &
+                   tedgeorient=indx(7))
+
+CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+INTEGER(I4B) :: ii
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+CALL obj%fe(ii)%ptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                           geoElemsd=geoElemsd)
+END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !
