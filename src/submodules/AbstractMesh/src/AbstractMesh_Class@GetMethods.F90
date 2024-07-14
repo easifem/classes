@@ -45,9 +45,14 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           DOMAIN_BOUNDARY_ELEMENT, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetConnectivity, &
+                          ElemData_GetConnectivity2, &
                           ElemData_GetElementToElements, &
                           ElemData_GetGlobalNodesPointer, &
-                          ElemData_GetTotalGlobalElements
+                          ElemData_GetTotalGlobalElements, &
+                          ElemData_name, &
+                          ElemData_topoName, &
+                          ElemData_topoIndx, &
+                          ElemData_GetOrientation
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -72,6 +77,60 @@ INTEGER(I4B), PARAMETER :: MaxNodesInElement = 125
 #endif
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                             GetTotalElementsTopologyWise
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElementsTopologyWise
+ans = obj%tElements_topology_wise
+END PROCEDURE obj_GetTotalElementsTopologyWise
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalTopology
+ans = obj%tElemTopologies
+END PROCEDURE obj_GetTotalTopology
+
+!----------------------------------------------------------------------------
+!                                                       GetElemTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemTopology1
+ans = obj%elemTopologies
+END PROCEDURE obj_GetElemTopology1
+
+!----------------------------------------------------------------------------
+!                                                            GetElemTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemTopology2
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
+ans = ElemData_topoName(obj%elementData(iel)%ptr)
+END PROCEDURE obj_GetElemTopology2
+
+!----------------------------------------------------------------------------
+!                                                        GetElemTopologyIndx
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemTopologyIndx
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
+ans = ElemData_topoIndx(obj%elementData(iel)%ptr)
+END PROCEDURE obj_GetElemTopologyIndx
+
+!----------------------------------------------------------------------------
+!                                                                GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemType
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
+ans = ElemData_name(obj%elementData(iel)%ptr)
+END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
 !                                                              GetElemData
@@ -616,9 +675,9 @@ END PROCEDURE obj_GetConnectivity
 !                                                            GetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetConnectivity_
+MODULE PROCEDURE obj_GetConnectivity1_
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity1_()"
 LOGICAL(LGT) :: problem
 #endif
 
@@ -639,7 +698,71 @@ iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 CALL ElemData_GetConnectivity(obj=obj%elementData(iel)%ptr, con=ans, &
                               tsize=tsize, opt=opt)
 
-END PROCEDURE obj_GetConnectivity_
+END PROCEDURE obj_GetConnectivity1_
+
+!----------------------------------------------------------------------------
+!                                                            GetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity2_()"
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+problem = .NOT. obj%isElementPresent(globalElement=globalElement, islocal=islocal)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+              '[INTERNAL ERROR] :: problem in getting localElement number'// &
+                    ' from globalElement = '//ToString(globalElement))
+  RETURN
+END IF
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL ElemData_GetConnectivity2(obj=obj%elementData(iel)%ptr, &
+         cellCon=cellCon, faceCon=faceCon, edgeCon=edgeCon, nodeCon=nodeCon, &
+                    tCellCon=tCellCon, tFaceCon=tFaceCon, tEdgeCon=tEdgeCon, &
+                               tNodeCon=tNodeCon)
+
+END PROCEDURE obj_GetConnectivity2_
+
+!----------------------------------------------------------------------------
+!                                                            GetOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrientation()"
+LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+problem = .NOT. obj%isElementPresent(globalElement=globalElement, islocal=islocal)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+              '[INTERNAL ERROR] :: problem in getting localElement number'// &
+                    ' from globalElement = '//ToString(globalElement))
+  RETURN
+END IF
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL ElemData_GetOrientation(obj=obj%elementData(iel)%ptr, &
+                             cellOrient=cellOrient, faceOrient=faceOrient, &
+                             edgeOrient=edgeOrient, tCellOrient=tCellOrient, &
+                             tFaceOrient=tFaceOrient, tEdgeOrient=tEdgeOrient)
+
+END PROCEDURE obj_GetOrientation
 
 !----------------------------------------------------------------------------
 !                                                            GetConnectivity
