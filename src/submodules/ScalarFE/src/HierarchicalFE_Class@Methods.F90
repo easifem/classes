@@ -18,9 +18,7 @@
 !
 
 SUBMODULE(HierarchicalFE_Class) Methods
-USE Display_Method, ONLY: ToString
-
-USE BaseType, ONLY: TypeElemNameOpt, TypeFeVariableOpt
+USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -82,37 +80,7 @@ END IF
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                     GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-CALL obj%GetHierarchicalLocalElemShapeData(quad=quad, elemsd=elemsd)
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                 GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalFacetElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetLocalFacetElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                     GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetGlobalElemShapeData
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE Methods
