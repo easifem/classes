@@ -16,7 +16,8 @@
 
 SUBMODULE(AbstractFE_Class) GetMethods
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                HierarchicalElemShapeData
+                                HierarchicalElemShapeData, &
+                                Set
 
 IMPLICIT NONE
 CONTAINS
@@ -106,6 +107,31 @@ ans = obj%topoType
 END PROCEDURE obj_GetTopologyType
 
 !----------------------------------------------------------------------------
+!                                                     GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+#endif
+
+SELECT CASE (obj%baseInterpolation)
+CASE ("LAGR")
+  CALL obj%GetLagrangeLocalElemShapeData(quad=quad, elemsd=elemsd)
+
+CASE ("HIER", "HEIR")
+  CALL obj%GetHierarchicalLocalElemShapeData(quad=quad, elemsd=elemsd)
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
+  RETURN
+#endif
+END SELECT
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -129,6 +155,29 @@ CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
                        cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
                                edgeOrient=obj%edgeOrient)
 END PROCEDURE obj_GetHierarchicalLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+IF (PRESENT(geoelemsd)) THEN
+  CALL Set(obj=elemsd, val=xij, N=geoelemsd%N, dNdXi=geoelemsd%dNdXi)
+  RETURN
+END IF
+
+CALL Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
+END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !
