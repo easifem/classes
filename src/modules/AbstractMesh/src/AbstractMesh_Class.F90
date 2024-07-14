@@ -326,6 +326,27 @@ CONTAINS
   !  GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
+  !! Get the element name
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElementsTopologyWise => &
+    obj_GetTotalElementsTopologyWise
+  !! get total elements topology wise
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalTopology => obj_GetTotalTopology
+  !! Get total topology
+
+  PROCEDURE, PASS(obj) :: GetElemTopology1 => obj_GetElemTopology1
+  !! Get all the unique element topology stored in the mesh
+  PROCEDURE, PASS(obj) :: GetElemTopology2 => obj_GetElemTopology2
+  !! Get the name element topology name of an element
+  GENERIC, PUBLIC :: GetElemTopology => GetElemTopology1, GetElemTopology2
+  !! Generic method to get the element topology name
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemTopologyIndx => &
+    obj_GetElemTopologyIndx
+  !! Get the index of element topology
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
   !! Get the element data
 
@@ -436,9 +457,22 @@ CONTAINS
     obj_GetConnectivity
   !! Returns  node numbers in an element (this is vertex connectivity)
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => &
-    obj_GetConnectivity_
-  !! Returns  node numbers in an element
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetConnectivity1_ => &
+    obj_GetConnectivity1_
+  !! Get connectivity of an element in a single vector
+  !! you can specify opt="A, V, E, F, C" for all, vertex, edge, face, cell
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetConnectivity2_ => &
+    obj_GetConnectivity2_
+  !! Get connectivity of an element into separate vectors
+  !! you can get cell, face, and edge connectivity
+
+  GENERIC, PUBLIC :: GetConnectivity_ => GetConnectivity1_, &
+    GetConnectivity2_
+  !! Generic method for getting the connectivity of an element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
+  !! Get the orientation of the element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
     obj_GetNodeConnectivity
@@ -1241,6 +1275,121 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                    GetTotalElementsTopologyWise@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  REturns the total elements topology wise
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetTotalElementsTopologyWise(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(8)
+  !! Total number of points, lines, triangles, quadrangles, tetrahedrons,
+  !! hexahedrons, prisms, pyramids
+  END FUNCTION obj_GetTotalElementsTopologyWise
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalTopology@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  Returns the total number of topology present in the mesh
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetTotalTopology(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElementTopology@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-12
+! summary:  Get the name of element topology present in the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemTopology1(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(8)
+  END FUNCTION obj_GetElemTopology1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElementTopology@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-12
+! summary:  Get the name of element topology present in the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemTopology2(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemTopology2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElemTopoIndx@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  Get the element topology index
+!
+!# Introduction
+!
+! Point 1
+! Line 2
+! Triangle 3
+! Quadrangle
+! Tetrahedron
+! Hexahedron
+! Prism
+! Pyramid
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemTopologyIndx(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemTopologyIndx
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetElemType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-13
+! summary:  get element type from the element data
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemType(obj, globalElement, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     GetElemData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1258,7 +1407,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetElemData@GetMethods
+!                                             GetElemDataPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1828,8 +1977,8 @@ END INTERFACE
 ! summary: This routine returns global node numbers in a given global elem
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, &
-                                         islocal, opt)
+  MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
+                                          islocal, opt)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1841,7 +1990,76 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
     !! Vertex, Edge, Face, Cell
     !! Default is Vertex
-  END SUBROUTINE obj_GetConnectivity_
+  END SUBROUTINE obj_GetConnectivity1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get connectivity
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
+      nodeCon, tCellCon, tFaceCon, tEdgeCon, tNodeCon, globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: faceCon(:)
+    !! face connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: edgeCon(:)
+    !! edge connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: nodeCon(:)
+    !! node connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tCellCon
+    !! size of data written in cellCon
+    INTEGER(I4B), INTENT(OUT) :: tFaceCon
+    !! size of data written in faceCon
+    INTEGER(I4B), INTENT(OUT) :: tEdgeCon
+    !! size of data written in edgecon
+    INTEGER(I4B), INTENT(OUT) :: tnodeCon
+    !! size of data written in nodecon
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetConnectivity2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get the orientation flags of an element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
+           edgeOrient, tCellOrient, tFaceOrient, tEdgeOrient, globalElement, &
+                                       islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: faceOrient(:, :)
+    !! face connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrient(:)
+    !! edge connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tCellOrient
+    !! size of data written in cellCon
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrient(2)
+    !! size of data written in faceCon
+    !! tFaceOrient(1) is the number of rows in faceOrient
+    !! tFaceOrient(2) is the number of columns in faceOrient
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrient
+    !! size of data written in edgecon
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2552,9 +2770,8 @@ END INTERFACE
 ! - The master cell number is the global element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement, &
-    & elementType)&
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement, elementType) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
@@ -2577,8 +2794,8 @@ END INTERFACE
 ! - The slave cell number is the global element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, &
-    & elementType) RESULT(ans)
+  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, elementType) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
@@ -2603,8 +2820,8 @@ END INTERFACE
 ! - ans(2)  contains the slave cell number
 
 INTERFACE
-  MODULE FUNCTION obj_GetCellNumber(obj, facetElement, &
-    & elementType) RESULT(ans)
+  MODULE FUNCTION obj_GetCellNumber(obj, facetElement, elementType) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
@@ -2621,8 +2838,8 @@ END INTERFACE
 ! summary: Returns the local facet id
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, &
-    & elementType, isMaster) RESULT(ans)
+  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, elementType, &
+                                      isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
@@ -2646,7 +2863,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION AbstractMeshGetFacetConnectivity(obj, facetElement, &
-    & elementType, isMaster) RESULT(ans)
+                                            elementType, isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
@@ -2677,7 +2894,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
-    & iface, islocal) RESULT(ans)
+                                           iface, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
@@ -2696,7 +2913,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetFacetElementType(obj, globalElement, islocal) &
-    & RESULT(ans)
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
