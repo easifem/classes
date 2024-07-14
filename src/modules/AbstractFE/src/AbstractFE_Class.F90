@@ -216,14 +216,23 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order and reallocate appropriate data in
+  !! already initiated AbstractFE_
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetLagrangeOrder => &
+    obj_SetLagrangeOrder
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetHierarchicalOrder => &
+    obj_SetHierarchicalOrder
+
   !GET:
   ! @GetMethods
 
   PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
   !! Get prefix
 
-  PROCEDURE(obj_GetLocalElemShapeData), DEFERRED, PUBLIC, PASS(obj) :: &
-    GetLocalElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetLagrangeLocalElemShapeData => &
@@ -234,8 +243,8 @@ CONTAINS
     obj_GetHierarchicalLocalElemShapeData
   !! Get local shape data for Hierarchical element
 
-  PROCEDURE(obj_GetGlobalElemShapeData), DEFERRED, PUBLIC, PASS(obj) :: &
-    GetGlobalElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
   !! Get global element shape data
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
@@ -559,10 +568,14 @@ END INTERFACE AbstractFEDeallocate
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE AbstractFEDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(AbstractFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE AbstractFEDeallocate
+
+INTERFACE DEALLOCATE
+  MODULE PROCEDURE Deallocate_Ptr_Vector
 END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
@@ -677,6 +690,78 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   GetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+!
+! This routine will call SetLagrangeOrder for LagrangeFE
+! This routine will call SetHierarchicalFE for HierarchicalFE
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder(obj, order, anisoorder, cellOrder, &
+           faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetLagrangeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLagrangeOrder(obj, order, anisoorder, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetLagrangeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  Set order of hierarchical polynomial
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
+                      edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! Check the eror in debug mode
+  END SUBROUTINE obj_SetHierarchicalOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
@@ -765,9 +850,8 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get local element shape data shape data
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    IMPORT :: AbstractFE_, ElemShapedata_, QuadraturePoint_
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
@@ -810,10 +894,9 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get local element shape data shape data on facets
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, facetElemsd, &
-                                            quad)
-    IMPORT :: AbstractFE_, ElemShapedata_, QuadraturePoint_
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
+                                                   facetElemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
       !! finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
@@ -835,9 +918,8 @@ END INTERFACE
 ! date:  2023-08-15
 ! summary:  Get Global element shape data shape data
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
-    IMPORT :: AbstractFE_, ElemShapedata_, ElemShapeData_, DFP
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -847,7 +929,7 @@ ABSTRACT INTERFACE
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoelemsd
     !! shape function data for geometry which contains local shape function
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
@@ -945,6 +1027,32 @@ INTERFACE
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTopologyType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetIntegerType(a, default_a, n, b)
+    INTEGER(I4B), INTENT(INOUT) :: a(:)
+    INTEGER(I4B), INTENT(IN) :: default_a(:)
+    INTEGER(I4B), INTENT(IN) :: n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: b(:)
+  END SUBROUTINE obj_SetIntegerType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetRealType(a, default_a, n, b)
+    REAL(DFP), INTENT(INOUT) :: a(:)
+    REAL(DFP), INTENT(IN) :: default_a(:)
+    INTEGER(I4B), INTENT(IN) :: n
+    REAL(DFP), OPTIONAL, INTENT(IN) :: b(:)
+  END SUBROUTINE obj_SetRealType
 END INTERFACE
 
 END MODULE AbstractFE_Class
