@@ -22,8 +22,10 @@ USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE BaseType, ONLY: CSRMatrix_
-USE AbstractFE_Class, ONLY: AbstractFE_
+USE BaseType, ONLY: CSRMatrix_, &
+                    QuadraturePoint_, &
+                    ElemshapeData_
+USE AbstractFE_Class, ONLY: AbstractFE_, AbstractFEPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -58,25 +60,42 @@ TYPE :: FEDOF_
   !! Total number of faces
   INTEGER(I4B) :: tCells = 0
   !! Total number of cells
-  CHARACTER(:), ALLOCATABLE :: baseContinuity
+  INTEGER(I4B) :: maxTotalConnectivity = 0
+  !! maximum number of connectivity
+
+  CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
   !! H1, HCurl, HDiv, DG
-  CHARACTER(:), ALLOCATABLE :: baseInterpolation
+
+  CHARACTER(4) :: baseInterpolation = "LAGR"
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
-  !! LagrangeInterpolation
-  !! HierarchyInterpolation
-  !! HermitInterpolation
+  !! LagrangeInterpolation ! HierarchyInterpolation
+  !! OrthogonalInterpolation ! HermitInterpolation
   !! SerendipityInterpolation
-  !! OrthogonalInterpolation
-  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
-  !! Pointer to domain
+
+  INTEGER(INT8) :: maxCellOrder = 0_INT8
+  !! maximum value of cell order
+
+  INTEGER(INT8) :: maxFaceOrder = 0_INT8
+  !! maximum value of face order
+
+  INTEGER(INT8) :: maxEdgeOrder = 0_INT8
+  !! maximum value of edge order
 
   INTEGER(INT8), ALLOCATABLE :: cellOrder(:)
   !! Order of each cell
+  !! the size of cellOrder is equal to the obj%tCells
+  !! Get connectivity of an element
+  !! Get entity number of an element
+  !! Get the cell number of an element (this is global element number)
+  !! convert it to the local element number
+  !! use this local element number to get cell order from cellOrder
+
   INTEGER(INT8), ALLOCATABLE :: faceOrder(:)
   !! order of each face
+
   INTEGER(INT8), ALLOCATABLE :: edgeOrder(:)
   !! order of each edge
 
@@ -101,8 +120,12 @@ TYPE :: FEDOF_
   !! The degrees of freedom of icell is stored in
   !! cellJA(cellIA(icell):cellIA(icell+1)-1)
 
-  CLASS(AbstractFE_), POINTER :: fe => NULL()
+  TYPE(AbstractFEPointer_) :: fe(8)
   !! pointer to finite element object
+  !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism, pyramid
+
+  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+  !! Pointer to domain
 
 CONTAINS
 
@@ -177,9 +200,22 @@ CONTAINS
     obj_GetBaseInterpolation
   !! Get the base interpolation
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
+
+  PROCEDURE, PASS(obj) :: GetQuadraturePoints1 => obj_GetQuadraturePoints1
+  PROCEDURE, PASS(obj) :: GetQuadraturePoints2 => obj_GetQuadraturePoints2
+  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
+    GetQuadraturePoints2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
 
   !SET:
   !@SetSparsityMethods
@@ -575,9 +611,10 @@ END INTERFACE
 ! summary: Set the cell order
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetCellOrder(obj, cellOrder)
+  MODULE SUBROUTINE obj_SetCellOrder(obj, order)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! this is cell order
   END SUBROUTINE obj_SetCellOrder
 END INTERFACE
 
@@ -590,9 +627,9 @@ END INTERFACE
 ! summary: Set the face order
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetFaceOrder(obj, cellOrder)
+  MODULE SUBROUTINE obj_SetFaceOrder(obj)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+    !! this is cell order
   END SUBROUTINE obj_SetFaceOrder
 END INTERFACE
 
@@ -605,9 +642,8 @@ END INTERFACE
 ! summary: Set the Edge order
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetEdgeOrder(obj, cellOrder)
+  MODULE SUBROUTINE obj_SetEdgeOrder(obj)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
   END SUBROUTINE obj_SetEdgeOrder
 END INTERFACE
 
@@ -642,6 +678,54 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      GetOrders@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  Get cellOrder, faceOrder, edgeOrder
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrders(obj, cellOrder, faceOrder, edgeOrder, &
+                 cellOrient, faceOrient, edgeOrient, tCellOrder, tFaceOrder, &
+                          tEdgeOrder, tCellOrient, tFaceOrient, tEdgeOrient, &
+                                  globalElement, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
+    INTEGER(I4B), INTENT(INOUT) :: faceOrder(:, :)
+    !! number of rows in faceOrder is equal to 3
+    !! number of columns in faceOrder is equal to total faces
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrder(:)
+    !! size if equal to the total number of edges in element
+    INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
+    !! size is equal to 1
+    INTEGER(I4B), INTENT(INOUT) :: faceOrient(:, :)
+    !! face orientation flags
+    !! number of rows is 3
+    !! number of columns is tface
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrient(:)
+    !! orientaion flag for edge
+    !! size is equal to tedge
+    INTEGER(I4B), INTENT(OUT) :: tCellOrder
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrder
+    !! size of data written in faceorder
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrder
+    !! size of data written in edgeorder
+    INTEGER(I4B), INTENT(OUT) :: tCellOrient
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrient(2)
+    !! size of data written in faceorder
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrient
+    !! size of data written in edgeorder
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetOrders
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                         GetMaxTotalConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
@@ -673,7 +757,7 @@ INTERFACE FEDOFSetSparsity
 END INTERFACE FEDOFSetSparsity
 
 !----------------------------------------------------------------------------
-!                                                      SetSparsity@SetMethod
+!                                                     SetSparsity@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -703,7 +787,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              SetSparsity@SetSparsityMethods
+!                                            SetSparsity@SetSparsityMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -716,5 +800,131 @@ INTERFACE FEDOFSetSparsity
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
   END SUBROUTINE obj_SetSparsity3
 END INTERFACE FEDOFSetSparsity
+
+!----------------------------------------------------------------------------
+!                                                        GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, globalElement, &
+                          quadratureType, order, alpha, beta, lambda, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature points
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+    !! Type of quadrature points
+    !! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight ! GaussChebyshev
+    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussChebyshevRadauRight
+    INTEGER(I4B), INTENT(IN) :: order
+    !! Order of integrand
+    !! either the order or the nips should be present
+    !! Both nips and order should not be present
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameter
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetQuadraturePoints1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, globalElement, &
+         p, q, r, quadratureType1, quadratureType2, quadratureType3, alpha1, &
+      beta1, lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature point
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    INTEGER(I4B), INTENT(IN) :: p
+    !! order of integrand in x
+    INTEGER(I4B), INTENT(IN) :: q
+    !! order of integrand in y
+    INTEGER(I4B), INTENT(IN) :: r
+    !! order of integrand in z direction
+    INTEGER(I4B), INTENT(IN) :: quadratureType1
+    !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
+    !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
+    !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
+    INTEGER(I4B), INTENT(IN) :: quadratureType2
+    !! Type of quadrature points
+    INTEGER(I4B), INTENT(IN) :: quadratureType3
+    !! Type of quadrature points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
+    !! Jacobi parameter and Ultraspherical parameters
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then the global element is local element
+  END SUBROUTINE obj_GetQuadraturePoints2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-13
+! summary:  Get local element shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, globalElement, elemsd, &
+                                              quad, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-13
+! summary:  Get global element shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, globalElement, elemsd, &
+                                               xij, geoElemsd, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! shape function data
+    TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd
+    !! global element shape data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then the global element is a local element
+  END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
 
 END MODULE FEDOF_Class
