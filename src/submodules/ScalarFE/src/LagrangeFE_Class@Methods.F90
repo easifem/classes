@@ -18,24 +18,30 @@
 !
 
 SUBMODULE(LagrangeFE_Class) Methods
-USE Display_Method, ONLY: ToString
-
-USE BaseType, ONLY: TypeElemNameOpt, TypeFeVariableOpt
+USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                          LagrangeFEPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_LagrangeFEPointer1
+ALLOCATE (ans)
+END PROCEDURE obj_LagrangeFEPointer1
+
+!----------------------------------------------------------------------------
 !                                                         LagrangeFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LagrangeFEPointer
+MODULE PROCEDURE obj_LagrangeFEPointer2
 ALLOCATE (ans)
 CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
                   nsd=nsd, baseContinuity=baseContinuity, &
            baseInterpolation="LAGRANGE", ipType=ipType, basisType=basisType, &
     alpha=alpha, beta=beta, lambda=lambda, order=order, anisoOrder=anisoOrder)
-END PROCEDURE obj_LagrangeFEPointer
+END PROCEDURE obj_LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
@@ -81,37 +87,7 @@ END IF
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                     GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-CALL obj%GetLagrangeLocalElemShapeData(quad=quad, elemsd=elemsd)
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                 GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalFacetElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetLocalFacetElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                     GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetGlobalElemShapeData
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE Methods
