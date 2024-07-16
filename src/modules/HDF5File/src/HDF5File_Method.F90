@@ -111,8 +111,8 @@ END SUBROUTINE HDF5GetEntities
 !                                                          HDF5ReadIntMatrix
 !----------------------------------------------------------------------------
 
-SUBROUTINE HDF5ReadIntMatrix(hdf5, VALUE, group, fieldname, myname,  &
-  & modname, check)
+SUBROUTINE HDF5ReadIntMatrix(hdf5, VALUE, group, fieldname, myname, &
+                             modname, check)
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
   CHARACTER(*), INTENT(IN) :: group
@@ -132,7 +132,7 @@ SUBROUTINE HDF5ReadIntMatrix(hdf5, VALUE, group, fieldname, myname,  &
 
   IF (check .AND. .NOT. isok0) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+                      '[INTERNAL ERROR]:: '//astr//' path does not exists.')
     RETURN
   END IF
 
