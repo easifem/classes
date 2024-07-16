@@ -330,7 +330,13 @@ CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
                    tcellorient=indx(4), tfaceorient=indx(5:6), &
                    tedgeorient=indx(7))
 
+CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
+            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+              faceOrient=faceOrient, edgeOrient=edgeOrient, errCheck=.TRUE., &
+                             tcell=indx(1), tface=indx(2), tedge=indx(3))
+
 CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
