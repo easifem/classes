@@ -207,7 +207,11 @@ CONTAINS
   !! Get the maximum size of connectivity
 
   PROCEDURE, PASS(obj) :: GetQuadraturePoints1 => obj_GetQuadraturePoints1
+  !! Get quadrature points for isotropic order
+
   PROCEDURE, PASS(obj) :: GetQuadraturePoints2 => obj_GetQuadraturePoints2
+  !! Get quadrature points for anisotropic ordder
+
   GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
     GetQuadraturePoints2
 
@@ -691,7 +695,9 @@ INTERFACE
                           tEdgeOrder, tCellOrient, tFaceOrient, tEdgeOrient, &
                                   globalElement, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
+    !! fedof object
     INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
+    !! cell order
     INTEGER(I4B), INTENT(INOUT) :: faceOrder(:, :)
     !! number of rows in faceOrder is equal to 3
     !! number of columns in faceOrder is equal to total faces
@@ -926,5 +932,9 @@ INTERFACE
     !! if true then the global element is a local element
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE FEDOF_Class
