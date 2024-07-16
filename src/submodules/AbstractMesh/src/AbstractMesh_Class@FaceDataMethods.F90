@@ -19,19 +19,24 @@ SUBMODULE(AbstractMesh_Class) FaceDataMethods
 USE ReferenceElement_Method, ONLY: &
   REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
   REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
-  RefElemGetGeoParam, &
-  IsQuadrangle
+  RefElemGetGeoParam, IsQuadrangle
 
 USE ReferenceTriangle_Method, ONLY: FaceShapeMetaData_Triangle
 
 USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
 
 USE ReallocateUtility, ONLY: Reallocate
+
 USE FaceData_Class
+
 USE FaceDataBinaryTree_Class
+
 USE SortUtility
+
 USE GlobalData, ONLY: INT8
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -48,16 +53,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 SELECT CASE (obj%xidim)
 CASE (2_I4B)
   CALL InitiateFaceConnectivity2D(obj)
+
 CASE (3_I4B)
   CALL InitiateFaceConnectivity3D(obj)
+
 CASE DEFAULT
   CALL e%RaiseError(modName//'::obj_InitiateFaceConnectivity - '// &
-    & '[INTERNAL ERROR] :: Invalid dimension')
+                    '[INTERNAL ERROR] :: Invalid dimension')
+  RETURN
+
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateFaceConnectivity
@@ -71,9 +80,8 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity2D()"
-  INTEGER(I4B) :: tElements, iel, elemType, tFaces, &
-             localFaces(2_I4B, REFELEM_MAX_FACES), face0(2), sorted_face(2), &
-                  tsize1, tsize2, iface
+  INTEGER(I4B) :: tElements, iel, elemType, tFaces, face0(2), &
+   sorted_face(2), tsize1, tsize2, iface, localFaces(2_I4B, REFELEM_MAX_FACES)
 
   LOGICAL(LGT) :: problem
   TYPE(FaceDataBinaryTree_) :: faceTree
@@ -116,8 +124,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
     DO iface = 1, tFaces
 
-      face0 = &
-        obj%elementData(iel)%ptr%globalNodes(localFaces(:, iface))
+      face0 = obj%elementData(iel)%ptr%globalNodes(localFaces(:, iface))
 
       sorted_face = Sort(face0)
 

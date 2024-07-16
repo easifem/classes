@@ -42,7 +42,8 @@ USE NodeData_Class, ONLY: INTERNAL_NODE, &
                           NodeData_Set, &
                           NodeData_SetNodeCoord
 
-USE ElemData_Class, ONLY: ElemData_Set
+USE ElemData_Class, ONLY: ElemData_Set, &
+                          ElemData_Deallocate
 
 USE GlobalData, ONLY: stdout
 
@@ -339,6 +340,19 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname, &
        fieldname="connectivity", myname=myname, modName=modName, check=.TRUE.)
 
+  isok = ALLOCATED(connectivity)
+  IF (isok) THEN
+    isok = SIZE(connectivity, 1) .NE. 0 .AND. SIZE(connectivity, 2) .NE. 0
+  END IF
+
+  IF (.NOT. isok) THEN
+    CALL Display(dsetname, "dsetname: ", unitno=stdout)
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      '[INTERNAL ERROR] :: either connectivity not allocated,&
+      & or its size is zero')
+    RETURN
+  END IF
+
   obj%maxNNE = SIZE(connectivity, 1)
 
   IF (PRESENT(internalNptrs)) THEN
@@ -433,7 +447,6 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
   INTEGER(I4B) :: ii, elemType, meshID
   CHARACTER(:), ALLOCATABLE :: dsetname
   CHARACTER(*), PARAMETER :: myName = "MeshImportElementData()"
-  LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -457,11 +470,15 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
     obj%local_elemNumber(elemNumber(ii)) = ii
 
     ALLOCATE (obj%elementData(ii)%ptr)
+    CALL ElemData_Deallocate(obj%elementData(ii)%ptr)
 
     CALL ElemData_Set(obj=obj%elementData(ii)%ptr, &
-                      globalElemNum=elemNumber(ii), localElemNum=ii, &
-                      globalNodes=connectivity(:, ii), name=elemType, &
-                      isActive=.TRUE., meshID=meshID)
+                      globalElemNum=elemNumber(ii), &
+                      localElemNum=ii, &
+                      globalNodes=connectivity(:, ii), &
+                      name=elemType, &
+                      isActive=.TRUE., &
+                      meshID=meshID)
   END DO
   !$OMP END PARALLEL DO
 
@@ -490,7 +507,6 @@ SUBROUTINE MeshImportElementDataFromDim(obj, elemType, meshID, &
   ! Internal variables
   INTEGER(I4B) :: ii
   CHARACTER(*), PARAMETER :: myName = "MeshImportElementDataFromDim()"
-  LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -502,6 +518,7 @@ SUBROUTINE MeshImportElementDataFromDim(obj, elemType, meshID, &
     obj%local_elemNumber(elemNumber(ii)) = ii
 
     ALLOCATE (obj%elementData(ii)%ptr)
+    CALL ElemData_Deallocate(obj%elementData(ii)%ptr)
 
     CALL ElemData_Set(obj=obj%elementData(ii)%ptr, &
                       globalElemNum=elemNumber(ii), &
@@ -534,7 +551,6 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
   INTEGER(I4B) :: ii, jj, aint, dummy
   LOGICAL(LGT), ALLOCATABLE :: mask(:)
   CHARACTER(*), PARAMETER :: myName = "MeshImportNodeData()"
-  LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -878,6 +894,13 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   obj%maxNNE = MAXVAL(nne)
   obj%tElements = SUM(tElements)
 
+  isok = obj%maxNNE .NE. 0 .AND. obj%tElements .NE. 0
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: maxNNE or tElements are zero')
+    RETURN
+  END IF
+
   CALL Reallocate(connectivity, obj%maxNNE, obj%tElements)
   CALL Reallocate(elemNumber, obj%tElements)
 
@@ -936,6 +959,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   END IF
 
   ALLOCATE (obj%elementData(obj%tElements))
+
   CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 
   bint = 0

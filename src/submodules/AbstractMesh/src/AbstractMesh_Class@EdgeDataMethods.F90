@@ -70,9 +70,8 @@ DO iel = 1, tElements
   problem = .NOT. obj%elementData(iel)%ptr%isActive
   IF (problem) CYCLE
   elemType = obj%elementData(iel)%ptr%name
-  CALL RefElemGetGeoParam(elemType=elemType,  &
-    & tEdges=tEdges, tNodes=tNodes, edgeCon=localEdges,  &
-    & edgeOpt=1_I4B)
+  CALL RefElemGetGeoParam(elemType=elemType, tEdges=tEdges, tNodes=tNodes, &
+                          edgeCon=localEdges, edgeOpt=1_I4B)
 
   CALL Reallocate(obj%elementData(iel)%ptr%globalEdges, tEdges)
   CALL Reallocate(obj%elementData(iel)%ptr%edgeOrient, tEdges)
