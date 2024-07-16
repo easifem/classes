@@ -17,7 +17,9 @@
 
 MODULE ElemData_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
+
 USE Display_Method, ONLY: Display
+
 USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
                                    RefElemGetGeoParam, &
                                    ElementName, &
@@ -30,16 +32,20 @@ USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
 USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
 
 USE InterpolationUtility, ONLY: GetTotalInDOF
+
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle, &
                                       FaceShapeMetaData_Quadrangle
+
 USE SortUtility, ONLY: Sort
+
 USE ReallocateUtility, ONLY: Reallocate
-USE SafeSizeUtility, ONLY: SafeSize
+
 USE ExceptionHandler_Class, ONLY: e
 
 USE BaseType, ONLY: elemopt => TypeElemNameOpt
 
 IMPLICIT NONE
+
 PRIVATE
 
 PUBLIC :: ElemData_
@@ -380,14 +386,16 @@ SUBROUTINE ElemData_Deallocate(obj)
   obj%name = 0
   obj%topoName = 0
   obj%meshID = 0
-  IF (ALLOCATED(obj%material)) DEALLOCATE (obj%material)
-  IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
-  IF (ALLOCATED(obj%globalEdges)) DEALLOCATE (obj%globalEdges)
-  IF (ALLOCATED(obj%edgeOrient)) DEALLOCATE (obj%edgeOrient)
-  IF (ALLOCATED(obj%globalFaces)) DEALLOCATE (obj%globalFaces)
-  IF (ALLOCATED(obj%faceOrient)) DEALLOCATE (obj%faceOrient)
-  IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
-  IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
+
+  CALL Reallocate(obj%material, 0)
+  CALL Reallocate(obj%globalNodes, 0)
+  CALL Reallocate(obj%globalEdges, 0)
+  CALL Reallocate(obj%edgeOrient, 0)
+  CALL Reallocate(obj%globalFaces, 0)
+  CALL Reallocate(obj%faceOrient, 0, 0)
+  CALL Reallocate(obj%globalElements, 0)
+  CALL Reallocate(obj%boundaryData, 0)
+
 END SUBROUTINE ElemData_Deallocate
 
 !----------------------------------------------------------------------------
@@ -584,15 +592,15 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
 
   SELECT CASE (opt0)
   CASE ("V", "v")
-    tsize = SafeSize(obj%globalNodes)
+    tsize = SIZE(obj%globalNodes)
     DO ii = 1, tsize; con(ii) = obj%globalNodes(ii); END DO
 
   CASE ("E", "e")
-    tsize = SafeSize(obj%globalEdges)
+    tsize = SIZE(obj%globalEdges)
     DO ii = 1, tsize; con(ii) = obj%globalEdges(ii); END DO
 
   CASE ("F", "f")
-    tsize = SafeSize(obj%globalFaces)
+    tsize = SIZE(obj%globalFaces)
     DO ii = 1, tsize; con(ii) = obj%globalFaces(ii); END DO
 
   CASE ("C", "c")
@@ -601,7 +609,7 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
 
   CASE ("A", "a")
     aint = 1
-    tsize = SafeSize(obj%globalNodes)
+    tsize = SIZE(obj%globalNodes)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
@@ -609,7 +617,7 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
     END DO
 
     aint = tsize + 1
-    tsize = tsize + SafeSize(obj%globalEdges)
+    tsize = tsize + SIZE(obj%globalEdges)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
@@ -617,7 +625,7 @@ SUBROUTINE ElemData_GetConnectivity(obj, con, tsize, opt)
     END DO
 
     aint = tsize + 1
-    tsize = tsize + SafeSize(obj%globalFaces)
+    tsize = tsize + SIZE(obj%globalFaces)
     jj = 0
     DO ii = aint, tsize
       jj = jj + 1
@@ -651,17 +659,17 @@ SUBROUTINE ElemData_GetConnectivity2(obj, cellCon, faceCon, edgeCon, nodeCon, &
   !! internal variable
   INTEGER(I4B) :: ii
 
-  tNodeCon = SafeSize(obj%globalNodes)
+  tNodeCon = SIZE(obj%globalNodes)
   DO ii = 1, tNodeCon
     nodeCon(ii) = obj%globalNodes(ii)
   END DO
 
-  tEdgeCon = SafeSize(obj%globalEdges)
+  tEdgeCon = SIZE(obj%globalEdges)
   DO ii = 1, tEdgeCon
     edgeCon(ii) = obj%globalEdges(ii)
   END DO
 
-  tFaceCon = SafeSize(obj%globalFaces)
+  tFaceCon = SIZE(obj%globalFaces)
   DO ii = 1, tFaceCon
     faceCon(ii) = obj%globalFaces(ii)
   END DO
@@ -682,9 +690,9 @@ END SUBROUTINE ElemData_GetConnectivity2
 FUNCTION ElemData_GetTotalEntities(obj) RESULT(ans)
   TYPE(ElemData_), INTENT(in) :: obj
   INTEGER(I4B) :: ans(4)
-  ans(1) = SafeSize(obj%globalNodes)
-  ans(2) = SafeSize(obj%globalEdges)
-  ans(3) = SafeSize(obj%globalFaces)
+  ans(1) = SIZE(obj%globalNodes)
+  ans(2) = SIZE(obj%globalEdges)
+  ans(3) = SIZE(obj%globalFaces)
   ans(4) = 1
 END FUNCTION ElemData_GetTotalEntities
 
