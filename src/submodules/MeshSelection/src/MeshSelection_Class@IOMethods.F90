@@ -40,8 +40,8 @@ CONTAINS
 !                                                                   Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Import
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 
@@ -176,14 +176,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE meshSelect_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                   Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Export
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 !> print info
@@ -286,13 +286,13 @@ END IF
 !> print info
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
   & "Exporting Mesh Selection [OK!]")
-END PROCEDURE meshSelect_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Display
+MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 INTEGER(I4B) :: ii
 
@@ -458,14 +458,14 @@ IF (bool1) THEN
   END DO
 END IF
 
-END PROCEDURE meshSelect_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "meshSelect_ImportParamFromToml()"
+MODULE PROCEDURE obj_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isSelectionByElemNum, isSelectionByNodeNum,  &
   & isSelectionByBox, isSelectionByMeshID
@@ -500,14 +500,14 @@ CALL SetMeshSelectionParam( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE meshSelect_ImportParamFromToml
+END PROCEDURE obj_ImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                         ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(ParameterList_) :: param
 INTEGER(I4B), ALLOCATABLE :: aintvec(:)
 TYPE(BoundingBox_), ALLOCATABLE :: box(:)
@@ -683,14 +683,14 @@ CALL obj%Set()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]()')
 #endif
-END PROCEDURE meshSelect_ImportFromToml1
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                         ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "meshSelect_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -733,6 +733,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE meshSelect_ImportFromToml2
+END PROCEDURE obj_ImportFromToml2
 
 END SUBMODULE IOMethods

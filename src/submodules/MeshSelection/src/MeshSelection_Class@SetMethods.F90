@@ -27,8 +27,8 @@ CONTAINS
 !                                                                       Add
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Add
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Add()"
+MODULE PROCEDURE obj_Add
+CHARACTER(*), PARAMETER :: myName = "obj_Add()"
 LOGICAL(LGT) :: bool1
 
 #ifdef DEBUG_VER
@@ -105,13 +105,13 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE meshSelect_Add
+END PROCEDURE obj_Add
 
 !----------------------------------------------------------------------------
 !                                                                     Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Set
+MODULE PROCEDURE obj_Set
 IF (isAllocated(obj%pointMeshID)) THEN
   CALL RemoveDuplicates(obj%pointMeshID)
 END IF
@@ -143,7 +143,7 @@ if(isAllocated(obj%volumeNodeNum) ) CALL Append(obj%nodeNum, obj%volumeNodeNum)
 IF (isAllocated(obj%nodeNum)) THEN
   CALL RemoveDuplicates(obj%nodeNum)
 END IF
-END PROCEDURE meshSelect_Set
+END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
 !                                                         MeshSelectionSet

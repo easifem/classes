@@ -28,8 +28,8 @@ CONTAINS
 !                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetnodeNum1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum1()"
+MODULE PROCEDURE obj_GetnodeNum1
+CHARACTER(*), PARAMETER :: myName = "obj_GetnodeNum1()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: aint
 
@@ -52,14 +52,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE meshSelect_GetnodeNum1
+END PROCEDURE obj_GetnodeNum1
 
 !----------------------------------------------------------------------------
 !                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetnodeNum2
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum2()"
+MODULE PROCEDURE obj_GetnodeNum2
+CHARACTER(*), PARAMETER :: myName = "obj_GetnodeNum2()"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:)
 INTEGER(I4B) :: ii
@@ -109,14 +109,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] GetnodeNum()')
 #endif
-END PROCEDURE meshSelect_GetnodeNum2
+END PROCEDURE obj_GetnodeNum2
 
 !----------------------------------------------------------------------------
 !                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetnodeNum3
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3()"
+MODULE PROCEDURE obj_GetnodeNum3
+CHARACTER(*), PARAMETER :: myName = "obj_GetnodeNum3()"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
 INTEGER(I4B) :: ii, dim, nsd
@@ -184,6 +184,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE meshSelect_GetnodeNum3
+END PROCEDURE obj_GetnodeNum3
 
 END SUBMODULE GetnodeNumMethods

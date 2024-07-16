@@ -28,7 +28,7 @@ CONTAINS
 !                                                                 getMeshID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_getMeshID
+MODULE PROCEDURE obj_getMeshID
 SELECT CASE (dim)
 CASE (0)
   IF (isAllocated(obj%PointMeshID)) ans = obj%PointMeshID
@@ -40,13 +40,13 @@ CASE (3)
   IF (isAllocated(obj%VolumeMeshID)) ans = obj%VolumeMeshID
 END SELECT
 IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
-END PROCEDURE meshSelect_getMeshID
+END PROCEDURE obj_getMeshID
 
 !----------------------------------------------------------------------------
 !                                                         isMeshIDAllocated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_isMeshIDAllocated
+MODULE PROCEDURE obj_isMeshIDAllocated
 SELECT CASE (dim)
 CASE (0)
   ans = isAllocated(obj%PointMeshID)
@@ -57,13 +57,13 @@ CASE (2)
 CASE (3)
   ans = isAllocated(obj%VolumeMeshID)
 END SELECT
-END PROCEDURE meshSelect_isMeshIDAllocated
+END PROCEDURE obj_isMeshIDAllocated
 
 !----------------------------------------------------------------------------
 !                                                         isElemNumAllocated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_isElemNumAllocated
+MODULE PROCEDURE obj_isElemNumAllocated
 SELECT CASE (dim)
 CASE (0)
   ans = isAllocated(obj%PointElemNum)
@@ -74,21 +74,21 @@ CASE (2)
 CASE (3)
   ans = isAllocated(obj%VolumeElemNum)
 END SELECT
-END PROCEDURE meshSelect_isElemNumAllocated
+END PROCEDURE obj_isElemNumAllocated
 
 !----------------------------------------------------------------------------
 !                                                       isNodeNumAllocated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_isNodeNumAllocated
+MODULE PROCEDURE obj_isNodeNumAllocated
 ans = isAllocated(obj%NodeNum)
-END PROCEDURE meshSelect_isNodeNumAllocated
+END PROCEDURE obj_isNodeNumAllocated
 
 !----------------------------------------------------------------------------
 !                                                                 GetQuery
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetQuery
+MODULE PROCEDURE obj_GetQuery
 IF (PRESENT(isInitiated)) THEN
   isInitiated = obj%isInitiated
 END IF
@@ -104,14 +104,14 @@ END IF
 IF (PRESENT(isSelectionByNodeNum)) THEN
   isSelectionByNodeNum = obj%isSelectionByNodeNum
 END IF
-END PROCEDURE meshSelect_GetQuery
+END PROCEDURE obj_GetQuery
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE meshSelect_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

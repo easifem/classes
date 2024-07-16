@@ -28,8 +28,8 @@ CONTAINS
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum1()"
+MODULE PROCEDURE obj_GetElemNum1
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum1()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -65,14 +65,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE meshSelect_GetElemNum1
+END PROCEDURE obj_GetElemNum1
 
 !----------------------------------------------------------------------------
 !                                                                 GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum2
-CHARACTER(*), PARAMETER :: myname = "meshSelect_GetElemNum2()"
+MODULE PROCEDURE obj_GetElemNum2
+CHARACTER(*), PARAMETER :: myname = "obj_GetElemNum2()"
 CLASS(AbstractMesh_), POINTER :: meshptr
 INTEGER(I4B) :: ii
 
@@ -131,15 +131,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE meshSelect_GetElemNum2
+END PROCEDURE obj_GetElemNum2
 
 !----------------------------------------------------------------------------
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum3
+MODULE PROCEDURE obj_GetElemNum3
 INTEGER(I4B) :: ii
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum3()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum3()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -154,14 +154,14 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE meshSelect_GetElemNum3
+END PROCEDURE obj_GetElemNum3
 
 !----------------------------------------------------------------------------
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum4
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum4()"
+MODULE PROCEDURE obj_GetElemNum4
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum4()"
 INTEGER(I4B) :: ii
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 
@@ -179,6 +179,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE meshSelect_GetElemNum4
+END PROCEDURE obj_GetElemNum4
 
 END SUBMODULE GetElemNumMethods

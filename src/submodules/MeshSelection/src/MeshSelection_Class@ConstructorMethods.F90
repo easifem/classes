@@ -19,20 +19,23 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
+USE IntVector_Method, ONLY: DEALLOCATE, isAllocated
+USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
+USE BoundingBox_Method, ONLY: BB_Deallocate => DEALLOCATE
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "meshSelect_CheckEssentialParam()"
-INTEGER(I4B) :: ii
-TYPE(String), ALLOCATABLE :: essentialParam(:)
-TYPE(String) :: astr, prefix0
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+CHARACTER(:), ALLOCATABLE :: astr, prefix0
 
 IF (PRESENT(prefix)) THEN
   prefix0 = prefix
@@ -40,26 +43,16 @@ ELSE
   prefix0 = obj%GetPrefix()
 END IF
 
-astr = "/isSelectionByMeshID/isSelectionBynodeNum/"//  &
-  & "isSelectionByBox/isSelectionByElemNum"
+astr = "/isSelectionByMeshID/isSelectionBynodeNum/"// &
+       "isSelectionByBox/isSelectionByElemNum"
 
-CALL astr%Split(essentialParam, sep="/")
-CALL CheckEssentialParam(obj=param,  &
-  & keys=essentialParam,  &
-  & prefix=prefix0%chars(),  &
-  & myName=myName,  &
-  & modName=modName)
+CALL CheckEssentialParam(obj=param, keys=astr, prefix=prefix0, &
+                         myName=myName, modName=modName)
 !NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
-IF (ALLOCATED(essentialParam)) THEN
-  DO ii = 1, SIZE(essentialParam)
-    essentialParam(ii) = ""
-  END DO
-  DEALLOCATE (essentialParam)
-END IF
 astr = ""
 prefix0 = ""
-END PROCEDURE meshSelect_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                    SetMeshSelectionParam
@@ -68,21 +61,21 @@ END PROCEDURE meshSelect_CheckEssentialParam
 MODULE PROCEDURE SetMeshSelectionParam
 ! CHARACTER(*), PARAMETER :: myName = "SetMeshSelectionParam()"
 
-CALL Set(param, datatype=.TRUE., prefix=prefix,  &
-  & key="isSelectionByElemNum",  &
-  & VALUE=input(option=isSelectionByElemNum, default=.FALSE.))
+CALL Set(param, datatype=.TRUE., prefix=prefix, &
+         key="isSelectionByElemNum", &
+         VALUE=Input(option=isSelectionByElemNum, default=.FALSE.))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix,  &
-  & key="isSelectionBynodeNum",  &
-  & VALUE=input(option=isSelectionBynodeNum, default=.FALSE.))
+CALL Set(param, datatype=.TRUE., prefix=prefix, &
+         key="isSelectionBynodeNum", &
+         VALUE=Input(option=isSelectionBynodeNum, default=.FALSE.))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix,  &
-  & key="isSelectionByBox",  &
-  & VALUE=input(option=isSelectionByBox, default=.FALSE.))
+CALL Set(param, datatype=.TRUE., prefix=prefix, &
+         key="isSelectionByBox", &
+         VALUE=Input(option=isSelectionByBox, default=.FALSE.))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix,  &
-  & key="isSelectionByMeshID",  &
-  & VALUE=input(option=isSelectionByMeshID, default=.FALSE.))
+CALL Set(param, datatype=.TRUE., prefix=prefix, &
+         key="isSelectionByMeshID", &
+         VALUE=Input(option=isSelectionByMeshID, default=.FALSE.))
 
 END PROCEDURE SetMeshSelectionParam
 
@@ -90,72 +83,72 @@ END PROCEDURE SetMeshSelectionParam
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Initiate1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Initiate()')
+                        '[START]')
 #endif
 
 CALL obj%DEALLOCATE()
 
 obj%isInitiated = .TRUE.
-obj%isSelectionByMeshID = Input(option=isSelectionByMeshID,  &
-  & default=.FALSE.)
+obj%isSelectionByMeshID = Input(option=isSelectionByMeshID, &
+                                default=.FALSE.)
 
-obj%isSelectionByElemNum = Input(option=isSelectionByElemNum,  &
-  & default=.FALSE.)
+obj%isSelectionByElemNum = Input(option=isSelectionByElemNum, &
+                                 default=.FALSE.)
 
-obj%isSelectionBynodeNum = Input(option=isSelectionBynodeNum,  &
-  & default=.FALSE.)
+obj%isSelectionBynodeNum = Input(option=isSelectionBynodeNum, &
+                                 default=.FALSE.)
 
-obj%isSelectionByBox = Input(option=isSelectionByBox,  &
-  & default=.FALSE.)
+obj%isSelectionByBox = Input(option=isSelectionByBox, &
+                             default=.FALSE.)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Initiate()')
+                        '[END]')
 #endif
-END PROCEDURE meshSelect_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Initiate2
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Initiate2()"
+MODULE PROCEDURE obj_Initiate2
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] meshSelect_Initiate2()')
+                        '[START]')
 #endif
 
 CALL obj%DEALLOCATE()
 obj%isInitiated = .TRUE.
 prefix = obj%GetPrefix()
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox",  &
-  & VALUE=obj%isSelectionByBox)
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByMeshID",  &
-  & VALUE=obj%isSelectionByMeshID)
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionBynodeNum",  &
-  & VALUE=obj%isSelectionBynodeNum)
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByElemNum",  &
-  & VALUE=obj%isSelectionByElemNum)
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox", &
+              VALUE=obj%isSelectionByBox)
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionByMeshID", &
+              VALUE=obj%isSelectionByMeshID)
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionBynodeNum", &
+              VALUE=obj%isSelectionBynodeNum)
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionByElemNum", &
+              VALUE=obj%isSelectionByElemNum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] meshSelect_Initiate2()')
+                        '[END]')
 #endif
 
-END PROCEDURE meshSelect_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%isInitiated = .FALSE.
 obj%isSelectionByElemNum = .FALSE.
 obj%isSelectionBynodeNum = .FALSE.
@@ -174,25 +167,25 @@ CALL DEALLOCATE (obj%pointNodeNum)
 CALL DEALLOCATE (obj%curveNodeNum)
 CALL DEALLOCATE (obj%surfaceNodeNum)
 CALL DEALLOCATE (obj%volumeNodeNum)
-CALL DEALLOCATE (obj%pointBox)
-CALL DEALLOCATE (obj%curveBox)
-CALL DEALLOCATE (obj%surfaceBox)
-CALL DEALLOCATE (obj%volumeBox)
-END PROCEDURE meshSelect_Deallocate
+CALL BB_Deallocate(obj%pointBox)
+CALL BB_Deallocate(obj%curveBox)
+CALL BB_Deallocate(obj%surfaceBox)
+CALL BB_Deallocate(obj%volumeBox)
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE meshSelect_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                     Copy
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_Copy
+MODULE PROCEDURE obj_Copy
 obj%isInitiated = obj2%isInitiated
 obj%isSelectionByMeshID = obj2%isSelectionByMeshID
 obj%isSelectionByElemNum = obj2%isSelectionByElemNum
@@ -210,7 +203,7 @@ IF (isAllocated(obj2%surfaceElemNum)) obj%surfaceElemNum = obj2%surfaceElemNum
 IF (isAllocated(obj2%volumeElemNum)) obj%volumeElemNum = obj2%volumeElemNum
 
 IF (isAllocated(obj2%nodeNum)) obj%nodeNum = obj2%nodeNum
-END PROCEDURE meshSelect_Copy
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
