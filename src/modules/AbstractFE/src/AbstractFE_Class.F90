@@ -175,7 +175,9 @@ TYPE, ABSTRACT :: AbstractFE_
   !! interpolation points for lagrange polynomial
   !! coeff, and xij are needed internally for
   !! constructing the lagrange polynomial
+
 CONTAINS
+
   PRIVATE
 
   ! CONSTRUCTOR:
@@ -707,16 +709,37 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder(obj, order, anisoorder, cellOrder, &
-           faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck)
+                   faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
+                                 tcell, tface, tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
+    !! aniso tropic order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order
+    !! size of edgeorder is tedgeorder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
@@ -748,16 +771,29 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
-                      edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck)
+                    edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck, &
+                                             tcell, tface, tedge)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! eddge orient
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
     !! Check the eror in debug mode
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
   END SUBROUTINE obj_SetHierarchicalOrder
 END INTERFACE
 
