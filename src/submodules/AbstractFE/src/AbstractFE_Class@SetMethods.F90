@@ -90,10 +90,9 @@ CASE ("LAGR")
 
 CASE ("HIER", "HEIR")
   CALL obj%SetHierarchicalOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
-                                edgeOrder=edgeOrder, cellOrient=cellOrient, &
-                               faceOrient=faceOrient, edgeOrient=edgeOrient, &
-                                errCheck=errCheck)
-
+          edgeOrder=edgeOrder, cellOrient=cellOrient, faceOrient=faceOrient, &
+                      edgeOrient=edgeOrient, errCheck=errCheck, tcell=tcell, &
+                                tface=tface, tedge=tedge)
 END SELECT
 END PROCEDURE obj_SetOrder
 
@@ -157,7 +156,7 @@ obj%tdof = HierarchicalDOF(elemType=obj%elemType, cellOrder=cellOrder, &
 IF (PRESENT(cellOrder)) THEN
 
   obj%isCellOrder = .TRUE.
-  obj%tCellOrder = SIZE(cellOrder)
+  obj%tCellOrder = tcell
   DO ii = 1, obj%tCellOrder
     obj%cellOrder(ii) = cellOrder(ii)
     obj%cellOrient(ii) = cellOrient(ii)
@@ -170,7 +169,7 @@ IF (PRESENT(faceOrder)) THEN
   IF (obj%xidim .GE. 2) THEN
 
     obj%isFaceOrder = .TRUE.
-    obj%tFaceOrder = SIZE(faceOrder, 2)
+    obj%tFaceOrder = tface
 
     DO ii = 1, obj%tFaceOrder
       obj%faceOrder(1:3, ii) = faceOrder(1:3, ii)
@@ -186,7 +185,7 @@ IF (PRESENT(edgeOrder)) THEN
   IF (obj%xidim .GE. 3) THEN
 
     obj%isEdgeOrder = .TRUE.
-    obj%tEdgeOrder = SIZE(edgeOrder)
+    obj%tEdgeOrder = tedge
     DO ii = 1, obj%tEdgeOrder
       obj%edgeOrder(ii) = edgeOrder(ii)
       obj%edgeOrient(ii) = edgeOrient(ii)
@@ -218,20 +217,41 @@ SUBROUTINE checkerror
     RETURN
   END IF
 
-  isok = SIZE(cellOrder) .EQ. SIZE(cellOrient)
+  isok = PRESENT(tcell)
   IF (.NOT. isok) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: size of cellOrder and cellOrient is not same.')
+                      '[INTERNAL ERROR] :: tcell is not present.')
+    RETURN
+  END IF
+
+  isok = tcell .LE. SIZE(cellOrder)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: size of cellOrder is not enough.')
+    RETURN
+  END IF
+
+  isok = tcell .LE. SIZE(cellOrient)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: size of cellOrient is not enough.')
     RETURN
   END IF
 
   abool = obj%xidim .GE. 2
   IF (abool) THEN
-    isok = PRESENT(faceOrder)
 
+    isok = PRESENT(faceOrder)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: faceOrder is not present.')
+      RETURN
+    END IF
+
+    isok = PRESENT(tface)
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[INTERNAL ERROR] :: tface is not present.')
       RETURN
     END IF
 
@@ -240,6 +260,14 @@ SUBROUTINE checkerror
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: rowsize in faceOrder should be 3.')
+      RETURN
+    END IF
+
+    isok = SIZE(faceOrder, 2) .GE. tface
+
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                       '[INTERNAL ERROR] :: colsize in faceOrder not enough.')
       RETURN
     END IF
 
@@ -257,10 +285,11 @@ SUBROUTINE checkerror
       RETURN
     END IF
 
-    isok = SIZE(faceOrder, 2) .EQ. SIZE(faceOrient, 2)
+    isok = SIZE(faceOrder, 2) .GE. tface
+
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: colsize in faceOrder and faceOrient not same.')
+                      '[INTERNAL ERROR] :: colsize in faceorient not enough.')
       RETURN
     END IF
 
@@ -268,8 +297,8 @@ SUBROUTINE checkerror
 
   abool = obj%xidim .GE. 3
   IF (abool) THEN
-    isok = PRESENT(edgeOrder)
 
+    isok = PRESENT(edgeOrder)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: edgeOrder is not present.')
@@ -277,19 +306,33 @@ SUBROUTINE checkerror
     END IF
 
     isok = PRESENT(edgeOrient)
-
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: edgeOrient is not present.')
       RETURN
     END IF
 
-    isok = SIZE(edgeOrient) .EQ. SIZE(edgeOrder)
+    isok = PRESENT(tedge)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: size of edgeOrient and edgeOrder is not same.')
+                        '[INTERNAL ERROR] :: tedge is not present.')
       RETURN
     END IF
+
+    isok = SIZE(edgeOrder) .GE. tedge
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                       '[INTERNAL ERROR] :: size of edgeOrder is not enough.')
+      RETURN
+    END IF
+
+    isok = SIZE(edgeOrient) .GE. tedge
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: size of edgeOrient is not enough.')
+      RETURN
+    END IF
+
   END IF
 
 END SUBROUTINE checkerror

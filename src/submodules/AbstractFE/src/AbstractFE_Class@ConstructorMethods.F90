@@ -39,7 +39,9 @@ USE ReferenceElement_Method, ONLY: ElementTopology, &
                                    GetTotalEdges, &
                                    GetTotalFaces, &
                                    GetTotalCells, &
-                                   RefCoord_
+                                   RefCoord_, &
+                                   GetElementIndex, &
+                                   ReferenceElementInfo
 
 USE LagrangePolynomialUtility, ONLY: LagrangeDOF
 
@@ -260,6 +262,7 @@ obj%fetype = fetype
 
 mystr = RefElemDomain(elemType=elemType, baseContinuity=baseContinuity, &
                       baseInterpol=baseInterpolation)
+
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
 
@@ -268,13 +271,18 @@ CALL RefCoord_(elemType=elemType, ans=obj%refelemCoord, nrow=ii, ncol=jj, &
 
 obj%xidim = XiDimension(elemType)
 
+ii = GetElementIndex(elemType)
+
 ! For 1D elements cellOrder should be present
 ! For 2D elements cellOrder, faceOrder should be present
 ! For 3D elements cellOrder, faceOrder, and edgeOrder should should be present
 
 CALL obj%SetHierarchicalOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
           edgeOrder=edgeOrder, cellOrient=cellOrient, faceOrient=faceOrient, &
-                              edgeOrient=edgeOrient, errCheck=.FALSE.)
+                              edgeOrient=edgeOrient, errCheck=.FALSE., &
+                              tcell=ReferenceElementInfo%tCells(ii), &
+                              tface=ReferenceElementInfo%tFaces(ii), &
+                              tedge=ReferenceElementInfo%tEdges(ii))
 
 !NOTE: We have set errCheck = .false. because
 ! in fedof when we construct shape function
