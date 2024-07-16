@@ -97,25 +97,31 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => obj_isPreconditionSet
   !! True if prcondition is Set
 
-PROCEDURE(obj_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: SetPrecondition
+  PROCEDURE(obj_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
+    SetPrecondition
   !! Build precondition matrix
 
-PROCEDURE(obj_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: GetPrecondition
+  PROCEDURE(obj_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetPrecondition
   !! Get the precondition matrix
 
-  PROCEDURE(obj_reversePermutation), DEFERRED, PUBLIC, PASS(obj) :: reversePermutation
+  PROCEDURE(obj_reversePermutation), DEFERRED, PUBLIC, PASS(obj) :: &
+    reversePermutation
   !!
 
-PROCEDURE(obj_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: DiagonalScaling
+  PROCEDURE(obj_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: &
+    DiagonalScaling
   !! DiagonalScaling
 
   PROCEDURE(obj_GetDiagonal), DEFERRED, PUBLIC, PASS(obj) :: GetDiagonal
   !! Get Diagonal
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SymSchurLargestEigenVal => obj_SymSchurLargestEigenVal
+  PROCEDURE, PUBLIC, PASS(obj) :: SymSchurLargestEigenVal => &
+    obj_SymSchurLargestEigenVal
   !! SymSchurLargestEigenVal
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SymLargestEigenVal => obj_SymLargestEigenVal
+  PROCEDURE, PUBLIC, PASS(obj) :: SymLargestEigenVal => &
+    obj_SymLargestEigenVal
   !! SymLargestEigenVal
 
   PROCEDURE(obj_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC

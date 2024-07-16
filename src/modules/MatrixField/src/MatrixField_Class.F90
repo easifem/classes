@@ -420,17 +420,8 @@ END TYPE MatrixFieldPointer_
 ! summary: This routine Sets the parameter for creating MatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldParam( &
-    & param, &
-    & name, &
-    & matrixProp, &
-    & engine,  &
-    & spaceCompo, &
-    & timeCompo, &
-    & fieldType, &
-    & comm, &
-    & local_n, &
-    & global_n)
+  MODULE SUBROUTINE SetMatrixFieldParam(param, name, matrixProp, engine, &
+                    spaceCompo, timeCompo, fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[MatrixField_]] will be stored in this
     CHARACTER(*), INTENT(IN) :: name
