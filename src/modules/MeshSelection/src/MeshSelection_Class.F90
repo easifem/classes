@@ -24,7 +24,7 @@ USE BaseType, ONLY: IntVector_, BoundingBox_
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
-USE Domain_Class, ONLY: Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
@@ -109,75 +109,91 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
-    !! Check essential parameter
+  !! Check essential parameter
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
-    !! Initiate an instance of meshSelection
+  !! Initiate an instance of meshSelection
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
-    !! Initiate an instance of meshSelection
+  !! Initiate an instance of meshSelection
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-    !! Initiate an instance of meshSelection
+  !! Initiate an instance of meshSelection
   PROCEDURE, PASS(obj) :: Copy => obj_Copy
-    !! This routine copies object
+  !! This routine copies object
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
-    !! Assignment operator
+  !! Assignment operator
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-    !! Deallocate Data
+  !! Deallocate Data
   FINAL :: obj_Final
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Add => obj_Add
-    !! Add a new region to the MeshSelection_
+  !! Add a new region to the MeshSelection_
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
-    !! This routine should be called when we are done
-    !! setting the regions in the instance
+  !! This routine should be called when we are done
+  !! setting the regions in the instance
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-    !! Import from the hdf5 file
+  !! Import from the hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-    !! Export to the HDF5File
+  !! Export to the HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-    !! Displays the content
+  !! Displays the content
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
     obj_ImportParamFromToml
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => &
-    obj_ImportFromToml1
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => &
-    obj_ImportFromToml2
-  GENERIC, PUBLIC :: ImportFromToml => &
-    ImportFromToml1, ImportFromToml2
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_getMeshID
-    !! Returns the mesh id if available
+  !! Returns the mesh id if available
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshIDPointer => obj_getMeshIDPointer
+  !! returns pointer to mesh id
+
+  PROCEDURE, PASS(obj) :: GetTotalElemNum1 => obj_GetTotalElemNum1
+  PROCEDURE, PASS(obj) :: GetTotalElemNum2 => obj_GetTotalElemNum2
+  PROCEDURE, PASS(obj) :: GetTotalElemNum3 => obj_GetTotalElemNum3
+  PROCEDURE, PASS(obj) :: GetTotalElemNum4 => obj_GetTotalElemNum4
+  GENERIC, PUBLIC :: GetTotalElemNum => &
+    GetTotalElemNum1, GetTotalElemNum2, GetTotalElemNum3, &
+    GetTotalElemNum4
+
   PROCEDURE, PASS(obj) :: obj_GetElemNum1
 
-    !! Returns the element numbers if available
+  !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: obj_GetElemNum2
-    !! Returns the element numbers if available
+  !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: obj_GetElemNum3
-    !! Returns the element numbers if available
+  !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: obj_GetElemNum4
-    !! Returns the element numbers if available
-  GENERIC, PUBLIC :: GetElemNum => &
-    obj_GetElemNum1, &
-    obj_GetElemNum2, &
-    obj_GetElemNum3, &
-    obj_GetElemNum4
-    !! Returns the element numbers if available
+  !! Returns the element numbers if available
+  GENERIC, PUBLIC :: GetElemNum => obj_GetElemNum1, &
+    obj_GetElemNum2, obj_GetElemNum3, obj_GetElemNum4
+  !! Returns the element numbers if available
+
+  PROCEDURE, PASS(obj) :: GetTotalNodeNum1 => obj_GetTotalNodeNum1
+  PROCEDURE, PASS(obj) :: GetTotalNodeNum2 => obj_GetTotalNodeNum2
+  PROCEDURE, PASS(obj) :: GetTotalNodeNum3 => obj_GetTotalNodeNum3
+  GENERIC, PUBLIC :: GetTotalNodeNum => GetTotalNodeNum1, GetTotalNodeNum2, &
+    GetTotalNodeNum3
+
   PROCEDURE, PASS(obj) :: obj_GetNodeNum1
   PROCEDURE, PASS(obj) :: obj_GetNodeNum2
   PROCEDURE, PASS(obj) :: obj_GetNodeNum3
-  GENERIC, PUBLIC :: GetNodeNum => &
-    obj_GetNodeNum1, &
-    obj_GetNodeNum2, &
+  GENERIC, PUBLIC :: GetNodeNum => obj_GetNodeNum1, obj_GetNodeNum2, &
     obj_GetNodeNum3
     !! Returns the node number if available
+
   PROCEDURE, PUBLIC, PASS(obj) :: IsMeshIDAllocated => &
     obj_IsMeshIDAllocated
     !! returns true if selection by meshID is allocated
@@ -187,9 +203,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isNodeNumAllocated => &
     obj_isNodeNumAllocated
     !! returns true if the node numbers are allocated
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => obj_GetQuery
-    !! Query the mesh selection
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
     !! Query the mesh selection
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE MeshSelection_
@@ -362,7 +376,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Add(obj, dom, dim, meshID, box, elemNum, &
                             nodeNum)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID(:)
     TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box(:)
@@ -395,9 +409,9 @@ END INTERFACE
 ! summary: This routine adds data to the meshSelection
 
 INTERFACE MeshSelectionSet
-  MODULE SUBROUTINE meshSelection_Set_Vec(obj)
+  MODULE SUBROUTINE obj_Set2(obj)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj(:)
-  END SUBROUTINE meshSelection_Set_Vec
+  END SUBROUTINE obj_Set2
 END INTERFACE MeshSelectionSet
 
 !----------------------------------------------------------------------------
@@ -413,7 +427,7 @@ INTERFACE
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -445,7 +459,7 @@ INTERFACE MeshSelectionImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE MeshSelectionImportFromToml
 
@@ -458,14 +472,14 @@ END INTERFACE MeshSelectionImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE MeshSelectionImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile,  &
-      & filename, printToml, dom)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml, dom)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE MeshSelectionImportFromToml
 
@@ -502,7 +516,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetMeshID@getMethods
+!                                                      GetMeshID@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -510,11 +524,24 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetMeshID(obj, dim) RESULT(Ans)
+  MODULE PURE FUNCTION obj_GetMeshID(obj, dim) RESULT(ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetMeshID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetMeshIDPointer@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), POINTER, INTENT(out) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetMeshIDPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -526,7 +553,7 @@ END INTERFACE
 ! summary: This routine returns true if meshID of given dim is allocated
 
 INTERFACE
-  MODULE PURE FUNCTION obj_IsMeshIDAllocated(obj, dim) RESULT(Ans)
+  MODULE PURE FUNCTION obj_IsMeshIDAllocated(obj, dim) RESULT(ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     LOGICAL(LGT) :: ans
@@ -542,7 +569,7 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION obj_IsElemNumAllocated(obj, dim) RESULT(Ans)
+  MODULE PURE FUNCTION obj_IsElemNumAllocated(obj, dim) RESULT(ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     LOGICAL(LGT) :: ans
@@ -558,35 +585,90 @@ END INTERFACE
 ! summary: This routine returns true if node numbers are allocated
 
 INTERFACE
-  MODULE PURE FUNCTION obj_IsNodeNumAllocated(obj) RESULT(Ans)
+  MODULE PURE FUNCTION obj_IsNodeNumAllocated(obj) RESULT(ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsNodeNumAllocated
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetQuery@GetMethods
+!                                                     GetParam@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_GetQuery( &
-    & obj, &
-    & isInitiated, &
-    & isSelectionByBox, &
-    & isSelectionByMeshID, &
-    & isSelectionByElemNum, &
-    & isSelectionByNodeNum)
+  MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, isSelectionByBox, &
+              isSelectionByMeshID, isSelectionByElemNum, isSelectionByNodeNum)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByMeshID
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByElemNum
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByNodeNum
-  END SUBROUTINE obj_GetQuery
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetElemNum@getMethods
+!                                                GetTotalElemNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemNum1(obj, dim) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElemNum1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetElemNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemNum2(obj, dim, dom) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElemNum2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalElemNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemNum3(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElemNum3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalElemNum@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemNum4(obj, dom) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElemNum4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -594,15 +676,16 @@ END INTERFACE
 ! summary: Returns element number if isSelectionByElemNum is true
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemNum1(obj, dim) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetElemNum1(obj, dim, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemNum1
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetElemNum@getMethods
+!                                              GetElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -620,16 +703,17 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemNum2(obj, dim, domain) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetElemNum2(obj, dim, dom, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    CLASS(Domain_), INTENT(IN) :: domain
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemNum2
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetElemNum@getMethods
+!                                               GetElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -637,14 +721,15 @@ END INTERFACE
 ! summary: Returns element number if isSelectionByElemNum is true
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemNum3(obj) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetElemNum3(obj, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemNum3
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetElemNum@getMethods
+!                                               GetElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -662,11 +747,63 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemNum4(obj, domain) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetElemNum4(obj, dom, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    CLASS(Domain_), INTENT(IN) :: domain
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemNum4
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalNodenum@GetNodeNumMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-17
+! summary:  Get total node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodenum1(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodenum1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalNodenum@GetNodeNumMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total nodes of a meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodenum2(obj, dim, dom, onlydim) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dim is used only to access the mesh from domain
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlydim
+    !! only for development, so that we can call it from gettotalnodenum3
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodenum2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns node numbers
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodenum3(obj, dom) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodenum3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -678,10 +815,11 @@ END INTERFACE
 ! summary: This routine returns the node numbers
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeNum1(obj) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetNodeNum1(obj, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNodeNum1
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetNodeNum1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -698,12 +836,15 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeNum2(obj, dim, domain) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetNodeNum2(obj, dim, dom, ans, tsize, onlydim)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    CLASS(Domain_), INTENT(IN) :: domain
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNodeNum2
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlydim
+    !! only for development so that we can call it from getnodenum3
+  END SUBROUTINE obj_GetNodeNum2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -715,11 +856,12 @@ END INTERFACE
 ! summary: This routine returns node numbers
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeNum3(obj, domain) RESULT(Ans)
+  MODULE SUBROUTINE obj_GetNodeNum3(obj, dom, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    CLASS(Domain_), INTENT(IN) :: domain
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNodeNum3
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetNodeNum3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -736,5 +878,9 @@ INTERFACE
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE MeshSelection_Class
