@@ -15,6 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
+USE fhash, ONLY: fhash_ => fhash_tbl_t, key => fhash_key
+
 USE GlobalData, ONLY: MaxDFP, MinDFP
 
 USE ReallocateUtility, ONLY: Reallocate
@@ -52,7 +54,11 @@ USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
                           ElemData_name, &
                           ElemData_topoName, &
                           ElemData_topoIndx, &
-                          ElemData_GetOrientation
+                          ElemData_GetOrientation, &
+                          ElemData_Meshid, &
+                          ElemData_localElemNum, &
+                          ElemData_globalElemNum, &
+                          ElemData_GetTotalGlobalNodes
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -179,16 +185,123 @@ ans = obj%tElements
 END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
+!                                                           GetTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElements2
+INTEGER(I4B) :: ii, found
+LOGICAL(LGT) :: isok
+
+ans = 0
+DO ii = 1, obj%tElements
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  found = ElemData_MeshID(obj=obj%elementData(ii)%ptr)
+  IF (found .EQ. meshid) ans = ans + 1
+
+END DO
+
+END PROCEDURE obj_GetTotalElements2
+
+!----------------------------------------------------------------------------
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetElemNum
+MODULE PROCEDURE obj_GetElemNum1
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: islocal0
+
+tsize = obj%GetTotalElements()
+ALLOCATE (ans(tsize))
+islocal0 = .FALSE.
+IF (PRESENT(islocal)) islocal0 = islocal
+
+CALL obj%GetElemNum_(ans=ans, tsize=tsize, islocal=islocal0)
+END PROCEDURE obj_GetElemNum1
+
+!----------------------------------------------------------------------------
+!                                                           GetElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNum2
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: islocal0
+
+tsize = obj%GetTotalElements(meshid=meshid)
+ALLOCATE (ans(tsize))
+islocal0 = .FALSE.
+IF (PRESENT(islocal)) islocal0 = islocal
+
+CALL obj%GetElemNum_(meshid=meshid, ans=ans, tsize=tsize, islocal=islocal0)
+END PROCEDURE obj_GetElemNum2
+
+!----------------------------------------------------------------------------
+!                                                                GetElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNum1_
 INTEGER(I4B) :: ii
-CALL Reallocate(ans, obj%GetTotalElements())
-DO ii = 1, SIZE(ans)
-  ans(ii) = obj%GetglobalElemNumber(localElement=ii)
+
+tsize = obj%GetTotalElements()
+IF (islocal) THEN
+
+  DO ii = 1, tsize
+    ans(ii) = ElemData_localElemNum(obj%elementData(ii)%ptr)
+  END DO
+
+  RETURN
+END IF
+
+DO ii = 1, tsize
+  ans(ii) = ElemData_globalElemNum(obj%elementData(ii)%ptr)
 END DO
-END PROCEDURE obj_GetElemNum
+
+END PROCEDURE obj_GetElemNum1_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNum2_
+INTEGER(I4B) :: ii, found, fake_tsize
+LOGICAL(LGT) :: isok
+
+fake_tsize = obj%GetTotalElements()
+tsize = 0
+
+IF (islocal) THEN
+
+  DO ii = 1, fake_tsize
+
+    isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+    IF (.NOT. isok) CYCLE
+
+    found = ElemData_Meshid(obj=obj%elementData(ii)%ptr)
+    IF (found .EQ. meshid) THEN
+      tsize = tsize + 1
+      ans(tsize) = ElemData_localElemNum(obj%elementData(ii)%ptr)
+    END IF
+
+  END DO
+
+  RETURN
+END IF
+
+DO ii = 1, fake_tsize
+
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  found = ElemData_Meshid(obj=obj%elementData(ii)%ptr)
+  IF (found .EQ. meshid) THEN
+    tsize = tsize + 1
+    ans(tsize) = ElemData_globalElemNum(obj%elementData(ii)%ptr)
+  END IF
+
+END DO
+
+END PROCEDURE obj_GetElemNum2_
 
 !----------------------------------------------------------------------------
 !                                                         GetBoundingEntity
@@ -206,25 +319,125 @@ END PROCEDURE obj_GetBoundingEntity
 !                                                                   GetNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNptrs
-INTEGER(I4B) :: ii
-DO CONCURRENT(ii=1:SIZE(ans))
-  ans(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
-END DO
-END PROCEDURE obj_GetNptrs
+MODULE PROCEDURE obj_GetNptrs1
+INTEGER(I4B) :: ii, tsize
+CALL obj%GetNptrs_(ans=ans, tsize=tsize)
+END PROCEDURE obj_GetNptrs1
+
+!----------------------------------------------------------------------------
+!                                                                GetNptrs2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs2
+INTEGER(I4B) :: tsize
+tsize = obj%GetTotalNodes(meshid=meshid)
+ALLOCATE (ans(tsize))
+CALL obj%GetNptrs_(ans=ans, tsize=tsize, meshid=meshid)
+END PROCEDURE obj_GetNptrs2
 
 !----------------------------------------------------------------------------
 !                                                                  GetNptrs_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNptrs_
-INTEGER(I4B) :: ii, n
-n = SIZE(obj%nodeData)
-DO CONCURRENT(ii=1:n)
-  nptrs(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
+MODULE PROCEDURE obj_GetNptrs1_
+INTEGER(I4B) :: ii
+tsize = SIZE(obj%nodeData)
+DO CONCURRENT(ii=1:tsize)
+  ans(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
 END DO
-IF (PRESENT(tsize)) tsize = n
-END PROCEDURE obj_GetNptrs_
+END PROCEDURE obj_GetNptrs1_
+
+!----------------------------------------------------------------------------
+!                                                                 GetNptrs2_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs2_
+INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
+LOGICAL(LGT) :: isok
+LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
+INTEGER(I4B), POINTER :: intptr(:)
+
+fake_tsize = obj%GetTotalElements()
+tsize = 0
+
+ii = obj%GetMaxNodeNumber()
+ALLOCATE (foundNodes(ii))
+foundNodes = .FALSE.
+
+DO ii = 1, fake_tsize
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  found_meshid = ElemData_meshid(obj%elementData(ii)%ptr)
+
+  isok = found_meshid .EQ. meshid
+  IF (.NOT. isok) CYCLE
+
+  intptr => ElemData_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
+  jj = ElemData_GetTotalGlobalNodes(obj%elementData(ii)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    isok = foundNodes(ll)
+    IF (isok) CYCLE
+
+    foundNodes(ll) = .TRUE.
+    tsize = tsize + 1
+    ans(tsize) = ll
+
+  END DO
+
+END DO
+
+DEALLOCATE (foundNodes)
+intptr => NULL()
+
+END PROCEDURE obj_GetNptrs2_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNptrs3_
+INTEGER(I4B) :: ii, jj, kk, ll, ierr, telem, iel
+TYPE(fhash_) :: tbl
+INTEGER(I4B), POINTER :: intptr(:)
+LOGICAL(LGT) :: isok
+
+tsize = 0
+telem = SIZE(globalElement)
+
+DO ii = 1, telem
+  iel = obj%GetLocalElemNumber(globalElement=globalElement(ii), &
+                               islocal=islocal)
+
+  isok = obj%IsElementActive(globalElement=iel, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  intptr => ElemData_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
+  jj = ElemData_GetTotalGlobalNodes(obj%elementData(iel)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    !! check if the key is present
+    CALL tbl%check_key(key=key(ll), stat=ierr)
+    isok = ierr .EQ. 0_I4B
+    IF (isok) CYCLE
+
+    !! if not present then set the key
+    CALL tbl%Set(key=key(ll), VALUE=.TRUE.)
+    tsize = tsize + 1
+    ans(tsize) = ll
+
+  END DO
+
+END DO
+
+intptr => NULL()
+
+END PROCEDURE obj_GetNptrs3_
 
 !----------------------------------------------------------------------------
 !                                                               GetNptrsInBox
@@ -556,9 +769,98 @@ END PROCEDURE obj_GetTotalInternalNodes
 !                                                              GetTotalNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalNodes
+MODULE PROCEDURE obj_GetTotalNodes1
 ans = obj%tNodes
-END PROCEDURE obj_GetTotalNodes
+END PROCEDURE obj_GetTotalNodes1
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNodes2
+INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
+LOGICAL(LGT) :: isok
+LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
+INTEGER(I4B), POINTER :: intptr(:)
+
+fake_tsize = obj%GetTotalElements()
+ans = 0
+
+ii = obj%GetMaxNodeNumber()
+ALLOCATE (foundNodes(ii))
+foundNodes = .FALSE.
+
+DO ii = 1, fake_tsize
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  found_meshid = ElemData_meshid(obj%elementData(ii)%ptr)
+
+  isok = found_meshid .EQ. meshid
+  IF (.NOT. isok) CYCLE
+
+  intptr => ElemData_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
+  jj = ElemData_GetTotalGlobalNodes(obj%elementData(ii)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    isok = foundNodes(ll)
+    IF (isok) CYCLE
+
+    foundNodes(ll) = .TRUE.
+    ans = ans + 1
+
+  END DO
+
+END DO
+
+DEALLOCATE (foundNodes)
+intptr => NULL()
+
+END PROCEDURE obj_GetTotalNodes2
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNodes3
+INTEGER(I4B) :: ii, jj, kk, ll, ierr, tsize, iel
+TYPE(fhash_) :: tbl
+INTEGER(I4B), POINTER :: intptr(:)
+LOGICAL(LGT) :: isok
+
+ans = 0
+tsize = SIZE(globalElement)
+
+DO ii = 1, tsize
+  iel = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
+
+  isok = obj%IsElementActive(globalElement=iel, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  intptr => ElemData_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
+  jj = ElemData_GetTotalGlobalNodes(obj%elementData(iel)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    !! check if the key is present
+    CALL tbl%check_key(key=key(ll), stat=ierr)
+    isok = ierr .EQ. 0_I4B
+    IF (isok) CYCLE
+
+    !! if not present then set the key
+    CALL tbl%Set(key=key(ll), VALUE=.TRUE.)
+    ans = ans + 1
+
+  END DO
+
+END DO
+
+intptr => NULL()
+
+END PROCEDURE obj_GetTotalNodes3
 
 !----------------------------------------------------------------------------
 !                                                             GetTotalFaces
