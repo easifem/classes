@@ -43,7 +43,7 @@ END PROCEDURE bc_GetDOFNo
 
 MODULE PROCEDURE bc_Get
 CHARACTER(*), PARAMETER :: myName = "bc_Get()"
-INTEGER(I4B) :: ii, tsize, tNodes, tTimes
+INTEGER(I4B) :: ii, tsize, tnodes, tTimes
 LOGICAL(LGT) :: isNodalValuePresent, isNOTOK, isok
 
 #ifdef DEBUG_VER
@@ -58,8 +58,10 @@ isok = ASSOCIATED(obj%dom)
 CALL AssertError1(isok, myName, &
                   'AbstractBC_::obj%dom is not associated!')
 
-nodeNum = obj%boundary%GetNodeNum(domain=obj%dom)
-tNodes = SIZE(nodeNum)
+tnodes = obj%boundary%GetTotalNodeNum(dom=obj%dom)
+CALL Reallocate(nodenum, tnodes)
+CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=tnodes)
+! tnodes = SIZE(nodeNum)
 
 tTimes = 1
 IF (PRESENT(times)) tTimes = SIZE(times)
@@ -87,7 +89,7 @@ SELECT CASE (obj%nodalValueType)
 
 ! Constant
 CASE (CONSTANT)
-  CALL Reallocate(nodalValue, tNodes, tTimes)
+  CALL Reallocate(nodalValue, tnodes, tTimes)
   nodalValue = obj%nodalValue(1, 1)
 
 ! Space
@@ -171,7 +173,7 @@ END PROCEDURE bc_isuseFunction
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_GetQuery
-CALL obj%boundary%GetQuery(isSelectionByBox=isSelectionByBox, &
+CALL obj%boundary%GetParam(isSelectionByBox=isSelectionByBox, &
                            isSelectionByMeshID=isSelectionByMeshID, &
                            isSelectionByElemNum=isSelectionByElemNum, &
                            isSelectionByNodeNum=isSelectionByNodeNum)
@@ -202,7 +204,7 @@ END PROCEDURE bc_GetPrefix
 
 MODULE PROCEDURE bc_GetFromUserFunction
 CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
-INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes, argType, &
+INTEGER(I4B) :: ii, kk, retType, tnodes, nsd, tTimes, argType, &
                 tsize
 REAL(DFP) :: xij(4, 1), ans
 LOGICAL(LGT) :: problem
@@ -264,14 +266,14 @@ IF (problem) THEN
   RETURN
 END IF
 
-tNodes = SIZE(nodeNum)
+tnodes = SIZE(nodeNum)
 nsd = obj%dom%GetNSD()
 
 SELECT CASE (obj%nodalValueType)
 
 ! Constant
 CASE (Constant)
-  CALL Reallocate(nodalValue, tNodes, 1)
+  CALL Reallocate(nodalValue, tnodes, 1)
 
   CALL obj%dom%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
                             globalNode=nodeNum(1), islocal=.FALSE.)
@@ -282,9 +284,9 @@ CASE (Constant)
 
 ! Space
 CASE (Space)
-  CALL Reallocate(nodalValue, tNodes, 1)
+  CALL Reallocate(nodalValue, tnodes, 1)
 
-  DO ii = 1, tNodes
+  DO ii = 1, tnodes
     CALL obj%dom%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
                               globalNode=nodeNum(ii), islocal=.FALSE.)
 
@@ -298,7 +300,7 @@ CASE (Time)
 
   tTimes = SIZE(times)
 
-  CALL Reallocate(nodalValue, tNodes, tTimes)
+  CALL Reallocate(nodalValue, tnodes, tTimes)
 
   DO ii = 1, tTimes
     CALL obj%func%Get(val=ans, args=times(ii:ii))
@@ -310,12 +312,12 @@ CASE (Time)
 CASE (SpaceTime)
   tTimes = SIZE(times)
 
-  CALL Reallocate(nodalValue, tNodes, tTimes)
+  CALL Reallocate(nodalValue, tnodes, tTimes)
 
   DO kk = 1, tTimes
     xij(nsd + 1, 1) = times(kk)
 
-    DO ii = 1, tNodes
+    DO ii = 1, tnodes
       CALL obj%dom%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
                                 globalNode=nodeNum(ii), islocal=.FALSE.)
 
