@@ -501,9 +501,12 @@ END PROCEDURE obj_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs_
+INTEGER(I4B) :: jj
+
 CLASS(AbstractMesh_), POINTER :: meshptr
 meshptr => obj%GetMeshPointer(dim=dim)
-CALL meshptr%GetNptrs_(nptrs=nptrs)
+CALL meshptr%GetNptrs_(ans=nptrs, tsize=jj)
+IF (PRESENT(tsize)) tsize = jj
 meshptr => NULL()
 END PROCEDURE obj_GetNptrs_
 
