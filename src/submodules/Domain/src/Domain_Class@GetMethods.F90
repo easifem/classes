@@ -498,7 +498,7 @@ SUBROUTINE macro
   problem = meshptr%isEmpty()
   IF (problem) RETURN
 
-  CALL meshptr%GetNptrs_(nptrs=nptrs(offset:), tsize=n)
+  CALL meshptr%GetNptrs_(ans=nptrs(offset:), tsize=n)
 
   offset = offset + n
 END SUBROUTINE macro
