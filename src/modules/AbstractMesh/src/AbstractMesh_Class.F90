@@ -350,7 +350,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
   !! Get the element data
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => obj_GetElemDataPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => &
+    obj_GetElemDataPointer
   !! Get pointer to an element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
@@ -362,17 +363,38 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_size
   !! Returns the size of the mesh (total number of elements)
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElemNum => obj_GetElemNum
+  PROCEDURE, PASS(obj) :: GetElemNum1 => obj_GetElemNum1
   !! Returns global element number in the mesh
+  PROCEDURE, PASS(obj) :: GetElemNum2 => obj_GetElemNum2
+  !! Returne global or local element number in mesh with meshid
+  GENERIC, PUBLIC :: GetElemNum => GetElemNum1, GetElemNum2
+  !! Generic method to get list of local or global element number in mesh
+
+  PROCEDURE, PASS(obj) :: GetElemNum1_ => obj_GetElemNum1_
+  !! Returns global element number in the mesh
+  PROCEDURE, PASS(obj) :: GetElemNum2_ => obj_GetElemNum2_
+  !! Returne global or local element number in mesh with meshid
+  GENERIC, PUBLIC :: GetElemNum_ => GetElemNum1_, GetElemNum2_
+  !! Generic method to get list of local or global element number in mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingEntity => obj_GetBoundingEntity
   !! Returns the nodal coordinates
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
+  PROCEDURE, PASS(obj) :: GetNptrs1 => obj_GetNptrs1
   !! Returns the node number of mesh
+  PROCEDURE, PASS(obj) :: GetNptrs2 => obj_GetNptrs2
+  !! Get node number of mesh of meshid
+  GENERIC, PUBLIC :: GetNptrs => GetNptrs1, GetNptrs2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
+  PROCEDURE, PASS(obj) :: GetNptrs1_ => obj_GetNptrs1_
   !! This is a subroutine which returns the node number of mesh
+  PROCEDURE, PASS(obj) :: GetNptrs2_ => obj_GetNptrs2_
+  !! Get node number of mesh of given meshid
+  PROCEDURE, PASS(obj) :: GetNptrs3_ => obj_GetNptrs3_
+  !! Get node number of several elements
+
+  GENERIC, PUBLIC :: GetNptrs_ => GetNptrs1_, GetNptrs2_, GetNptrs3_
+  !! Get node number of mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
   !! Get node number in a box
@@ -426,8 +448,15 @@ CONTAINS
     obj_GetTotalInternalNodes
   !! Returns the total number of internal nodes
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
+  PROCEDURE, PASS(obj) :: GetTotalNodes1 => obj_GetTotalNodes1
   !! Returns the total number of nodes
+  PROCEDURE, PASS(obj) :: GetTotalNodes2 => obj_GetTotalNodes2
+  !! Returns total nodes of meshid
+  PROCEDURE, PASS(obj) :: GetTotalNodes3 => obj_GetTotalNodes3
+  !! Returns total nodes from a list of element number
+  GENERIC, PUBLIC :: GetTotalNodes => GetTotalNodes1, GetTotalNodes2, &
+    GetTotalNodes3
+  !! get total nodes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaces => obj_GetTotalFaces
   !! Returns the total number of faces in the mesh (obj%tFaces)
@@ -438,8 +467,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCells => obj_size
   !! Returns the total number of cells in the mesh (obj%tElements)
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_size
+  PROCEDURE, PASS(obj) :: GetTotalElements1 => obj_size
   !! Returns the size of the mesh
+
+  PROCEDURE, PASS(obj) :: GetTotalElements2 => obj_GetTotalElements2
+  !! Returns total number of elements of given meshid
+
+  GENERIC, PUBLIC :: GetTotalElements => GetTotalElements1, &
+    GetTotalElements2
+  !! Generic method for getting the total number of elements
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
     obj_GetTotalBoundaryElements
@@ -1473,6 +1509,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               GetTotalElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total number of elements of given meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElements2(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! mesh object
+    INTEGER(I4B), INTENT(IN) :: meshid
+    !! mesh id
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetElemNum@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1481,10 +1535,55 @@ END INTERFACE
 ! summary: Returns the global element numbers present in the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemNum(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetElemNum1(obj, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemNum
+  END FUNCTION obj_GetElemNum1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetElemNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-07-17
+! summary: Get global element number for a given meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemNum2(obj, meshid, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetElemNum2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetElemNum_@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNum1_(obj, islocal, ans, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetElemNum_@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNum2_(obj, meshid, islocal, ans, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum2_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1511,10 +1610,26 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers
 
 INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetNptrs1(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(obj%tNodes)
-  END FUNCTION obj_GetNptrs
+  END FUNCTION obj_GetNptrs1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the vector of global node numbers
+
+INTERFACE
+  MODULE FUNCTION obj_GetNptrs2(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNptrs2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1526,11 +1641,40 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, tsize)
+  MODULE SUBROUTINE obj_GetNptrs1_(obj, ans, tsize)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetNptrs_
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetNptrs1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs2_(obj, meshid, ans, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetNptrs2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNptrs3_(obj, globalElement, ans, tsize, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local
+  END SUBROUTINE obj_GetNptrs3_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1843,10 +1987,46 @@ END INTERFACE
 ! summary: returns total number of nodes in the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetTotalNodes(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalNodes1(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalNodes
+  END FUNCTION obj_GetTotalNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total nodes of meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodes2(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-17
+! summary:  Get total nodes in a collection of abstract mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodes3(obj, globalElement, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodes3
 END INTERFACE
 
 !----------------------------------------------------------------------------
