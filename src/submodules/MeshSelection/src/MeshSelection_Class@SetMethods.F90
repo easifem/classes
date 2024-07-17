@@ -19,7 +19,9 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) SetMethods
-USE BaseMethod
+USE IntVector_Method, ONLY: Append, RemoveDuplicates, isAllocated
+USE BoundingBox_Method, ONLY: BB_Append => Append
+
 IMPLICIT NONE
 CONTAINS
 
@@ -33,7 +35,7 @@ LOGICAL(LGT) :: bool1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 bool1 = PRESENT(dim) .AND. PRESENT(meshID)
@@ -91,19 +93,19 @@ bool1 = PRESENT(dim) .AND. PRESENT(box)
 IF (bool1) THEN
   SELECT CASE (dim)
   CASE (0)
-    CALL Append(obj%pointBox, box)
+    CALL BB_Append(obj%pointBox, box)
   CASE (1)
-    CALL Append(obj%curveBox, box)
+    CALL BB_Append(obj%curveBox, box)
   CASE (2)
-    CALL Append(obj%surfaceBox, box)
+    CALL BB_Append(obj%surfaceBox, box)
   CASE (3)
-    CALL Append(obj%volumeBox, box)
+    CALL BB_Append(obj%volumeBox, box)
   END SELECT
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_Add
 
@@ -149,12 +151,12 @@ END PROCEDURE obj_Set
 !                                                         MeshSelectionSet
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelection_Set_Vec
-CHARACTER(*), PARAMETER :: myName = "meshSelection_Set_Vec()"
+MODULE PROCEDURE obj_Set2
+CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 INTEGER(I4B) :: ii, tMaterials
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 tMaterials = SIZE(obj)
@@ -164,9 +166,9 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
-END PROCEDURE meshSelection_Set_Vec
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
 !
