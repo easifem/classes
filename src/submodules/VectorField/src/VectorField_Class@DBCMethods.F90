@@ -18,6 +18,8 @@
 SUBMODULE(VectorField_Class) DBCMethods
 USE Display_Method, ONLY: ToString
 
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 
 CONTAINS
@@ -31,7 +33,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: aint, spaceCompo
+INTEGER(I4B) :: aint, spaceCompo, nrow, ncol
 
 istimes = PRESENT(times)
 
@@ -50,9 +52,16 @@ IF (istimes) THEN
 END IF
 #endif
 
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+nrow = dbc%GetTotalNodeNum()
+ncol = 1
+ALLOCATE (nodalvalue(nrow, ncol))
+ALLOCATE (nodenum(nrow))
+
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+             ncol=ncol)
+
 spaceCompo = dbc%GetDOFNo()
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
              spaceCompo=spaceCompo, islocal=.TRUE.)
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -71,9 +80,12 @@ END PROCEDURE obj_applyDirichletBC1
 
 MODULE PROCEDURE obj_applyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, tsize, aint, spaceCompo
+INTEGER(I4B) :: idof, tsize, aint, spaceCompo, nrow, ncol
 LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
@@ -97,13 +109,23 @@ END IF
 
 tsize = SIZE(dbc)
 
+ncol = 1
 DO idof = 1, tsize
-  spaceCompo = dbc(idof)%ptr%GetDOFNo()
+  nrow = dbc(idof)%ptr%GetTotalNodeNum()
+  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+END DO
+
+DO idof = 1, tsize
 
   CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                         times=times)
+                         times=times, nrow=nrow, ncol=ncol)
 
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+  spaceCompo = dbc(idof)%ptr%GetDOFNo()
+
+  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
                spaceCompo=spaceCompo, islocal=.TRUE.)
 END DO
 
