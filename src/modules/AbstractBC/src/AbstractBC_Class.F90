@@ -59,6 +59,8 @@ PUBLIC :: AbstractBCImportParamFromToml
 ! summary: This is an abstract data type for boundary conditions
 
 TYPE, ABSTRACT :: AbstractBC_
+  PRIVATE
+
   LOGICAL(LGT) :: isInitiated = .FALSE.
   !! It is true if the object is initiated
   TYPE(String) :: name
@@ -67,6 +69,10 @@ TYPE, ABSTRACT :: AbstractBC_
   !! degree of freedom number
   INTEGER(I4B) :: nodalValueType = default_nodalValueType
   !! Constant, Space, SpaceTime, Time
+  INTEGER(I4B) :: nrow = 0
+  !! number of rows in nodalValue
+  INTEGER(I4B) :: ncol = 0
+  !! number of columns in nodalvalue
   LOGICAL(LGT) :: isNormal = default_isNormal
   !! True if the boundary condition is normal to the boundary
   LOGICAL(LGT) :: isTangent = default_isTangent
