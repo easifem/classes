@@ -31,8 +31,8 @@ CONTAINS
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Import
-CHARACTER(*), PARAMETER :: myName = "bc_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname, strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -158,14 +158,14 @@ IF (ALLOCATED(real2)) DEALLOCATE (real2)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE bc_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Export
-CHARACTER(*), PARAMETER :: myName = "bc_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname, strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -259,13 +259,13 @@ END IF
 
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
-END PROCEDURE bc_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Display
+MODULE PROCEDURE obj_Display
 TYPE(String) :: strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -325,14 +325,14 @@ END IF
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
 
-END PROCEDURE bc_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "bc_ImportParamFromToml()"
+MODULE PROCEDURE obj_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat, nodalValueType, idof
 LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, useExternal
 TYPE(String) :: nodalValueType_string, name, astr
@@ -396,14 +396,14 @@ nodalValueType_string = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE bc_ImportParamFromToml
+END PROCEDURE obj_ImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(ParameterList_) :: param
 TYPE(toml_table), POINTER :: node
 TYPE(MeshSelection_) :: boundary
@@ -512,14 +512,14 @@ CALL param%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE bc_ImportFromToml1
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -554,7 +554,7 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE bc_ImportFromToml2
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !
