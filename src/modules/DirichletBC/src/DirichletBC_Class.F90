@@ -20,7 +20,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE FPL, ONLY: ParameterList_
-USE AbstractBC_Class
+USE AbstractBC_Class, ONLY: AbstractBC_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 
@@ -38,6 +38,7 @@ PUBLIC :: AddDirichletBC
 PUBLIC :: AppendDirichletBC
 PUBLIC :: GetDirichletBCPointer
 PUBLIC :: DirichletBCImportFromToml
+PUBLIC :: TypeDirichletBC
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -53,6 +54,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   FINAL :: obj_Final
 END TYPE DirichletBC_
+
+!----------------------------------------------------------------------------
+!                                                           TypeDirichletBC
+!----------------------------------------------------------------------------
+
+TYPE(DirichletBC_), PARAMETER :: TypeDirichletBC = DirichletBC_()
 
 !----------------------------------------------------------------------------
 !
