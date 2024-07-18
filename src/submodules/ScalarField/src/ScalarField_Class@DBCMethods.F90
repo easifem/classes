@@ -120,15 +120,17 @@ END IF
 
 tsize = SIZE(dbc)
 
+ncol = 1
+DO ibc = 1, tsize
+  nrow = dbc(ibc)%ptr%GetTotalNodeNum()
+  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+END DO
+
 IF (istimes) THEN
   DO ibc = 1, tsize
-    ncol = 1
-    nrow = dbc(ibc)%ptr%GetTotalNodeNum()
-    CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                    expandFactor=expandFactor)
-    CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                    expandFactor=expandFactor)
-
     CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
                           times=times, nrow=nrow, ncol=ncol)
     aint = SIZE(nodalvalue, 2)
@@ -144,14 +146,6 @@ IF (istimes) THEN
 END IF
 
 DO ibc = 1, tsize
-  ncol = 1
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum()
-  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
                         ncol=ncol)
 
