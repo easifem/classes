@@ -119,7 +119,6 @@ DO idof = 1, tsize
 END DO
 
 DO idof = 1, tsize
-
   CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
                          times=times, nrow=nrow, ncol=ncol)
 
