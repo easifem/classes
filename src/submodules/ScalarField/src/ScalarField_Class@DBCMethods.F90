@@ -17,6 +17,7 @@
 
 SUBMODULE(ScalarField_Class) DBCMethods
 USE Display_Method, ONLY: ToString
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -29,7 +30,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: idof, aint
+INTEGER(I4B) :: idof, aint, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -52,7 +53,12 @@ IF (istimes) THEN
 END IF
 #endif
 
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+ncol = 1
+nrow = dbc%GetTotalNodeNum()
+ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
+
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+             ncol=ncol)
 
 IF (istimes) THEN
   aint = SIZE(nodalvalue, 2)
@@ -83,9 +89,12 @@ END PROCEDURE obj_ApplyDirichletBC1
 
 MODULE PROCEDURE obj_ApplyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, tsize, aint, idof
+INTEGER(I4B) :: ibc, tsize, aint, idof, nrow, ncol
 LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
@@ -113,11 +122,18 @@ tsize = SIZE(dbc)
 
 IF (istimes) THEN
   DO ibc = 1, tsize
+    ncol = 1
+    nrow = dbc(ibc)%ptr%GetTotalNodeNum()
+    CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
+                    expandFactor=expandFactor)
+    CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
+                    expandFactor=expandFactor)
+
     CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times)
+                          times=times, nrow=nrow, ncol=ncol)
     aint = SIZE(nodalvalue, 2)
     DO idof = 1, aint
-      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
                    islocal=.FALSE.)
     END DO
   END DO
@@ -128,8 +144,18 @@ IF (istimes) THEN
 END IF
 
 DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+  ncol = 1
+  nrow = dbc(ibc)%ptr%GetTotalNodeNum()
+  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+
+  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+
+  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
+                        ncol=ncol)
+
+  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
                islocal=.FALSE.)
 END DO
 
