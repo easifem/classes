@@ -103,7 +103,7 @@ CASE (TypeFEVariableOpt%constant)
 CASE (TypeFEVariableOpt%space)
 
 #ifdef DEBUG_VER
-  isok = SIZE(obj%nodalValue, 1) .GE. nrow
+  isok = obj%nrow .GE. nrow
   CALL AssertError1(isok, myname, &
                     'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
 #endif
@@ -115,7 +115,7 @@ CASE (TypeFEVariableOpt%space)
 
 ! Time
 CASE (TypeFEVariableOpt%time)
-  ncol = SIZE(obj%nodalValue, 1)
+  ncol = obj%nrow
 
   DO CONCURRENT(ii=1:nrow, jj=1:ncol)
     nodalValue(ii, jj) = obj%nodalValue(jj, 1)
@@ -125,12 +125,12 @@ CASE (TypeFEVariableOpt%time)
 CASE (TypeFEVariableOpt%spacetime)
 
 #ifdef DEBUG_VER
-  isok = SIZE(obj%nodalValue, 1) .GE. nrow
+  isok = obj%nrow .GE. nrow
   CALL AssertError1(isok, myname, &
                     'SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)')
 #endif
 
-  ncol = SIZE(obj%nodalvalue, 2)
+  ncol = obj%ncol
 
   DO CONCURRENT(ii=1:nrow, jj=1:ncol)
     nodalValue(ii, jj) = obj%nodalValue(ii, jj)
@@ -260,7 +260,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-
 problem = .NOT. ASSOCIATED(obj%func)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -270,13 +269,11 @@ IF (problem) THEN
                     CHAR_LF//"but it is not associated")
   RETURN
 END IF
-
 #endif
 
 retType = obj%func%GetReturnType()
 
 #ifdef DEBUG_VER
-
 problem = retType .NE. TypeFEVariableOpt%scalar
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -306,13 +303,11 @@ IF (problem) THEN
                     " but it is not present")
   RETURN
 END IF
-
 #endif
 
 argType = obj%func%GetArgType()
 
 #ifdef DEBUG_VER
-
 problem = argType .NE. obj%nodalValueType
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -322,7 +317,6 @@ IF (problem) THEN
                     ' in AbstractBC_')
   RETURN
 END IF
-
 #endif
 
 tnodes = SIZE(nodeNum)
