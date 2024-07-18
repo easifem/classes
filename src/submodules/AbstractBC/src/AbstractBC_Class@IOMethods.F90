@@ -532,27 +532,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
 
 IF (.NOT. ASSOCIATED(node)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: following error occured while reading '//  &
-    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
+                '[CONFIG ERROR] :: following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
 END IF
 
 CALL obj%ImportFromToml(table=node, dom=dom)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
-    & unitNo=stdout)
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+               unitNo=stdout)
 END IF
 #endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml2
 
