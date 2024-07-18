@@ -481,6 +481,7 @@ MODULE PROCEDURE obj_GetNodeLoc2
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
 INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
 INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -497,7 +498,10 @@ spaceCompo(1) = dbc%GetDOFNo()
 
 ivar0 = Input(default=1_I4B, option=ivar)
 
-CALL dbc%Get(nodeNum=globalNode)
+tsize = dbc%GetTotalNodeNum()
+ALLOCATE (globalNode(tsize))
+
+CALL dbc%Get(nodeNum=globalNode, tsize=tsize)
 ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar, &
                      spaceCompo=spaceCompo, &
                      timeCompo=Arange(1_I4B, timeCompo(ivar0)))
