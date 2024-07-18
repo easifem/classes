@@ -38,6 +38,8 @@ obj%isUserFunction = .FALSE.
 obj%isNormal = .FALSE.
 obj%isTangent = .FALSE.
 obj%useExternal = .FALSE.
+obj%nrow = 0
+obj%ncol = 0
 
 IF (ALLOCATED(obj%nodalValue)) DEALLOCATE (obj%nodalValue)
 
@@ -47,9 +49,9 @@ obj%dom => NULL()
 
 IF (ASSOCIATED(obj%func)) THEN
   CALL obj%func%DEALLOCATE()
+  DEALLOCATE (obj%func)
 END IF
 
-DEALLOCATE (obj%func)
 obj%func => NULL()
 
 END PROCEDURE obj_Deallocate
