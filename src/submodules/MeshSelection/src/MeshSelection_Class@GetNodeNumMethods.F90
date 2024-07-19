@@ -48,7 +48,7 @@ ans = SIZE(obj%nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_GetTotalNodenum1
@@ -74,14 +74,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ans = 0
 
 IF (.NOT. PRESENT(onlydim)) THEN
-
-  IF (obj%isSelectionBynodeNum) THEN
+  IF (obj%ms(3)) THEN
     ans = ans + obj%GetTotalNodenum()
   END IF
-
 END IF
 
-IF (obj%isSelectionByMeshID) THEN
+IF (obj%ms(1)) THEN
   CALL obj%GetMeshIDPointer(dim=dim, ans=intptr, tsize=jj)
   meshptr => dom%GetMeshPointer(dim=dim)
 
@@ -95,7 +93,7 @@ IF (obj%isSelectionByMeshID) THEN
   meshptr => NULL()
 END IF
 
-IF (obj%isSelectionByElemNum) THEN
+IF (obj%ms(2)) THEN
   jj = obj%GetTotalElemNum(dim=dim)
   ALLOCATE (intptr(jj))
 
@@ -182,13 +180,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 tsize = 0
 
 IF (.NOT. PRESENT(onlydim)) THEN
-! isSelectionBynodeNum
-  IF (obj%isSelectionBynodeNum) THEN
+  IF (obj%ms(3)) THEN
     CALL obj%GetNodenum(ans=ans, tsize=tsize)
   END IF
 END IF
 
-IF (obj%isSelectionByMeshID) THEN
+IF (obj%ms(1)) THEN
   CALL obj%GetMeshIDPointer(dim=dim, ans=intptr, tsize=jj)
   meshptr => dom%GetMeshPointer(dim=dim)
 
@@ -202,7 +199,7 @@ IF (obj%isSelectionByMeshID) THEN
   meshptr => NULL()
 END IF
 
-IF (obj%isSelectionByElemNum) THEN
+IF (obj%ms(2)) THEN
   jj = obj%GetTotalElemNum(dim=dim)
   ALLOCATE (intptr(jj))
 

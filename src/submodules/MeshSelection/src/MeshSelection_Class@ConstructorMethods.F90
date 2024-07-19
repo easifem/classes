@@ -30,6 +30,118 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                           IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isinit
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsSelectionByMeshID
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsSelectionByMeshID
+ans = obj%ms(1)
+END PROCEDURE obj_IsSelectionByMeshID
+
+!----------------------------------------------------------------------------
+!                                                       IsSelectionByElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsSelectionByElemNum
+ans = obj%ms(2)
+END PROCEDURE obj_IsSelectionByElemNum
+
+!----------------------------------------------------------------------------
+!                                                       IsSelectionBynodeNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsSelectionBynodeNum
+ans = obj%ms(3)
+END PROCEDURE obj_IsSelectionBynodeNum
+
+!----------------------------------------------------------------------------
+!                                                       IsSelectionByBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsSelectionByBox
+ans = obj%ms(4)
+END PROCEDURE obj_IsSelectionByBox
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalPointMeshid
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalPointMeshid
+! ans = obj%totalPointMeshid
+! END PROCEDURE obj_GetTotalPointMeshid
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalCurveMeshid
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalCurveMeshid
+! ans = obj%totalCurveMeshid
+! END PROCEDURE obj_GetTotalCurveMeshid
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalSurfaceMeshid
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalSurfaceMeshid
+! ans = obj%totalSurfaceMeshid
+! END PROCEDURE obj_GetTotalSurfaceMeshid
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalVolumeMeshid
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalVolumeMeshid
+! ans = obj%totalVolumeMeshid
+! END PROCEDURE obj_GetTotalVolumeMeshid
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalPointElemNum
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalPointElemNum
+! ans = obj%totalPointElemNum
+! END PROCEDURE obj_GetTotalPointElemNum
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalCurveElemNum
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalCurveElemNum
+! ans = obj%totalCurveElemNum
+! END PROCEDURE obj_GetTotalCurveElemNum
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalSurfaceElemNum
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalSurfaceElemNum
+! ans = obj%totalSurfaceElemNum
+! END PROCEDURE obj_GetTotalSurfaceElemNum
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalVolumeElemNum
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalVolumeElemNum
+! ans = obj%totalVolumeElemNum
+! END PROCEDURE obj_GetTotalVolumeElemNum
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalPointNodenum
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_GetTotalPointNodenum
+! ans = obj%totalPoint
+! END PROCEDURE obj_GetTotalPointNodenum
+
+!----------------------------------------------------------------------------
 !                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
@@ -84,7 +196,9 @@ END PROCEDURE SetMeshSelectionParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -93,18 +207,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-obj%isInitiated = .TRUE.
-obj%isSelectionByMeshID = Input(option=isSelectionByMeshID, &
-                                default=.FALSE.)
+obj%isinit = .TRUE.
+obj%ms(1) = Input(option=isSelectionByMeshID, default=.FALSE.)
 
-obj%isSelectionByElemNum = Input(option=isSelectionByElemNum, &
-                                 default=.FALSE.)
+obj%ms(2) = Input(option=isSelectionByElemNum, default=.FALSE.)
 
-obj%isSelectionBynodeNum = Input(option=isSelectionBynodeNum, &
-                                 default=.FALSE.)
+obj%ms(3) = Input(option=isSelectionBynodeNum, default=.FALSE.)
 
-obj%isSelectionByBox = Input(option=isSelectionByBox, &
-                             default=.FALSE.)
+obj%ms(4) = Input(option=isSelectionByBox, default=.FALSE.)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -117,7 +227,10 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
 CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
@@ -126,16 +239,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInitiated = .TRUE.
+obj%isinit = .TRUE.
 prefix = obj%GetPrefix()
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox", &
-              VALUE=obj%isSelectionByBox)
 CALL GetValue(obj=param, prefix=prefix, key="isSelectionByMeshID", &
-              VALUE=obj%isSelectionByMeshID)
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionBynodeNum", &
-              VALUE=obj%isSelectionBynodeNum)
+              VALUE=obj%ms(1))
 CALL GetValue(obj=param, prefix=prefix, key="isSelectionByElemNum", &
-              VALUE=obj%isSelectionByElemNum)
+              VALUE=obj%ms(2))
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionBynodeNum", &
+              VALUE=obj%ms(3))
+CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox", &
+              VALUE=obj%ms(4))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -149,11 +262,21 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-obj%isInitiated = .FALSE.
-obj%isSelectionByElemNum = .FALSE.
-obj%isSelectionBynodeNum = .FALSE.
-obj%isSelectionByMeshID = .FALSE.
-obj%isSelectionByBox = .FALSE.
+obj%isinit = .FALSE.
+obj%ms = .FALSE.
+obj%totalPointMeshid = 0
+obj%totalCurveMeshid = 0
+obj%totalSurfaceMeshid = 0
+obj%totalVolumeMeshid = 0
+obj%totalPointElemNum = 0
+obj%totalCurveElemNum = 0
+obj%totalSurfaceElemNum = 0
+obj%totalVolumeElemNum = 0
+obj%totalPointNodenum = 0
+obj%totalCurveNodenum = 0
+obj%totalSurfaceNodenum = 0
+obj%totalVolumeNodenum = 0
+
 CALL DEALLOCATE (obj%pointMeshID)
 CALL DEALLOCATE (obj%curveMeshID)
 CALL DEALLOCATE (obj%surfaceMeshID)
@@ -186,11 +309,21 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Copy
-obj%isInitiated = obj2%isInitiated
-obj%isSelectionByMeshID = obj2%isSelectionByMeshID
-obj%isSelectionByElemNum = obj2%isSelectionByElemNum
-obj%isSelectionBynodeNum = obj2%isSelectionBynodeNum
-obj%isSelectionByBox = obj2%isSelectionByBox
+obj%isinit = obj2%isinit
+obj%ms = obj2%ms
+
+obj%totalPointMeshid = obj2%totalPointMeshid
+obj%totalCurveMeshid = obj2%totalCurveMeshid
+obj%totalSurfaceMeshid = obj2%totalSurfaceMeshid
+obj%totalVolumeMeshid = obj2%totalVolumeMeshid
+obj%totalPointElemnum = obj2%totalPointElemnum
+obj%totalCurveElemnum = obj2%totalCurveElemnum
+obj%totalSurfaceElemnum = obj2%totalSurfaceElemnum
+obj%totalVolumeElemnum = obj2%totalVolumeElemnum
+obj%totalPointNodenum = obj2%totalPointNodenum
+obj%totalCurveNodenum = obj2%totalCurveNodenum
+obj%totalSurfaceNodenum = obj2%totalSurfaceNodenum
+obj%totalVolumeNodenum = obj2%totalVolumeNodenum
 
 IF (isAllocated(obj2%pointMeshID)) obj%pointMeshID = obj2%pointMeshID
 IF (isAllocated(obj2%curveMeshID)) obj%curveMeshID = obj2%curveMeshID

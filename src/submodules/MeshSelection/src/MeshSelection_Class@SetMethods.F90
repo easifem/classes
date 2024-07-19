@@ -31,83 +31,135 @@ CONTAINS
 
 MODULE PROCEDURE obj_Add
 CHARACTER(*), PARAMETER :: myName = "obj_Add()"
-LOGICAL(LGT) :: bool1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-bool1 = PRESENT(dim) .AND. PRESENT(meshID)
-IF (bool1) THEN
-  obj%isSelectionByMeshID = .TRUE.
-  SELECT CASE (dim)
-  CASE (0)
-    CALL Append(obj%pointMeshID, meshID)
-  CASE (1)
-    CALL Append(obj%curveMeshID, meshID)
-  CASE (2)
-    CALL Append(obj%surfaceMeshID, meshID)
-  CASE (3)
-    CALL Append(obj%volumeMeshID, meshID)
-  END SELECT
-END IF
-
-bool1 = PRESENT(dim) .AND. PRESENT(elemNum)
-IF (bool1) THEN
-  obj%isSelectionByElemNum = .TRUE.
-  SELECT CASE (dim)
-  CASE (0)
-    CALL Append(obj%pointElemNum, elemNum)
-  CASE (1)
-    CALL Append(obj%curveElemNum, elemNum)
-  CASE (2)
-    CALL Append(obj%surfaceElemNum, elemNum)
-  CASE (3)
-    CALL Append(obj%volumeElemNum, elemNum)
-  END SELECT
-END IF
-
-bool1 = PRESENT(nodeNum) .AND. (.NOT. PRESENT(dim))
-IF (bool1) THEN
-  obj%isSelectionByNodeNum = .TRUE.
-  CALL Append(obj%nodeNum, nodeNum)
-END IF
-
-bool1 = PRESENT(nodeNum) .AND. (PRESENT(dim))
-IF (bool1) THEN
-  obj%isSelectionByNodeNum = .TRUE.
-  SELECT CASE (dim)
-  CASE (0)
-    CALL Append(obj%pointNodeNum, nodeNum)
-  CASE (1)
-    CALL Append(obj%curveNodeNum, nodeNum)
-  CASE (2)
-    CALL Append(obj%surfaceNodeNum, nodeNum)
-  CASE (3)
-    CALL Append(obj%volumeNodeNum, nodeNum)
-  END SELECT
-END IF
-
-bool1 = PRESENT(dim) .AND. PRESENT(box)
-IF (bool1) THEN
-  SELECT CASE (dim)
-  CASE (0)
-    CALL BB_Append(obj%pointBox, box)
-  CASE (1)
-    CALL BB_Append(obj%curveBox, box)
-  CASE (2)
-    CALL BB_Append(obj%surfaceBox, box)
-  CASE (3)
-    CALL BB_Append(obj%volumeBox, box)
-  END SELECT
-END IF
+CALL addmeshid(obj, meshid, dim)
+CALL addelemnum(obj, elemnum, dim)
+CALL addnodenum(obj, nodenum, dim)
+CALL addbox(obj, box, dim)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_Add
+
+!----------------------------------------------------------------------------
+!                                                                 AddMeshID
+!----------------------------------------------------------------------------
+
+SUBROUTINE addmeshid(obj, meshid, dim)
+  CLASS(MeshSelection_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshid(:), dim
+
+  LOGICAL(LGT) :: bool1
+
+  bool1 = PRESENT(dim) .AND. PRESENT(meshID)
+  IF (bool1) THEN
+    obj%ms(1) = .TRUE.
+    SELECT CASE (dim)
+    CASE (0)
+      CALL Append(obj%pointMeshID, meshID)
+    CASE (1)
+      CALL Append(obj%curveMeshID, meshID)
+    CASE (2)
+      CALL Append(obj%surfaceMeshID, meshID)
+    CASE (3)
+      CALL Append(obj%volumeMeshID, meshID)
+    END SELECT
+  END IF
+
+END SUBROUTINE addmeshid
+
+!----------------------------------------------------------------------------
+!                                                                addelemnum
+!----------------------------------------------------------------------------
+
+SUBROUTINE addelemnum(obj, elemnum, dim)
+  CLASS(MeshSelection_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemnum(:), dim
+
+  LOGICAL(LGT) :: bool1
+
+  bool1 = PRESENT(dim) .AND. PRESENT(elemnum)
+  IF (bool1) THEN
+    obj%ms(2) = .TRUE.
+    SELECT CASE (dim)
+    CASE (0)
+      CALL Append(obj%pointElemNum, elemnum)
+    CASE (1)
+      CALL Append(obj%curveElemNum, elemnum)
+    CASE (2)
+      CALL Append(obj%surfaceElemNum, elemnum)
+    CASE (3)
+      CALL Append(obj%volumeElemNum, elemnum)
+    END SELECT
+  END IF
+
+END SUBROUTINE addelemnum
+
+!----------------------------------------------------------------------------
+!                                                                addnodenum
+!----------------------------------------------------------------------------
+
+SUBROUTINE addnodenum(obj, nodenum, dim)
+  CLASS(MeshSelection_), INTENT(INOUT) :: obj
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodenum(:), dim
+
+  LOGICAL(LGT) :: bool1
+
+  bool1 = PRESENT(nodeNum) .AND. (.NOT. PRESENT(dim))
+  IF (bool1) THEN
+    obj%ms(3) = .TRUE.
+    CALL Append(obj%nodeNum, nodeNum)
+  END IF
+
+  bool1 = PRESENT(nodeNum) .AND. (PRESENT(dim))
+  IF (bool1) THEN
+    obj%ms(3) = .TRUE.
+    SELECT CASE (dim)
+    CASE (0)
+      CALL Append(obj%pointNodeNum, nodeNum)
+    CASE (1)
+      CALL Append(obj%curveNodeNum, nodeNum)
+    CASE (2)
+      CALL Append(obj%surfaceNodeNum, nodeNum)
+    CASE (3)
+      CALL Append(obj%volumeNodeNum, nodeNum)
+    END SELECT
+  END IF
+END SUBROUTINE addnodenum
+
+!----------------------------------------------------------------------------
+!                                                                 addbox
+!----------------------------------------------------------------------------
+
+SUBROUTINE addbox(obj, box, dim)
+  CLASS(MeshSelection_), INTENT(INOUT) :: obj
+  TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+
+  LOGICAL(LGT) :: bool1
+
+  bool1 = PRESENT(dim) .AND. PRESENT(box)
+  IF (bool1) THEN
+    obj%ms(4) = .TRUE.
+    SELECT CASE (dim)
+    CASE (0)
+      CALL BB_Append(obj%pointBox, box)
+    CASE (1)
+      CALL BB_Append(obj%curveBox, box)
+    CASE (2)
+      CALL BB_Append(obj%surfaceBox, box)
+    CASE (3)
+      CALL BB_Append(obj%volumeBox, box)
+    END SELECT
+  END IF
+END SUBROUTINE addbox
 
 !----------------------------------------------------------------------------
 !                                                                     Set
@@ -152,15 +204,19 @@ END PROCEDURE obj_Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
-INTEGER(I4B) :: ii, tMaterials
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif DEBUG_VER
 
-tMaterials = SIZE(obj)
-DO ii = 1, tMaterials
+tsize = SIZE(obj)
+DO ii = 1, tsize
   CALL obj(ii)%Set()
 END DO
 

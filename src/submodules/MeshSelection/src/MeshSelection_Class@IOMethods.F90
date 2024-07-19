@@ -62,13 +62,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-IF (obj%isInitiated) THEN
+IF (obj%isinit) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
          '[CONFIG ERROR] :: MeshSelection_::object is already initiated, '// &
                     'deallocate it first!')
 END IF
 
-obj%isInitiated = .TRUE.
+obj%isinit = .TRUE.
 
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -85,36 +85,35 @@ END IF
 dsetname = TRIM(group)//"/isSelectionByMeshID"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%isSelectionByMeshID)
+                 vals=obj%ms(1))
 ELSE
-  obj%isSelectionByMeshID = .FALSE.
+  obj%ms(1) = .FALSE.
 END IF
 
 ! READ isSelectionByElemNum
 dsetname = TRIM(group)//"/isSelectionByElemNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%isSelectionByElemNum)
+                 vals=obj%ms(2))
 ELSE
-  obj%isSelectionByElemNum = .FALSE.
+  obj%ms(2) = .FALSE.
 END IF
 
 ! READ isSelectionByNodeNum
 dsetname = TRIM(group)//"/isSelectionByNodeNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%isSelectionByNodeNum)
+                 vals=obj%ms(3))
 ELSE
-  obj%isSelectionByNodeNum = .FALSE.
+  obj%ms(3) = .FALSE.
 END IF
 
 ! READ isSelectionByBox
 dsetname = TRIM(group)//"/isSelectionByBox"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%isSelectionByBox)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%ms(4))
 ELSE
-  obj%isSelectionByBox = .FALSE.
+  obj%ms(4) = .FALSE.
 END IF
 
 ! READ PointMeshID
@@ -123,7 +122,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%PointMeshID = intvec
-  obj%isSelectionByMeshID = .TRUE.
+  obj%ms(1) = .TRUE.
 END IF
 
 ! READ CurveMeshID
@@ -132,7 +131,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%CurveMeshID = intvec
-  obj%isSelectionByMeshID = .TRUE.
+  obj%ms(1) = .TRUE.
 END IF
 
 ! READ SurfaceMeshID
@@ -141,7 +140,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%SurfaceMeshID = intvec
-  obj%isSelectionByMeshID = .TRUE.
+  obj%ms(1) = .TRUE.
 END IF
 
 ! READ VolumeMeshID
@@ -150,7 +149,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%VolumeMeshID = intvec
-  obj%isSelectionByMeshID = .TRUE.
+  obj%ms(1) = .TRUE.
 END IF
 
 ! READ PointElemNum
@@ -159,7 +158,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%PointElemNum = intvec
-  obj%isSelectionByElemNum = .TRUE.
+  obj%ms(2) = .TRUE.
 END IF
 
 ! READ CurveElemNum
@@ -168,7 +167,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%CurveElemNum = intvec
-  obj%isSelectionByElemNum = .TRUE.
+  obj%ms(2) = .TRUE.
 END IF
 
 ! READ SurfaceElemNum
@@ -177,7 +176,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%SurfaceElemNum = intvec
-  obj%isSelectionByElemNum = .TRUE.
+  obj%ms(2) = .TRUE.
 END IF
 
 ! READ VolumeElemNum
@@ -186,7 +185,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%VolumeElemNum = intvec
-  obj%isSelectionByElemNum = .TRUE.
+  obj%ms(2) = .TRUE.
 END IF
 
 ! READ NodeNum
@@ -195,7 +194,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
   obj%NodeNum = intvec
-  obj%isSelectionByNodeNum = .TRUE.
+  obj%ms(3) = .TRUE.
 END IF
 
 #ifdef DEBUG_VER
@@ -219,7 +218,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 !> check
-IF (.NOT. obj%isInitiated) THEN
+IF (.NOT. obj%isinit) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
                     'The object is not initiated, allocate first!')
 END IF
@@ -239,22 +238,22 @@ END IF
 ! READ isSelectionByMeshID
 dsetname = TRIM(group)//"/isSelectionByMeshID"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                vals=obj%isSelectionByMeshID)
+                vals=obj%ms(1))
 
 ! READ isSelectionByElemNum
 dsetname = TRIM(group)//"/isSelectionByElemNum"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                vals=obj%isSelectionByElemNum)
+                vals=obj%ms(2))
 
 ! READ isSelectionByNodeNum
 dsetname = TRIM(group)//"/isSelectionByNodeNum"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                vals=obj%isSelectionByNodeNum)
+                vals=obj%ms(3))
 
 ! READ isSelectionByBox
 dsetname = TRIM(group)//"/isSelectionByBox"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                vals=obj%isSelectionByBox)
+                vals=obj%ms(4))
 
 ! READ PointMeshID
 IF (isAllocated(obj%PointMeshID)) THEN
@@ -337,7 +336,7 @@ INTEGER(I4B) :: ii
 CALL EqualLine(unitNo=unitNo)
 CALL Display(msg, unitNo=unitNo)
 CALL EqualLine(unitNo=unitNo)
-IF (.NOT. obj%isInitiated) THEN
+IF (.NOT. obj%isinit) THEN
   CALL BlankLines(unitNo=unitNo, nol=1_I4B)
   CALL Display("The object is not initiated, nothing to show!", &
                unitNo=unitNo)
@@ -346,14 +345,14 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 
 CALL BlankLines(unitNo=unitNo, nol=1_I4B)
-CALL Display(obj%isInitiated, "IsInitiated :", unitNo=unitNo)
-CALL Display(obj%IsSelectionByMeshID, "IsSelectionByMeshID : ", &
+CALL Display(obj%isinit, "IsInitiated :", unitNo=unitNo)
+CALL Display(obj%ms(1), "IsSelectionByMeshID : ", &
              unitNo=unitNo)
-CALL Display(obj%IsSelectionByElemNum, "IsSelectionByElemNum : ", &
+CALL Display(obj%ms(2), "IsSelectionByElemNum : ", &
              unitNo=unitNo)
-CALL Display(obj%IsSelectionByNodeNum, "IsSelectionByNodeNum : ", &
+CALL Display(obj%ms(3), "IsSelectionByNodeNum : ", &
              unitNo=unitNo)
-CALL Display(obj%IsSelectionByBox, "IsSelectionByBox : ", &
+CALL Display(obj%ms(4), "IsSelectionByBox : ", &
              unitNo=unitNo)
 bool1 = IsAllocated(obj%pointMeshID)
 CALL Display(bool1, "PointMeshID ALLOCATED :", unitNo=unitNo)
@@ -566,7 +565,7 @@ node => NULL()
 CALL toml_get(table, "meshID", node, origin=origin, &
               stat=stat, requested=.FALSE.)
 
-bool1 = obj%isSelectionByMeshID .AND. (.NOT. ASSOCIATED(node))
+bool1 = obj%ms(1) .AND. (.NOT. ASSOCIATED(node))
 IF (bool1) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
              '[CONFIG ERROR] :: You have set isSelectionByMeshID = .TRUE.'// &
@@ -574,8 +573,8 @@ IF (bool1) THEN
   RETURN
 END IF
 
-bool1 = ASSOCIATED(node) .AND. (.NOT. obj%isSelectionByMeshID)
-IF (bool1) obj%isSelectionByMeshID = .TRUE.
+bool1 = ASSOCIATED(node) .AND. (.NOT. obj%ms(1))
+IF (bool1) obj%ms(1) = .TRUE.
 
 IF (ASSOCIATED(node)) THEN
   ! read points
@@ -604,7 +603,7 @@ node => NULL()
 CALL toml_get(table, "box", node, origin=origin, &
               stat=stat, requested=.FALSE.)
 
-bool1 = obj%isSelectionByBox .AND. (.NOT. ASSOCIATED(node))
+bool1 = obj%ms(4) .AND. (.NOT. ASSOCIATED(node))
 IF (bool1) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                 '[CONFIG ERROR] :: You have set isSelectionByBox = .TRUE.'// &
@@ -612,8 +611,8 @@ IF (bool1) THEN
   RETURN
 END IF
 
-bool1 = ASSOCIATED(node) .AND. (.NOT. obj%isSelectionByBox)
-IF (bool1) obj%isSelectionByBox = .TRUE.
+bool1 = ASSOCIATED(node) .AND. (.NOT. obj%ms(4))
+IF (bool1) obj%ms(4) = .TRUE.
 
 IF (ASSOCIATED(node)) THEN
   ! read points
@@ -642,7 +641,7 @@ node => NULL()
 CALL toml_get(table, "elemNum", node, origin=origin, &
               stat=stat, requested=.FALSE.)
 
-bool1 = obj%isSelectionByElemNum .AND. (.NOT. ASSOCIATED(node))
+bool1 = obj%ms(2) .AND. (.NOT. ASSOCIATED(node))
 IF (bool1) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
             '[CONFIG ERROR] :: You have set isSelectionByElemNum = .TRUE.'// &
@@ -650,8 +649,8 @@ IF (bool1) THEN
   RETURN
 END IF
 
-bool1 = ASSOCIATED(node) .AND. (.NOT. obj%isSelectionByElemNum)
-IF (bool1) obj%isSelectionByElemNum = .TRUE.
+bool1 = ASSOCIATED(node) .AND. (.NOT. obj%ms(2))
+IF (bool1) obj%ms(2) = .TRUE.
 
 IF (ASSOCIATED(node)) THEN
   ! read points
@@ -680,7 +679,7 @@ node => NULL()
 CALL toml_get(table, "nodeNum", node, origin=origin, &
               stat=stat, requested=.FALSE.)
 
-bool1 = obj%isSelectionByElemNum .AND. (.NOT. ASSOCIATED(node))
+bool1 = obj%ms(2) .AND. (.NOT. ASSOCIATED(node))
 IF (bool1) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
             '[CONFIG ERROR] :: You have set isSelectionByElemNum = .TRUE.'// &
@@ -688,8 +687,8 @@ IF (bool1) THEN
   RETURN
 END IF
 
-bool1 = ASSOCIATED(node) .AND. (.NOT. obj%isSelectionByElemNum)
-IF (bool1) obj%isSelectionByElemNum = .TRUE.
+bool1 = ASSOCIATED(node) .AND. (.NOT. obj%ms(2))
+IF (bool1) obj%ms(2) = .TRUE.
 
 IF (ASSOCIATED(node)) THEN
   ! read points

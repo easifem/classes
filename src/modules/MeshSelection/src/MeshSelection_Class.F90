@@ -54,16 +54,45 @@ PUBLIC :: MeshSelectionSet
 
 TYPE :: MeshSelection_
   PRIVATE
-  LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isinit = .FALSE.
     !!  True if the instance is initiated
-  LOGICAL(LGT), PUBLIC :: isSelectionByMeshID = .FALSE.
-    !! True if selection by mesh id
-  LOGICAL(LGT), PUBLIC :: isSelectionByElemNum = .FALSE.
-    !! True if selection by element number
-  LOGICAL(LGT), PUBLIC :: isSelectionByBox = .FALSE.
-    !! True if selection by box
-  LOGICAL(LGT), PUBLIC :: isSelectionByNodeNum = .FALSE.
-    !! True if selection by node number
+  LOGICAL(LGT) :: ms(4) = .FALSE.
+  !! mesh selection
+  !! index 1: selection by mesh id
+  !! index 2: selection by element number
+  !! index 3: selection by node number
+  !! index 4: selection by box
+
+  ! TODO: Convert all intvector into allocatable array
+  ! and use expand operation instead of append
+
+  INTEGER(I4B) :: totalPointMeshid = 0
+  !! size of pointMeshid
+  INTEGER(I4B) :: totalCurveMeshid = 0
+  !! size of curveMeshid
+  INTEGER(I4B) :: totalSurfaceMeshid = 0
+  !! size of surfaceMeshid
+  INTEGER(I4B) :: totalVolumeMeshid = 0
+  !! size of volumeMeshid
+
+  INTEGER(I4B) :: totalPointElemnum = 0
+  !! size of pointElemnum
+  INTEGER(I4B) :: totalCurveElemnum = 0
+  !! size of curveElemnum
+  INTEGER(I4B) :: totalSurfaceElemnum = 0
+  !! size of surfaceElemnum
+  INTEGER(I4B) :: totalVolumeElemnum = 0
+  !! size of volumeElemnum
+
+  INTEGER(I4B) :: totalPointNodenum = 0
+  !! size of pointNodeNum
+  INTEGER(I4B) :: totalCurveNodenum = 0
+  !! size of curvePointNum
+  INTEGER(I4B) :: totalSurfaceNodenum = 0
+  !! size of surfacePointNum
+  INTEGER(I4B) :: totalVolumeNodenum = 0
+  !! size of volumePointNum
+
   TYPE(IntVector_) :: pointMeshID
     !! It denotes the IDs of mesh which has xidim = 0 (point-mesh)
   TYPE(IntVector_) :: curveMeshID
@@ -72,6 +101,7 @@ TYPE :: MeshSelection_
     !! It denotes the IDs of mesh which has xidim = 2 (surface-mesh)
   TYPE(IntVector_) :: volumeMeshID
     !! It denotes the IDs of mesh which has xidim = 3 (volume-mesh)
+
   TYPE(IntVector_) :: pointElemNum
     !! Element number in mesh of points
   TYPE(IntVector_) :: curveElemNum
@@ -80,18 +110,16 @@ TYPE :: MeshSelection_
     !! Element number in mesh of surfaces
   TYPE(IntVector_) :: volumeElemNum
     !! Element number in mesh of volume
+
+  !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: pointNodeNum
     !! Global Node numbers in pointEntity
-    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: curveNodeNum
     !! Global Node numbers in cuveEntity
-    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: surfaceNodeNum
     !! Global Node numbers in surfaceEntity
-    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: volumeNodeNum
     !! Global Node numbers in volumeEntity
-    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: nodeNum
     !! Global Node numbers
   TYPE(BoundingBox_), ALLOCATABLE :: pointBox(:)
@@ -113,6 +141,21 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameter
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isSelectionByMeshID => &
+    obj_isSelectionByMeshID
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isSelectionByElemNum => &
+    obj_isSelectionByElemNum
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isSelectionByNodeNum => &
+    obj_isSelectionByNodeNum
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isSelectionByBox => &
+    obj_isSelectionByBox
+
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate an instance of meshSelection
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -221,6 +264,61 @@ TYPE(MeshSelection_), PUBLIC, PARAMETER ::TypeMeshSelection=MeshSelection_()
 TYPE :: MeshSelectionPointer_
   CLASS(MeshSelection_), POINTER :: ptr => NULL()
 END TYPE MeshSelectionPointer_
+
+!----------------------------------------------------------------------------
+!                                             isInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION obj_isInitiated(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    isSelectionByMeshID@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION obj_isSelectionByMeshID(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isSelectionByMeshID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    isSelectionByElemNum@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION obj_isSelectionByElemNum(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isSelectionByElemNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   isSelectionByNodeNum@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION obj_isSelectionByNodeNum(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isSelectionByNodeNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       isSelectionByBox@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION obj_isSelectionByBox(obj) RESULT(ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isSelectionByBox
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods

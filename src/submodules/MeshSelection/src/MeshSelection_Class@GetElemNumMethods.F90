@@ -47,7 +47,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ans = 0
 
-isok = obj%isSelectionByElemNum
+isok = obj%ms(2)
 IF (.NOT. isok) RETURN
 
 SELECT CASE (dim)
@@ -83,13 +83,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = 0
-IF (obj%isSelectionByElemNum) THEN
-  ans = obj%GetTotalElemNum(dim=dim)
-END IF
+ans = obj%GetTotalElemNum(dim=dim)
 
 ! isSelectionByMeshID
-IF (obj%isSelectionByMeshID) THEN
+IF (obj%ms(1)) THEN
 
   meshptr => dom%GetMeshPointer(dim=dim)
 
@@ -205,7 +202,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 tsize = 0
 
-isok = obj%isSelectionByElemNum
+isok = obj%ms(2)
 IF (.NOT. isok) RETURN
 
 SELECT CASE (dim)
@@ -259,14 +256,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = 0
-
-IF (obj%isSelectionByElemNum) THEN
-  CALL obj%GetElemNum(dim=dim, ans=ans, tsize=tsize)
-END IF
+CALL obj%GetElemNum(dim=dim, ans=ans, tsize=tsize)
 
 ! isSelectionByMeshID
-IF (obj%isSelectionByMeshID) THEN
+IF (obj%ms(1)) THEN
 
   meshptr => dom%GetMeshPointer(dim=dim)
 

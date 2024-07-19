@@ -82,6 +82,8 @@ CASE (2)
   ans = isAllocated(obj%surfaceMeshID)
 CASE (3)
   ans = isAllocated(obj%volumeMeshID)
+CASE DEFAULT
+  ans = .FALSE.
 END SELECT
 END PROCEDURE obj_isMeshIDAllocated
 
@@ -99,6 +101,8 @@ CASE (2)
   ans = isAllocated(obj%surfaceElemNum)
 CASE (3)
   ans = isAllocated(obj%volumeElemNum)
+CASE default
+  ans = .FALSE.
 END SELECT
 END PROCEDURE obj_isElemNumAllocated
 
@@ -116,19 +120,19 @@ END PROCEDURE obj_isnodenumAllocated
 
 MODULE PROCEDURE obj_GetParam
 IF (PRESENT(isInitiated)) THEN
-  isInitiated = obj%isInitiated
-END IF
-IF (PRESENT(isSelectionByBox)) THEN
-  isSelectionByBox = obj%isSelectionByBox
+  isInitiated = obj%isinit
 END IF
 IF (PRESENT(isSelectionByMeshID)) THEN
-  isSelectionByMeshID = obj%isSelectionByMeshID
+  isSelectionByMeshID = obj%ms(1)
 END IF
 IF (PRESENT(isSelectionByElemNum)) THEN
-  isSelectionByElemNum = obj%isSelectionByElemNum
+  isSelectionByElemNum = obj%ms(2)
 END IF
 IF (PRESENT(isSelectionBynodenum)) THEN
-  isSelectionBynodenum = obj%isSelectionBynodenum
+  isSelectionBynodenum = obj%ms(3)
+END IF
+IF (PRESENT(isSelectionByBox)) THEN
+  isSelectionByBox = obj%ms(4)
 END IF
 END PROCEDURE obj_GetParam
 
