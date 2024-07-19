@@ -183,7 +183,7 @@ CALL GetValue(obj=param, prefix=prefix, key="useExternal", &
 
 ! Check
 CALL boundary%GetParam(isSelectionByMeshID=isSelectionByMeshID)
-abool = boundary%isSelectionByMeshID &
+abool = isSelectionByMeshID &
         .AND. (.NOT. obj%isUserFunction) &
         .AND. (.NOT. obj%useExternal) &
         .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
