@@ -26,11 +26,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: aint
+#endif
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: idof, aint, nrow, ncol
+LOGICAL(LGT) :: istimes
+INTEGER(I4B) :: idof, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -61,9 +66,8 @@ CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
              ncol=ncol)
 
 IF (istimes) THEN
-  aint = SIZE(nodalvalue, 2)
-  DO idof = 1, aint
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof), &
+  DO idof = 1, ncol
+    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:ncol, idof), &
                  islocal=.FALSE.)
   END DO
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -71,7 +75,8 @@ IF (istimes) THEN
   RETURN
 END IF
 
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), islocal=.FALSE.)
+CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+             islocal=.FALSE.)
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
