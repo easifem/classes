@@ -231,7 +231,8 @@ END PROCEDURE obj_GetnodeNum2
 MODULE PROCEDURE obj_GetNodeNum3
 INTEGER(I4B) :: ii, nsd, mysize
 
-CALL obj%GetNodeNum(dim=0, dom=dom, ans=ans, tsize=mysize)
+tsize = 0
+CALL obj%GetNodeNum(dim=0, dom=dom, ans=ans, tsize=tsize)
 nsd = dom%GetNSD()
 DO ii = 1, nsd
   CALL obj%GetNodeNum(dim=ii, dom=dom, onlydim=.TRUE., &
