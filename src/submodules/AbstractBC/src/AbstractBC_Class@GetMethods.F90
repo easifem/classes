@@ -227,7 +227,7 @@ IF (PRESENT(useFunction)) useFunction = obj%isUserFunction
 IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
 IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
-IF (PRESENT(useExternal)) useExternal = obj%useExternal
+IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------

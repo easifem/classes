@@ -77,16 +77,19 @@ TYPE, ABSTRACT :: AbstractBC_
   !! True if the boundary condition is normal to the boundary
   LOGICAL(LGT) :: isTangent = default_isTangent
   !! True if the boundary condition is tangent to the boundary
-  LOGICAL(LGT) :: useExternal = default_useExternal
+  LOGICAL(LGT) :: isUseExternal = default_useExternal
   !! if true then nodal values are used externally
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
   !! instance of AbstractBC_
   LOGICAL(LGT) :: isUserFunction = default_isUserFunction
   !! True if userFunction is set
+  INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+  !! node numbers, size is same as
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
+  !! nodalValue is used when useFunction and useExternal is false
   CLASS(UserFunction_), POINTER :: func => NULL()
   !! User function
   TYPE(MeshSelection_) :: boundary
@@ -202,7 +205,7 @@ END INTERFACE AbstractBCcheckEssentialParam
 INTERFACE
   MODULE SUBROUTINE SetAbstractBCParam(param, prefix, &
                             name, idof, nodalValueType, isNormal, isTangent, &
-                                       useExternal, isUserFunction)
+                                       isUseExternal, isUserFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
@@ -220,7 +223,7 @@ INTERFACE
     !! default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
     !! default is false
   END SUBROUTINE SetAbstractBCParam
 END INTERFACE
@@ -520,7 +523,7 @@ INTERFACE
   MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, &
                 isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
                isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
-                                  nodalValueType, useExternal, isUserFunction)
+                                nodalValueType, isUseExternal, isUserFunction)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
@@ -532,7 +535,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useFunction
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useExternal
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUseExternal
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
   END SUBROUTINE obj_GetParam
 END INTERFACE

@@ -37,7 +37,7 @@ obj%nodalValueType = -1
 obj%isUserFunction = .FALSE.
 obj%isNormal = .FALSE.
 obj%isTangent = .FALSE.
-obj%useExternal = .FALSE.
+obj%isUseExternal = .FALSE.
 obj%nrow = 0
 obj%ncol = 0
 
@@ -71,7 +71,7 @@ ELSE
 END IF
 
 astr = "/name/idof/nodalValueType/isNormal/isTangent/"// &
-       "useExternal/isUserFunction"
+       "isUseExternal/isUserFunction"
 
 CALL CheckEssentialParam(obj=param, keys=astr, prefix=prefix0, &
                          myName=myName, modName=modName)
@@ -103,8 +103,8 @@ CALL Set(param, datatype=.TRUE., prefix=prefix, key="isNormal", &
 CALL Set(param, datatype=.TRUE., prefix=prefix, key="isTangent", &
          VALUE=Input(option=isTangent, default=default_isTangent))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix, key="useExternal", &
-         VALUE=Input(option=useExternal, default=default_useExternal))
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUseExternal", &
+         VALUE=Input(option=isUseExternal, default=default_useExternal))
 
 IF (PRESENT(isUserFunction)) THEN
   CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUserFunction", &
@@ -177,15 +177,15 @@ CALL GetValue(obj=param, prefix=prefix, key="isNormal", &
 CALL GetValue(obj=param, prefix=prefix, key="isTangent", &
               VALUE=obj%isTangent)
 
-! useExternal
-CALL GetValue(obj=param, prefix=prefix, key="useExternal", &
-              VALUE=obj%useExternal)
+! isUseExternal
+CALL GetValue(obj=param, prefix=prefix, key="isUseExternal", &
+              VALUE=obj%isUseExternal)
 
 ! Check
 CALL boundary%GetParam(isSelectionByMeshID=isSelectionByMeshID)
 abool = isSelectionByMeshID &
         .AND. (.NOT. obj%isUserFunction) &
-        .AND. (.NOT. obj%useExternal) &
+        .AND. (.NOT. obj%isUseExternal) &
         .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
 
 IF (abool) THEN

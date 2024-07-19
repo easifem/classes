@@ -114,12 +114,12 @@ IF (obj%isUserFunction) THEN
   CALL obj%func%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-dsetname = TRIM(group)//"/useExternal"
+dsetname = TRIM(group)//"/isUseExternal"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataset useExternal should be present')
+  & 'The dataset isUseExternal should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%useExternal)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isUseExternal)
 END IF
 
 dsetname = TRIM(group)//"/boundary"
@@ -224,9 +224,9 @@ IF (ASSOCIATED(obj%func)) THEN
   CALL obj%func%Export(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-! WRITE useExternal
-dsetname = TRIM(group)//"/useExternal"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%useExternal)
+! WRITE isUseExternal
+dsetname = TRIM(group)//"/isUseExternal"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUseExternal)
 
 ! WRITE Boundary
 dsetname = TRIM(group)//"/boundary"
@@ -293,7 +293,7 @@ END SELECT
 CALL Display("nodalValueType : "//TRIM(strval%chars()), unitNo=unitNo)
 
 CALL Display(obj%isUserFunction, "isUserFunction : ", unitNo=unitNo)
-CALL Display(obj%useExternal, "useExternal : ", unitNo=unitNo)
+CALL Display(obj%isUseExternal, "isUseExternal: ", unitNo=unitNo)
 CALL obj%Boundary%Display(msg="Boundary : ", unitNo=unitNo)
 
 IF (.NOT. obj%isUserFunction) THEN
@@ -334,7 +334,7 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_ImportParamFromToml
 CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat, nodalValueType, idof
-LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, useExternal
+LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, isUseExternal
 TYPE(String) :: nodalValueType_string, name, astr
 
 #ifdef DEBUG_VER
@@ -351,7 +351,7 @@ CALL toml_get(table, "isTangent", isTangent,  &
 CALL toml_get(table, "isNormal", isNormal,  &
   & default_isNormal, origin=origin, stat=stat)
 
-CALL toml_get(table, "useExternal", useExternal,  &
+CALL toml_get(table, "isUseExternal", isUseExternal,  &
   & default_useExternal, origin=origin, stat=stat)
 
 CALL toml_get(table, "nodalValueType", nodalValueType_string%raw,  &
@@ -386,7 +386,7 @@ CALL SetAbstractBCParam( &
   & isUserFunction=isUserFunction,  &
   & isNormal=isNormal,  &
   & isTangent=isTangent,  &
-  & useExternal=useExternal &
+  & isUseExternal=isUseExternal &
   & )
 
 name = ""

@@ -42,7 +42,7 @@ CALL set_check_error(obj, constantNodalValue, spaceNodalValue, &
                      timeNodalValue, spaceTimeNodalValue, userFunction)
 #endif
 
-abool = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%useExternal)
+abool = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
 
 acase = 0
 IF (abool) THEN
@@ -66,12 +66,14 @@ END IF
 
 SELECT CASE (acase)
 CASE (1)
+  ! constantNodalValue
   obj%nrow = 1
   obj%ncol = 1
   CALL Reallocate(obj%nodalvalue, obj%nrow, obj%ncol)
   obj%nodalvalue(1:obj%nrow, 1:obj%ncol) = constantNodalValue
 
 CASE (2)
+  ! spaceNodalValue
   obj%nrow = SIZE(spaceNodalValue, 1)
   obj%ncol = 1
   CALL Reallocate(obj%nodalvalue, obj%nrow, obj%ncol)
@@ -129,7 +131,7 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
     RETURN
   END IF
 
-  notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%useExternal)
+  notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
 
   isUserFunction = PRESENT(userFunction)
   isConstVal = PRESENT(constantNodalValue)
@@ -140,7 +142,7 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
   IF (notFunc_notExt .AND. isUserFunction) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                "[CONFIG ERROR] :: AbstractBC_::obj is initiated "//CHAR_LF// &
-               "with useFunction=.FALSE. and useExternal=.FALSE."//CHAR_LF// &
+             "with useFunction=.FALSE. and isUseExternal=.FALSE."//CHAR_LF// &
                       "So you cannot provide userFunction.")
     RETURN
   END IF
