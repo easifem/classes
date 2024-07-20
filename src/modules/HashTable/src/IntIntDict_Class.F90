@@ -73,4 +73,4 @@ END MODULE IntIntDictUtility
 #define CHECK_ITERATOR_VALUE
 #endif
 
-#include "./fhash.inc"
+#include "./fhash.F90"
