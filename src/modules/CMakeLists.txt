@@ -15,8 +15,8 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-# fhash
-include(${CMAKE_CURRENT_LIST_DIR}/Fhash/CMakeLists.txt)
+# HashTable
+include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
 
 # ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
@@ -77,9 +77,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 
 # BinaryTree
 include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
-
-# HashTable
-include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
 
 # LinkList
 include(${CMAKE_CURRENT_LIST_DIR}/LinkList/CMakeLists.txt)
