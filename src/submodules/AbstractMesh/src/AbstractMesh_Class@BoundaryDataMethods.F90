@@ -27,7 +27,7 @@ MODULE PROCEDURE obj_InitiateBoundaryData
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (obj%isBoundaryDataInitiated) RETURN
@@ -38,7 +38,7 @@ obj%isBoundaryDataInitiated = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_InitiateBoundaryData
 
