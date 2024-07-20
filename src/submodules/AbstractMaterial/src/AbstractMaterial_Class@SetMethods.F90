@@ -17,8 +17,7 @@
 
 SUBMODULE(AbstractMaterial_Class) SetMethods
 USE BaseMethod
-USE Fhash, ONLY: key => fhash_key
-USE fhash_tbl, ONLY: FHASH_KEY_NOT_FOUND
+USE HashTables, ONLY: Hashkey
 IMPLICIT NONE
 CONTAINS
 
@@ -33,21 +32,21 @@ INTEGER(I4B) :: matPropSize
 
 IF (.NOT. obj%isInit) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMaterial_::obj is not initiated.')
+               '[INTERNAL ERROR] :: AbstractMaterial_::obj is not initiated.')
   RETURN
 END IF
 
 isMatPresent = obj%IsMaterialPresent(name)
 IF (isMatPresent) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: The material '//name//  &
-    & ' is already present!')
+                    '[INTERNAL ERROR] :: The material '//name// &
+                    ' is already present!')
   RETURN
 END IF
 
 obj%tProperties = obj%tProperties + 1
 
-CALL obj%tbl%set(key(name), obj%tProperties)
+CALL obj%tbl%set(Hashkey(name), obj%tProperties)
 
 matPropsAlloc = ALLOCATED(obj%matProps)
 
