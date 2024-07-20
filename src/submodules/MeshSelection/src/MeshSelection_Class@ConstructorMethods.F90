@@ -262,6 +262,15 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isinit = .FALSE.
 obj%ms = .FALSE.
 obj%totalPointMeshid = 0
@@ -290,10 +299,17 @@ CALL DEALLOCATE (obj%pointNodeNum)
 CALL DEALLOCATE (obj%curveNodeNum)
 CALL DEALLOCATE (obj%surfaceNodeNum)
 CALL DEALLOCATE (obj%volumeNodeNum)
+
 CALL BB_Deallocate(obj%pointBox)
 CALL BB_Deallocate(obj%curveBox)
 CALL BB_Deallocate(obj%surfaceBox)
 CALL BB_Deallocate(obj%volumeBox)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
