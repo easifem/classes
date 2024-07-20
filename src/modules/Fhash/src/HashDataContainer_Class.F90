@@ -2,34 +2,48 @@
 ! https://github.com/LKedward/fhash
 !> Implements simple container type
 !>  for polymorphic scalars and 1D arrays
-MODULE fhash_data_container
+
+MODULE HashDataContainer_Class
 USE ISO_FORTRAN_ENV, ONLY: sp => REAL32, dp => REAL64, INT32, INT64
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC fhash_container_t
-PUBLIC fhash_container
+
+PUBLIC :: HashDataContainer_
+PUBLIC :: HashDataContainer
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Generic container for scalar and 1D data
-TYPE fhash_container_t
+TYPE HashDataContainer_
 
   CLASS(*), ALLOCATABLE :: scalar_data
   CLASS(*), POINTER :: scalar_ptr => NULL()
 
 CONTAINS
 
-  PROCEDURE :: allocated => fhash_container_allocated
-  PROCEDURE :: get => fhash_container_get_scalar
-  PROCEDURE :: get_ptr => fhash_container_get_scalar_ptr
+  PROCEDURE :: allocated => obj_allocated
+  PROCEDURE :: get => obj_get
+  PROCEDURE :: get_ptr => obj_get_ptr
 
-END TYPE fhash_container_t
+END TYPE HashDataContainer_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Create a fhash_container object from a polymorphic value
-INTERFACE fhash_container
+INTERFACE HashDataContainer
   MODULE PROCEDURE fhash_container_scalar
-END INTERFACE fhash_container
+END INTERFACE HashDataContainer
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Helper to initialise a polymorphic data container with scalar
 FUNCTION fhash_container_scalar(VALUE, POINTER) RESULT(container)
@@ -40,7 +54,7 @@ FUNCTION fhash_container_scalar(VALUE, POINTER) RESULT(container)
   !> If .true., store pointer to value instead of copying
   LOGICAL, INTENT(in), OPTIONAL :: POINTER
 
-  TYPE(fhash_container_t) :: container
+  TYPE(HashDataContainer_) :: container
 
   IF (PRESENT(POINTER)) THEN
     IF (POINTER) THEN
@@ -56,19 +70,28 @@ FUNCTION fhash_container_scalar(VALUE, POINTER) RESULT(container)
 
 END FUNCTION fhash_container_scalar
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Helper to determine if container contains anything
-FUNCTION fhash_container_allocated(container) RESULT(alloc)
-  CLASS(fhash_container_t), INTENT(in) :: container
+FUNCTION obj_allocated(container) RESULT(alloc)
+  CLASS(HashDataContainer_), INTENT(in) :: container
   LOGICAL :: alloc
 
   alloc = ALLOCATED(container%scalar_data) .OR. &
           ASSOCIATED(container%scalar_ptr)
 
-END FUNCTION fhash_container_allocated
+END FUNCTION obj_allocated
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Helper to return container value as intrinsic type
-  subroutine fhash_container_get_scalar(container,i32,i64,r32,r64,char,bool,raw,match,type_string)
-  CLASS(fhash_container_t), INTENT(in), TARGET :: container
+SUBROUTINE obj_get(container, i32, i64, r32, r64, &
+                   char, bool, raw, match, type_string)
+  CLASS(HashDataContainer_), INTENT(in), TARGET :: container
   INTEGER(INT32), INTENT(out), OPTIONAL :: i32
   INTEGER(INT64), INTENT(out), OPTIONAL :: i64
   REAL(sp), INTENT(out), OPTIONAL :: r32
@@ -150,11 +173,16 @@ END FUNCTION fhash_container_allocated
 
   END SELECT
 
-END SUBROUTINE fhash_container_get_scalar
+END SUBROUTINE obj_get
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Helper to return pointer to container value as intrinsic type
-  subroutine fhash_container_get_scalar_ptr(container,i32,i64,r32,r64,char,bool,raw,match,type_string)
-  CLASS(fhash_container_t), INTENT(in), TARGET :: container
+SUBROUTINE obj_get_ptr(container, i32, i64, r32, r64, &
+                       char, bool, raw, match, type_string)
+  CLASS(HashDataContainer_), INTENT(in), TARGET :: container
   INTEGER(INT32), POINTER, INTENT(out), OPTIONAL :: i32
   INTEGER(INT64), POINTER, INTENT(out), OPTIONAL :: i64
   REAL(sp), POINTER, INTENT(out), OPTIONAL :: r32
@@ -236,6 +264,10 @@ END SUBROUTINE fhash_container_get_scalar
 
   END SELECT
 
-END SUBROUTINE fhash_container_get_scalar_ptr
+END SUBROUTINE obj_get_ptr
 
-END MODULE fhash_data_container
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE HashDataContainer_Class

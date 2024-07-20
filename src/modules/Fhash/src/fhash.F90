@@ -5,13 +5,13 @@
 ! convention of EASIFEM
 
 MODULE fhash
-USE fhash_tbl, ONLY: fhash_tbl_t
-USE fhash_tbl_iter, ONLY: fhash_iter_t
-USE fhash_key_base, ONLY: fhash_key_t
-USE fhash_key_char, ONLY: fhash_key_char_t, fhash_key
-USE fhash_key_int32, ONLY: fhash_key_int32_t, fhash_key
-USE fhash_key_int64, ONLY: fhash_key_int64_t, fhash_key
-USE fhash_key_int32_1d, ONLY: fhash_key_int32_1d_t, fhash_key
-USE fhash_key_int64_1d, ONLY: fhash_key_int64_1d_t, fhash_key
+USE HashTable_Class, ONLY: HashTable_
+USE HashTableIter_Class, ONLY: HashTableIter_
+USE Hashkey_Class, ONLY: Hashkey_
+USE HashkeyChar_Class, ONLY: HashkeyChar_, Hashkey
+USE HashkeyInt32_Class, ONLY: HashkeyInt32_, Hashkey
+USE HashkeyInt64_Class, ONLY: HashkeyInt64_, Hashkey
+USE HashkeyInt32Vec_Class, ONLY: HashkeyInt32Vec_, Hashkey
+USE HashkeyInt64Vec_Class, ONLY: HashkeyInt64Vec_, Hashkey
 IMPLICIT NONE
 END MODULE fhash

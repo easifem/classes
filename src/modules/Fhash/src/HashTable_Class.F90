@@ -1,11 +1,24 @@
-MODULE fhash_tbl
+! fhash module i taken from
+! https://github.com/LKedward/fhash
+!
+! I  have modified the naming convention which adhere with the naming
+! convention of EASIFEM
+!
+! I have renamed the HashTable_ to HashTable_
+
+MODULE HashTable_Class
 USE ISO_FORTRAN_ENV, ONLY: INT32, INT64, sp => REAL32, dp => REAL64
-USE fhash_data_container, ONLY: fhash_container
-USE fhash_sll
+USE HashDataContainer_Class, ONLY: HashDataContainer_, HashDataContainer
+USE fhash_sll, ONLY: HashTableNode_, sll_find_in, sll_push_node, &
+                     node_depth, sll_remove
+
+USE Hashkey_Class, ONLY: Hashkey_
+
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC fhash_tbl_t
+
+PUBLIC :: HashTable_
 
 !> This condition should be unreachable by the public interface
 INTEGER, PARAMETER, PUBLIC :: FHASH_INTERNAL_ERROR = -4
@@ -24,55 +37,77 @@ INTEGER, PARAMETER, PUBLIC :: FHASH_KEY_NOT_FOUND = -1
 !> Default allocation size
 INTEGER, PARAMETER :: FHASH_DEFAULT_ALLOCATION = 127
 
-TYPE fhash_tbl_t
+!----------------------------------------------------------------------------
+!                                                                HashTable_
+!----------------------------------------------------------------------------
 
-  TYPE(fhash_node_t), ALLOCATABLE :: buckets(:)
+TYPE HashTable_
+
+  TYPE(HashTableNode_), ALLOCATABLE :: buckets(:)
 
 CONTAINS
+  PRIVATE
 
-  PROCEDURE :: ALLOCATE => fhash_tbl_allocate
-  PROCEDURE :: unset => fhash_tbl_unset
-  PROCEDURE :: check_key => fhash_tbl_check_key
-  PROCEDURE :: stats => fhash_tbl_stats
+  PROCEDURE, PUBLIC :: ALLOCATE => fhash_tbl_allocate
+  PROCEDURE, PUBLIC :: unset => fhash_tbl_unset
+  PROCEDURE, PUBLIC :: check_key => fhash_tbl_check_key
+  PROCEDURE, PUBLIC :: stats => fhash_tbl_stats
 
   PROCEDURE :: fhash_tbl_set_scalar
-  GENERIC :: set => fhash_tbl_set_scalar
+  GENERIC, PUBLIC :: set => fhash_tbl_set_scalar
 
   PROCEDURE :: fhash_tbl_set_scalar_ptr
-  GENERIC :: set_ptr => fhash_tbl_set_scalar_ptr
+  GENERIC, PUBLIC :: set_ptr => fhash_tbl_set_scalar_ptr
 
   PROCEDURE :: fhash_tbl_get_int32, fhash_tbl_get_int64
   PROCEDURE :: fhash_tbl_get_float, fhash_tbl_get_double
   PROCEDURE :: fhash_tbl_get_char, fhash_tbl_get_logical
   PROCEDURE :: fhash_tbl_get_data, fhash_tbl_get_raw
 
-  GENERIC :: get => fhash_tbl_get_int32, fhash_tbl_get_int64
-  GENERIC :: get => fhash_tbl_get_float, fhash_tbl_get_double
-  GENERIC :: get => fhash_tbl_get_char, fhash_tbl_get_logical
-  GENERIC :: get => fhash_tbl_get_data
-  GENERIC :: get_raw => fhash_tbl_get_raw
+  GENERIC, PUBLIC :: get => fhash_tbl_get_int32, &
+    fhash_tbl_get_int64, &
+    fhash_tbl_get_float, &
+    fhash_tbl_get_double, &
+    fhash_tbl_get_char, &
+    fhash_tbl_get_logical, &
+    fhash_tbl_get_data, &
+    fhash_tbl_get_raw
 
   PROCEDURE :: fhash_tbl_get_int32_ptr, fhash_tbl_get_int64_ptr
   PROCEDURE :: fhash_tbl_get_float_ptr, fhash_tbl_get_double_ptr
   PROCEDURE :: fhash_tbl_get_char_ptr, fhash_tbl_get_logical_ptr
   PROCEDURE :: fhash_tbl_get_raw_ptr
 
-  GENERIC :: get_ptr => fhash_tbl_get_int32_ptr, fhash_tbl_get_int64_ptr
-  GENERIC :: get_ptr => fhash_tbl_get_float_ptr, fhash_tbl_get_double_ptr
-  GENERIC :: get_ptr => fhash_tbl_get_char_ptr, fhash_tbl_get_logical_ptr
-  GENERIC :: get_raw_ptr => fhash_tbl_get_raw_ptr
+  GENERIC, PUBLIC :: get_ptr => fhash_tbl_get_int32_ptr, &
+    fhash_tbl_get_int64_ptr, &
+    fhash_tbl_get_float_ptr, &
+    fhash_tbl_get_double_ptr, &
+    fhash_tbl_get_char_ptr, &
+    fhash_tbl_get_logical_ptr
+
+  GENERIC, PUBLIC :: get_raw_ptr => fhash_tbl_get_raw_ptr
+
+  PROCEDURE, PUBLIC :: DEALLOCATE => fhash_tbl_deallocate
 
   FINAL :: fhash_tbl_cleanup
 
-END TYPE fhash_tbl_t
+END TYPE HashTable_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Allocate hash table
 SUBROUTINE fhash_tbl_allocate(tbl, size)
 
   !> Table object to allocate
-  CLASS(fhash_tbl_t), INTENT(inout) :: tbl
+  CLASS(HashTable_), INTENT(inout) :: tbl
 
   !> Number of buckets in hash table
   !> If ommited, `tbl` is allocated with `FHASH_DEFAULT_ALLOCATION`
@@ -86,11 +121,14 @@ SUBROUTINE fhash_tbl_allocate(tbl, size)
 
 END SUBROUTINE fhash_tbl_allocate
 
-!> Finalizer for fhash_tbl_t
-SUBROUTINE fhash_tbl_cleanup(tbl)
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
+!> Finalizer for HashTable_
+SUBROUTINE fhash_tbl_deallocate(tbl)
   !> Table object to allocate
-  TYPE(fhash_tbl_t), INTENT(inout) :: tbl
+  CLASS(HashTable_), INTENT(INOUT) :: tbl
 
   INTEGER :: i
 
@@ -102,17 +140,31 @@ SUBROUTINE fhash_tbl_cleanup(tbl)
 
   END DO
 
+END SUBROUTINE fhash_tbl_deallocate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE fhash_tbl_cleanup(tbl)
+  !> Table object to allocate
+  TYPE(HashTable_), INTENT(inout) :: tbl
+  CALL tbl%DEALLOCATE()
 END SUBROUTINE fhash_tbl_cleanup
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 !> Unset a value in the table
 !>
 SUBROUTINE fhash_tbl_unset(tbl, key, stat)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(inout) :: tbl
+  CLASS(HashTable_), INTENT(inout) :: tbl
 
   !> Key to remove
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Status flag. Zero if successful.
   !> Unsuccessful: FHASH_EMPTY_TABLE | `FHASH_KEY_NOT_FOUND`
@@ -135,14 +187,18 @@ SUBROUTINE fhash_tbl_unset(tbl, key, stat)
 
 END SUBROUTINE fhash_tbl_unset
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Check if key exists in table
 SUBROUTINE fhash_tbl_check_key(tbl, key, stat)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl
+  CLASS(HashTable_), INTENT(in) :: tbl
 
   !> Key to retrieve
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Status flag. Zero if key is found.
   !> Unsuccessful: `FHASH_EMPTY_TABLE` | `FHASH_KEY_NOT_FOUND`
@@ -150,7 +206,7 @@ SUBROUTINE fhash_tbl_check_key(tbl, key, stat)
 
   INTEGER :: index
   LOGICAL :: found
-  TYPE(fhash_container_t), POINTER :: DATA
+  TYPE(HashDataContainer_), POINTER :: DATA
 
   IF (.NOT. ALLOCATED(tbl%buckets)) THEN
     stat = FHASH_EMPTY_TABLE
@@ -169,11 +225,15 @@ SUBROUTINE fhash_tbl_check_key(tbl, key, stat)
 
 END SUBROUTINE fhash_tbl_check_key
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get stats about the hash table
 subroutine fhash_tbl_stats(tbl,num_buckets,num_items,num_collisions,max_depth)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl
+  CLASS(HashTable_), INTENT(in) :: tbl
 
   !> Number of buckets allocated in table
   INTEGER, INTENT(out), OPTIONAL :: num_buckets
@@ -216,16 +276,20 @@ subroutine fhash_tbl_stats(tbl,num_buckets,num_items,num_collisions,max_depth)
 
 END SUBROUTINE fhash_tbl_stats
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Set/update a polymorphic scalar value in the table
 !>
 !> `tbl` is allocated with default size if not already allocated
 SUBROUTINE fhash_tbl_set_scalar(tbl, key, VALUE, POINTER)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(inout) :: tbl
+  CLASS(HashTable_), INTENT(inout) :: tbl
 
   !> Key to set/update
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Value for key
   CLASS(*), INTENT(in), TARGET :: VALUE
@@ -243,16 +307,20 @@ SUBROUTINE fhash_tbl_set_scalar(tbl, key, VALUE, POINTER)
 
 END SUBROUTINE fhash_tbl_set_scalar
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper routine for generic 'set_ptr'
 !>
 !> `tbl` is allocated with default size if not already allocated
 SUBROUTINE fhash_tbl_set_scalar_ptr(tbl, key, VALUE)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(inout) :: tbl
+  CLASS(HashTable_), INTENT(inout) :: tbl
 
   !> Key to set/update
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Value for key
   CLASS(*), INTENT(in), TARGET :: VALUE
@@ -261,17 +329,21 @@ SUBROUTINE fhash_tbl_set_scalar_ptr(tbl, key, VALUE)
 
 END SUBROUTINE fhash_tbl_set_scalar_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Retrieve data container from the hash table
 SUBROUTINE fhash_tbl_get_data(tbl, key, DATA, stat)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl
+  CLASS(HashTable_), INTENT(in) :: tbl
 
   !> Key to retrieve
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Copy of value retrieved for key
-  TYPE(fhash_container_t), POINTER :: DATA
+  TYPE(HashDataContainer_), POINTER :: DATA
 
   !> Status flag. Zero if successful.
   !> Unsuccessful: `FHASH_EMPTY_TABLE` | `FHASH_KEY_NOT_FOUND`
@@ -300,14 +372,18 @@ SUBROUTINE fhash_tbl_get_data(tbl, key, DATA, stat)
 
 END SUBROUTINE fhash_tbl_get_data
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to retrieve a scalar intrinsic type value
 subroutine fhash_tbl_get_intrinsic_scalar(tbl,key,i32,i64,r32,r64,char,raw,bool,stat)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl
+  CLASS(HashTable_), INTENT(in) :: tbl
 
   !> Key to retrieve
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Value to retrieve
   INTEGER(INT32), INTENT(out), OPTIONAL :: i32
@@ -325,7 +401,7 @@ subroutine fhash_tbl_get_intrinsic_scalar(tbl,key,i32,i64,r32,r64,char,raw,bool,
 
   LOGICAL :: type_match
   INTEGER :: local_stat
-  TYPE(fhash_container_t), POINTER :: DATA
+  TYPE(HashDataContainer_), POINTER :: DATA
 
   CHARACTER(:), ALLOCATABLE :: char_temp
 
@@ -357,14 +433,18 @@ subroutine fhash_tbl_get_intrinsic_scalar(tbl,key,i32,i64,r32,r64,char,raw,bool,
 
 END SUBROUTINE fhash_tbl_get_intrinsic_scalar
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to retrieve a scalar intrinsic type pointer
 subroutine fhash_tbl_get_intrinsic_scalar_ptr(tbl,key,i32,i64,r32,r64,char,bool,raw,stat)
 
   !> Hash table object
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl
+  CLASS(HashTable_), INTENT(in) :: tbl
 
   !> Key to retrieve
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Value to retrieve
   INTEGER(INT32), POINTER, INTENT(out), OPTIONAL :: i32
@@ -382,7 +462,7 @@ subroutine fhash_tbl_get_intrinsic_scalar_ptr(tbl,key,i32,i64,r32,r64,char,bool,
 
   LOGICAL :: type_match
   INTEGER :: local_stat
-  TYPE(fhash_container_t), POINTER :: DATA
+  TYPE(HashDataContainer_), POINTER :: DATA
 
   CHARACTER(:), POINTER :: char_temp
 
@@ -414,10 +494,14 @@ subroutine fhash_tbl_get_intrinsic_scalar_ptr(tbl,key,i32,i64,r32,r64,char,bool,
 
 END SUBROUTINE fhash_tbl_get_intrinsic_scalar_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar int32 value
 SUBROUTINE fhash_tbl_get_int32(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   INTEGER(INT32), INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -425,10 +509,14 @@ SUBROUTINE fhash_tbl_get_int32(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_int32
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar int64 value
 SUBROUTINE fhash_tbl_get_int64(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   INTEGER(INT64), INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -436,10 +524,14 @@ SUBROUTINE fhash_tbl_get_int64(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_int64
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar float value
 SUBROUTINE fhash_tbl_get_float(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   REAL(sp), INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -447,10 +539,14 @@ SUBROUTINE fhash_tbl_get_float(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_float
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar double value
 SUBROUTINE fhash_tbl_get_double(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   REAL(dp), INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -458,10 +554,14 @@ SUBROUTINE fhash_tbl_get_double(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_double
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar character value
 SUBROUTINE fhash_tbl_get_char(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   CHARACTER(:), ALLOCATABLE, INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -469,10 +569,14 @@ SUBROUTINE fhash_tbl_get_char(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_char
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar logical value
 SUBROUTINE fhash_tbl_get_logical(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   LOGICAL, INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -480,10 +584,14 @@ SUBROUTINE fhash_tbl_get_logical(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_logical
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve underlying polymorhpic scalar value
 SUBROUTINE fhash_tbl_get_raw(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   CLASS(*), ALLOCATABLE, INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -491,10 +599,14 @@ SUBROUTINE fhash_tbl_get_raw(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_raw
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar int32 value
 SUBROUTINE fhash_tbl_get_int32_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   INTEGER(INT32), POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -502,10 +614,14 @@ SUBROUTINE fhash_tbl_get_int32_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_int32_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar int64 value
 SUBROUTINE fhash_tbl_get_int64_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   INTEGER(INT64), POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -513,10 +629,14 @@ SUBROUTINE fhash_tbl_get_int64_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_int64_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar float value
 SUBROUTINE fhash_tbl_get_float_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   REAL(sp), POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -524,10 +644,14 @@ SUBROUTINE fhash_tbl_get_float_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_float_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar double value
 SUBROUTINE fhash_tbl_get_double_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   REAL(dp), POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -535,10 +659,14 @@ SUBROUTINE fhash_tbl_get_double_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_double_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar character value
 SUBROUTINE fhash_tbl_get_char_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   CHARACTER(:), POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -546,10 +674,14 @@ SUBROUTINE fhash_tbl_get_char_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_char_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve a scalar logical value
 SUBROUTINE fhash_tbl_get_logical_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   LOGICAL, POINTER, INTENT(out) :: VALUE !! Output value pointer
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -557,10 +689,14 @@ SUBROUTINE fhash_tbl_get_logical_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_logical_ptr
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Get wrapper to directly retrieve underlying polymorhpic scalar value
 SUBROUTINE fhash_tbl_get_raw_ptr(tbl, key, VALUE, stat)
-  CLASS(fhash_tbl_t), INTENT(in) :: tbl !! Hash table object
-  CLASS(fhash_key_t), INTENT(in) :: key !! Key to retrieve
+  CLASS(HashTable_), INTENT(in) :: tbl !! Hash table object
+  CLASS(Hashkey_), INTENT(in) :: key !! Key to retrieve
   CLASS(*), POINTER, INTENT(out) :: VALUE !! Output value
   INTEGER, INTENT(out), OPTIONAL :: stat !! Status flag. Zero if successful.
 
@@ -568,4 +704,8 @@ SUBROUTINE fhash_tbl_get_raw_ptr(tbl, key, VALUE, stat)
 
 END SUBROUTINE fhash_tbl_get_raw_ptr
 
-END MODULE fhash_tbl
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE HashTable_Class

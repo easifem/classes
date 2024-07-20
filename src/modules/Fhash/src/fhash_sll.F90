@@ -2,18 +2,34 @@
 !>
 MODULE fhash_sll
 USE ISO_FORTRAN_ENV, ONLY: INT32, INT64
-USE fhash_key_base, ONLY: fhash_key_t
-USE fhash_data_container, ONLY: fhash_container_t
+USE Hashkey_Class, ONLY: Hashkey_
+USE HashDataContainer_Class, ONLY: HashDataContainer_
+
 IMPLICIT NONE
 
+PRIVATE
+
+PUBLIC :: HashTableNode_
+PUBLIC :: sll_find_in
+PUBLIC :: sll_push_node
+PUBLIC :: node_depth
+PUBLIC :: sll_remove
+PUBLIC :: sll_get_at
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Node type for hash table singly linked list
-TYPE fhash_node_t
+TYPE HashTableNode_
+  CLASS(Hashkey_), ALLOCATABLE :: key
+  TYPE(HashDataContainer_) :: VALUE
+  TYPE(HashTableNode_), POINTER :: next => NULL()
+END TYPE HashTableNode_
 
-  CLASS(fhash_key_t), ALLOCATABLE :: key
-  TYPE(fhash_container_t) :: VALUE
-  TYPE(fhash_node_t), POINTER :: next => NULL()
-
-END TYPE fhash_node_t
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 CONTAINS
 
@@ -21,10 +37,10 @@ CONTAINS
 RECURSIVE SUBROUTINE sll_push_node(node, key, VALUE, POINTER)
 
   !> Node to which to add data
-  TYPE(fhash_node_t), INTENT(inout) :: node
+  TYPE(HashTableNode_), INTENT(inout) :: node
 
   !> Key to add
-  CLASS(fhash_key_t), INTENT(in) :: key
+  CLASS(Hashkey_), INTENT(in) :: key
 
   !> Value to add
   CLASS(*), INTENT(in), TARGET :: VALUE
@@ -56,12 +72,16 @@ RECURSIVE SUBROUTINE sll_push_node(node, key, VALUE, POINTER)
 
 END SUBROUTINE sll_push_node
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Set container value in node
 !>
 SUBROUTINE sll_node_set(node, VALUE, POINTER)
 
   !> Node to which to add data
-  TYPE(fhash_node_t), INTENT(inout) :: node
+  TYPE(HashTableNode_), INTENT(inout) :: node
 
   !> Value to set
   CLASS(*), INTENT(in), TARGET :: VALUE
@@ -81,20 +101,24 @@ SUBROUTINE sll_node_set(node, VALUE, POINTER)
 
 END SUBROUTINE sll_node_set
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Search for a node with a specific key.
 !> Returns a pointer to the 'data' component of the corresponding node.
 !> Pointer is not associated if node cannot be found
 RECURSIVE SUBROUTINE sll_find_in(node, key, DATA, found)
 
   !> Node to search in
-  TYPE(fhash_node_t), INTENT(in), TARGET :: node
+  TYPE(HashTableNode_), INTENT(in), TARGET :: node
 
   !> Key to look for
-  CLASS(fhash_key_t) :: key
+  CLASS(Hashkey_) :: key
 
   !> Pointer to value container if found.
   !> (Unassociated if the key is not found in node)
-  TYPE(fhash_container_t), POINTER, INTENT(out) :: DATA
+  TYPE(HashDataContainer_), POINTER, INTENT(out) :: DATA
 
   LOGICAL, INTENT(out), OPTIONAL :: found
 
@@ -120,22 +144,26 @@ RECURSIVE SUBROUTINE sll_find_in(node, key, DATA, found)
 
 END SUBROUTINE sll_find_in
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Return a node at a specific depth in the sll
 RECURSIVE SUBROUTINE sll_get_at(node, depth, key, DATA, found)
 
   !> Node to search in
-  TYPE(fhash_node_t), INTENT(in), TARGET :: node
+  TYPE(HashTableNode_), INTENT(in), TARGET :: node
 
   !> Node depth to access
   INTEGER, INTENT(in) :: depth
 
   !> Key of found item
   !>  (Unallocated if no node is found at specified depth)
-  CLASS(fhash_key_t), INTENT(out), ALLOCATABLE :: key
+  CLASS(Hashkey_), INTENT(out), ALLOCATABLE :: key
 
   !> Pointer to value container if found.
   !> (Unassociated if no node is found at specified depth)
-  TYPE(fhash_container_t), POINTER, INTENT(out) :: DATA
+  TYPE(HashDataContainer_), POINTER, INTENT(out) :: DATA
 
   LOGICAL, INTENT(out), OPTIONAL :: found
 
@@ -162,22 +190,26 @@ RECURSIVE SUBROUTINE sll_get_at(node, depth, key, DATA, found)
 
 END SUBROUTINE sll_get_at
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Search for a node with a specific key and remove
 RECURSIVE SUBROUTINE sll_remove(node, key, found, parent_node)
 
   !> Node to remove from
-  TYPE(fhash_node_t), INTENT(inout) :: node
+  TYPE(HashTableNode_), INTENT(inout) :: node
 
   !> Key to remove
-  CLASS(fhash_key_t) :: key
+  CLASS(Hashkey_) :: key
 
   !> Indicates if the key was found in node and removed
   LOGICAL, OPTIONAL, INTENT(out) :: found
 
   !> Used internally
-  TYPE(fhash_node_t), INTENT(inout), OPTIONAL :: parent_node
+  TYPE(HashTableNode_), INTENT(inout), OPTIONAL :: parent_node
 
-  TYPE(fhash_node_t), POINTER :: next_temp
+  TYPE(HashTableNode_), POINTER :: next_temp
 
   IF (PRESENT(found)) THEN
     found = .FALSE.
@@ -231,11 +263,15 @@ RECURSIVE SUBROUTINE sll_remove(node, key, found, parent_node)
 
 END SUBROUTINE sll_remove
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Deallocate node components and those of its children
 RECURSIVE SUBROUTINE sll_clean(node)
 
   !> Node to search in
-  TYPE(fhash_node_t), INTENT(inout) :: node
+  TYPE(HashTableNode_), INTENT(inout) :: node
 
   IF (ASSOCIATED(node%next)) THEN
 
@@ -246,15 +282,19 @@ RECURSIVE SUBROUTINE sll_clean(node)
 
 END SUBROUTINE sll_clean
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> Determine depth of SLL
 FUNCTION node_depth(node) RESULT(depth)
 
   !> Node to check depth
-  TYPE(fhash_node_t), INTENT(in), TARGET :: node
+  TYPE(HashTableNode_), INTENT(in), TARGET :: node
 
   INTEGER :: depth
 
-  TYPE(fhash_node_t), POINTER :: current
+  TYPE(HashTableNode_), POINTER :: current
 
   IF (.NOT. ALLOCATED(node%key)) THEN
 
@@ -273,5 +313,9 @@ FUNCTION node_depth(node) RESULT(depth)
   END IF
 
 END FUNCTION node_depth
+
+!----------------------------------------------------------------------------
+!                                                                 -
+!----------------------------------------------------------------------------
 
 END MODULE fhash_sll
