@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
-USE fhash, ONLY: fhash_ => fhash_tbl_t, key => fhash_key
+USE HashTables, ONLY: HashTable_, Hashkey
 
 USE GlobalData, ONLY: MaxDFP, MinDFP
 
@@ -441,7 +441,7 @@ END PROCEDURE obj_GetNptrs2_
 
 MODULE PROCEDURE obj_GetNptrs3_
 INTEGER(I4B) :: ii, jj, kk, ll, ierr, telem, iel
-TYPE(fhash_) :: tbl
+TYPE(HashTable_) :: tbl
 INTEGER(I4B), POINTER :: intptr(:)
 LOGICAL(LGT) :: isok
 
@@ -462,12 +462,12 @@ DO ii = 1, telem
     ll = intptr(kk)
 
     !! check if the key is present
-    CALL tbl%check_key(key=key(ll), stat=ierr)
+    CALL tbl%check_key(key=Hashkey(ll), stat=ierr)
     isok = ierr .EQ. 0_I4B
     IF (isok) CYCLE
 
     !! if not present then set the key
-    CALL tbl%Set(key=key(ll), VALUE=.TRUE.)
+    CALL tbl%Set(key=Hashkey(ll), VALUE=.TRUE.)
     tsize = tsize + 1
     ans(tsize) = ll
 
@@ -866,7 +866,7 @@ END PROCEDURE obj_GetTotalNodes2
 
 MODULE PROCEDURE obj_GetTotalNodes3
 INTEGER(I4B) :: ii, jj, kk, ll, ierr, tsize, iel
-TYPE(fhash_) :: tbl
+TYPE(HashTable_) :: tbl
 INTEGER(I4B), POINTER :: intptr(:)
 LOGICAL(LGT) :: isok
 
@@ -886,12 +886,12 @@ DO ii = 1, tsize
     ll = intptr(kk)
 
     !! check if the key is present
-    CALL tbl%check_key(key=key(ll), stat=ierr)
+    CALL tbl%check_key(key=Hashkey(ll), stat=ierr)
     isok = ierr .EQ. 0_I4B
     IF (isok) CYCLE
 
     !! if not present then set the key
-    CALL tbl%Set(key=key(ll), VALUE=.TRUE.)
+    CALL tbl%Set(key=Hashkey(ll), VALUE=.TRUE.)
     ans = ans + 1
 
   END DO
