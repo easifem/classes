@@ -71,8 +71,16 @@ TYPE, ABSTRACT :: AbstractBC_
   !! Constant, Space, SpaceTime, Time
   INTEGER(I4B) :: nrow = 0
   !! number of rows in nodalValue
+  !! constantNodalValue nrow = 1
+  !! spaceNodalValue nrow = size of nodenum
+  !! timeNodalValue nrow = size of timenodalvalue
+  !! spaceTimeNodalValue nrow = size of nodenum
   INTEGER(I4B) :: ncol = 0
   !! number of columns in nodalvalue
+  !! constantNodalValue ncol = 1
+  !! spaceNodalValue ncol = 1
+  !! timeNodalValue ncol = 1
+  !! spaceTimeNodalValue ncol = size of times
   LOGICAL(LGT) :: isNormal = default_isNormal
   !! True if the boundary condition is normal to the boundary
   LOGICAL(LGT) :: isTangent = default_isTangent
@@ -84,8 +92,37 @@ TYPE, ABSTRACT :: AbstractBC_
   !! instance of AbstractBC_
   LOGICAL(LGT) :: isUserFunction = default_isUserFunction
   !! True if userFunction is set
+  INTEGER(I4B) :: tElemToFace = 0
+  !! number of col in elemToFace
+  INTEGER(I4B) :: tElemToEdge = 0
+  !! number of col in elemToEdge
   INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-  !! node numbers, size is same as
+  !! node numbers, where dirichlet boundary condition will be imposed
+  !! INFO: to be used soon
+
+  INTEGER(I4B), ALLOCATABLE :: elemToFace(:, :)
+  !! each col contains the following data:
+  !! localCellNum, localFaceNum
+  !! two col are ordered with respect to localCellNum
+  !! For example, if a cell has two or more faces where boundary condition
+  !! is applied, then this data will be stored in two consequtive rows:
+  !! col1:       localCellNum1, localFace1
+  !! col2:       localCellNum1, localFace2
+  !!
+  !! if the value of localFace is zero, then it means
+  !! boundary condition is not applied on that face
+  INTEGER(I4B), ALLOCATABLE :: elemToEdge(:, :)
+  !! It is used for 3D mesh
+  !! each cols contains the following data:
+  !! localCellNum, localEdgeNum
+  !! two cols are ordered with respect to localCellNum
+  !! For example, if a cell has two or more faces where boundary condition
+  !! is applied, then this data will be stored in two consequtive rows:
+  !! col1:       localCellNum1, localEdge1
+  !! col2:       localCellNum1, localEdge2
+  !!
+  !! if the value of localEdge is zero, then it means
+  !! boundary condition is not applied on that edge
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
@@ -134,6 +171,8 @@ CONTAINS
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElemToLocalBoundary => &
+    obj_SetElemToLocalBoundary
 
   ! GET:
   ! @GetMethods
@@ -588,6 +627,20 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
     TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
   END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetElemToLocalBoundary@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-19
+! summary:  Set the element to local boundary data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetElemToLocalBoundary(obj)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetElemToLocalBoundary
 END INTERFACE
 
 END MODULE AbstractBC_Class
