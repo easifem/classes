@@ -374,7 +374,9 @@ CONTAINS
   !! Returns global element number in the mesh
   PROCEDURE, PASS(obj) :: GetElemNum2_ => obj_GetElemNum2_
   !! Returne global or local element number in mesh with meshid
-  GENERIC, PUBLIC :: GetElemNum_ => GetElemNum1_, GetElemNum2_
+  PROCEDURE, PASS(obj) :: GetElemNum3_ => obj_GetElemNum3_
+  !! Returne global or local element number in mesh with meshid
+  GENERIC, PUBLIC :: GetElemNum_ => GetElemNum1_, GetElemNum2_, GetElemNum3_
   !! Generic method to get list of local or global element number in mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingEntity => obj_GetBoundingEntity
@@ -473,8 +475,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetTotalElements2 => obj_GetTotalElements2
   !! Returns total number of elements of given meshid
 
+  PROCEDURE, PASS(obj) :: GetTotalElements3 => obj_GetTotalElements3
+  !! Returns total number of elements of given meshid
+
   GENERIC, PUBLIC :: GetTotalElements => GetTotalElements1, &
-    GetTotalElements2
+    GetTotalElements2, GetTotalElements3
   !! Generic method for getting the total number of elements
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
@@ -629,6 +634,12 @@ CONTAINS
   !! Return the local facet id, so that we can Get reference element of
   !! the facet element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: FindFace => obj_FindFace
+  !! Find a face in a cell
+
+  PROCEDURE, PUBLIC, PASS(obj) :: FindEdge => obj_FindEdge
+  !! Find a edge in a cell (only for 3D)
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity => &
     obj_GetFacetConnectivity
   !! Generic method to Get the connectivity of a facet element
@@ -709,7 +720,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
   GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
 
-  PROCEDURE, PASS(obj) :: GetMaxNodeToElements => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeToElements => &
     obj_GetMaxNodeToElements
   !! Get maximum number of node to elements
 
@@ -1527,6 +1538,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               GetTotalElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-20
+! summary:  Get total elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElements3(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid(:)
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElements3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetElemNum@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1584,6 +1611,20 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
   END SUBROUTINE obj_GetElemNum2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetElemNum_@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNum3_(obj, meshid, islocal, ans, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNum3_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3029,6 +3070,66 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       FindFace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-20
+! summary:  Find a face in a given element
+
+INTERFACE
+  MODULE SUBROUTINE obj_FindFace(obj, globalElement, faceCon, isFace, &
+                                localFaceNumber, onlyBoundaryElement, islocal)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! abstract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local elem number
+    INTEGER(I4B), INTENT(IN) :: faceCon(:)
+    !! vertex connectivity of face
+    LOGICAL(LGT), INTENT(OUT) :: isFace
+    !! if faceCon is a face of globalElement then it is true, else false
+    INTEGER(I4B), INTENT(OUT) :: localFaceNumber
+    !! local face number if found, else 0
+    LOGICAL(LGT), INTENT(IN) :: onlyBoundaryElement
+    !! if true then we will search if the element is boundary element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_FindFace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       FindEdge@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-20
+! summary:  Find edge in a cell
+!
+!# Introduction
+!
+! Call this routine only for 3D mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_FindEdge(obj, globalElement, edgeCon, isEdge, &
+                                localEdgeNumber, onlyBoundaryElement, islocal)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! abstract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local elem number
+    INTEGER(I4B), INTENT(IN) :: edgeCon(:)
+    !! vertex connectivity of Edge
+    LOGICAL(LGT), INTENT(OUT) :: isEdge
+    !! if EdgeCon is a Edge of globalElement then it is true, else false
+    INTEGER(I4B), INTENT(OUT) :: localEdgeNumber
+    !! local Edge number if found, else 0
+    LOGICAL(LGT), INTENT(IN) :: onlyBoundaryElement
+    !! if true then we will search if the element is boundary element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_FindEdge
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                           GetFacetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
@@ -3352,7 +3453,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxNodeToElements(obj) RESULT(ans)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxNodeToElements
 END INTERFACE
@@ -3367,7 +3468,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxNodeToNodes(obj) RESULT(ans)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxNodeToNodes
 END INTERFACE
@@ -3382,7 +3483,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxElementToElements(obj) RESULT(ans)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxElementToElements
 END INTERFACE
