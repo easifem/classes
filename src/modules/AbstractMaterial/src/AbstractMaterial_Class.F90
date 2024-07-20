@@ -29,7 +29,7 @@ USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 USE TxtFile_Class
 USE tomlf, ONLY: toml_table
-USE Fhash, ONLY: FhashTable_ => fhash_tbl_t
+USE HashTables, ONLY: HashTable_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractMaterial_
@@ -78,7 +78,7 @@ TYPE, ABSTRACT :: AbstractMaterial_
   !! Total number of properties
   TYPE(String) :: name
     !! name of the material
-  TYPE(FhashTable_) :: tbl
+  TYPE(HashTable_) :: tbl
   !! Hash table for name to index mapping
   TYPE(UserFunctionPointer_), ALLOCATABLE :: matProps(:)
   !! material properties
