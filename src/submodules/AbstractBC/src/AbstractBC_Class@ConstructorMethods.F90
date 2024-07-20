@@ -30,6 +30,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isInitiated = .FALSE.
 obj%name = ''
 obj%idof = 0
@@ -40,8 +49,13 @@ obj%isTangent = .FALSE.
 obj%isUseExternal = .FALSE.
 obj%nrow = 0
 obj%ncol = 0
+obj%tElemToFace = 0
+obj%tElemToEdge = 0
 
 IF (ALLOCATED(obj%nodalValue)) DEALLOCATE (obj%nodalValue)
+IF (ALLOCATED(obj%nodenum)) DEALLOCATE (obj%nodenum)
+IF (ALLOCATED(obj%elemToFace)) DEALLOCATE (obj%elemToFace)
+IF (ALLOCATED(obj%elemToEdge)) DEALLOCATE (obj%elemToEdge)
 
 CALL obj%boundary%DEALLOCATE()
 
@@ -53,6 +67,11 @@ IF (ASSOCIATED(obj%func)) THEN
 END IF
 
 obj%func => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Deallocate
 

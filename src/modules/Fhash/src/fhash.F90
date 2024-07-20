@@ -1,5 +1,8 @@
 ! fhash module is taken from
 ! https://github.com/LKedward/fhash
+!
+! I  have modified the naming convention which adhere with the naming
+! convention of EASIFEM
 
 MODULE fhash
 USE fhash_tbl, ONLY: fhash_tbl_t

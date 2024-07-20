@@ -18,6 +18,11 @@
 SUBMODULE(AbstractBC_Class) SetMethods
 USE GlobalData, ONLY: CHAR_LF
 USE ReallocateUtility, ONLY: Reallocate
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
 
 IMPLICIT NONE
 CONTAINS
@@ -80,6 +85,7 @@ CASE (2)
   obj%nodalvalue(1:obj%nrow, 1) = spaceNodalValue
 
 CASE (3)
+  ! timeNodalValue
   obj%nrow = SIZE(timeNodalValue)
   obj%ncol = 1
 
@@ -189,14 +195,274 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
     RETURN
   END IF
 
-  bool1 = isUserFunction .AND. obj%isUserFunction
-  IF (.NOT. bool1) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
+  IF (isUserFunction) THEN
+
+    bool1 = obj%isUserFunction
+    IF (.NOT. bool1) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
            "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
-                      " for userFunction")
-    RETURN
+                        " for userFunction")
+      RETURN
+    END IF
   END IF
 END SUBROUTINE set_check_error
+
+!----------------------------------------------------------------------------
+!                                                 SetElemToLocalBoundary
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetElemToLocalBoundary
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetElemToLocalBoundary()"
+#endif
+
+INTEGER(I4B) :: nsd
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nsd = obj%dom%GetNSD()
+
+IF (nsd .GE. 2) THEN
+  CALL set_elem_to_faces(obj)
+END IF
+
+IF (nsd .EQ. 3) THEN
+  CALL set_elem_to_edges(obj)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetElemToLocalBoundary
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE set_elem_to_faces(obj)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+
+  CHARACTER(*), PARAMETER :: myName = "set_elem_to_faces()"
+  LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
+                             no = .FALSE.
+
+  ! INTEGER(I4B), PARAMETER :: expandFactor = 2
+
+  INTEGER(I4B) :: ii, jj, nsd, tsize, indx(4), tmeshid, maxnode2elem, &
+                  localFaceNumber, localCellNumber
+  INTEGER(I4B), POINTER :: intptr(:)
+  CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
+  INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
+                               cell_con(:)
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  nsd = obj%dom%GetNSD()
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+  ALLOCATE (n2e(maxnode2elem))
+
+  bmesh => obj%dom%GetMeshPointer(dim=nsd - 1)
+  CALL obj%boundary%GetMeshIDPointer(dim=nsd - 1, ans=intptr, tsize=tmeshid)
+
+  IF (tmeshid .EQ. 0) THEN
+    obj%tElemToFace = 0
+    CALL Reallocate(obj%elemToFace, 0, 0)
+    CALL finishme
+    RETURN
+  END IF
+
+  indx = 0
+
+  indx(1) = bmesh%GetTotalElements(meshid=intptr(1:tmeshid))
+  tsize = indx(1)
+  ALLOCATE (bndy2cell(tsize))
+  CALL Reallocate(obj%elemToFace, 2, tsize)
+  obj%tElemToFace = tsize
+
+  ! INFO: here we are getting the local element number of boundary
+  CALL bmesh%GetElemNum_(meshid=intptr, islocal=yes, ans=bndy2cell, &
+                         tsize=indx(2))
+
+  tsize = cmesh%GetMaxNNE()
+  ALLOCATE (bndy_con(tsize), cell_con(tsize))
+
+  ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
+  tsize = indx(2)
+  boundary_loop: DO ii = 1, tsize
+
+    CALL Display(ii, 'boundary element : ')
+    CALL Display(bndy2cell(ii), 'bndy2cell(ii, 1): ')
+
+    CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
+                            ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
+
+    isok = indx(3) .NE. 0
+    IF (.NOT. isok) CYCLE
+
+    !INFO: select a node, bndy_con(1)
+    CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &
+                                  globalNode=bndy_con(1), islocal=no)
+
+    !INFO: loop over all elements connected to con(1)
+    node_to_element_loop: DO jj = 1, indx(4)
+      localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
+
+      CALL cmesh%FindFace(globalElement=localCellNumber, &
+                          faceCon=bndy_con(1:indx(3)), &
+                          isFace=isok, islocal=yes, &
+                          localFaceNumber=localFaceNumber, &
+                          onlyBoundaryElement=onlyBoundaryElement)
+
+      IF (isok) THEN
+        obj%elemToFace(1, ii) = localCellNumber
+        obj%elemToFace(2, ii) = localFaceNumber
+        EXIT node_to_element_loop
+      END IF
+
+    END DO node_to_element_loop
+
+  END DO boundary_loop
+
+  CALL finishme
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+CONTAINS
+  SUBROUTINE finishme
+    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+    intptr => NULL()
+    bmesh => NULL()
+    cmesh => NULL()
+  END SUBROUTINE finishme
+
+END SUBROUTINE set_elem_to_faces
+
+!----------------------------------------------------------------------------
+!                                                          set_elem_to_edges
+!----------------------------------------------------------------------------
+
+SUBROUTINE set_elem_to_edges(obj)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+
+  CHARACTER(*), PARAMETER :: myName = "set_elem_to_edges()"
+  LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
+                             no = .FALSE.
+  INTEGER(I4B), PARAMETER :: nsd = 3, dim = 1
+
+  ! INTEGER(I4B), PARAMETER :: expandFactor = 2
+
+  INTEGER(I4B) :: ii, jj, tsize, indx(4), tmeshid, maxnode2elem, &
+                  localEdgeNumber, localCellNumber
+  INTEGER(I4B), POINTER :: intptr(:)
+  CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
+  INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
+                               cell_con(:)
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+  ALLOCATE (n2e(maxnode2elem))
+
+  bmesh => obj%dom%GetMeshPointer(dim=dim)
+  CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tmeshid)
+
+  IF (tmeshid .EQ. 0) THEN
+    obj%tElemToEdge = 0
+    CALL Reallocate(obj%elemToEdge, 0, 0)
+    CALL finishme
+    RETURN
+  END IF
+
+  indx = 0
+
+  indx(1) = bmesh%GetTotalElements(meshid=intptr(1:tmeshid))
+  tsize = indx(1)
+  ALLOCATE (bndy2cell(tsize))
+  CALL Reallocate(obj%elemToEdge, 2, tsize)
+  obj%tElemToEdge = tsize
+
+  ! INFO: here we are getting the local element number of boundary
+  CALL bmesh%GetElemNum_(meshid=intptr, islocal=yes, ans=bndy2cell, &
+                         tsize=indx(2))
+
+  tsize = cmesh%GetMaxNNE()
+  ALLOCATE (bndy_con(tsize), cell_con(tsize))
+
+  ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
+  tsize = indx(2)
+  boundary_loop: DO ii = 1, tsize
+
+    CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
+                            ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
+
+    isok = indx(3) .NE. 0
+    IF (.NOT. isok) CYCLE
+
+    !INFO: select a node, bndy_con(1)
+    CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &
+                                  globalNode=bndy_con(1), islocal=no)
+
+    !INFO: loop over all elements connected to con(1)
+    node_to_element_loop: DO jj = 1, indx(4)
+      localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
+
+      CALL cmesh%FindEdge(globalElement=localCellNumber, &
+                          edgeCon=bndy_con(1:indx(3)), &
+                          isEdge=isok, islocal=yes, &
+                          localEdgeNumber=localEdgeNumber, &
+                          onlyBoundaryElement=onlyBoundaryElement)
+
+      IF (isok) THEN
+        obj%elemToEdge(1, ii) = localCellNumber
+        obj%elemToEdge(2, ii) = localEdgeNumber
+        EXIT node_to_element_loop
+      END IF
+
+    END DO node_to_element_loop
+
+  END DO boundary_loop
+
+  DEALLOCATE (n2e, bndy_con, cell_con)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+CONTAINS
+  SUBROUTINE finishme
+    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+    intptr => NULL()
+    bmesh => NULL()
+    cmesh => NULL()
+  END SUBROUTINE finishme
+
+END SUBROUTINE set_elem_to_edges
 
 !----------------------------------------------------------------------------
 !
