@@ -62,7 +62,9 @@ USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           Elemdata_GetTotalGlobalNodes, &
                           Elemdata_IsBoundaryElement, &
                           Elemdata_FindFace, &
-                          Elemdata_FindEdge
+                          Elemdata_FindEdge, &
+                          Elemdata_GetGlobalFaceNumber, &
+                          Elemdata_GetGlobalEdgeNumber
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -1911,6 +1913,28 @@ ELSE
                           slaveLocalFacetID=ans)
 END IF
 END PROCEDURE obj_GetLocalFacetID
+
+!----------------------------------------------------------------------------
+!                                                       GetGlobalFaceNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFaceNumber
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+ans = Elemdata_GetGlobalFaceNumber(obj=obj%elementData(iel)%ptr, &
+                                   localFaceNumber=localFaceNumber)
+END PROCEDURE obj_GetGlobalFaceNumber
+
+!----------------------------------------------------------------------------
+!                                                       GetGlobalEdgeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalEdgeNumber
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+ans = Elemdata_GetGlobalEdgeNumber(obj=obj%elementData(iel)%ptr, &
+                                   localEdgeNumber=localEdgeNumber)
+END PROCEDURE obj_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
 !                                                      GetFacetConnectivity
