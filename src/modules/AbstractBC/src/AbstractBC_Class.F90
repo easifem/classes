@@ -27,6 +27,7 @@ USE UserFunction_Class, ONLY: UserFunction_
 USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE FEDOF_Class, ONLY: FEDOF_
 
 IMPLICIT NONE
 PRIVATE
@@ -92,6 +93,10 @@ TYPE, ABSTRACT :: AbstractBC_
   !! instance of AbstractBC_
   LOGICAL(LGT) :: isUserFunction = default_isUserFunction
   !! True if userFunction is set
+  LOGICAL(LGT) :: isElemToFace = .FALSE.
+  !! When elemToFace is set then isElemToFace is true
+  LOGICAL(LGT) :: isElemToEdge = .FALSE.
+  !! When elemToEdge is set then isElemToEdge is true
   INTEGER(I4B) :: tElemToFace = 0
   !! number of col in elemToFace
   INTEGER(I4B) :: tElemToEdge = 0
@@ -111,6 +116,7 @@ TYPE, ABSTRACT :: AbstractBC_
   !!
   !! if the value of localFace is zero, then it means
   !! boundary condition is not applied on that face
+
   INTEGER(I4B), ALLOCATABLE :: elemToEdge(:, :)
   !! It is used for 3D mesh
   !! each cols contains the following data:
@@ -123,10 +129,12 @@ TYPE, ABSTRACT :: AbstractBC_
   !!
   !! if the value of localEdge is zero, then it means
   !! boundary condition is not applied on that edge
+
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
   !! nodalValue is used when useFunction and useExternal is false
+
   CLASS(UserFunction_), POINTER :: func => NULL()
   !! User function
   TYPE(MeshSelection_) :: boundary
@@ -171,6 +179,8 @@ CONTAINS
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  !! set the boundary condition value
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetElemToLocalBoundary => &
     obj_SetElemToLocalBoundary
 
@@ -183,11 +193,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshIDPointer => obj_GetMeshIDPointer
   !! Get mesh id pointer
 
+  PROCEDURE, PASS(obj) :: GetH1Lagrange1 => obj_Get_H1_Lagrange1
+  !! Get nodenum and nodal value for H1 and Lagrange polynomial
+  GENERIC, PUBLIC :: GetH1Lagrange => GetH1Lagrange1
+
   PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
-  !! Get value of boundary condition
+  !! Get the nodal value of boundary condition
 
   PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
-  !! Get value of boundary condition
+  !! Get node numbers where boundary condition is applied
 
   PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
   !! Get value of boundary condition in FEVariable_
@@ -198,9 +212,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeNum => obj_GetTotalNodeNum
   !! Get total node number
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFromUserFunction => &
-    obj_GetFromUserFunction
-  !! Get value from userfunction
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => obj_GetDOFNo
   !! Get degree of freedom number
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
@@ -432,9 +443,13 @@ END INTERFACE
 !                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  Get the nodenum and nodalvalue
+
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, nodeNum, nodalValue, nrow, ncol, times)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
     !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
     REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
@@ -453,7 +468,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, nodeNum, tsize)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
     !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -471,7 +486,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get3(obj, fevar, globalNode, &
                              spaceQuadPoints, timeQuadPoints, atime, timeVec)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceQuadPoints(:, :)
@@ -479,6 +494,54 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: atime
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
   END SUBROUTINE obj_Get3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-02-12
+! summary:  Get the nodenum and nodalvalue
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_H1_Lagrange1(obj, fedof, nodeNum, &
+                                         nodalValue, nrow, ncol, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nrow = Size of nodeNum
+    !! ncol = 1 or Size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_Get_H1_Lagrange1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetH1Hierarchical@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_H1_Hierarchical1(obj, fedof, nodeNum, &
+                                             nodalValue, nrow, ncol, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nrow = Size of nodeNum
+    !! ncol = 1 or Size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_Get_H1_Hierarchical1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -490,49 +553,6 @@ INTERFACE
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodeNum
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetFromFunction_@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:
-! summary:  This function returns the nodalValue from userfunction
-!
-!# Introduction
-!
-! the shape and value of nodal value depends upon the obj%nodalValuetype
-!
-! constant: shape of nodalvalue is tnodes, 1
-! in this case we get the value from function and set
-! all values of nodalvalue(:, 1)
-!
-! space:
-! ncol = 1
-!
-! time
-! ncol = ttimes
-!
-! spacetime
-! ncol = ttimes
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFromUserFunction(obj, nodeNum, nodalValue, &
-                                            nrow, ncol, times)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
-    !! node number should be allocated
-    !! size of nodenum is nrow
-    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
-    !! nodal values
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    !! time value
-    !! time values are needed when userfunction is time or space-time
-    INTEGER(I4B) :: nrow, ncol
-    !! nrow is size of nodenum and size of number of rows in nodalvalue
-    !! ncol is colsize of nodalvalue
-  END SUBROUTINE obj_GetFromUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -622,10 +642,22 @@ INTERFACE
                             timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    !! constant nodal value
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    !! space nodal value
+    !! size should be same as the number of boundary nodes
+
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    !! time nodal value
+    !! size is total number of time nodes
+
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+    !! space time nodal value
+    !! rowsize is total number of boundary nodes
+    !! colsize is total number of time nodes
+
     TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
+    !! user function
   END SUBROUTINE obj_Set
 END INTERFACE
 
