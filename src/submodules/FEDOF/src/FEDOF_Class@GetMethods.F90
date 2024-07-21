@@ -47,27 +47,51 @@ END PROCEDURE obj_GetVertexDOF
 !                                                                 GetEdgeDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetEdgeDOF
+MODULE PROCEDURE obj_GetEdgeDOF1
 INTEGER(I4B) :: ii
 tsize = 0
 DO ii = obj%edgeIA(globalEdge), obj%edgeIA(globalEdge + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
-END PROCEDURE obj_GetEdgeDOF
+END PROCEDURE obj_GetEdgeDOF1
+
+!----------------------------------------------------------------------------
+!                                                                 GetEdgeDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEdgeDOF2
+INTEGER(I4B) :: globalEdge
+globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
+                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+CALL obj%GetEdgeDOF(globalEdge=globalEdge, ans=ans, tsize=tsize, &
+                    islocal=islocal)
+END PROCEDURE obj_GetEdgeDOF2
 
 !----------------------------------------------------------------------------
 !                                                                 GetFaceDOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFaceDOF
+MODULE PROCEDURE obj_GetFaceDOF1
 INTEGER(I4B) :: ii
 tsize = 0
 DO ii = obj%faceIA(globalface), obj%faceIA(globalface + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
-END PROCEDURE obj_GetFaceDOF
+END PROCEDURE obj_GetFaceDOF1
+
+!----------------------------------------------------------------------------
+!                                                                 GetFaceDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFaceDOF2
+INTEGER(I4B) :: globalFace
+globalFace = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
+                             islocal=islocal, localFaceNumber=localFaceNumber)
+CALL obj%GetFaceDOF(globalFace=globalFace, ans=ans, tsize=tsize, &
+                    islocal=islocal)
+END PROCEDURE obj_GetFaceDOF2
 
 !----------------------------------------------------------------------------
 !                                                                 GetCellDOF
