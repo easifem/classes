@@ -52,6 +52,9 @@ obj%ncol = 0
 obj%tElemToFace = 0
 obj%tElemToEdge = 0
 
+obj%isElemToFace = .FALSE.
+obj%isElemToEdge = .FALSE.
+
 IF (ALLOCATED(obj%nodalValue)) DEALLOCATE (obj%nodalValue)
 IF (ALLOCATED(obj%nodenum)) DEALLOCATE (obj%nodenum)
 IF (ALLOCATED(obj%elemToFace)) DEALLOCATE (obj%elemToFace)

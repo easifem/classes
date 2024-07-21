@@ -20,10 +20,6 @@ USE GlobalData, ONLY: CHAR_LF
 USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
 IMPLICIT NONE
 CONTAINS
 
@@ -216,22 +212,13 @@ MODULE PROCEDURE obj_SetElemToLocalBoundary
 CHARACTER(*), PARAMETER :: myName = "obj_SetElemToLocalBoundary()"
 #endif
 
-INTEGER(I4B) :: nsd
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-nsd = obj%dom%GetNSD()
-
-IF (nsd .GE. 2) THEN
-  CALL set_elem_to_faces(obj)
-END IF
-
-IF (nsd .EQ. 3) THEN
-  CALL set_elem_to_edges(obj)
-END IF
+CALL set_elem_to_faces(obj)
+CALL set_elem_to_edges(obj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -266,21 +253,30 @@ SUBROUTINE set_elem_to_faces(obj)
                           '[START] ')
 #endif
 
+  IF (obj%isElemToFace) RETURN
+
+  obj%isElemToFace = .TRUE.
+
   nsd = obj%dom%GetNSD()
 
-  cmesh => obj%dom%GetMeshPointer(dim=nsd)
-  maxnode2elem = cmesh%GetMaxNodeToElements()
-  ALLOCATE (n2e(maxnode2elem))
+  tsize = nsd - 1
+  CALL obj%boundary%GetMeshIDPointer(dim=tsize, ans=intptr, tsize=tmeshid)
 
-  bmesh => obj%dom%GetMeshPointer(dim=nsd - 1)
-  CALL obj%boundary%GetMeshIDPointer(dim=nsd - 1, ans=intptr, tsize=tmeshid)
+  isok = tmeshid .EQ. 0 .OR. (nsd .LT. 2)
 
-  IF (tmeshid .EQ. 0) THEN
+  IF (isok) THEN
     obj%tElemToFace = 0
     CALL Reallocate(obj%elemToFace, 0, 0)
     CALL finishme
     RETURN
   END IF
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+  ALLOCATE (n2e(maxnode2elem))
+
+  ! here tsize = nsd - 1
+  bmesh => obj%dom%GetMeshPointer(dim=tsize)
 
   indx = 0
 
@@ -300,9 +296,6 @@ SUBROUTINE set_elem_to_faces(obj)
   ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
   tsize = indx(2)
   boundary_loop: DO ii = 1, tsize
-
-    CALL Display(ii, 'boundary element : ')
-    CALL Display(bndy2cell(ii), 'bndy2cell(ii, 1): ')
 
     CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
                             ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
@@ -364,12 +357,12 @@ SUBROUTINE set_elem_to_edges(obj)
   CHARACTER(*), PARAMETER :: myName = "set_elem_to_edges()"
   LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
                              no = .FALSE.
-  INTEGER(I4B), PARAMETER :: nsd = 3, dim = 1
+  INTEGER(I4B), PARAMETER :: dim = 1
 
   ! INTEGER(I4B), PARAMETER :: expandFactor = 2
 
   INTEGER(I4B) :: ii, jj, tsize, indx(4), tmeshid, maxnode2elem, &
-                  localEdgeNumber, localCellNumber
+                  localEdgeNumber, localCellNumber, nsd
   INTEGER(I4B), POINTER :: intptr(:)
   CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
   INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
@@ -381,19 +374,28 @@ SUBROUTINE set_elem_to_edges(obj)
                           '[START] ')
 #endif
 
-  cmesh => obj%dom%GetMeshPointer(dim=nsd)
-  maxnode2elem = cmesh%GetMaxNodeToElements()
-  ALLOCATE (n2e(maxnode2elem))
+  IF (obj%isElemToEdge) RETURN
 
-  bmesh => obj%dom%GetMeshPointer(dim=dim)
+  obj%isElemToEdge = .TRUE.
+
+  nsd = obj%dom%GetNSD()
+
   CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tmeshid)
 
-  IF (tmeshid .EQ. 0) THEN
+  isok = tmeshid .EQ. 0 .OR. (nsd .NE. 3)
+
+  IF (isok) THEN
     obj%tElemToEdge = 0
     CALL Reallocate(obj%elemToEdge, 0, 0)
     CALL finishme
     RETURN
   END IF
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+  ALLOCATE (n2e(maxnode2elem))
+
+  bmesh => obj%dom%GetMeshPointer(dim=dim)
 
   indx = 0
 

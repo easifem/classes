@@ -78,8 +78,8 @@ CALL AssertError1(isok, myName, &
 CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
 
 IF (obj%isUserFunction) THEN
-  CALL obj%GetFromUserFunction(nodeNum=nodeNum, nodalValue=nodalValue, &
-                               times=times, nrow=nrow, ncol=ncol)
+  CALL GetFromUserFunction(obj=obj, nodeNum=nodeNum, nodalValue=nodalValue, &
+                           times=times, nrow=nrow, ncol=ncol)
   RETURN
 END IF
 
@@ -87,17 +87,16 @@ ncol = 1
 IF (PRESENT(times)) ncol = SIZE(times)
 
 #ifdef DEBUG_VER
-
 isok = ALLOCATED(obj%nodalValue)
 CALL AssertError1(isok, myname, &
                   'AbstractBC_::obj%nodalValue is not allocated!')
-
 #endif
 
 ! get nodal values
 SELECT CASE (obj%nodalValueType)
 
 CASE (TypeFEVariableOpt%constant)
+
   nodalValue(1:nrow, 1:ncol) = obj%nodalValue(1, 1)
 
 CASE (TypeFEVariableOpt%space)
@@ -241,161 +240,197 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
-!
+!                                                            GetFromFunction
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFromUserFunction
-CHARACTER(*), PARAMETER :: myName = "obj_GetFromUserFunction()"
-INTEGER(I4B) :: ii, kk, retType, tnodes, nsd, tTimes, argType, &
-                tsize
-REAL(DFP) :: xij(4, 1), ans
-LOGICAL(LGT) :: problem
-CLASS(AbstractMesh_), POINTER :: meshptr
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  This function returns the nodalValue from userfunction
+!
+!# Introduction
+!
+! the shape and value of nodal value depends upon the obj%nodalValuetype
+!
+! constant: shape of nodalvalue is tnodes, 1
+! in this case we get the value from function and set
+! all values of nodalvalue(:, 1)
+!
+! space:
+! ncol = 1
+!
+! time
+! ncol = ttimes
+!
+! spacetime
+! ncol = ttimes
+
+SUBROUTINE GetFromUserFunction(obj, nodeNum, nodalValue, &
+                               nrow, ncol, times)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+    !! node number should be allocated
+    !! size of nodenum is nrow
+  REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nodal values
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time value
+    !! time values are needed when userfunction is time or space-time
+  INTEGER(I4B) :: nrow, ncol
+    !! nrow is size of nodenum and size of number of rows in nodalvalue
+    !! ncol is colsize of nodalvalue
+
+    !! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "GetFromUserFunction()"
+  INTEGER(I4B) :: ii, kk, retType, tnodes, nsd, tTimes, argType, &
+                  tsize
+  REAL(DFP) :: xij(4, 1), ans
+  LOGICAL(LGT) :: problem
+  CLASS(AbstractMesh_), POINTER :: meshptr
 
 ! get pointer to nodecoord
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-problem = .NOT. ASSOCIATED(obj%func)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    "[INTERNAL ERROR] :: When nodalValueType is "// &
-                    CHAR_LF//"Space and useFunction is specified, "// &
-                    CHAR_LF//"then SpaceFunction is needed, "// &
-                    CHAR_LF//"but it is not associated")
-  RETURN
-END IF
+  problem = .NOT. ASSOCIATED(obj%func)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      "[INTERNAL ERROR] :: When nodalValueType is "// &
+                      CHAR_LF//"Space and useFunction is specified, "// &
+                      CHAR_LF//"then SpaceFunction is needed, "// &
+                      CHAR_LF//"but it is not associated")
+    RETURN
+  END IF
 #endif
 
-retType = obj%func%GetReturnType()
+  retType = obj%func%GetReturnType()
 
 #ifdef DEBUG_VER
-problem = retType .NE. TypeFEVariableOpt%scalar
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  problem = retType .NE. TypeFEVariableOpt%scalar
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
              '[INTERNAL ERROR] :: Return type of user function should be '// &
-                    'scalar.')
-  RETURN
-END IF
+                      'scalar.')
+    RETURN
+  END IF
 
-problem = (obj%nodalValueType .EQ. TypeFEVariableOpt%time) .AND. &
-          (.NOT. PRESENT(times))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    "[INTERNAL ERROR] :: When `nodalValueType` is Time "// &
-                    " and `IsUserFunction` is TRUE, "// &
-                    " then `times` is needed in the passing argument,"// &
-                    " but it is not present")
-  RETURN
-END IF
+  problem = (obj%nodalValueType .EQ. TypeFEVariableOpt%time) .AND. &
+            (.NOT. PRESENT(times))
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      "[INTERNAL ERROR] :: When `nodalValueType` is Time "// &
+                      " and `IsUserFunction` is TRUE, "// &
+                      " then `times` is needed in the passing argument,"// &
+                      " but it is not present")
+    RETURN
+  END IF
 
-problem = (obj%nodalValueType .EQ. TypeFEVariableOpt%spacetime) .AND. &
-          (.NOT. PRESENT(times))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  problem = (obj%nodalValueType .EQ. TypeFEVariableOpt%spacetime) .AND. &
+            (.NOT. PRESENT(times))
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
                  "[INTERNAL ERROR] :: When `nodalValueType` is SpaceTime "// &
-                    " and `IsUserFunction` is TRUE, "// &
-                    " then `times` is needed in the passing argument,"// &
-                    " but it is not present")
-  RETURN
-END IF
+                      " and `IsUserFunction` is TRUE, "// &
+                      " then `times` is needed in the passing argument,"// &
+                      " but it is not present")
+    RETURN
+  END IF
 #endif
 
-argType = obj%func%GetArgType()
+  argType = obj%func%GetArgType()
 
 #ifdef DEBUG_VER
-problem = argType .NE. obj%nodalValueType
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: argType='//tostring(argType)// &
-                    ' in user function is not same '// &
-                    'as nodalValueType '//tostring(obj%nodalValueType)// &
-                    ' in AbstractBC_')
-  RETURN
-END IF
+  problem = argType .NE. obj%nodalValueType
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: argType='//tostring(argType)// &
+                      ' in user function is not same '// &
+                      'as nodalValueType '//tostring(obj%nodalValueType)// &
+                      ' in AbstractBC_')
+    RETURN
+  END IF
 #endif
 
-tnodes = SIZE(nodeNum)
-nrow = tnodes
-ncol = 0
-nsd = obj%dom%GetNSD()
+  tnodes = SIZE(nodeNum)
+  nrow = tnodes
+  ncol = 0
+  nsd = obj%dom%GetNSD()
 
-SELECT CASE (obj%nodalValueType)
+  SELECT CASE (obj%nodalValueType)
 
 ! Constant
-CASE (TypeFEVariableOpt%constant)
-  ! CALL Reallocate(nodalValue, tnodes, 1)
-  ncol = 1
-  CALL obj%func%Get(val=ans)
-  nodalValue(1:nrow, 1) = ans
+  CASE (TypeFEVariableOpt%constant)
+    ! CALL Reallocate(nodalValue, tnodes, 1)
+    ncol = 1
+    CALL obj%func%Get(val=ans)
+    nodalValue(1:nrow, 1) = ans
 
 ! Space
-CASE (TypeFEVariableOpt%space)
-  ! CALL Reallocate(nodalValue, tnodes, 1)
-  ncol = 1
-  meshptr => obj%dom%GetMeshPointer(dim=nsd)
-
-  DO ii = 1, tnodes
-    CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
-                              globalNode=nodeNum(ii), islocal=.FALSE.)
-
-    CALL obj%func%Get(val=ans, args=xij(1:3, 1))
-
-    nodalValue(ii, 1) = ans
-  END DO
-
-  meshptr => NULL()
-
-! Time
-CASE (TypeFEVariableOpt%time)
-
-  tTimes = SIZE(times)
-
-  ! CALL Reallocate(nodalValue, tnodes, tTimes)
-  ncol = tTimes
-
-  DO ii = 1, tTimes
-    CALL obj%func%Get(val=ans, args=times(ii:ii))
-
-    nodalValue(1:nrow, ii) = ans
-  END DO
-
-! SpaceTime
-CASE (TypeFEVariableOpt%spacetime)
-  tTimes = SIZE(times)
-
-  ! CALL Reallocate(nodalValue, tnodes, tTimes)
-  ncol = tTimes
-
-  meshptr => obj%dom%GetMeshPointer(dim=nsd)
-
-  DO kk = 1, tTimes
-    xij(nsd + 1, 1) = times(kk)
+  CASE (TypeFEVariableOpt%space)
+    ! CALL Reallocate(nodalValue, tnodes, 1)
+    ncol = 1
+    meshptr => obj%dom%GetMeshPointer(dim=nsd)
 
     DO ii = 1, tnodes
       CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
                                 globalNode=nodeNum(ii), islocal=.FALSE.)
 
-      CALL obj%func%Get(val=ans, args=xij(1:4, 1))
+      CALL obj%func%Get(val=ans, args=xij(1:3, 1))
 
-      nodalValue(ii, kk) = ans
+      nodalValue(ii, 1) = ans
     END DO
-  END DO
 
-  meshptr => NULL()
+    meshptr => NULL()
 
-END SELECT
+! Time
+  CASE (TypeFEVariableOpt%time)
+
+    tTimes = SIZE(times)
+
+    ! CALL Reallocate(nodalValue, tnodes, tTimes)
+    ncol = tTimes
+
+    DO ii = 1, tTimes
+      CALL obj%func%Get(val=ans, args=times(ii:ii))
+
+      nodalValue(1:nrow, ii) = ans
+    END DO
+
+! SpaceTime
+  CASE (TypeFEVariableOpt%spacetime)
+    tTimes = SIZE(times)
+
+    ! CALL Reallocate(nodalValue, tnodes, tTimes)
+    ncol = tTimes
+
+    meshptr => obj%dom%GetMeshPointer(dim=nsd)
+
+    DO kk = 1, tTimes
+      xij(nsd + 1, 1) = times(kk)
+
+      DO ii = 1, tnodes
+        CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
+                                  globalNode=nodeNum(ii), islocal=.FALSE.)
+
+        CALL obj%func%Get(val=ans, args=xij(1:4, 1))
+
+        nodalValue(ii, kk) = ans
+      END DO
+    END DO
+
+    meshptr => NULL()
+
+  END SELECT
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
 
-END PROCEDURE obj_GetFromUserFunction
+END SUBROUTINE GetFromUserFunction
 
 !----------------------------------------------------------------------------
 !
