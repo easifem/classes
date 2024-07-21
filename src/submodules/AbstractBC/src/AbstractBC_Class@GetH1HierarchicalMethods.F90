@@ -106,27 +106,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Get_H1_Hierarchical1
 
 !----------------------------------------------------------------------------
-!                                                          GetConstantValue
+!                                                                GetNodeNum
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
-                            times)
+SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   !! Boundary condition
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
   !! Degree of freedom
   INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
   !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-  REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
-  !! nrow = Size of nodeNum
-  !! ncol = 1 or Size of times
-  INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  INTEGER(I4B), INTENT(OUT) :: nrow
   !! the size of data written in nodalValue
-  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-  !! times vector is only used when usefunction is true in obj
 
   !! internal variables
-  INTEGER(I4B) :: mysize, nsd
+  INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii
   CLASS(AbstractMesh_), POINTER :: mesh
 
   nrow = 0
@@ -149,9 +143,109 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! get DOF on the face
   !! - If tElemToEdge is not zero then we call GetDOF from FEDOF to get
   !! DOF on the edge
-  ! DO ii = 1, obj%tElemToFace
-  ! call obj%Get
-  ! END DO
+  DO ii = 1, obj%tElemToFace
+    localElement = obj%elemToFace(1, ii)
+    localboundary = obj%elemToFace(2, ii)
+    CALL fedof%GetFaceDOF(globalElement=localElement, &
+        localFaceNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+    nrow = nrow + mysize
+  END DO
+
+  DO ii = 1, obj%tElemToEdge
+    localElement = obj%elemToEdge(1, ii)
+    localboundary = obj%elemToEdge(2, ii)
+    CALL fedof%GetEdgeDOF(globalElement=localElement, &
+        localEdgeNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+    nrow = nrow + mysize
+  END DO
+
+  mesh => NULL()
+
+END SUBROUTINE GetNodeNum
+
+!----------------------------------------------------------------------------
+!                                                          GetConstantValue
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
+                            times)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  !! Boundary condition
+  CLASS(FEDOF_), INTENT(INOUT) :: fedof
+  !! Degree of freedom
+  INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+  !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+  REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+  !! nrow = Size of nodeNum
+  !! ncol = 1 or Size of times
+  INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  !! the size of data written in nodalValue
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  !! times vector is only used when usefunction is true in obj
+
+  !! internal variables
+  INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii, jj, kk
+  CLASS(AbstractMesh_), POINTER :: mesh
+
+  nrow = 0
+  ncol = 1
+  IF (PRESENT(times)) ncol = SIZE(times)
+
+  !! INFO: Lets get vertex node, if there are any
+  CALL obj%boundary%GetNodeNum(ans=nodenum, tsize=mysize, dom=obj%dom)
+  nrow = nrow + mysize
+
+  IF (nrow .NE. 0) THEN
+    nsd = obj%dom%GetNSD()
+    mesh => obj%dom%GetMeshPointer(dim=nsd)
+    CALL mesh%GetLocalNodeNumber_(globalNode=nodenum(1:nrow), ans=nodenum, &
+                                  islocal=.FALSE.)
+
+    mesh => NULL()
+  END IF
+
+  DO CONCURRENT(ii=1:nrow, jj=1:ncol)
+    nodalValue(ii, jj) = obj%nodalValue(1, 1)
+  END DO
+
+  CALL obj%SetElemToLocalBoundary()
+
+  !! INFO: Now we have elemToFace and elemToEdge ready
+  !! - If tElemToFace is not zero then we call GetDOF from FEDOF to
+  !! get DOF on the face
+  !! - If tElemToEdge is not zero then we call GetDOF from FEDOF to get
+  !! DOF on the edge
+  !! In the case of constant boundary condition,
+  !! we will assign zero value to the face and edge degree of freedom
+  DO ii = 1, obj%tElemToFace
+    localElement = obj%elemToFace(1, ii)
+    localboundary = obj%elemToFace(2, ii)
+    CALL fedof%GetFaceDOF(globalElement=localElement, &
+        localFaceNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+
+    DO CONCURRENT(kk=1:mysize, jj=1:ncol)
+      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+    END DO
+
+    nrow = nrow + mysize
+  END DO
+
+  DO ii = 1, obj%tElemToEdge
+    localElement = obj%elemToEdge(1, ii)
+    localboundary = obj%elemToEdge(2, ii)
+    CALL fedof%GetEdgeDOF(globalElement=localElement, &
+        localEdgeNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+
+    DO CONCURRENT(kk=1:mysize, jj=1:ncol)
+      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+    END DO
+
+    nrow = nrow + mysize
+  END DO
 
 END SUBROUTINE GetConstantValue
 
@@ -174,6 +268,72 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! the size of data written in nodalValue
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   !! times vector is only used when usefunction is true in obj
+
+  !! internal variables
+  CHARACTER(*), PARAMETER :: myname = "GetSpaceValue()"
+  INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii, jj, kk
+  CLASS(AbstractMesh_), POINTER :: mesh
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+
+  nrow = 0
+  ncol = 1
+  IF (PRESENT(times)) ncol = SIZE(times)
+
+  !! INFO: Lets get vertex node, if there are any
+  CALL obj%boundary%GetNodeNum(ans=nodenum, tsize=mysize, dom=obj%dom)
+  nrow = nrow + mysize
+
+  IF (nrow .NE. 0) THEN
+    nsd = obj%dom%GetNSD()
+    mesh => obj%dom%GetMeshPointer(dim=nsd)
+    CALL mesh%GetLocalNodeNumber_(globalNode=nodenum(1:nrow), ans=nodenum, &
+                                  islocal=.FALSE.)
+
+    mesh => NULL()
+  END IF
+
+  DO CONCURRENT(ii=1:nrow, jj=1:ncol)
+    nodalValue(ii, jj) = obj%nodalValue(1, 1)
+  END DO
+
+  CALL obj%SetElemToLocalBoundary()
+
+  !! INFO: Now we have elemToFace and elemToEdge ready
+  !! - If tElemToFace is not zero then we call GetDOF from FEDOF to
+  !! get DOF on the face
+  !! - If tElemToEdge is not zero then we call GetDOF from FEDOF to get
+  !! DOF on the edge
+  !! In the case of constant boundary condition,
+  !! we will assign zero value to the face and edge degree of freedom
+  DO ii = 1, obj%tElemToFace
+    localElement = obj%elemToFace(1, ii)
+    localboundary = obj%elemToFace(2, ii)
+    CALL fedof%GetFaceDOF(globalElement=localElement, &
+        localFaceNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+
+    DO CONCURRENT(kk=1:mysize, jj=1:ncol)
+      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+    END DO
+
+    nrow = nrow + mysize
+  END DO
+
+  DO ii = 1, obj%tElemToEdge
+    localElement = obj%elemToEdge(1, ii)
+    localboundary = obj%elemToEdge(2, ii)
+    CALL fedof%GetEdgeDOF(globalElement=localElement, &
+        localEdgeNumber=localboundary, ans=nodenum(nrow + 1:), tsize=mysize, &
+                          islocal=.TRUE.)
+
+    DO CONCURRENT(kk=1:mysize, jj=1:ncol)
+      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+    END DO
+
+    nrow = nrow + mysize
+  END DO
 END SUBROUTINE GetSpaceValue
 
 !----------------------------------------------------------------------------
