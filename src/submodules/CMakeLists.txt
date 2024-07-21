@@ -60,6 +60,102 @@ include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
 # MSHFile
 include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 
+# AbstractFunction
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
+
+# AbstractBasis
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractBasis/CMakeLists.txt)
+
+# Monomial1D
+include(${CMAKE_CURRENT_LIST_DIR}/Monomial1D/CMakeLists.txt)
+
+# Monomial2D
+include(${CMAKE_CURRENT_LIST_DIR}/Monomial2D/CMakeLists.txt)
+
+# Monomial3D
+include(${CMAKE_CURRENT_LIST_DIR}/Monomial3D/CMakeLists.txt)
+
+# MonomialND
+include(${CMAKE_CURRENT_LIST_DIR}/MonomialND/CMakeLists.txt)
+
+# AbstractPolynomial
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractPolynomial/CMakeLists.txt)
+
+# Polynomial1D
+include(${CMAKE_CURRENT_LIST_DIR}/Polynomial1D/CMakeLists.txt)
+
+# Polynomial2D
+include(${CMAKE_CURRENT_LIST_DIR}/Polynomial2D/CMakeLists.txt)
+
+# Polynomial3D
+include(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
+
+# PolynomialND
+include(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
+
+# Lagrange1D
+include(${CMAKE_CURRENT_LIST_DIR}/Lagrange1D/CMakeLists.txt)
+
+# Lagrange2D
+include(${CMAKE_CURRENT_LIST_DIR}/Lagrange2D/CMakeLists.txt)
+
+# Lagrange3D
+include(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
+
+# Lagrange3D
+include(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
+
+# AbstractOrthopol1D
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
+
+# Jacobi1D
+include(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
+
+# Ultraspherical1D
+include(${CMAKE_CURRENT_LIST_DIR}/Ultraspherical1D/CMakeLists.txt)
+
+# Legendre1D
+include(${CMAKE_CURRENT_LIST_DIR}/Legendre1D/CMakeLists.txt)
+
+# ChebyshevFirst1D
+include(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
+
+# PolynomialFactory
+include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
+
+# RefElement
+include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
+
+# AbstractFE
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
+
+# ScalarFE
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
+
+# # FiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+#
+# # MixedFiniteElement
+# include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+
+# Tree3R
+include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
+
+# UserFunction
+include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
+
+# AbstractBC
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
+
+# DirichletBC
+include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
+
+# NeumannBC
+include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
+
+# NitscheBC
+include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
 # AbstractMesh
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 
@@ -90,8 +186,43 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
+# FEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
+
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+
+# materials here
+
+# AbstractMaterialModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
+
+# AbstractSolidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
+
+# LinearElasticModel
+include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
+
+# LinearPoroElasticModel
+include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
+
+# NewtonianFluidModel
+include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
+
+# AbstractMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
+
+# SolidMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
+
+# fluidMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
+
+# porousMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+
+# MaterialFactory
+include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
 
 # AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
@@ -168,18 +299,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 # FieldFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
-# AbstractBC
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
-
-# DirichletBC
-include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
-
-# NeumannBC
-include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
-
-# NitscheBC
-include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
-
 # AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 
@@ -189,89 +308,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 # LinSolverLis
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 
-# LinSolverFactory
-include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
+# # LinSolverFactory
+# include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 
-# AbstractFunction
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
-
-# AbstractBasis
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractBasis/CMakeLists.txt)
-
-# Monomial1D
-include(${CMAKE_CURRENT_LIST_DIR}/Monomial1D/CMakeLists.txt)
-
-# Monomial2D
-include(${CMAKE_CURRENT_LIST_DIR}/Monomial2D/CMakeLists.txt)
-
-# Monomial3D
-include(${CMAKE_CURRENT_LIST_DIR}/Monomial3D/CMakeLists.txt)
-
-# MonomialND
-include(${CMAKE_CURRENT_LIST_DIR}/MonomialND/CMakeLists.txt)
-
-# AbstractPolynomial
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractPolynomial/CMakeLists.txt)
-
-# Polynomial1D
-include(${CMAKE_CURRENT_LIST_DIR}/Polynomial1D/CMakeLists.txt)
-
-# Polynomial2D
-include(${CMAKE_CURRENT_LIST_DIR}/Polynomial2D/CMakeLists.txt)
-
-# Polynomial3D
-include(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
-
-# PolynomialND
-include(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
-
-# Lagrange1D
-include(${CMAKE_CURRENT_LIST_DIR}/Lagrange1D/CMakeLists.txt)
-
-# Lagrange2D
-include(${CMAKE_CURRENT_LIST_DIR}/Lagrange2D/CMakeLists.txt)
-
-# Lagrange3D
-include(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
-
-# Lagrange3D
-include(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
-
-# AbstractOrthopol1D
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
-
-# Jacobi1D
-include(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
-
-# Ultraspherical1D
-include(${CMAKE_CURRENT_LIST_DIR}/Ultraspherical1D/CMakeLists.txt)
-
-# Legendre1D
-include(${CMAKE_CURRENT_LIST_DIR}/Legendre1D/CMakeLists.txt)
-
-# ChebyshevFirst1D
-include(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
-
-# PolynomialFactory
-include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
-
-# Tree3R
-include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
-
-# UserFunction
-include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
-
-# RefElement
-include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
-
-# AbstractFE
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
-
-# FiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
-
-# MixedFiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+# ---------------------------------------------------------------------------
+# Plotting
+# ---------------------------------------------------------------------------
 
 # AbstractPlot
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
@@ -285,41 +327,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 # PLPlot
 include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 
-# materials here
-
-# AbstractMaterialModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
-
-# AbstractSolidMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
-
-# LinearElasticModel
-include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
-
-# LinearPoroElasticModel
-include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
-
-# NewtonianFluidModel
-include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
-
-# MaterialFactory
-include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
-
-# AbstractMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
-
-# SolidMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
-
-# fluidMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
-
-# porousMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
-
 # ----------------------------------------------------------------------------
 # KERNELS
 # ----------------------------------------------------------------------------
 
 # AbstractKernel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+# include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)

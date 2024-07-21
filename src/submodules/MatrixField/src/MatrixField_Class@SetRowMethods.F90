@@ -20,7 +20,17 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) SetRowMethods
-USE BaseMethod
+
+USE Basetype, ONLY: DOF_
+
+USE DOF_Method, ONLY: GetIDOF
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+
+USE Display_Method, ONLY: ToString
+
+USE CSRMatrix_Method, ONLY: SetRow, GetDOFPointer
+
 IMPLICIT NONE
 CONTAINS
 
@@ -29,60 +39,45 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow1
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow1()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow1"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=vecVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetRow1
 
 !----------------------------------------------------------------------------
@@ -90,66 +85,13 @@ END PROCEDURE obj_SetRow1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow2
-REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow2"
+INTEGER(I4B) :: indx
+TYPE(DOF_), POINTER :: adof
+adof => GetDOFPointer(obj%mat, 1)
+indx = GetIDOF(obj=adof, ivar=ivar, idof=idof)
+CALL obj%SetRow(globalNode=globalNode, islocal=islocal, idof=indx, &
+                scalarVal=scalarVal, vecVal=vecVal, nodeFieldVal=nodeFieldVal)
 
-IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  END IF
-END IF
-
-IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=vecVal)
-  END IF
-END IF
-
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=realvec)
-  END IF
-END IF
-
-realvec => NULL()
 END PROCEDURE obj_SetRow2
 
 !----------------------------------------------------------------------------
@@ -157,72 +99,13 @@ END PROCEDURE obj_SetRow2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow3
-REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow3"
+INTEGER(I4B) :: indx
+TYPE(DOF_), POINTER :: adof
+adof => GetDOFPointer(obj%mat, 1)
+indx = GetIDOF(obj=adof, ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo)
+CALL obj%SetRow(globalNode=globalNode, islocal=islocal, idof=indx, &
+                scalarVal=scalarVal, vecVal=vecVal, nodeFieldVal=nodeFieldVal)
 
-IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-     & obj=obj%mat, &
-     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-     & ivar=ivar, &
-     & spacecompo=spacecompo, &
-     & timecompo=timecompo, &
-     & VALUE=scalarVal)
-  END IF
-END IF
-
-IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  END IF
-END IF
-
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
-END IF
-
-realvec => NULL()
 END PROCEDURE obj_SetRow3
 
 !----------------------------------------------------------------------------
@@ -230,72 +113,48 @@ END PROCEDURE obj_SetRow3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow4
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow4()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow4"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetRow4
 
 !----------------------------------------------------------------------------
@@ -303,72 +162,48 @@ END PROCEDURE obj_SetRow4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow5
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow5()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow5"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetRow5
 
 !----------------------------------------------------------------------------
@@ -376,72 +211,48 @@ END PROCEDURE obj_SetRow5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow6
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow6()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow6"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetRow6
 
 !----------------------------------------------------------------------------
@@ -449,76 +260,54 @@ END PROCEDURE obj_SetRow6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetRow7
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow7()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetRow7"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=scalarVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  ELSE
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=vecVal)
-  END IF
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+              spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetRow7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetRowMethods

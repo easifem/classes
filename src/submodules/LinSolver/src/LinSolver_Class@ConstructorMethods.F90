@@ -16,225 +16,193 @@
 !
 
 SUBMODULE(LinSolver_Class) ConstructorMethods
-USE BaseMethod
+USE BaseType, ONLY: TypePrecondOpt, &
+                    TypeConvergenceOpt
+
+USE InputUtility, ONLY: Input
+USE AbstractLinSolverParam
+
+USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
+                                   AbstractLinSolverDeallocate
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     setPreconditionOption
+!                                                     SetPreconditionOption
 !----------------------------------------------------------------------------
 
-SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
+SUBROUTINE SetPreconditionOption(IPAR, PRECOND_TYPE)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), INTENT(IN) :: PRECOND_TYPE
+
   SELECT CASE (PRECOND_TYPE)
-  CASE (NO_PRECONDITION)
+  CASE (TypePrecondOpt%NONE)
     IPAR(2) = 0
-  CASE (LEFT_PRECONDITION)
+  CASE (TypePrecondOpt%left)
     IPAR(2) = 1
-  CASE (RIGHT_PRECONDITION)
+  CASE (TypePrecondOpt%right)
     IPAR(2) = 2
-  CASE (LEFT_RIGHT_PRECONDITION)
+  CASE (TypePrecondOpt%both)
     IPAR(2) = 3
+  CASE DEFAULT
+    IPAR(2) = 0
   END SELECT
-END SUBROUTINE setPreconditionOption
+END SUBROUTINE SetPreconditionOption
 
 !----------------------------------------------------------------------------
-!                                                     setKrylovSubspaceSize
+!                                                     SetKrylovSubspaceSize
 !----------------------------------------------------------------------------
 
-SUBROUTINE setKrylovSubspaceSize(IPAR, m)
+SUBROUTINE SetKrylovSubspaceSize(IPAR, m)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: m
-  IPAR(5) = INPUT(default=15, option=m)
-END SUBROUTINE setKrylovSubspaceSize
+  IPAR(5) = INPUT(default=default_KrylovSubspaceSize, option=m)
+END SUBROUTINE SetKrylovSubspaceSize
 
 !----------------------------------------------------------------------------
-!                                                                 setMatIter
+!                                                                 SetMatIter
 !----------------------------------------------------------------------------
 
-SUBROUTINE setMaxIter(IPAR, maxIter)
+SUBROUTINE SetMaxIter(IPAR, maxIter)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), INTENT(IN) :: maxIter
   IPAR(6) = maxIter
-END SUBROUTINE setMaxIter
+END SUBROUTINE SetMaxIter
 
 !----------------------------------------------------------------------------
-!                                                          setConvergenceType
+!                                                          SetConvergenceType
 !----------------------------------------------------------------------------
 
-SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
-  & relativeToRHS)
+SUBROUTINE SetConvergenceType(IPAR, convergenceIn, convergenceType, &
+                              relativeToRHS)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), INTENT(IN) :: convergenceIn
   INTEGER(I4B), INTENT(IN) :: convergenceType
   LOGICAL(LGT), INTENT(IN) :: relativeToRHS
-  !
+
   IPAR(3) = 1
   SELECT CASE (convergenceType)
-  CASE (absoluteConvergence)
-    IF (convergenceIn .EQ. convergenceInSol) THEN
+  CASE (TypeConvergenceOpt%absolute)
+
+    IF (convergenceIn .EQ. TypeConvergenceOpt%sol) THEN
       IPAR(3) = -1
-    ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
+    ELSE IF (convergenceIn .EQ. TypeConvergenceOpt%res) THEN
       IPAR(3) = 1
     END IF
-  CASE (relativeConvergence)
-    IF (convergenceIn .EQ. convergenceInSol) THEN
+
+  CASE (TypeConvergenceOpt%relative)
+
+    IF (convergenceIn .EQ. TypeConvergenceOpt%sol) THEN
       IF (relativeToRHS) THEN
         IPAR(3) = -2
       ELSE
         IPAR(3) = -1
       END IF
-    ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
+
+    ELSE IF (convergenceIn .EQ. TypeConvergenceOpt%res) THEN
+
       IF (relativeToRHS) THEN
         IPAR(3) = 2
       ELSE
         IPAR(3) = 1
       END IF
+
     END IF
+
   END SELECT
-END SUBROUTINE setConvergenceType
+END SUBROUTINE SetConvergenceType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE setTolerance(FPAR, atol, rtol)
+SUBROUTINE SetTolerance(FPAR, atol, rtol)
   REAL(DFP), INTENT(INOUT) :: fpar(:)
   REAL(DFP), OPTIONAL, INTENT(IN) :: atol
   REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
 
-  IF (PRESENT(atol)) THEN
-    FPAR(2) = atol
-  END IF
-  IF (PRESENT(rtol)) THEN
-    FPAR(1) = rtol
-  END IF
-END SUBROUTINE setTolerance
-
-!----------------------------------------------------------------------------
-!                                                       checkEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "ls_checkEssentialParam"
-
-! name
-IF (.NOT. param%isPresent(key=myprefix//"/solverName")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/solverName should be present in param')
-
-! preconditionOption
-IF (.NOT. param%isPresent(key=myprefix//"/preconditionOption")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/preconditionOption should be present in param')
-
-! convergenceIn
-IF (.NOT. param%isPresent(key=myprefix//"/convergenceIn")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/convergenceIn should be present in param')
-
-! convergenceType
-IF (.NOT. param%isPresent(key=myprefix//"/convergenceType")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/convergenceType should be present in param')
-
-! maxIter
-IF (.NOT. param%isPresent(key=myprefix//"/maxIter")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/maxIter should be present in param')
-
-! relativeToRHS
-IF (.NOT. param%isPresent(key=myprefix//"/relativeToRHS")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/relativeToRHS should be present in param')
-
-! KrylovSubspaceSize
-IF (.NOT. param%isPresent(key=myprefix//"/KrylovSubspaceSize")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/KrylovSubspaceSize should be present in param')
-
-! rtol
-IF (.NOT. param%isPresent(key=myprefix//"/rtol")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/rtol should be present in param')
-
-! atol
-IF (.NOT. param%isPresent(key=myprefix//"/atol")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/atol should be present in param')
-END PROCEDURE ls_checkEssentialParam
+  IF (PRESENT(atol)) FPAR(2) = atol
+  IF (PRESENT(rtol)) FPAR(1) = rtol
+END SUBROUTINE SetTolerance
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Initiate
+MODULE PROCEDURE obj_Initiate
 INTEGER(I4B) :: solverName, preconditionOption, convergenceIn, &
-  & convergenceType, maxIter, KrylovSubspaceSize
+                convergenceType, maxIter, KrylovSubspaceSize
 REAL(DFP) :: rtol, atol
 LOGICAL(LGT) :: relativeToRHS
 
-CALL obj%checkEssentialParam(param)
-CALL getAbstractLinSolverParam( &
-  & param=param, &
-  & prefix=myprefix, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & maxIter=maxIter, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & rtol=rtol, &
-  & atol=atol)
+CALL obj%DEALLOCATE()
 
-CALL obj%SetParam(&
-  & isInitiated=.TRUE., &
-  & engine="NATIVE_SERIAL", &
-  & ierr=0_I4B, &
-  & iter=0_I4B, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & maxIter=maxIter, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & atol=atol, &
-  & rtol=rtol &
-  & )
+CALL obj%CheckEssentialParam(param)
+
+CALL GetAbstractLinSolverParam( &
+  param=param, &
+  prefix=myprefix, &
+  solverName=solverName, &
+  preconditionOption=preconditionOption, &
+  convergenceIn=convergenceIn, &
+  convergenceType=convergenceType, &
+  maxIter=maxIter, &
+  relativeToRHS=relativeToRHS, &
+  KrylovSubspaceSize=KrylovSubspaceSize, &
+  rtol=rtol, &
+  atol=atol)
+
+CALL obj%SetParam( &
+  isInitiated=.TRUE., &
+  engine="NATIVE_SERIAL", &
+  ierr=0_I4B, &
+  iter=0_I4B, &
+  solverName=solverName, &
+  preconditionOption=preconditionOption, &
+  convergenceIn=convergenceIn, &
+  convergenceType=convergenceType, &
+  maxIter=maxIter, &
+  relativeToRHS=relativeToRHS, &
+  KrylovSubspaceSize=KrylovSubspaceSize, &
+  atol=atol, &
+  rtol=rtol)
 
 obj%IPAR = 0
-CALL setPreconditionOption(obj%IPAR, preconditionOption)
-CALL setConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
-  & relativeToRHS)
+CALL SetPreconditionOption(obj%IPAR, preconditionOption)
+CALL SetConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
+                        relativeToRHS)
+
 obj%IPAR(5) = KrylovSubspaceSize
-CALL setMaxIter(obj%IPAR, maxIter)
+
+CALL SetMaxIter(obj%IPAR, maxIter)
+
 obj%FPAR = 0.0_DFP
-CALL setTolerance(fpar=obj%fpar, rtol=rtol, atol=atol)
+
+CALL SetTolerance(fpar=obj%fpar, rtol=rtol, atol=atol)
 ! CALL Reallocate(obj%RES, maxIter)
 ! CALL Reallocate(obj%dbcIndx, 0)
-END PROCEDURE ls_Initiate
+
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractLinSolverDeallocate(obj)
 obj%ipar = 0
 obj%fpar = 0.0_DFP
-IF (ALLOCATED(obj%W)) DEALLOCATE (obj%W)
-END PROCEDURE ls_Deallocate
+IF (ALLOCATED(obj%w)) DEALLOCATE (obj%w)
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_final
+MODULE PROCEDURE obj_final
 CALL obj%DEALLOCATE()
-END PROCEDURE ls_final
+END PROCEDURE obj_final
 
 !----------------------------------------------------------------------------
 !

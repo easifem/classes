@@ -580,16 +580,10 @@ nsd = dom%GetNSD()
 DO ii = 1, nsd
   CALL dom%SetTotalMaterial(dim=ii, n=obj%tOverlappedMaterials)
   !! Add one material to all meshes of domain
-  indx = dom%GetTotalMaterial(dim=ii)
-  indx = indx - indx(1)
-  IF (ANY(indx .NE. 0)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Some error occured.')
-    RETURN
-  END IF
 END DO
 
-obj%SOLID_MATERIAL_ID = dom%GetTotalMaterial(dim=nsd, entityNum=1)
+obj%SOLID_MATERIAL_ID = dom%GetTotalMaterial(dim=nsd, entityNum=1, &
+                                          globalElement=1_I4B, islocal=.TRUE.)
 
 DO ii = 1, obj%tSolidMaterials
   DO kk = 1, obj%nsd

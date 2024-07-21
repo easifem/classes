@@ -16,9 +16,7 @@
 !
 
 SUBMODULE(ScalarField_Class) IOMethods
-USE BaseMethod
-USE HDF5File_Method
-USE Mesh_Class
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 IMPLICIT NONE
 CONTAINS
 
@@ -27,21 +25,18 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
 
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Import()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AbstractNodeFieldImport( &
-  & obj=obj, &
-  & hdf5=hdf5, &
-  & group=group, &
-  & dom=dom, &
-  & domains=domains)
+CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
+                             fedof=fedof, fedofs=fedofs)
 
 dsetname = TRIM(group)//"/tSize"
 bools(1) = hdf5%pathExists(dsetname%chars())
@@ -51,21 +46,19 @@ dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
 IF (.NOT. ALL(bools)) THEN
-! Initiate
+
   CALL param%initiate()
-  CALL SetScalarFieldParam( &
-    & param=param, &
-    & name=obj%name%chars(), &
-    & engine=obj%engine%chars(), &
-    & fieldType=obj%fieldType)
+  CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
+                           engine=obj%engine%chars(), fieldType=obj%fieldType)
   obj%isInitiated = .FALSE.
-  CALL obj%initiate(param=param, dom=dom)
+  CALL obj%Initiate(param=param, fedof=fedof)
   CALL param%DEALLOCATE()
 END IF
 
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Import()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Import
 

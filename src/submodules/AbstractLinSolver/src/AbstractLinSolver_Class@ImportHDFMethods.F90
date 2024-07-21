@@ -16,7 +16,12 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ImportHDFMethods
-USE BaseMethod
+USE HDF5File_Method, ONLY: HDF5ReadScalar
+
+USE Display_Method, ONLY: ToString
+
+USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
+
 IMPLICIT NONE
 CONTAINS
 
@@ -24,132 +29,130 @@ CONTAINS
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_Import
-CHARACTER(*), PARAMETER :: myName = "als_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname, strval
+LOGICAL(LGT) :: isok
+TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The object is already initiated, deallocate first!')
-END IF
-obj%isInitiated = .TRUE.
+isok = .NOT. obj%isInit
+CALL AssertError1(isok, myName, &
+                  'The object is already initiated, deallocate first!')
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
-END IF
-IF (.NOT. hdf5%isRead()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have read permission')
-END IF
+obj%isInit = .TRUE.
 
-dsetname = TRIM(group)//"/engine"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset engine should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%engine)
+isok = hdf5%isOpen()
+CALL AssertError1(isok, myName, "HDF5 file is not opened")
 
-dsetname = TRIM(group)//"/solverName"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset solverName should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-obj%solverName = obj%getLinSolverCodeFromName(TRIM(strval%chars()))
+isok = hdf5%isRead()
+CALL AssertError1(isok, myName, "HDF5 file does not have read permission")
 
-dsetname = TRIM(group)//"/preconditionOption"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset preconditionOption should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-SELECT CASE (TRIM(strval%chars()))
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%engine, group=group, &
+             fieldname="engine", myname=myName, modName=modName, check=.TRUE.)
+
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=strval, group=group, &
+         fieldname="solverName", myname=myName, modName=modName, check=.TRUE.)
+obj%solverName = obj%getLinSolverCodeFromName(strval%chars())
+
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=strval, group=group, &
+ fieldname="preconditionOption", myname=myName, modName=modName, check=.TRUE.)
+strval = strval%Upper()
+SELECT CASE (strval%chars())
 CASE ("NONE")
-  obj%preconditionOption = NO_PRECONDITION
+  obj%preconditionOption = TypePrecondOpt%NONE
 CASE ("LEFT")
-  obj%preconditionOption = LEFT_PRECONDITION
+  obj%preconditionOption = TypePrecondOpt%left
 CASE ("RIGHT")
-  obj%preconditionOption = RIGHT_PRECONDITION
-CASE ("LEFT_RIGHT")
-  obj%preconditionOption = LEFT_RIGHT_PRECONDITION
+  obj%preconditionOption = TypePrecondOpt%right
+CASE ("LEFT_RIGHT", "BOTH")
+  obj%preconditionOption = TypePrecondOpt%both
+CASE DEFAULT
+  CALL no_case_found("preconditionOption")
 END SELECT
 
-dsetname = TRIM(group)//"/convergenceIn"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset convergenceIn should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-SELECT CASE (TRIM(strval%chars()))
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=strval, group=group, &
+      fieldname="convergenceIn", myname=myName, modName=modName, check=.TRUE.)
+strval = strval%Upper()
+SELECT CASE (strval%chars())
 CASE ("RESIDUAL")
-  obj%convergenceIn = convergenceInRes
+  obj%convergenceIn = TypeConvergenceOpt%res
 CASE ("SOLUTION")
-  obj%convergenceIn = convergenceInSol
+  obj%convergenceIn = TypeConvergenceOpt%sol
+CASE DEFAULT
+  CALL no_case_found("convergenceIn")
 END SELECT
 
-dsetname = TRIM(group)//"/convergenceType"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset convergenceType should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-SELECT CASE (TRIM(strval%chars()))
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=strval, group=group, &
+    fieldname="convergenceType", myname=myName, modName=modName, check=.TRUE.)
+strval = strval%Upper()
+SELECT CASE (strval%chars())
 CASE ("ABSOLUTE")
-  obj%convergenceType = absoluteConvergence
+  obj%convergenceType = TypeConvergenceOpt%absolute
 CASE ("RELATIVE")
-  obj%convergenceType = relativeConvergence
+  obj%convergenceType = TypeConvergenceOpt%relative
+CASE default
+  CALL no_case_found("convergenceType")
 END SELECT
 
-IF (obj%convergenceType .EQ. relativeConvergence) THEN
-  dsetname = TRIM(group)//"/relativeToRHS"
-  IF (hdf5%pathExists(dsetname%chars())) THEN
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%relativeToRHS)
-  ELSE
-    obj%relativeToRHS = .FALSE.
-  END IF
-ELSE
-  obj%relativeToRHS = .FALSE.
-END IF
+obj%relativeToRHS = .FALSE.
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%relativeToRHS, group=group, &
+     fieldname="relativeToRHS", myname=myName, modName=modName, check=.FALSE.)
 
-dsetname = TRIM(group)//"/maxIter"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset maxIter should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%maxIter)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxIter, group=group, &
+           fieldname="maxIter", myname=myName, modName=modName, check=.FALSE.)
 
-dsetname = TRIM(group)//"/KrylovSubspaceSize"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%KrylovSubspaceSize)
-ELSE
-  obj%KrylovSubspaceSize = 20
-END IF
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%KrylovSubspaceSize, group=group, &
+fieldname="KrylovSubspaceSize", myname=myName, modName=modName, check=.FALSE.)
 
-dsetname = TRIM(group)//"/relativeTolerance"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset relativeTolerance should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%rtol)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%rtol, group=group, &
+ fieldname="relativeTolerance", myname=myName, modName=modName, check=.FALSE.)
 
-dsetname = TRIM(group)//"/absoluteTolerance"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset absoluteTolerance should be present')
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%atol)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%atol, group=group, &
+ fieldname="absoluteTolerance", myname=myName, modName=modName, check=.FALSE.)
+
+obj%isInit = .FALSE.
+
+CALL param%Initiate()
+
+CALL SetAbstractLinSolverParam( &
+  param=param, &
+  prefix=obj%GetPrefix(), &
+  engine=obj%engine%chars(), &
+  solverName=obj%solverName, &
+  preconditionOption=obj%preconditionOption, &
+  convergenceIn=obj%convergenceIn, &
+  convergenceType=obj%convergenceType, &
+  maxIter=obj%maxIter, &
+  relativeToRHS=obj%relativeToRHS, &
+  KrylovSubspaceSize=obj%KrylovSubspaceSize, &
+  rtol=obj%rtol, &
+  atol=obj%atol)
+
+CALL obj%Initiate(param)
+CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
-END PROCEDURE als_Import
+CONTAINS
+SUBROUTINE no_case_found(msg)
+  CHARACTER(*), INTENT(IN) :: msg
+  CALL AssertError1(.FALSE., myName, "No case found for "//msg)
+END SUBROUTINE no_case_found
+
+END PROCEDURE obj_Import
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ImportHDFMethods

@@ -20,48 +20,56 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetColMethods
-USE BaseMethod
+USE CSRMatrix_Method, ONLY: GetColumn
+
+USE DOF_Method, ONLY: GetIDOF
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 GetColumn
+!                                                                  GetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn1
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn1()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetColumn1"
-!
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is not implemented for Rectangle matrix')
-END IF
-!
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
+
 IF (PRESENT(VALUE)) THEN
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+
+  CALL GetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=VALUE, &
+                 scale=scale, addContribution=addContribution)
+  RETURN
+
 END IF
-!
-IF (PRESENT(nodeFieldVal)) THEN
-  !
-  realvec => nodeFieldVal%GetPointer()
-  !
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=realvec, &
-    & scale=scale, &
-    & addContribution=addContribution)
-  !
-END IF
-!
-NULLIFY (realvec)
+
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec, &
+               scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetColumn1
 
 !----------------------------------------------------------------------------
@@ -69,13 +77,13 @@ END PROCEDURE obj_GetColumn1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn2
-CALL obj%GetColumn( &
-  & globalNode=globalNode, &
-  & idof=(obj%mat%csr%jdof.DOFStartIndex.ivar) + idof - 1, &
-  & VALUE=VALUE, &
-  & nodefieldVal=nodefieldVal, &
-  & scale=scale, &
-  & addContribution=addContribution)
+INTEGER(I4B) :: ii
+
+ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, idof=idof)
+
+CALL obj%GetColumn(globalNode=globalNode, islocal=islocal, &
+                   idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
+                   scale=scale, addContribution=addContribution)
 END PROCEDURE obj_GetColumn2
 
 !----------------------------------------------------------------------------
@@ -83,15 +91,15 @@ END PROCEDURE obj_GetColumn2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn3
-CALL obj%GetColumn( &
-  & globalNode=globalNode, &
-  & idof=GetIDOF(obj=obj%mat%csr%jdof, &
-          & ivar=ivar, spacecompo=spacecompo, &
-          & timecompo=timecompo), &
-  & VALUE=VALUE, &
-  & nodefieldVal=nodefieldVal, &
-  & scale=scale, &
-  & addContribution=addContribution)
+INTEGER(I4B) :: ii
+
+ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, spaceCompo=spaceCompo, &
+             timeCompo=timeCompo)
+
+CALL obj%GetColumn(globalNode=globalNode, islocal=islocal, &
+                   idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
+                   scale=scale, addContribution=addContribution)
+
 END PROCEDURE obj_GetColumn3
 
 !----------------------------------------------------------------------------
@@ -99,41 +107,42 @@ END PROCEDURE obj_GetColumn3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn4
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn4()"
+
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetColumn4"
-!
-!
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is not implemented for Rectangle matrix')
-END IF
-!
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
+
 IF (PRESENT(VALUE)) THEN
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+
+  CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
+                 ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                 VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
-!
-IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%GetPointer()
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=realvec, &
-    & scale=scale, &
-    & addContribution=addContribution)
-END IF
-!
-NULLIFY (realvec)
+
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+               spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+               scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetColumn4
 
 !----------------------------------------------------------------------------
@@ -141,41 +150,42 @@ END PROCEDURE obj_GetColumn4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn5
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn5()"
+
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetColumn5"
-!
-!
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is not implemented for Rectangle matrix')
-END IF
-!
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
+
 IF (PRESENT(VALUE)) THEN
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+
+  CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
+                 ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                 VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
-!
-IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%GetPointer()
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=realvec, &
-    & scale=scale, &
-    & addContribution=addContribution)
-END IF
-!
-NULLIFY (realvec)
+
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+               spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+               scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetColumn5
 
 !----------------------------------------------------------------------------
@@ -183,41 +193,42 @@ END PROCEDURE obj_GetColumn5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn6
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn6()"
+
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetColumn6"
-!
-!
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is not implemented for Rectangle matrix')
-END IF
-!
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
+
 IF (PRESENT(VALUE)) THEN
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+
+  CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
+                 ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                 VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
-!
-IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%GetPointer()
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=realvec, &
-    & scale=scale, &
-    & addContribution=addContribution)
-END IF
-!
-NULLIFY (realvec)
+
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+               spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+               scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetColumn6
 
 !----------------------------------------------------------------------------
@@ -225,45 +236,48 @@ END PROCEDURE obj_GetColumn6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn7
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn7()"
+
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetColumn7"
-!
-!
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is not implemented for Rectangle matrix')
-END IF
-!
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
+
 IF (PRESENT(VALUE)) THEN
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
+
+  CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
+                 ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                 VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
-!
-IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%GetPointer()
-  CALL GetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=realvec, &
-    & scale=scale, &
-    & addContribution=addContribution)
-END IF
-!
-NULLIFY (realvec)
+
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+               spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+               scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetColumn7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetColMethods

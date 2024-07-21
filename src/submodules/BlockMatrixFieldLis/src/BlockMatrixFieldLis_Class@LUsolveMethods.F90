@@ -19,8 +19,5 @@
 ! date: 16 July 2021
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE(BlockMatrixFieldLis_Class) LUSolveMethods
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-END SUBMODULE LUSolveMethods
+! SUBMODULE(BlockMatrixFieldLis_Class) LUSolveMethods
+! END SUBMODULE LUSolveMethods

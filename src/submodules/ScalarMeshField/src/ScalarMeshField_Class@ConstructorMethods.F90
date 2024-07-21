@@ -15,8 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(ScalarMeshField_Class) ConstructorMethods
-USE BaseMethod
+USE GlobalData, ONLY: Constant, SpaceTime, Scalar, Nodal
+
+USE AbstractField_Class, ONLY: TypeField
+
+USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,27 +37,20 @@ INTEGER(I4B) :: s(1)
 
 IF (varType .EQ. SpaceTime) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: For ScalarMeshField varType cannot be SpaceTime.'// &
-    & ' In this situation you should use STScalarMeshField.')
+    '[INTERNAL ERROR] :: For ScalarMeshField varType cannot be SpaceTime.'// &
+                    ' In this situation you should use STScalarMeshField.')
   RETURN
 END IF
 
-IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (fieldType .EQ. TypeField%Constant) THEN
   s = 1
 ELSE
   s = nns
 END IF
 
-CALL SetAbstractMeshFieldParam( &
-  & param=param, &
-  & prefix=myprefix, &
-  & name=name, &
-  & fieldType=fieldType, &
-  & varType=varType, &
-  & engine=engine, &
-  & defineOn=defineOn, &
-  & rank=Scalar, &
-  & s=s)
+CALL SetAbstractMeshFieldParam(param=param, prefix=myprefix, name=name, &
+     fieldType=fieldType, varType=varType, engine=engine, defineOn=defineOn, &
+                               rank=Scalar, s=s)
 
 END PROCEDURE SetScalarMeshFieldParam
 
@@ -62,31 +63,17 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: returnType, argType, nns, varType, fieldType
 TYPE(ParameterList_) :: param
-CLASS(ReferenceElement_), POINTER :: refelem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-refelem => NULL()
-refelem => mesh%GetRefElemPointer()
-isok = ASSOCIATED(refelem)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: refelem pointer not found.')
-  RETURN
-END IF
-nns = (.NNE.refelem)
-
+nns = mesh%GetMaxNNE()
 returnType = func%GetReturnType()
 
 isok = returnType .EQ. Scalar
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: returnType should be scalar.')
-  RETURN
-END IF
+CALL AssertError1(isok, myName, "returnType should be scalar.")
 
 fieldType = TypeField%normal
 argType = func%GetArgType()
@@ -98,19 +85,16 @@ IF (argType .EQ. Constant) THEN
 END IF
 
 CALL param%Initiate()
-CALL SetScalarMeshFieldParam(param=param, name=name,  &
-   & fieldType=fieldType, varType=varType, engine=engine,  &
-   & defineOn=Nodal, nns=nns)
+CALL SetScalarMeshFieldParam(param=param, name=name, fieldType=fieldType, &
+                      varType=varType, engine=engine, defineOn=Nodal, nns=nns)
 
 CALL obj%Initiate(param=param, mesh=mesh)
 
 CALL param%DEALLOCATE()
 
-NULLIFY (refelem)
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate4
@@ -157,5 +141,7 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

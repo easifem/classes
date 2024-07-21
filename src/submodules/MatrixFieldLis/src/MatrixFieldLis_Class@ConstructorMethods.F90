@@ -19,8 +19,17 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixFieldLis_Class) ConstructorMethods
-USE BaseMethod
+
+USE MatrixField_Class, ONLY: MatrixFieldInitiate1, &
+                             MatrixFieldInitiate2, &
+                             MatrixFieldInitiate3, &
+                             MatrixFieldDeallocate
+
+USE CSRMatrix_Method, ONLY: GetNNZ
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -28,29 +37,31 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
-CALL MatrixFieldInitiate1(obj=obj, param=param, dom=dom)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL MatrixFieldInitiate1(obj=obj, param=param, fedof=fedof)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+
 CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
 CALL CHKERR(ierr)
 
-nnz = getNNZ(obj%mat)
+nnz = GetNNZ(obj%mat)
+
 obj%lis_ia = obj%mat%csr%ia - 1
 obj%lis_ja = obj%mat%csr%ja - 1
 
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
+CALL lis_matrix_set_csr(nnz, obj%lis_ia, obj%lis_ja, obj%mat%a, obj%lis_ptr, &
+                        ierr)
+
 CALL CHKERR(ierr)
 
 CALL lis_matrix_assemble(obj%lis_ptr, ierr)
@@ -61,6 +72,12 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -68,16 +85,17 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
-CALL MatrixFieldInitiate2( &
-  & obj=obj, &
-  & obj2=obj2, &
-  & copyFull=copyFull, &
-  & copyStructure=copyStructure, &
-  & usePointer=usePointer)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL MatrixFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+                          copyStructure=copyStructure, usePointer=usePointer)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -88,13 +106,8 @@ nnz = getNNZ(obj%mat)
 obj%lis_ia = obj%mat%csr%ia - 1
 obj%lis_ja = obj%mat%csr%ja - 1
 
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
+CALL lis_matrix_set_csr(nnz, obj%lis_ia, obj%lis_ja, obj%mat%a, obj%lis_ptr, &
+                        ierr)
 CALL CHKERR(ierr)
 
 CALL lis_matrix_assemble(obj%lis_ptr, ierr)
@@ -105,6 +118,11 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Initiate2
 
@@ -113,12 +131,17 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 INTEGER(I4B), PARAMETER :: tVar = 2
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
-CALL MatrixFieldInitiate3(obj=obj, param=param, dom=dom)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL MatrixFieldInitiate3(obj=obj, param=param, fedof=fedof)
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
@@ -128,13 +151,8 @@ nnz = getNNZ(obj%mat)
 obj%lis_ia = obj%mat%csr%ia - 1
 obj%lis_ja = obj%mat%csr%ja - 1
 
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
+CALL lis_matrix_set_csr(nnz, obj%lis_ia, obj%lis_ja, obj%mat%a, obj%lis_ptr, &
+                        ierr)
 CALL CHKERR(ierr)
 
 CALL lis_matrix_assemble(obj%lis_ptr, ierr)
@@ -145,6 +163,12 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------

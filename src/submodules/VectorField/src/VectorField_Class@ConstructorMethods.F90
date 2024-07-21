@@ -16,8 +16,22 @@
 !
 
 SUBMODULE(VectorField_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE FPL_Method, ONLY: Set, GetValue
+
+USE String_Class, ONLY: String
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
+                                   AbstractNodeFieldInitiate, &
+                                   AbstractNodeFieldInitiate2, &
+                                   AbstractNodeFieldDeallocate
+
+USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
+                               SetAbstractFieldParam
+
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
+USE ArangeUtility, ONLY: Arange
+
 IMPLICIT NONE
 CONTAINS
 
@@ -30,34 +44,26 @@ CHARACTER(*), PARAMETER :: myName = "SetVectorFieldParam()"
 INTEGER(I4B) :: ierr
 TYPE(ParameterList_), POINTER :: sublist
 
-CALL SetAbstractFieldParam( &
-  & param=param, &
-  & prefix=myprefix, &
-  & name=name, &
-  & engine=engine, &
-  & fieldType=fieldType, &
-  & comm=comm, &
-  & local_n=local_n, &
-  & global_n=global_n)
+CALL SetAbstractFieldParam(param=param, prefix=myprefix, &
+                           name=name, engine=engine, fieldType=fieldType, &
+                           comm=comm, local_n=local_n, global_n=global_n)
 
 sublist => NULL()
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
 IF (ierr .NE. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
 END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
 END IF
 
-CALL Set( &
-  & obj=sublist, &
-  & datatype=TypeIntI4B, &
-  & prefix=myprefix, &
-  & key="spaceCompo", &
-  & VALUE=spaceCompo)
+CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, &
+         key="spaceCompo", VALUE=spaceCompo)
 
 sublist => NULL()
 
@@ -68,11 +74,13 @@ END PROCEDURE SetVectorFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam"
+CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam()"
+
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
+
 IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'spaceCompo should be present in param.')
+                 '[INTERNAL ERROR] :: spaceCompo should be present in param.')
 END IF
 END PROCEDURE obj_checkEssentialParam
 
@@ -84,8 +92,13 @@ MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 CHARACTER(1) :: names(1)
 TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, tNodes
+INTEGER(I4B) :: tdof, ierr, tNodes(1)
 TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! main
 sublist => NULL()
@@ -93,40 +106,45 @@ sublist => NULL()
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
 IF (ierr .NE. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
 END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
 END IF
 
 CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo",  &
-  & VALUE=obj%spaceCompo)
+CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", &
+              VALUE=obj%spaceCompo)
 
-tNodes = dom%GetTotalNodes()
-tdof = tNodes * obj%spaceCompo
+tNodes(1) = fedof%GetTotalDOF()
+tdof = tNodes(1) * obj%spaceCompo
 names(1) (:) = astr%slice(1, 1)
 
-CALL AbstractNodeFieldSetParam(obj=obj,  &
-  & dof_tPhysicalVars=1_I4B,  &
-  & dof_storageFMT=NODES_FMT,  &
-  & dof_spaceCompo=[obj%spaceCompo],  &
-  & dof_timeCompo=[1_I4B],  &
-  & dof_tNodes=[tNodes],  &
-  & dof_names_char=names,  &
-  & tSize=tdof)
+CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
+            dof_storageFMT=mystorageformat, dof_spaceCompo=[obj%spaceCompo], &
+                               dof_timeCompo=[1_I4B], dof_tNodes=tNodes, &
+                               dof_names_char=names, tSize=tdof)
 
-nsd = dom%GetNSD()
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof)
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
+CALL Reallocate(obj%idofs, obj%spaceCompo)
+obj%idofs = Arange(1_I4B, obj%spaceCompo)
 
 astr = ""
 sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -134,15 +152,19 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-CALL AbstractNodeFieldInitiate2(&
-  & obj=obj, &
-  & obj2=obj2, &
-  & copyFull=copyFull, &
-  & copyStructure=copyStructure, &
-  & usePointer=usePointer)
-SELECT TYPE (obj2)
-CLASS IS (VectorField_)
+INTEGER(I4B) :: ii, tsize
+
+CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+                           copyStructure=copyStructure, usePointer=usePointer)
+
+SELECT TYPE (obj2); CLASS IS (VectorField_)
   obj%spaceCompo = obj2%spaceCompo
+
+  tsize = SafeSize(obj2%idofs)
+  CALL Reallocate(obj%idofs, tsize)
+  DO ii = 1, tsize
+    obj%idofs(ii) = obj2%idofs(ii)
+  END DO
 END SELECT
 END PROCEDURE obj_Initiate2
 
@@ -152,6 +174,7 @@ END PROCEDURE obj_Initiate2
 
 MODULE PROCEDURE obj_Deallocate
 obj%spaceCompo = 0_I4B
+IF (ALLOCATED(obj%idofs)) DEALLOCATE (obj%idofs)
 CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
 
@@ -168,7 +191,7 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param, dom)
+CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -177,7 +200,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%Initiate(param, dom)
+CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------

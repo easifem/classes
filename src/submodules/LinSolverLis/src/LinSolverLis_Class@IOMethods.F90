@@ -15,22 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LinSolverLis_Class) IOMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                 Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_Display
-CALL LinSolverDisplay(obj=obj, msg=msg, unitno=unitno)
-CALL Display(obj%lis_solver, "# lis_solver : ", unitno=unitno)
-END PROCEDURE ls_Display
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE IOMethods
+! SUBMODULE(LinSolverLis_Class) IOMethods
+! END SUBMODULE IOMethods

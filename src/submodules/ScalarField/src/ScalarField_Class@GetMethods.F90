@@ -16,7 +16,41 @@
 !
 
 SUBMODULE(ScalarField_Class) GetMethods
-USE BaseMethod
+USE RealVector_Method, ONLY: GetValue_, Get, GetValue
+
+USE ScalarField_Class, ONLY: ScalarField_
+
+USE STScalarField_Class, ONLY: STScalarField_
+
+USE VectorField_Class, ONLY: VectorField_
+
+! USE STVectorField_Class, only: STVectorField_
+
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+
+USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+
+USE VectorFieldLis_Class, ONLY: VectorFieldLis_
+
+! USE STVectorFieldLis_Class, only: STVectorFieldLis_
+
+USE ArangeUtility, ONLY: Arange
+
+USE FEVariable_Method, ONLY: NodalVariable
+
+USE BaseType, ONLY: TypeFEVariableScalar, &
+                    TypeFEVariableSpace
+
+USE DOF_Method, ONLY: GetNodeLoc, &
+                      OPERATOR(.tNodes.), &
+                      GetIDOF
+
+USE AbstractField_Class, ONLY: TypeField
+
+USE ReallocateUtility, ONLY: Reallocate
+
+USE Display_Method, ONLY: Tostring
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,17 +59,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=1, &
-    & dataType=1.0_DFP)
-ELSE
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & dataType=1.0_DFP)
-END IF
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+#include "./localNodeError.inc"
+CALL obj%GetSingle(VALUE=VALUE, indx=globalNode)
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -43,19 +69,10 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL reallocate(VALUE, obj%tsize)
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=1, &
-    & dataType=1.0_DFP)
-ELSE
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & VALUE=VALUE, &
-    & idof=1)
-END IF
+INTEGER(I4B) :: s(3)
+s = GetNodeLoc(obj=obj%dof, idof=1)
+CALL obj%GetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
+                     tsize=tsize)
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -63,24 +80,26 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-VALUE = Get( &
-  & obj=obj%realVec, &
-  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-  & dataType=1.0_DFP)
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
+#include "./localNodeError.inc"
+CALL obj%GetMultiple(VALUE=VALUE, indx=globalNode, tsize=tsize)
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
-!                                                                   Get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
-INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-jj = 0
-DO ii = istart, iend, stride
-  jj = jj + 1
-  globalNode(jj) = ii
-END DO
-CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+#include "./localNodeError.inc"
+
+VALUE = NodalVariable( &
+        Get( &
+        obj=obj%realVec, &
+        nodenum=globalNode, &
+        dataType=1.0_DFP), &
+        TypeFEVariableScalar, &
+        TypeFEVariableSpace)
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -88,13 +107,7 @@ END PROCEDURE obj_Get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get5
-VALUE = NodalVariable( &
-  & Get( &
-  & obj=obj%realVec, &
-  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-  & dataType=1.0_DFP), &
-  & TypeFEVariableScalar, &
-  & TypeFEVariableSpace)
+CALL obj%Get(ivar=1, idof=1, VALUE=VALUE, ivar_value=1, idof_value=1)
 END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
@@ -102,63 +115,103 @@ END PROCEDURE obj_Get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get6
-CALL GetValue(obj=obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE obj_Get6
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get7
-CHARACTER(*), PARAMETER :: myName = "obj_Get7"
+CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 INTEGER(I4B) :: tsize
-INTEGER(I4B) :: tsize_value
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: indx1
-INTEGER(I4B) :: indx2
-REAL(DFP) :: avar
+INTEGER(I4B) :: s(3), p(3)
+REAL(DFP), POINTER :: realvec(:)
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'ScalarField_::obj is not initiated')
-END IF
+#ifdef DEBUG_VER
 
-IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractNodeField_ ::value is not initiated')
-END IF
+CALL AssertError1(obj%isInitiated, myName, &
+                  'ScalarFieldLis_::obj is not initiated')
 
-tsize = obj%dof.tNodes. [ivar, idof]
-tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
-IF (tsize .NE. tsize_value) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
-END IF
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  'AbstractNodeField::value is not initiated')
+#endif
 
-DO ii = 1, tsize
-  indx1 = GetNodeLoc(&
-    & obj=obj%dof, &
-    & nodenum=ii, &
-    & ivar=ivar, &
-    & idof=idof)
-  CALL obj%GetSingle(VALUE=avar, indx=indx1)
-  indx2 = GetNodeLoc(&
-    & obj=VALUE%dof, &
-    & nodenum=ii, &
-    & ivar=ivar_value, &
-    & idof=idof_value)
-  CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
-END DO
+SELECT TYPE (VALUE)
 
-END PROCEDURE obj_Get7
+TYPE IS (ScalarField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1)
+  realvec => VALUE%GetPointer()
+  CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
+                       tsize=tsize)
+  realvec => NULL()
+
+TYPE IS (STScalarField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1)
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  tsize = obj%dof.tNodes.1
+
+  realvec => VALUE%GetPointer()
+  CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
+                       tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                       stride_value=p(3))
+  realvec => NULL()
+
+TYPE IS (VectorField_)
+
+  s = GetNodeLoc(obj=obj%dof, idof=1)
+  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+                                             idof=idof_value))
+  tsize = obj%dof.tNodes.1
+
+  realvec => VALUE%GetPointer()
+  CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
+                       tsize=tsize, istart_value=p(1), iend_value=p(2), &
+                       stride_value=p(3))
+  realvec => NULL()
+
+! TYPE IS (STVectorField_)
+!
+!   s = GetNodeLoc(obj=obj%dof, idof=1)
+!   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
+!                                              idof=idof_value))
+!   tsize = obj%dof.tNodes.1
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
+!                        tsize=tsize, istart_value=p(1), iend_value=p(2), &
+!                        stride_value=p(3))
+!   realvec => NULL()
+
+TYPE IS (ScalarFieldLis_)
+
+  CALL VALUE%Set(ivar=1_I4B, idof=1_I4B, VALUE=obj, idof_value=1_I4B, &
+                 ivar_value=1_I4B)
+
+TYPE IS (STScalarFieldLis_)
+
+  CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
+                 ivar_value=1_I4B)
+
+TYPE IS (VectorFieldLis_)
+
+  CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
+                 ivar_value=1_I4B)
+
+! TYPE IS (STVectorFieldLis_)
+!
+!   CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
+!                  ivar_value=1_I4B)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for type value')
+  RETURN
+END SELECT
+
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                              GetFeVariable
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFEVariable
-CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
-CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
+CALL obj%Get(VALUE=VALUE, globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
@@ -168,5 +221,19 @@ END PROCEDURE obj_GetFEVariable
 MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Size
+ans = obj%local_n
+END PROCEDURE obj_Size
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

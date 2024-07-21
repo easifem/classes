@@ -16,9 +16,14 @@
 !
 
 SUBMODULE(VectorField_Class) IOMethods
-USE BaseMethod
-USE HDF5File_Method
+USE String_Class, ONLY: String
+USE Display_Method, ONLY: Display
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
+                                   AbstractNodeFieldImport, &
+                                   AbstractNodeFieldExport
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -27,7 +32,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-CALL Display(obj%spaceCompo, msg="# spaceCompo = ", unitno=unitno)
+CALL Display(obj%spaceCompo, msg="spaceCompo = ", unitno=unitno)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -35,31 +40,29 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: strval, dsetname, name, engine
 INTEGER(I4B) :: fieldType, spaceCompo
 TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: bools(3)
+LOGICAL(LGT) :: bools(3), isok
 
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Import()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AbstractNodeFieldImport( &
-  & obj=obj, &
-  & hdf5=hdf5, &
-  & group=group, &
-  & dom=dom, &
-  & domains=domains)
+CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
+                             fedof=fedof, fedofs=fedofs)
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
-ELSE
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset spaceCompo should be present')
+isok = hdf5%pathExists(dsetname%chars())
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+               '[INTERNAL ERROR] :: The dataset spaceCompo should be present')
 END IF
+
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 dsetname = TRIM(group)//"/tSize"
 bools(1) = hdf5%pathExists(dsetname%chars())
@@ -68,26 +71,35 @@ bools(2) = hdf5%pathExists(dsetname%chars())
 dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
-IF (.NOT. ALL(bools)) THEN
-  CALL param%initiate()
-
-  CALL SetVectorFieldParam( &
-    & param=param, &
-    & name=obj%name%chars(), &
-    & fieldType=obj%fieldType, &
-    & spaceCompo=obj%spaceCompo, &
-    & engine=obj%engine%chars() &
-    & )
-
-  obj%isInitiated = .FALSE.
-
-  CALL obj%initiate(param=param, dom=dom)
-
-  CALL param%DEALLOCATE()
+isok = ALL(bools)
+IF (isok) THEN
+  CALL FinishMe
+  RETURN
 END IF
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Import()")
+CALL param%initiate()
+
+CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
+                         fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
+                         engine=obj%engine%chars())
+
+obj%isInitiated = .FALSE.
+
+CALL obj%Initiate(param=param, fedof=fedof)
+
+CALL param%DEALLOCATE()
+
+CALL finishMe
+
+CONTAINS
+SUBROUTINE finishMe
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE finishMe
 
 END PROCEDURE obj_Import
 
@@ -96,11 +108,13 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dsetname
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Export()')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
@@ -108,8 +122,11 @@ CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 dsetname = TRIM(group)//"/spaceCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Export()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------

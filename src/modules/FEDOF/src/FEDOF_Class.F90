@@ -1,0 +1,1003 @@
+! This program is a part of EASIFEM library
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
+! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+MODULE FEDOF_Class
+USE GlobalData, ONLY: DFP, I4B, LGT, INT8
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE ExceptionHandler_Class, ONLY: e
+USE FPL, ONLY: ParameterList_
+USE BaseType, ONLY: CSRMatrix_, &
+                    QuadraturePoint_, &
+                    ElemshapeData_
+USE AbstractFE_Class, ONLY: AbstractFE_, AbstractFEPointer_
+
+IMPLICIT NONE
+PRIVATE
+
+PUBLIC :: FEDOF_
+PUBLIC :: FEDOFPointer_
+PUBLIC :: FEDOFSetSparsity
+PUBLIC :: SetFEDOFParam
+
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
+CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
+
+!----------------------------------------------------------------------------
+!                                                                   FEDOF_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: FEDOF data type
+
+TYPE :: FEDOF_
+  PRIVATE
+  LOGICAL(LGT) :: isLagrange = .FALSE.
+  !! It is true when baseInterpolation is Lagrange
+  INTEGER(I4B) :: tdof = 0
+  !! Total number of degrees of freedom
+  INTEGER(I4B) :: tNodes = 0
+  !! Total number of nodes
+  INTEGER(I4B) :: tEdges = 0
+  !! Total number of edges
+  INTEGER(I4B) :: tFaces = 0
+  !! Total number of faces
+  INTEGER(I4B) :: tCells = 0
+  !! Total number of cells
+  INTEGER(I4B) :: maxTotalConnectivity = 0
+  !! maximum number of connectivity
+
+  CHARACTER(2) :: baseContinuity = "H1"
+  !! continuity or conformity of basis defined on reference
+  !! element, following values are allowed
+  !! H1, HCurl, HDiv, DG
+
+  CHARACTER(4) :: baseInterpolation = "LAGR"
+  !! Type of basis functions used for interpolation on reference
+  !! element, Following values are allowed
+  !! LagrangeInterpolation ! HierarchyInterpolation
+  !! OrthogonalInterpolation ! HermitInterpolation
+  !! SerendipityInterpolation
+
+  INTEGER(INT8) :: maxCellOrder = 0_INT8
+  !! maximum value of cell order
+
+  INTEGER(INT8) :: maxFaceOrder = 0_INT8
+  !! maximum value of face order
+
+  INTEGER(INT8) :: maxEdgeOrder = 0_INT8
+  !! maximum value of edge order
+
+  INTEGER(INT8), ALLOCATABLE :: cellOrder(:)
+  !! Order of each cell
+  !! the size of cellOrder is equal to the obj%tCells
+  !! Get connectivity of an element
+  !! Get entity number of an element
+  !! Get the cell number of an element (this is global element number)
+  !! convert it to the local element number
+  !! use this local element number to get cell order from cellOrder
+
+  INTEGER(INT8), ALLOCATABLE :: faceOrder(:)
+  !! order of each face
+
+  INTEGER(INT8), ALLOCATABLE :: edgeOrder(:)
+  !! order of each edge
+
+  INTEGER(I4B), ALLOCATABLE :: edgeIA(:)
+  !! sparsity for edge, the size of edgeJA is equal to the total number of
+  !! degrees of freedom on edge,
+  !! the size of edgeIA is equal to the total number of edges + 1
+  !! The degrees of freedom of iedge is stored in
+  !! edgeJA(edgeIA(iedge):edgeIA(iedge+1)-1)
+
+  INTEGER(I4B), ALLOCATABLE :: faceIA(:)
+  !! sparsity for face, the size of faceJA is equal to the total number of
+  !! degrees of freedom on face,
+  !! the size of faceIA is equal to the total number of faces + 1
+  !! The degrees of freedom of iface is stored in
+  !! faceJA(faceIA(iface):faceIA(iface+1)-1)
+
+  INTEGER(I4B), ALLOCATABLE :: cellIA(:)
+  !! sparsity for cell, the size of cellJA is equal to the total number of
+  !! degrees of freedom on cell,
+  !! the size of cellIA is equal to the total number of cells + 1
+  !! The degrees of freedom of icell is stored in
+  !! cellJA(cellIA(icell):cellIA(icell+1)-1)
+
+  TYPE(AbstractFEPointer_) :: fe(8)
+  !! pointer to finite element object
+  !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism, pyramid
+
+  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+  !! Pointer to domain
+
+CONTAINS
+
+  !SET:
+  !@ConstructorMethods
+
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate FEDOF by using homogeneous order
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate FEDOF by using inhomogeneous order
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate FEDOF from ParameterList
+  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate FEDOF from order vector defined for global elements
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
+    Initiate4
+  !! Generic method for initiating FEDOF
+
+  PROCEDURE, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
+  !! Check essential parameters
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  !! Copy
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
+
+  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the data
+
+  !IO:
+  !@IOMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the contents of FEDOF
+
+  !GET:
+  !@GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
+  !! Get vertex degrees of freedom
+
+  PROCEDURE, PASS(obj) :: GetEdgeDOF1 => obj_GetEdgeDOF1
+  !! Get edge degrees of freedom
+  PROCEDURE, PASS(obj) :: GetEdgeDOF2 => obj_GetEdgeDOF2
+  !! Get edge degree of freedom from global element and
+  !! local edge number
+  GENERIC, PUBLIC :: GetEdgeDOF => GetEdgeDOF1, GetEdgeDOF2
+
+  PROCEDURE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
+  !! Get face degrees of freedom
+  PROCEDURE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
+  !! Get face degrees of freedom from globbal element and
+  !! local face number
+  GENERIC, PUBLIC :: GetFaceDOF => GetFaceDOF1, GetFaceDOF2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
+  !! Get cell degrees of freedom
+
+  PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
+  !! Retuns the total degrees of freedom in FEDOF
+  PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
+  !! Retuns the total dof of an element
+  GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2
+  !! Generic mehthod for getting the total dof
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix for setting the data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
+  !! Get the mesh pointer
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+  !! Get the base interpolation
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
+    obj_GetMaxTotalConnectivity
+  !! Get the maximum size of connectivity
+
+  PROCEDURE, PASS(obj) :: GetQuadraturePoints1 => obj_GetQuadraturePoints1
+  !! Get quadrature points for isotropic order
+
+  PROCEDURE, PASS(obj) :: GetQuadraturePoints2 => obj_GetQuadraturePoints2
+  !! Get quadrature points for anisotropic ordder
+
+  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
+    GetQuadraturePoints2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+
+  !SET:
+  !@SetSparsityMethods
+
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  !! Set sparsity in the CSRMatrix by using single FEDOF
+  !! This is for non block matrix
+
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
+  !! Set sparsity in the CSRMatrix by using single FEDOF
+  !! This is for non block matrix
+
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+
+END TYPE FEDOF_
+
+!----------------------------------------------------------------------------
+!                                                             FEDOFPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: FEDOFPointer_
+  TYPE(FEDOF_), POINTER :: ptr => NULL()
+END TYPE FEDOFPointer_
+
+!----------------------------------------------------------------------------
+!                                     CheckEssentialParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: This routine Check the essential parameters in param.
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  END SUBROUTINE obj_Initiate1
+
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, lambda, beta)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetFEDOFParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set the essential parameters for constructing the FEDOF
+
+INTERFACE
+  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
+                            orderFile, ipType, basisType, alpha, beta, lambda)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity or conformity of basis defined on reference
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Type of basis functions used for interpolation on reference
+    CHARACTER(*), INTENT(IN) :: orderFile
+    !! file containing the order of each element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! basis type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! ultraspherical parameter
+  END SUBROUTINE SetFEDOFParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate3(obj, param, mesh)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Initiate an instance of fe dof
+!
+!# Introduction
+!
+! This routine is similar to the obj_Initiate2, but the order of the
+! element is defined for global element numbers.
+! The number of rows in order is equal to 2
+! the first row contains the global element number
+! the second row contains the order.
+!
+! This routine will make order0(:) from order(:,:) and call initiate2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, order, mesh, baseContinuity, &
+                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(:, :)
+    !! the number of columns in order is equal to total number of elements
+    !! the number of rows in order is equal to 2
+    !! the first row contains the global element number
+    !! the second rows contains the order of that element
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity of basis function
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! interpolation of basis
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation point type, needed for Lagrange polynomial
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! basis type, needed for Lagrange polynomial only
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! alpha parameter for jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! beta parameter for jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Copy@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Copy
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CLASS(FEDOF_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-20
+! summary: Deallocate the data
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Get the connectivity (function)
+
+INTERFACE
+  MODULE FUNCTION obj_GetConnectivity(obj, opt, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+    CHARACTER(*), INTENT(IN) :: opt
+    !! opt = Vertex
+    !! opt = Edge
+    !! opt = Face
+    !! opt = Cell
+    !! opt = All
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal true then globalElement is local element number
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! connectivity of element
+  END FUNCTION obj_GetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetConnectivity_@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
+! summary: Get the connectivity
+
+INTERFACE
+ MODULE SUBROUTINE obj_GetConnectivity_(obj, ans, tsize, opt, globalElement, &
+                                         islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in con
+    CHARACTER(*), INTENT(IN) :: opt
+    !! opt = Vertex
+    !! opt = Edge
+    !! opt = Face
+    !! opt = Cell
+    !! opt = All
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal true then globalElement is local element number
+  END SUBROUTINE obj_GetConnectivity_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetVertexDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVertexDOF(obj, globalNode, ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+  END SUBROUTINE obj_GetVertexDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeDOF1(obj, globalEdge, ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalEdge
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+  END SUBROUTINE obj_GetEdgeDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-21
+! summary:  Get edge degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeDOF2(obj, globalElement, localEdgeNumber, &
+                                    ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local cell element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local edge number in global element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! edge degree of freedom
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! tota size of data written in ans
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetEdgeDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-21
+! summary:  Get face degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceDOF1(obj, globalFace, ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalFace
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+  END SUBROUTINE obj_GetFaceDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-21
+! summary:  Get face degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceDOF2(obj, globalElement, localFaceNumber, &
+                                    ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! DOF object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in globall element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! face degree of freedom
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in ans
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetFaceDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetCellDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalCell
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+  END SUBROUTINE obj_GetCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Returns total number of dof in the FEDOF
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF1(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Returns total number of dof in the FEDOF
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF2(obj, globalElement, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Get the prefix for setting essential parameters
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-19
+! summary: Display the content of FE DOF
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetCellOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCellOrder(obj, order)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! this is cell order
+  END SUBROUTINE obj_SetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetFaceOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the face order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFaceOrder(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! this is cell order
+  END SUBROUTINE obj_SetFaceOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetEdgeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the Edge order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetEdgeOrder(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetEdgeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Get the mesh pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), POINTER :: ans
+  END FUNCTION obj_GetMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetBaseInterpolation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the base interpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetOrders@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  Get cellOrder, faceOrder, edgeOrder
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrders(obj, cellOrder, faceOrder, edgeOrder, &
+                 cellOrient, faceOrient, edgeOrient, tCellOrder, tFaceOrder, &
+                          tEdgeOrder, tCellOrient, tFaceOrient, tEdgeOrient, &
+                                  globalElement, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), INTENT(INOUT) :: faceOrder(:, :)
+    !! number of rows in faceOrder is equal to 3
+    !! number of columns in faceOrder is equal to total faces
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrder(:)
+    !! size if equal to the total number of edges in element
+    INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
+    !! size is equal to 1
+    INTEGER(I4B), INTENT(INOUT) :: faceOrient(:, :)
+    !! face orientation flags
+    !! number of rows is 3
+    !! number of columns is tface
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrient(:)
+    !! orientaion flag for edge
+    !! size is equal to tedge
+    INTEGER(I4B), INTENT(OUT) :: tCellOrder
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrder
+    !! size of data written in faceorder
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrder
+    !! size of data written in edgeorder
+    INTEGER(I4B), INTENT(OUT) :: tCellOrient
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrient(2)
+    !! size of data written in faceorder
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrient
+    !! size of data written in edgeorder
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetOrders
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Get maximum size of connectivity
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalConnectivity(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-09
+! summary: Set sparsity in CSRMatrix_ from AbstractDomain_
+
+INTERFACE FEDOFSetSparsity
+
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity1
+END INTERFACE FEDOFSetSparsity
+
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@SetMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity2(obj, col_fedof, cellToCell, mat, &
+                                     ivar, jvar)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! Abstract mesh class
+    CLASS(FEDOF_), INTENT(INOUT) :: col_fedof
+    !! Abstract mesh class
+    INTEGER(I4B), INTENT(IN) :: cellToCell(:)
+    !! cell To Cell connectivity between mesh of obj and col_fedof
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in row
+    INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable in column
+  END SUBROUTINE obj_SetSparsity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
+
+INTERFACE FEDOFSetSparsity
+  MODULE SUBROUTINE obj_SetSparsity3(fedofs, mat)
+    CLASS(FEDOFPointer_), INTENT(INOUT) :: fedofs(:)
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity3
+END INTERFACE FEDOFSetSparsity
+
+!----------------------------------------------------------------------------
+!                                                        GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, globalElement, &
+                          quadratureType, order, alpha, beta, lambda, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature points
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+    !! Type of quadrature points
+    !! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight ! GaussChebyshev
+    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussChebyshevRadauRight
+    INTEGER(I4B), INTENT(IN) :: order
+    !! Order of integrand
+    !! either the order or the nips should be present
+    !! Both nips and order should not be present
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameter
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetQuadraturePoints1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, globalElement, &
+         p, q, r, quadratureType1, quadratureType2, quadratureType3, alpha1, &
+      beta1, lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature point
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    INTEGER(I4B), INTENT(IN) :: p
+    !! order of integrand in x
+    INTEGER(I4B), INTENT(IN) :: q
+    !! order of integrand in y
+    INTEGER(I4B), INTENT(IN) :: r
+    !! order of integrand in z direction
+    INTEGER(I4B), INTENT(IN) :: quadratureType1
+    !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
+    !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
+    !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
+    INTEGER(I4B), INTENT(IN) :: quadratureType2
+    !! Type of quadrature points
+    INTEGER(I4B), INTENT(IN) :: quadratureType3
+    !! Type of quadrature points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
+    !! Jacobi parameter and Ultraspherical parameters
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
+    !! Jacobi parameter and Ultraspherical parameters
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then the global element is local element
+  END SUBROUTINE obj_GetQuadraturePoints2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-13
+! summary:  Get local element shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, globalElement, elemsd, &
+                                              quad, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-13
+! summary:  Get global element shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, globalElement, elemsd, &
+                                               xij, geoElemsd, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! shape function data
+    TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd
+    !! global element shape data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then the global element is a local element
+  END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE FEDOF_Class

@@ -19,27 +19,33 @@
 ! summary: Scalar field data type is defined
 
 MODULE BlockNodeField_Class
-USE GlobalData
-USE BaSetype
-USE String_Class
-USE AbstractField_Class
-USE AbstractNodeField_Class
+USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NodesToDOF
+USE BaseType, ONLY: FEVariable_
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE HDF5File_Class
-USE Domain_Class
-USE DirichletBC_Class
+USE HDF5File_Class, ONLY: HDF5File_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
+INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
+INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
+
 PUBLIC :: BlockNodeFieldPointer_
 PUBLIC :: BlockNodeField_
-PUBLIC :: TypeBlockNodeField
 PUBLIC :: SetBlockNodeFieldParam
 PUBLIC :: BlockNodeFieldInitiate1
 PUBLIC :: BlockNodeFieldInitiate3
 PUBLIC :: BlockNodeFieldDeallocate
+PUBLIC :: BlockNodeFieldExport
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -52,86 +58,162 @@ PUBLIC :: BlockNodeFieldDeallocate
 !{!pages/docs-api/BlockNodeField/BlockNodeField_.md!}
 
 TYPE, EXTENDS(AbstractNodeField_) :: BlockNodeField_
+  INTEGER(I4B), ALLOCATABLE :: idofs(:)
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethod
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & obj_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+    obj_checkEssentialParam
+  !! Check essential parameter
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate by using parameter list
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate by using parameter list and fedofs
+
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+  !! Set all values to a scalar values
+  !! We call set all method
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
+  !! Set all values of obj by using a rank-1 vector
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
+  !! Set a single entry
+  !! filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
+  !! Set multiple values to a constant value
+  !! Filter: ivar
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  !! Set multiple values by using rank-1 vector
+  !! Filter: ivar
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  !! Set miltiple values to a constant value
+  !! Filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  !! Set multiple values by using rank-1 vector
+  !! Filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
+  !! Set multiple values to a constant value
+  !! Filter: ivar, spaceCompo, timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
+  !! Set multiple values to a constant value
+  !! Filter: ivar, spaceCompo, timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
+  !! Set multiple values by using rank-1 vector
+  !! Filter: ivar, spaceCompo, timeCompo(:)
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
+  !! Set multiple values to a constant scalar
+  !! filter spaceCompo and timeCompo(:)
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
+  !! Set multiple values by using rank-1 vector
+  !! Filter: ivar, spaceCompo(:), timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
+  !! Set multiple values to a constant scalar
+  !! Filter: ivar, spaceCompo(:), timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
   !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+  !! filter: ivar, spaceCompo, timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set15 => obj_Set15
+  !! Set single entry
+  !! filter: ivar, spaceCompo, timeCompo(:)
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set16 => obj_Set16
+  !! Set single entry
+  !! filter: ivar, spaceCompo(:), timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set17 => obj_Set17
+  !!
+
+  PROCEDURE, PASS(obj) :: Set18 => obj_Set18
+  !!
+
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
+    Set5, Set6, Set7, Set8, Set9, Set10, Set11, &
+    Set12, Set13, Set14, Set15, Set16, Set17, Set18
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ASSIGN => obj_Assign
   !! Set all values to a scalar values
-  PROCEDURE, PASS(obj) :: ASSIGN => obj_Assign
-  !! Set all values to a scalar values
+
   GENERIC, PUBLIC :: ASSIGNMENT(=) => ASSIGN
   !! Assignment, obj = scalar
-  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
-  !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
-  !! Set selected values to given scalar
-  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
-  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
-  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
-  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
-  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
-  PROCEDURE, PASS(obj) :: Set12 => obj_Set12
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
-  PROCEDURE, PASS(obj) :: Set15 => obj_Set15
-  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
-  PROCEDURE, PASS(obj) :: Set17 => obj_Set17
-  PROCEDURE, PASS(obj) :: Set18 => obj_Set18
-  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
-    & Set5, Set6, Set7, Set8, Set9, Set10, Set11, &
-    & Set12, Set13, Set14, Set15, Set16, Set17, Set18
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
-  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
-  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
-  PROCEDURE, PASS(obj) :: Get4 => obj_Get4
-  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
-  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
-  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
-  PROCEDURE, PASS(obj) :: Get8 => obj_Get8
-  PROCEDURE, PASS(obj) :: Get9 => obj_Get9
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
+  !! Set a single value to a scalar value
+  !! filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  !! Get all the values in a rank-1 vector
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
+  !! Get multiple values
+  !! Filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
+  !! Get in FEVariable
+  !! Filter: ivar, idof
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
+  !! Get in FEVariable
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
+  !! Get multiple values in a rank-1 vector
+  !! Filter: ivar, spaceCompo, timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
+  !! Get value in FEVariable
+  !! Filter: ivar, spaceCompo, timeCompo
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
+
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
-    & Get5, Get6, Get7, Get8, Get9
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+    Get5, Get6, Get7, Get8
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 
-  ! GET:
-  ! @OperatorMethods
-  PROCEDURE, PASS(obj) :: IsEqual => obj_IsEqual
-  GENERIC, PUBLIC :: OPERATOR(.EQ.) => IsEqual
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
+    obj_ApplyDirichletBC1
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
+    obj_ApplyDirichletBC2
+
 END TYPE BlockNodeField_
-
-!----------------------------------------------------------------------------
-!                                                       TypeBlockNodeField
-!----------------------------------------------------------------------------
-
-TYPE(BlockNodeField_), PARAMETER :: TypeBlockNodeField =  &
-  & BlockNodeField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                    BlockNodeFieldPointer_
@@ -154,16 +236,8 @@ END TYPE BlockNodeFieldPointer_
 ! The size of physicalVarNames, spaceCompo, timeCompo should be the same
 
 INTERFACE
-  MODULE SUBROUTINE SetBlockNodeFieldParam(param, &
-    & name, &
-    & engine, &
-    & physicalVarNames, &
-    & spaceCompo, &
-    & timeCompo, &
-    & fieldType, &
-    & comm, &
-    & local_n, &
-    & global_n)
+  MODULE SUBROUTINE SetBlockNodeFieldParam(param, name, engine, &
+  physicalVarNames, spaceCompo, timeCompo, fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockNodeField_]] will be stored in param
     CHARACTER(*), INTENT(IN) :: name
@@ -231,10 +305,10 @@ END INTERFACE
 !@endnote
 
 INTERFACE BlockNodeFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE BlockNodeFieldInitiate1
 
@@ -259,10 +333,10 @@ END INTERFACE BlockNodeFieldInitiate1
 ! - `dom` contains the pointer to [[Domain_]] class.
 
 INTERFACE BlockNodeFieldInitiate3
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE BlockNodeFieldInitiate3
 
@@ -295,14 +369,30 @@ END INTERFACE BlockNodeFieldDeallocate
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data into HDF5File_
+
+INTERFACE BlockNodeFieldExport
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_Export
+END INTERFACE BlockNodeFieldExport
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -316,8 +406,11 @@ INTERFACE
   MODULE SUBROUTINE obj_Set1(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
+    !! scalar value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set1
 END INTERFACE
 
@@ -333,8 +426,11 @@ INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! Size of value should be equal to the size of obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set2
 END INTERFACE
 
@@ -347,15 +443,23 @@ END INTERFACE
 ! summary: This routine Sets the single value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, globalNode, VALUE, ivar, idof, &
-    & scale, addContribution)
+  MODULE SUBROUTINE obj_Set3(obj, globalNode, islocal, VALUE, ivar, idof, &
+                             scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! degree of freedom number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set3
 END INTERFACE
 
@@ -368,14 +472,21 @@ END INTERFACE
 ! summary: This routine Sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, globalNode, VALUE, ivar, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, globalNode, islocal, VALUE, ivar, scale, &
+                             addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be set
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set4
 END INTERFACE
 
@@ -388,14 +499,24 @@ END INTERFACE
 ! summary: This routine Sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, globalNode, VALUE, ivar, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, globalNode, VALUE, islocal, ivar, scale, &
+                             addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! obj = value
+    !! set all degrees of freedom of physical variable ivar
+    !! size of value should be equal to the degrees of freedo in
+    !! ivar.
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set5
 END INTERFACE
 
@@ -408,15 +529,23 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, globalNode, VALUE, ivar, idof, &
-    & scale, addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, globalNode, islocal, VALUE, ivar, idof, &
+                             scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! constant value which will be assigned to the globalnode
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set6
 END INTERFACE
 
@@ -429,15 +558,23 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, globalNode, VALUE, ivar, idof, &
-    & scale, addContribution)
+  MODULE SUBROUTINE obj_Set7(obj, globalNode, islocal, VALUE, ivar, idof, &
+                             scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! obj = value, size(value) = size(globalNode)
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set7
 END INTERFACE
 
@@ -450,16 +587,26 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, ivar, &
+                             spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! value to be set
+    !! size(value) = size(globalNode)
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component number in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component number in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set8
 END INTERFACE
 
@@ -472,16 +619,25 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, globalNode, islocal, VALUE, ivar, &
+                             spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! scalar value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set9
 END INTERFACE
 
@@ -494,16 +650,25 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set10(obj, globalNode, islocal, VALUE, ivar, &
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! value to be set
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set10
 END INTERFACE
 
@@ -516,16 +681,25 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set11(obj, globalNode, islocal, VALUE, ivar, &
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! scalar value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set11
 END INTERFACE
 
@@ -538,16 +712,25 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set12(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set12(obj, globalNode, islocal, VALUE, ivar, &
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
+    !! values, the size should be same as size of spacecompo
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set12
 END INTERFACE
 
@@ -560,16 +743,25 @@ END INTERFACE
 ! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set13(obj, globalNode, islocal, VALUE, ivar, &
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set13
 END INTERFACE
 
@@ -583,15 +775,22 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set14(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component in the physical variable
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set14
 END INTERFACE
 
@@ -605,15 +804,22 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set15(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global or local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space component
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! time components in the physical variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set15
 END INTERFACE
 
@@ -627,15 +833,22 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set16(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
+                              spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global or local node number
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space component numbers in ivar
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component numbers in ivar
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add contribution
   END SUBROUTINE obj_Set16
 END INTERFACE
 
@@ -650,9 +863,13 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Set17(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    CLASS(BlockNodeField_), INTENT(IN) :: VALUE
+    !! BlockNodeField_
+    CLASS(BlockNodeField_), INTENT(INOUT) :: VALUE
+    !! BlockNodeField_
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set17
 END INTERFACE
 
@@ -666,15 +883,22 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set18(obj, ivar, idof, VALUE, ivar_value, &
-    & idof_value, scale, addContribution)
+                              idof_value, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom number in ivar
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    !! AbstractNodeField_
     INTEGER(I4B), INTENT(IN) :: ivar_value
+    !! physical variable number in value
     INTEGER(I4B), INTENT(IN) :: idof_value
+    !! local degree of freedom number in value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
   END SUBROUTINE obj_Set18
 END INTERFACE
 
@@ -702,14 +926,18 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, ivar, idof)
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, islocal, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
+    !! contant value
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: ivar
-  !! physical variable number
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
-  !! degree of freedom number
+    !! degree of freedom number
   END SUBROUTINE obj_Get1
 END INTERFACE
 
@@ -722,9 +950,12 @@ END INTERFACE
 ! summary: returns all the values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, VALUE)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, tsize)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    !! Get all values in a rank 1
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of VALUE should be equal to the size of obj
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -737,12 +968,21 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, ivar, idof)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, tsize, globalNode, islocal, &
+                             ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    !! value
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size written in value
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom number
   END SUBROUTINE obj_Get3
 END INTERFACE
 
@@ -755,15 +995,20 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride,  &
-    & ivar, idof)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, islocal, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(IN) :: istart
-    INTEGER(I4B), INTENT(IN) :: iend
-    INTEGER(I4B), INTENT(IN) :: stride
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
+    !! TypeFEVariableScalar
+    !! TypeFEVariableSpace
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
+    !! local degree of freedom number
   END SUBROUTINE obj_Get4
 END INTERFACE
 
@@ -776,16 +1021,21 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, &
-    & ivar, idof)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! NodalVariable
-    !! TypeFEVariableScalar
-    !! TypeFEVariableSpace
+    !! If spaceCompo is greater than 1, then FETypeVector
+    !! IF spaceCompo is equal to 1, then FETypeScalar
+    !! If timeCompo is equal to 1, then FETypeSpace
+    !! If timeCompo is greater than 1, then FETypeSpaceTime
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
+    !! physical variable number
+
   END SUBROUTINE obj_Get5
 END INTERFACE
 
@@ -798,16 +1048,16 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, VALUE, globalNode, ivar)
+  MODULE SUBROUTINE obj_Get6(obj, VALUE, tsize, globalNode, islocal, ivar, &
+                             spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    !! NodalVariable
-    !! If spaceCompo is greater than 1, then FETypeVector
-    !! IF spaceCompo is equal to 1, then FETypeScalar
-    !! If timeCompo is equal to 1, then FETypeSpace
-    !! If timeCompo is greater than 1, then FETypeSpaceTime
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN) :: timeCompo
   END SUBROUTINE obj_Get6
 END INTERFACE
 
@@ -820,11 +1070,15 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, globalNode, ivar, &
-    & spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_Get7(obj, VALUE, globalNode, islocal, ivar, &
+                             spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
+    !! TypeFEVariableScalar
+    !! TypeFEVariableSpace
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), INTENT(IN) :: islocal
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -837,40 +1091,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine returns the single entry of the scalar field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, VALUE, globalNode, ivar, &
-    & spaceCompo, timeCompo)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    !! NodalVariable
-    !! TypeFEVariableScalar
-    !! TypeFEVariableSpace
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE obj_Get8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
 ! summary: Returns values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE SUBROUTINE obj_Get8(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE obj_Get9
+  END SUBROUTINE obj_Get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -882,11 +1113,16 @@ END INTERFACE
 ! summary: Set single entry
 
 INTERFACE BlockFieldGetFEVariable
-  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, VALUE, ivar)
+  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! global or local node number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then globalNode is local node number
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable number
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE BlockFieldGetFEVariable
 
@@ -916,7 +1152,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBC_), INTENT(IN) :: dbc
+    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
@@ -934,23 +1170,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+    CLASS(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       EQ@OperatorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_IsEqual(obj, obj2) RESULT(Ans)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(BlockNodeField_), INTENT(IN) :: obj2
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_IsEqual
 END INTERFACE
 
 !----------------------------------------------------------------------------
