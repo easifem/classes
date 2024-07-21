@@ -638,6 +638,14 @@ CONTAINS
   !! Return the local facet id, so that we can Get reference element of
   !! the facet element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
+    obj_GetGlobalFaceNumber
+  !! Get global face number from global element and localFacenumber
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
+    obj_GetGlobalEdgeNumber
+  !! Get global Edge number from global element and localEdgenumber
+
   PROCEDURE, PUBLIC, PASS(obj) :: FindFace => obj_FindFace
   !! Find a face in a cell
 
@@ -3084,6 +3092,48 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: isMaster
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetLocalFacetID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalFaceNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-21
+! summary:  Get global face number from globalElement and local face number
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global face number
+  END FUNCTION obj_GetGlobalFaceNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalEdgeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local Edge number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global Edge number
+  END FUNCTION obj_GetGlobalEdgeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
