@@ -171,11 +171,19 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeDOF => obj_GetEdgeDOF
+  PROCEDURE, PASS(obj) :: GetEdgeDOF1 => obj_GetEdgeDOF1
   !! Get edge degrees of freedom
+  PROCEDURE, PASS(obj) :: GetEdgeDOF2 => obj_GetEdgeDOF2
+  !! Get edge degree of freedom from global element and
+  !! local edge number
+  GENERIC, PUBLIC :: GetEdgeDOF => GetEdgeDOF1, GetEdgeDOF2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFaceDOF => obj_GetFaceDOF
+  PROCEDURE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
   !! Get face degrees of freedom
+  PROCEDURE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
+  !! Get face degrees of freedom from globbal element and
+  !! local face number
+  GENERIC, PUBLIC :: GetFaceDOF => GetFaceDOF1, GetFaceDOF2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
@@ -506,27 +514,82 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetEdgeDOF(obj, globalEdge, ans, tsize, islocal)
+  MODULE SUBROUTINE obj_GetEdgeDOF1(obj, globalEdge, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalEdge
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-  END SUBROUTINE obj_GetEdgeDOF
+  END SUBROUTINE obj_GetEdgeDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-21
+! summary:  Get edge degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeDOF2(obj, globalElement, localEdgeNumber, &
+                                    ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local cell element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local edge number in global element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! edge degree of freedom
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! tota size of data written in ans
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetEdgeDOF2
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      GetFaceDOF@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-21
+! summary:  Get face degree of freedom
+
 INTERFACE
-  MODULE SUBROUTINE obj_GetFaceDOF(obj, globalFace, ans, tsize, islocal)
+  MODULE SUBROUTINE obj_GetFaceDOF1(obj, globalFace, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalFace
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-  END SUBROUTINE obj_GetFaceDOF
+  END SUBROUTINE obj_GetFaceDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2024-07-21
+! summary:  Get face degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceDOF2(obj, globalElement, localFaceNumber, &
+                                    ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! DOF object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in globall element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! face degree of freedom
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in ans
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetFaceDOF2
 END INTERFACE
 
 !----------------------------------------------------------------------------
