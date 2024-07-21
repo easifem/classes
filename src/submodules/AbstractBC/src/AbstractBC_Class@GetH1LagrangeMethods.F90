@@ -138,6 +138,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Get_H1_Lagrange1
 
 !----------------------------------------------------------------------------
+!                                                                GetNodeNum
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  !! Boundary condition
+  CLASS(FEDOF_), INTENT(INOUT) :: fedof
+  !! Degree of freedom
+  INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+  !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+  INTEGER(I4B), INTENT(OUT) :: nrow
+  !! the size of data written in nodalValue
+
+  CHARACTER(*), PARAMETER :: myName = "GetNodeNum()"
+  INTEGER(I4B) :: nsd
+  CLASS(AbstractMesh_), POINTER :: mesh
+
+  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
+  IF (nrow .NE. 0) THEN
+    nsd = obj%dom%GetNSD()
+    mesh => obj%dom%GetMeshPointer(dim=nsd)
+    CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
+                                  islocal=.FALSE.)
+    mesh => NULL()
+  END IF
+END SUBROUTINE GetNodeNum
+
+!----------------------------------------------------------------------------
 !                                                          GetConstantValue
 !----------------------------------------------------------------------------
 
@@ -160,8 +188,7 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! internal variables
   CHARACTER(*), PARAMETER :: myName = "GetConstantValue()"
   LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: nsd
-  CLASS(AbstractMesh_), POINTER :: mesh
+  INTEGER(I4B) :: ii, jj
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodalValue)
@@ -169,16 +196,14 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
-  nsd = obj%dom%GetNSD()
-  mesh => obj%dom%GetMeshPointer(dim=nsd)
-  CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
-                                islocal=.FALSE.)
-  mesh => NULL()
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
   ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
-  nodalValue(1:nrow, 1:ncol) = obj%nodalValue(1, 1)
+
+  DO CONCURRENT(ii=1:nrow, jj=1:ncol)
+    nodalValue(ii, jj) = obj%nodalValue(1, 1)
+  END DO
 END SUBROUTINE GetConstantValue
 
 !----------------------------------------------------------------------------
@@ -204,8 +229,7 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! internal variables
   CHARACTER(*), PARAMETER :: myName = "GetSpaceValue()"
   LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: ii, nsd
-  CLASS(AbstractMesh_), POINTER :: mesh
+  INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodalValue)
@@ -213,12 +237,7 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
-  nsd = obj%dom%GetNSD()
-  mesh => obj%dom%GetMeshPointer(dim=nsd)
-  CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
-                                islocal=.FALSE.)
-  mesh => NULL()
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
 #ifdef DEBUG_VER
   isok = obj%nrow .GE. nrow
@@ -255,9 +274,8 @@ SUBROUTINE GetTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
 
   !! internal variables
   CHARACTER(*), PARAMETER :: myname = 'GetTimeValue()'
-  INTEGER(I4B) :: ii, jj, nsd
+  INTEGER(I4B) :: ii, jj
   LOGICAL(LGT) :: isok
-  CLASS(AbstractMesh_), POINTER :: mesh
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodalValue)
@@ -265,12 +283,7 @@ SUBROUTINE GetTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
-  nsd = obj%dom%GetNSD()
-  mesh => obj%dom%GetMeshPointer(dim=nsd)
-  CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
-                                islocal=.FALSE.)
-  mesh => NULL()
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
   ncol = obj%nrow
 
@@ -302,8 +315,7 @@ SUBROUTINE GetSpaceTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! internal variables
   CHARACTER(*), PARAMETER :: myName = 'GetSpaceTimeValue()'
   LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: ii, jj, nsd
-  CLASS(AbstractMesh_), POINTER :: mesh
+  INTEGER(I4B) :: ii, jj
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodalValue)
@@ -312,12 +324,7 @@ SUBROUTINE GetSpaceTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
 
 #endif
 
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=nrow)
-  nsd = obj%dom%GetNSD()
-  mesh => obj%dom%GetMeshPointer(dim=nsd)
-  CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
-                                islocal=.FALSE.)
-  mesh => NULL()
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
 #ifdef DEBUG_VER
   isok = obj%nrow .GE. nrow
