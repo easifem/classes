@@ -1142,13 +1142,32 @@ END PROCEDURE obj_GetNodeConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
-INTEGER(I4B) :: ii
+CALL obj%GetLocalNodeNumber_(globalNode=globalNode, ans=ans, islocal=islocal)
+END PROCEDURE obj_GetLocalNodeNumber1
 
-DO ii = 1, SIZE(globalNode)
-  ans(ii) = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
+!----------------------------------------------------------------------------
+!                                                       GetLocalNodeNumber_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber1_
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: islocal0
+
+islocal0 = Input(option=islocal, default=.FALSE.)
+tsize = SIZE(globalNode)
+
+IF (islocal0) THEN
+  DO CONCURRENT(ii=1:tsize)
+    ans(ii) = globalNode(ii)
+  END DO
+  RETURN
+END IF
+
+DO CONCURRENT(ii=1:tsize)
+  ans(ii) = obj%local_nptrs(globalNode(ii))
 END DO
 
-END PROCEDURE obj_GetLocalNodeNumber1
+END PROCEDURE obj_GetLocalNodeNumber1_
 
 !----------------------------------------------------------------------------
 !                                                        GetLocalNodeNumber
