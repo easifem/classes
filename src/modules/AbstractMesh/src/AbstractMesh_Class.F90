@@ -529,6 +529,10 @@ CONTAINS
     GetLocalNodeNumber2
   !! Returns the local node number of a global node number
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalNodeNumber_ => &
+    obj_GetLocalNodeNumber1_
+  !! get local node number without allocation
+
   PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => &
     obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
@@ -2319,13 +2323,26 @@ END INTERFACE
 ! This function returns the local node numbers from global node numbers.
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal)  &
-   & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans(SIZE(globalNode))
   END FUNCTION obj_GetLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetLocalNoddeNumber_@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalNodeNumber1_(obj, globalNode, ans, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetLocalNodeNumber1_
 END INTERFACE
 
 !----------------------------------------------------------------------------
