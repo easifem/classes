@@ -889,7 +889,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetNodeNum@getMethods
+!                                                      GetNodeNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -905,12 +905,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetNodeNum@getMethods
+!                                                      GetNodeNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns the node numbers
+! summary: This routine returns the node numbers from nodenum
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeNum1(obj, ans, tsize)
@@ -921,12 +921,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetNodeNum@getMethods
+!                                                      GetNodeNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns node numbers
+! summary: This routine returns node numbers from nodenum, meshid, elemnum
 !
 ! - [x] isSelectionByMeshID
 ! - [x] isSelectionByElemNum
@@ -946,7 +946,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetNodeNum@getMethods
+!                                                      GetNodeNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
