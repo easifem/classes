@@ -105,6 +105,8 @@ PUBLIC :: Elemdata_GetOrientation
 PUBLIC :: Elemdata_IsBoundaryElement
 PUBLIC :: Elemdata_FindFace
 PUBLIC :: Elemdata_FindEdge
+PUBLIC :: Elemdata_GetGlobalFaceNumber
+PUBLIC :: Elemdata_GetGlobalEdgeNumber
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -1190,10 +1192,10 @@ PURE SUBROUTINE Elemdata_GetGlobalEdges(obj, ans, tsize)
 
   INTEGER(I4B) :: ii
 
-  tsize = SIZE(obj%globalNodes)
+  tsize = SIZE(obj%globalEdges)
 
   DO ii = 1, tsize
-    ans(ii) = obj%globalNodes(ii)
+    ans(ii) = obj%globalEdges(ii)
   END DO
 
 END SUBROUTINE Elemdata_GetGlobalEdges
@@ -1216,6 +1218,28 @@ PURE SUBROUTINE Elemdata_GetGlobalFaces(obj, ans, tsize)
   END DO
 
 END SUBROUTINE Elemdata_GetGlobalFaces
+
+!----------------------------------------------------------------------------
+!                                                       GetGlobalFaceNumber
+!----------------------------------------------------------------------------
+
+PURE FUNCTION Elemdata_GetGlobalFaceNumber(obj, localFaceNumber) RESULT(ans)
+  TYPE(Elemdata_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  INTEGER(I4B) :: ans
+  ans = obj%globalFaces(localFaceNumber)
+END FUNCTION Elemdata_GetGlobalFaceNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+PURE FUNCTION Elemdata_GetGlobalEdgeNumber(obj, localEdgeNumber) RESULT(ans)
+  TYPE(Elemdata_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+  INTEGER(I4B) :: ans
+  ans = obj%globalEdges(localEdgeNumber)
+END FUNCTION Elemdata_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
 !                                                          GetGlobalElements
