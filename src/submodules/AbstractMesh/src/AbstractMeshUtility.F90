@@ -223,14 +223,6 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       END IF
     END DO
 
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
-
     aint = jj * 3
     CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
     elementData(iel)%ptr%globalElements = temp1(1:aint)
@@ -253,7 +245,7 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
     END IF
 
     aint = tfaces - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
+    CALL Reallocate(elementData(iel)%ptr%boundaryData, aint)
     isbndy = jj .NE. tfaces
 
     IF (isbndy) THEN

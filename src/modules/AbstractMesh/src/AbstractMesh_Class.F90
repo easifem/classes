@@ -66,17 +66,6 @@ PUBLIC :: PARAM_MAX_NNE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
-#ifdef MAX_NODE_TO_NODE
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_NODE = MAX_NODE_TO_NODE
-#else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_NODE = 256
-#endif
-
-#ifdef MAX_NODE_TO_ELEM
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
-#else
-INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
-#endif
 
 !----------------------------------------------------------------------------
 !                                                             AbstractMesh_
