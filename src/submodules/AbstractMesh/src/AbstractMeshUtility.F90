@@ -244,23 +244,6 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       elementData(iel)%ptr%elementType = TypeElem%internal
     END IF
 
-    aint = tfaces - jj
-    CALL Reallocate(elementData(iel)%ptr%boundaryData, aint)
-    isbndy = jj .NE. tfaces
-
-    IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
-      jj = 0
-      DO ii = 1, tfaces
-        IF (bndyflag(ii) .NE. 0) THEN
-          jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
-        END IF
-      END DO
-    ELSE
-      elementData(iel)%elementType = TypeElem%internal
-    END IF
-
   END DO
 
   IF (ALLOCATED(face2elem)) DEALLOCATE (face2elem)
@@ -374,14 +357,6 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
       END IF
     END DO
 
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
-
     aint = jj * 3
     CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
     elementData(iel)%ptr%globalElements = temp1(1:aint)
@@ -401,23 +376,6 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
       END DO
     ELSE
       elementData(iel)%ptr%elementType = TypeElem%internal
-    END IF
-
-    aint = tedges - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
-    isbndy = jj .NE. tedges
-
-    IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
-      jj = 0
-      DO ii = 1, tedges
-        IF (bndyflag(ii) .NE. 0) THEN
-          jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
-        END IF
-      END DO
-    ELSE
-      elementData(iel)%elementType = TypeElem%internal
     END IF
 
   END DO
@@ -535,14 +493,6 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
       END IF
     END DO
 
-#ifdef DEBUG_VER
-    IF (jj .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: jj = 0 found, somethign is wrong')
-      RETURN
-    END IF
-#endif
-
     aint = jj * 3
     CALL Reallocate(elementData(iel)%ptr%globalElements, aint)
     elementData(iel)%ptr%globalElements = temp1(1:aint)
@@ -562,23 +512,6 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
       END DO
     ELSE
       elementData(iel)%ptr%elementType = TypeElem%internal
-    END IF
-
-    aint = tNodes - jj
-    CALL Reallocate(elementData(iel)%boundaryData, aint)
-    isbndy = jj .NE. tNodes
-
-    IF (isbndy) THEN
-      elementData(iel)%elementType = TypeElem%domainBoundary
-      jj = 0
-      DO ii = 1, tNodes
-        IF (bndyflag(ii) .NE. 0) THEN
-          jj = jj + 1
-          elementData(iel)%boundaryData(jj) = ii
-        END IF
-      END DO
-    ELSE
-      elementData(iel)%elementType = TypeElem%internal
     END IF
 
   END DO
