@@ -100,8 +100,6 @@ IF (problem) THEN
   RETURN
 END IF
 
-#endif
-
 ! check
 problem = .NOT. obj%isNodeToNodesInitiated
 IF (problem) CALL obj%InitiateNodeToNodes()

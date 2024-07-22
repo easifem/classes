@@ -2052,8 +2052,6 @@ CASE (3_I4B)
     ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
   END DO
 
-#endif
-
 END SELECT
 
 END PROCEDURE obj_GetFacetConnectivity
