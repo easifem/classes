@@ -554,19 +554,6 @@ tnodes = jj
 END PROCEDURE obj_GetNptrsInBox_
 
 !----------------------------------------------------------------------------
-!                                                                  GetNptrs_
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNptrs_
-INTEGER(I4B) :: ii, n
-n = SIZE(obj%nodeData)
-DO CONCURRENT(ii=1:n)
-  nptrs(ii) = obj%nodeData(ii)%globalNodeNum
-END DO
-IF (PRESENT(tsize)) tsize = n
-END PROCEDURE obj_GetNptrs_
-
-!----------------------------------------------------------------------------
 !                                                          GetInternalNptrs
 !----------------------------------------------------------------------------
 
@@ -1125,31 +1112,6 @@ END PROCEDURE obj_GetOrientation
 !                                                            GetConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetConnectivity_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
-LOGICAL(LGT) :: problem
-#endif
-
-INTEGER(I4B) :: iel
-
-#ifdef DEBUG_VER
-problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: problem in getting localElement number')
-END IF
-#endif
-
-iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-tsize = SIZE(obj%elementData(iel)%globalNodes)
-ans(1:tsize) = obj%elementData(iel)%globalNodes
-END PROCEDURE obj_GetConnectivity_
-
-!----------------------------------------------------------------------------
-!                                                            GetConnectivity
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_GetNodeConnectivity
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeConnectivity()"
@@ -1375,8 +1337,6 @@ END PROCEDURE obj_GetNodeToElements1
 MODULE PROCEDURE obj_GetNodeToElements2
 INTEGER(I4B) :: ii, jj, n, lnode(SIZE(globalNode)), &
                 nn(SIZE(globalNode) + 1)
-
-IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
