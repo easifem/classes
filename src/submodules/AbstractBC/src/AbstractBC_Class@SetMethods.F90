@@ -159,7 +159,7 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
     RETURN
   END IF
 
-! spaceNodalValue
+  !! spaceNodalValue
   bool1 = notFunc_notExt .AND. isSpaceVal
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%space)
   IF (bool2) THEN

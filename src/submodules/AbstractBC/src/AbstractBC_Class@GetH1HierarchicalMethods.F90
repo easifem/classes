@@ -109,7 +109,8 @@ END PROCEDURE obj_Get_H1_Hierarchical1
 !                                                                GetNodeNum
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
+SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow, iNodeOnNode, iNodeOnFace, &
+                      iNodeOnEdge)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   !! Boundary condition
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -118,6 +119,12 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
   !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
   INTEGER(I4B), INTENT(OUT) :: nrow
   !! the size of data written in nodalValue
+  INTEGER(I4B), INTENT(OUT) :: iNodeOnNode
+  !! starting point of nodes on nodes
+  INTEGER(I4B), INTENT(OUT) :: iNodeOnFace
+  !! starting point of nodes on face
+  INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
+  !! starting point of nodes on edge
 
   !! internal variables
   INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii
@@ -128,6 +135,8 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
   !! INFO: Lets get vertex node, if there are any
   CALL obj%boundary%GetNodeNum(ans=nodenum, tsize=mysize)
   nrow = nrow + mysize
+  iNodeOnNode = 1
+  iNodeOnFace = nrow + 1
 
   nsd = obj%dom%GetNSD()
   mesh => obj%dom%GetMeshPointer(dim=nsd)
@@ -151,6 +160,8 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
                           islocal=.TRUE.)
     nrow = nrow + mysize
   END DO
+
+  iNodeOnEdge = nrow + 1
 
   DO ii = 1, obj%tElemToEdge
     localElement = obj%elemToEdge(1, ii)
@@ -189,9 +200,12 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii, jj, kk
   CLASS(AbstractMesh_), POINTER :: mesh
 
-  nrow = 0
-  ncol = 1
+  nrow = 0; ncol = 1
+
   IF (PRESENT(times)) ncol = SIZE(times)
+
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=nrow, &
+    iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, iNodeOnEdge=iNodeOnEdge)
 
   !! INFO: Lets get vertex node, if there are any
   CALL obj%boundary%GetNodeNum(ans=nodenum, tsize=mysize, dom=obj%dom)
@@ -227,7 +241,7 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                           islocal=.TRUE.)
 
     DO CONCURRENT(kk=1:mysize, jj=1:ncol)
-      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+      nodalValue(nrow + kk, jj) = 0.0_DFP
     END DO
 
     nrow = nrow + mysize
@@ -241,7 +255,7 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                           islocal=.TRUE.)
 
     DO CONCURRENT(kk=1:mysize, jj=1:ncol)
-      nodalValue(nrow + kk, jj) = obj%nodalValue(1, 1)
+      nodalValue(nrow + kk, jj) = 0.0_DFP
     END DO
 
     nrow = nrow + mysize
