@@ -53,4 +53,3 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_plot3
 
 END SUBMODULE PlotMethods
-
