@@ -168,6 +168,9 @@ CONTAINS
   !GET:
   !@GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
+  !! Get the case name of fedof
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
 
@@ -178,12 +181,24 @@ CONTAINS
   !! local edge number
   GENERIC, PUBLIC :: GetEdgeDOF => GetEdgeDOF1, GetEdgeDOF2
 
+  PROCEDURE, PASS(obj) :: GetTotalEdgeDOF1 => obj_GetTotalEdgeDOF1
+  !! Get total edge dof
+  PROCEDURE, PASS(obj) :: GetTotalEdgeDOF2 => obj_GetTotalEdgeDOF2
+  !! Get total edge dof from global element and local edge number
+  GENERIC, PUBLIC :: GetTotalEdgeDOF => GetTotalEdgeDOF1, GetTotalEdgeDOF2
+
   PROCEDURE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
   !! Get face degrees of freedom
   PROCEDURE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
   !! Get face degrees of freedom from globbal element and
   !! local face number
   GENERIC, PUBLIC :: GetFaceDOF => GetFaceDOF1, GetFaceDOF2
+
+  PROCEDURE, PASS(obj) :: GetTotalFaceDOF1 => obj_GetTotalFaceDOF1
+  !! Get total face dof
+  PROCEDURE, PASS(obj) :: GetTotalFaceDOF2 => obj_GetTotalFaceDOF2
+  !! Get total face dof from global element and local face number
+  GENERIC, PUBLIC :: GetTotalFaceDOF => GetTotalFaceDOF1, GetTotalFaceDOF2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
@@ -438,6 +453,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetCaseName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-27
+! summary:  Get the case name of fedof
+
+INTERFACE
+  MODULE FUNCTION obj_GetCaseName(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CHARACTER(6) :: ans
+  END FUNCTION obj_GetCaseName
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 GetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
@@ -524,6 +554,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  GetTotalEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEdgeDOF1(obj, globalEdge, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalEdge
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalEdgeDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     GetEdgeDOF@GetMethods
 !----------------------------------------------------------------------------
 
@@ -546,6 +589,24 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true then globalElement is local element
   END SUBROUTINE obj_GetEdgeDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEdgeDOF2(obj, globalElement, localEdgeNumber, &
+                                       islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local cell element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local edge number in global element
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalEdgeDOF2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -590,6 +651,47 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true then globalElement is local element
   END SUBROUTINE obj_GetFaceDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-27
+! summary:  Get total face dof
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFaceDOF1(obj, globalFace, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalFace
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFaceDOF1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-27
+! summary:  Get total number of degree of freedom on face
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFaceDOF2(obj, globalElement, localFaceNumber, &
+                                       islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! DOF object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in globall element
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalElement is local element
+    INTEGER(I4B) :: ans
+    !! Total number of degree of freedom on face
+  END FUNCTION obj_GetTotalFaceDOF2
 END INTERFACE
 
 !----------------------------------------------------------------------------
