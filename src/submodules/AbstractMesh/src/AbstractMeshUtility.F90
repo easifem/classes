@@ -16,10 +16,10 @@
 !
 
 MODULE AbstractMeshUtility
-USE GlobalData
-USE Display_Method
-USE ReallocateUtility
-USE CPUTime_Class
+USE GlobalData, ONLY: DFP, I4B, LGT, stdout
+USE Display_Method, ONLY: Display, ToString
+USE ReallocateUtility, ONLY: Reallocate
+USE CPUTime_Class, ONLY: CPUTime_
 USE ExceptionHandler_Class, ONLY: e
 USE ElemData_Class
 USE FacetData_Class
@@ -251,9 +251,9 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName//  &
-      & " : time : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName//" : "//myName// &
+                 " : time : "// &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
 END SUBROUTINE InitiateElementToElements3D
@@ -392,7 +392,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName//  &
       & " : time : "//  &
-      & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+      & ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
 END SUBROUTINE InitiateElementToElements2D
@@ -528,7 +528,7 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName//" : "//myName// &
                  " : time : "// &
-                 tostring(TypeCPUTime%GetTime()), unitno=stdout)
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
 END SUBROUTINE InitiateElementToElements1D
