@@ -117,7 +117,7 @@ CONTAINS
   !! Export AbstractNodeField to HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData1_vtk
   PROCEDURE, NOPASS :: WriteData_vtk_ptrs_vec =>  &
-    & obj_WriteData2_vtk
+     obj_WriteData2_vtk
   GENERIC, PUBLIC :: WriteData => WriteData_vtk_ptrs_vec
   !! Export data in VTKformat
 
