@@ -32,7 +32,16 @@ USE Display_Method, ONLY: Display
 #endif
 
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                               GetCaseName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCaseName
+ans = obj%baseContinuity//obj%baseInterpolation
+END PROCEDURE obj_GetCaseName
 
 !----------------------------------------------------------------------------
 !                                                               GetVertexDOF
@@ -57,6 +66,14 @@ END DO
 END PROCEDURE obj_GetEdgeDOF1
 
 !----------------------------------------------------------------------------
+!                                                           GetTotalEdgeDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEdgeDOF1
+ans = obj%edgeIA(globalEdge + 1) - obj%edgeIA(globalEdge)
+END PROCEDURE obj_GetTotalEdgeDOF1
+
+!----------------------------------------------------------------------------
 !                                                                 GetEdgeDOF
 !----------------------------------------------------------------------------
 
@@ -67,6 +84,17 @@ globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
 CALL obj%GetEdgeDOF(globalEdge=globalEdge, ans=ans, tsize=tsize, &
                     islocal=islocal)
 END PROCEDURE obj_GetEdgeDOF2
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalEdgeDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEdgeDOF2
+INTEGER(I4B) :: globalEdge
+globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
+                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+ans = obj%GetTotalEdgeDOF(globalEdge=globalEdge, islocal=islocal)
+END PROCEDURE obj_GetTotalEdgeDOF2
 
 !----------------------------------------------------------------------------
 !                                                                 GetFaceDOF
@@ -82,6 +110,14 @@ END DO
 END PROCEDURE obj_GetFaceDOF1
 
 !----------------------------------------------------------------------------
+!                                                            GetTotalFaceDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalFaceDOF1
+ans = obj%faceIA(globalface + 1) - obj%faceIA(globalface)
+END PROCEDURE obj_GetTotalFaceDOF1
+
+!----------------------------------------------------------------------------
 !                                                                 GetFaceDOF
 !----------------------------------------------------------------------------
 
@@ -92,6 +128,17 @@ globalFace = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
 CALL obj%GetFaceDOF(globalFace=globalFace, ans=ans, tsize=tsize, &
                     islocal=islocal)
 END PROCEDURE obj_GetFaceDOF2
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalFaceDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalFaceDOF2
+INTEGER(I4B) :: globalFace
+globalFace = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
+                             islocal=islocal, localFaceNumber=localFaceNumber)
+ans = obj%GetTotalFaceDOF(globalFace=globalFace, islocal=islocal)
+END PROCEDURE obj_GetTotalFaceDOF2
 
 !----------------------------------------------------------------------------
 !                                                                 GetCellDOF
