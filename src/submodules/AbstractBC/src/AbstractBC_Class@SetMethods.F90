@@ -16,9 +16,14 @@
 !
 
 SUBMODULE(AbstractBC_Class) SetMethods
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 USE GlobalData, ONLY: CHAR_LF
 USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -127,11 +132,8 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
 
   CHARACTER(*), PARAMETER :: myname = "set_check_error()"
 
-  IF (.NOT. obj%isInitiated) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[CONFIG ERROR ] :: AbstractBC_ object is not initiated.')
-    RETURN
-  END IF
+  CALL AssertError1(obj%isInitiated, myName, &
+                    "AbstractBC_ object is not initiated")
 
   notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
 
@@ -273,6 +275,12 @@ SUBROUTINE set_elem_to_faces(obj)
 
   cmesh => obj%dom%GetMeshPointer(dim=nsd)
   maxnode2elem = cmesh%GetMaxNodeToElements()
+
+#ifdef DEBUG_VER
+  isok = maxnode2elem .NE. 0
+  CALL AssertError1(isok, myName, "maxNodeToElements from mesh is zero")
+#endif
+
   ALLOCATE (n2e(maxnode2elem))
 
   ! here tsize = nsd - 1
@@ -291,10 +299,17 @@ SUBROUTINE set_elem_to_faces(obj)
                          tsize=indx(2))
 
   tsize = cmesh%GetMaxNNE()
+
+#ifdef DEBUG_VER
+  isok = tsize .NE. 0
+  CALL AssertError1(isok, myName, "maxNNE from mesh is zero")
+#endif
+
   ALLOCATE (bndy_con(tsize), cell_con(tsize))
 
   ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
   tsize = indx(2)
+
   boundary_loop: DO ii = 1, tsize
 
     CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
@@ -310,6 +325,11 @@ SUBROUTINE set_elem_to_faces(obj)
     !INFO: loop over all elements connected to con(1)
     node_to_element_loop: DO jj = 1, indx(4)
       localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
+
+#ifdef DEBUG_VER
+      isok = localCellNumber .NE. 0
+      CALL AssertError1(isok, myName, "debug localCellNumber is zero")
+#endif
 
       CALL cmesh%FindFace(globalElement=localCellNumber, &
                           faceCon=bndy_con(1:indx(3)), &
@@ -469,5 +489,7 @@ END SUBROUTINE set_elem_to_edges
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
