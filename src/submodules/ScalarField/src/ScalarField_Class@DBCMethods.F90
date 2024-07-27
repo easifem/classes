@@ -59,11 +59,11 @@ END IF
 #endif
 
 ncol = 1
-nrow = dbc%GetTotalNodeNum()
+nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
 ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol)
+             ncol=ncol, fedof=obj%fedof)
 
 IF (istimes) THEN
   DO idof = 1, ncol
@@ -127,7 +127,7 @@ tsize = SIZE(dbc)
 
 ncol = 1
 DO ibc = 1, tsize
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum()
+  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
                   expandFactor=expandFactor)
   CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
@@ -137,7 +137,7 @@ END DO
 IF (istimes) THEN
   DO ibc = 1, tsize
     CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times, nrow=nrow, ncol=ncol)
+                          times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
     aint = SIZE(nodalvalue, 2)
     DO idof = 1, aint
     CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
@@ -152,7 +152,7 @@ END IF
 
 DO ibc = 1, tsize
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol)
+                        ncol=ncol, fedof=obj%fedof)
 
   CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
                islocal=.FALSE.)
