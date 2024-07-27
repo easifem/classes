@@ -1393,7 +1393,7 @@ SUBROUTINE Elemdata_FindFace(obj, faceCon, isFace, &
   localFaceNumber = 0
 
   IF (onlyBoundaryElement) THEN
-    isok = obj%elementType .EQ. BOUNDARY_ELEMENT
+    isok = Elemdata_IsBoundaryElement(obj=obj)
     IF (.NOT. isok) RETURN
   END IF
 
@@ -1493,7 +1493,8 @@ END SUBROUTINE Elemdata_FindEdge
 FUNCTION Elemdata_IsBoundaryElement(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   LOGICAL(LGT) :: ans
-  ans = obj%elementType .EQ. BOUNDARY_ELEMENT
+  ans = (obj%elementType .EQ. TypeElem%boundary) .OR. &
+        (obj%elementType .EQ. TypeElem%domainBoundary)
 END FUNCTION Elemdata_IsBoundaryElement
 
 !----------------------------------------------------------------------------
