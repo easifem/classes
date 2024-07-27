@@ -1872,7 +1872,7 @@ END PROCEDURE obj_GetCellNumber
 
 MODULE PROCEDURE obj_FindFace
 INTEGER(I4B) :: iel
-iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
 IF (onlyBoundaryElement) THEN
   CALL obj%InitiateBoundaryData()
