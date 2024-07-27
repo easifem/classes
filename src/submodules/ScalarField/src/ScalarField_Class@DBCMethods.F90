@@ -76,7 +76,7 @@ IF (istimes) THEN
 END IF
 
 CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-             islocal=.FALSE.)
+             islocal=.TRUE.)
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
@@ -141,7 +141,7 @@ IF (istimes) THEN
     aint = SIZE(nodalvalue, 2)
     DO idof = 1, aint
     CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                   islocal=.FALSE.)
+                   islocal=.TRUE.)
     END DO
   END DO
 
@@ -155,7 +155,7 @@ DO ibc = 1, tsize
                         ncol=ncol, fedof=obj%fedof)
 
   CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               islocal=.FALSE.)
+               islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
