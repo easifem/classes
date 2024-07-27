@@ -52,13 +52,13 @@ IF (istimes) THEN
 END IF
 #endif
 
-nrow = dbc%GetTotalNodeNum()
+nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
 ncol = 1
 ALLOCATE (nodalvalue(nrow, ncol))
 ALLOCATE (nodenum(nrow))
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol)
+             ncol=ncol, fedof=obj%fedof)
 
 spaceCompo = dbc%GetDOFNo()
 CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
@@ -111,7 +111,7 @@ tsize = SIZE(dbc)
 
 ncol = 1
 DO idof = 1, tsize
-  nrow = dbc(idof)%ptr%GetTotalNodeNum()
+  nrow = dbc(idof)%ptr%GetTotalNodeNum(fedof=obj%fedof)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
                   expandFactor=expandFactor)
   CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
@@ -120,7 +120,7 @@ END DO
 
 DO idof = 1, tsize
   CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                         times=times, nrow=nrow, ncol=ncol)
+                         times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
 
   spaceCompo = dbc(idof)%ptr%GetDOFNo()
 
