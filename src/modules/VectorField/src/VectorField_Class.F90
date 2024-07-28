@@ -1194,7 +1194,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+    TYPE(DirichletBC_), INTENT(INOUT) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
@@ -1212,7 +1212,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
