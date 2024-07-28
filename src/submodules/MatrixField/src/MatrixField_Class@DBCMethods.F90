@@ -26,8 +26,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplyDBC
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBC()"
+MODULE PROCEDURE obj_ApplyDBC1
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBC1()"
 LOGICAL(LGT) :: case1
 INTEGER(I4B) :: tsize
 
@@ -55,7 +55,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_ApplyDBC
+END PROCEDURE obj_ApplyDBC1
 
 !----------------------------------------------------------------------------
 !                                                             GetDBCSubMat
