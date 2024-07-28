@@ -210,7 +210,7 @@ PURE SUBROUTINE NodeData_GetNodeCoord(obj, ans, tsize)
   TYPE(NodeData_), INTENT(IN) :: obj
   REAL(DFP), INTENT(INOUT) :: ans(:)
   INTEGER(I4B), INTENT(OUT) :: tsize
-  tsize = 3
+  tsize = SIZE(obj%nodeCoord)
   ans(1:tsize) = obj%nodeCoord(1:tsize)
 END SUBROUTINE NodeData_GetNodeCoord
 
