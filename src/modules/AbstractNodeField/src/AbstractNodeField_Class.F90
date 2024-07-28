@@ -116,8 +116,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData1_vtk
-  PROCEDURE, NOPASS :: WriteData_vtk_ptrs_vec =>  &
-     obj_WriteData2_vtk
+  PROCEDURE, NOPASS :: WriteData_vtk_ptrs_vec => &
+    obj_WriteData2_vtk
   GENERIC, PUBLIC :: WriteData => WriteData_vtk_ptrs_vec
   !! Export data in VTKformat
 
@@ -869,7 +869,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBC_), INTENT(inout) :: dbc
+    TYPE(DirichletBC_), INTENT(inout) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
@@ -887,7 +887,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBCPointer_), INTENT(inout) :: dbc(:)
+    TYPE(DirichletBCPointer_), INTENT(inout) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
