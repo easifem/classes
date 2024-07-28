@@ -392,7 +392,7 @@ CONTAINS
     obj_SymLargestEigenVal
 
   ! SET:
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => obj_ApplyDBC
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => obj_ApplyDBC1
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBCtoRHS => obj_ApplyDBCToRHS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDBCSubMat => obj_GetDBCSubMat
 
@@ -1190,11 +1190,23 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to matrixfield_
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDBC(obj, dbcPtrs)
+  MODULE SUBROUTINE obj_ApplyDBC1(obj, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_ApplyDBC
+  END SUBROUTINE obj_ApplyDBC1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ApplyDBC@DBCMethods
+!----------------------------------------------------------------------------
+
+! INTERFACE
+!   MODULE SUBROUTINE obj_ApplyDBC2(obj, dbc, ivar)
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+!     TYPE(DirichletBC_), INTENT(INOUT) :: dbc
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+!   END SUBROUTINE obj_ApplyDBC2
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 ApplyDBCtoRHS@DBCMethods
