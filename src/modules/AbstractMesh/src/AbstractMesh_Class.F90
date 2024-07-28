@@ -66,7 +66,6 @@ PUBLIC :: PARAM_MAX_NNE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
-
 !----------------------------------------------------------------------------
 !                                                             AbstractMesh_
 !----------------------------------------------------------------------------
@@ -2526,7 +2525,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
-    & RESULT(ans)
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
