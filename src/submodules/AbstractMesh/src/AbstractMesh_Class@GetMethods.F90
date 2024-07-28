@@ -2238,7 +2238,6 @@ END PROCEDURE obj_GetTotalEntities2
 MODULE PROCEDURE obj_GetNodeCoord2
 INTEGER(I4B) :: tsize, ii
 
-nrow = 3_I4B
 ncol = obj%GetTotalNodes()
 
 !$OMP PARALLEL DO PRIVATE(ii, tsize)
@@ -2247,6 +2246,8 @@ DO ii = 1, ncol
                              ans=nodeCoord(:, ii), tsize=tsize)
 END DO
 !$OMP END PARALLEL DO
+
+nrow = tsize
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
@@ -2273,7 +2274,7 @@ END PROCEDURE obj_GetNodeCoord3
 MODULE PROCEDURE obj_GetNodeCoord4
 INTEGER(I4B) :: ii, jj
 
-nrow = 3
+nrow = 0
 ncol = SIZE(globalNode)
 
 DO ii = 1, SIZE(globalNode)
