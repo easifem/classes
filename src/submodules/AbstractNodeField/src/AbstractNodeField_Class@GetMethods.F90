@@ -15,6 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) GetMethods
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer, &
                              RealVector_Get => Get, &
                              GetValue_
@@ -96,7 +100,7 @@ END IF
 #endif
 
 DO aint = 1, tnames
-  ans(aint) (:) = obj%dof_names_char(aint) (1:1)
+  ans(aint) = obj%dof_names_char(aint)
 END DO
 
 END PROCEDURE obj_GetPhysicalNames
