@@ -1022,17 +1022,17 @@ END INTERFACE
 ! - If cloSetag is true then close the piece
 
 INTERFACE
-  MODULE SUBROUTINE obj_ExportToVTK(obj, vtkFile, nodeCoord, filename, &
-                                    OpenTag, Content, CloSetag)
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk, nodeCoord, filename, &
+                                    opentag, content, closetag)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtkFile
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
     REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: OpenTag
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: opentag
     !! Default is true
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloSetag
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: closetag
     !! Default is true
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Content
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: content
     !! Default is true
   END SUBROUTINE obj_ExportToVTK
 END INTERFACE
