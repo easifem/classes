@@ -266,15 +266,15 @@ CALL Set(obj=param, prefix=prefix, key="preconditionOption", datatype=1_I4B, &
 
 ! maxIter
 CALL Set(obj=param, prefix=prefix, key="maxIter", datatype=1_I4B, &
-         VALUE=maxIter)
+         VALUE=Input(default=default_maxIter, option=maxIter))
 
 ! rtol
 CALL Set(obj=param, prefix=prefix, key="rtol", datatype=1.0_DFP, &
-         VALUE=rtol)
+         VALUE=Input(default=default_rtol, option=rtol))
 
 ! atol
 CALL Set(obj=param, prefix=prefix, key="atol", datatype=1.0_DFP, &
-         VALUE=atol)
+         VALUE=Input(default=default_atol, option=atol))
 
 ! convergenceIn
 CALL Set(obj=param, prefix=prefix, key="convergenceIn", datatype=1_I4B, &
