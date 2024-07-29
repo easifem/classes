@@ -249,145 +249,161 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
 END SUBROUTINE ExportFieldToVTK
 
 !----------------------------------------------------------------------------
+!                                                                ExportToVTK
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ExportToVTK
+CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_ExportToVTK
+
+!----------------------------------------------------------------------------
+!                                                WriteData_vtk1_checkerror
+!----------------------------------------------------------------------------
+
+SUBROUTINE Writedata_vtk1_checkerror(obj, vtk)
+  CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+  TYPE(VTKFile_), INTENT(INOUT) :: vtk
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "Writedata_vtk1_checkerror()"
+  LOGICAL(LGT) :: isok, isSingleFEDOF, isMultiFEDOF
+  CLASS(AbstractMesh_), POINTER :: meshptr
+  CLASS(FEDOF_), POINTER :: fedof
+  INTEGER(I4B) :: tPhysicalVars
+  INTEGER(I4B), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
+  CHARACTER(1), ALLOCATABLE :: dofnames(:)
+
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+
+  isok = obj%isInitiated
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj is not isInitiated.')
+
+  isok = vtk%isOpen()
+  CALL AssertError1(isok, myName, 'VTKFile_::vtk is not open.')
+
+  isSingleFEDOF = ASSOCIATED(obj%fedof)
+  isMultiFEDOF = ALLOCATED(obj%fedofs)
+
+  isok = isSingleFEDOF .OR. isMultiFEDOF
+  CALL AssertError1(isok, myName, &
+                    'Either AbstractNodeField_::obj%fedof, '// &
+                    ' or AbstractNodeField_::obj%fedofs not allocated.')
+
+  tPhysicalVars = obj%GetTotalPhysicalVars()
+
+  isok = tPhysicalVars .GT. 0
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj%GetTotalPhysicalVars() '// &
+                    'returned zero.')
+
+  ALLOCATE (dofnames(tPhysicalVars), spacecompo(tPhysicalVars), &
+            timecompo(tPhysicalVars))
+
+  CALL obj%GetPhysicalNames(dofnames)
+
+  isok = ALLOCATED(dofnames)
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::obj%GetPhysicalNames() '// &
+                    'returned unallocated dofnames.')
+
+  isok = SIZE(dofnames) .GT. 0
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::obj%GetPhysicalNames() '// &
+                    'returned zero size dofnames.')
+
+  spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
+  timeCompo = obj%GetTimeCompo(tPhysicalVars)
+
+  isok = ALL(spaceCompo .GT. 0)
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::obj%GetSpaceCompo() '// &
+                    'returned zero spaceCompo.')
+  isok = ALL(timeCompo .GT. 0)
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::obj%GetTimeCompo() '// &
+                    'returned zero timeCompo.')
+
+  CALL AssertError1(isSingleFEDOF, myname, &
+                    'Multi-FEDOF is not implemented yet')
+
+  fedof => obj%fedof
+  isok = ASSOCIATED(fedof)
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::obj%fedof is not associated.')
+
+  meshptr => fedof%GetMeshPointer()
+  isok = ASSOCIATED(meshptr)
+  CALL AssertError1(isok, myname, &
+                    'AbstractNodeField_::fedof%GetMeshPointer() '// &
+                    'returned unassociated meshptr.')
+
+  fedof => NULL()
+  meshptr => NULL()
+
+  IF (ALLOCATED(dofnames)) DEALLOCATE (dofnames)
+  IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
+  IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+
+END SUBROUTINE Writedata_vtk1_checkerror
+
+!----------------------------------------------------------------------------
 !                                                                 WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Writedata_vtk1
-CHARACTER(*), PARAMETER :: myname = "obj_Writedata_vtk1()"
-LOGICAL(LGT) :: isok, isSingleFEDOF, isMultiFEDOF
+MODULE PROCEDURE obj_WriteData_vtk1
+CHARACTER(*), PARAMETER :: myname = "obj_WriteData_vtk1()"
+LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
+
 CLASS(AbstractMesh_), POINTER :: meshptr
-INTEGER(I4B) :: nsd, tPhysicalVars, tnodes, nrow, ncol
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
-REAL(DFP), ALLOCATABLE :: xij(:, :)
-CHARACTER(1), ALLOCATABLE :: dofNames(:)
-CLASS(FEDOF_), POINTER :: fedof
+TYPE(String) :: location, action
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-NULLIFY (meshptr, fedof)
-
 #ifdef DEBUG_VER
-isok = obj%isInitiated
-CALL AssertError1(isok, myname, 'AbstractNodeField_::obj is not isInitiated.')
-
-isok = vtk%isOpen()
-CALL AssertError1(isok, myname, 'VTKFile_::vtk is not open.')
+CALL Writedata_vtk1_checkerror(obj=obj, vtk=vtk)
 #endif
 
-isSingleFEDOF = ASSOCIATED(obj%fedof)
-isMultiFEDOF = ALLOCATED(obj%fedofs)
+meshptr => obj%fedof%GetMeshPointer()
+CALL meshptr%ExportToVTK(vtk=vtk, openTag=yes, content=yes, closeTag=no)
+location = String('node')
+action = String('open')
+CALL vtk%WriteDataArray(location=location, action=action)
 
-#ifdef DEBUG_VER
-isok = isSingleFEDOF .OR. isMultiFEDOF
-CALL AssertError1(isok, myname, &
-                  'Either AbstractNodeField_::obj%fedof, '// &
-                  ' or AbstractNodeField_::obj%fedofs not allocated.')
-#endif
+! Call ExporToVTK
+! CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
+!                       spaceCompo, timeCompo, .FALSE.)
+CALL obj%ExportToVTK(vtk=vtk)
 
-tPhysicalVars = obj%GetTotalPhysicalVars()
-
-#ifdef DEBUG_VER
-isok = tPhysicalVars .GT. 0
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%GetTotalPhysicalVars() '// &
-                  'returned zero.')
-#endif
-
-ALLOCATE (dofNames(tPhysicalVars), spaceCompo(tPhysicalVars), &
-          timeCompo(tPhysicalVars))
-
-CALL obj%GetPhysicalNames(dofNames)
-
-#ifdef DEBUG_VER
-isok = ALLOCATED(dofNames)
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%GetPhysicalNames() '// &
-                  'returned unallocated dofnames.')
-isok = SIZE(dofNames) .GT. 0
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%GetPhysicalNames() '// &
-                  'returned zero size dofnames.')
-#endif
-
-spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
-timeCompo = obj%GetTimeCompo(tPhysicalVars)
-
-#ifdef DEBUG_VER
-isok = ALL(spaceCompo .GT. 0)
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%GetSpaceCompo() '// &
-                  'returned zero spaceCompo.')
-isok = ALL(timeCompo .GT. 0)
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%GetTimeCompo() '// &
-                  'returned zero timeCompo.')
-#endif
-
-#ifdef DEBUG_VER
-CALL AssertError1(isSingleFEDOF, myname, &
-                  'Multi-FEDOF is not implemented yet')
-#endif
-
-fedof => obj%fedof
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(fedof)
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::obj%fedof is not associated.')
-#endif
-
-meshptr => fedof%GetMeshPointer()
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(meshptr)
-CALL AssertError1(isok, myname, &
-                  'AbstractNodeField_::fedof%GetMeshPointer() '// &
-                  'returned unassociated meshptr.')
-#endif
-
-nsd = meshptr%GetNSD()
-tnodes = meshptr%GetTotalNodes()
-
-ALLOCATE (xij(3, tnodes))
-
-CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
-
-CALL meshptr%ExportToVTK(vtk=vtk, nodeCoord=xij, &
-                         openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
-
-CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
-
-nptrs = meshptr%GetNptrs()
-
-CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
-                      spaceCompo, timeCompo, .FALSE.)
-
-CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+action = String('close')
+CALL vtk%WriteDataArray(location=location, action=action)
 
 CALL vtk%WritePiece()
+CALL vtk%CLOSE()
 
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
-IF (ALLOCATED(dofNames)) DEALLOCATE (dofNames)
-IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
-IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
-NULLIFY (meshptr, fedof)
+NULLIFY (meshptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_Writedata_vtk1
+END PROCEDURE obj_WriteData_vtk1
 
 !----------------------------------------------------------------------------
 !                                                             WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_WriteData2_vtk
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData2_vtk()"
+MODULE PROCEDURE obj_WriteData_vtk2
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk2()"
 LOGICAL(LGT) :: isOK
 INTEGER(I4B) :: tnodes
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
@@ -526,7 +542,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE obj_WriteData2_vtk
+END PROCEDURE obj_WriteData_vtk2
 
 !----------------------------------------------------------------------------
 !
