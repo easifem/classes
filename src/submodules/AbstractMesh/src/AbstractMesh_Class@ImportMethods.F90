@@ -324,7 +324,11 @@ IF (Content_) THEN
 
 END IF
 
-IF (CloseTag_) CALL vtk%WritePiece()
+IF (CloseTag_) THEN
+  CALL vtk%WritePiece()
+  CALL vtk%CLOSE()
+END IF
+
 ! clean up
 IF (ALLOCATED(types)) DEALLOCATE (types)
 IF (ALLOCATED(vtkindx)) DEALLOCATE (vtkindx)
