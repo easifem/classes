@@ -203,6 +203,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
+  !! Retuns the total number of vertex dof
+
   PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Retuns the total degrees of freedom in FEDOF
   PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
@@ -706,6 +709,21 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
   END SUBROUTINE obj_GetCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalVertexDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-29
+! summary:  Returns total number of vertex dof
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexDOF(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
