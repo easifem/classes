@@ -29,7 +29,8 @@ USE InputUtility, ONLY: Input
 
 USE ReferenceElement_Method, ONLY: GetElementIndex, &
                                    GetTotalNodes, &
-                                   ReferenceElementInfo
+                                   ReferenceElementInfo, &
+                                   GetVTKelementType_
 
 USE Display_Method, ONLY: Display, &
                           EqualLine, &
@@ -45,9 +46,11 @@ USE NodeData_Class, ONLY: INTERNAL_NODE, &
 USE ElemData_Class, ONLY: ElemData_Set, &
                           ElemData_Deallocate
 
-USE GlobalData, ONLY: stdout
+USE GlobalData, ONLY: stdout, INT8
 
 USE StringUtility, ONLY: PathJoin, PathBase
+
+USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED, VTK_UnStructuredGrid
 
 IMPLICIT NONE
 
@@ -213,13 +216,122 @@ CALL e%RaiseError(modName//"::"//myName//" - "// &
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                                     Export
+!                                                                ExportToVTK
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExportToVTK
 CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: opentag_, closetag_, content_, isok
+INTEGER(INT8), ALLOCATABLE :: types(:)
+INTEGER(I4B) :: ncells, npoints, ii, jj, nne, maxnne, elemtype, tsize
+INTEGER(I4B), ALLOCATABLE :: vtkindx(:), connectivity(:), &
+                             offsets(:), cellcon(:)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! main
+IF (.NOT. vtk%isInitiated) THEN
+  isok = PRESENT(filename)
+  CALL AssertError1(isok, myname, &
+                    "VTKFile_ is not initiated, and filename is not present.")
+
+  CALL vtk%InitiateVTKFile(filename=filename, &
+                           mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+                           DataStructureType=VTK_UnStructuredGrid)
+
+END IF
+
+ncells = obj%GetTotalElements()
+npoints = obj%GetTotalNodes()
+
+opentag_ = INPUT(default=.TRUE., option=OpenTag)
+closetag_ = INPUT(default=.TRUE., option=CloseTag)
+content_ = INPUT(default=.TRUE., option=Content)
+
+! Write piece information if OpenTag is true
+IF (opentag_) CALL vtk%WritePiece(nPoints=npoints, nCells=ncells)
+
+!  Write Points information
+IF (PRESENT(nodeCoord)) THEN
+  isok = (SIZE(nodecoord, 1) .EQ. 3) .AND. (SIZE(nodecoord, 2) .EQ. npoints)
+
+  CALL AssertError1(isok, myname, &
+                    "Shape of nodeCoord should be [3, nPoints]")
+
+  CALL vtk%WritePoints(x=nodeCoord)
+
+ELSE
+  CALL Reallocate(xij, 3, npoints)
+  CALL obj%GetNodeCoord(nodecoord=xij, nrow=ii, ncol=jj)
+  CALL vtk%WritePoints(x=xij)
+
+END IF
+
+! Write Cells
+IF (Content_) THEN
+
+  maxnne = obj%GetMaxNNE()
+
+#ifdef DEBUG_VER
+  isok = maxnne .GT. 0
+  CALL AssertError1(isok, myname, &
+                    "maxnne should be greater than zero")
+#endif
+
+  ALLOCATE (types(ncells), offsets(0:ncells), connectivity(maxnne * ncells), &
+            cellcon(maxnne), vtkindx(maxnne))
+
+  offsets(0) = 0
+
+  DO ii = 1, ncells
+    isok = obj%isElementActive(globalElement=ii, islocal=.TRUE.)
+    IF (.NOT. isok) CYCLE
+
+    elemtype = obj%GetElemType(globalElement=ii, islocal=.TRUE.)
+
+    CALL GetVTKelementType_(elemType=elemtype, vtk_type=types(ii), &
+                            nptrs=vtkindx, tsize=nne)
+
+    offsets(ii) = offsets(ii - 1) + nne
+
+    CALL obj%GetConnectivity_(globalElement=ii, islocal=.TRUE., &
+                              ans=cellcon, tsize=tsize)
+
+#ifdef DEBUG_VER
+    isok = tsize .EQ. nne
+    CALL AssertError1(isok, myname, &
+                      "tsize should be equal to nne")
+#endif
+
+    CALL obj%GetLocalNodeNumber_(globalNode=cellcon(1:tsize), &
+                                 ans=cellcon(1:tsize), islocal=.FALSE.)
+
+    DO jj = 1, nne
+      connectivity(offsets(ii) - nne + jj) = cellcon(vtkindx(jj)) - 1
+    END DO
+
+  END DO
+
+  tsize = offsets(ncells)
+
+  CALL vtk%WriteCells(connectivity=connectivity(1:tsize), &
+                      offsets=offsets(1:ncells), &
+                      types=types(1:ncells))
+
+END IF
+
+IF (CloseTag_) CALL vtk%WritePiece()
+! clean up
+IF (ALLOCATED(types)) DEALLOCATE (types)
+IF (ALLOCATED(vtkindx)) DEALLOCATE (vtkindx)
+IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
+IF (ALLOCATED(offsets)) DEALLOCATE (offsets)
+IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
@@ -1027,5 +1139,11 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 #endif
 
 END SUBROUTINE MeshImportFromDim
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ImportMethods
