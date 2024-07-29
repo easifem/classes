@@ -17,6 +17,7 @@
 
 SUBMODULE(ScalarField_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -61,5 +62,53 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Import
+
+!----------------------------------------------------------------------------
+!                                                               ExportToVTK
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ExportToVTK
+CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
+
+INTEGER(I4B) :: tsize, tnodes
+REAL(DFP), ALLOCATABLE :: VALUE(:)
+TYPE(String) :: name
+CHARACTER(1), ALLOCATABLE :: dofnames(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalPhysicalVars()
+ALLOCATE (dofnames(tsize))
+CALL obj%GetPhysicalNames(dofnames)
+
+tsize = obj%fedof%GetTotalDOF()
+tnodes = obj%fedof%GetTotalVertexDOF()
+
+ALLOCATE (VALUE(tsize))
+CALL obj%Get(VALUE=VALUE, tsize=tsize)
+
+! name = obj%name%chars()//"_"//dofnames(1)
+name = obj%name%Join(array=dofnames, sep="_")
+
+CALL vtk%WriteDataArray(name=name, x=VALUE(1:tnodes), numberOfComponents=1)
+
+name = ''
+DEALLOCATE (dofnames)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_ExportToVTK
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods
