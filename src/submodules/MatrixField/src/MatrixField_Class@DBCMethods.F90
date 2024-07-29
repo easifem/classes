@@ -18,6 +18,7 @@
 SUBMODULE(MatrixField_Class) DBCMethods
 USE ReallocateUtility, ONLY: Reallocate
 USE CSRMatrix_Method, ONLY: GetSubMatrix, Matvec, ApplyDBC
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -28,8 +29,9 @@ CONTAINS
 
 MODULE PROCEDURE obj_ApplyDBC1
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBC1()"
-LOGICAL(LGT) :: case1
-INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: case1, isok
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -39,16 +41,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 case1 = PRESENT(dbcPtrs)
 
 IF (case1) THEN
-  tsize = SIZE(dbcPtrs)
-  CALL Reallocate(obj%dbcPtrs, tsize)
-  obj%dbcPtrs = dbcPtrs
-  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcPtrs, submat=obj%submat, &
-                    subIndices=obj%subIndices)
-ELSE
-  CALL GetSubMatrix(obj=obj%mat, subIndices=obj%subIndices, submat=obj%submat)
+  obj%tdbcptrs = SIZE(dbcptrs)
+  CALL Reallocate(obj%dbcptrs, obj%tdbcptrs, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+
+  obj%dbcPtrs(1:obj%tdbcptrs) = dbcPtrs(1:obj%tdbcptrs)
+
+  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcptrs(1:obj%tdbcptrs), &
+                    submat=obj%submat, subIndices=obj%subindices)
+
+  obj%tsubindices = SIZE(obj%subindices)
+
+  IF (obj%tdbcptrs .GT. 0) THEN
+    CALL ApplyDBC(obj=obj%mat, dbcptrs=obj%dbcptrs(1:obj%tdbcptrs))
+  END IF
+
+  RETURN
 END IF
 
-CALL ApplyDBC(obj=obj%mat, dbcPtrs=dbcPtrs)
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%subindices)
+CALL AssertError1(isok, myname, &
+                  "MatrxiField_::obj%subindices not allocated")
+#endif
+
+IF (obj%tsubindices .GT. 0) THEN
+
+  CALL GetSubMatrix(obj=obj%mat, &
+                    subIndices=obj%subindices(1:obj%tsubindices), &
+                    submat=obj%submat)
+END IF
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%dbcptrs)
+CALL AssertError1(isok, myname, &
+                  "MatrxiField_::obj%dbcptrs not allocated")
+#endif
+
+IF (obj%tdbcptrs .GT. 0) THEN
+  CALL ApplyDBC(obj=obj%mat, dbcPtrs=obj%dbcptrs(1:obj%tdbcptrs))
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -95,5 +127,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ApplyDBCToRHS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods
