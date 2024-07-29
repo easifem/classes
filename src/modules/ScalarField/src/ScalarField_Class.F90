@@ -26,6 +26,7 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
+USE VTKFile_Class, ONLY: VTKFile_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
@@ -159,6 +160,8 @@ CONTAINS
   ! @IOMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
 END TYPE ScalarField_
 
@@ -317,6 +320,28 @@ INTERFACE ScalarFieldImport
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
+
+!----------------------------------------------------------------------------
+!                                                     ExportToVTK@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-29
+! summary:  This routine called during WriteData_vtk
+!
+!# Introduction
+!
+! This routine is called during WriteData_vtk
+! It should be implemented by the child class
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! node field object
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    !! vtkfile object
+  END SUBROUTINE obj_ExportToVTK
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
