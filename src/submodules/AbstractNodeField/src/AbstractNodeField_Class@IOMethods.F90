@@ -51,6 +51,7 @@ USE IntVector_Method, ONLY: IntVector_Initiate => Initiate, &
                             ASSIGNMENT(=)
 
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -148,14 +149,20 @@ END PROCEDURE obj_Export
 
 SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
                             spaceCompo, timeCompo, islocal)
-  IMPLICIT NONE
   CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  INTEGER(I4B), INTENT(IN) :: nptrs(:), spaceCompo(:), timeCompo(:)
+  INTEGER(I4B), INTENT(IN) :: nptrs(:)
+  !! local or global node numbers
+  INTEGER(I4B), INTENT(IN) :: spaceCompo(:), timeCompo(:)
+  !! space and time components in each physical variables
+  !! the size of spaceCompo and timeCompo should be equal to tPhysicalVars
   INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+  !! total number of physical variables
   CHARACTER(1), INTENT(IN) :: dofNames(:)
+  !! names of physical variables
   LOGICAL(LGT), INTENT(IN) :: islocal
   !! is nptrs local or global
+  !! if true then nptrs are local node numbers
 
   ! internal variables
   INTEGER(I4B) :: ivar, var_rank, var_vartype, itime
@@ -163,6 +170,11 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
   TYPE(FEVariable_) :: fevar
   CHARACTER(*), PARAMETER :: myName = "ExportToVTK()"
   CHARACTER(:), ALLOCATABLE :: name
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   DO ivar = 1, tPhysicalVars
     CALL obj%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar, &
@@ -175,12 +187,14 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
     SELECT CASE (var_rank)
     CASE (Scalar)
 
+      !! ScalarField
       IF (var_vartype .EQ. Space) THEN
         r1 = FEVariable_Get(fevar, TypeFEVariableScalar, TypeFEVariableSpace)
         CALL vtk%WriteDataArray(name=String(name), x=r1, &
                                 numberOfComponents=spaceCompo(ivar))
       END IF
 
+      !! STScalarField
       IF (var_vartype .EQ. SpaceTime) THEN
         r2 = FEVariable_Get(fevar, TypeFEVariableScalar, &
                             TypeFEVariableSpaceTime)
@@ -192,12 +206,14 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
 
     CASE (Vector)
 
+      !! Vector Space
       IF (var_vartype .EQ. Space) THEN
         r2 = FEVariable_Get(fevar, TypeFEVariableVector, TypeFEVariableSpace)
         CALL vtk%WriteDataArray(name=String(name), x=r2, &
                                 numberOfComponents=spaceCompo(ivar))
       END IF
 
+      !! Vector Space-Time
       IF (var_vartype .EQ. SpaceTime) THEN
 
         r3 = FEVariable_Get(fevar, TypeFEVariableVector, &
@@ -225,15 +241,20 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
   IF (ALLOCATED(r2)) DEALLOCATE (r2)
   IF (ALLOCATED(r3)) DEALLOCATE (r3)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
 END SUBROUTINE ExportFieldToVTK
 
 !----------------------------------------------------------------------------
-!                                                             WriteData
+!                                                                 WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_WriteData1_vtk
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData1_vtk()"
-LOGICAL(LGT) :: isOK, isSingleFEDOF, isMultiFEDOF
+MODULE PROCEDURE obj_Writedata_vtk1
+CHARACTER(*), PARAMETER :: myname = "obj_Writedata_vtk1()"
+LOGICAL(LGT) :: isok, isSingleFEDOF, isMultiFEDOF
 CLASS(AbstractMesh_), POINTER :: meshptr
 INTEGER(I4B) :: nsd, tPhysicalVars, tnodes, nrow, ncol
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
@@ -248,46 +269,85 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 NULLIFY (meshptr, fedof)
 
-isOK = obj%isInitiated
-IF (.NOT. isOK) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: AbstractNodeField_::obj is not isInitiated.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = obj%isInitiated
+CALL AssertError1(isok, myname, 'AbstractNodeField_::obj is not isInitiated.')
 
-isOK = vtk%isOpen()
-IF (.NOT. isOK) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
-  RETURN
-END IF
+isok = vtk%isOpen()
+CALL AssertError1(isok, myname, 'VTKFile_::vtk is not open.')
+#endif
 
 isSingleFEDOF = ASSOCIATED(obj%fedof)
 isMultiFEDOF = ALLOCATED(obj%fedofs)
-isOK = isSingleFEDOF .OR. isMultiFEDOF
-IF (.NOT. isOK) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%fedof, '// &
-                    ' ot AbstractNodeField_::obj%fedofs not allocated.')
-  RETURN
-END IF
+
+#ifdef DEBUG_VER
+isok = isSingleFEDOF .OR. isMultiFEDOF
+CALL AssertError1(isok, myname, &
+                  'Either AbstractNodeField_::obj%fedof, '// &
+                  ' or AbstractNodeField_::obj%fedofs not allocated.')
+#endif
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
+
+#ifdef DEBUG_VER
+isok = tPhysicalVars .GT. 0
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%GetTotalPhysicalVars() '// &
+                  'returned zero.')
+#endif
+
 ALLOCATE (dofNames(tPhysicalVars), spaceCompo(tPhysicalVars), &
           timeCompo(tPhysicalVars))
 
 CALL obj%GetPhysicalNames(dofNames)
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(dofNames)
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%GetPhysicalNames() '// &
+                  'returned unallocated dofnames.')
+isok = SIZE(dofNames) .GT. 0
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%GetPhysicalNames() '// &
+                  'returned zero size dofnames.')
+#endif
+
 spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
 timeCompo = obj%GetTimeCompo(tPhysicalVars)
 
-IF (.NOT. isSingleFEDOF) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: Multi-FEDOF is not implemented yet')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = ALL(spaceCompo .GT. 0)
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%GetSpaceCompo() '// &
+                  'returned zero spaceCompo.')
+isok = ALL(timeCompo .GT. 0)
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%GetTimeCompo() '// &
+                  'returned zero timeCompo.')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(isSingleFEDOF, myname, &
+                  'Multi-FEDOF is not implemented yet')
+#endif
 
 fedof => obj%fedof
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(fedof)
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::obj%fedof is not associated.')
+#endif
+
 meshptr => fedof%GetMeshPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(meshptr)
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::fedof%GetMeshPointer() '// &
+                  'returned unassociated meshptr.')
+#endif
+
 nsd = meshptr%GetNSD()
 tnodes = meshptr%GetTotalNodes()
 
@@ -295,7 +355,7 @@ ALLOCATE (xij(3, tnodes))
 
 CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 
-CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
+CALL meshptr%ExportToVTK(vtk=vtk, nodeCoord=xij, &
                          openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
 
 CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
@@ -318,9 +378,9 @@ NULLIFY (meshptr, fedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
-END PROCEDURE obj_WriteData1_vtk
+END PROCEDURE obj_Writedata_vtk1
 
 !----------------------------------------------------------------------------
 !                                                             WriteData
@@ -430,7 +490,7 @@ tnodes = meshptr%GetTotalNodes()
 ALLOCATE (xij(3, tnodes))
 CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 
-CALL meshptr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, &
+CALL meshptr%ExportToVTK(vtk=vtk, nodeCoord=xij, &
                          openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
 
 CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
@@ -463,7 +523,7 @@ NULLIFY (meshptr, fedof, obj0, meshptr2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
 END PROCEDURE obj_WriteData2_vtk
@@ -471,5 +531,7 @@ END PROCEDURE obj_WriteData2_vtk
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods
