@@ -37,6 +37,7 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 
 USE BaseType, ONLY: CSRMatrix_
 IMPLICIT NONE
@@ -145,6 +146,11 @@ END INTERFACE
 
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   LOGICAL(LGT) :: isRectangle = .FALSE.
+  !!
+  INTEGER(I4B) :: tdbcptrs = 0
+  !! total size of dbcptrs
+  INTEGER(I4B) :: tsubindices = 0
+  !! total size of subindices
   TYPE(CSRMatrix_) :: mat
   !! main matrix
   TYPE(MatrixFieldPrecondition_) :: pmat
@@ -153,9 +159,9 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   !! Submatrix of columns
   !! this is used to apply Dirichlet boundary condition
   !! to rhs of the problem
-  INTEGER(I4B), ALLOCATABLE :: dbcPtrs(:)
+  INTEGER(I4B), ALLOCATABLE :: dbcptrs(:)
   !! Dirichlet nodes numbers
-  INTEGER(I4B), ALLOCATABLE :: subIndices(:)
+  INTEGER(I4B), ALLOCATABLE :: subindices(:)
   !! Indices of dirichlet boundary condition submatrix in
   !! matrix field
 CONTAINS
@@ -1193,20 +1199,9 @@ INTERFACE
   MODULE SUBROUTINE obj_ApplyDBC1(obj, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+    !! These are column numbers which are local node
   END SUBROUTINE obj_ApplyDBC1
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       ApplyDBC@DBCMethods
-!----------------------------------------------------------------------------
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_ApplyDBC2(obj, dbc, ivar)
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-!     TYPE(DirichletBC_), INTENT(INOUT) :: dbc
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-!   END SUBROUTINE obj_ApplyDBC2
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 ApplyDBCtoRHS@DBCMethods
