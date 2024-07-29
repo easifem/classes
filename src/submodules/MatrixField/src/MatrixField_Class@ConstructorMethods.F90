@@ -667,8 +667,13 @@ MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ierr
 CALL AbstractMatrixFieldDeallocate(obj)
 CALL CSRMatrix_Deallocate(obj%mat)
-CALL Pmat_Deallocate(obj%Pmat)
+CALL CSRMatrix_Deallocate(obj%submat)
+CALL Pmat_Deallocate(obj%pmat)
 obj%isRectangle = .FALSE.
+obj%tdbcptrs = 0
+obj%tsubindices = 0
+IF (ALLOCATED(obj%dbcPtrs)) DEALLOCATE (obj%dbcPtrs)
+IF (ALLOCATED(obj%subIndices)) DEALLOCATE (obj%subIndices)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
