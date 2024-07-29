@@ -116,12 +116,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
 
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
 
-  PROCEDURE, NOPASS :: WriteData_vtk_ptrs_vec => &
-    obj_WriteData2_vtk
+  PROCEDURE, NOPASS :: WriteData_vtk2 => &
+    obj_WriteData_vtk2
 
-  GENERIC, PUBLIC :: WriteData => WriteData_vtk_ptrs_vec
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk2
   !! Export data in VTKformat
 
   ! GET:
@@ -396,10 +398,10 @@ END INTERFACE AbstractNodeFieldExport
 ! summary:  Export data in vtkfile
 
 INTERFACE AbstractNodeFieldWriteData
-  MODULE SUBROUTINE obj_Writedata_vtk1(obj, vtk)
+  MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE obj_Writedata_vtk1
+  END SUBROUTINE obj_WriteData_vtk1
 END INTERFACE AbstractNodeFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -411,15 +413,37 @@ END INTERFACE AbstractNodeFieldWriteData
 ! summary:  Export data in vtkfile
 
 INTERFACE AbstractNodeFieldWriteData
-  MODULE SUBROUTINE obj_WriteData2_vtk(obj, vtk)
+  MODULE SUBROUTINE obj_WriteData_vtk2(obj, vtk)
     CLASS(AbstractNodeFieldPointer_), INTENT(INOUT) :: obj(:)
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE obj_WriteData2_vtk
+  END SUBROUTINE obj_WriteData_vtk2
 END INTERFACE AbstractNodeFieldWriteData
 
 INTERFACE NodeFieldsWriteData
-  MODULE PROCEDURE obj_WriteData2_vtk
+  MODULE PROCEDURE obj_WriteData_vtk2
 END INTERFACE NodeFieldsWriteData
+
+!----------------------------------------------------------------------------
+!                                                     ExportToVTK@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-29
+! summary:  This routine called during WriteData_vtk
+!
+!# Introduction
+!
+! This routine is called during WriteData_vtk
+! It should be implemented by the child class
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field object
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    !! vtkfile object
+  END SUBROUTINE obj_ExportToVTK
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     GetPointer@GetMethods
@@ -732,7 +756,7 @@ END INTERFACE AbstractNodeFieldGetFEVariable
 INTERFACE
   MODULE SUBROUTINE obj_GetPhysicalNames(obj, ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(INOUT) :: ans(:)
+    CHARACTER(1), INTENT(INOUT) :: ans(:)
   END SUBROUTINE obj_GetPhysicalNames
 END INTERFACE
 
