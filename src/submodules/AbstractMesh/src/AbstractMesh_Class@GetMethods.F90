@@ -64,7 +64,8 @@ USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           Elemdata_FindFace, &
                           Elemdata_FindEdge, &
                           Elemdata_GetGlobalFaceNumber, &
-                          Elemdata_GetGlobalEdgeNumber
+                          Elemdata_GetGlobalEdgeNumber, &
+                          Elemdata_Order
 
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
@@ -1739,12 +1740,22 @@ END PROCEDURE obj_GetBoundaryElementData
 !                                                                  GetOrder
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetOrder
+MODULE PROCEDURE obj_GetOrder1
 CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
 ans = 0
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is not available')
-END PROCEDURE obj_GetOrder
+END PROCEDURE obj_GetOrder1
+
+!----------------------------------------------------------------------------
+!                                                                  GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder2
+INTEGER(I4B) :: iel
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+ans = Elemdata_Order(obj=obj%elementData(iel)%ptr)
+END PROCEDURE obj_GetOrder2
 
 !----------------------------------------------------------------------------
 !                                                                     GetNSD
