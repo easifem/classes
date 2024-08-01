@@ -176,8 +176,8 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow)
   IF (nrow .NE. 0) THEN
     nsd = obj%dom%GetNSD()
     mesh => obj%dom%GetMeshPointer(dim=nsd)
-    CALL mesh%GetLocalNodeNumber_(globalNode=nodenum, ans=nodenum, &
-                                  islocal=.FALSE.)
+    CALL mesh%GetLocalNodeNumber_(globalNode=nodenum(1:nrow), &
+                                  ans=nodenum(1:nrow), islocal=.FALSE.)
     mesh => NULL()
   END IF
 END SUBROUTINE GetNodeNum
@@ -213,6 +213,7 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
+  nrow = 0
   CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
   ncol = 1
@@ -347,22 +348,26 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
 
   !! internal variables
   REAL(DFP) :: ans, xij(4, 1)
-  INTEGER(I4B) :: ii, jj, nsd, tnodes, tsize
+  INTEGER(I4B) :: ii, jj, nsd, tsize
   CLASS(AbstractMesh_), POINTER :: meshptr
+
+  nrow = 0
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
 
   nsd = obj%dom%GetNSD()
   meshptr => obj%dom%GetMeshPointer(dim=nsd)
-  nrow = SIZE(nodeNum); ncol = 1
+
+  ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
 
-  DO ii = 1, tnodes
+  DO ii = 1, nrow
     CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
                               globalNode=nodeNum(ii), islocal=.TRUE.)
 
     CALL obj%func%Get(val=ans, args=xij(1:3, 1))
 
     DO jj = 1, ncol
-      nodalValue(ii, 1) = ans
+      nodalValue(ii, jj) = ans
     END DO
   END DO
 
@@ -434,8 +439,11 @@ SUBROUTINE GetTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
   REAL(DFP) :: ans
   INTEGER(I4B) :: ii, jj
 
-  ncol = SIZE(times)
-  nrow = SIZE(nodeNum)
+  nrow = 0
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
+
+  ncol = 1
+  IF (PRESENT(times)) ncol = SIZE(times)
 
   DO jj = 1, ncol
     CALL obj%func%Get(val=ans, args=times(jj:jj))
@@ -519,9 +527,12 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   REAL(DFP) :: xij(4, 1), ans
   CLASS(AbstractMesh_), POINTER :: meshptr
 
+  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow)
+
   ncol = SIZE(times)
-  nrow = SIZE(nodeNum)
+
   nsd = obj%dom%GetNSD()
+
   meshptr => obj%dom%GetMeshPointer(dim=nsd)
 
   DO jj = 1, ncol
