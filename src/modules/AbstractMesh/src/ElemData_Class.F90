@@ -27,7 +27,8 @@ USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
                                    GetEdgeConnectivity, &
                                    PARAM_REFELEM_MAX_EDGES, &
                                    ElementTopology, &
-                                   GetElementIndex
+                                   GetElementIndex, &
+                                   ElementOrder
 
 USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
 
@@ -107,6 +108,7 @@ PUBLIC :: Elemdata_FindFace
 PUBLIC :: Elemdata_FindEdge
 PUBLIC :: Elemdata_GetGlobalFaceNumber
 PUBLIC :: Elemdata_GetGlobalEdgeNumber
+PUBLIC :: Elemdata_Order
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -1496,6 +1498,16 @@ FUNCTION Elemdata_IsBoundaryElement(obj) RESULT(ans)
   ans = (obj%elementType .EQ. TypeElem%boundary) .OR. &
         (obj%elementType .EQ. TypeElem%domainBoundary)
 END FUNCTION Elemdata_IsBoundaryElement
+
+!----------------------------------------------------------------------------
+!                                                           Elemdata_Order
+!----------------------------------------------------------------------------
+
+PURE FUNCTION Elemdata_Order(obj) RESULT(ans)
+  TYPE(Elemdata_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = ElementOrder(obj%name)
+END FUNCTION Elemdata_Order
 
 !----------------------------------------------------------------------------
 !
