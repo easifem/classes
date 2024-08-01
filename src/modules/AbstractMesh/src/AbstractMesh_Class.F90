@@ -660,9 +660,12 @@ CONTAINS
     obj_GetFacetElementType
   !! Returns the facet element type of a given cell element number
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
-    obj_GetOrder
+  PROCEDURE, PASS(obj) :: GetOrder1 => obj_GetOrder1
   !! Returns the order ofthe element of mesh
+  !! This method will be deprecated in future
+  PROCEDURE, PASS(obj) :: GetOrder2 => obj_GetOrder2
+  !! get order of an element
+  GENERIC, PUBLIC :: GetOrder => GetOrder1, GetOrder2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
     obj_GetNSD
@@ -2879,10 +2882,29 @@ END INTERFACE
 ! summary: Returns the order of reference element
 
 INTERFACE
-  MODULE FUNCTION obj_GetOrder(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetOrder1(obj) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetOrder
+  END FUNCTION obj_GetOrder1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-29
+! summary:  Get the order of element
+
+INTERFACE
+  MODULE FUNCTION obj_GetOrder2(obj, globalElement, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetOrder2
 END INTERFACE
 
 !----------------------------------------------------------------------------
