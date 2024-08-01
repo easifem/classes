@@ -22,6 +22,8 @@ USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
 
 USE ReallocateUtility, ONLY: Reallocate
 
+USE Display_Method, ONLY: ToString, Display
+
 IMPLICIT NONE
 
 CONTAINS
@@ -83,6 +85,13 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrder
+CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 SELECT CASE (obj%baseInterpolation)
 CASE ("LAGR")
   CALL obj%SetLagrangeOrder(order=order, anisoorder=anisoorder, &
@@ -93,7 +102,17 @@ CASE ("HIER", "HEIR")
           edgeOrder=edgeOrder, cellOrient=cellOrient, faceOrient=faceOrient, &
                       edgeOrient=edgeOrient, errCheck=errCheck, tcell=tcell, &
                                 tface=tface, tedge=tedge)
+
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    '[INTERNAL ERROR] :: no case found for baseInterpolation is not defined.')
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
@@ -101,13 +120,32 @@ END PROCEDURE obj_SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetLagrangeOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetLagrangeOrder()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B), PARAMETER :: default_anisoOrder(3) = 0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isIsotropicOrder = PRESENT(order)
 
 IF (obj%isIsotropicOrder) THEN
   obj%order = order
   obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%elemType)
+
+#ifdef DEBUG_VER
+  isok = obj%order .GT. 0
+  CALL AssertError1(isok, myname, "zero order found")
+
+  isok = obj%tdof .GT. 0
+  CALL AssertError1(isok, myname, "zero tdof found")
+#endif
+
   CALL Reallocate(obj%coeff, obj%tdof, obj%tdof, isExpand=.TRUE., &
                   expandFactor=2_I4B)
   CALL Reallocate(obj%xij, 3, obj%tdof, isExpand=.TRUE., expandFactor=2_I4B)
@@ -125,6 +163,12 @@ IF (obj%isAnisotropicOrder) THEN
                   expandFactor=2_I4B)
   CALL Reallocate(obj%xij, 3, obj%tdof, isExpand=.TRUE., expandFactor=2_I4B)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetLagrangeOrder
 
 !----------------------------------------------------------------------------
@@ -344,5 +388,7 @@ END PROCEDURE obj_SetHierarchicalOrder
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
