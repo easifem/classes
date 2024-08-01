@@ -27,6 +27,8 @@ USE ElemData_Class, ONLY: ElemData_, &
 
 USE ReferenceElement_Method, ONLY: ReferenceElementInfo
 
+USE Display_Method, ONLY: ToString
+
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
@@ -392,12 +394,91 @@ END PROCEDURE obj_GetQuadraturePoints2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
+CHARACTER(6) :: casename
+CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeData()'
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+casename = obj%GetCaseName()
+
+SELECT CASE (casename)
+CASE ('H1LAGR')
+  CALL obj%GetLocalElemShapeDataH1Lagrange(globalElement=globalElement, &
+                                    elemsd=elemsd, quad=quad, islocal=islocal)
+CASE ('H1HIER')
+  CALL obj%GetLocalElemShapeDataH1Hierarchical(globalElement=globalElement, &
+                                    elemsd=elemsd, quad=quad, islocal=islocal)
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for case name')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                 GetLocalElemShapeData1
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeDataH1Lagrange
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeDataH1Lagrange()'
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, iel, cellOrder(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+cellOrder(1) = obj%cellOrder(iel)
+ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+isok = ii .NE. 0
+CALL AssertError1(isok, myname, &
+                  'Element topology index is not found')
+#endif
+CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), errCheck=.TRUE.)
+CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemShapeDataH1Lagrange
+
+!----------------------------------------------------------------------------
+!                                                 GetLocalElemShapeData1
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName='obj_GetLocalElemShapeDataH1Hierarchical()'
+#endif
+
 INTEGER(I4B) :: ii, cellOrder(1), &
                 faceOrder(3, ReferenceElementInfo%maxEdges), &
                 edgeOrder(ReferenceElementInfo%maxEdges), &
                 faceOrient(3, ReferenceElementInfo%maxEdges), &
                 edgeOrient(ReferenceElementInfo%maxEdges), &
                 cellOrient(3), indx(10)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
 
@@ -415,7 +496,12 @@ CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
 
 CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
-END PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
 
 !----------------------------------------------------------------------------
 !
@@ -431,5 +517,7 @@ END PROCEDURE obj_GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

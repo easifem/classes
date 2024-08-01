@@ -18,7 +18,7 @@
 !
 
 SUBMODULE(FEDOF_Class) IOMethods
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -28,6 +28,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
@@ -72,6 +73,11 @@ IF (isok) CALL Display(SIZE(obj%faceIA), "faceIA size: ", unitno=unitno)
 isok = ALLOCATED(obj%cellIA)
 CALL Display(isok, "cellIA ALLOCATED: ", unitno=unitno)
 IF (isok) CALL Display(SIZE(obj%cellIA), "cellIA size: ", unitno=unitno)
+
+DO ii = 1, SIZE(obj%fe)
+  isok = ASSOCIATED(obj%fe(ii)%ptr)
+  CALL Display(isok, "fe(ii)%ptr ASSOCIATED: ", unitno=unitno)
+END DO
 
 END PROCEDURE obj_Display
 

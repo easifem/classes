@@ -80,8 +80,7 @@ MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
-INTEGER(I4B) :: ii
-INTEGER(INT8) :: aint8
+CHARACTER(6) :: casename
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -101,23 +100,22 @@ END IF
 obj%mesh => mesh
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
 
-CALL FEDOF_Initiate_Before(obj=obj, isLagrange=obj%isLagrange)
+CALL FEDOF_Initiate_Before(obj=obj)
 
-aint8 = INT(order, kind=INT8)
-DO CONCURRENT(ii=1:obj%tCells)
-  obj%cellOrder(ii) = aint8
-END DO
-obj%maxcellOrder = aint8
+! Set order
+casename = obj%GetCaseName()
+SELECT CASE (casename)
+CASE ("H1LAGR")
+  CALL SetOrderH1Lagrange(obj=obj)
 
-DO CONCURRENT(ii=1:obj%tFaces)
-  obj%faceOrder(ii) = aint8
-END DO
-obj%maxFaceOrder = aint8
+CASE ("H1HIER")
+  CALL SetOrderH1Hierarchical1(obj=obj, order=order)
 
-DO CONCURRENT(ii=1:obj%tEdges)
-  obj%edgeOrder(ii) = aint8
-END DO
-obj%maxEdgeOrder = aint8
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+ '[INTERNAL ERROR] :: No case found for baseContinuity and baseInterpolation')
+  RETURN
+END SELECT
 
 CALL FEDOF_Initiate_After(obj=obj)
 
@@ -145,6 +143,81 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
+!                                                         SetOrderH1Lagrange
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetOrderH1Lagrange(obj)
+  CLASS(FEDOF_), INTENT(INOUT) :: obj
+
+  ! internal variable
+  CHARACTER(*), PARAMETER :: myName = "SetOrderH1Lagrange()"
+  INTEGER(I4B) :: ii, order, tcell
+  INTEGER(INT8) :: aint8
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  tcell = obj%mesh%GetTotalCells()
+  CALL Reallocate(obj%cellOrder, tcell)
+
+  DO ii = 1, tcell
+    order = obj%mesh%GetOrder(globalElement=ii, islocal=.TRUE.)
+    aint8 = INT(order, kind=INT8)
+    obj%cellOrder(ii) = aint8
+  END DO
+  obj%maxCellOrder = MAXVAL(obj%cellOrder(1:tcell))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE SetOrderH1Lagrange
+
+!----------------------------------------------------------------------------
+!                                                 SetOrderH1Hierarchical1
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetOrderH1Hierarchical1(obj, order)
+  CLASS(FEDOF_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: order
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "SetOrderH1Hierarchical1()"
+  INTEGER(INT8) :: aint8
+  INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  aint8 = INT(order, kind=INT8)
+  DO CONCURRENT(ii=1:obj%tCells)
+    obj%cellOrder(ii) = aint8
+  END DO
+  obj%maxcellOrder = aint8
+
+  DO CONCURRENT(ii=1:obj%tFaces)
+    obj%faceOrder(ii) = aint8
+  END DO
+  obj%maxFaceOrder = aint8
+
+  DO CONCURRENT(ii=1:obj%tEdges)
+    obj%edgeOrder(ii) = aint8
+  END DO
+  obj%maxEdgeOrder = aint8
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE SetOrderH1Hierarchical1
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
@@ -169,7 +242,7 @@ END IF
 obj%mesh => mesh
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
 
-CALL FEDOF_Initiate_Before(obj=obj, isLagrange=obj%isLagrange)
+CALL FEDOF_Initiate_Before(obj=obj)
 
 CALL obj%SetCellOrder(order=order)
 CALL obj%SetFaceOrder()
@@ -215,7 +288,7 @@ SUBROUTINE handle_lagrange_fe(obj, iptype, basistype, alpha, beta, lambda)
   CHARACTER(*), PARAMETER :: myName = "handle_lagrange_fe()"
   LOGICAL(LGT) :: isok
 
-  INTEGER(I4B) :: ii, elemType, nsd
+  INTEGER(I4B) :: ii, elemType, nsd, jj
   INTEGER(I4B) :: totalTopo, topoList(8)
 
   isok = PRESENT(iptype)
@@ -226,16 +299,12 @@ SUBROUTINE handle_lagrange_fe(obj, iptype, basistype, alpha, beta, lambda)
   nsd = obj%mesh%GetNSD()
 
   DO ii = 1, totalTopo
-
     elemType = topoList(ii)
+    jj = GetElementIndex(elemType)
 
-    obj%fe(ii)%ptr => LagrangeFEPointer(elemType=elemType, nsd=nsd, &
-                                        baseContinuity=obj%baseContinuity, &
-                                        ipType=ipType, &
-                                        basisType=basisType, &
-                                        alpha=alpha, &
-                                        beta=beta, &
-                                        lambda=lambda)
+    obj%fe(jj)%ptr => LagrangeFEPointer(elemType=elemType, nsd=nsd, &
+                           baseContinuity=obj%baseContinuity, ipType=ipType, &
+                   basisType=basisType, alpha=alpha, beta=beta, lambda=lambda)
 
   END DO
 
@@ -427,12 +496,14 @@ END PROCEDURE obj_Initiate4
 !                                                     FEDOF_Initiate_Help
 !----------------------------------------------------------------------------
 
-SUBROUTINE FEDOF_Initiate_Before(obj, isLagrange)
+SUBROUTINE FEDOF_Initiate_Before(obj)
   CLASS(FEDOF_), INTENT(INOUT) :: obj
-  LOGICAL(LGT), INTENT(IN) :: isLagrange
 
   !! internal variables
   INTEGER(I4B) :: ent(4)
+  LOGICAL(LGT) :: isLagrange
+
+  isLagrange = obj%isLagrange
 
   !INFO: It returns total number of nodes, edges, faces, and cells in the mesh
   ent = obj%mesh%GetTotalEntities()
