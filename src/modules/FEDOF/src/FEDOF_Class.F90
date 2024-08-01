@@ -244,6 +244,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
 
+  PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Lagrange => &
+    obj_GetLocalElemShapeDataH1Lagrange
+
+  PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Hierarchical => &
+    obj_GetLocalElemShapeDataH1Hierarchical
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
 
@@ -292,20 +298,43 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
+!
+!# Introduction
+!
+! In case of H1 Lagrange fedof,
+! order is determined from the cell order of each mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
                     baseInterpolation, ipType, basisType, alpha, beta, lambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
+    !! homogeneous value of order
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! cell mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! basis function used for interpolation
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation type
+    !! used when baseInterpolation is Lagrange
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! type of basis function used for
+    !! constructing the Lagrange polynomial
+    !! Used when baseInterpolation is Lagrange
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! alpha parameter for jacobian parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Jacobi
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! beta parameter for jacobian parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Jacobi
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! lambda parameter for Ultraspherical parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Ultraspherical
   END SUBROUTINE obj_Initiate1
 
 END INTERFACE
@@ -1082,6 +1111,36 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeDataH1Lagrange(obj, &
+                                         globalElement, elemsd, quad, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetLocalElemShapeDataH1Lagrange
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeDataH1Hierarchical(obj, &
+                                         globalElement, elemsd, quad, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetLocalElemShapeDataH1Hierarchical
 END INTERFACE
 
 !----------------------------------------------------------------------------
