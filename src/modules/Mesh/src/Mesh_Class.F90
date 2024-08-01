@@ -96,7 +96,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer => obj_GetRefElemPointer
   !! Returns pointer to the reference element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder1 => obj_GetOrder
   !! Returns the order ofthe element of mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
