@@ -110,7 +110,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ReadMatInt32 => txt_read_Mat_Int32
   PROCEDURE, PASS(obj) :: ReadMatInt64 => txt_read_Mat_Int64
   !! generic
-  GENERIC, PUBLIC :: Read => &
+  GENERIC, PUBLIC :: READ => &
     & ReadLine, ReadLines, ReadChar, &
     & ReadInt8, ReadInt16, ReadInt32, ReadInt64, &
     & ReadReal32, ReadReal64, &
@@ -156,7 +156,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: WriteMatInt32 => txt_write_Mat_Int32
   PROCEDURE, PASS(obj) :: WriteMatInt64 => txt_write_Mat_Int64
   !! generic
-  GENERIC, PUBLIC :: Write => &
+  GENERIC, PUBLIC :: WRITE => &
     & WriteBlank, &
     & WriteLine, WriteLines, WriteChar, &
     & WriteInt8, WriteInt16, WriteInt32, WriteInt64, &
