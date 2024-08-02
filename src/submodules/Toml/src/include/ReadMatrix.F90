@@ -41,9 +41,9 @@
           CALL toml_get(array, ii, row_array)
           IF (.NOT. ASSOCIATED(row_array)) THEN
             CALL e%RaiseError(modName//'::'//myName//' - '// &
-              & '[INTERNAL ERROR] :: While reading 2D array, '//  &
-              & ' it is seems the '//tostring(ii)//'th row is empty '//  &
-              & '(cannot read it).')
+                            '[INTERNAL ERROR] :: While reading 2D array, '// &
+                     ' it is seems the '//tostring(ii)//'th row is empty '// &
+                              '(cannot read it).')
           END IF
 
           tcol = toml_len(row_array)
@@ -54,7 +54,7 @@
           ELSE
             IF (tcol .NE. tcol_same) THEN
               CALL e%RaiseError(modName//'::'//myName//' - '// &
-                & '[INTERNAL ERROR] :: Staggered matrix is not allowed')
+                        '[INTERNAL ERROR] :: Staggered matrix is not allowed')
             END IF
           END IF
 
@@ -71,15 +71,15 @@
       CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
 
       IF (stat0 .EQ. toml_stat%success) THEN
-        CALL atxtfile%Initiate(filename=filename%Chars(),  &
-          & action="READ", status="OLD")
+        CALL atxtfile%Initiate(filename=filename%Chars(), &
+                               action="READ", status="OLD")
         CALL atxtfile%OPEN()
         CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg)
         bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
         IF (bool1) THEN
           CALL e%RaiseError(modName//'::'//myName//' - '// &
-            & '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-            & CHAR_LF//TRIM(iomsg))
+               '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
+                            CHAR_LF//TRIM(iomsg))
           IF (PRESENT(isFound)) isFound = isFound0
           RETURN
         END IF

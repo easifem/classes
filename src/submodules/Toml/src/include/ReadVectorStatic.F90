@@ -16,22 +16,24 @@
 
       CHARACTER(*), PARAMETER :: myName = "toml_get"
       TYPE(toml_array), POINTER :: array
-      INTEGER(I4B) :: tsize, stat0, iostat, ii
+      INTEGER(I4B) :: stat0, iostat, ii
       TYPE(String) :: filename
       TYPE(TxtFile_) :: atxtfile
       CHARACTER(512) :: iomsg
-      LOGICAL(LGT) :: isFound0, bool1
+      LOGICAL(LGT) :: isFound0, bool1, isok
 
       isFound0 = .FALSE.
 
       ! try to read from the array
       array => NULL()
-      CALL toml_get(table, key, array,  &
-        & origin=origin, stat=stat0, requested=.FALSE.)
+      CALL toml_get(table, key, array, &
+                    origin=origin, stat=stat0, requested=.FALSE.)
 
-      IF (ASSOCIATED(array)) THEN
+      isok = ASSOCIATED(array)
+
+      IF (isok) THEN
         tsize = toml_len(array)
-        CALL Reallocate(VALUE, tsize)
+        ! CALL Reallocate(VALUE, tsize)
         isFound0 = .TRUE.
         DO ii = 1, tsize
           CALL toml_get(array, ii, VALUE(ii))
@@ -44,28 +46,29 @@
       END IF
 
       ! try to read from the file
-      CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
+      CALL GetValue(table=table, key=key, VALUE=filename, &
+                    default_value="", origin=origin, stat=stat0, isfound=isok)
 
-      IF (stat0 .EQ. toml_stat%success) THEN
-        CALL atxtfile%Initiate(filename=filename%Chars(),  &
-          & action="READ", status="OLD")
-        CALL atxtfile%OPEN()
-        CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg)
-
-        bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
-        IF (bool1) THEN
-          CALL e%RaiseError(modName//'::'//myName//' - '// &
-            & '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-            & CHAR_LF//TRIM(iomsg))
-          IF (PRESENT(isFound)) isFound = isFound0
-          IF (PRESENT(stat)) stat = stat0
-          filename = ""
-          RETURN
-        END IF
-
-        isFound0 = .TRUE.
-        CALL atxtfile%DEALLOCATE()
-      END IF
+      ! IF (isok) THEN
+      !   CALL atxtfile%Initiate(filename=filename%Chars(), &
+      !                          action="READ", status="OLD")
+      !   CALL atxtfile%OPEN()
+      !   CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg)
+      !
+      !   bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
+      !   IF (bool1) THEN
+      !     CALL e%RaiseError(modName//'::'//myName//' - '// &
+      !          '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
+      !                       CHAR_LF//TRIM(iomsg))
+      !     IF (PRESENT(isFound)) isFound = isFound0
+      !     IF (PRESENT(stat)) stat = stat0
+      !     filename = ""
+      !     RETURN
+      !   END IF
+      !
+      !   isFound0 = .TRUE.
+      !   CALL atxtfile%DEALLOCATE()
+      ! END IF
 
       IF (PRESENT(isFound)) isFound = isFound0
       IF (PRESENT(stat)) stat = stat0
