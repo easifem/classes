@@ -333,3 +333,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 
 # AbstractKernel
 # include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# 1D Solvers
+# ----------------------------------------------------------------------------
+
+# ElastoDynamicsSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSTFEM/CMakeLists.txt)
