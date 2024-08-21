@@ -122,7 +122,8 @@ TYPE :: FEDOF_
 
   TYPE(AbstractFEPointer_) :: fe(8)
   !! pointer to finite element object
-  !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism, pyramid
+  !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
+  !! pyramid
 
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
