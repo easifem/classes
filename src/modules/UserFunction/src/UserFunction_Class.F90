@@ -27,20 +27,15 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "UserFunction_Class"
 CHARACTER(*), PARAMETER :: myprefix = "UserFunction"
-CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) =  &
-  & [ &
-  & "Scalar", &
-  & "Vector", &
-  & "Matrix"  &
-  & ]
-CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) =  &
-  & [ &
-  & "Constant         ", &
-  & "Space            ",  &
-  & "Time             ", &
-  & "SpaceTime        ",  &
-  & "SolutionDependent"  &
-  & ]
+CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) = &
+                           ["Scalar", "Vector", "Matrix"]
+CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) = &
+                           ["Constant         ", &
+                            "Space            ", &
+                            "Time             ", &
+                            "SpaceTime        ", &
+                            "SolutionDependent"]
+
 INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SCALAR = 1
 INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_VECTOR = 3
 INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_MATRIX = 6
@@ -107,13 +102,17 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+
   FINAL :: obj_Final
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set1
 
   ! GET:
@@ -217,8 +216,8 @@ END INTERFACE
 ! summary: Sets user funciton parameter
 
 INTERFACE
-  MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType,  &
-    & numArgs, numReturns, luaScript, luaFunctionName, returnShape)
+  MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType, &
+                 numArgs, numReturns, luaScript, luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! parameter to be constructed
     CHARACTER(*), INTENT(IN) :: name
@@ -545,9 +544,9 @@ CONTAINS
 ! date: 26 Oct 2021
 ! summary: Sets the user function
 
-SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
-  & luaScript, luaFunctionName, scalarFunction, vectorFunction,  &
-  & matrixFunction)
+SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue, &
+                 luaScript, luaFunctionName, scalarFunction, vectorFunction, &
+                    matrixFunction)
   USE BaseMethod, ONLY: Reallocate, tostring
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue
@@ -555,12 +554,12 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: matrixValue(:, :)
   CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
   CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
-  PROCEDURE(iface_ScalarFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
-    & scalarFunction
-  PROCEDURE(iface_VectorFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
-    & vectorFunction
-  PROCEDURE(iface_MatrixFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
-    & matrixFunction
+  PROCEDURE(iface_ScalarFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+    scalarFunction
+  PROCEDURE(iface_VectorFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+    vectorFunction
+  PROCEDURE(iface_MatrixFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+    matrixFunction
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "obj_Set()"
@@ -569,13 +568,13 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] Set()')
+                          '[START] Set()')
 #endif
 
   isNotOK = .NOT. obj%isInitiated
   IF (isNotOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')
+                   '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')
     RETURN
   END IF
 
@@ -583,8 +582,8 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Scalar
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '// &
-      & ' or UserFunction_::obj%returnType is not Scalar')
+         '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '// &
+                        ' or UserFunction_::obj%returnType is not Scalar')
       RETURN
     END IF
     obj%scalarValue = scalarValue
@@ -594,18 +593,18 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Vector
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
-      & CHAR_LF//' is NOT Constant '//  &
-      & CHAR_LF//'or UserFunction_::obj%returnType is not Vector.')
+                        '[INTERNAL ERROR] :: UserFunction_::obj%argType '// &
+                        CHAR_LF//' is NOT Constant '// &
+                   CHAR_LF//'or UserFunction_::obj%returnType is not Vector.')
       RETURN
     END IF
     tsize = SIZE(vectorValue)
     isNotOK = tsize .NE. obj%numReturns
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%numReturns '//  &
-      & CHAR_LF//tostring(obj%numReturns)//'is NOT equal to '//  &
-      & CHAR_LF//' the size of vectorValue ('//tostring(tsize)//').')
+                      '[INTERNAL ERROR] :: UserFunction_::obj%numReturns '// &
+                     CHAR_LF//tostring(obj%numReturns)//'is NOT equal to '// &
+                 CHAR_LF//' the size of vectorValue ('//tostring(tsize)//').')
       RETURN
     END IF
     CALL Reallocate(obj%vectorValue, SIZE(vectorValue))
@@ -616,9 +615,9 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Matrix
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
-      & CHAR_LF//'is NOT Constant '//  &
-      & CHAR_LF//'or UserFunction_::obj%returnType is not Matrix')
+                        '[INTERNAL ERROR] :: UserFunction_::obj%argType '// &
+                        CHAR_LF//'is NOT Constant '// &
+                    CHAR_LF//'or UserFunction_::obj%returnType is not Matrix')
       RETURN
     END IF
     myshape = SHAPE(matrixValue)
@@ -626,8 +625,8 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = ALL(myshape .NE. obj%returnShape)
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is '//  &
-        & 'Matrix, but shape of matrixValue is not same as obj%returnShape')
+                   '[INTERNAL ERROR] :: UserFunction_::obj%returnType is '// &
+            'Matrix, but shape of matrixValue is not same as obj%returnShape')
       RETURN
     END IF
 
@@ -642,8 +641,8 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
       obj%luaFunctionName = luaFunctionName
     ELSE
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: both luaScript and luaFunctionName '//  &
-        & 'should be present.')
+                 '[INTERNAL ERROR] :: both luaScript and luaFunctionName '// &
+                        'should be present.')
       RETURN
     END IF
   END IF
@@ -652,7 +651,7 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Scalar
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Scalar')
+            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Scalar')
       RETURN
     END IF
     obj%isUserFunctionSet = .TRUE.
@@ -663,7 +662,7 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Vector
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Vector')
+            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Vector')
       RETURN
     END IF
     obj%isUserFunctionSet = .TRUE.
@@ -674,7 +673,7 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     isNotOK = obj%returnType .NE. Matrix
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Matrix')
+            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Matrix')
       RETURN
     END IF
     obj%isUserFunctionSet = .TRUE.
@@ -683,7 +682,7 @@ SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] Set()')
+                          '[END] Set()')
 #endif
 END SUBROUTINE obj_Set1
 
