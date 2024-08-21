@@ -23,6 +23,7 @@
       LOGICAL(LGT) :: isFound0, bool1, isok
 
       isFound0 = .FALSE.
+      tsize = 0
 
       ! try to read from the array
       array => NULL()
@@ -49,26 +50,31 @@
       CALL GetValue(table=table, key=key, VALUE=filename, &
                     default_value="", origin=origin, stat=stat0, isfound=isok)
 
-      ! IF (isok) THEN
-      !   CALL atxtfile%Initiate(filename=filename%Chars(), &
-      !                          action="READ", status="OLD")
-      !   CALL atxtfile%OPEN()
-      !   CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg)
-      !
-      !   bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
-      !   IF (bool1) THEN
-      !     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      !          '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-      !                       CHAR_LF//TRIM(iomsg))
-      !     IF (PRESENT(isFound)) isFound = isFound0
-      !     IF (PRESENT(stat)) stat = stat0
-      !     filename = ""
-      !     RETURN
-      !   END IF
-      !
-      !   isFound0 = .TRUE.
-      !   CALL atxtfile%DEALLOCATE()
-      ! END IF
+      IF (isok) THEN
+        CALL atxtfile%Initiate(filename=filename%Chars(), &
+                               action="READ", status="OLD")
+        CALL atxtfile%OPEN()
+
+        tsize = atxtfile%GetTotalRecords()
+
+        DO ii = 1, tsize
+          CALL atxtfile%READ(val=VALUE(ii), iostat=iostat, iomsg=iomsg)
+
+          bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
+          IF (bool1) THEN
+            CALL e%RaiseError(modName//'::'//myName//' - '// &
+               '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
+                              CHAR_LF//TRIM(iomsg))
+            IF (PRESENT(isFound)) isFound = isFound0
+            IF (PRESENT(stat)) stat = stat0
+            filename = ""
+            RETURN
+          END IF
+        END DO
+
+        isFound0 = .TRUE.
+        CALL atxtfile%DEALLOCATE()
+      END IF
 
       IF (PRESENT(isFound)) isFound = isFound0
       IF (PRESENT(stat)) stat = stat0
