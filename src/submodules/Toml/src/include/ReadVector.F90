@@ -26,8 +26,8 @@
 
       ! try to read from the array
       array => NULL()
-      CALL toml_get(table, key, array, &
-                    origin=origin, stat=stat0, requested=.FALSE.)
+      CALL toml_get(table, key, array, origin=origin, stat=stat0, &
+                    requested=.FALSE.)
 
       isok = ASSOCIATED(array)
 
@@ -67,8 +67,24 @@
 
         isFound0 = .TRUE.
         CALL atxtfile%DEALLOCATE()
+
+        IF (PRESENT(isFound)) isFound = isFound0
+        IF (PRESENT(stat)) stat = stat0
+        filename = ""
+        RETURN
       END IF
 
+      CALL toml_get(table, key, temp, origin=origin, stat=stat0)
+
+      IF (stat0 .EQ. toml_stat%success) THEN
+        CALL Reallocate(VALUE, 1)
+        VALUE(1) = temp
+        isFound0 = .TRUE.
+        IF (PRESENT(isFound)) isFound = isFound0
+        IF (PRESENT(stat)) stat = stat0
+        RETURN
+      END IF
+
+      isFound0 = .FALSE.
       IF (PRESENT(isFound)) isFound = isFound0
       IF (PRESENT(stat)) stat = stat0
-      filename = ""
