@@ -18,7 +18,7 @@
 SUBMODULE(TomlUtility) GetMethods
 USE ReallocateUtility, ONLY: Reallocate
 
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 
 USE tomlf, ONLY: toml_error, &
                  toml_load, &
@@ -107,12 +107,17 @@ MODULE PROCEDURE toml_get_real64
 END PROCEDURE toml_get_real64
 
 !----------------------------------------------------------------------------
-!                                                                      Get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int8_r1
+INTEGER(INT8) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_int8_r1
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int8_r1_static
 #include "./include/ReadVectorStatic.F90"
@@ -123,6 +128,7 @@ END PROCEDURE toml_get_int8_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int16_r1
+INTEGER(INT16) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_int16_r1
 
@@ -139,6 +145,7 @@ END PROCEDURE toml_get_int16_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int32_r1
+INTEGER(INT32) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_int32_r1
 
@@ -155,6 +162,7 @@ END PROCEDURE toml_get_int32_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int64_r1
+INTEGER(INT64) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_int64_r1
 
@@ -171,6 +179,7 @@ END PROCEDURE toml_get_int64_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real32_r1
+REAL(REAL32) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_real32_r1
 
@@ -187,6 +196,7 @@ END PROCEDURE toml_get_real32_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real64_r1
+REAL(REAL64) :: temp
 #include "./include/ReadVector.F90"
 END PROCEDURE toml_get_real64_r1
 
