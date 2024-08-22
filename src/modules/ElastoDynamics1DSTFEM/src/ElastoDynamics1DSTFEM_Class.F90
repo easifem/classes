@@ -41,6 +41,8 @@ USE ExceptionHandler_Class, ONLY: e
 
 USE String_Class, ONLY: String
 
+USE UserFunction_Class, ONLY: UserFunction_
+
 PRIVATE
 
 PUBLIC :: ElastoDynamics1DSTFEM_
