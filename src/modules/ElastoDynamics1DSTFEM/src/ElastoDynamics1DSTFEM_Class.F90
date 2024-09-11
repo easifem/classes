@@ -215,17 +215,11 @@ TYPE :: ElastoDynamics1DSTFEM_
   TYPE(ElemshapeData_) :: elemsdForTime
   !! Element shape data for time
 
-  REAL(DFP) :: timeShapeFunc0(MAX_ORDER_TIME + 1)
+  REAL(DFP) :: timeShapeFuncBndy(MAX_ORDER_TIME + 1, 2)
   !! Value of time shape function at theta = -1
 
-  REAL(DFP) :: timeShapeFuncRight(MAX_ORDER_TIME + 1)
-  !! Value of time shape function at theta = +1
-
-  REAL(DFP) :: spaceShapeFuncRight(MAX_ORDER_SPACE + 1)
+  REAL(DFP) :: spaceShapeFuncBndy(MAX_ORDER_SPACE + 1, 2)
   !! Value of space shape function at xi = 1
-
-  REAL(DFP) :: spaceShapeFuncLeft(MAX_ORDER_SPACE + 1)
-  !! Value of space shape function at xi = -1
 
   REAL(DFP) :: ct(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1)
   !! Ct matrix, see notes

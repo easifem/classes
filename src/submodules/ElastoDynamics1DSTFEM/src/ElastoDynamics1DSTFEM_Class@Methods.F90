@@ -1097,8 +1097,8 @@ ncol = nrow
 ans(1:nrow, 1:ncol) = 0.0
 
 scale = 1.0_DFP
-CALL OuterProd_(a=obj%timeShapeFunc0(1:nrow), &
-                b=obj%timeShapeFunc0(1:ncol), &
+CALL OuterProd_(a=obj%timeShapeFuncBndy(1:nrow, 1), &
+                b=obj%timeShapeFuncBndy(1:ncol, 1), &
                 ans=ans, nrow=ii, ncol=jj, anscoeff=0.0_DFP, scale=scale)
 
 #ifdef DEBUG_VER
@@ -1194,11 +1194,11 @@ ncol = nrow
 
 tsize = obj%elemsdForTime%nips
 
-temp(1:nrow) = MATMUL(obj%wt(1:nrow, 1:ncol), obj%timeShapeFunc0(1:ncol))
+temp(1:nrow) = MATMUL(obj%wt(1:nrow, 1:ncol), obj%timeShapeFuncBndy(1:ncol, 1))
 
 obj%tat(1:nrow) = 0.0_DFP
 
-obj%at_right = DOT_PRODUCT(obj%timeShapeFuncRight(1:nrow), temp(1:nrow))
+obj%at_right = DOT_PRODUCT(obj%timeShapeFuncBndy(1:nrow, 2), temp(1:nrow))
 
 DO ii = 1, tsize
   obj%at(ii) = DOT_PRODUCT(obj%elemsdForTime%N(1:nrow, ii), temp(1:nrow))
@@ -1237,7 +1237,7 @@ obj%bt(1:nrow, 1:ncol) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
 obj%bt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol) * half
 
 obj%bt_right(1:nrow) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
-                              obj%timeShapeFuncRight(1:nrow))
+                              obj%timeShapeFuncBndy(1:nrow, 2))
 
 obj%bt_right(1:nrow) = obj%bt_right(1:nrow) * half
 
@@ -1449,11 +1449,11 @@ CASE ("LAGR")
                              ipType=obj%ipTypeForSpace, &
                              basisType=obj%baseTypeForSpace)
 
-  obj%spaceShapeFuncLeft(1:nns) = 0.0_DFP
-  obj%spaceShapeFuncLeft(1) = 1.0_DFP
+  obj%spaceShapeFuncBndy(1:nns, 1) = 0.0_DFP
+  obj%spaceShapeFuncBndy(1, 1) = 1.0_DFP
 
-  obj%spaceShapeFuncRight(1:nns) = 0.0_DFP
-  obj%spaceShapeFuncRight(2) = 1.0_DFP
+  obj%spaceShapeFuncBndy(1:nns, 2) = 0.0_DFP
+  obj%spaceShapeFuncBndy(2, 2) = 1.0_DFP
 
 CASE ("HIER", "HEIR")
 
@@ -1468,11 +1468,11 @@ CASE ("HIER", "HEIR")
                                  cellOrder=cellOrder, &
                                  cellOrient=cellOrient)
 
-  obj%spaceShapeFuncLeft(1:nns) = 0.0_DFP
-  obj%spaceShapeFuncLeft(1) = 1.0_DFP
+  obj%spaceShapeFuncBndy(1:nns, 1) = 0.0_DFP
+  obj%spaceShapeFuncBndy(1, 1) = 1.0_DFP
 
-  obj%spaceShapeFuncRight(1:nns) = 0.0_DFP
-  obj%spaceShapeFuncRight(2) = 1.0_DFP
+  obj%spaceShapeFuncBndy(1:nns, 2) = 0.0_DFP
+  obj%spaceShapeFuncBndy(2, 2) = 1.0_DFP
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -1538,11 +1538,11 @@ CASE ("LAGR")
                              ipType=obj%ipTypeForTime, &
                              basisType=obj%baseTypeForTime)
 
-  obj%timeShapeFunc0(1:nns) = 0.0_DFP
-  obj%timeShapeFunc0(1) = 1.0_DFP
+  obj%timeShapeFuncBndy(1:nns, 1) = 0.0_DFP
+  obj%timeShapeFuncBndy(1, 1) = 1.0_DFP
 
-  obj%timeShapeFuncRight(1:nns) = 0.0_DFP
-  obj%timeShapeFuncRight(2) = 1.0_DFP
+  obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
+  obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
 
 CASE ("HIER", "HEIR")
 
@@ -1557,11 +1557,11 @@ CASE ("HIER", "HEIR")
                                  cellOrder=cellOrder, &
                                  cellOrient=cellOrient)
 
-  obj%timeShapeFunc0(1:nns) = 0.0_DFP
-  obj%timeShapeFunc0(1) = 1.0_DFP
+  obj%timeShapeFuncBndy(1:nns, 1) = 0.0_DFP
+  obj%timeShapeFuncBndy(1, 1) = 1.0_DFP
 
-  obj%timeShapeFuncRight(1:nns) = 0.0_DFP
-  obj%timeShapeFuncRight(2) = 1.0_DFP
+  obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
+  obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
 
 CASE ("ORTH")
 
@@ -1575,11 +1575,15 @@ CASE ("ORTH")
                                domainName="B", order=order, &
                                basisType=poly%legendre)
 
-  ! obj%timeShapeFunc0(1:nns) = 0.0_DFP
-  ! obj%timeShapeFunc0(1) = 1.0_DFP
+  ! CALL OrthogonalBasis_Line_(order=order, xij=xij, refLine=domainName, &
+  !                basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+  !                            ans=ans, nrow=nrow, ncol=ncol)
+
+  ! obj%timeShapeFuncBndy(1:nns, 1) = 0.0_DFP
+  ! obj%timeShapeFuncBndy(1, 1) = 1.0_DFP
   !
-  ! obj%timeShapeFuncRight(1:nns) = 0.0_DFP
-  ! obj%timeShapeFuncRight(2) = 1.0_DFP
+  ! obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
+  ! obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -1810,7 +1814,7 @@ DO ielSpace = 1, obj%totalSpaceElements
   f1(1:nns) = MATMUL(obj%ms(1:nrow, 1:ncol), v0(1:ncol))
   f2(1:nns) = MATMUL(obj%ks(1:nrow, 1:ncol), u0(1:ncol))
 
-  CALL OTimesTilda(a=obj%timeShapeFunc0(1:nnt), b=f1(1:nns), ans=obj%rhse, &
+  CALL OTimesTilda(a=obj%timeShapeFuncBndy(1:nnt, 1), b=f1(1:nns), ans=obj%rhse, &
                    tsize=tsize, anscoeff=zero, scale=one)
 
   CALL OTimesTilda(a=obj%tat(1:nnt), b=f2(1:nns), ans=obj%rhse, &
@@ -1975,7 +1979,7 @@ DO ipt = 1, nipt
 
     DO ii = 1, nns
 
-      r(6) = obj%spaceShapeFuncLeft(ii)
+      r(6) = obj%spaceShapeFuncBndy(ii, 1)
       r(7) = scale * r(5) * r(6)
 
       ans(ii + (a - 1) * nns) = ans(ii + (a - 1) * nns) + r(7)
@@ -2036,7 +2040,7 @@ DO ipt = 1, nipt
 
     DO ii = 1, nns
 
-      r(6) = obj%spaceShapeFuncRight(ii)
+      r(6) = obj%spaceShapeFuncBndy(ii, 2)
       r(7) = scale * r(5) * r(6)
 
       ans(ii + (a - 1) * nns) = ans(ii + (a - 1) * nns) + r(7)
@@ -2372,7 +2376,7 @@ CALL RealVector_Set(obj=obj%v0, VALUE=zero)
 CALL RealVector_Scale(obj%u0, obj%at_right)
 
 DO ii = 1, nnt
-  scale = obj%timeShapeFuncRight(ii)
+  scale = obj%timeShapeFuncBndy(ii, 2)
   CALL RealVector_Add(obj1=obj%v0, dofobj1=obj%dof, idof1=1_I4B, &
                       obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
 
@@ -2447,11 +2451,11 @@ DO ielSpace = 1, obj%totalSpaceElements
   DATA(con(1), 1) = xij(1, 1)
   DATA(con(2), 1) = xij(1, 2)
 
-  DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncLeft(1:nns))
-  DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncRight(1:nns))
+  DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
+  DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
 
-  DATA(con(1), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncLeft(1:nns))
-  DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncRight(1:nns))
+  DATA(con(1), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
+  DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
 
   xij(1, 1) = xij(1, 2)
 
