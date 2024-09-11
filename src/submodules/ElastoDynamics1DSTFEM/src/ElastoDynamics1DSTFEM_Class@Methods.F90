@@ -30,7 +30,12 @@ USE StringUtility, ONLY: UpperCase
 
 USE Display_Method, ONLY: ToString, Display
 
-USE GlobalData, ONLY: stdout, CHAR_LF, DOF_FMT, NONE, LIS_GMRES
+USE GlobalData, ONLY: stdout, &
+                      CHAR_LF, &
+                      DOF_FMT, &
+                      NONE, &
+                      LIS_GMRES, &
+                      CHAR_SLASH
 
 USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
                                     BaseType_ToInteger, &
@@ -50,7 +55,8 @@ USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate, &
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Allocate => ALLOCATE, &
                                 HierarchicalElemShapeData, &
-                                Elemsd_Set => Set
+                                Elemsd_Set => Set, &
+                                OrthogonalElemShapeData
 
 USE SwapUtility, ONLY: SWAP
 
@@ -121,6 +127,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isConnectivity = .FALSE.
+obj%baseContinuityForSpace = "H1"
+obj%baseContinuityForTime = "H1"
+obj%baseInterpolationForSpace = "LAGR"
+obj%baseInterpolationForTime = "LAGR"
+obj%verbosity = 0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -251,6 +262,12 @@ CALL Display(isok, "velocityLeft ASSOCIATED: ", unitno=unitno)
 isok = ASSOCIATED(obj%velocityRight)
 CALL Display(isok, "velocityRight ASSOCIATED: ", unitno=unitno)
 
+isok = ASSOCIATED(obj%initialDisp)
+CALL Display(isok, "initialDisp ASSOCIATED: ", unitno=unitno)
+
+isok = ASSOCIATED(obj%initialVel)
+CALL Display(isok, "initialVel ASSOCIATED: ", unitno=unitno)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -270,6 +287,7 @@ LOGICAL(LGT) :: isok, abool
 TYPE(String) :: astr
 INTEGER(I4B), ALLOCATABLE :: tempintvec(:)
 REAL(DFP), ALLOCATABLE :: temprealvec(:)
+TYPE(toml_table), POINTER :: node
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -291,6 +309,9 @@ CALL Display(myName//" filename")
 
 CALL GetValue(table=table, key="filename", VALUE=obj%filename, &
        origin=origin, stat=stat, isfound=isok, default_value=default_filename)
+
+CALL GetValue(table=table, key="verbosity", VALUE=obj%verbosity, &
+      origin=origin, stat=stat, isfound=isok, default_value=default_verbosity)
 
 #ifdef DEBUG_VER
 CALL Display(myName//" totalSpaceNodes")
@@ -419,7 +440,6 @@ CALL Reallocate(obj%spaceOrder, obj%totalSpaceElements)
 
 abool = SIZE(tempintvec) .EQ. 1
 IF (abool) THEN
-  CALL Display(tempintvec(1), myname//" tempintvec(1): ")
   obj%spaceOrder(:) = tempintvec(1)
 ELSE
   isok = SIZE(tempintvec) .EQ. obj%totalSpaceElements
@@ -610,9 +630,110 @@ CALL GetValue(table=table, key="quadTypeForTime", VALUE=astr, &
               stat=stat, isfound=isok)
 obj%quadTypeForTime = BaseInterpolation_ToInteger(astr%chars())
 
-!INFO:
+!INFO: bodyForce
+astr = "bodyForce"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%bodyForce)
+  CALL obj%bodyForce%ImportFromToml(table=node)
+END IF
+node => NULL()
 
-! CALL obj%Initiate()
+!INFO: tractionRight
+astr = "tractionRight"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%tractionRight)
+  CALL obj%tractionRight%ImportFromToml(table=node)
+END IF
+node => NULL()
+
+!INFO: tractionLeft
+astr = "tractionLeft"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%tractionLeft)
+  CALL obj%tractionLeft%ImportFromToml(table=node)
+END IF
+node => NULL()
+
+!INFO: velocityRight
+astr = "velocityRight"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%velocityRight)
+  CALL obj%velocityRight%ImportFromToml(table=node)
+END IF
+node => NULL()
+
+!INFO: velocityLeft
+astr = "velocityLeft"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%velocityLeft)
+  CALL obj%velocityLeft%ImportFromToml(table=node)
+END IF
+node => NULL()
+
+!INFO: initialVel
+astr = "initialVel"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%initialVel)
+  CALL obj%initialVel%ImportFromToml(table=node)
+END IF
+node => NULL()
+
+!INFO: initialDisp
+astr = "initialDisp"
+#ifdef DEBUG_VER
+CALL Display(myName//astr%chars())
+#endif
+node => NULL()
+CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  ALLOCATE (obj%initialDisp)
+  CALL obj%initialDisp%ImportFromToml(table=node)
+END IF
+node => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1442,20 +1563,23 @@ CASE ("HIER", "HEIR")
   obj%timeShapeFuncRight(1:nns) = 0.0_DFP
   obj%timeShapeFuncRight(2) = 1.0_DFP
 
-! CASE ("ORTH")
-!
-!   cellOrder = order
-!   CALL HierarchicalElemShapeData(obj=obj%elemsdForTime, &
-!                                  quad=obj%quadForTime, &
-!                                  nsd=obj%elemsdForTime%nsd, &
-!                                  xidim=obj%elemsdForTime%xidim, &
-!                                  elemtype=elem%line, &
-!                                  refelemCoord=refelemCoord, &
-!                                  domainName="B", &
-!                                  cellOrder=cellOrder)
-!
-!   obj%timeShapeFunc0(1:nns) = 0.0_DFP
-!   obj%timeShapeFunc0(1) = 1.0_DFP
+CASE ("ORTH")
+
+  cellOrder = order
+  CALL OrthogonalElemShapeData(obj=obj%elemsdForTime, &
+                               quad=obj%quadForTime, &
+                               nsd=obj%elemsdForTime%nsd, &
+                               xidim=obj%elemsdForTime%xidim, &
+                               elemtype=elem%line, &
+                               refelemCoord=refelemCoord, &
+                               domainName="B", order=order, &
+                               basisType=poly%legendre)
+
+  ! obj%timeShapeFunc0(1:nns) = 0.0_DFP
+  ! obj%timeShapeFunc0(1) = 1.0_DFP
+  !
+  ! obj%timeShapeFuncRight(1:nns) = 0.0_DFP
+  ! obj%timeShapeFuncRight(2) = 1.0_DFP
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -1554,7 +1678,6 @@ DO ielSpace = 1, obj%totalSpaceElements
 
   CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=tcon)
 
-  !! CALL Display(x1, "x1: ")
   dx = obj%spaceElemLength(ielSpace)
   dx_by_2 = dx * 0.5_DFP
   dx2 = dx * dx
@@ -1569,12 +1692,14 @@ DO ielSpace = 1, obj%totalSpaceElements
   obj%ke = 0.0_DFP
 
   CALL obj%GetMs(ans=obj%ms, nrow=nrow, ncol=ncol)
-  obj%ms(1:nrow, 1:ncol) = dx_by_2 * obj%ms(1:nrow, 1:ncol)
+  obj%ms(1:nrow, 1:ncol) = obj%density(ielSpace) * dx_by_2 &
+                           * obj%ms(1:nrow, 1:ncol)
 
   nns = nrow
 
   CALL obj%GetKs(ans=obj%ks, nrow=nrow, ncol=ncol)
-  obj%ks(1:nrow, 1:ncol) = two_by_dx * obj%ks(1:nrow, 1:ncol)
+  obj%ks(1:nrow, 1:ncol) = obj%elasticModulus(ielSpace) * &
+                           two_by_dx * obj%ks(1:nrow, 1:ncol)
 
   CALL obj%GetCs(ans=obj%cs, nrow=nrow, ncol=ncol, &
                  alpha=obj%rayleighAlpha(ielSpace), &
@@ -1634,7 +1759,7 @@ REAL(DFP) :: dx, dx_by_2, two_by_dx, dt, minus_dt_by_2, &
 
 INTEGER(I4B), PARAMETER :: conversion(1) = [NONE]
 
-LOGICAL(LGT) :: isBodyForce, isTractionLeft, isTractionRight
+LOGICAL(LGT) :: isTractionLeft, isTractionRight
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1645,7 +1770,6 @@ CALL RealVector_Set(obj=obj%rhs, VALUE=zero)
 
 nnt = obj%elemsdForTime%nns
 
-isBodyForce = ASSOCIATED(obj%bodyForce)
 isTractionRight = ASSOCIATED(obj%tractionRight)
 isTractionLeft = ASSOCIATED(obj%tractionLeft)
 
@@ -1670,10 +1794,12 @@ DO ielSpace = 1, obj%totalSpaceElements
   obj%rhse = 0.0_DFP
 
   CALL obj%GetMs(ans=obj%ms, nrow=nrow, ncol=ncol)
-  obj%ms(1:nrow, 1:ncol) = dx_by_2 * obj%ms(1:nrow, 1:ncol)
+  obj%ms(1:nrow, 1:ncol) = obj%density(ielSpace) * &
+                           dx_by_2 * obj%ms(1:nrow, 1:ncol)
 
   CALL obj%GetKs(ans=obj%ks, nrow=nrow, ncol=ncol)
-  obj%ks(1:nrow, 1:ncol) = two_by_dx * obj%ks(1:nrow, 1:ncol)
+  obj%ks(1:nrow, 1:ncol) = obj%elasticModulus(ielSpace) * &
+                           two_by_dx * obj%ks(1:nrow, 1:ncol)
 
   CALL RealVector_GetValue_(obj=obj%v0, nodenum=con(1:nns), VALUE=v0, &
                             tsize=nns)
@@ -1691,10 +1817,8 @@ DO ielSpace = 1, obj%totalSpaceElements
                    tsize=tsize, anscoeff=one, scale=minus_dt_by_2)
 
   !! Body force
-  IF (isBodyForce) THEN
-    CALL obj%GetBodyForce(ans=obj%rhse, tsize=tsize, spaceElemNum=ielSpace, &
-                          timeElemNum=timeElemNum, anscoeff=one, scale=one)
-  END IF
+  CALL obj%GetBodyForce(ans=obj%rhse, tsize=tsize, spaceElemNum=ielSpace, &
+                        timeElemNum=timeElemNum, anscoeff=one, scale=one)
 
   ! CALL RealVector_Add(obj=)
   CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:tsize), &
@@ -1707,23 +1831,21 @@ END DO
 ! Traction right
 IF (isTractionRight) THEN
   CALL obj%GetTractionRight(ans=obj%rhse, tsize=tsize, &
-                            timeElemNum=timeElemNum, anscoeff=one, scale=one)
+                            timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
   CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:tsize), &
          scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
-  CALL Display(obj%rhse(1:tsize), myname//" obj%rhse: ")
 END IF
 
 ! Traction left
 IF (isTractionLeft) THEN
   CALL obj%GetTractionLeft(ans=obj%rhse, tsize=tsize, &
-                           timeElemNum=timeElemNum, anscoeff=one, scale=one)
+                           timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
   CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:tsize), &
          scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
-  CALL Display(obj%rhse(1:tsize), myname//" obj%rhse: ")
 END IF
 
 #ifdef DEBUG_VER
@@ -1743,12 +1865,16 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetBodyForce()"
 #endif
 
 INTEGER(I4B) :: nns, nnt, nips, nipt, ii, a, ipt, ips
-REAL(DFP) :: r(10), x(1), t, js_jt
+REAL(DFP) :: r(10), args(2), t, js_jt
+LOGICAL(LGT) :: isBodyForce
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+isBodyForce = ASSOCIATED(obj%bodyForce)
+IF (.NOT. isBodyForce) RETURN
 
 nns = obj%elemsdForSpace%nns
 nnt = obj%elemsdForTime%nns
@@ -1758,19 +1884,20 @@ tsize = nns * nnt
 ans(1:tsize) = ans(1:tsize) * anscoeff
 
 js_jt = obj%spaceElemLength(spaceElemNum) * obj%timeElemLength(timeElemNum) &
-        * 0.25_DFP
+        * 0.25_DFP * obj%density(spaceElemNum)
 
 DO ipt = 1, nipt
 
   t = obj%elemsdForTime%coord(1, ipt)
+  args(2) = t
 
-  r(1) = obj%elemsdForTime%ws(ipt)
+  r(1) = obj%elemsdForTime%ws(ipt) * js_jt
 
   DO ips = 1, nips
 
-    x(1) = obj%elemsdForSpace%coord(1, ips)
+    args(1) = obj%elemsdForSpace%coord(1, ips)
 
-    r(2) = obj%bodyForce(x=x, t=t)
+    CALL obj%bodyForce%Get(val=r(2), args=args)
 
     r(3) = obj%elemsdForSpace%ws(ips)
 
@@ -1815,12 +1942,16 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTractionLeft()"
 #endif
 
 INTEGER(I4B) :: nns, nnt, nipt, ii, a, ipt
-REAL(DFP) :: r(10), t, dt_by_2
+REAL(DFP) :: r(10), args(1), dt_by_2
+LOGICAL(LGT) :: isTractionLeft
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+isTractionLeft = ASSOCIATED(obj%tractionLeft)
+IF (.NOT. isTractionLeft) RETURN
 
 nns = obj%elemsdForSpace%nns
 nnt = obj%elemsdForTime%nns
@@ -1832,9 +1963,9 @@ dt_by_2 = obj%timeElemLength(timeElemNum) * 0.5_DFP
 
 DO ipt = 1, nipt
 
-  t = obj%elemsdForTime%coord(1, ipt)
-  r(1) = obj%elemsdForTime%ws(ipt)
-  r(2) = obj%tractionLeft(t)
+  args(1) = obj%elemsdForTime%coord(1, ipt)
+  r(1) = obj%elemsdForTime%ws(ipt) * dt_by_2
+  CALL obj%tractionLeft%Get(val=r(2), args=args)
   r(3) = r(1) * r(2)
 
   DO a = 1, nnt
@@ -1872,12 +2003,16 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTractionRight()"
 #endif
 
 INTEGER(I4B) :: nns, nnt, nipt, ii, a, ipt
-REAL(DFP) :: r(10), t, dt_by_2
+REAL(DFP) :: r(10), args(1), dt_by_2
+LOGICAL(LGT) :: isTractionRight
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+isTractionRight = ASSOCIATED(obj%tractionRight)
+IF (.NOT. isTractionRight) RETURN
 
 nns = obj%elemsdForSpace%nns
 nnt = obj%elemsdForTime%nns
@@ -1889,9 +2024,9 @@ dt_by_2 = obj%timeElemLength(timeElemNum) * 0.5_DFP
 
 DO ipt = 1, nipt
 
-  t = obj%elemsdForTime%coord(1, ipt)
-  r(1) = obj%elemsdForTime%ws(ipt)
-  r(2) = obj%tractionRight(t)
+  args(1) = obj%elemsdForTime%coord(1, ipt)
+  r(1) = obj%elemsdForTime%ws(ipt) * dt_by_2
+  CALL obj%tractionRight%Get(val=r(2), args=args)
   r(3) = r(1) * r(2)
 
   DO a = 1, nnt
@@ -1951,7 +2086,9 @@ IF (isDirichletLeft) THEN
   nipt = obj%elemsdForTime%nips
 
   DO ii = 1, nipt
-    obj%dbc_coeff(ii) = obj%velocityLeft(obj%elemsdForTime%coord(1, ii))
+    ! obj%dbc_coeff(ii) = obj%velocityLeft(obj%elemsdForTime%coord(1, ii))
+    CALL obj%velocityLeft%Get(val=obj%dbc_coeff(ii), &
+                              args=obj%elemsdForTime%coord(1, ii:ii))
   END DO
 
   obj%dbc_rhs(1:nnt) = 0.0
@@ -1981,7 +2118,8 @@ IF (isDirichletRight) THEN
   nipt = obj%elemsdForTime%nips
 
   DO ii = 1, nipt
-    obj%dbc_coeff(ii) = obj%velocityRight(obj%elemsdForTime%coord(1, ii))
+    CALL obj%velocityRight%Get(val=obj%dbc_coeff(ii), &
+                               args=obj%elemsdForTime%coord(1, ii:ii))
   END DO
 
   obj%dbc_rhs(1:nnt) = 0.0
@@ -2072,7 +2210,8 @@ DO ielSpace = 1, obj%totalSpaceElements
   nips = obj%elemsdForSpace%nips
 
   DO ii = 1, nips
-    coeff(ii) = obj%initialVel(obj%elemsdForSpace%coord(1, ii))
+    CALL obj%initialVel%Get(val=coeff(ii), &
+                            args=obj%elemsdForSpace%coord(1, ii:ii))
   END DO
 
   rhs(1:nns) = 0.0
@@ -2128,8 +2267,6 @@ END IF
 CALL obj%InitiateConnectivity()
 
 xij(1, 1) = obj%spaceDomain(1)
-! val(1) = obj%initialDisp(xij(1, 1))
-! CALL RealVector_Set(obj=obj%u0, VALUE=val(1), nodenum=1)
 
 DO ielSpace = 1, obj%totalSpaceElements
 
@@ -2137,9 +2274,6 @@ DO ielSpace = 1, obj%totalSpaceElements
 
   dx = obj%spaceElemLength(ielSpace)
   xij(1, 2) = xij(1, 1) + dx
-
-  ! val(2) = obj%initialDisp(xij(1, 2))
-  ! CALL RealVector_Set(obj=obj%u0, VALUE=val(2), nodenum=con(2))
 
   CALL obj%SetQuadForSpace(ielSpace)
   CALL obj%SetElemsdForSpace(ielSpace, xij)
@@ -2149,7 +2283,8 @@ DO ielSpace = 1, obj%totalSpaceElements
   nips = obj%elemsdForSpace%nips
 
   DO ii = 1, nips
-    coeff(ii) = obj%initialDisp(obj%elemsdForSpace%coord(1, ii))
+    CALL obj%initialDisp%Get(val=coeff(ii), &
+                             args=obj%elemsdForSpace%coord(1, ii:ii))
   END DO
 
   rhs(1:nns) = 0.0
@@ -2254,12 +2389,122 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Update
 
 !----------------------------------------------------------------------------
+!                                                                 WriteData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData()"
+#endif
+
+REAL(DFP) :: t, dx, xij(1, 2), u0(MAX_ORDER_SPACE + 1), &
+             v0(MAX_ORDER_SPACE + 1), xlim(2), ylim(2)
+
+REAL(DFP), ALLOCATABLE :: DATA(:, :)
+
+INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, nips, &
+                totalNodes
+
+CHARACTER(:), ALLOCATABLE :: filename_disp, filename_vel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+t = obj%currentTime
+xij(1, 1) = obj%spaceDomain(1)
+
+filename_disp = obj%result_dir//CHAR_SLASH//obj%filename//'_disp_'// &
+                tostring(obj%currentTimeStep)
+
+filename_vel = obj%result_dir//CHAR_SLASH//obj%filename//'_vel_'// &
+               tostring(obj%currentTimeStep)
+
+totalNodes = obj%totalVertexDOFSpace
+
+ALLOCATE (DATA(totalNodes, 3))
+
+DO ielSpace = 1, obj%totalSpaceElements
+
+  CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
+
+  dx = obj%spaceElemLength(ielSpace)
+
+  xij(1, 2) = xij(1, 1) + dx
+
+  CALL obj%SetQuadForSpace(ielSpace)
+  CALL obj%SetElemsdForSpace(ielSpace, xij)
+
+  CALL RealVector_GetValue_(obj=obj%u0, nodenum=con(1:nns), VALUE=u0, &
+                            tsize=nns)
+
+  CALL RealVector_GetValue_(obj=obj%v0, nodenum=con(1:nns), VALUE=v0, &
+                            tsize=nns)
+
+  nips = obj%elemsdForSpace%nips
+
+  DATA(con(1), 1) = xij(1, 1)
+  DATA(con(2), 1) = xij(1, 2)
+
+  DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncLeft(1:nns))
+  DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncRight(1:nns))
+
+  DATA(con(1), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncLeft(1:nns))
+  DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncRight(1:nns))
+
+  xij(1, 1) = xij(1, 2)
+
+END DO
+
+CALL obj%plot%filename(filename_disp//'.plt')
+CALL obj%plot%options('set terminal pngcairo; set output "'//filename_disp//'.png"')
+xlim = obj%spaceDomain
+ylim(1) = MINVAL(DATA(1:totalNodes, 2))
+ylim(2) = MAXVAL(DATA(1:totalNodes, 2))
+xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+CALL obj%plot%xlim(xlim)
+CALL obj%plot%ylim(ylim)
+CALL obj%plot%xlabel('x')
+CALL obj%plot%ylabel('u')
+CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2))
+CALL obj%plot%reset()
+
+CALL obj%plot%filename(filename_vel//'.plt')
+CALL obj%plot%options('set terminal pngcairo; set output "'//filename_vel//'.png"')
+xlim = obj%spaceDomain
+ylim(1) = MINVAL(DATA(1:totalNodes, 3))
+ylim(2) = MAXVAL(DATA(1:totalNodes, 3))
+xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+CALL obj%plot%xlim(xlim)
+CALL obj%plot%ylim(ylim)
+CALL obj%plot%xlabel('x')
+CALL obj%plot%ylabel('v')
+CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3))
+CALL obj%plot%reset()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_WriteData
+
+!----------------------------------------------------------------------------
 !                                                                    Solve
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Debug
+MODULE PROCEDURE obj_Run
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Debug()"
+CHARACTER(*), PARAMETER :: myName = "obj_Run()"
 #endif
 
 INTEGER(I4B) :: ielTime
@@ -2276,11 +2521,6 @@ tij(1, 1) = obj%timeDomain(1)
 CALL obj%SetInitialVelocity()
 CALL obj%SetInitialDisplacement()
 
-#ifdef DEBUG_VER
-CALL RealVector_Display(obj%u0, myname//" obj%u0: ")
-CALL RealVector_Display(obj%v0, myname//" obj%v0: ")
-#endif
-
 DO ielTime = 1, obj%totalTimeElements
   CALL Display(tij(1, 1), myname//" t1: ")
   tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
@@ -2289,10 +2529,7 @@ DO ielTime = 1, obj%totalTimeElements
   CALL obj%ApplyDirichletBC(timeElemNum=ielTime, tij=tij)
   CALL obj%Solve()
   CALL obj%Update()
-  CALL RealVector_Display(obj%sol, myname//" obj%sol: ")
-  CALL RealVector_Display(obj%u0, myname//" obj%u0: ")
-  CALL RealVector_Display(obj%v0, myname//" obj%v0: ")
-  ! STOP myname
+  CALL obj%WriteData()
   tij(1, 1) = tij(1, 2)
 END DO
 
@@ -2301,7 +2538,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Debug
+END PROCEDURE obj_Run
 
 !----------------------------------------------------------------------------
 !

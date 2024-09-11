@@ -43,6 +43,8 @@ USE String_Class, ONLY: String
 
 USE UserFunction_Class, ONLY: UserFunction_
 
+USE GnuPlot_Class, ONLY: GnuPlot_
+
 PRIVATE
 
 PUBLIC :: ElastoDynamics1DSTFEM_
@@ -61,6 +63,7 @@ CHARACTER(*), PARAMETER :: default_quadTypeForSpace = "GaussLegendre"
 CHARACTER(*), PARAMETER :: default_quadTypeForTime = "GaussLegendre"
 INTEGER(I4B), PARAMETER :: MAX_ORDER_SPACE = 10
 INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 10
+INTEGER(I4B), PARAMETER :: default_verbosity = 0
 
 !----------------------------------------------------------------------------
 !                                                   ElastoDynamics1DSTFEM_
@@ -85,6 +88,11 @@ TYPE :: ElastoDynamics1DSTFEM_
   !! LagrangeInterpolation ! HierarchyInterpolation
   !! OrthogonalInterpolation ! HermitInterpolation
   !! SerendipityInterpolation
+
+  INTEGER(I4B) :: verbosity = 0
+  !! verbosity level
+  !! 0 means minimum
+
   INTEGER(I4B) :: totalSpaceNodes = 0
   !! total nodes in space
 
@@ -308,25 +316,28 @@ TYPE :: ElastoDynamics1DSTFEM_
   REAL(DFP), ALLOCATABLE :: fpar(:), work(:)
   !! for linear solver
 
-  PROCEDURE(iface_SpaceTimeFunction), POINTER, NOPASS :: bodyForce => NULL()
+  TYPE(GnuPlot_) :: plot
+  !! for plotting
+
+  TYPE(UserFunction_), POINTER :: bodyForce => NULL()
   !! body force
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: tractionRight => NULL()
+  TYPE(UserFunction_), POINTER :: tractionRight => NULL()
   !! traction force on right boundary
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: tractionLeft => NULL()
+  TYPE(UserFunction_), POINTER :: tractionLeft => NULL()
   !! traction force on left boundary
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: velocityRight => NULL()
+  TYPE(UserFunction_), POINTER :: velocityRight => NULL()
   !! velocity boundary condition on right boundary
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: velocityLeft => NULL()
+  TYPE(UserFunction_), POINTER :: velocityLeft => NULL()
   !! velocity boundarty condition on left boundary
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: initialVel => NULL()
+  TYPE(UserFunction_), POINTER :: initialVel => NULL()
   !! velocity boundarty condition on left boundary
 
-  PROCEDURE(iface_1DFunction), POINTER, NOPASS :: initialDisp => NULL()
+  TYPE(UserFunction_), POINTER :: initialDisp => NULL()
   !! velocity boundarty condition on left boundary
 
 CONTAINS
@@ -440,7 +451,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
   !! Update
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Debug => obj_Debug
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData => obj_WriteData
+  !! Update
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
   !! Debug mode
 
 END TYPE ElastoDynamics1DSTFEM_
@@ -861,9 +875,9 @@ END INTERFACE
 ! summary:  Debug mode
 
 INTERFACE
-  MODULE SUBROUTINE obj_Debug(obj)
+  MODULE SUBROUTINE obj_Run(obj)
     CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Debug
+  END SUBROUTINE obj_Run
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -953,6 +967,16 @@ INTERFACE
   MODULE SUBROUTINE obj_Update(obj)
     CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Update
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         WriteData@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData(obj)
+    CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_WriteData
 END INTERFACE
 
 !----------------------------------------------------------------------------

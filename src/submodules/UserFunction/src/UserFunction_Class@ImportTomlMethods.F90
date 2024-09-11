@@ -243,8 +243,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
 
 IF (.NOT. ASSOCIATED(node)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
