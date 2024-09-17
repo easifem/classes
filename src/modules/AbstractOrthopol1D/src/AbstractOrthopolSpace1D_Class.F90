@@ -47,7 +47,7 @@ CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Orthopol_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => Orthopol_SetParam
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Orthopol_Display
   !!
@@ -740,8 +740,8 @@ END INTERFACE
 ! summary: Discrete orthopol Transform of a function
 
 INTERFACE
-  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType) &
-    & RESULT(ans)
+  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType, x1, x2) &
+    RESULT(ans)
     CLASS(AbstractOrthopolSpace1D_), INTENT(IN) :: obj
     !! orthopol
     INTEGER(I4B), INTENT(IN) :: n
@@ -751,6 +751,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: quadType
     !! Quadrature type, Gauss, GaussLobatto, GaussRadau, GaussRadauLeft
     !! GaussRadauRight
+    REAL(DFP), INTENT(IN) :: x1, x2
     REAL(DFP) :: ans(0:n)
     !! modal values  or coefficients
   END FUNCTION Orthopol_Transform2

@@ -80,7 +80,7 @@ END PROCEDURE Orthopol_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE Orthopol_Final
 
 !----------------------------------------------------------------------------
@@ -319,7 +319,7 @@ END PROCEDURE Orthopol_Transform1
 
 MODULE PROCEDURE Orthopol_Transform2
 ans = JacobiTransform(n=n, alpha=obj%alpha, beta=obj%beta, &
-  & f=f, quadType=quadType)
+                      f=f, quadType=quadType, x1=x1, x2=x2)
 END PROCEDURE Orthopol_Transform2
 
 !----------------------------------------------------------------------------
