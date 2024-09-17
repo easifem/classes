@@ -69,12 +69,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => xmlFile_Export
   PROCEDURE, PUBLIC, PASS(Obj) :: setNewStat => xmlFile_setNewStat
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
-    & xmlFile_setOverwriteStat
+    xmlFile_setOverwriteStat
   PROCEDURE, PUBLIC, PASS(Obj) :: isNew => xmlFile_isNew
   PROCEDURE, PUBLIC, PASS(obj) :: isOverwrite => xmlFile_isOverwrite
   PROCEDURE, PUBLIC, PASS(Obj) :: isFormatted => xmlFile_isFormatted
   PROCEDURE, PUBLIC, PASS(obj) :: parseXMLDeclaration => &
-    & xmlFile_parseXMLDeclaration
+    xmlFile_parseXMLDeclaration
   PROCEDURE, PUBLIC, PASS(obj) :: BuildCache => xmlFile_BuildCache
   PROCEDURE, PUBLIC, PASS(obj) :: Display => xmlFile_Display
 END TYPE XMLFile_

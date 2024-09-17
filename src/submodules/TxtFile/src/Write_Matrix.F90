@@ -16,41 +16,35 @@
 !
 
 INTEGER(I4B) :: ii
-TYPE(String) :: aline, orient0
-!!
+TYPE(String) :: aline
+CHARACTER(1) :: orient0
+
 IF (PRESENT(orient)) THEN
-  orient0 = UpperCase(orient)
+  orient0 = UpperCase(orient(1:1))
 ELSE
-  orient0 = "ROW"
+  orient0 = "C"
 END IF
-!!
-SELECT CASE (orient0%chars())
-CASE ("ROW")
-  !!
+
+SELECT CASE (orient0)
+
+CASE ("R")
+
   DO ii = 1, SIZE(val, 1)
-    !!
+
     aline = STR(val(ii, :), separator=obj%separator)
-    !!
-    CALL obj%writeLine( &
-      & val=aline, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & advance=advance)
-    !!
+
+    CALL obj%writeLine(val=aline, iostat=iostat, iomsg=iomsg, advance=advance)
+
   END DO
-  !!
-CASE ("COL", "TRANSPOSE")
-  !!
+
+CASE ("C", "T")
+
   DO ii = 1, SIZE(val, 2)
-    !!
+
     aline = STR(val(:, ii), separator=obj%separator)
-    !!
-    CALL obj%writeLine( &
-      & val=aline, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & advance=advance)
-    !!
+    CALL obj%writeLine(val=aline, iostat=iostat, iomsg=iomsg, &
+                       advance=advance)
+
   END DO
-  !!
+
 END SELECT
