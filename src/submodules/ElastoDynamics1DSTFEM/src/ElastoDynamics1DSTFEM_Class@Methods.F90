@@ -42,6 +42,8 @@ USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
                                     BaseType_ToChar, &
                                     BaseInterpolation_ToChar
 
+USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
+
 USE ReallocateUtility, ONLY: Reallocate
 
 USE ProductUtility, ONLY: OuterProd_, OTimesTilda
@@ -352,27 +354,23 @@ CALL GetValue(table=table, key="baseInterpolationForSpace", &
               origin=origin, stat=stat, isfound=isok)
 obj%baseInterpolationForSpace = UpperCase(astr%slice(1, 4))
 
-isok = obj%baseInterpolationForSpace .EQ. "LAGR"
-IF (isok) THEN
-
 #ifdef DEBUG_VER
-  CALL Display(myName//" baseTypeForSpace")
+CALL Display(myName//" baseTypeForSpace")
 #endif
 
-  CALL GetValue(table=table, key="baseTypeForSpace", &
-                VALUE=astr, default_value=default_baseTypeForSpace, &
-                origin=origin, stat=stat, isfound=isok)
-  obj%baseTypeForSpace = BaseType_ToInteger(astr%chars())
+CALL GetValue(table=table, key="baseTypeForSpace", &
+              VALUE=astr, default_value=default_baseTypeForSpace, &
+              origin=origin, stat=stat, isfound=isok)
+obj%baseTypeForSpace = BaseType_ToInteger(astr%chars())
 
 #ifdef DEBUG_VER
-  CALL Display(myName//" ipTypeForSpace")
+CALL Display(myName//" ipTypeForSpace")
 #endif
 
-  CALL GetValue(table=table, key="ipTypeForSpace", &
-                VALUE=astr, default_value=default_ipTypeForSpace, &
-                origin=origin, stat=stat, isfound=isok)
-  obj%ipTypeForSpace = BaseInterpolation_ToInteger(astr%chars())
-END IF
+CALL GetValue(table=table, key="ipTypeForSpace", &
+              VALUE=astr, default_value=default_ipTypeForSpace, &
+              origin=origin, stat=stat, isfound=isok)
+obj%ipTypeForSpace = BaseInterpolation_ToInteger(astr%chars())
 
 #ifdef DEBUG_VER
 CALL Display(myName//" baseInterpolationForTime")
@@ -383,27 +381,23 @@ CALL GetValue(table=table, key="baseInterpolationForTime", &
               origin=origin, stat=stat, isfound=isok)
 obj%baseInterpolationForTime = UpperCase(astr%slice(1, 4))
 
-isok = obj%baseInterpolationForTime .EQ. "LAGR"
-IF (isok) THEN
-
 #ifdef DEBUG_VER
-  CALL Display(myName//" baseTypeForTime")
+CALL Display(myName//" baseTypeForTime")
 #endif
 
-  CALL GetValue(table=table, key="baseTypeForTime", &
-                VALUE=astr, default_value=default_baseTypeForTime, &
-                origin=origin, stat=stat, isfound=isok)
-  obj%baseTypeForTime = BaseType_ToInteger(astr%chars())
+CALL GetValue(table=table, key="baseTypeForTime", &
+              VALUE=astr, default_value=default_baseTypeForTime, &
+              origin=origin, stat=stat, isfound=isok)
+obj%baseTypeForTime = BaseType_ToInteger(astr%chars())
 
 #ifdef DEBUG_VER
-  CALL Display(myName//" ipTypeForTime")
+CALL Display(myName//" ipTypeForTime")
 #endif
 
-  CALL GetValue(table=table, key="ipTypeForTime", &
-                VALUE=astr, default_value=default_ipTypeForTime, &
-                origin=origin, stat=stat, isfound=isok)
-  obj%ipTypeForTime = BaseInterpolation_ToInteger(astr%chars())
-END IF
+CALL GetValue(table=table, key="ipTypeForTime", &
+              VALUE=astr, default_value=default_ipTypeForTime, &
+              origin=origin, stat=stat, isfound=isok)
+obj%ipTypeForTime = BaseInterpolation_ToInteger(astr%chars())
 
 #ifdef DEBUG_VER
 CALL Display(myName//" spaceDomain")
@@ -1497,8 +1491,9 @@ END PROCEDURE obj_SetElemsdForSpace
 
 MODULE PROCEDURE obj_SetElemsdForTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetElemsdForTime()"
-INTEGER(I4B) :: nips, nns, cellOrder(1), order, cellOrient(1)
-REAL(DFP) :: refElemCoord(1, 2)
+INTEGER(I4B) :: nips, nns, cellOrder(1), order, cellOrient(1), nrow, ncol, &
+                ii, jj
+REAL(DFP) :: refElemCoord(1, 2), temp(2, MAX_ORDER_TIME + 1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1575,15 +1570,13 @@ CASE ("ORTH")
                                domainName="B", order=order, &
                                basisType=poly%legendre)
 
-  ! CALL OrthogonalBasis_Line_(order=order, xij=xij, refLine=domainName, &
-  !                basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
-  !                            ans=ans, nrow=nrow, ncol=ncol)
+  CALL OrthogonalBasis_Line_(order=order, xij=refElemCoord, &
+                             refLine="B", basisType=poly%legendre, ans=temp, &
+                             nrow=nrow, ncol=ncol)
 
-  ! obj%timeShapeFuncBndy(1:nns, 1) = 0.0_DFP
-  ! obj%timeShapeFuncBndy(1, 1) = 1.0_DFP
-  !
-  ! obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
-  ! obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
+  DO CONCURRENT(ii=1:nrow, jj=1:ncol)
+    obj%timeShapeFuncBndy(jj, ii) = temp(ii, jj)
+  END DO
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -2407,9 +2400,10 @@ REAL(DFP) :: t, dx, xij(1, 2), u0(MAX_ORDER_SPACE + 1), &
 REAL(DFP), ALLOCATABLE :: DATA(:, :)
 
 INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, nips, &
-                totalNodes
+                totalNodes, ii
 
-CHARACTER(:), ALLOCATABLE :: filename_disp, filename_vel
+CHARACTER(:), ALLOCATABLE :: filename_disp, filename_vel, filename_acc, &
+                             aline, filename_data
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -2424,6 +2418,12 @@ filename_disp = obj%result_dir//CHAR_SLASH//obj%filename//'_disp_'// &
 
 filename_vel = obj%result_dir//CHAR_SLASH//obj%filename//'_vel_'// &
                tostring(obj%currentTimeStep)
+
+filename_acc = obj%result_dir//CHAR_SLASH//obj%filename//'_acc_'// &
+               tostring(obj%currentTimeStep)
+
+filename_data = obj%result_dir//CHAR_SLASH//obj%filename//'_data_'// &
+                tostring(obj%currentTimeStep)
 
 totalNodes = obj%totalVertexDOFSpace
 
@@ -2460,6 +2460,90 @@ DO ielSpace = 1, obj%totalSpaceElements
   xij(1, 1) = xij(1, 2)
 
 END DO
+
+! csv file
+
+! disp
+#ifdef DEBUG_VER
+CALL Display("Writing data to file: "//filename_disp//".csv")
+#endif
+CALL obj%dispfile%Initiate(filename=filename_disp//".csv", unit=100, &
+                 status="REPLACE", action="WRITE", comment="#", separator=",")
+CALL obj%dispfile%OPEN()
+
+aline = "# time-step = "//tostring(obj%currentTimeStep)// &
+        ", time = "//tostring(obj%currentTime)//" s"
+CALL obj%dispfile%WRITE(aline)
+
+aline = "x, disp"
+CALL obj%dispfile%WRITE(aline)
+
+DO ii = 1, totalNodes
+  aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 2))
+  CALL obj%dispfile%WRITE(aline)
+END DO
+
+! vel
+#ifdef DEBUG_VER
+CALL Display("Writing data to file: "//filename_vel//".csv")
+#endif
+CALL obj%velfile%Initiate(filename=filename_vel//".csv", &
+                 status="REPLACE", action="WRITE", comment="#", separator=",")
+CALL obj%velfile%OPEN()
+
+aline = "# time-step = "//tostring(obj%currentTimeStep)// &
+        ", time = "//tostring(obj%currentTime)//" s"
+CALL obj%velfile%WRITE(aline)
+
+aline = "x, vel"
+CALL obj%velfile%WRITE(aline)
+
+DO ii = 1, totalNodes
+  aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 3))
+  CALL obj%velfile%WRITE(aline)
+END DO
+
+! acc
+#ifdef DEBUG_VER
+CALL Display("Writing data to file: "//filename_acc//".csv")
+#endif
+CALL obj%accfile%Initiate(filename=filename_acc//".csv", &
+                 status="REPLACE", action="WRITE", comment="#", separator=",")
+CALL obj%accfile%OPEN()
+
+aline = "# time-step = "//tostring(obj%currentTimeStep)// &
+        ", time = "//tostring(obj%currentTime)//" s"
+CALL obj%accfile%WRITE(aline)
+aline = "x, acc"
+CALL obj%accfile%WRITE(aline)
+!TODO: Write acceleration data
+
+! write all data
+#ifdef DEBUG_VER
+CALL Display("Writing data to file: "//filename_data//".csv")
+#endif
+CALL obj%datafile%Initiate(filename=filename_data//".csv", &
+                 status="REPLACE", action="WRITE", comment="#", separator=",")
+CALL obj%datafile%OPEN()
+
+aline = "# time-step = "//tostring(obj%currentTimeStep)// &
+        ", time = "//tostring(obj%currentTime)//" s"
+CALL obj%datafile%WRITE(aline)
+
+aline = "x, disp, vel"
+CALL obj%datafile%WRITE(aline)
+CALL obj%datafile%WRITE(val=DATA(1:totalNodes, 1:3), orient="ROW")
+
+#ifdef DEBUG_VER
+CALL Display("Done writing files csvfiles")
+#endif
+
+CALL obj%dispfile%DEALLOCATE()
+CALL obj%velfile%DEALLOCATE()
+CALL obj%accfile%DEALLOCATE()
+CALL obj%datafile%DEALLOCATE()
+
+! plotting
 
 CALL obj%plot%filename(filename_disp//'.plt')
 CALL obj%plot%options('set terminal pngcairo; set output "'//filename_disp//'.png"')

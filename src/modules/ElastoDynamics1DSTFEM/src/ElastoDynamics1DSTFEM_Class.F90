@@ -45,6 +45,8 @@ USE UserFunction_Class, ONLY: UserFunction_
 
 USE GnuPlot_Class, ONLY: GnuPlot_
 
+USE CSVFile_Class, ONLY: CSVFile_
+
 PRIVATE
 
 PUBLIC :: ElastoDynamics1DSTFEM_
@@ -333,6 +335,9 @@ TYPE :: ElastoDynamics1DSTFEM_
 
   TYPE(UserFunction_), POINTER :: initialDisp => NULL()
   !! velocity boundarty condition on left boundary
+
+  TYPE(CSVFile_) :: dispfile, velfile, accfile, datafile
+  !! file to write displacement, velocity, acceleration
 
 CONTAINS
 
