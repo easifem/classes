@@ -52,22 +52,22 @@ USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractKernel_Class"
-CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
-  & "/name/engine/coordinateSystem/domainFile/isCommonDomain/gravity/"// &
-  & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
-  & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
-  & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "ipTypeForSpace/basisTypeForSpace/"//  &
-  & "alphaForSpace/betaForSpace/lambdaForSpace/betaForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime/"//&
-  & "ipTypeForTime/basisTypeForTime/"//  &
-  & "alphaForTime/betaForTime/lambdaForTime/"//  &
-  & "/tMaterialInterfaces/tSolidMaterials/tDirichletBC/tWeakDirichletBC/"//  &
-  & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
-  & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
-  & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
-  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
-  & "problemType/tOverlappedMaterials/outputPath/tPointSource/showTime"
+CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam = &
+        "/name/engine/coordinateSystem/domainFile/isCommonDomain/gravity/"// &
+               "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"// &
+    "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"// &
+                          "baseContinuityForSpace/quadratureTypeForSpace/"// &
+                           "ipTypeForSpace/basisTypeForSpace/"// &
+                 "alphaForSpace/betaForSpace/lambdaForSpace/betaForSpace/"// &
+   "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime/"// &
+                           "ipTypeForTime/basisTypeForTime/"// &
+                           "alphaForTime/betaForTime/lambdaForTime/"// &
+     "/tMaterialInterfaces/tSolidMaterials/tDirichletBC/tWeakDirichletBC/"// &
+         "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"// &
+             "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"// &
+      "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"// &
+               "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"// &
+           "problemType/tOverlappedMaterials/outputPath/tPointSource/showTime"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
