@@ -302,9 +302,9 @@ END TYPE Helmholtz1DFEM_
 !                              -                            Initiate@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
-! summary:  Initiate by param
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Initiate the data
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, param)
@@ -317,9 +317,9 @@ END INTERFACE
 !                                                        Deallocate@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
-! summary:  Deallocate the data
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Initiate the data
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
@@ -331,8 +331,8 @@ END INTERFACE
 !                                                            Display@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
+!> author: Shion Shimizu
+! date:   2024-09-18
 ! summary:  Display the data
 
 INTERFACE
@@ -347,8 +347,8 @@ END INTERFACE
 !                                                     ImportFromToml@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-08-02
+!> author: Shion Shimizu
+! date:   2024-09-18
 ! summary:  Import data from toml config
 
 INTERFACE
@@ -362,8 +362,8 @@ END INTERFACE
 !                                                     ImportFromToml@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
+!> author: Shion Shimizu
+! date:   2024-09-18
 ! summary:  Import data from toml config
 
 INTERFACE
@@ -381,9 +381,9 @@ END INTERFACE
 !                                                                Set@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
-! summary:  Set the problem
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  set the data
 
 INTERFACE
   MODULE SUBROUTINE obj_Set(obj)
@@ -395,6 +395,10 @@ END INTERFACE
 !                                                            SetQuadForSpace
 !----------------------------------------------------------------------------
 
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  set the data of quadrature points
+
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadForSpace(obj, spaceElemNum)
     CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
@@ -405,6 +409,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                 SetElemsdForSpace@Methods
 !----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  set the data of element shape functions
 
 INTERFACE
   MODULE SUBROUTINE obj_SetElemsdForSpace(obj, spaceElemNum, xij)
@@ -418,9 +426,9 @@ END INTERFACE
 !                                                             GetMs@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-05
-! summary:  Get Ms matrix
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  calculate the element mass matrix
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMs(obj, ans, nrow, ncol)
@@ -434,9 +442,9 @@ END INTERFACE
 !                                                             GetKs@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-05
-! summary:  Get Ks matrix
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  calculate the element stiffness matrix
 
 INTERFACE
   MODULE SUBROUTINE obj_GetKs(obj, ans, nrow, ncol)
@@ -450,9 +458,9 @@ END INTERFACE
 !                                                       GetBodyForce@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-05
-! summary:  Get body force function
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  calculate the element body force vector
 
 INTERFACE
   MODULE SUBROUTINE obj_GetBodyForce(obj, ans, tsize, spaceElemNum, &
@@ -470,9 +478,9 @@ END INTERFACE
 !                                                   GetTractionRight@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-05
-! summary:  Get traction on right
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  apply neumann boundary condition at the right side
 
 INTERFACE
   MODULE SUBROUTINE obj_GetTractionRight(obj, ans, tsize, &
@@ -489,6 +497,10 @@ END INTERFACE
 !                                                   GetTractionLeft@Methods
 !----------------------------------------------------------------------------
 
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  apply neumann boundary condition at the left side
+
 INTERFACE
   MODULE SUBROUTINE obj_GetTractionLeft(obj, ans, tsize, &
                                         anscoeff, scale)
@@ -501,8 +513,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  ApplyDirichletBC@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC(obj)
+    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_ApplyDirichletBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                InitiateConnectivity@Methods
 !----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Initiate the connectivity
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateConnectivity(obj)
@@ -511,60 +541,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     InitiateFields@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateFields(obj)
-    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateFields
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     AssembleTanmat@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_AssembleTanmat(obj)
-    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_AssembleTanmat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        AssembleRHS@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-12
-! summary:  Assemble RHS
-
-INTERFACE
-  MODULE SUBROUTINE obj_AssembleRHS(obj)
-    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_AssembleRHS
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Debug@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-05
-! summary:  Debug mode
-
-INTERFACE
-  MODULE SUBROUTINE obj_Run(obj)
-    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Run
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                     GetConnectivity@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-09
-! summary:  Get connectivity matrix
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Get the connectivity
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity(obj, spaceElemNum, ans, tsize)
@@ -576,26 +558,54 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  ApplyDirichletBC@Methods
+!                                                     InitiateFields@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-18
-! summary:  Apply Dirichlet boundary condition
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Initiate the fields for Helmholtz1DFEM_
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC(obj)
+  MODULE SUBROUTINE obj_InitiateFields(obj)
     CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_ApplyDirichletBC
+  END SUBROUTINE obj_InitiateFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     AssembleTanmat@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  assemble the tangent matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleTanmat(obj)
+    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleTanmat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        AssembleRHS@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  assemble the right hand side vector
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleRHS(obj)
+    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                              Solve@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-18
-! summary:  Set initial displacement
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Solve the linear system
 
 INTERFACE
   MODULE SUBROUTINE obj_Solve(obj)
@@ -604,8 +614,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                             Debug@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  Solve the helmholtz equation
+
+INTERFACE
+  MODULE SUBROUTINE obj_Run(obj)
+    CLASS(Helmholtz1DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Run
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         WriteData@Methods
 !----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-18
+! summary:  write the data to csv and plt for gnuplot
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteData(obj)

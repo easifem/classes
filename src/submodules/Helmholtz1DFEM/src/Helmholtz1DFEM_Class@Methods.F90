@@ -28,7 +28,7 @@ USE TomlUtility, ONLY: GetValue, GetValue_
 
 USE StringUtility, ONLY: UpperCase
 
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString, Display, BlankLines
 
 USE GlobalData, ONLY: stdout, &
                       CHAR_LF, &
@@ -251,6 +251,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 #ifdef DEBUG_VER
+CALL BlankLines()
 CALL Display(myName//" result_dir")
 #endif
 
@@ -400,7 +401,7 @@ obj%quadTypeForSpace = BaseInterpolation_ToInteger(astr%chars())
 !INFO: bodyForce
 astr = "bodyForce"
 #ifdef DEBUG_VER
-CALL Display(myName//astr%chars())
+CALL Display(myName//" "//astr%chars())
 #endif
 node => NULL()
 CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
@@ -415,7 +416,7 @@ node => NULL()
 !INFO: tractionRight
 astr = "tractionRight"
 #ifdef DEBUG_VER
-CALL Display(myName//astr%chars())
+CALL Display(myName//" "//astr%chars())
 #endif
 node => NULL()
 CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
@@ -430,7 +431,7 @@ node => NULL()
 !INFO: tractionLeft
 astr = "tractionLeft"
 #ifdef DEBUG_VER
-CALL Display(myName//astr%chars())
+CALL Display(myName//" "//astr%chars())
 #endif
 node => NULL()
 CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
@@ -445,7 +446,7 @@ node => NULL()
 !INFO: displacementRight
 astr = "displacementRight"
 #ifdef DEBUG_VER
-CALL Display(myName//astr%chars())
+CALL Display(myName//" "//astr%chars())
 #endif
 node => NULL()
 CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
@@ -460,7 +461,8 @@ node => NULL()
 !INFO: displacementLeft
 astr = "displacementLeft"
 #ifdef DEBUG_VER
-CALL Display(myName//astr%chars())
+CALL Display(myName//" "//astr%chars())
+CALL BlankLines()
 #endif
 node => NULL()
 CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
@@ -476,6 +478,7 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
@@ -1278,7 +1281,7 @@ MODULE PROCEDURE obj_Solve
 CHARACTER(*), PARAMETER :: myName = "obj_Solve()"
 #endif
 
-INTEGER(I4B) :: n, solverName
+INTEGER(I4B) :: n, solverName, aint
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1286,10 +1289,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 n = CSRMatrix_Size(obj%tanmat, 1)
-solverName = LIS_GMRES
+aint = 10_I4B * n
+solverName = LIS_CG
 
 CALL CSRMatrixLinSolveInitiate(ipar=obj%ipar, fpar=obj%fpar, W=obj%work, &
-                               n=n, solverName=solverName)
+                               n=aint, solverName=solverName)
 
 CALL CSRMatrix_LinSolve(obj=obj%tanmat, sol=obj%sol%val(1:n), &
                rhs=obj%rhs%val(1:n), ipar=obj%ipar, fpar=obj%fpar, W=obj%work)
@@ -1432,16 +1436,10 @@ MODULE PROCEDURE obj_Run
 CHARACTER(*), PARAMETER :: myName = "obj_Run()"
 #endif
 
-REAL(DFP) :: x1
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
-
-x1 = obj%spaceDomain(1)
-
-! CALL obj%SetInitialDisplacement()
 
 CALL obj%AssembleTanmat()
 CALL obj%AssembleRHS()
