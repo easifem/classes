@@ -88,6 +88,8 @@ USE RealVector_Method, ONLY: RealVector_Initiate => Initiate, &
                              RealVector_Display => Display, &
                              RealVector_Scale => SCAL
 
+USE LagrangePolynomialUtility, ONLY: InterpolationPoint_
+
 IMPLICIT NONE
 
 REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
@@ -1317,10 +1319,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_WriteData()"
 REAL(DFP) :: dx, xij(1, 2), u0(MAX_ORDER_SPACE + 1), &
              xlim(2), ylim(2)
 
-REAL(DFP), ALLOCATABLE :: DATA(:, :)
+REAL(DFP), ALLOCATABLE :: DATA(:, :), ips(:, :)
 
-INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, nips, &
-                totalNodes, ii
+INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, &
+                totalNodes, ii, jj, inds(2), n
 
 CHARACTER(:), ALLOCATABLE :: filename_disp, aline, filename_data
 
@@ -1335,9 +1337,17 @@ filename_disp = obj%result_dir//CHAR_SLASH//obj%filename//'_disp'
 
 filename_data = obj%result_dir//CHAR_SLASH//obj%filename//'_data'
 
-totalNodes = obj%totalVertexDOFSpace
+SELECT CASE (obj%baseInterpolationForSpace)
+CASE ("LAGR")
+  totalNodes = obj%totalVertexDOFSpace + obj%totalEdgeDOFSpace
+  ALLOCATE (ips(1, MAXVAL(obj%spaceOrder) + 1))
+CASE DEFAULT
+  totalNodes = obj%totalVertexDOFSpace
+END SELECT
 
 ALLOCATE (DATA(totalNodes, 2))
+
+n = 1
 
 DO ielSpace = 1, obj%totalSpaceElements
 
@@ -1353,13 +1363,33 @@ DO ielSpace = 1, obj%totalSpaceElements
   CALL RealVector_GetValue_(obj=obj%sol, nodenum=con(1:nns), VALUE=u0, &
                             tsize=nns)
 
-  nips = obj%elemsdForSpace%nips
+  SELECT CASE (obj%baseInterpolationForSpace)
+  CASE ("LAGR")
+    CALL InterpolationPoint_(order=obj%spaceOrder(ielSpace), &
+                             elemType=elem%line, &
+                             ipType=obj%ipTypeForSpace, &
+                             xij=xij, layout="VEFC", &
+                             ans=ips, nrow=inds(1), ncol=inds(2))
 
-  DATA(con(1), 1) = xij(1, 1)
-  DATA(con(2), 1) = xij(1, 2)
+    DATA(n, 1) = ips(1, 1)
+    DATA(n, 2) = u0(1)
 
-  DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
-  DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
+    DO jj = 1, nns - 2
+      DATA(n + jj, 1) = ips(1, jj + 2)
+      DATA(n + jj, 2) = u0(jj + 2)
+    END DO
+
+    n = n + inds(2) - 1
+    DATA(n, 1) = ips(1, 2)
+    DATA(n, 2) = u0(2)
+
+  CASE DEFAULT
+    DATA(con(1), 1) = xij(1, 1)
+    DATA(con(2), 1) = xij(1, 2)
+
+    DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
+    DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
+  END SELECT
 
   xij(1, 1) = xij(1, 2)
 
