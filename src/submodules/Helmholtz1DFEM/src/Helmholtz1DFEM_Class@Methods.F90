@@ -1085,7 +1085,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 nns = obj%elemsdForSpace%nns
-CALL Display(nns, "nns ::")
 nips = obj%elemsdForSpace%nips
 tsize = nns
 ans(1:tsize) = ans(1:tsize) * anscoeff
@@ -1098,7 +1097,7 @@ DO ips = 1, nips
 
   CALL obj%bodyForce%Get(val=r(1), args=args)
 
-  r(2) = obj%elemsdForSpace%ws(ips)
+  r(2) = obj%elemsdForSpace%ws(ips) * js
 
   r(3) = r(1) * r(2)
 
@@ -1344,7 +1343,7 @@ filename_data = obj%result_dir//CHAR_SLASH//obj%filename//'_data'
 SELECT CASE (obj%baseInterpolationForSpace)
 CASE ("LAGR")
   totalNodes = obj%totalVertexDOFSpace + obj%totalEdgeDOFSpace
-  ALLOCATE (ips(1, MAXVAL(obj%spaceOrder) + 1))
+  ALLOCATE (ips(1, obj%maxSpaceOrder + 1))
 CASE DEFAULT
   totalNodes = obj%totalVertexDOFSpace
 END SELECT
@@ -1420,8 +1419,10 @@ END DO
 #ifdef DEBUG_VER
 CALL Display("Writing data to file: "//filename_data//".csv")
 #endif
+
 CALL obj%datafile%Initiate(filename=filename_data//".csv", &
-                 status="REPLACE", action="WRITE", comment="#", separator=",")
+                           status="REPLACE", action="WRITE", &
+                           comment="#", separator=",")
 CALL obj%datafile%OPEN()
 
 aline = "x, disp"
