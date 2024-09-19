@@ -1146,6 +1146,8 @@ nns = obj%elemsdForSpace%nns
 tsize = nns
 ans(1:nns) = ans(1:nns) * anscoeff
 
+args(1) = obj%spaceDomain(1)
+
 CALL obj%tractionLeft%Get(val=r(1), args=args)
 
 DO ii = 1, nns
@@ -1188,6 +1190,8 @@ IF (.NOT. isTractionRight) RETURN
 nns = obj%elemsdForSpace%nns
 tsize = nns
 ans(1:nns) = ans(1:nns) * anscoeff
+
+args(1) = obj%spaceDomain(2)
 
 CALL obj%tractionRight%Get(val=r(1), args=args)
 
