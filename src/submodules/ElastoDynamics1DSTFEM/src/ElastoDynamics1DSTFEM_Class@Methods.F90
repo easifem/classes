@@ -20,7 +20,7 @@
 SUBMODULE(ElastoDynamics1DSTFEM_Class) Methods
 USE tomlf, ONLY: toml_serialize, &
                  toml_get => get_value, &
-                 toml_stat
+                 toml_stat, toml_array
 
 USE Lapack_Method, ONLY: GetInvMat, SymLinSolve
 
@@ -85,6 +85,8 @@ USE RealVector_Method, ONLY: RealVector_Initiate => Initiate, &
                              RealVector_Set => Set, &
                              RealVector_Display => Display, &
                              RealVector_Scale => SCAL
+
+USE LagrangePolynomialUtility, ONLY: InterpolationPoint_
 
 IMPLICIT NONE
 
@@ -290,6 +292,8 @@ TYPE(String) :: astr
 INTEGER(I4B), ALLOCATABLE :: tempintvec(:)
 REAL(DFP), ALLOCATABLE :: temprealvec(:)
 TYPE(toml_table), POINTER :: node
+TYPE(toml_array), POINTER :: array
+LOGICAL(LGT), ALLOCATABLE :: tempboolvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -512,6 +516,47 @@ ELSE
                     "totalTimeElements values")
   obj%timeElemLength(:) = temprealvec(1:obj%totalTimeElements)
 END IF
+
+! INFO: saveData
+#ifdef DEBUG_VER
+CALL Display(myName//" saveData")
+#endif
+
+obj%saveData = .TRUE.
+CALL toml_get(table, "saveData", array, origin=origin, stat=stat)
+CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
+
+IF (SIZE(tempboolvec) .EQ. 4) THEN
+  obj%saveData = tempboolvec
+ELSE
+  CALL AssertError1(.FALSE., myname, "saveData should have 4 values")
+END IF
+array => NULL()
+DEALLOCATE (tempboolvec)
+
+! INFO: plotData
+#ifdef DEBUG_VER
+CALL Display(myName//" plotData")
+#endif
+
+obj%plotData = .TRUE.
+CALL toml_get(table, "plotData", array, origin=origin, stat=stat)
+CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
+
+IF (SIZE(tempboolvec) .EQ. 3) THEN
+  obj%plotData = tempboolvec
+ELSE
+  CALL AssertError1(.FALSE., myname, "plotData should have 3 values")
+END IF
+array => NULL()
+
+! INFO: outputFreq
+#ifdef DEBUG_VER
+CALL Display(myName//" outputFreq")
+#endif
+
+CALL GetValue(table=table, key="outputFreq", VALUE=obj%outputFreq, &
+              default_value=1_I4B, origin=origin, stat=stat)
 
 !INFO: elasticModulus
 #ifdef DEBUG_VER
@@ -2395,15 +2440,22 @@ CHARACTER(*), PARAMETER :: myName = "obj_WriteData()"
 #endif
 
 REAL(DFP) :: t, dx, xij(1, 2), u0(MAX_ORDER_SPACE + 1), &
-             v0(MAX_ORDER_SPACE + 1), xlim(2), ylim(2)
+             v0(MAX_ORDER_SPACE + 1), &
+             a0(MAX_ORDER_SPACE + 1), xlim(2), ylim(2)
 
-REAL(DFP), ALLOCATABLE :: DATA(:, :)
+REAL(DFP), ALLOCATABLE :: DATA(:, :), ips(:, :)
 
-INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, nips, &
-                totalNodes, ii
+INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, &
+                totalNodes, ii, jj, n, inds(2)
 
 CHARACTER(:), ALLOCATABLE :: filename_disp, filename_vel, filename_acc, &
                              aline, filename_data
+LOGICAL(LGT) :: abool1, abool2, abool3
+
+abool1 = ANY(obj%saveData)
+abool2 = ANY(obj%plotData)
+
+IF (.NOT. abool1 .AND. .NOT. abool2) RETURN
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -2414,20 +2466,31 @@ t = obj%currentTime
 xij(1, 1) = obj%spaceDomain(1)
 
 filename_disp = obj%result_dir//CHAR_SLASH//obj%filename//'_disp_'// &
-                tostring(obj%currentTimeStep)
+                tostring(obj%currentTimeStep - 1_I4B)
 
 filename_vel = obj%result_dir//CHAR_SLASH//obj%filename//'_vel_'// &
-               tostring(obj%currentTimeStep)
+               tostring(obj%currentTimeStep - 1_I4B)
 
 filename_acc = obj%result_dir//CHAR_SLASH//obj%filename//'_acc_'// &
-               tostring(obj%currentTimeStep)
+               tostring(obj%currentTimeStep - 1_I4B)
 
 filename_data = obj%result_dir//CHAR_SLASH//obj%filename//'_data_'// &
-                tostring(obj%currentTimeStep)
+                tostring(obj%currentTimeStep - 1_I4B)
 
-totalNodes = obj%totalVertexDOFSpace
+SELECT CASE (obj%baseInterpolationForSpace)
+CASE ("LAGR")
+  totalNodes = obj%totalVertexDOFSpace + obj%totalEdgeDOFSpace
+  ALLOCATE (ips(1, obj%maxSpaceOrder + 1))
+CASE DEFAULT
+  totalNodes = obj%totalVertexDOFSpace
+END SELECT
 
 ALLOCATE (DATA(totalNodes, 3))
+
+abool1 = obj%saveData(1) .OR. obj%plotData(1) .OR. obj%saveData(4)
+abool2 = obj%saveData(2) .OR. obj%plotData(2) .OR. obj%saveData(4)
+abool3 = obj%saveData(3) .OR. obj%plotData(3) .OR. obj%saveData(4)
+n = 1
 
 DO ielSpace = 1, obj%totalSpaceElements
 
@@ -2440,22 +2503,63 @@ DO ielSpace = 1, obj%totalSpaceElements
   CALL obj%SetQuadForSpace(ielSpace)
   CALL obj%SetElemsdForSpace(ielSpace, xij)
 
-  CALL RealVector_GetValue_(obj=obj%u0, nodenum=con(1:nns), VALUE=u0, &
-                            tsize=nns)
+  IF (abool1) &
+    CALL RealVector_GetValue_(obj=obj%u0, nodenum=con(1:nns), VALUE=u0, &
+                              tsize=nns)
 
-  CALL RealVector_GetValue_(obj=obj%v0, nodenum=con(1:nns), VALUE=v0, &
-                            tsize=nns)
+  IF (abool2) &
+    CALL RealVector_GetValue_(obj=obj%v0, nodenum=con(1:nns), VALUE=v0, &
+                              tsize=nns)
 
-  nips = obj%elemsdForSpace%nips
+  ! IF (abool3) &
+  !   CALL RealVector_GetValue_(obj=obj%a0, nodenum=con(1:nns), VALUE=a0, &
+  !                             tsize=nns)
 
-  DATA(con(1), 1) = xij(1, 1)
-  DATA(con(2), 1) = xij(1, 2)
+  SELECT CASE (obj%baseInterpolationForSpace)
+  CASE ("LAGR")
+    CALL InterpolationPoint_(order=obj%spaceOrder(ielSpace), &
+                             elemType=elem%line, &
+                             ipType=obj%ipTypeForSpace, &
+                             xij=xij, layout="VEFC", &
+                             ans=ips, nrow=inds(1), ncol=inds(2))
 
-  DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
-  DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
+    DATA(n, 1) = ips(1, 1)
+    IF (abool1) DATA(n, 2) = u0(1)
+    IF (abool2) DATA(n, 3) = v0(1)
+    ! IF (abool3) DATA(n, 4) = a0(1)
 
-  DATA(con(1), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncBndy(1:nns, 1))
-  DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), obj%spaceShapeFuncBndy(1:nns, 2))
+    DO jj = 1, nns - 2
+      DATA(n + jj, 1) = ips(1, jj + 2)
+      IF (abool1) DATA(n + jj, 2) = u0(jj + 2)
+      IF (abool2) DATA(n + jj, 3) = v0(jj + 2)
+      ! IF (abool3) DATA(n + jj, 4) = a0(jj + 2)
+    END DO
+
+    n = n + inds(2) - 1
+    DATA(n, 1) = ips(1, 2)
+    IF (abool1) DATA(n, 2) = u0(2)
+    IF (abool2) DATA(n, 3) = v0(2)
+    ! IF (abool3) DATA(n, 4) = a0(2)
+
+  CASE DEFAULT
+    DATA(con(1), 1) = xij(1, 1)
+    DATA(con(2), 1) = xij(1, 2)
+
+    IF (abool1) DATA(con(1), 2) = DOT_PRODUCT(u0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 1))
+    IF (abool1) DATA(con(2), 2) = DOT_PRODUCT(u0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 2))
+
+    IF (abool2) DATA(con(1), 3) = DOT_PRODUCT(v0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 1))
+    IF (abool2) DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 2))
+
+    ! IF (abool3) DATA(con(1), 4) = DOT_PRODUCT(a0(1:nns), &
+    !                                          obj%spaceShapeFuncBndy(1:nns, 1))
+    ! IF (abool3) DATA(con(2), 4) = DOT_PRODUCT(a0(1:nns), &
+    !                                          obj%spaceShapeFuncBndy(1:nns, 2))
+  END SELECT
 
   xij(1, 1) = xij(1, 2)
 
@@ -2464,120 +2568,159 @@ END DO
 ! csv file
 
 ! disp
+IF (obj%saveData(1)) THEN
 #ifdef DEBUG_VER
-CALL Display("Writing data to file: "//filename_disp//".csv")
+  CALL Display("Writing data to file: "//filename_disp//".csv")
 #endif
-CALL obj%dispfile%Initiate(filename=filename_disp//".csv", unit=100, &
-                 status="REPLACE", action="WRITE", comment="#", separator=",")
-CALL obj%dispfile%OPEN()
+  CALL obj%dispfile%Initiate(filename=filename_disp//".csv", unit=100, &
+                             status="REPLACE", action="WRITE", &
+                             comment="#", separator=",")
+  CALL obj%dispfile%OPEN()
 
-aline = "# time-step = "//tostring(obj%currentTimeStep)// &
-        ", time = "//tostring(obj%currentTime)//" s"
-CALL obj%dispfile%WRITE(aline)
-
-aline = "x, disp"
-CALL obj%dispfile%WRITE(aline)
-
-DO ii = 1, totalNodes
-  aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 2))
+  aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
+          ", time = "//tostring(obj%currentTime)//" s"
   CALL obj%dispfile%WRITE(aline)
-END DO
+
+  aline = "x, disp"
+  CALL obj%dispfile%WRITE(aline)
+
+  DO ii = 1, totalNodes
+    aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 2))
+    CALL obj%dispfile%WRITE(aline)
+  END DO
+  CALL obj%dispfile%DEALLOCATE()
+END IF
 
 ! vel
+IF (obj%saveData(2)) THEN
 #ifdef DEBUG_VER
-CALL Display("Writing data to file: "//filename_vel//".csv")
+  CALL Display("Writing data to file: "//filename_vel//".csv")
 #endif
-CALL obj%velfile%Initiate(filename=filename_vel//".csv", &
+  CALL obj%velfile%Initiate(filename=filename_vel//".csv", &
                  status="REPLACE", action="WRITE", comment="#", separator=",")
-CALL obj%velfile%OPEN()
+  CALL obj%velfile%OPEN()
 
-aline = "# time-step = "//tostring(obj%currentTimeStep)// &
-        ", time = "//tostring(obj%currentTime)//" s"
-CALL obj%velfile%WRITE(aline)
-
-aline = "x, vel"
-CALL obj%velfile%WRITE(aline)
-
-DO ii = 1, totalNodes
-  aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 3))
+  aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
+          ", time = "//tostring(obj%currentTime)//" s"
   CALL obj%velfile%WRITE(aline)
-END DO
+
+  aline = "x, vel"
+  CALL obj%velfile%WRITE(aline)
+
+  DO ii = 1, totalNodes
+    aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 3))
+    CALL obj%velfile%WRITE(aline)
+  END DO
+  CALL obj%velfile%DEALLOCATE()
+END IF
 
 ! acc
-#ifdef DEBUG_VER
-CALL Display("Writing data to file: "//filename_acc//".csv")
-#endif
-CALL obj%accfile%Initiate(filename=filename_acc//".csv", &
-                 status="REPLACE", action="WRITE", comment="#", separator=",")
-CALL obj%accfile%OPEN()
-
-aline = "# time-step = "//tostring(obj%currentTimeStep)// &
-        ", time = "//tostring(obj%currentTime)//" s"
-CALL obj%accfile%WRITE(aline)
-aline = "x, acc"
-CALL obj%accfile%WRITE(aline)
-!TODO: Write acceleration data
+! TODO: implement acc
+! IF (obj%saveData(3)) THEN
+! #ifdef DEBUG_VER
+!   CALL Display("Writing data to file: "//filename_acc//".csv")
+! #endif
+!   CALL obj%accfile%Initiate(filename=filename_acc//".csv", &
+!                  status="REPLACE", action="WRITE", comment="#", separator=",")
+!   CALL obj%accfile%OPEN()
+!
+!   aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
+!           ", time = "//tostring(obj%currentTime)//" s"
+!   CALL obj%accfile%WRITE(aline)
+!   aline = "x, acc"
+!   CALL obj%accfile%WRITE(aline)
+!
+!   DO ii = 1, totalNodes
+!     aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 4))
+!     CALL obj%accfile%WRITE(aline)
+!   END DO
+!   CALL obj%accfile%DEALLOCATE()
+! END IF
 
 ! write all data
+IF (obj%saveData(4)) THEN
 #ifdef DEBUG_VER
-CALL Display("Writing data to file: "//filename_data//".csv")
+  CALL Display("Writing data to file: "//filename_data//".csv")
 #endif
-CALL obj%datafile%Initiate(filename=filename_data//".csv", &
+  CALL obj%datafile%Initiate(filename=filename_data//".csv", &
                  status="REPLACE", action="WRITE", comment="#", separator=",")
-CALL obj%datafile%OPEN()
+  CALL obj%datafile%OPEN()
 
-aline = "# time-step = "//tostring(obj%currentTimeStep)// &
-        ", time = "//tostring(obj%currentTime)//" s"
-CALL obj%datafile%WRITE(aline)
+  aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
+          ", time = "//tostring(obj%currentTime)//" s"
+  CALL obj%datafile%WRITE(aline)
 
-aline = "x, disp, vel"
-CALL obj%datafile%WRITE(aline)
-CALL obj%datafile%WRITE(val=DATA(1:totalNodes, 1:3), orient="ROW")
+  aline = "x, disp, vel"
+  CALL obj%datafile%WRITE(aline)
+  CALL obj%datafile%WRITE(val=DATA(1:totalNodes, 1:3), orient="ROW")
+
+  CALL obj%datafile%DEALLOCATE()
+END IF
 
 #ifdef DEBUG_VER
 CALL Display("Done writing files csvfiles")
 #endif
 
-CALL obj%dispfile%DEALLOCATE()
-CALL obj%velfile%DEALLOCATE()
-CALL obj%accfile%DEALLOCATE()
-CALL obj%datafile%DEALLOCATE()
-
 ! plotting
 
-CALL obj%plot%filename(filename_disp//'.plt')
+IF (obj%plotData(1)) THEN
+  CALL obj%plot%filename(filename_disp//'.plt')
 CALL obj%plot%options('set terminal pngcairo; set output "'//filename_disp//'.png"')
-xlim = obj%spaceDomain
-ylim(1) = MINVAL(DATA(1:totalNodes, 2))
-ylim(2) = MAXVAL(DATA(1:totalNodes, 2))
-xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
-xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
-ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
-ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+  xlim = obj%spaceDomain
+  ylim(1) = MINVAL(DATA(1:totalNodes, 2))
+  ylim(2) = MAXVAL(DATA(1:totalNodes, 2))
+  xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+  xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
 
-CALL obj%plot%xlim(xlim)
-CALL obj%plot%ylim(ylim)
-CALL obj%plot%xlabel('x')
-CALL obj%plot%ylabel('u')
-CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2))
-CALL obj%plot%reset()
+  CALL obj%plot%xlim(xlim)
+  CALL obj%plot%ylim(ylim)
+  CALL obj%plot%xlabel('x')
+  CALL obj%plot%ylabel('u')
+  CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2))
+  CALL obj%plot%reset()
 
-CALL obj%plot%filename(filename_vel//'.plt')
-CALL obj%plot%options('set terminal pngcairo; set output "'//filename_vel//'.png"')
-xlim = obj%spaceDomain
-ylim(1) = MINVAL(DATA(1:totalNodes, 3))
-ylim(2) = MAXVAL(DATA(1:totalNodes, 3))
-xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
-xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
-ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
-ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+END IF
 
-CALL obj%plot%xlim(xlim)
-CALL obj%plot%ylim(ylim)
-CALL obj%plot%xlabel('x')
-CALL obj%plot%ylabel('v')
-CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3))
-CALL obj%plot%reset()
+IF (obj%plotData(2)) THEN
+  CALL obj%plot%filename(filename_vel//'.plt')
+  CALL obj%plot%options('set terminal pngcairo; set output "' &
+                        //filename_vel//'.png"')
+  xlim = obj%spaceDomain
+  ylim(1) = MINVAL(DATA(1:totalNodes, 3))
+  ylim(2) = MAXVAL(DATA(1:totalNodes, 3))
+  xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+  xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+  CALL obj%plot%xlim(xlim)
+  CALL obj%plot%ylim(ylim)
+  CALL obj%plot%xlabel('x')
+  CALL obj%plot%ylabel('v')
+  CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3))
+  CALL obj%plot%reset()
+END IF
+
+! IF (obj%plotData(3)) THEN
+!   CALL obj%plot%filename(filename_acc//'.plt')
+! CALL obj%plot%options('set terminal pngcairo; set output "'//filename_acc//'.png"')
+!   xlim = obj%spaceDomain
+!   ylim(1) = MINVAL(DATA(1:totalNodes, 4))
+!   ylim(2) = MAXVAL(DATA(1:totalNodes, 4))
+!   xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+!   xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+!   ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+!   ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+!
+!   CALL obj%plot%xlim(xlim)
+!   CALL obj%plot%ylim(ylim)
+!   CALL obj%plot%xlabel('x')
+!   CALL obj%plot%ylabel('a')
+!   CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 4))
+!   CALL obj%plot%reset()
+! END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -2609,6 +2752,8 @@ tij(1, 1) = obj%timeDomain(1)
 CALL obj%SetInitialVelocity()
 CALL obj%SetInitialDisplacement()
 
+CALL obj%WriteData()
+
 DO ielTime = 1, obj%totalTimeElements
   CALL Display(tij(1, 1), myname//" t1: ")
   tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
@@ -2617,7 +2762,8 @@ DO ielTime = 1, obj%totalTimeElements
   CALL obj%ApplyDirichletBC(timeElemNum=ielTime, tij=tij)
   CALL obj%Solve()
   CALL obj%Update()
-  CALL obj%WriteData()
+  IF (MOD(ielTime, obj%outputFreq) .EQ. 0_I4B) &
+    CALL obj%WriteData()
   tij(1, 1) = tij(1, 2)
 END DO
 
