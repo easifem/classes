@@ -262,6 +262,17 @@ TYPE :: ElastoDynamics1DSDFEM_
   TYPE(CSVFile_) :: dispfile, velfile, accfile, datafile
   !! file to write displacement, velocity, acceleration
 
+  LOGICAL(LGT) :: saveData(4)
+  !! boolean to decide write the data of
+  !! diaplacement, velocity, acceleration, and all
+
+  LOGICAL(LGT) :: plotData(3)
+  !! boolean to decide plot the data of
+  !! diaplacement, velocity, acceleration
+
+  INTEGER(I4B) :: outputFreq = 1
+  !! output frequency
+
 CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
