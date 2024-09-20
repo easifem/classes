@@ -16,9 +16,13 @@
 !
 
 MODULE AbstractKernelParam
-USE GlobalData
-USE String_Class
-USE BaseMethod
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE String_Class, ONLY: String
+USE StringUtility, ONLY: Uppercase
+
+USE BaseType, ONLY: varopt => TypeFEVariableOpt
+
+! USE BaseMethod
 IMPLICIT NONE
 PRIVATE
 
@@ -27,6 +31,8 @@ PUBLIC :: KernelGetNSDFromID
 PUBLIC :: KernelGetNSDFromName
 PUBLIC :: KernelGetCoordinateSystemName
 PUBLIC :: KernelGetCoordinateSystemID
+PUBLIC :: KernelProblemType
+PUBLIC :: KernelCoordinateSystem
 
 !----------------------------------------------------------------------------
 !
@@ -54,35 +60,50 @@ INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
 
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TANMAT_PROP = "UNSYM"
 !! Default tangent matrix properties
+
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_OUTPUT_PATH = "./results/"
 !! Default outputpath
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
+
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_ENGINE = "NATIVE_SERIAL"
 !! Default value of engine
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
+
+REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_NitscheAlpha = 100.0
 !! Alpha for Nitsche boundary
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isSymNitsche = .TRUE.
+
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsSymNitsche = .TRUE.
 !! Default value of symmetric Nitsche formulation
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isConstantMatProp = .TRUE.
+
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsConstantMatProp = .TRUE.
 !! Default value of constant material property
-INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_algorithm = 1_I4B
+
+INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_Algorithm = 1_I4B
 !! Default value of algorithm
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIsotropic = .TRUE.
+
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsIsotropic = .TRUE.
 !! Default value for isotropicicity
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIncompressible = .FALSE.
+
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsIncompressible = .FALSE.
 !! Default value for incompressibility
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForDisplacement = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForDisplacement = 1.0E-6
 !! Default absolute tolerance for displacement
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForDisplacement = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForDisplacement = 1.0E-6
 !! Default relative tolerance for displacement
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForVelocity = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForVelocity = 1.0E-6
 !! Default absolute tolerance for velocity
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForVelocity = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForVelocity = 1.0E-6
 !! Default relative tolerance for velocity
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForResidual = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForResidual = 1.0E-6
 !! Default absolute tolerance for residual
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForResidual = 1.0E-6
+
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForResidual = 1.0E-6
 !! Default relative tolerance for residual
-INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_tOverlappedMaterials = 1_I4B
+
+INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_TOverlappedMaterials = 1_I4B
 !! Total number of overlapped materials
 
 !----------------------------------------------------------------------------
@@ -101,46 +122,49 @@ REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_gravity(3) = 0.0_DFP
 !                                                         Space dependency
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_1D_H = 1
-  !! One dimensional problem in horizontal direction
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_1D_V = 2
-  !! One dimensional problem in vertical direction
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_2D = 3
-  !! Two dimension problem in Cartesian coordinate
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_2D_AXISYM = 4
-  !! Two dimension problem in Axis-Symmetric coordinate
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_3D = 5
-  !! Three dimension problem in Cartesian Coordinate system
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_PLANE_STRESS = 6
-  !! Two dimension plane stress problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_PLANE_STRAIN = 7
-  !! Two dimension plane strain problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_CARTESIAN = 8
-  !! Cartesian coordinates
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_CYLINDRICAL = 9
-  !! Cylinderical coordinates
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_SPHERICAL = 10
-  !! Sperical coordinates
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem_char = "Cartesian"
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem = KERNEL_CARTESIAN
-
 TYPE :: KernelCoordinateSystem_
-  INTEGER(I4B) :: OneD_H = KERNEL_1D_H
-  INTEGER(I4B) :: OneD_V = KERNEL_1D_V
-  INTEGER(I4B) :: TwoD = KERNEL_2D
-  INTEGER(I4B) :: TwoD_Axisym = KERNEL_2D_AXISYM
-  INTEGER(I4B) :: ThreeD = KERNEL_3D
-  INTEGER(I4B) :: PlaneStress = KERNEL_PLANE_STRESS
-  INTEGER(I4B) :: PlaneStrain = KERNEL_PLANE_STRAIN
-  INTEGER(I4B) :: Cartesian = KERNEL_CARTESIAN
-  INTEGER(I4B) :: Cylinderical = KERNEL_CYLINDRICAL
-  INTEGER(I4B) :: Spherical = KERNEL_SPHERICAL
+  INTEGER(I4B) :: OneD_H = 1
+  !! One dimensional problem in horizontal direction
+
+  INTEGER(I4B) :: OneD_V = 2
+  !! One dimensional problem in vertical direction
+
+  INTEGER(I4B) :: TwoD = 3
+  !! Two dimension problem in Cartesian coordinate
+
+  INTEGER(I4B) :: TwoD_Axisym = 4
+  !! Two dimension problem in Axis-Symmetric coordinate
+
+  INTEGER(I4B) :: ThreeD = 5
+  !! Three dimension problem in Cartesian Coordinate system
+
+  INTEGER(I4B) :: PlaneStress = 6
+  !! Two dimension plane stress problem
+
+  INTEGER(I4B) :: PlaneStrain = 7
+  !! Two dimension plane strain problem
+
+  INTEGER(I4B) :: Cartesian = 8
+  !! Cartesian coordinates
+
+  INTEGER(I4B) :: Cylinderical = 9
+  !! Cylinderical coordinates
+
+  INTEGER(I4B) :: Spherical = 10
+  !! Sperical coordinates
+
 CONTAINS
+
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => coordinateSystem_ToNumber
+
 END TYPE KernelCoordinateSystem_
 
-TYPE(KernelCoordinateSystem_), PUBLIC, PARAMETER :: &
-  & KernelCoordinateSystem = KernelCoordinateSystem_()
+TYPE(KernelCoordinateSystem_), PARAMETER :: KernelCoordinateSystem = &
+                                            KernelCoordinateSystem_()
+
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem_char = "Cartesian"
+
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem = 8
 
 !----------------------------------------------------------------------------
 !                                                          Time dependency
@@ -156,7 +180,21 @@ INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_TRANSIENT = 2
   !! PDE defines a Transient problem
 INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_DYNAMIC = KERNEL_TRANSIENT
   !! PDE defines a Transient problem
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_TimeDependency = KERNEL_TRANSIENT
+
+TYPE :: KernelTimeDependency_
+  INTEGER(I4B) :: static = 0
+  INTEGER(I4B) :: steady = 0
+  INTEGER(I4B) :: pseudostatic = 1
+  INTEGER(I4B) :: transient = 2
+  INTEGER(I4B) :: dynamic = 2
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => timeDependency_ToNumber
+END TYPE KernelTimeDependency_
+
+TYPE(KernelTimeDependency_), PARAMETER, PUBLIC :: KernelTimeDependency = &
+                                                  KernelTimeDependency_()
+
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_TimeDependency = KernelTimeDependency%transient
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TimeDependency_char = "TRANSIENT"
 INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_TotalTimeStep = 1_I4B
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_currentTime = 0.0_DFP
@@ -164,41 +202,24 @@ REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_dt = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_startTime = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_endTime = 0.0_DFP
 
-TYPE :: KernelTimeDependency_
-  INTEGER(I4B) :: static = KERNEL_STATIC
-  INTEGER(I4B) :: steady = KERNEL_STEADY
-  INTEGER(I4B) :: pseudostatic = KERNEL_PSEUDOSTATIC
-  INTEGER(I4B) :: transient = KERNEL_TRANSIENT
-  INTEGER(I4B) :: dynamic = KERNEL_DYNAMIC
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => timeDependency_ToNumber
-END TYPE KernelTimeDependency_
-
-TYPE(KernelTimeDependency_), PARAMETER, PUBLIC :: KernelTimeDependency = &
-  & KernelTimeDependency_()
-
 !----------------------------------------------------------------------------
 !                                                       Problem type
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PARAMETER :: KERNEL_TYPE_SCALAR = Scalar
-INTEGER(I4B), PARAMETER :: KERNEL_TYPE_VECTOR = Vector
-INTEGER(I4B), PARAMETER :: KERNEL_TYPE_MULTI_PHYSICS = Vector + 100
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_PROBLEM_TYPE = -1_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: PROBLEM_TYPE_NONE = -1_I4B
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_PROBLEM_TYPE_CHAR = "NONE"
-
 TYPE :: KernelProblemType_
-  INTEGER(I4B) :: scalar = KERNEL_TYPE_SCALAR
-  INTEGER(I4B) :: vector = KERNEL_TYPE_VECTOR
-  INTEGER(I4B) :: multiPhysics = KERNEL_TYPE_MULTI_PHYSICS
-  INTEGER(I4B) :: NONE = PROBLEM_TYPE_NONE
+  INTEGER(I4B) :: scalar = varopt%Scalar
+  INTEGER(I4B) :: vector = varopt%Vector
+  INTEGER(I4B) :: multiPhysics = varopt%Vector + 100
+  INTEGER(I4B) :: NONE = -1
+  INTEGER(I4B) :: default = -1
+  CHARACTER(4) :: default_char = "NONE"
+
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => problemType_ToNumber
 END TYPE KernelProblemType_
 
-TYPE(KernelProblemType_), PARAMETER, PUBLIC :: KernelProblemType =  &
-  & KernelProblemType_()
+TYPE(KernelProblemType_), PARAMETER :: KernelProblemType = &
+                                       KernelProblemType_()
 
 !----------------------------------------------------------------------------
 !

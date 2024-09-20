@@ -410,7 +410,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 # ----------------------------------------------------------------------------
 
 # AbstractKernel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+
 # easifemKernels
 # include(${CMAKE_CURRENT_LIST_DIR}/easifemKernels/CMakeLists.txt)
 
