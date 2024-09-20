@@ -528,7 +528,7 @@ CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
 
 IF (SIZE(tempboolvec) .EQ. 4) THEN
   obj%saveData = tempboolvec
-ELSE
+ELSEIF (SIZE(tempboolvec) .GT. 0) THEN
   CALL AssertError1(.FALSE., myname, "saveData should have 4 values")
 END IF
 array => NULL()
@@ -545,10 +545,11 @@ CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
 
 IF (SIZE(tempboolvec) .EQ. 3) THEN
   obj%plotData = tempboolvec
-ELSE
+ELSEIF (SIZE(tempboolvec) .GT. 0) THEN
   CALL AssertError1(.FALSE., myname, "plotData should have 3 values")
 END IF
 array => NULL()
+DEALLOCATE (tempboolvec)
 
 ! INFO: outputFreq
 #ifdef DEBUG_VER
