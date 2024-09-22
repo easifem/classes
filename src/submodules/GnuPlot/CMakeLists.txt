@@ -22,5 +22,6 @@ target_sources(
           ${src_path}/GnuPlot_Class@UtilityMethods.F90
           ${src_path}/GnuPlot_Class@PlotMethods.F90
           ${src_path}/GnuPlot_Class@MultiPlotMethods.F90
+          ${src_path}/GnuPlot_Class@AnimationMethods.F90
           ${src_path}/GnuPlot_Class@ContourMethods.F90
           ${src_path}/GnuPlot_Class@SetMethods.F90)

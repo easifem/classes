@@ -31,6 +31,7 @@ CHARACTER(*), PARAMETER :: defaultFmtGnuplot = '(a)'
 CHARACTER(*), PARAMETER :: commentLineGnuplot = &
                            '# -------------------------------------------'
 CHARACTER(*), PARAMETER :: defaultPlotScale = "linear"
+REAL(dfp), PARAMETER :: defaultPause = 2.0_DFP
 
 !----------------------------------------------------------------------------
 !
@@ -170,8 +171,8 @@ CONTAINS
   ! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
   PROCEDURE, PUBLIC, PASS(obj) :: runScript => obj_runScript
-  PROCEDURE, PUBLIC, PASS(obj) :: animation_start => sub_animation_start
-  PROCEDURE, PUBLIC, PASS(obj) :: animation_show => sub_animation_show
+  PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
+  PROCEDURE, PUBLIC, PASS(obj) :: animationShow => obj_animationShow
 
   PROCEDURE, PUBLIC, PASS(obj) :: writeScript => obj_writeScript
 
@@ -1034,6 +1035,43 @@ INTERFACE
   END SUBROUTINE obj_runScript
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                              animationStart
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary: set the setting to start an animation
+!-------------------------------------------------------------------------------
+! obj_animation_start: set the setting to start an animation
+! it simply set flags and open a script file to write data
+!-------------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_animationStart(obj, pauseSeconds)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: pauseSeconds
+  END SUBROUTINE obj_animationStart
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             animationShow
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  show animation
+!-------------------------------------------------------------------------------
+! sub_animation_show: simply resets the animation flags
+! and finalize the plotting.
+!-------------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_animationShow(obj)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
+  END SUBROUTINE obj_animationShow
+END INTERFACE
+
 CONTAINS
 
 SUBROUTINE splot(obj, x, y, z, lspec, palette)
@@ -1329,52 +1367,5 @@ SUBROUTINE lplot3d(obj, x, y, z, lspec, palette)
 
   !: End of lplot3d
 END SUBROUTINE lplot3d
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    !!> Section Three: Animation Routines
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-SUBROUTINE sub_animation_start(obj, pause_seconds)
-  !-------------------------------------------------------------------------------
-  ! sub_animation_start: set the setting to start an animation
-  ! it simply set flags and open a script file to write data
-  !-------------------------------------------------------------------------------
-  CLASS(GnuPlot_) :: obj
-  REAL, INTENT(in), OPTIONAL :: pause_seconds
-
-  ! ogpf does not support multiplot with animation at the same time
-  IF (obj%hasmultiplot) THEN
-    PRINT *, md_name//': does not support animation in multiplot mode!'
-    STOP
-  END IF
-
-  IF (PRESENT(pause_seconds)) THEN
-    obj%pause_seconds = pause_seconds
-  ELSE
-    obj%pause_seconds = 2 ! delay in second
-  END IF
-
-  obj%frame_number = 0
-
-  ! create the ouput file for writting gnuplot script
-  CALL create_outputfile(obj)
-  obj%hasfileopen = .TRUE.
-  obj%hasanimation = .TRUE.
-
-END SUBROUTINE sub_animation_start
-
-SUBROUTINE sub_animation_show(obj)
-  !-------------------------------------------------------------------------------
-  ! sub_animation_show: simply resets the animation flags
-  ! and finalize the plotting.
-  !-------------------------------------------------------------------------------
-
-  CLASS(GnuPlot_) :: obj
-
-  obj%frame_number = 0
-  obj%hasanimation = .FALSE.
-
-  CALL finalize_plot(obj)
-
-END SUBROUTINE sub_animation_show
 
 END MODULE GnuPlot_Class
