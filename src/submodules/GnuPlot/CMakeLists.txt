@@ -21,12 +21,6 @@ target_sources(
   PRIVATE ${src_path}/GnuPlot_Class@ConstructorMethods.F90
           ${src_path}/GnuPlot_Class@UtilityMethods.F90
           ${src_path}/GnuPlot_Class@PlotMethods.F90
-          # ${src_path}/GnuPlot_Class@LinePlotMethods.F90
-          # ${src_path}/GnuPlot_Class@ScatterMethods.F90
+          ${src_path}/GnuPlot_Class@MultiPlotMethods.F90
           ${src_path}/GnuPlot_Class@ContourMethods.F90
-          # ${src_path}/GnuPlot_Class@ColorbarMethods.F90
-          # ${src_path}/GnuPlot_Class@BarMethods.F90
-          # ${src_path}/GnuPlot_Class@FillMethods.F90
-          # ${src_path}/GnuPlot_Class@QuiverMethods.F90
-          # ${src_path}/GnuPlot_Class@SurfaceMethods.F90
           ${src_path}/GnuPlot_Class@SetMethods.F90)
