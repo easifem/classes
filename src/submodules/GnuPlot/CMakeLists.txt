@@ -21,6 +21,8 @@ target_sources(
   PRIVATE ${src_path}/GnuPlot_Class@ConstructorMethods.F90
           ${src_path}/GnuPlot_Class@UtilityMethods.F90
           ${src_path}/GnuPlot_Class@PlotMethods.F90
+          ${src_path}/GnuPlot_Class@Plot3DMethods.F90
+          ${src_path}/GnuPlot_Class@SurfacePlotMethods.F90
           ${src_path}/GnuPlot_Class@MultiPlotMethods.F90
           ${src_path}/GnuPlot_Class@AnimationMethods.F90
           ${src_path}/GnuPlot_Class@ContourMethods.F90

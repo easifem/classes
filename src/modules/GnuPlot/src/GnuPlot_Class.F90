@@ -128,11 +128,21 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: cblim => obj_setCBLim
 
   !! plot
+  PROCEDURE, PUBLIC, PASS(obj) :: multiplot => obj_multiplot
   PROCEDURE, PUBLIC, PASS(obj) :: plot1 => obj_plot1
   PROCEDURE, PUBLIC, PASS(obj) :: plot2 => obj_plot2
   PROCEDURE, PUBLIC, PASS(obj) :: plot3 => obj_plot3
   PROCEDURE, PUBLIC, PASS(obj) :: plot4 => obj_plot4
   GENERIC, PUBLIC :: plot => plot1, plot2, plot3, plot4
+
+  !! 3d line plot
+  PROCEDURE, PUBLIC, PASS(obj) :: plot3d_1 => obj_plot3d_vvv
+  GENERIC, PUBLIC :: plot3d => plot3d_1
+
+  !! surface plot
+  PROCEDURE, PUBLIC, PASS(obj) :: surf1 => obj_surf1
+  GENERIC, PUBLIC :: surf => surf1
+
   !! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: contour1 => obj_contour1
   PROCEDURE, PUBLIC, PASS(obj) :: contour2 => obj_contour2
@@ -162,13 +172,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: filename => set_filename
   PROCEDURE, PUBLIC, PASS(obj) :: reset => reset_to_defaults
   PROCEDURE, PUBLIC, PASS(obj) :: preset => use_preset_configuration
-  PROCEDURE, PUBLIC, PASS(obj) :: multiplot => obj_multiplot
-  PROCEDURE, PUBLIC, PASS(obj) :: surf => splot
-  ! 3D surface plot
-  PROCEDURE, PUBLIC, PASS(obj) :: lplot => lplot3d
-  ! 3D line plot
-  PROCEDURE, PUBLIC, PASS(obj) :: old_contour => cplot
-  ! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
   PROCEDURE, PUBLIC, PASS(obj) :: runScript => obj_runScript
   PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
@@ -399,6 +402,56 @@ INTERFACE
     INTEGER, OPTIONAL, INTENT(in) :: np
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
   END SUBROUTINE obj_plot4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 plot3d
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  plot line in 3D
+!..............................................................................
+! lplot3d create a line plot in 3d
+! datablock is used instead of  gnuplot inline file "-"
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName, logScale)
+    CLASS(GnuPlot_) :: obj
+    REAL(DFP), INTENT(in) :: x(:)
+    REAL(DFP), OPTIONAL, INTENT(in) :: y(:)
+    REAL(DFP), OPTIONAL, INTENT(in) :: z(:)
+    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+    !! default is no logscale
+  END SUBROUTINE obj_plot3d_vvv
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                       surf
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  plot surface
+!..............................................................................
+! splot create a surface plot
+! datablock is used instead of  gnuplot inline file "-"
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName, logScale)
+    CLASS(GnuPlot_) :: obj
+    REAL(DFP), INTENT(in) :: x(:, :)
+    REAL(DFP), OPTIONAL, INTENT(in) :: y(:, :)
+    REAL(DFP), OPTIONAL, INTENT(in) :: z(:, :)
+    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+  !! default is no logscale
+  END SUBROUTINE obj_surf1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1072,300 +1125,8 @@ INTERFACE
   END SUBROUTINE obj_animationShow
 END INTERFACE
 
-CONTAINS
-
-SUBROUTINE splot(obj, x, y, z, lspec, palette)
-  !..............................................................................
-  ! splot create a surface plot
-  ! datablock is used instead of  gnuplot inline file "-"
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x(:, :)
-  REAL(DFP), INTENT(in), OPTIONAL :: y(:, :)
-  REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-  CHARACTER(*), INTENT(in), OPTIONAL :: palette
-
-  !   Local variables
-  !----------------------------------------------------------------------
-  INTEGER :: ncx
-  INTEGER :: nrx
-  INTEGER :: i
-  INTEGER :: j
-  LOGICAL :: xyz_data
-  CHARACTER(80) :: pltstring
-  CHARACTER(*), PARAMETER :: datablock = '$xyz'
-
-  pltstring = ''
-  !   Check the input data
-  ncx = SIZE(x, dim=2)
-  nrx = SIZE(x, dim=1)
-  IF (PRESENT(y) .AND. PRESENT(z)) THEN
-    xyz_data = .TRUE.
-  ELSEIF (PRESENT(y)) THEN
-    PRINT *, "GnuPlot_ error: Z matrix was not sent to 3D plot routine"
-    RETURN
-  ELSE
-    xyz_data = .FALSE.
-  END IF
-
-  ! set default line style for 3D plot, can be overwritten
-  obj%txtdatastyle = 'lines'
-  ! create the script file for writting gnuplot commands and data
-  CALL create_outputfile(obj)
-
-  ! Write titles and other annotations
-  CALL processcmd(obj)
-
-  ! Write xy data into file
-  WRITE (obj%file_unit, '(a)') '#data x y z'
-  ! Rev 0.20
-  ! write the $xyz datablocks
-  WRITE (obj%file_unit, '(a)') datablock//' << EOD'
-  IF (xyz_data) THEN
-    DO j = 1, ncx
-      DO i = 1, nrx
-        WRITE (obj%file_unit, *) x(i, j), y(i, j), z(i, j)
-      END DO
-      WRITE (obj%file_unit, '(a)') !put an empty line
-    END DO
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  ELSE !only Z has been sent (i.e. single matrix data)
-    DO j = 1, ncx
-      DO i = 1, nrx
-        WRITE (obj%file_unit, *) i, j, x(i, j)
-      END DO
-      WRITE (obj%file_unit, '(a)') !put an empty line
-    END DO
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  END IF
-
-  !write the color palette into gnuplot script file
-  IF (PRESENT(palette)) THEN
-    WRITE (obj%file_unit, '(a)') color_palettes(palette)
-    WRITE (obj%file_unit, '(a)') 'set pm3d' ! a conflict with lspec
-  END IF
-
-  IF (PRESENT(lspec)) THEN
-    IF (hastitle(lspec)) THEN
-      pltstring = 'splot '//datablock//' '//TRIM(lspec)
-    ELSE
-      pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)
-    END IF
-  ELSE
-    pltstring = 'splot '//datablock//' notitle '
-  END IF
-
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring)
-
-  !> Rev 0.2: animation
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !: End of splot
-END SUBROUTINE splot
-
-!..............................................................................
-!   Rev 0.19
-!   cplot creates a contour plot based on the three dimensional data
-!..............................................................................
-
-SUBROUTINE cplot(obj, x, y, z, lspec, palette)
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x(:, :)
-  REAL(DFP), INTENT(in), OPTIONAL :: y(:, :)
-  REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-  CHARACTER(*), INTENT(in), OPTIONAL :: palette
-
-  INTEGER :: ncx
-  INTEGER :: nrx
-  INTEGER :: i
-  INTEGER :: j
-  LOGICAL :: xyz_data
-  CHARACTER(80) :: pltstring
-  CHARACTER(*), PARAMETER :: datablock = '$xyz'
-  !       character(*), parameter ::  cntr_table = '$xyz_contour'
-
-  pltstring = ''
-  !   Check the input data
-  ncx = SIZE(x, dim=2)
-  nrx = SIZE(x, dim=1)
-  IF (PRESENT(y) .AND. PRESENT(z)) THEN
-    xyz_data = .TRUE.
-  ELSEIF (PRESENT(y)) THEN
-    PRINT *, "GnuPlot_ error: Z matrix was not sent to 3D plot routine"
-    RETURN
-  ELSE
-    xyz_data = .FALSE.
-  END IF
-
-  ! set default line style for 3D plot, can be overwritten
-  obj%txtdatastyle = 'lines'
-  ! create the script file for writting gnuplot commands and data
-  CALL create_outputfile(obj)
-
-  ! Write titles and other annotations
-  CALL processcmd(obj)
-
-  ! Write xy data into file
-  WRITE (obj%file_unit, '(a)') '#data x y z'
-  ! write the $xyz datablocks
-  WRITE (obj%file_unit, '(a)') datablock//' << EOD'
-  IF (xyz_data) THEN
-    DO j = 1, ncx
-      DO i = 1, nrx
-        WRITE (obj%file_unit, fmt=*) x(i, j), y(i, j), z(i, j)
-      END DO
-      WRITE (obj%file_unit, '(a)') !put an empty line
-    END DO
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  ELSE !only Z has been sent (i.e. single matrix data)
-    DO j = 1, ncx
-      DO i = 1, nrx
-        WRITE (obj%file_unit, fmt=*) i, j, x(i, j)
-      END DO
-      WRITE (obj%file_unit, '(a)') !put an empty line
-    END DO
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  END IF
-
-  ! create the contour lines
-  WRITE (obj%file_unit, '(a)') ! empty line
-  WRITE (obj%file_unit, '(a)') '# create the contour'
-  WRITE (obj%file_unit, '(a)') 'set contour base'
-  WRITE (obj%file_unit, '(a)') 'set cntrparam levels 14'
-  WRITE (obj%file_unit, '(a)') 'unset surface'
-  WRITE (obj%file_unit, '(a)') 'set view map'
-
-  !write the color palette into gnuplot script file
-  IF (PRESENT(palette)) THEN
-    WRITE (obj%file_unit, '(a)') color_palettes(palette)
-    WRITE (obj%file_unit, '(a)') 'set pm3d' ! a conflict with lspec
-  END IF
-
-  WRITE (obj%file_unit, '(a)') ! empty line
-
-  IF (PRESENT(lspec)) THEN
-    IF (hastitle(lspec)) THEN
-      pltstring = 'splot '//datablock//' '//TRIM(lspec)
-    ELSE
-      pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)
-    END IF
-  ELSE
-    pltstring = 'splot '//datablock//' notitle '
-  END IF
-
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring)
-
-  !> Rev 0.20
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !: End of cplot
-END SUBROUTINE cplot
-
-SUBROUTINE lplot3d(obj, x, y, z, lspec, palette)
-  !..............................................................................
-  ! lplot3d create a line plot in 3d
-  ! datablock is used instead of  gnuplot inline file "-"
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x(:)
-  REAL(DFP), INTENT(in), OPTIONAL :: y(:)
-  REAL(DFP), INTENT(in), OPTIONAL :: z(:)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-  CHARACTER(*), INTENT(in), OPTIONAL :: palette
-
-  !   Local variables
-  !----------------------------------------------------------------------
-  INTEGER :: ncx
-  INTEGER :: nrx
-  INTEGER :: i
-  INTEGER :: j
-  LOGICAL :: xyz_data
-  CHARACTER(80) :: pltstring
-  CHARACTER(*), PARAMETER :: datablock = '$xyz'
-
-  pltstring = ''
-  !   Check the input data
-  nrx = SIZE(x)
-  IF (PRESENT(y) .AND. PRESENT(z)) THEN
-    xyz_data = .TRUE.
-  ELSEIF (PRESENT(y)) THEN
-    PRINT *, "GnuPlot_ error: Z matrix was not sent to 3D plot routine"
-    RETURN
-  ELSE
-    xyz_data = .FALSE.
-  END IF
-
-  ! set default line style for 3D plot, can be overwritten
-  obj%txtdatastyle = 'lines'
-  ! create the script file for writing gnuplot commands and data
-  CALL create_outputfile(obj)
-
-  ! Write titles and other annotations
-  CALL processcmd(obj)
-
-  ! Write xy data into file
-  WRITE (obj%file_unit, '(a)') '#data x y z'
-  ! Rev 0.20
-  ! write the $xyz datablocks
-  WRITE (obj%file_unit, '(a)') datablock//' << EOD'
-  IF (xyz_data) THEN
-    DO i = 1, nrx
-      WRITE (obj%file_unit, *) x(i), y(i), z(i)
-    END DO
-    WRITE (obj%file_unit, '(a)') !put an empty line
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  ELSE !only Z has been sent (i.e. single matrix data)
-    DO i = 1, nrx
-      WRITE (obj%file_unit, *) i, x(i)
-    END DO
-    WRITE (obj%file_unit, '(a)') !put an empty line
-    WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-  END IF
-
-  !write the color palette into gnuplot script file
-  IF (PRESENT(palette)) THEN
-    WRITE (obj%file_unit, '(a)') color_palettes(palette)
-    WRITE (obj%file_unit, '(a)') 'set pm3d' ! a conflict with lspec
-  END IF
-
-  IF (PRESENT(lspec)) THEN
-    IF (hastitle(lspec)) THEN
-      pltstring = 'splot '//datablock//' '//TRIM(lspec)//'with lines'
-    ELSE
-      pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)//'with lines'
-    END IF
-  ELSE
-    pltstring = 'splot '//datablock//' notitle with lines'
-  END IF
-
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring)
-
-  !> Rev 0.2: animation
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !: End of lplot3d
-END SUBROUTINE lplot3d
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE GnuPlot_Class
