@@ -30,6 +30,7 @@ CHARACTER(*), PARAMETER :: gnuplot_output_filename = 'gnuplot_temp_script.plt'
 CHARACTER(*), PARAMETER :: defaultFmtGnuplot = '(a)'
 CHARACTER(*), PARAMETER :: commentLineGnuplot = &
                            '# -------------------------------------------'
+CHARACTER(*), PARAMETER :: defaultPlotScale = "linear"
 
 !----------------------------------------------------------------------------
 !
@@ -129,7 +130,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: plot1 => obj_plot1
   PROCEDURE, PUBLIC, PASS(obj) :: plot2 => obj_plot2
   PROCEDURE, PUBLIC, PASS(obj) :: plot3 => obj_plot3
-  GENERIC, PUBLIC :: plot => plot1, plot2, plot3
+  PROCEDURE, PUBLIC, PASS(obj) :: plot4 => obj_plot4
+  GENERIC, PUBLIC :: plot => plot1, plot2, plot3, plot4
   !! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: contour1 => obj_contour1
   PROCEDURE, PUBLIC, PASS(obj) :: contour2 => obj_contour2
@@ -137,15 +139,6 @@ CONTAINS
 
   ! TODO: make a interface for these subroutines
   PROCEDURE, PASS(obj) :: preset_gnuplot_config
-  PROCEDURE, PASS(obj) :: plot2d_vector_vs_vector
-  PROCEDURE, PASS(obj) :: plot2d_matrix_vs_vector
-  PROCEDURE, PASS(obj) :: plot2d_matrix_vs_matrix
-  PROCEDURE, PASS(obj) :: semilogxv
-  PROCEDURE, PASS(obj) :: semilogxm
-  PROCEDURE, PASS(obj) :: semilogyv
-  PROCEDURE, PASS(obj) :: semilogym
-  PROCEDURE, PASS(obj) :: loglogv
-  PROCEDURE, PASS(obj) :: loglogm
 
   PROCEDURE, PUBLIC, PASS(obj) :: create_outputfile
   PROCEDURE, PUBLIC, PASS(obj) :: processcmd
@@ -168,20 +161,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: filename => set_filename
   PROCEDURE, PUBLIC, PASS(obj) :: reset => reset_to_defaults
   PROCEDURE, PUBLIC, PASS(obj) :: preset => use_preset_configuration
-  PROCEDURE, PUBLIC, PASS(obj) :: multiplot => sub_multiplot
-  GENERIC, PUBLIC :: old_plot => plot2d_vector_vs_vector, &
-    plot2d_matrix_vs_vector, &
-    plot2d_matrix_vs_matrix
-  GENERIC, PUBLIC :: semilogx => semilogxv, semilogxm
-  GENERIC, PUBLIC :: semilogy => semilogyv, semilogym
-  GENERIC, PUBLIC :: loglog => loglogv, loglogm
+  PROCEDURE, PUBLIC, PASS(obj) :: multiplot => obj_multiplot
   PROCEDURE, PUBLIC, PASS(obj) :: surf => splot
   ! 3D surface plot
   PROCEDURE, PUBLIC, PASS(obj) :: lplot => lplot3d
   ! 3D line plot
   PROCEDURE, PUBLIC, PASS(obj) :: old_contour => cplot
   ! contour plot
-  PROCEDURE, PUBLIC, PASS(obj) :: fplot => function_plot
   PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
   PROCEDURE, PUBLIC, PASS(obj) :: runScript => obj_runScript
   PROCEDURE, PUBLIC, PASS(obj) :: animation_start => sub_animation_start
@@ -289,18 +275,40 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  multiplot@MultiPlotMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  initialize the multiplot
+!..............................................................................
+! obj subroutine sets flag and number of rows and columns in case
+! of multiplot layout
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_multiplot(obj, rows, cols)
+    CLASS(GnuPlot_) :: obj
+    INTEGER(I4B), INTENT(in) :: rows
+    INTEGER(I4B), INTENT(in) :: cols
+  END SUBROUTINE obj_multiplot
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Plot@PlotMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
 ! summary:  Plot 1D data
+! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
   MODULE SUBROUTINE obj_plot1(obj, x1, y1, ls1, axes1, &
                               x2, y2, ls2, axes2, &
                               x3, y3, ls3, axes3, &
-                              x4, y4, ls4, axes4)
+                              x4, y4, ls4, axes4, &
+                              logScale)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: x1(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: y1(:)
@@ -318,7 +326,8 @@ INTERFACE
     REAL(DFP), INTENT(IN), DIMENSION(:), OPTIONAL :: y4
     CHARACTER(*), INTENT(IN), OPTIONAL :: ls4
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes4
-
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+    !! default is no logscale
   END SUBROUTINE obj_plot1
 END INTERFACE
 
@@ -329,13 +338,16 @@ END INTERFACE
 !> author: Shion Shimizu
 ! date:   2024-06-08
 ! summary:  Plot 2D data
+! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec)
+  MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec, logScale)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: xv(:)
     REAL(DFP), INTENT(IN) :: ymat(:, :)
     CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+    !! default is no logscale
   END SUBROUTINE obj_plot2
 END INTERFACE
 
@@ -346,14 +358,46 @@ END INTERFACE
 !> author: Shion Shimizu
 ! date:   2024-06-08
 ! summary:  Plot 2D data
+! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec)
+  MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec, logScale)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(in) :: xmat(:, :)
     REAL(DFP), INTENT(in) :: ymat(:, :)
     CHARACTER(*), INTENT(in), OPTIONAL :: lspec
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+    !! default is no logscale
   END SUBROUTINE obj_plot3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           plot4@PlotMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  plot with function
+!..............................................................................
+! fplot, plot a function in the range xrange=[xmin, xamx] with np points
+! if np is not sent, then np=50 is assumed!
+! func is the name of function to be plotted
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_plot4(obj, func, xrange, np, logScale)
+    CLASS(GnuPlot_) :: obj
+    INTERFACE
+      FUNCTION func(x_)
+        IMPORT DFP
+        REAL(DFP), INTENT(in) :: x_
+        REAL(DFP) :: func
+      END FUNCTION func
+    END INTERFACE
+    REAL(DFP), INTENT(in) :: xrange(2)
+    INTEGER, OPTIONAL, INTENT(in) :: np
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+  END SUBROUTINE obj_plot4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -992,437 +1036,6 @@ END INTERFACE
 
 CONTAINS
 
-!..............................................................................
-! obj subroutine sets flag and number of rows and columns in case
-! of multiplot layout
-!..............................................................................
-SUBROUTINE sub_multiplot(obj, rows, cols)
-
-  CLASS(GnuPlot_) :: obj
-  INTEGER, INTENT(in) :: rows
-  INTEGER, INTENT(in) :: cols
-
-  ! ogpf does not support multiplot in animation mode
-  IF (obj%hasanimation) THEN
-    PRINT *, md_name//': ogpf does not support animation in multiplot mode'
-    STOP
-  END IF
-
-  ! set multiplot cols and rows
-  IF (rows > 0) THEN
-    obj%multiplot_rows = rows
-  ELSE
-
-  END IF
-  IF (cols > 0) THEN
-    obj%multiplot_cols = cols
-  ELSE
-
-  END IF
-
-  ! set the multiplot layout flag and plot numbers
-  obj%hasmultiplot = .TRUE.
-  obj%multiplot_total_plots = 0
-
-  ! create the ouput file for writting gnuplot script
-  CALL create_outputfile(obj)
-
-END SUBROUTINE sub_multiplot
-
-SUBROUTINE plot2d_vector_vs_vector(obj, x1, y1, ls1, axes1, &
-                                   x2, y2, ls2, axes2, &
-                                   x3, y3, ls3, axes3, &
-                                   x4, y4, ls4, axes4)
-  !..............................................................................
-  ! obj procedure plots:
-  !   1. A vector against another vector (xy plot)
-  !   2. A vector versus its element indices (yi plot).
-  !   3. Can accept up to 4 data sets as x,y pairs!
-  ! Arguments
-  ! xi, yi vectors of data series,
-  ! lsi a string maximum 80 characters containing the line specification,
-  ! legends, ...
-  ! axesi is the axes for plotting: secondary axes are x2, and y2
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x1(:) ! vector of data for x
-  REAL(DFP), INTENT(in), OPTIONAL :: y1(:) ! vector of data for y
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls1 ! line specification
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes1
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x2
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y2
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls2
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes2
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x3
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y3
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls3
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes3
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x4
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y4
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls4
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes4
-
-  !   Local variables
-  !----------------------------------------------------------------------
-
-  INTEGER :: nx1
-  INTEGER :: ny1
-  INTEGER :: nx2
-  INTEGER :: ny2
-  INTEGER :: nx3
-  INTEGER :: ny3
-  INTEGER :: nx4
-  INTEGER :: ny4
-  INTEGER :: number_of_plots
-  CHARACTER(3) :: plottype
-  INTEGER :: i
-  CHARACTER(80) :: pltstring(4) ! Four 80 characters string
-
-  !Initialize variables
-  plottype = ''
-  pltstring = ''
-
-  !   Check the input
-  nx1 = SIZE(x1)
-  IF ((PRESENT(y1))) THEN
-    ny1 = SIZE(y1)
-    IF (nx1 .EQ. ny1) THEN
-      plottype = 'xy1'
-      number_of_plots = 1
-    ELSE
-                print*, md_name // ':plot2d_vector_vs_vector:' // 'length of x1 and y1 does not match'
-      RETURN
-    END IF
-  ELSE !plot only x againest its element indices
-    plottype = 'xi'
-    number_of_plots = 1
-  END IF
-
-  !Process line spec and axes set for first data set if present
-  CALL process_linespec(1, pltstring(1), ls1, axes1)
-
-  IF (PRESENT(x2) .AND. PRESENT(y2)) THEN
-    nx2 = SIZE(x2)
-    ny2 = SIZE(y2)
-    IF (nx2 .EQ. ny2) THEN
-      plottype = 'xy2'
-      number_of_plots = 2
-    ELSE
-      RETURN
-    END IF
-    !Process line spec for 2nd data set if present
-    CALL process_linespec(2, pltstring(2), ls2, axes2)
-  END IF
-
-  IF (PRESENT(x3) .AND. PRESENT(y3)) THEN
-    nx3 = SIZE(x3)
-    ny3 = SIZE(y3)
-    IF (nx3 .EQ. ny3) THEN
-      plottype = 'xy3'
-      number_of_plots = 3
-    ELSE
-      RETURN
-    END IF
-    !Process line spec for 3rd data set if present
-    CALL process_linespec(3, pltstring(3), ls3, axes3)
-  END IF
-
-  IF (PRESENT(x4) .AND. PRESENT(y4)) THEN
-    nx4 = SIZE(x4)
-    ny4 = SIZE(y4)
-    IF (nx4 .EQ. ny4) THEN
-      plottype = 'xy4'
-      number_of_plots = 4
-    ELSE
-      RETURN
-    END IF
-    !Process line spec for 4th data set if present
-    CALL process_linespec(4, pltstring(4), ls4, axes4)
-  END IF
-
-  CALL create_outputfile(obj)
-
-  ! Write plot title, axis labels and other annotations
-  CALL processcmd(obj)
-
-  ! Write plot command and line styles and legend if any
-  IF (number_of_plots == 1) THEN
-    WRITE (obj%file_unit, '(a)') TRIM(pltstring(1))
-  ELSE
-            write ( obj%file_unit, '(a)' )  ( trim(pltstring(i)) // ' \' , i=1, number_of_plots-1)
-    WRITE (obj%file_unit, '(a)') TRIM(pltstring(number_of_plots))
-  END IF
-  ! Write xy data into file
-  SELECT CASE (plottype)
-  CASE ('xi')
-    CALL write_xydata(obj%file_unit, nx1, x1)
-  CASE ('xy1')
-    CALL write_xydata(obj%file_unit, nx1, x1, y1)
-  CASE ('xy2')
-    CALL write_xydata(obj%file_unit, nx1, x1, y1)
-    CALL write_xydata(obj%file_unit, nx2, x2, y2)
-  CASE ('xy3')
-    CALL write_xydata(obj%file_unit, nx1, x1, y1)
-    CALL write_xydata(obj%file_unit, nx2, x2, y2)
-    CALL write_xydata(obj%file_unit, nx3, x3, y3)
-  CASE ('xy4')
-    CALL write_xydata(obj%file_unit, nx1, x1, y1)
-    CALL write_xydata(obj%file_unit, nx2, x2, y2)
-    CALL write_xydata(obj%file_unit, nx3, x3, y3)
-    CALL write_xydata(obj%file_unit, nx4, x4, y4)
-  END SELECT
-
-  !> Rev 0.2
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !: End of plot2D_vector_vs_vector
-END SUBROUTINE plot2d_vector_vs_vector
-
-SUBROUTINE plot2d_matrix_vs_vector(obj, xv, ymat, lspec)
-  !..............................................................................
-  ! plot2D_matrix_vs_vector accepts a vector xv and a matrix ymat and plots
-  ! columns of ymat against xv. lspec is an optional array defines the line
-  ! specification for each data series. If a single element array is sent for
-  ! lspec then all series are plotted using the same linespec
-  !..............................................................................
-
-  IMPLICIT NONE
-  CLASS(GnuPlot_) :: obj
-  ! Input arrays
-  REAL(DFP), INTENT(in) :: xv(:)
-  REAL(DFP), INTENT(in) :: ymat(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-  !----------------------------------------------------------------------
-  !       Local variables
-  INTEGER :: nx
-  INTEGER :: ny
-  INTEGER :: ns
-  INTEGER :: number_of_curves
-  INTEGER :: i
-  INTEGER :: j
-  INTEGER :: ierr
-  CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
-  !
-
-  !*******************************************************************************
-  !   Check the input
-  nx = SIZE(xv)
-  ny = SIZE(ymat, dim=1)
-  IF (.NOT. nx .EQ. ny) THEN
-            print*, md_name // ':plot2d_matrix_vs_vector:' // 'The length of arrays does not match'
-    RETURN
-  END IF
-  ! create the outfile to write the gnuplot script
-  CALL create_outputfile(obj)
-
-  ! Write titles and other annotations
-  CALL processcmd(obj)
-
-  ! Write plot command and line styles and legend if any
-  number_of_curves = SIZE(ymat, dim=2)
-  ALLOCATE (pltstring(number_of_curves), stat=ierr)
-  IF (ierr /= 0) THEN
-    PRINT *, 'allocation error'
-    RETURN
-  END IF
-
-  ! assume no linespec is available
-  pltstring(1:number_of_curves) = ''
-
-  IF (PRESENT(lspec)) THEN
-
-    CALL splitstring2array(lspec, lst, ';')
-    ns = SIZE(lst, dim=1)
-
-    IF (ns == number_of_curves) THEN
-      ! there is a linespec for each curve
-      pltstring = lst
-    ELSEIF (ns < number_of_curves) THEN
-      ! not enough linespec
-      DO i = 1, ns
-        pltstring(i) = lst(i)
-      END DO
-    ELSE ! ns > number_of curves
-      PRINT *, 'ogpf: plot2d_matrix_vs_vector: wrong number of linespec'
-      PRINT *, 'semicolon ";" acts as delimiter, check the linespec'
-    END IF
-  END IF
-
-  IF (PRESENT(lspec)) THEN
-
-    CALL process_linespec(1, pltstring(1), lst(1))
-    ns = SIZE(lst)
-    ! gpf will cylce through line specification, if number of specification passed
-    ! is less than number of plots
-    DO i = 1, number_of_curves
-      j = MOD(i - 1, ns) + 1
-      CALL process_linespec(i, pltstring(i), lst(j))
-    END DO
-  ELSE !No lspec is available
-    pltstring(1) = ' plot "-" notitle,'
-    pltstring(2:number_of_curves - 1) = '"-" notitle,'
-    pltstring(number_of_curves) = '"-" notitle'
-  END IF
-
-  ! Write plot command and line styles and legend if any
-        write ( obj%file_unit, '(a)' ) ( trim(pltstring(i)) // ' \' , i=1, number_of_curves-1)
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring(number_of_curves))
-
-  ! Write data into script file
-  DO j = 1, number_of_curves
-    DO i = 1, nx
-      WRITE (obj%file_unit, *) xv(i), ymat(i, j)
-    END DO
-    WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
-  END DO
-
-  !> Rev 0.2
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !Release memory
-  IF (ALLOCATED(pltstring)) THEN
-    DEALLOCATE (pltstring)
-  END IF
-  !: End of plot2D_matrix_vs_vector
-END SUBROUTINE plot2d_matrix_vs_vector
-
-SUBROUTINE plot2d_matrix_vs_matrix(obj, xmat, ymat, lspec)
-  !..............................................................................
-  ! plot2D_matrix_vs_matrix accepts a matrix xmat and a matrix ymat and plots
-  ! columns of ymat against columns of xmat. lspec is an optional array defines
-  ! the line specification for each data series. If a single element array is
-  ! sent for lspec then all series are plotted using the same linespec
-  !..............................................................................
-
-  IMPLICIT NONE
-  CLASS(GnuPlot_) :: obj
-  ! Input arrays
-  REAL(DFP), INTENT(in) :: xmat(:, :)
-  REAL(DFP), INTENT(in) :: ymat(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-  !----------------------------------------------------------------------
-  !       Local variables
-  INTEGER :: mx, nx
-  INTEGER :: my, ny
-  INTEGER :: ns
-  INTEGER :: number_of_curves
-  INTEGER :: i
-  INTEGER :: j
-  INTEGER :: ierr
-  CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
-  !
-
-  !*******************************************************************************
-  !   Check the input
-  ! check number of rows
-  mx = SIZE(xmat, dim=1)
-  my = SIZE(ymat, dim=1)
-  IF (.NOT. mx .EQ. my) THEN
-            print*, md_name // ':plot2d_matrix_vs_matrix:' // 'The length of arrays does not match'
-    RETURN
-  END IF
-  ! check number of rows
-  nx = SIZE(xmat, dim=2)
-  ny = SIZE(ymat, dim=2)
-  IF (.NOT. nx .EQ. ny) THEN
-   PRINT *, 'GnuPlot_ error: The number of columns are different, check xmat, ymat'
-    RETURN
-  END IF
-
-  ! create the outfile to write the gnuplot script
-  CALL create_outputfile(obj)
-
-  ! Write titles and other annotations
-  CALL processcmd(obj)
-
-  ! Write plot command and line styles and legend if any
-  number_of_curves = SIZE(ymat, dim=2)
-  ALLOCATE (pltstring(number_of_curves), stat=ierr)
-  IF (ierr /= 0) THEN
-    PRINT *, 'allocation error'
-    RETURN
-  END IF
-
-  ! assume no linespec is available
-  pltstring(1:number_of_curves) = ''
-
-  IF (PRESENT(lspec)) THEN
-
-    CALL splitstring2array(lspec, lst, ';')
-    ns = SIZE(lst, dim=1)
-
-    IF (ns == number_of_curves) THEN
-      ! there is a linespec for each curve
-      pltstring = lst
-    ELSEIF (ns < number_of_curves) THEN
-      ! not enough linespec
-      DO i = 1, ns
-        pltstring(i) = lst(i)
-      END DO
-    ELSE ! ns > number_of curves
-   PRINT *, md_name//': plot2d_matrix_vs_matrix:'//' wrong number of linespec'
-      PRINT *, 'semicolon ";" acts as delimiter, check the linespec'
-    END IF
-  END IF
-
-  IF (PRESENT(lspec)) THEN
-
-    CALL process_linespec(1, pltstring(1), lst(1))
-    ns = SIZE(lst)
-    ! GnuPlot_ will cylce through line specification, if number of specification passed
-    ! is less than number of plots
-    DO i = 1, number_of_curves
-      j = MOD(i - 1, ns) + 1
-      CALL process_linespec(i, pltstring(i), lst(j))
-    END DO
-  ELSE !No lspec is available
-    pltstring(1) = ' plot "-" notitle,'
-    pltstring(2:number_of_curves - 1) = '"-" notitle,'
-    pltstring(number_of_curves) = '"-" notitle'
-  END IF
-
-  ! Write plot command and line styles and legend if any
-        write ( obj%file_unit, '(a)' ) ( trim(pltstring(i)) // ' \' , i=1, number_of_curves-1)
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring(number_of_curves))
-
-  ! Write data into script file
-  DO j = 1, number_of_curves
-    DO i = 1, mx
-      WRITE (obj%file_unit, *) xmat(i, j), ymat(i, j)
-    END DO
-    WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
-  END DO
-
-  !> Rev 0.2
-  ! if there is no animation finalize
-  IF (.NOT. (obj%hasanimation)) THEN
-    CALL finalize_plot(obj)
-  ELSE
-    WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-  END IF
-
-  !Release memory
-  IF (ALLOCATED(pltstring)) THEN
-    DEALLOCATE (pltstring)
-  END IF
-  !: End of plot2D_matrix_vs_vector
-END SUBROUTINE plot2d_matrix_vs_matrix
-
 SUBROUTINE splot(obj, x, y, z, lspec, palette)
   !..............................................................................
   ! splot create a surface plot
@@ -1716,238 +1329,6 @@ SUBROUTINE lplot3d(obj, x, y, z, lspec, palette)
 
   !: End of lplot3d
 END SUBROUTINE lplot3d
-
-SUBROUTINE function_plot(obj, func, xrange, np)
-  !..............................................................................
-  ! fplot, plot a function in the range xrange=[xmin, xamx] with np points
-  ! if np is not sent, then np=50 is assumed!
-  ! func is the name of function to be plotted
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  INTERFACE
-    FUNCTION func(x_)
-      IMPORT DFP
-      REAL(DFP), INTENT(in) :: x_
-      REAL(DFP) :: func
-    END FUNCTION func
-  END INTERFACE
-  REAL(DFP), INTENT(in) :: xrange(2)
-  INTEGER, OPTIONAL, INTENT(in) :: np
-
-  INTEGER :: n
-  INTEGER :: i
-  INTEGER :: alloc_err
-  REAL(DFP), ALLOCATABLE :: x(:)
-  REAL(DFP), ALLOCATABLE :: y(:)
-
-  IF (PRESENT(np)) THEN
-    n = np
-  ELSE
-    n = 50
-  END IF
-  ALLOCATE (x(1:n), y(1:n), stat=alloc_err)
-  IF (alloc_err /= 0) THEN
-    STOP "Allocation error in fplot procedure..."
-  END IF
-  !Create set of xy data
-  x = Linspace(xrange(1), xrange(2), n)
-  y = [(func(x(i)), i=1, n)]
-
-  CALL plot2d_vector_vs_vector(obj, x, y)
-
-  ! cleanup memory
-  IF (ALLOCATED(x)) DEALLOCATE (x)
-  IF (ALLOCATED(y)) DEALLOCATE (y)
-
-END SUBROUTINE function_plot
-
-SUBROUTINE semilogxv(obj, x1, y1, ls1, axes1, &
-                     x2, y2, ls2, axes2, &
-                     x3, y3, ls3, axes3, &
-                     x4, y4, ls4, axes4)
-  !..............................................................................
-  !   obj procedure is the same as plotXY with logarithmic x1 and x2 axes
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x1(:) ! vector of data for x
-  REAL(DFP), INTENT(in), OPTIONAL :: y1(:) ! vector of data for y
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls1 ! line specification
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes1
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x2
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y2
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls2
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes2
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x3
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y3
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls3
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes3
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x4
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y4
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls4
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes4
-  obj%plotscale = 'semilogx'
-  CALL plot2d_vector_vs_vector(obj, &
-                               x1, y1, ls1, axes1, &
-                               x2, y2, ls2, axes2, &
-                               x3, y3, ls3, axes3, &
-                               x4, y4, ls4, axes4)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE semilogxv
-
-!..............................................................................
-SUBROUTINE semilogyv(obj, x1, y1, ls1, axes1, &
-                     x2, y2, ls2, axes2, &
-                     x3, y3, ls3, axes3, &
-                     x4, y4, ls4, axes4)
-  !..............................................................................
-  !   obj procedure is the same as plotXY with logarithmic y1 and y2 axes
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x1(:) ! vector of data for x
-  REAL(DFP), INTENT(in), OPTIONAL :: y1(:) ! vector of data for y
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls1 ! line specification
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes1
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x2
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y2
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls2
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes2
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x3
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y3
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls3
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes3
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x4
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y4
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls4
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes4
-
-  obj%plotscale = 'semilogy'
-  CALL plot2d_vector_vs_vector(obj, &
-                               x1, y1, ls1, axes1, &
-                               x2, y2, ls2, axes2, &
-                               x3, y3, ls3, axes3, &
-                               x4, y4, ls4, axes4)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE semilogyv
-
-SUBROUTINE loglogv(obj, x1, y1, ls1, axes1, &
-                   x2, y2, ls2, axes2, &
-                   x3, y3, ls3, axes3, &
-                   x4, y4, ls4, axes4)
-  !..............................................................................
-  !   obj procedure is the same as plotXY with logarithmic x1, y1, x2, y2 axes
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  ! Input vector
-  REAL(DFP), INTENT(in) :: x1(:) ! vector of data for x
-  REAL(DFP), INTENT(in), OPTIONAL :: y1(:) ! vector of data for y
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls1 ! line specification
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes1
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x2
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y2
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls2
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes2
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x3
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y3
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls3
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes3
-
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: x4
-  REAL(DFP), INTENT(in), DIMENSION(:), OPTIONAL :: y4
-  CHARACTER(*), INTENT(in), OPTIONAL :: ls4
-  CHARACTER(*), INTENT(in), OPTIONAL :: axes4
-
-  obj%plotscale = 'loglog'
-  CALL plot2d_vector_vs_vector(obj, &
-                               x1, y1, ls1, axes1, &
-                               x2, y2, ls2, axes2, &
-                               x3, y3, ls3, axes3, &
-                               x4, y4, ls4, axes4)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE loglogv
-
-SUBROUTINE semilogxm(obj, xv, ymat, lspec)
-  !..............................................................................
-  !Plots a matrix against a vector with logarithmic x-axis
-  !For more information see plot2D_matrix_vs_vector procedure
-  !Everything is the same except the x-axis scale
-  !..............................................................................
-
-  IMPLICIT NONE
-  CLASS(GnuPlot_) :: obj
-  ! Input arrays
-  REAL(DFP), INTENT(in) :: xv(:)
-  REAL(DFP), INTENT(in) :: ymat(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-
-  obj%plotscale = 'semilogx'
-  CALL plot2d_matrix_vs_vector(obj, xv, ymat, lspec)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE semilogxm
-
-SUBROUTINE semilogym(obj, xv, ymat, lspec)
-  !..............................................................................
-  !Plots a matrix against a vector with logarithmic y-axis
-  !For more information see plot2D_matrix_vs_vector procedure
-  !Everything is the same except the x-axis scale
-  !..............................................................................
-
-  IMPLICIT NONE
-  CLASS(GnuPlot_) :: obj
-  ! Input arrays
-  REAL(DFP), INTENT(in) :: xv(:)
-  REAL(DFP), INTENT(in) :: ymat(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-
-  obj%plotscale = 'semilogy'
-  CALL plot2d_matrix_vs_vector(obj, xv, ymat, lspec)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE semilogym
-
-SUBROUTINE loglogm(obj, xv, ymat, lspec)
-  !..............................................................................
-  !Plots a matrix against a vector with logarithmic x-axis and y-axis
-  !For more information see plot2D_matrix_vs_vector procedure
-  !Everything is the same except the axes scale
-  !..............................................................................
-
-  IMPLICIT NONE
-  CLASS(GnuPlot_) :: obj
-  ! Input arrays
-  REAL(DFP), INTENT(in) :: xv(:)
-  REAL(DFP), INTENT(in) :: ymat(:, :)
-  CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-
-  obj%plotscale = 'loglog'
-  CALL plot2d_matrix_vs_vector(obj, xv, ymat, lspec)
-  ! Set the plot scale as linear. It means log scale is off
-  obj%plotscale = 'linear'
-
-END SUBROUTINE loglogm
-
     !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     !!> Section Three: Animation Routines
     !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

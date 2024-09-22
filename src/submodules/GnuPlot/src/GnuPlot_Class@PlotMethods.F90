@@ -114,8 +114,13 @@ END IF
 
 CALL create_outputfile(obj)
 
+IF (PRESENT(logScale)) THEN
+  obj%plotscale = logScale
+END IF
 ! Write plot title, axis labels and other annotations
 CALL processcmd(obj)
+
+obj%plotscale = defaultPlotScale
 
 ! Write plot command and line styles and legend if any
 isok = number_of_plots .EQ. 1
@@ -167,9 +172,94 @@ END PROCEDURE obj_plot1
 
 MODULE PROCEDURE obj_plot2
 CHARACTER(*), PARAMETER :: myName = "obj_plot2"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_plot2
+
+INTEGER :: nx, ny, ns, number_of_curves, ii, jj, ierr
+CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
+
+nx = SIZE(xv)
+ny = SIZE(ymat, dim=1)
+IF (.NOT. nx .EQ. ny) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: The length of xv and ymat does not match')
+END IF
+
+CALL create_outputfile(obj)
+IF (PRESENT(logScale)) THEN
+  obj%plotscale = logScale
+END IF
+! Write plot title, axis labels and other annotations
+CALL processcmd(obj)
+
+obj%plotscale = defaultPlotScale
+
+number_of_curves = SIZE(ymat, dim=2)
+ALLOCATE (pltstring(number_of_curves), stat=ierr)
+IF (ierr /= 0) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Failed to allocate memory for pltstring')
+END IF
+
+pltstring(1:number_of_curves) = ''
+
+IF (PRESENT(lspec)) THEN
+
+  CALL splitstring2array(lspec, lst, ';')
+  ns = SIZE(lst, dim=1)
+
+  IF (ns == number_of_curves) THEN
+    pltstring = lst
+  ELSEIF (ns < number_of_curves) THEN
+    DO ii = 1, ns
+      pltstring(ii) = lst(ii)
+    END DO
+  ELSE ! ns > number_of curves
+    CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+      & '[WARNING]:: wrong number of linespec,'// &
+      'semicolon ";" acts as delimiter')
+  END IF
+END IF
+
+IF (PRESENT(lspec)) THEN
+
+  CALL process_linespec(1, pltstring(1), lst(1))
+  ns = SIZE(lst)
+  ! gpf will cylce through line specification, if number of specification passed
+  ! is less than number of plots
+  DO ii = 1, number_of_curves
+    jj = MOD(ii - 1, ns) + 1
+    CALL process_linespec(ii, pltstring(ii), lst(jj))
+  END DO
+ELSE !No lspec is available
+  pltstring(1) = ' plot "-" notitle,'
+  pltstring(2:number_of_curves - 1) = '"-" notitle,'
+  pltstring(number_of_curves) = '"-" notitle'
+END IF
+
+! Write plot command and line styles and legend if any
+DO ii = 1, number_of_curves - 1
+  CALL obj%writeScript(script=TRIM(pltstring(ii))//' \')
+END DO
+CALL obj%writeScript(script=TRIM(pltstring(number_of_curves)))
+
+! Write data into script file
+DO jj = 1, number_of_curves
+  DO ii = 1, nx
+    WRITE (obj%file_unit, *) xv(ii), ymat(ii, jj)
+  END DO
+  WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
+END DO
+
+IF (.NOT. (obj%hasanimation)) THEN
+  CALL finalize_plot(obj)
+ELSE
+  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
+END IF
+
+!Release memory
+IF (ALLOCATED(pltstring)) THEN
+  DEALLOCATE (pltstring)
+END IF
+
 END PROCEDURE obj_plot2
 
 !----------------------------------------------------------------------------
@@ -178,10 +268,135 @@ END PROCEDURE obj_plot2
 
 MODULE PROCEDURE obj_plot3
 CHARACTER(*), PARAMETER :: myName = "obj_plot3"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_plot3
+INTEGER(I4B) :: mx, nx, my, ny, ns, number_of_curves, &
+                ii, jj, ierr
+CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
+
+mx = SIZE(xmat, dim=1)
+my = SIZE(ymat, dim=1)
+IF (.NOT. mx .EQ. my) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: The row length of xmat and ymat does not match')
+END IF
+
+nx = SIZE(xmat, dim=2)
+ny = SIZE(ymat, dim=2)
+IF (.NOT. nx .EQ. ny) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: The column length of xmat and ymat does not match')
+END IF
+
+CALL create_outputfile(obj)
+IF (PRESENT(logScale)) THEN
+  obj%plotscale = logScale
+END IF
+! Write plot title, axis labels and other annotations
+CALL processcmd(obj)
+
+obj%plotscale = defaultPlotScale
+
+number_of_curves = SIZE(ymat, dim=2)
+ALLOCATE (pltstring(number_of_curves), stat=ierr)
+IF (ierr /= 0) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Failed to allocate memory for pltstring')
+END IF
+
+pltstring(1:number_of_curves) = ''
+
+IF (PRESENT(lspec)) THEN
+
+  CALL splitstring2array(lspec, lst, ';')
+  ns = SIZE(lst, dim=1)
+
+  IF (ns == number_of_curves) THEN
+    ! there is a linespec for each curve
+    pltstring = lst
+  ELSEIF (ns < number_of_curves) THEN
+    ! not enough linespec
+    DO ii = 1, ns
+      pltstring(ii) = lst(ii)
+    END DO
+  ELSE ! ns > number_of curves
+    CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+      & '[WARNING]:: wrong number of linespec,'// &
+      'semicolon ";" acts as delimiter')
+  END IF
+END IF
+
+IF (PRESENT(lspec)) THEN
+
+  CALL process_linespec(1, pltstring(1), lst(1))
+  ns = SIZE(lst)
+  ! GnuPlot_ will cylce through line specification, if number of specification passed
+  ! is less than number of plots
+  DO ii = 1, number_of_curves
+    jj = MOD(ii - 1, ns) + 1
+    CALL process_linespec(ii, pltstring(ii), lst(jj))
+  END DO
+ELSE !No lspec is available
+  pltstring(1) = ' plot "-" notitle,'
+  pltstring(2:number_of_curves - 1) = '"-" notitle,'
+  pltstring(number_of_curves) = '"-" notitle'
+END IF
+
+DO ii = 1, number_of_curves - 1
+  CALL obj%writeScript(script=TRIM(pltstring(ii))//' \')
+END DO
+CALL obj%writeScript(script=TRIM(pltstring(number_of_curves)))
+
+DO jj = 1, number_of_curves
+  DO ii = 1, mx
+    WRITE (obj%file_unit, *) xmat(ii, jj), ymat(ii, jj)
+  END DO
+  WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
+END DO
+
+IF (.NOT. (obj%hasanimation)) THEN
+  CALL finalize_plot(obj)
+ELSE
+  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
+END IF
+
+IF (ALLOCATED(pltstring)) THEN
+  DEALLOCATE (pltstring)
+END IF
+
 END PROCEDURE obj_plot3
+
+!----------------------------------------------------------------------------
+!                                                                    plot4
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_plot4
+CHARACTER(*), PARAMETER :: myName = "obj_plot4"
+INTEGER :: np0, ii, alloc_err
+REAL(DFP), ALLOCATABLE :: x(:)
+REAL(DFP), ALLOCATABLE :: y(:)
+
+IF (PRESENT(np)) THEN
+  np0 = np
+ELSE
+  np0 = 50
+END IF
+
+ALLOCATE (x(1:np0), y(1:np0), stat=alloc_err)
+
+IF (alloc_err /= 0) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Failed to allocate memory for x and y')
+END IF
+!Create set of xy data
+x = Linspace(xrange(1), xrange(2), np0)
+y = [(func(x(ii)), ii=1, np0)]
+
+CALL obj%plot(x, y, logScale=logScale)
+
+! cleanup memory
+IF (ALLOCATED(x)) DEALLOCATE (x)
+IF (ALLOCATED(y)) DEALLOCATE (y)
+
+END PROCEDURE obj_plot4
 
 !----------------------------------------------------------------------------
 !                                                              finalize_plot
