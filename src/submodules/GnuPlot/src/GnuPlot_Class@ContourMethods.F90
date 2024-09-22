@@ -98,7 +98,7 @@ WRITE (obj%file_unit, '(a)') 'set view map'
 
 !write the color palette into gnuplot script file
 IF (PRESENT(palette)) THEN
-  WRITE (obj%file_unit, '(a)') obj%getColorPalettes(palette)
+  WRITE (obj%file_unit, '(a)') color_palettes(palette)
 
   IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
     WRITE (obj%file_unit, '(a)') obj%pm3dOpts_stmt
@@ -110,7 +110,7 @@ END IF
 WRITE (obj%file_unit, '(a)') ! empty line
 
 IF (PRESENT(lspec)) THEN
-  IF (obj%checkTitle(lspec)) THEN
+  IF (hasTitle(lspec)) THEN
     pltstring = 'splot '//datablock//' '//TRIM(lspec)
   ELSE
     pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)

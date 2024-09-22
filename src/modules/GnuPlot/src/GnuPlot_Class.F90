@@ -27,6 +27,9 @@ CHARACTER(*), PARAMETER :: gnuplot_term_type = 'wxt'
 CHARACTER(*), PARAMETER :: gnuplot_term_font = 'Times New Roman,10'
 CHARACTER(*), PARAMETER :: gnuplot_term_size = '640,480'
 CHARACTER(*), PARAMETER :: gnuplot_output_filename = 'gnuplot_temp_script.plt'
+CHARACTER(*), PARAMETER :: defaultFmtGnuplot = '(a)'
+CHARACTER(*), PARAMETER :: commentLineGnuplot = &
+                           '# -------------------------------------------'
 
 !----------------------------------------------------------------------------
 !
@@ -147,8 +150,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: create_outputfile
   PROCEDURE, PUBLIC, PASS(obj) :: processcmd
   PROCEDURE, PUBLIC, PASS(obj) :: finalize_plot
-  PROCEDURE, PUBLIC, PASS(obj) :: getColorPalettes
-  PROCEDURE, PUBLIC, PASS(obj) :: checkTitle
   !> 0.22
   PROCEDURE, PASS(obj) :: set_label
   ! public procedures
@@ -181,10 +182,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: old_contour => cplot
   ! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: fplot => function_plot
-  PROCEDURE, PUBLIC, PASS(obj) :: add_script => addscript
-  PROCEDURE, PUBLIC, PASS(obj) :: run_script => runscript
+  PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
+  PROCEDURE, PUBLIC, PASS(obj) :: runScript => obj_runScript
   PROCEDURE, PUBLIC, PASS(obj) :: animation_start => sub_animation_start
   PROCEDURE, PUBLIC, PASS(obj) :: animation_show => sub_animation_show
+
+  PROCEDURE, PUBLIC, PASS(obj) :: writeScript => obj_writeScript
 
 END TYPE GnuPlot_
 
@@ -898,8 +901,94 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       preset_gnuplot_config
 !----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  preset gnuplot config
+
+INTERFACE
+  MODULE SUBROUTINE preset_gnuplot_config(obj)
+    CLASS(GnuPlot_) :: obj
+  END SUBROUTINE preset_gnuplot_config
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         writeScript
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  write gnuplot script to file
+
+INTERFACE
+  MODULE SUBROUTINE obj_writeScript(obj, script, fmt)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: script
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fmt
+  END SUBROUTINE obj_writeScript
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             color_palettes
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  get color palettes hex code
+!...............................................................................
+! color_palettes create color palette as a
+! string to be written into gnuplot script file
+! the palettes credit goes to: Anna Schnider (https://github.com/aschn) and
+! Hagen Wierstorf (https://github.com/hagenw)
+!...............................................................................
+
+INTERFACE
+  MODULE FUNCTION color_palettes(paletteName) RESULT(paletteScript)
+    CHARACTER(*), INTENT(in) :: paletteName
+    CHARACTER(:), ALLOCATABLE :: paletteScript
+  END FUNCTION color_palettes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        addScript
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary: create or eddit raw gnuplot script
+! stored in obj%txtscript
+
+!..............................................................................
+! addscript: accepts all type of gnuplot command as a string and store it
+! in global txtscript to be later sent to gnuplot
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_addScript(obj, scripts)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CHARACTER(*), INTENT(in) :: scripts
+  END SUBROUTINE obj_addScript
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 runScript
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  run raw gnuplot scripts stored in obj%txtscript
+!..............................................................................
+! runscript sends the the script string (txtstring) into a script
+! file to be run by gnuplot
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_runScript(obj)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
+  END SUBROUTINE obj_runScript
+END INTERFACE
 
 CONTAINS
 
@@ -1906,213 +1995,5 @@ SUBROUTINE sub_animation_show(obj)
   CALL finalize_plot(obj)
 
 END SUBROUTINE sub_animation_show
-
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    !!> Section Four: Gnuplot direct scriptting
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-SUBROUTINE addscript(obj, strcmd)
-  !..............................................................................
-  ! addscript: accepts all type of gnuplot command as a string and store it
-  ! in global txtscript to be later sent to gnuplot
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-  CHARACTER(*), INTENT(in) :: strcmd
-
-  IF (.NOT. ALLOCATED(obj%txtscript)) obj%txtscript = ''
-  IF (LEN_TRIM(obj%txtscript) == 0) THEN
-    obj%txtscript = '' ! initialize string
-  END IF
-  IF (LEN_TRIM(strcmd) > 0) THEN
-    obj%txtscript = obj%txtscript//splitstr(strcmd)
-  END IF
-
-END SUBROUTINE addscript
-
-SUBROUTINE runscript(obj)
-  !..............................................................................
-  ! runscript sends the the script string (txtstring) into a script
-  ! file to be run by gnuplot
-  !..............................................................................
-
-  CLASS(GnuPlot_) :: obj
-
-  !REV 0.18: a dedicated subroutine is used to create the output file
-  CALL create_outputfile(obj)
-
-  !write the script
-  CALL processcmd(obj)
-  WRITE (unit=obj%file_unit, fmt='(a)') obj%txtscript
-
-  ! close the file and call gnuplot
-  CALL finalize_plot(obj)
-
-END SUBROUTINE runscript
-
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    !!> Section Five: gnuplot command processing and data writing to script file
-    !!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-FUNCTION getColorPalettes(obj, palette_name) RESULT(chars)
-  CLASS(GnuPlot_), INTENT(inout) :: obj
-  CHARACTER(*), INTENT(in) :: palette_name
-  CHARACTER(:), ALLOCATABLE :: chars
-
-  chars = color_palettes(palette_name)
-END FUNCTION getColorPalettes
-
-FUNCTION color_palettes(palette_name) RESULT(str)
-  !...............................................................................
-  ! color_palettes create color palette as a
-  ! string to be written into gnuplot script file
-  ! the palettes credit goes to: Anna Schnider (https://github.com/aschn) and
-  ! Hagen Wierstorf (https://github.com/hagenw)
-  !...............................................................................
-  CHARACTER(*), INTENT(in) :: palette_name
-  CHARACTER(:), ALLOCATABLE :: str
-
-  ! local variables
-  CHARACTER(1) :: strnumber
-  CHARACTER(11) :: strblank
-  INTEGER :: j
-  INTEGER :: maxcolors
-
-  ! define the color palettes
-  CHARACTER(:), ALLOCATABLE :: pltname
-  CHARACTER(7) :: palette(10) ! palettes with maximum 9 colors
-
-  maxcolors = 8 ! default number of discrete colors
-  palette = ''
-  SELECT CASE (LowerCase(TRIM(ADJUSTL(palette_name))))
-  CASE ('set1')
-    pltname = 'set1'
-    palette(1:maxcolors) = [ &
-                           "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", &
-                           "#FF7F00", "#FFFF33", "#A65628", "#F781BF"]
-  CASE ('set2')
-    pltname = 'set2'
-    palette(1:maxcolors) = [ &
-                           "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", &
-                           "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"]
-  CASE ('set3')
-    pltname = 'set3'
-    palette(1:maxcolors) = [ &
-                           "#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", &
-                           "#80B1D3", "#FDB462", "#B3DE69", "#FCCDE5"]
-  CASE ('palette1')
-    pltname = 'palette1'
-    palette(1:maxcolors) = [ &
-                           "#FBB4AE", "#B3CDE3", "#CCEBC5", "#DECBE4", &
-                           "#FED9A6", "#FFFFCC", "#E5D8BD", "#FDDAEC"]
-  CASE ('palette2')
-    pltname = 'palette2'
-    palette(1:maxcolors) = [ &
-                           "#B3E2CD", "#FDCDAC", "#CDB5E8", "#F4CAE4", &
-                           "#D6F5C9", "#FFF2AE", "#F1E2CC", "#CCCCCC"]
-  CASE ('paired')
-    pltname = 'paired'
-    palette(1:maxcolors) = [ &
-                           "#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", &
-                           "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00"]
-  CASE ('dark2')
-    pltname = 'dark2'
-    palette(1:maxcolors) = [ &
-                           "#1B9E77", "#D95F02", "#7570B3", "#E7298A", &
-                           "#66A61E", "#E6AB02", "#A6761D", "#666666"]
-  CASE ('accent')
-    pltname = 'accent'
-    palette(1:maxcolors) = [ &
-                           "#7FC97F", "#BEAED4", "#FDC086", "#FFFF99", &
-                           "#386CB0", "#F0027F", "#BF5B17", "#666666"]
-  CASE ('jet')
-    ! Matlab jet palette
-    maxcolors = 9
-    pltname = 'jet'
-    palette(1:maxcolors) = [ &
-                           '#000090', '#000fff', '#0090ff', '#0fffee', &
-                        '#90ff70', '#ffee00', '#ff7000', '#ee0000', '#7f0000']
-
-  CASE ('vik')
-    maxcolors = 10
-    pltname = 'vik'
-    palette = ["#001261", "#033E7D", "#1E6F9D", "#71A8C4", "#C9DDE7", &
-               "#EACEBD", "#D39774", "#BE6533", "#8B2706", "#590008"]
-  CASE default
-    PRINT *, md_name//": color_palettes: wrong palette name"
-    PRINT *, 'gnuplot default palette will be used!'
-    str = ' ' ! empty palette is returned!
-    RETURN
-  END SELECT
-
-  ! generate the gnuplot palette as a single multiline string
-  str = '# Define the '//pltname//' pallete'//NEW_LINE(' ')
-  str = str//'set palette defined ( \'//NEW_LINE(' ')
-  strblank = '           ' ! pad certain number of paces
-  DO j = 1, maxcolors - 1
-    WRITE (unit=strnumber, fmt='(I1)') j - 1
-    str = str//strblank//strnumber//' "'//palette(j)//'",\'//NEW_LINE(' ')
-  END DO
-
-  j = maxcolors - 1
-  WRITE (strnumber, fmt='(I1)') j
-  str = str//strblank//strnumber//' "'//palette(j)//'" )'//NEW_LINE(' ')
-
-END FUNCTION color_palettes
-
-SUBROUTINE preset_gnuplot_config(obj)
-  !..............................................................................
-  ! To write the preset configuration for gnuplot (ogpf customized settings)
-  !..............................................................................
-  CLASS(GnuPlot_) :: obj
-
-  WRITE (obj%file_unit, fmt='(a)')
-  WRITE (obj%file_unit, fmt='(a)') '# ogpf extra configuration'
-        write(obj%file_unit, fmt='(a)') '# -------------------------------------------'
-
-  ! color definition
-  WRITE (obj%file_unit, fmt='(a)') '# color definitions'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 1 lc rgb "#800000" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 2 lc rgb "#ff0000" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 3 lc rgb "#ff4500" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 4 lc rgb "#ffa500" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 5 lc rgb "#006400" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 6 lc rgb "#0000ff" lt 1 lw 2'
-WRITE (obj%file_unit, fmt='(a)') 'set style line 7 lc rgb "#9400d3" lt 1 lw 2'
-  WRITE (obj%file_unit, fmt='(a)')
-  ! axes setting
-  WRITE (obj%file_unit, fmt='(a)') '# Axes'
-  WRITE (obj%file_unit, fmt='(a)') 'set border linewidth 1.15'
-  WRITE (obj%file_unit, fmt='(a)') 'set tics nomirror'
-  WRITE (obj%file_unit, fmt='(a)')
-
-  WRITE (obj%file_unit, fmt='(a)') '# grid'
-  WRITE (obj%file_unit, fmt='(a)') '# Add light grid to plot'
-        write(obj%file_unit, fmt='(a)') 'set style line 102 lc rgb "#d6d7d9" lt 0 lw 1'
-  WRITE (obj%file_unit, fmt='(a)') 'set grid back ls 102'
-  WRITE (obj%file_unit, fmt='(a)')
-  ! set the plot style
-  WRITE (obj%file_unit, fmt='(a)') '# plot style'
-  WRITE (obj%file_unit, fmt='(a)') 'set style data linespoints'
-  WRITE (obj%file_unit, fmt='(a)')
-
-        write(obj%file_unit, fmt='(a)') '# -------------------------------------------'
-  WRITE (obj%file_unit, fmt='(a)') ''
-
-END SUBROUTINE preset_gnuplot_config
-
-! TODO: improve by using StringUtility
-FUNCTION checkTitle(obj, chars) RESULT(isOk)
-  CLASS(GnuPlot_), INTENT(in) :: obj
-  CHARACTER(*), INTENT(in) :: chars
-  LOGICAL :: isOk
-
-  isOk = hasTitle(chars)
-END FUNCTION checkTitle
-
-! TODO: replace these utility with String_Class methods
-!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!> Section Seven: String utility Routines
-!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 END MODULE GnuPlot_Class
