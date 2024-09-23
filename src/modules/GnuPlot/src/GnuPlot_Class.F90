@@ -478,13 +478,14 @@ END INTERFACE
 ! summary:  Contour plot with gnuplot
 
 INTERFACE
-  MODULE SUBROUTINE obj_contour1(obj, x, y, z, lspec, palette, fill)
+  MODULE SUBROUTINE obj_contour1(obj, x, y, z, lspec, &
+                                 paletteName, fill)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(in) :: x(:, :)
     REAL(DFP), INTENT(in), OPTIONAL :: y(:, :)
     REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
     CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: palette
+    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
     LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
   END SUBROUTINE obj_contour1
 END INTERFACE
@@ -498,13 +499,14 @@ END INTERFACE
 ! summary:  Contour plot with gnuplot
 
 INTERFACE
-  MODULE SUBROUTINE obj_contour2(obj, x, y, z, lspec, palette, fill)
+  MODULE SUBROUTINE obj_contour2(obj, x, y, z, lspec, &
+                                 paletteName, fill)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(in) :: x(:)
     REAL(DFP), INTENT(in) :: y(:)
     REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
     CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: palette
+    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
     LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
   END SUBROUTINE obj_contour2
 END INTERFACE

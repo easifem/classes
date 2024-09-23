@@ -97,8 +97,8 @@ WRITE (obj%file_unit, '(a)') 'unset surface'
 WRITE (obj%file_unit, '(a)') 'set view map'
 
 !write the color palette into gnuplot script file
-IF (PRESENT(palette)) THEN
-  WRITE (obj%file_unit, '(a)') color_palettes(palette)
+IF (PRESENT(paletteName)) THEN
+  WRITE (obj%file_unit, '(a)') color_palettes(paletteName)
 
   IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
     WRITE (obj%file_unit, '(a)') obj%pm3dOpts_stmt
@@ -150,8 +150,8 @@ DO jj = 1, ysize
   y_arr(:, jj) = y(jj)
 END DO
 
-CALL obj%contour(x_arr, y=y_arr, z=z, lspec=lspec, palette=palette, &
-                 fill=fill)
+CALL obj%contour(x_arr, y=y_arr, z=z, lspec=lspec, &
+                 paletteName=paletteName, fill=fill)
 
 DEALLOCATE (x_arr, y_arr)
 

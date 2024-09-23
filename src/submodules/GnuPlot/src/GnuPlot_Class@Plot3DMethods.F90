@@ -84,8 +84,9 @@ END IF
 
 IF (PRESENT(lspec)) THEN
   pltstring = pltstring//TRIM(lspec)
+ELSE
+  pltstring = pltstring//" with lines"
 END IF
-pltstring = pltstring//" with lines"
 
 CALL obj%writeScript(script=TRIM(pltstring))
 
