@@ -1373,7 +1373,8 @@ DO ielSpace = 1, obj%totalSpaceElements
 
   isNonZero = .NOT. obj%algoParam%rhs_a1_zero(2)
   IF (isNonZero) tmp = tmp + dts * a0 * obj%algoParam%rhs_a1(2)
-  obj%rhse(1:nns) = obj%rhse(1:nns) + MATMUL(obj%cs(1:nrow, 1:ncol), tmp(1:ncol))
+  obj%rhse(1:nns) = obj%rhse(1:nns) + &
+                    dt * MATMUL(obj%cs(1:nrow, 1:ncol), tmp(1:ncol))
 
   ! stiff contribution
   tmp = 0.0_DFP
@@ -1386,7 +1387,8 @@ DO ielSpace = 1, obj%totalSpaceElements
 
   isNonZero = .NOT. obj%algoParam%rhs_a1_zero(3)
   IF (isNonZero) tmp = tmp + dts * a0 * obj%algoParam%rhs_a1(3)
-  obj%rhse(1:nns) = obj%rhse(1:nns) + MATMUL(obj%ks(1:nrow, 1:ncol), tmp(1:ncol))
+  obj%rhse(1:nns) = obj%rhse(1:nns) + &
+                    dts * MATMUL(obj%ks(1:nrow, 1:ncol), tmp(1:ncol))
 
   CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:nns), &
                       scale=one, dofobj=obj%dof, nodenum=con(1:nns), &
