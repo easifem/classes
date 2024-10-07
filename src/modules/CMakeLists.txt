@@ -415,8 +415,21 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 # include(${CMAKE_CURRENT_LIST_DIR}/easifemKernels/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
+# time integration algorithms
+# ----------------------------------------------------------------------------
+
+# semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
 # 1D Solvers
 # ----------------------------------------------------------------------------
 
 # ElastoDynamicsSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSTFEM/CMakeLists.txt)
+
+# ElastoDynamicsSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSDFEM/CMakeLists.txt)
+
+# HelmholtzFEM
+include(${CMAKE_CURRENT_LIST_DIR}/Helmholtz1DFEM/CMakeLists.txt)
