@@ -15,35 +15,46 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) SurfaceMethods
-USE BaseMethod
-USE EasyPlplot
+SUBMODULE(GnuPlot_Class) AnimationMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              animationStart
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_animationStart
+CHARACTER(*), PARAMETER :: myName = "obj_animationStart"
+IF (obj%hasmultiplot) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ERROR] :: animation is not supported in multiplot mode')
+END IF
+
+IF (PRESENT(pauseSeconds)) THEN
+  obj%pause_seconds = pauseSeconds
+ELSE
+  obj%pause_seconds = defaultPause
+END IF
+
+obj%frame_number = 0
+
+CALL create_outputfile(obj)
+obj%hasfileopen = .TRUE.
+obj%hasanimation = .TRUE.
+
+END PROCEDURE obj_animationStart
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_Surface
-  CALL Surface( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & N=N, &
-    & lineStyle=lineType )
-END PROCEDURE plot_Surface
+MODULE PROCEDURE obj_animationShow
+CHARACTER(*), PARAMETER :: myName = "obj_animationShow"
+obj%frame_number = 0
+obj%hasanimation = .FALSE.
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+CALL finalize_plot(obj)
 
-MODULE PROCEDURE plot_Wireframe
-  CALL Wireframe( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & lineColor=lineColor )
-END PROCEDURE plot_Wireframe
+END PROCEDURE obj_animationShow
 
-END SUBMODULE SurfaceMethods
+END SUBMODULE AnimationMethods

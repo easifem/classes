@@ -441,4 +441,136 @@ strarray(n + 1) = ADJUSTL(strtmp(m:))
 
 END PROCEDURE splitstring2array
 
+!----------------------------------------------------------------------------
+!                                                            preset_config
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE preset_gnuplot_config
+!..............................................................................
+! To write the preset configuration for gnuplot (ogpf customized settings)
+!..............................................................................
+
+CALL obj%writeScript()
+CALL obj%writeScript(script='# ogpf extra configuration')
+CALL obj%writeScript(script=commentLineGnuplot)
+
+! color definition
+CALL obj%writeScript(script='# color definitions')
+CALL obj%writeScript(script='set style line 1 lc rgb "#800000" lt 1 lw 2')
+CALL obj%writeScript(script='set style line 2 lc rgb "#ff0000" lt 1 lw 2')
+
+CALL obj%writeScript(script='set style line 3 lc rgb "#ff4500" lt 1 lw 2')
+CALL obj%writeScript(script='set style line 4 lc rgb "#ffa500" lt 1 lw 2')
+CALL obj%writeScript(script='set style line 5 lc rgb "#006400" lt 1 lw 2')
+CALL obj%writeScript(script='set style line 6 lc rgb "#0000ff" lt 1 lw 2')
+CALL obj%writeScript(script='set style line 7 lc rgb "#9400d3" lt 1 lw 2')
+CALL obj%writeScript()
+! axes setting
+CALL obj%writeScript(script='# Axes')
+CALL obj%writeScript(script='set border linewidth 1.15')
+CALL obj%writeScript(script='set tics nomirror')
+CALL obj%writeScript()
+
+CALL obj%writeScript(script='# grid')
+CALL obj%writeScript(script='# Add light grid to plot')
+CALL obj%writeScript(script='set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
+CALL obj%writeScript(script='set grid back ls 102')
+CALL obj%writeScript()
+! set the plot style
+CALL obj%writeScript(script='# plot style')
+CALL obj%writeScript(script='set style data linespoints')
+CALL obj%writeScript()
+
+CALL obj%writeScript(script=commentLineGnuplot)
+CALL obj%writeScript()
+
+END PROCEDURE preset_gnuplot_config
+
+!----------------------------------------------------------------------------
+!                                                            writeScript
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_writeScript
+CHARACTER(:), ALLOCATABLE :: fmt0
+
+IF (PRESENT(fmt)) THEN
+  fmt0 = fmt
+ELSE
+  fmt0 = defaultFmtGnuplot
+END IF
+
+IF (PRESENT(script)) THEN
+  WRITE (obj%file_unit, fmt0) script
+ELSE
+  WRITE (obj%file_unit, fmt0)
+END IF
+
+END PROCEDURE obj_writeScript
+
+!----------------------------------------------------------------------------
+!                                                            color_palettes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE color_palettes
+CHARACTER(1) :: strnumber
+CHARACTER(11) :: strblank
+INTEGER :: j
+INTEGER :: maxcolors
+
+CHARACTER(:), ALLOCATABLE :: pltname
+CHARACTER(7) :: palette(10) ! palettes with maximum 9 colors
+
+maxcolors = 8 ! default number of discrete colors
+palette = ''
+
+#include "./include/colorPalettes.F90"
+
+! generate the gnuplot palette as a single multiline string
+paletteScript = '# Define the '//pltname//' pallete'//NEW_LINE(' ')
+paletteScript = paletteScript//'set palette defined ( \'//NEW_LINE(' ')
+strblank = '           ' ! pad certain number of paces
+DO j = 1, maxcolors - 1
+  WRITE (unit=strnumber, fmt='(I1)') j - 1
+  paletteScript = paletteScript//strblank//strnumber// &
+                  ' "'//palette(j)//'",\'//NEW_LINE(' ')
+END DO
+
+j = maxcolors - 1
+WRITE (strnumber, fmt='(I1)') j
+paletteScript = paletteScript//strblank//strnumber// &
+                ' "'//palette(j)//'" )'//NEW_LINE(' ')
+
+END PROCEDURE color_palettes
+
+!----------------------------------------------------------------------------
+!                                                                 addscript
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_addscript
+
+IF (.NOT. ALLOCATED(obj%txtscript)) obj%txtscript = ''
+IF (LEN_TRIM(obj%txtscript) == 0) THEN
+  obj%txtscript = '' ! initialize string
+END IF
+IF (LEN_TRIM(scripts) > 0) THEN
+  obj%txtscript = obj%txtscript//splitstr(scripts)
+END IF
+
+END PROCEDURE obj_addscript
+
+!----------------------------------------------------------------------------
+!                                                                 runscript
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_runscript
+
+CALL create_outputfile(obj)
+
+CALL processcmd(obj)
+CALL obj%writeScript(script=obj%txtscript)
+
+CALL finalize_plot(obj)
+
+END PROCEDURE obj_runscript
+
 END SUBMODULE UtilityMethods

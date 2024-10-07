@@ -15,38 +15,37 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PLPlot_Class) FillMethods
-USE BaseMethod
-USE EasyPlplot
+SUBMODULE(GnuPlot_Class) MultiPlotMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                                multiplot
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE plot_FillBetween
-  CALL FillBetween( &
-    & x=x, &
-    & y1=y1, &
-    & y0=y0, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineWidth=lineWidth )
-END PROCEDURE plot_FillBetween
+MODULE PROCEDURE obj_multiplot
+CHARACTER(*), PARAMETER :: myName = "obj_multiplot"
+IF (obj%hasanimation) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ERROR] :: animation is not supported in multiplot mode')
+END IF
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+IF (rows > 0) THEN
+  obj%multiplot_rows = rows
+ELSE
 
-MODULE PROCEDURE plot_FillBetweenx
-  CALL FillBetweenx( &
-    & y=y, &
-    & x1=x1, &
-    & x0=x0, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineWidth=lineWidth )
-END PROCEDURE plot_FillBetweenx
+END IF
+IF (cols > 0) THEN
+  obj%multiplot_cols = cols
+ELSE
 
-END SUBMODULE FillMethods
+END IF
+
+obj%hasmultiplot = .TRUE.
+obj%multiplot_total_plots = 0
+
+CALL create_outputfile(obj)
+
+END PROCEDURE obj_multiplot
+
+END SUBMODULE MultiPlotMethods
