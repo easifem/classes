@@ -232,7 +232,9 @@ IF (PRESENT(lspec)) THEN
 ELSE !No lspec is available
   pltstring(1) = ' plot "-" notitle,'
   pltstring(2:number_of_curves - 1) = '"-" notitle,'
-  pltstring(number_of_curves) = '"-" notitle'
+  IF (number_of_curves .GT. 1) THEN
+    pltstring(number_of_curves) = '"-" notitle'
+  END IF
 END IF
 
 ! Write plot command and line styles and legend if any
@@ -337,7 +339,9 @@ IF (PRESENT(lspec)) THEN
 ELSE !No lspec is available
   pltstring(1) = ' plot "-" notitle,'
   pltstring(2:number_of_curves - 1) = '"-" notitle,'
-  pltstring(number_of_curves) = '"-" notitle'
+  IF (number_of_curves .GT. 1) THEN
+    pltstring(number_of_curves) = '"-" notitle'
+  END IF
 END IF
 
 DO ii = 1, number_of_curves - 1
