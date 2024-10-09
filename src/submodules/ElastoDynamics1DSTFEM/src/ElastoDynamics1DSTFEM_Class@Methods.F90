@@ -58,7 +58,8 @@ USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Allocate => ALLOCATE, &
                                 HierarchicalElemShapeData, &
                                 Elemsd_Set => Set, &
-                                OrthogonalElemShapeData
+                                OrthogonalElemShapeData, &
+                                getInterpolation
 
 USE SwapUtility, ONLY: SWAP
 
@@ -87,6 +88,7 @@ USE RealVector_Method, ONLY: RealVector_Initiate => Initiate, &
                              RealVector_Scale => SCAL
 
 USE LagrangePolynomialUtility, ONLY: InterpolationPoint_
+USE InputUtility
 
 IMPLICIT NONE
 
@@ -271,6 +273,19 @@ CALL Display(isok, "initialDisp ASSOCIATED: ", unitno=unitno)
 
 isok = ASSOCIATED(obj%initialVel)
 CALL Display(isok, "initialVel ASSOCIATED: ", unitno=unitno)
+
+CALL Display(obj%saveErrorNorm, "saveErrorNorm: ", unitno=unitno)
+CALL Display(obj%plotWithResult, "plotWithResult: ", unitno=unitno)
+CALL Display(obj%plotErrorNorm, "plotErrorNorm: ", unitno=unitno)
+
+isok = ASSOCIATED(obj%refDisp)
+CALL Display(isok, "refDisp ASSOCIATED: ", unitno=unitno)
+
+isok = ASSOCIATED(obj%refVel)
+CALL Display(isok, "refVel ASSOCIATED: ", unitno=unitno)
+
+isok = ASSOCIATED(obj%refAcc)
+CALL Display(isok, "refAcc ASSOCIATED: ", unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -775,11 +790,90 @@ IF (isok) THEN
 END IF
 node => NULL()
 
+CALL ReferenceImportFromToml(obj, table)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                   ReferenceImportFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReferenceImportFromToml(obj, table)
+  CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  CHARACTER(*), PARAMETER :: myName = "ReferenceImportFromToml()"
+  TYPE(toml_table), POINTER :: node => NULL()
+  INTEGER(I4B) :: stat, origin
+  TYPE(String) :: astr
+  CHARACTER(:), ALLOCATABLE :: achar
+  LOGICAL(LGT) :: isOK
+
+  astr = "referenceDisp"
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
+  isOK = ASSOCIATED(node)
+  IF (isOK) THEN
+    ALLOCATE (obj%refDisp)
+    CALL obj%refDisp%ImportFromToml(table=node)
+    CALL toml_get(node, "errorNorm", obj%saveErrorNorm(1), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL GetValue(table=node, key="normType", VALUE=astr, &
+                  default_value="L2SP", stat=stat, &
+                  origin=origin, isfound=isOK)
+    obj%errorType(1) = UpperCase(astr%slice(1, 4))
+    CALL toml_get(node, "plotWithResult", obj%plotWithResult(1), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL toml_get(node, "plotErrorNorm", obj%plotErrorNorm(1), .FALSE., &
+                  stat=stat, origin=origin)
+  END IF
+  node => NULL()
+
+  astr = "referenceVel"
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
+  isOK = ASSOCIATED(node)
+  IF (isOK) THEN
+    ALLOCATE (obj%refVel)
+    CALL obj%refDisp%ImportFromToml(table=node)
+    CALL toml_get(node, "errorNorm", obj%saveErrorNorm(2), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL GetValue(table=node, key="normType", VALUE=astr, &
+                  default_value="L2SP", stat=stat, &
+                  origin=origin, isfound=isOK)
+    obj%errorType(2) = UpperCase(astr%slice(1, 4))
+    CALL toml_get(node, "plotWithResult", obj%plotWithResult(2), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL toml_get(node, "plotErrorNorm", obj%plotErrorNorm(2), .FALSE., &
+                  stat=stat, origin=origin)
+  END IF
+  node => NULL()
+
+  astr = "referenceAcc"
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
+  isOK = ASSOCIATED(node)
+  IF (isOK) THEN
+    ALLOCATE (obj%refAcc)
+    CALL obj%refDisp%ImportFromToml(table=node)
+    CALL toml_get(node, "errorNorm", obj%saveErrorNorm(3), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL GetValue(table=node, key="normType", VALUE=astr, &
+                  default_value="L2SP", stat=stat, &
+                  origin=origin, isfound=isOK)
+    obj%errorType(3) = UpperCase(astr%slice(1, 4))
+    CALL toml_get(node, "plotWithResult", obj%plotWithResult(3), .FALSE., &
+                  stat=stat, origin=origin)
+    CALL toml_get(node, "plotErrorNorm", obj%plotErrorNorm(3), .FALSE., &
+                  stat=stat, origin=origin)
+  END IF
+  node => NULL()
+
+END SUBROUTINE ReferenceImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                           ImportFromToml
@@ -858,12 +952,57 @@ CALL RealVector_Initiate(obj%u0, tnodes)
 CALL RealVector_Initiate(obj%a0, tnodes)
 CALL RealVector_Initiate(obj%v0, tnodes)
 
+CALL SetErrorNormVector(obj, tnodes)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
 END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!                                                          setErrorNormVector
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetErrorNormVector(obj, tnodes)
+  CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: tnodes
+
+  IF (obj%saveErrorNorm(1)) THEN
+    CALL RealVector_Initiate(obj%um1, tnodes)
+    SELECT CASE (obj%errorType(1)%slice(3, 4))
+    CASE ("SP", "ST")
+      ALLOCATE (obj%errorDisp(obj%totalTimeElements, 1))
+    CASE ("BO")
+      ALLOCATE (obj%errorDisp(obj%totalTimeElements, 2))
+    END SELECT
+    obj%errorDisp = 0.0_DFP
+  END IF
+
+  IF (obj%saveErrorNorm(2)) THEN
+    CALL RealVector_Initiate(obj%vm1, tnodes)
+    SELECT CASE (obj%errorType(2)%slice(3, 4))
+    CASE ("SP", "ST")
+      ALLOCATE (obj%errorVel(obj%totalTimeElements, 1))
+    CASE ("BO")
+      ALLOCATE (obj%errorVel(obj%totalTimeElements, 2))
+    END SELECT
+    obj%errorVel = 0.0_DFP
+  END IF
+
+  IF (obj%saveErrorNorm(3)) THEN
+    CALL RealVector_Initiate(obj%am1, tnodes)
+    SELECT CASE (obj%errorType(3)%slice(3, 4))
+    CASE ("SP", "ST")
+      ALLOCATE (obj%errorAcc(obj%totalTimeElements, 1))
+    CASE ("BO")
+      ALLOCATE (obj%errorAcc(obj%totalTimeElements, 2))
+    END SELECT
+    obj%errorAcc = 0.0_DFP
+  END IF
+
+END SUBROUTINE SetErrorNormVector
 
 !----------------------------------------------------------------------------
 !                                                             InitiateTanmat
@@ -2410,6 +2549,13 @@ obj%currentTimeStep = obj%currentTimeStep + 1
 
 nnt = obj%elemsdForTime%nns
 
+IF (obj%saveErrorNorm(1)) &
+  CALL RealVector_Set(obj=obj%um1, VALUE=obj%u0)
+IF (obj%saveErrorNorm(2)) &
+  CALL RealVector_Set(obj=obj%vm1, VALUE=obj%v0)
+! IF (obj%saveErrorNorm(3)) &
+!   CALL RealVector_Set(obj=obj%am1, VALUE=obj%a0)
+
 CALL RealVector_Set(obj=obj%v0, VALUE=zero)
 
 CALL RealVector_Scale(obj%u0, obj%at_right)
@@ -2432,6 +2578,191 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Update
 
 !----------------------------------------------------------------------------
+!                                                                 EvalError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_EvalErrorNorm
+CHARACTER(*), PARAMETER :: myName = "obj_EvalErrorNorm()"
+
+IF (obj%saveErrorNorm(1)) THEN
+  SELECT CASE (obj%errorType(1)%slice(3, 4))
+  CASE ("SP")
+    obj%errorDisp(timeElemNum, 1) = GetErrorNorm_L2SP(obj=obj, &
+                                       solution=obj%u0, reference=obj%refDisp)
+  CASE ("ST")
+    obj%errorDisp(timeElemNum, 1) = GetErrorNorm_L2ST(obj=obj, &
+                                    solution=obj%sol, reference=obj%refDisp, &
+                                                      tij=tij, disp=.TRUE.)
+  CASE ("BO")
+    obj%errorDisp(timeElemNum, 1) = GetErrorNorm_L2SP(obj=obj, &
+                                       solution=obj%u0, reference=obj%refDisp)
+    obj%errorDisp(timeElemNum, 2) = GetErrorNorm_L2ST(obj=obj, &
+                                    solution=obj%sol, reference=obj%refDisp, &
+                                                      tij=tij, disp=.TRUE.)
+  END SELECT
+END IF
+
+IF (obj%saveErrorNorm(2)) THEN
+  SELECT CASE (obj%errorType(2)%slice(3, 4))
+  CASE ("SP")
+    obj%errorVel(timeElemNum, 1) = GetErrorNorm_L2SP(obj=obj, &
+                                        solution=obj%v0, reference=obj%refVel)
+  CASE ("ST")
+    obj%errorVel(timeElemNum, 1) = GetErrorNorm_L2ST(obj=obj, &
+                                     solution=obj%sol, reference=obj%refVel, &
+                                                     tij=tij, disp=.FALSE.)
+  CASE ("BO")
+    obj%errorVel(timeElemNum, 1) = GetErrorNorm_L2SP(obj=obj, &
+                                        solution=obj%v0, reference=obj%refVel)
+    obj%errorVel(timeElemNum, 2) = GetErrorNorm_L2ST(obj=obj, &
+                                     solution=obj%sol, reference=obj%refVel, &
+                                                     tij=tij, disp=.FALSE.)
+  END SELECT
+END IF
+
+IF (obj%saveErrorNorm(3)) THEN
+  ! cal error norm for acceleration field
+END IF
+
+END PROCEDURE obj_EvalErrorNorm
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+FUNCTION GetErrorNorm_L2SP(obj, solution, reference) RESULT(anorm)
+  CLASS(ElastoDynamics1DSTFEM_), INTENT(inout) :: obj
+  TYPE(RealVector_), INTENT(INOUT) :: solution
+  CLASS(UserFunction_), INTENT(INOUT) :: reference
+  REAL(DFP) :: anorm
+  INTEGER(I4B) :: ielSpace, nns, iqs, tsizeQP
+  INTEGER(I4B) :: con(MAX_ORDER_SPACE + 1)
+  REAL(DFP) :: dx, xij(1, 2), args(2), weight
+  REAL(DFP) :: sol0(MAX_ORDER_SPACE + 1), refQP
+  REAL(DFP), ALLOCATABLE :: solQP(:)
+
+  args = obj%currentTime
+
+  anorm = 0.0_DFP
+
+  DO ielSpace = 1, obj%totalSpaceElements
+
+    CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
+
+    dx = obj%spaceElemLength(ielSpace)
+    xij(1, 2) = xij(1, 1) + dx
+
+    CALL obj%SetQuadForSpace(ielSpace)
+    tsizeQP = SIZE(obj%quadForSpace%points, 2)
+    CALL obj%SetElemsdForSpace(ielSpace, xij)
+
+    CALL RealVector_GetValue_(obj=solution, nodenum=con(1:nns), VALUE=sol0, &
+                              tsize=nns)
+    ALLOCATE (solQP(tsizeQP))
+    solQP = MATMUL(sol0(1:nns), obj%elemsdForSpace%N)
+
+    DO iqs = 1, tsizeQP
+      args(1) = obj%elemsdForSpace%coord(1, iqs)
+      CALL reference%Get(val=refQP, args=args)
+      weight = obj%elemsdForSpace%ws(iqs) * obj%elemsdForSpace%js(iqs)
+      anorm = anorm + (refQP - solQP(iqs))**2 * weight
+    END DO
+
+    xij(1, 1) = xij(1, 2)
+    DEALLOCATE (solQP)
+
+  END DO
+
+  anorm = SQRT(anorm)
+
+END FUNCTION GetErrorNorm_L2SP
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+FUNCTION GetErrorNorm_L2ST(obj, solution, reference, tij, disp) RESULT(anorm)
+  CLASS(ElastoDynamics1DSTFEM_), INTENT(inout) :: obj
+  TYPE(RealVector_), INTENT(INOUT) :: solution
+  CLASS(UserFunction_), INTENT(INOUT) :: reference
+  REAL(DFP), INTENT(IN) :: tij(1, 2)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: disp
+  REAL(DFP) :: anorm
+  INTEGER(I4B) :: ielSpace, nns, nnt, tqs, tqt, &
+                  iqs, iqt, ii
+  INTEGER(I4B) :: con(MAX_ORDER_SPACE + 1)
+  REAL(DFP) :: dx, dt, xij(1, 2), args(2), weight0, weight1
+  REAL(DFP) :: solST(MAX_ORDER_TIME + 1, MAX_ORDER_SPACE + 1), refQP, &
+               u0(MAX_ORDER_SPACE + 1)
+  REAL(DFP), ALLOCATABLE :: solQPST(:, :), u0QP(:)
+  LOGICAL(LGT) :: disp0
+
+  disp0 = Input(default=.FALSE., option=disp)
+  anorm = 0.0_DFP
+
+  nnt = obj%elemsdForTime%nns
+  tqt = obj%elemsdForTime%nips
+  dt = tij(1, 2) - tij(1, 1)
+
+  DO ielSpace = 1, obj%totalSpaceElements
+
+    CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
+
+    dx = obj%spaceElemLength(ielSpace)
+    xij(1, 2) = xij(1, 1) + dx
+
+    CALL obj%SetQuadForSpace(ielSpace)
+    CALL obj%SetElemsdForSpace(ielSpace, xij)
+    tqs = obj%elemsdForSpace%nips
+
+    DO ii = 1, nnt
+      CALL RealVector_GetValue_(obj=solution, dofobj=obj%dof, ivar=1_I4B, &
+                                idof=ii, nodenum=con(1:nns), &
+                                VALUE=solST(ii, 1:nns), tsize=nns)
+    END DO
+
+    ALLOCATE (solQPST(tqt, tqs))
+
+    IF (disp) THEN
+      CALL RealVector_GetValue_(obj=obj%um1, nodenum=con(1:nns), &
+                                VALUE=u0(1:nns), tsize=nns)
+      ALLOCATE (u0QP(tqs))
+      u0QP = MATMUL(u0(1:nns), obj%elemsdForSpace%N)
+      DO ii = 1, tqt
+        solQPST(ii, :) = u0QP
+      END DO
+
+      solQPST = solQPST + dt * MATMUL(TRANSPOSE(obj%bt(1:nnt, 1:tqt)), &
+                            MATMUL(solST(1:nnt, 1:nns), obj%elemsdForSpace%N))
+
+      DEALLOCATE (u0QP)
+    ELSE
+      solQPST = MATMUL(TRANSPOSE(obj%elemsdForTime%N), &
+                       MATMUL(solST(1:nnt, 1:nns), obj%elemsdForSpace%N))
+    END IF
+
+    DO iqs = 1, tqs
+      args(1) = obj%elemsdForSpace%coord(1, iqs)
+      weight0 = obj%elemsdForSpace%ws(iqs) * obj%elemsdForSpace%js(iqs)
+      DO iqt = 1, tqt
+        args(2) = obj%elemsdForTime%coord(1, iqt)
+        CALL reference%Get(val=refQP, args=args)
+        weight1 = weight0 * obj%elemsdForTime%ws(iqt) * &
+                  obj%elemsdForTime%js(iqt)
+        anorm = anorm + (refQP - solQPST(iqt, iqs))**2 * weight1
+      END DO
+    END DO
+
+    xij(1, 1) = xij(1, 2)
+    DEALLOCATE (solQPST)
+
+  END DO
+
+  anorm = SQRT(anorm)
+
+END FUNCTION GetErrorNorm_L2ST
+
+!----------------------------------------------------------------------------
 !                                                                 WriteData
 !----------------------------------------------------------------------------
 
@@ -2442,9 +2773,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_WriteData()"
 
 REAL(DFP) :: t, dx, xij(1, 2), u0(MAX_ORDER_SPACE + 1), &
              v0(MAX_ORDER_SPACE + 1), &
-             a0(MAX_ORDER_SPACE + 1), xlim(2), ylim(2)
+             a0(MAX_ORDER_SPACE + 1), xlim(2), ylim(2), &
+             args(2)
 
-REAL(DFP), ALLOCATABLE :: DATA(:, :), ips(:, :)
+REAL(DFP), ALLOCATABLE :: DATA(:, :), ips(:, :), refVal(:)
 
 INTEGER(I4B) :: ielSpace, con(MAX_ORDER_SPACE + 1), nns, &
                 totalNodes, ii, jj, n, inds(2)
@@ -2666,7 +2998,8 @@ CALL Display("Done writing files csvfiles")
 
 IF (obj%plotData(1)) THEN
   CALL obj%plot%filename(filename_disp//'.plt')
-CALL obj%plot%options('set terminal pngcairo; set output "'//filename_disp//'.png"')
+  CALL obj%plot%options('set terminal pngcairo; set output "' &
+                        //filename_disp//'.png"')
   xlim = obj%spaceDomain
   ylim(1) = MINVAL(DATA(1:totalNodes, 2))
   ylim(2) = MAXVAL(DATA(1:totalNodes, 2))
@@ -2679,7 +3012,20 @@ CALL obj%plot%options('set terminal pngcairo; set output "'//filename_disp//'.pn
   CALL obj%plot%ylim(ylim)
   CALL obj%plot%xlabel('x')
   CALL obj%plot%ylabel('u')
-  CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2))
+  IF (obj%plotWithResult(1)) THEN
+    ALLOCATE (refVal(totalNodes))
+    args(2) = obj%currentTime
+    DO ii = 1, totalNodes
+      args(1) = DATA(ii, 1)
+      CALL obj%refDisp%Get(val=refVal(ii), args=args)
+    END DO
+    CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2), &
+                       x2=DATA(1:totalNodes, 1), y2=refVal, &
+                       ls2='with lines dt "_"')
+    DEALLOCATE (refVal)
+  ELSE
+    CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 2))
+  END IF
   CALL obj%plot%reset()
 
 END IF
@@ -2700,7 +3046,20 @@ IF (obj%plotData(2)) THEN
   CALL obj%plot%ylim(ylim)
   CALL obj%plot%xlabel('x')
   CALL obj%plot%ylabel('v')
-  CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3))
+  IF (obj%plotWithResult(2)) THEN
+    ALLOCATE (refVal(totalNodes))
+    args(2) = obj%currentTime
+    DO ii = 1, totalNodes
+      args(1) = DATA(ii, 1)
+      CALL obj%refVel%Get(val=refVal(ii), args=args)
+    END DO
+    CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3), &
+                       x2=DATA(1:totalNodes, 1), y2=refVal, &
+                       ls2='with lines dt "_"')
+    DEALLOCATE (refVal)
+  ELSE
+    CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 3))
+  END IF
   CALL obj%plot%reset()
 END IF
 
@@ -2729,6 +3088,180 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_WriteData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteErrorData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WriteErrorData()"
+#endif
+
+REAL(DFP) :: xlim(2), ylim(2)
+
+REAL(DFP), ALLOCATABLE :: tmpVec(:), timeData(:)
+
+INTEGER(I4B) :: ii
+
+CHARACTER(:), ALLOCATABLE :: filename_disp, filename_vel, filename_acc, &
+                             aline
+LOGICAL(LGT) :: abool1, abool2
+
+abool1 = ANY(obj%saveErrorNorm)
+abool2 = ANY(obj%plotErrorNorm)
+
+IF (.NOT. abool1 .AND. .NOT. abool2) RETURN
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+filename_disp = obj%result_dir//CHAR_SLASH//obj%filename//'_error_disp'
+
+filename_vel = obj%result_dir//CHAR_SLASH//obj%filename//'_error_vel'
+
+ALLOCATE (timeData(obj%totalTimeElements))
+timeData(1) = obj%timeElemLength(1)
+DO ii = 2, obj%totalTimeElements
+  timeData(ii) = timeData(ii - 1) + obj%timeElemLength(ii)
+END DO
+! csv file
+! disp
+IF (obj%saveErrorNorm(1)) THEN
+#ifdef DEBUG_VER
+  CALL Display("Writing data to file: "//filename_disp//".csv")
+#endif
+  CALL obj%dispfile%Initiate(filename=filename_disp//".csv", unit=100, &
+                             status="REPLACE", action="WRITE", &
+                             comment="#", separator=",")
+  CALL obj%dispfile%OPEN()
+
+  aline = "#  last line is the sum of error norms"
+  CALL obj%dispfile%WRITE(aline)
+  aline = getHeader(obj%errorType(1))
+  CALL obj%dispfile%WRITE(aline)
+
+  ALLOCATE (tmpVec(SIZE(obj%errorDisp, 2) + 1))
+  tmpVec = 0.0_DFP
+  DO ii = 1, obj%totalTimeElements
+    tmpVec(1) = timeData(ii)
+    tmpVec(2:) = obj%errorDisp(ii, :)
+    CALL obj%dispfile%WRITE(tmpVec, advance="YES", &
+                            orient="ROW")
+  END DO
+  tmpVec(1) = -1.0_DFP
+  tmpVec(2:) = SUM(obj%errorDisp, dim=1)
+  CALL obj%dispfile%WRITE(tmpVec, advance="YES", &
+                          orient="ROW")
+  CALL obj%dispfile%DEALLOCATE()
+  DEALLOCATE (tmpVec)
+END IF
+
+! vel
+IF (obj%saveErrorNorm(2)) THEN
+#ifdef DEBUG_VER
+  CALL Display("Writing data to file: "//filename_vel//".csv")
+#endif
+  CALL obj%velfile%Initiate(filename=filename_vel//".csv", unit=100, &
+                            status="REPLACE", action="WRITE", &
+                            comment="#", separator=",")
+  CALL obj%velfile%OPEN()
+
+  aline = "#  last line is the sum of error norms"
+  CALL obj%dispfile%WRITE(aline)
+  aline = getHeader(obj%errorType(1))
+  CALL obj%velfile%WRITE(aline)
+
+  ALLOCATE (tmpVec(SIZE(obj%errorVel, 2) + 1))
+  tmpVec = 0.0_DFP
+  DO ii = 1, obj%totalTimeElements
+    tmpVec(1) = timeData(ii)
+    tmpVec(2:) = obj%errorVel(ii, :)
+    CALL obj%velfile%WRITE(tmpVec, advance="YES", &
+                           orient="ROW")
+  END DO
+  tmpVec(1) = -1.0_DFP
+  tmpVec(2:) = SUM(obj%errorVel, dim=1)
+  CALL obj%velfile%WRITE(tmpVec, advance="YES", &
+                         orient="ROW")
+  CALL obj%velfile%DEALLOCATE()
+  CALL obj%velfile%DEALLOCATE()
+  DEALLOCATE (tmpVec)
+END IF
+
+#ifdef DEBUG_VER
+CALL Display("Done writing files csvfiles")
+#endif
+
+! plotting
+IF (obj%plotErrorNorm(1)) THEN
+  CALL obj%plot%filename(filename_disp//'.plt')
+  CALL obj%plot%options('set terminal pngcairo; set output "' &
+                        //filename_disp//'.png"')
+  xlim = obj%timeDomain
+  ylim(1) = MINVAL(obj%errorDisp)
+  ylim(2) = MAXVAL(obj%errorDisp)
+  xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+  xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+  CALL obj%plot%xlim(xlim)
+  CALL obj%plot%ylim(ylim)
+  CALL obj%plot%xlabel('t')
+  CALL obj%plot%ylabel('Norm of Error')
+  CALL obj%plot%plot(xv=timeData, ymat=obj%errorDisp)
+  CALL obj%plot%reset()
+
+END IF
+
+IF (obj%plotErrorNorm(2)) THEN
+  CALL obj%plot%filename(filename_disp//'.plt')
+  CALL obj%plot%options('set terminal pngcairo; set output "' &
+                        //filename_disp//'.png"')
+  xlim = obj%timeDomain
+  ylim(1) = MINVAL(obj%errorVel)
+  ylim(2) = MAXVAL(obj%errorVel)
+  xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+  xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+  CALL obj%plot%xlim(xlim)
+  CALL obj%plot%ylim(ylim)
+  CALL obj%plot%xlabel('t')
+  CALL obj%plot%ylabel('Error Norm of Displacement')
+  CALL obj%plot%plot(xv=timeData, ymat=obj%errorVel)
+  CALL obj%plot%reset()
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+CONTAINS
+FUNCTION getHeader(typeName) RESULT(astr)
+  TYPE(String), INTENT(inout) :: typeName
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  SELECT CASE (typeName%slice(3, 4))
+  CASE ("SP")
+    astr = "t, L2SP"
+  CASE ("ST")
+    astr = "t, L2ST"
+  CASE ("BO")
+    astr = "t, L2SP, L2ST"
+  CASE default
+    STOP "no case found"
+  END SELECT
+
+END FUNCTION getHeader
+
+END PROCEDURE obj_WriteErrorData
 
 !----------------------------------------------------------------------------
 !                                                                    Solve
@@ -2763,10 +3296,13 @@ DO ielTime = 1, obj%totalTimeElements
   CALL obj%ApplyDirichletBC(timeElemNum=ielTime, tij=tij)
   CALL obj%Solve()
   CALL obj%Update()
+  CALL obj%EvalErrorNorm(timeElemNum=ielTime, tij=tij)
   IF (MOD(ielTime, obj%outputFreq) .EQ. 0_I4B) &
     CALL obj%WriteData()
   tij(1, 1) = tij(1, 2)
 END DO
+
+CALL obj%WriteErrorData()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

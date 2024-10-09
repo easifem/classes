@@ -41,7 +41,8 @@ USE ExceptionHandler_Class, ONLY: e
 
 USE String_Class, ONLY: String
 
-USE UserFunction_Class, ONLY: UserFunction_
+USE UserFunction_Class, ONLY: UserFunction_, &
+                              UserFunctionPointer_
 
 USE GnuPlot_Class, ONLY: GnuPlot_
 
@@ -287,6 +288,10 @@ TYPE :: ElastoDynamics1DSTFEM_
   !! (space-time dof)
   !! Size of u0, v0, a0 is same as the size of space dof
 
+  TYPE(RealVector_) :: um1, vm1, am1
+  !! u-1, v-1 and a-1. They are initiated only when the
+  !! error norm is true
+
   INTEGER(I4B), ALLOCATABLE :: conIA(:), conJA(:)
   !!
 
@@ -349,6 +354,37 @@ TYPE :: ElastoDynamics1DSTFEM_
 
   INTEGER(I4B) :: outputFreq = 1
   !! output frequency
+
+  !! for error evaluation
+  TYPE(UserFunction_), POINTER :: refDisp => NULL()
+  !! reference function for displacement
+
+  TYPE(UserFunction_), POINTER :: refVel => NULL()
+  !! reference function for velocity
+
+  TYPE(UserFunction_), POINTER :: refAcc => NULL()
+  !! reference function for acceleration
+
+  REAL(DFP), ALLOCATABLE :: errorDisp(:, :), errorVel(:, :), &
+                            errorAcc(:, :)
+
+  TYPE(String) :: errorType(3)
+  !! "L2SP", "L2ST", "L2BO"
+
+  LOGICAL(LGT) :: saveErrorNorm(3) = .FALSE.
+  !! boolean to decide write calculeted error norms
+  !! of diaplacement, velocity, acceleration
+
+  LOGICAL(LGT) :: plotErrorNorm(3) = .FALSE.
+  !! boolean to decide plot variation of error norms in time
+
+  LOGICAL(LGT) :: plotWithResult(3) = .FALSE.
+  !! boolean to decide plot calculated
+  !! of diaplacement, velocity, acceleration
+
+  LOGICAL(LGT) :: scaleErrorNorm(3) = .FALSE.
+  !! boolean to decide scale error norms by
+  !! the size of space span and time span
 
 CONTAINS
 
@@ -462,10 +498,15 @@ CONTAINS
   !! Update
 
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData => obj_WriteData
-  !! Update
+  !! write data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteErrorData => obj_WriteErrorData
+  !! write error data
 
   PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
   !! Debug mode
+
+  PROCEDURE, PUBLIC, PASS(obj) :: EvalErrorNorm => obj_EvalErrorNorm
 
 END TYPE ElastoDynamics1DSTFEM_
 
@@ -987,6 +1028,34 @@ INTERFACE
   MODULE SUBROUTINE obj_WriteData(obj)
     CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_WriteData
+END INTERFACE
+!----------------------------------------------------------------------------
+!                                                        WriteErrorData@Methods
+!----------------------------------------------------------------------------
+!> author: Shion Shimizu
+! date:   2024-10-09
+! summary:  Write error data
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteErrorData(obj)
+    CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_WriteErrorData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         EvalError@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-10-08
+! summary: Evaluete the error norm
+
+INTERFACE
+  MODULE SUBROUTINE obj_EvalErrorNorm(obj, timeElemNum, tij)
+    CLASS(ElastoDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: timeElemNum
+    REAL(DFP), INTENT(IN) :: tij(1, 2)
+  END SUBROUTINE obj_EvalErrorNorm
 END INTERFACE
 
 !----------------------------------------------------------------------------
