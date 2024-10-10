@@ -843,7 +843,7 @@ SUBROUTINE ReferenceImportFromToml(obj, table)
   isOK = ASSOCIATED(node)
   IF (isOK) THEN
     ALLOCATE (obj%refVel)
-    CALL obj%refDisp%ImportFromToml(table=node)
+    CALL obj%refVel%ImportFromToml(table=node)
     CALL toml_get(node, "errorNorm", obj%saveErrorNorm(2), .FALSE., &
                   stat=stat, origin=origin)
     CALL GetValue(table=node, key="normType", VALUE=astr, &
@@ -863,7 +863,7 @@ SUBROUTINE ReferenceImportFromToml(obj, table)
   isOK = ASSOCIATED(node)
   IF (isOK) THEN
     ALLOCATE (obj%refAcc)
-    CALL obj%refDisp%ImportFromToml(table=node)
+    CALL obj%refAcc%ImportFromToml(table=node)
     CALL toml_get(node, "errorNorm", obj%saveErrorNorm(3), .FALSE., &
                   stat=stat, origin=origin)
     CALL GetValue(table=node, key="normType", VALUE=astr, &
@@ -3462,7 +3462,7 @@ IF (obj%saveErrorNorm(2)) THEN
   CALL obj%velfile%OPEN()
 
   aline = "#  last line is the sum of error norms"
-  CALL obj%dispfile%WRITE(aline)
+  CALL obj%velfile%WRITE(aline)
   aline = getHeader(obj%errorType(1))
   CALL obj%velfile%WRITE(aline)
 
@@ -3478,7 +3478,6 @@ IF (obj%saveErrorNorm(2)) THEN
   tmpVec(2:) = SUM(obj%errorVel, dim=1)
   CALL obj%velfile%WRITE(tmpVec, advance="YES", &
                          orient="ROW")
-  CALL obj%velfile%DEALLOCATE()
   CALL obj%velfile%DEALLOCATE()
   DEALLOCATE (tmpVec)
 END IF
