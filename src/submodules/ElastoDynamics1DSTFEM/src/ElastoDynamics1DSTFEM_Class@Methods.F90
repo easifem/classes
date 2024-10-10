@@ -20,7 +20,8 @@
 SUBMODULE(ElastoDynamics1DSTFEM_Class) Methods
 USE tomlf, ONLY: toml_serialize, &
                  toml_get => get_value, &
-                 toml_stat, toml_array
+                 toml_stat, toml_array, &
+                 toml_len => len
 
 USE Lapack_Method, ONLY: GetInvMat, SymLinSolve
 
@@ -58,8 +59,7 @@ USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Allocate => ALLOCATE, &
                                 HierarchicalElemShapeData, &
                                 Elemsd_Set => Set, &
-                                OrthogonalElemShapeData, &
-                                getInterpolation
+                                OrthogonalElemShapeData
 
 USE SwapUtility, ONLY: SWAP
 
@@ -94,6 +94,11 @@ IMPLICIT NONE
 
 REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
                         half = 0.5_DFP
+
+INTERFACE ElementDataImportFromToml
+  MODULE PROCEDURE ElementDataImportFromToml_real
+  MODULE PROCEDURE ElementDataImportFromToml_int
+END INTERFACE ElementDataImportFromToml
 
 CONTAINS
 
@@ -441,8 +446,8 @@ CALL Display(myName//" spaceOrder")
 #endif
 
 !INFO: spaceOrder
-CALL GetValue(table=table, key="spaceOrder", VALUE=tempintvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml_int(table, "spaceOrder", tempintvec, &
+                                   obj%totalSpaceElements, isok)
 CALL AssertError1(isok, myname, "spaceOrder not found")
 
 #ifdef DEBUG_VER
@@ -468,8 +473,8 @@ obj%maxSpaceOrder = MAXVAL(obj%spaceOrder)
 CALL Display(myName//" timeOrder")
 #endif
 
-CALL GetValue(table=table, key="timeOrder", VALUE=tempintvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml_int(table, "timeOrder", tempintvec, &
+                                   obj%totalTimeElements, isok)
 CALL AssertError1(isok, myname, "timeOrder not found")
 
 #ifdef DEBUG_VER
@@ -495,8 +500,8 @@ obj%maxTimeOrder = MAXVAL(obj%timeOrder)
 CALL Display(myName//" spaceElemLength")
 #endif
 
-CALL GetValue(table=table, key="spaceElemLength", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "spaceElemLength", temprealvec, &
+                               obj%totalSpaceElements, isok)
 CALL AssertError1(isok, myname, "spaceElemLength not found")
 
 CALL Reallocate(obj%spaceElemLength, obj%totalSpaceElements)
@@ -516,8 +521,8 @@ END IF
 CALL Display(myName//" timeElemLength")
 #endif
 
-CALL GetValue(table=table, key="timeElemLength", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "timeElemLength", temprealvec, &
+                               obj%totalTimeElements, isok)
 CALL AssertError1(isok, myname, "timeElemLength not found")
 
 CALL Reallocate(obj%timeElemLength, obj%totalTimeElements)
@@ -579,8 +584,8 @@ CALL GetValue(table=table, key="outputFreq", VALUE=obj%outputFreq, &
 CALL Display(myName//" elasticModulus")
 #endif
 
-CALL GetValue(table=table, key="elasticModulus", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "elasticModulus", temprealvec, &
+                               obj%totalSpaceElements, isok)
 CALL AssertError1(isok, myname, "elasticModulus not found")
 
 CALL Reallocate(obj%elasticModulus, obj%totalSpaceElements)
@@ -599,8 +604,8 @@ END IF
 #ifdef DEBUG_VER
 CALL Display(myName//" density")
 #endif
-CALL GetValue(table=table, key="density", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "density", temprealvec, &
+                               obj%totalSpaceElements, isok)
 CALL AssertError1(isok, myname, "density not found")
 
 CALL Reallocate(obj%density, obj%totalSpaceElements)
@@ -619,8 +624,8 @@ END IF
 #ifdef DEBUG_VER
 CALL Display(myName//" rayleighAlpha")
 #endif
-CALL GetValue(table=table, key="rayleighAlpha", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "rayleighAlpha", temprealvec, &
+                               obj%totalSpaceElements, isok)
 
 CALL Reallocate(obj%rayleighAlpha, obj%totalSpaceElements)
 
@@ -644,8 +649,8 @@ END IF
 #ifdef DEBUG_VER
 CALL Display(myName//" rayleighBeta")
 #endif
-CALL GetValue(table=table, key="rayleighBeta", VALUE=temprealvec, &
-              origin=origin, stat=stat, isfound=isok)
+CALL ElementDataImportFromToml(table, "rayleighBeta", temprealvec, &
+                               obj%totalSpaceElements, isok)
 
 CALL Reallocate(obj%rayleighBeta, obj%totalSpaceElements)
 
@@ -810,7 +815,6 @@ SUBROUTINE ReferenceImportFromToml(obj, table)
   TYPE(toml_table), POINTER :: node => NULL()
   INTEGER(I4B) :: stat, origin
   TYPE(String) :: astr
-  CHARACTER(:), ALLOCATABLE :: achar
   LOGICAL(LGT) :: isOK
 
   astr = "referenceDisp"
@@ -874,6 +878,294 @@ SUBROUTINE ReferenceImportFromToml(obj, table)
   node => NULL()
 
 END SUBROUTINE ReferenceImportFromToml
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElementDataImportFromToml_real(table, key, val, telem, isfound)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  CHARACTER(*), INTENT(IN) :: key
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  INTEGER(I4B), INTENT(IN) :: telem
+  LOGICAL(LGT), INTENT(INOUT) :: isfound
+
+  CHARACTER(*), PARAMETER :: myName = "ElementDataImportFromToml()"
+  TYPE(toml_array), POINTER :: array
+  INTEGER(I4B) :: stat, origin, ii, tsize, ncol, &
+                  iostat
+  LOGICAL(LGT) :: isOk
+  REAL(DFP) :: temp
+  TYPE(String) :: filename, ext
+  TYPE(TxtFile_) :: atxtfile
+  TYPE(CSVFile_) :: acsvfile
+  CHARACTER(512) :: iomsg
+  INTEGER(I4B), ALLOCATABLE :: intvec1(:), intvec2(:)
+  REAL(DFP), ALLOCATABLE :: realvec(:)
+
+#ifdef DEBUG_VER
+  CALL Display(myName//key)
+#endif
+
+  CALL toml_get(table, key, array, origin=origin, stat=stat, &
+                requested=.FALSE.)
+
+  IF (ASSOCIATED(array)) THEN
+    tsize = toml_len(array)
+    CALL Reallocate(val, tsize)
+    DO ii = 1, tsize
+      CALL toml_get(array, ii, val(ii))
+    END DO
+    NULLIFY (array)
+    isfound = .TRUE.
+    RETURN
+  END IF
+
+  CALL toml_get(table, key, temp, origin=origin, stat=stat)
+
+  IF (stat .EQ. toml_stat%success) THEN
+    CALL Reallocate(val, 1)
+    val(1) = temp
+    isfound = .TRUE.
+    RETURN
+  END IF
+
+  CALL toml_get(table, key, filename%raw, origin=origin, stat=stat)
+
+  IF (stat .EQ. toml_stat%success) THEN
+    ext = filename%extension()
+    SELECT CASE (ext%chars())
+    CASE (".txt")
+      CALL atxtfile%Initiate(filename=filename%Chars(), &
+                             action="READ", status="OLD")
+      CALL atxtfile%OPEN()
+      CALL atxtfile%READ(val=val, iostat=iostat, iomsg=iomsg)
+
+      isok = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
+      IF (isok) THEN
+        STOP "error occur "
+        filename = ""
+        RETURN
+      END IF
+
+      CALL atxtfile%DEALLOCATE()
+      filename = ""
+      isfound = .TRUE.
+      RETURN
+    CASE (".csv")
+      CALL acsvfile%Initiate(filename=filename%Chars(), &
+                             action="READ", status="OLD", &
+                             delimiter=",")
+      CALL acsvfile%OPEN()
+      CALL acsvfile%SetHeaderIndx(1)
+      CALL acsvfile%READ()
+      ncol = acsvfile%Getncols()
+      SELECT CASE (ncol)
+      CASE (1) ! only value
+
+        CALL acsvfile%get(1, val=realvec) ! value
+        isOk = ALLOCATED(realvec)
+        CALL AssertError1(isok, myname, &
+                          "value column does not have data")
+        CALL reallocate(val, 1)
+        val(1) = realvec(1)
+
+      CASE (2) ! element number and value
+
+        CALL acsvfile%get(1, val=intvec1) ! element
+        CALL acsvfile%get(2, val=realvec) ! value
+
+        isok = ALLOCATED(intvec1) .AND. ALLOCATED(realvec)
+        CALL AssertError1(isok, myname, &
+                          "element column or value column "// &
+                          " does not have data")
+        isok = SIZE(intvec1) .EQ. telem
+        CALL AssertError1(isok, myname, "the size of elemen column "// &
+                          " should be the same as the number of elements")
+        CALL reallocate(val, telem)
+        DO ii = 1, telem
+          val(intvec1(ii)) = realvec(ii)
+        END DO
+
+      CASE (3) ! start, end, value
+
+        CALL acsvfile%get(1, val=intvec1) ! start
+        CALL acsvfile%get(2, val=intvec2) ! end
+        CALL acsvfile%get(3, val=realvec) ! value
+        isok = ALLOCATED(intvec1) .AND. ALLOCATED(realvec) &
+               .AND. ALLOCATED(intvec2)
+        CALL AssertError1(isok, myname, &
+                          "start column, end column or value column"// &
+                          " does not have data")
+        isok = MINVAL(intvec1) .EQ. one
+        CALL AssertError1(isok, myname, "start must have 1 as a component")
+        isok = MAXVAL(intvec2) .EQ. telem
+        CALL AssertError1(isok, myname, "end must have the integer"// &
+                          " which is the same as the number of elements")
+
+        CALL reallocate(val, telem)
+        DO ii = 1, SIZE(intvec1)
+          val(intvec1(ii):intvec2(ii)) = realvec(ii)
+        END DO
+
+      CASE default
+        CALL AssertError1(.FALSE., myname, &
+                          "wrong number of columns in csv file ")
+      END SELECT
+
+      CALL acsvfile%DEALLOCATE()
+      filename = ""
+      isfound = .TRUE.
+      RETURN
+    END SELECT
+  END IF
+
+  isfound = .FALSE.
+
+END SUBROUTINE ElementDataImportFromToml_real
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElementDataImportFromToml_int(table, key, val, telem, isfound)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  CHARACTER(*), INTENT(IN) :: key
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  INTEGER(I4B), INTENT(IN) :: telem
+  LOGICAL(LGT), INTENT(INOUT) :: isfound
+
+  CHARACTER(*), PARAMETER :: myName = "ElementDataImportFromToml()"
+  TYPE(toml_array), POINTER :: array
+  INTEGER(I4B) :: stat, origin, ii, tsize, ncol, &
+                  iostat, temp
+  LOGICAL(LGT) :: isOk
+  TYPE(String) :: filename, ext
+  TYPE(TxtFile_) :: atxtfile
+  TYPE(CSVFile_) :: acsvfile
+  CHARACTER(512) :: iomsg
+  INTEGER(I4B), ALLOCATABLE :: intvec1(:), intvec2(:), intvec3(:)
+
+#ifdef DEBUG_VER
+  CALL Display(myName//key)
+#endif
+
+  CALL toml_get(table, key, array, origin=origin, stat=stat, &
+                requested=.FALSE.)
+
+  IF (ASSOCIATED(array)) THEN
+    tsize = toml_len(array)
+    CALL Reallocate(val, tsize)
+    DO ii = 1, tsize
+      CALL toml_get(array, ii, val(ii))
+    END DO
+    NULLIFY (array)
+    isfound = .TRUE.
+    RETURN
+  END IF
+
+  CALL toml_get(table, key, temp, origin=origin, stat=stat)
+
+  IF (stat .EQ. toml_stat%success) THEN
+    CALL Reallocate(val, 1)
+    val(1) = temp
+    isfound = .TRUE.
+    RETURN
+  END IF
+
+  CALL toml_get(table, key, filename%raw, origin=origin, stat=stat)
+
+  IF (stat .EQ. toml_stat%success) THEN
+    ext = filename%extension()
+    SELECT CASE (ext%chars())
+    CASE (".txt")
+      CALL atxtfile%Initiate(filename=filename%Chars(), &
+                             action="READ", status="OLD")
+      CALL atxtfile%OPEN()
+      CALL atxtfile%READ(val=val, iostat=iostat, iomsg=iomsg)
+
+      isok = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
+      IF (isok) THEN
+        STOP "error occur "
+        filename = ""
+        RETURN
+      END IF
+
+      CALL atxtfile%DEALLOCATE()
+      filename = ""
+      isfound = .TRUE.
+      RETURN
+    CASE (".csv")
+      CALL acsvfile%Initiate(filename=filename%Chars(), &
+                             action="READ", status="OLD", &
+                             delimiter=",")
+      CALL acsvfile%OPEN()
+      CALL acsvfile%SetHeaderIndx(1)
+      CALL acsvfile%READ()
+      ncol = acsvfile%Getncols()
+      SELECT CASE (ncol)
+      CASE (1) ! only value
+
+        CALL acsvfile%get(1, val=intvec3) ! value
+        isOk = ALLOCATED(intvec3)
+        CALL AssertError1(isok, myname, &
+                          "value column does not have data")
+        CALL reallocate(val, 1)
+        val(1) = intvec3(1)
+
+      CASE (2) ! element number and value
+
+        CALL acsvfile%get(1, val=intvec1) ! element
+        CALL acsvfile%get(2, val=intvec3) ! value
+
+        isok = ALLOCATED(intvec1) .AND. ALLOCATED(intvec3)
+        CALL AssertError1(isok, myname, &
+                          "element column or value column "// &
+                          " does not have data")
+        isok = SIZE(intvec1) .EQ. telem
+        CALL AssertError1(isok, myname, "the size of elemen column "// &
+                          " should be the same as the number of elements")
+        CALL reallocate(val, telem)
+        DO ii = 1, telem
+          val(intvec1(ii)) = intvec3(ii)
+        END DO
+
+      CASE (3) ! start, end, value
+
+        CALL acsvfile%get(1, val=intvec1) ! start
+        CALL acsvfile%get(2, val=intvec2) ! end
+        CALL acsvfile%get(3, val=intvec3) ! value
+        isok = ALLOCATED(intvec1) .AND. ALLOCATED(intvec3) &
+               .AND. ALLOCATED(intvec2)
+        CALL AssertError1(isok, myname, &
+                          "start column, end column or value column"// &
+                          " does not have data")
+        isok = MINVAL(intvec1) .EQ. one
+        CALL AssertError1(isok, myname, "start must have 1 as a component")
+        isok = MAXVAL(intvec2) .EQ. telem
+        CALL AssertError1(isok, myname, "end must have the integer"// &
+                          " which is the same as the number of elements")
+
+        CALL reallocate(val, telem)
+        DO ii = 1, SIZE(intvec1)
+          val(intvec1(ii):intvec2(ii)) = intvec3(ii)
+        END DO
+
+      CASE default
+        CALL AssertError1(.FALSE., myname, &
+                          "wrong number of columns in csv file ")
+      END SELECT
+
+      CALL acsvfile%DEALLOCATE()
+      filename = ""
+      isfound = .TRUE.
+      RETURN
+    END SELECT
+  END IF
+
+  isfound = .FALSE.
+
+END SUBROUTINE ElementDataImportFromToml_int
 
 !----------------------------------------------------------------------------
 !                                                           ImportFromToml
