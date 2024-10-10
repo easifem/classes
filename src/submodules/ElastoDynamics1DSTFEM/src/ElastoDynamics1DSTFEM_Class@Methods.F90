@@ -3509,9 +3509,9 @@ IF (obj%plotErrorNorm(1)) THEN
 END IF
 
 IF (obj%plotErrorNorm(2)) THEN
-  CALL obj%plot%filename(filename_disp//'.plt')
+  CALL obj%plot%filename(filename_vel//'.plt')
   CALL obj%plot%options('set terminal pngcairo; set output "' &
-                        //filename_disp//'.png"')
+                        //filename_vel//'.png"')
   xlim = obj%timeDomain
   ylim(1) = MINVAL(obj%errorVel)
   ylim(2) = MAXVAL(obj%errorVel)
@@ -3523,7 +3523,7 @@ IF (obj%plotErrorNorm(2)) THEN
   CALL obj%plot%xlim(xlim)
   CALL obj%plot%ylim(ylim)
   CALL obj%plot%xlabel('t')
-  CALL obj%plot%ylabel('Error Norm of Displacement')
+  CALL obj%plot%ylabel('Error Norm of Velocity')
   CALL obj%plot%plot(xv=timeData, ymat=obj%errorVel)
   CALL obj%plot%reset()
 
