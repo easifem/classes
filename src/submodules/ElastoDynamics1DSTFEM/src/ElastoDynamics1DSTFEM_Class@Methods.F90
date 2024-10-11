@@ -2937,6 +2937,7 @@ FUNCTION GetErrorNorm_L2SP(obj, solution, reference) RESULT(anorm)
 
   anorm = 0.0_DFP
 
+  xij(1, 1) = obj%spaceDomain(1)
   DO ielSpace = 1, obj%totalSpaceElements
 
     CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
@@ -2945,7 +2946,7 @@ FUNCTION GetErrorNorm_L2SP(obj, solution, reference) RESULT(anorm)
     xij(1, 2) = xij(1, 1) + dx
 
     CALL obj%SetQuadForSpace(ielSpace)
-    tsizeQP = SIZE(obj%quadForSpace%points, 2)
+    tsizeQP = obj%elemsdForSpace%nips
     CALL obj%SetElemsdForSpace(ielSpace, xij)
 
     CALL RealVector_GetValue_(obj=solution, nodenum=con(1:nns), VALUE=sol0, &
@@ -2996,6 +2997,7 @@ FUNCTION GetErrorNorm_L2ST(obj, solution, reference, tij, disp) RESULT(anorm)
   tqt = obj%elemsdForTime%nips
   dt = tij(1, 2) - tij(1, 1)
 
+  xij(1, 1) = obj%spaceDomain(1)
   DO ielSpace = 1, obj%totalSpaceElements
 
     CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
@@ -3528,6 +3530,8 @@ IF (obj%plotErrorNorm(2)) THEN
   CALL obj%plot%reset()
 
 END IF
+
+DEALLOCATE (timeData)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
