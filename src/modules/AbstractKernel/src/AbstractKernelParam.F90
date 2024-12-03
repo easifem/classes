@@ -20,109 +20,118 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: Uppercase
 
-USE BaseType, ONLY: varopt => TypeFEVariableOpt
+USE BaseType, ONLY: varopt => TypeFEVariableOpt, &
+                    ipopt => TypeInterpolationOpt, &
+                    polyopt => TypePolynomialOpt, &
+                    QuadraturePoint_
 
 ! USE BaseMethod
+
 IMPLICIT NONE
+
 PRIVATE
 
-PUBLIC :: BasisType_ToInteger
 PUBLIC :: KernelGetNSDFromID
 PUBLIC :: KernelGetNSDFromName
 PUBLIC :: KernelGetCoordinateSystemName
 PUBLIC :: KernelGetCoordinateSystemID
-PUBLIC :: KernelProblemType
-PUBLIC :: KernelCoordinateSystem
+
+PUBLIC :: TypeKernelCoordOpt
+PUBLIC :: TypeKernelTimeOpt
+PUBLIC :: TypeKernelProblemOpt
+PUBLIC :: TypeKernelTomlOpt
+PUBLIC :: TypeKernelNitscheOpt
+
+PUBLIC :: KernelBasisOpt_
+PUBLIC :: TypeKernelBasisOpt
+
+PUBLIC :: KernelErrorOpt_
+PUBLIC :: TypeKernelErrorOpt
 
 !----------------------------------------------------------------------------
-!
+!                                                           KernelErrorOpt_
 !----------------------------------------------------------------------------
 
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_LINSOLVER_NAME = "linSolver"
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_NEUMANN_BC_NAME = "neumannBC"
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_POINT_SOURCE_NAME = "pointSource"
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_NITSCHE_BC_NAME = "nitscheBC"
-CHARACTER(*), PUBLIC, PARAMETER :: TOML_SOLID_MATERIAL_NAME = "solidMaterial"
-!! Default value of linSolver in toml
+TYPE :: KernelErrorOpt_
+  REAL(DFP) :: atol = 1.0E-6
+  !! absolute tolerance for convergence
+  REAL(DFP) :: rtol = 1.0E-6
+  !! relative tolerance for convergence
+  REAL(DFP) :: error0 = 0.0_DFP
+  !! initial error
+  REAL(DFP) :: error = 0.0_DFP
+  !! current error
+  INTEGER(I4B) :: maxIter = 100
+  !! maximum number iterations
+END TYPE KernelErrorOpt_
+
+TYPE(KernelErrorOpt_), PARAMETER :: TypeKernelErrorOpt = KernelErrorOpt_()
 
 !----------------------------------------------------------------------------
-!
+!                                                            KernelBasisOpt_
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_Sym = -1
-!! Sym or unsymmetric Nitsche formulation
-INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
+TYPE :: KernelBasisOpt_
+  CHARACTER(2) :: baseContinuity = "H1"
+  !! conformity of basis functions
+  CHARACTER(4) :: baseInterpolation = "LAGR"
+  !! interpolation of basis functions
+  INTEGER(I4B) :: quadratureType = ipopt%GaussLegendre
+  !! quadrature type
+  INTEGER(I4B) :: basisType = polyopt%monomial
+  !! basis type in case baseInterpolation is Lagrange
+  INTEGER(I4B) :: ipType = ipopt%equidistance
+  !! interpolation type incase baseInterpolation is Lagrange
+  REAL(DFP) :: alpha = 0.0_DFP
+  !! Jacobi polynomial parameter
+  REAL(DFP) :: beta = 0.0_DFP
+  !! Jacobi polynomial parameter
+  REAL(DFP) :: lambda = 0.5_DFP
+  !! Ultraspherical polynomial parameter
+  CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
+  !! quadrature type
+  TYPE(QuadraturePoint_) :: qp
+  !! QuadraturePoint
+
+  !! quadratureType_char
+  !! basisType_char
+  !! ipType_char
+END TYPE KernelBasisOpt_
+
+TYPE(KernelBasisOpt_), PARAMETER :: TypeKernelBasisOpt = KernelBasisOpt_()
 
 !----------------------------------------------------------------------------
-!
+!                                                           KernelNitscheOpt_
 !----------------------------------------------------------------------------
 
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TANMAT_PROP = "UNSYM"
-!! Default tangent matrix properties
+TYPE :: KernelNitscheOpt_
+  INTEGER(I4B) :: sym = -1
+  INTEGER(I4B) :: skewsym = 1
+END TYPE KernelNitscheOpt_
 
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_OUTPUT_PATH = "./results/"
-!! Default outputpath
-
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_ENGINE = "NATIVE_SERIAL"
-!! Default value of engine
-
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_NitscheAlpha = 100.0
-!! Alpha for Nitsche boundary
-
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsSymNitsche = .TRUE.
-!! Default value of symmetric Nitsche formulation
-
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsConstantMatProp = .TRUE.
-!! Default value of constant material property
-
-INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_Algorithm = 1_I4B
-!! Default value of algorithm
-
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsIsotropic = .TRUE.
-!! Default value for isotropicicity
-
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_IsIncompressible = .FALSE.
-!! Default value for incompressibility
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForDisplacement = 1.0E-6
-!! Default absolute tolerance for displacement
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForDisplacement = 1.0E-6
-!! Default relative tolerance for displacement
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForVelocity = 1.0E-6
-!! Default absolute tolerance for velocity
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForVelocity = 1.0E-6
-!! Default relative tolerance for velocity
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_AtoleranceForResidual = 1.0E-6
-!! Default absolute tolerance for residual
-
-REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_RtoleranceForResidual = 1.0E-6
-!! Default relative tolerance for residual
-
-INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_TOverlappedMaterials = 1_I4B
-!! Total number of overlapped materials
+TYPE(KernelNitscheOpt_), PARAMETER :: TypeKernelNitscheOpt = &
+                                      KernelNitscheOpt_()
 
 !----------------------------------------------------------------------------
-!
+!                                                         KernelTomlOpt
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NNT = 1_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NSD = 0_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_postProcessOpt = 1_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_tdof = 0_I4B
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isCommonDomain = .TRUE.
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_maxIter = 100
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_gravity(3) = 0.0_DFP
+TYPE :: KernelTomlOpt_
+  CHARACTER(9) :: TOML_LINSOLVER_NAME = "linSolver"
+  CHARACTER(11) :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
+  CHARACTER(9) :: TOML_NEUMANN_BC_NAME = "neumannBC"
+  CHARACTER(12) :: TOML_POINT_SOURCE_NAME = "pointSource"
+  CHARACTER(9) :: TOML_NITSCHE_BC_NAME = "nitscheBC"
+  CHARACTER(13) :: TOML_SOLID_MATERIAL_NAME = "solidMaterial"
+END TYPE KernelTomlOpt_
+
+TYPE(KernelTomlOpt_), PARAMETER :: TypeKernelTomlOpt = KernelTomlOpt_()
 
 !----------------------------------------------------------------------------
 !                                                         Space dependency
 !----------------------------------------------------------------------------
 
-TYPE :: KernelCoordinateSystem_
+TYPE :: KernelCoordOpt_
   INTEGER(I4B) :: OneD_H = 1
   !! One dimensional problem in horizontal direction
 
@@ -153,60 +162,73 @@ TYPE :: KernelCoordinateSystem_
   INTEGER(I4B) :: Spherical = 10
   !! Sperical coordinates
 
+  INTEGER(I4B) :: default = 8
+  !! Default coordinate system
+
+  CHARACTER(9) :: default_char = "CARTESIAN"
+  !! default coordinate system
+
 CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => coordinateSystem_ToNumber
 
-END TYPE KernelCoordinateSystem_
+END TYPE KernelCoordOpt_
 
-TYPE(KernelCoordinateSystem_), PARAMETER :: KernelCoordinateSystem = &
-                                            KernelCoordinateSystem_()
-
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem_char = "Cartesian"
-
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem = 8
+TYPE(KernelCoordOpt_), PARAMETER :: TypeKernelCoordOpt = KernelCoordOpt_()
 
 !----------------------------------------------------------------------------
 !                                                          Time dependency
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_STATIC = 0
+TYPE :: KernelTimeOpt_
+  INTEGER(I4B) :: static = 0
   !! PDE defines a Static problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_STEADY = KERNEL_STATIC
+
+  INTEGER(I4B) :: steady = 0
   !! PDE defines a Static problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_PSEUDOSTATIC = 1
+
+  INTEGER(I4B) :: pseudostatic = 1
   !! PDE defines a Static problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_TRANSIENT = 2
-  !! PDE defines a Transient problem
-INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_DYNAMIC = KERNEL_TRANSIENT
+
+  INTEGER(I4B) :: transient = 2
   !! PDE defines a Transient problem
 
-TYPE :: KernelTimeDependency_
-  INTEGER(I4B) :: static = 0
-  INTEGER(I4B) :: steady = 0
-  INTEGER(I4B) :: pseudostatic = 1
-  INTEGER(I4B) :: transient = 2
   INTEGER(I4B) :: dynamic = 2
+  !! PDE defines a Transient problem
+
+  INTEGER(I4B) :: default = 2
+  !! Default time dependency
+
+  CHARACTER(9) :: default_char = "TRANSIENT"
+  !! Default time dependency
+
+  INTEGER(I4B) :: totalTimeStep = 1
+  !! Total number of time steps
+
+  REAL(DFP) :: currentTime = 0.0
+  !! Current time
+
+  REAL(DFP) :: dt = 0.0
+  !! Time step
+
+  REAL(DFP) :: startTime = 0.0
+  !! Start time
+
+  REAL(DFP) :: endTime = 0.0
+  !! End time
+
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => timeDependency_ToNumber
-END TYPE KernelTimeDependency_
 
-TYPE(KernelTimeDependency_), PARAMETER, PUBLIC :: KernelTimeDependency = &
-                                                  KernelTimeDependency_()
+END TYPE KernelTimeOpt_
 
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_TimeDependency = KernelTimeDependency%transient
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TimeDependency_char = "TRANSIENT"
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_TotalTimeStep = 1_I4B
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_currentTime = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_dt = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_startTime = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_endTime = 0.0_DFP
+TYPE(KernelTimeOpt_), PARAMETER :: TypeKernelTimeOpt = KernelTimeOpt_()
 
 !----------------------------------------------------------------------------
-!                                                       Problem type
+!                                                              Problem type
 !----------------------------------------------------------------------------
 
-TYPE :: KernelProblemType_
+TYPE :: KernelProblemOpt_
   INTEGER(I4B) :: scalar = varopt%Scalar
   INTEGER(I4B) :: vector = varopt%Vector
   INTEGER(I4B) :: multiPhysics = varopt%Vector + 100
@@ -215,64 +237,12 @@ TYPE :: KernelProblemType_
   CHARACTER(4) :: default_char = "NONE"
 
 CONTAINS
+
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => problemType_ToNumber
-END TYPE KernelProblemType_
 
-TYPE(KernelProblemType_), PARAMETER :: KernelProblemType = &
-                                       KernelProblemType_()
+END TYPE KernelProblemOpt_
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseContinuityForSpace = "H1"
-  !! Default continuity type for basis functions in space
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseInterpolationForSpace = &
-  & "LagrangeInterpolation"
-  !! Default interpolation functions for basis functions in space
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_quadratureTypeForSpace = &
-  & "GaussLegendre"
-  !! Default quadrature type for space
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseContinuityForPressure = &
-  & "H1"
-  !! Default continuity type for basis functions for pressure field
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseInterpolationForPressure =&
-  & "LagrangeInterpolation"
-  !! Default interolation functions for basis functions in pressure
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_quadratureTypeForPressure = &
-  & "GaussLegendre"
-  !! Default quadrature type for pressure
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseContinuityForVelocity = &
-  & "H1"
-  !! Default continuity type for basis functions for velocity
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseInterpolationForVelocity =&
-  & "LagrangeInterpolation"
-  !! Default interpolation type for basis function for velocity
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_quadratureTypeForVelocity = &
-  & "GaussLegendre"
-  !! Default quadrature type for velocity
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseContinuityForTime = "H1"
-  !! Default quadrature type for time
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_baseInterpolationForTime = &
-  & "LagrangeInterpolation"
-  !! Default interpolation type for basis function in time
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_quadratureTypeForTime = &
-  & "GaussLegendre"
-
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_ipTypeForSpace = Equidistance
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_ipTypeForTime = Equidistance
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_ipTypeForSpace_char = "Equidistance"
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_ipTypeForTime_char = "Equidistance"
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_basisTypeForSpace = Monomial
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_basisTypeForTime = Monomial
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_basisTypeForSpace_char = "Monomial"
-CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_basisTypeForTime_char = "Monomial"
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_alphaForSpace = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_betaForSpace = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForSpace = 0.5_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_alphaForTime = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_betaForTime = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForTime = 0.5_DFP
+TYPE(KernelProblemOpt_), PARAMETER :: TypeKernelProblemOpt = KernelProblemOpt_()
 
 !----------------------------------------------------------------------------
 !
@@ -281,7 +251,7 @@ REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForTime = 0.5_DFP
 CONTAINS
 
 FUNCTION coordinateSystem_ToNumber(obj, name) RESULT(ans)
-  CLASS(KernelCoordinateSystem_), INTENT(IN) :: obj
+  CLASS(KernelCoordOpt_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   TYPE(String) :: astr
@@ -321,19 +291,19 @@ END FUNCTION coordinateSystem_ToNumber
 ! summary:  Convert time dependency to number
 
 FUNCTION timeDependency_ToNumber(obj, name) RESULT(ans)
-  CLASS(KernelTimeDependency_), INTENT(IN) :: obj
+  CLASS(KernelTimeOpt_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   TYPE(String) :: astr
   astr = Uppercase(name)
-  ans = DEFAULT_TimeDependency
+  ans = TypeKernelTimeOpt%default
   SELECT CASE (astr%chars())
   CASE ("STATIC", "STEADY")
-    ans = obj%steady
+    ans = TypeKernelTimeOpt%steady
   CASE ("TRANSIENT", "DYNAMIC")
-    ans = obj%dynamic
+    ans = TypeKernelTimeOpt%dynamic
   CASE ("PSEUDOSTATIC")
-    ans = obj%pseudostatic
+    ans = TypeKernelTimeOpt%pseudostatic
   END SELECT
   astr = ""
 END FUNCTION timeDependency_ToNumber
@@ -343,67 +313,26 @@ END FUNCTION timeDependency_ToNumber
 !----------------------------------------------------------------------------
 
 FUNCTION problemType_ToNumber(obj, name) RESULT(ans)
-  CLASS(KernelProblemType_), INTENT(IN) :: obj
+  CLASS(KernelProblemOpt_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
-  CHARACTER(:), ALLOCATABLE :: astr
-  astr = Uppercase(name)
-  ans = DEFAULT_PROBLEM_TYPE
+
+  CHARACTER(2) :: astr
+
+  astr = Uppercase(name(1:2))
+
+  ans = TypeKernelProblemOpt%default
+
   SELECT CASE (astr)
-  CASE ("SCALAR")
-    ans = obj%scalar
-  CASE ("VECTOR")
-    ans = obj%vector
-  CASE ("MULTIPHYSICS")
-    ans = obj%multiPhysics
+  CASE ("SC")
+    ans = TypeKernelProblemOpt%scalar
+  CASE ("VE")
+    ans = TypeKernelProblemOpt%vector
+  CASE ("MU")
+    ans = TypeKernelProblemOpt%multiPhysics
   END SELECT
-  astr = ""
+
 END FUNCTION problemType_ToNumber
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-02
-! summary:  Convert basis type to integer
-
-FUNCTION BasisType_ToInteger(name) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  INTEGER(I4B) :: ans
-
-  TYPE(String) :: astr
-
-  astr = Uppercase(name)
-  ans = Monomial
-
-  SELECT CASE (astr%chars())
-  CASE ("MONOMIAL")
-    ans = Monomial
-  CASE ("JACOBI")
-    ans = Jacobi
-  CASE ("LEGENDRE")
-    ans = Legendre
-  CASE ("CHEBYSHEV")
-    ans = Chebyshev
-  CASE ("ULTRASPHERICAL")
-    ans = Ultraspherical
-  CASE ("LOBATTO")
-    ans = Lobatto
-  CASE ("LAGRANGE")
-    ans = Lagrange
-  CASE ("HIERACHICAL", "HEIRARCHICAL")
-    ans = Hierarchical
-  CASE ("ORTHOGONAL")
-    ans = Orthogonal
-  CASE ("UNSCALEDLOBATTO")
-    ans = UnscaledLobatto
-  CASE ("HERMIT")
-    ans = HermitPolynomial
-  CASE ("SERENDIPITY")
-    ans = Serendipity
-  END SELECT
-END FUNCTION
 
 !----------------------------------------------------------------------------
 !                                             KernelGetNSDFromID@GetMethods
@@ -414,13 +343,18 @@ FUNCTION KernelGetNSDFromID(uid) RESULT(Ans)
   INTEGER(I4B) :: ans
 
   SELECT CASE (uid)
-  CASE (KERNEL_1D_H, KERNEL_1D_V)
+  CASE (TypeKernelCoordOpt%OneD_H, TypeKernelCoordOpt%OneD_V)
     ans = 1
-  CASE (KERNEL_2D, KERNEL_2D_AXISYM, KERNEL_PLANE_STRAIN, &
-    & KERNEL_PLANE_STRESS)
+
+  CASE (TypeKernelCoordOpt%TwoD, &
+        TypeKernelCoordOpt%TwoD_Axisym, &
+        TypeKernelCoordOpt%PlaneStress, &
+        TypeKernelCoordOpt%PlaneStrain)
     ans = 2
+
   CASE DEFAULT
     ans = 3
+
   END SELECT
 END FUNCTION KernelGetNSDFromID
 
@@ -428,17 +362,25 @@ END FUNCTION KernelGetNSDFromID
 !                                                       KernelGetNSDFromName
 !----------------------------------------------------------------------------
 
-FUNCTION KernelGetNSDFromName(name) RESULT(Ans)
+FUNCTION KernelGetNSDFromName(name) RESULT(ans)
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
 
-  SELECT CASE (TRIM(name))
-  CASE ("1D_H", "1D_V")
+  CHARACTER(2) :: astr
+
+  astr = Uppercase(name(1:2))
+
+  SELECT CASE (astr)
+
+  CASE ("1D")
     ans = 1
-  CASE ("2D", "AXISYM", "PLANE_STRAIN", "PLANE_STRESS")
+
+  CASE ("2D", "AX", "PL")
     ans = 2
+
   CASE DEFAULT
     ans = 3
+
   END SELECT
 END FUNCTION KernelGetNSDFromName
 
@@ -446,31 +388,41 @@ END FUNCTION KernelGetNSDFromName
 !                                              KernelGetCoordinateSystemName
 !----------------------------------------------------------------------------
 
-FUNCTION KernelGetCoordinateSystemName(uid) RESULT(Ans)
+FUNCTION KernelGetCoordinateSystemName(uid) RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: uid
   TYPE(String) :: ans
 
   SELECT CASE (uid)
-  CASE (KERNEL_1D_H)
+  CASE (TypeKernelCoordOpt%OneD_H)
     ans = "1D_H"
-  CASE (KERNEL_1D_V)
+
+  CASE (TypeKernelCoordOpt%OneD_V)
     ans = "1D_V"
-  CASE (KERNEL_2D)
+
+  CASE (TypeKernelCoordOpt%TwoD)
     ans = "2D"
-  CASE (KERNEL_2D_AXISYM)
+
+  CASE (TypeKernelCoordOpt%TwoD_Axisym)
     ans = "AXISYM"
-  CASE (KERNEL_PLANE_STRAIN)
-    ans = "PLANE_STRAIN"
-  CASE (KERNEL_PLANE_STRESS)
+
+  CASE (TypeKernelCoordOpt%PlaneStress)
     ans = "PLANE_STRESS"
-  CASE (KERNEL_3D)
+
+  CASE (TypeKernelCoordOpt%PlaneStrain)
+    ans = "PLANE_STRAIN"
+
+  CASE (TypeKernelCoordOpt%ThreeD)
     ans = "3D"
-  CASE (KERNEL_CARTESIAN)
+
+  CASE (TypeKernelCoordOpt%Cartesian)
     ans = "CARTESTIAN"
-  CASE (KERNEL_CYLINDRICAL)
+
+  CASE (TypeKernelCoordOpt%Cylinderical)
     ans = "CYLINDRICAL"
-  CASE (KERNEL_SPHERICAL)
+
+  CASE (TypeKernelCoordOpt%Spherical)
     ans = "SPHERICAL"
+
   CASE DEFAULT
     ans = "CARTESTIAN"
   END SELECT
@@ -486,27 +438,38 @@ FUNCTION KernelGetCoordinateSystemID(name) RESULT(Ans)
 
   SELECT CASE (TRIM(name))
   CASE ("1D_H")
-    ans = KERNEL_1D_H
+    ans = TypeKernelCoordOpt%OneD_H
+
   CASE ("1D_V")
-    ans = KERNEL_1D_V
+    ans = TypeKernelCoordOpt%OneD_V
+
   CASE ("2D")
-    ans = KERNEL_2D
+    ans = TypeKernelCoordOpt%TwoD
+
   CASE ("AXISYM")
-    ans = KERNEL_2D_AXISYM
+    ans = TypeKernelCoordOpt%TwoD_Axisym
+
   CASE ("PLANE_STRAIN")
-    ans = KERNEL_PLANE_STRAIN
+    ans = TypeKernelCoordOpt%PlaneStrain
+
   CASE ("PLANE_STRESS")
-    ans = KERNEL_PLANE_STRESS
+    ans = TypeKernelCoordOpt%PlaneStress
+
   CASE ("3D")
-    ans = KERNEL_3D
+    ans = TypeKernelCoordOpt%ThreeD
+
   CASE ("CARTESIAN")
-    ans = KERNEL_CARTESIAN
+    ans = TypeKernelCoordOpt%Cartesian
+
   CASE ("CYLINDRICAL")
-    ans = KERNEL_CYLINDRICAL
+    ans = TypeKernelCoordOpt%Cylinderical
+
   CASE ("SPHERICAL")
-    ans = KERNEL_SPHERICAL
+    ans = TypeKernelCoordOpt%Spherical
+
   CASE DEFAULT
-    ans = KERNEL_CARTESIAN
+    ans = TypeKernelCoordOpt%default
+
   END SELECT
 END FUNCTION KernelGetCoordinateSystemID
 
