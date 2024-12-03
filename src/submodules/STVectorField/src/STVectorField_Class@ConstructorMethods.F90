@@ -252,6 +252,30 @@ END IF
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
+!                                                   VectorFieldSafeAllocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_STVectorFieldSafeAllocate1
+LOGICAL(LGT) :: isalloc
+INTEGER(I4B) :: tsize
+
+isalloc = ALLOCATED(obj)
+
+IF (.NOT. isalloc) THEN
+  ALLOCATE (obj(newsize))
+  RETURN
+END IF
+
+tsize = SIZE(obj)
+
+IF (tsize .LT. newsize) THEN
+  CALL STVectorFieldDeallocate(obj)
+  ALLOCATE (obj(newsize))
+END IF
+
+END PROCEDURE obj_STVectorFieldSafeAllocate1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
