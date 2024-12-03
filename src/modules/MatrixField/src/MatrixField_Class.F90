@@ -66,6 +66,7 @@ PUBLIC :: MatrixFieldDeallocate
 PUBLIC :: MatrixFieldDisplay
 PUBLIC :: MatrixFieldImport
 PUBLIC :: MatrixFieldExport
+PUBLIC :: MatrixFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                               MSRSparsity_
@@ -463,12 +464,8 @@ END INTERFACE
 ! summary: This routine Sets the parameter for precondition of MatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldPrecondParam( &
-    & param, &
-    & name, &
-    & engine, &
-    & lfil, mbloc, droptol, permtol, alpha, &
-    & comm, local_n, global_n)
+  MODULE SUBROUTINE SetMatrixFieldPrecondParam(param, name, engine, &
+                lfil, mbloc, droptol, permtol, alpha, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create precondition of [[MatrixField_]]
     INTEGER(I4B), INTENT(IN) :: name
@@ -741,6 +738,28 @@ INTERFACE MatrixFieldDeallocate
     TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE MatrixFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                MatrixFieldSafeAllocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-25
+! summary:  Safely allocate the matrix field
+!
+!# Introduction
+!
+! This routine will allocate obj if it is not allocated
+! It will allocate obj if its current size is less than newsize
+
+INTERFACE MatrixFieldSafeAllocate
+  MODULE SUBROUTINE obj_MatrixFieldSafeAllocate1(obj, newsize)
+    TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! allocatable Matrix field pointer
+    INTEGER(I4B), INTENT(IN) :: newsize
+    !! new size of obj
+  END SUBROUTINE obj_MatrixFieldSafeAllocate1
+END INTERFACE MatrixFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
