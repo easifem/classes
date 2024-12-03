@@ -50,6 +50,7 @@ PUBLIC :: STVectorField_Pointer
 PUBLIC :: STVectorFieldDisplay
 PUBLIC :: STVectorFieldImport
 PUBLIC :: STVectorFieldExport
+PUBLIC :: STVectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                             STVectorField_
@@ -342,6 +343,28 @@ INTERFACE STVectorFieldDeallocate
     TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE STVectorFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                STVectorFieldSafeAllocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-25
+! summary:  Safely allocate the STVector field
+!
+!# Introduction
+!
+! This routine will allocate obj if it is not allocated
+! It will allocate obj if its current size is less than newsize
+
+INTERFACE STVectorFieldSafeAllocate
+  MODULE SUBROUTINE obj_STVectorFieldSafeAllocate1(obj, newsize)
+    TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! allocatable STVector field pointer
+    INTEGER(I4B), INTENT(IN) :: newsize
+    !! new size of obj
+  END SUBROUTINE obj_STVectorFieldSafeAllocate1
+END INTERFACE STVectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
