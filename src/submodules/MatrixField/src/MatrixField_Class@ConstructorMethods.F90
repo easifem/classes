@@ -725,6 +725,30 @@ END IF
 END PROCEDURE obj_Deallocate_ptr_vector
 
 !----------------------------------------------------------------------------
+!                                                               SafeAllocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_MatrixFieldSafeAllocate1
+LOGICAL(LGT) :: isalloc
+INTEGER(I4B) :: tsize
+
+isalloc = ALLOCATED(obj)
+
+IF (.NOT. isalloc) THEN
+  ALLOCATE (obj(newsize))
+  RETURN
+END IF
+
+tsize = SIZE(obj)
+
+IF (tsize .LT. newsize) THEN
+  CALL MatrixFieldDeallocate(obj)
+  ALLOCATE (obj(newsize))
+END IF
+
+END PROCEDURE obj_MatrixFieldSafeAllocate1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
