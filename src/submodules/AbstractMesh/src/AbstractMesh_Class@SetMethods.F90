@@ -349,7 +349,7 @@ MODULE PROCEDURE obj_SetTotalMaterial2
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
-DO CONCURRENT(ii=1:obj%tElements)
+DO ii = 1, obj%tElements
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
   CALL ElemData_SetTotalMaterial(obj%elementData(ii)%ptr, n=n)
@@ -366,7 +366,7 @@ LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
-DO CONCURRENT(ii=1:obj%tElements)
+DO ii = 1, obj%tElements
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
 
@@ -392,7 +392,7 @@ LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
-DO CONCURRENT(ii=1:obj%tElements)
+DO ii = 1, obj%tElements
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
   CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
