@@ -293,6 +293,37 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                           SetFEDOFParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-23
+! summary: Set the essential parameters for constructing the FEDOF
+
+INTERFACE
+  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
+                            orderFile, ipType, basisType, alpha, beta, lambda)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity or conformity of basis defined on reference
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Type of basis functions used for interpolation on reference
+    CHARACTER(*), INTENT(IN) :: orderFile
+    !! file containing the order of each element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! basis type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! jacobian parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! ultraspherical parameter
+  END SUBROUTINE SetFEDOFParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -362,37 +393,6 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
   END SUBROUTINE obj_Initiate2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           SetFEDOFParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set the essential parameters for constructing the FEDOF
-
-INTERFACE
-  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
-                            orderFile, ipType, basisType, alpha, beta, lambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity or conformity of basis defined on reference
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Type of basis functions used for interpolation on reference
-    CHARACTER(*), INTENT(IN) :: orderFile
-    !! file containing the order of each element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! interpolation type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! basis type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! ultraspherical parameter
-  END SUBROUTINE SetFEDOFParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
