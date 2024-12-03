@@ -178,6 +178,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! This routine should be called when we are done
   !! setting the regions in the instance
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToMesh1 => obj_SetMaterialToMesh1
+  !! Set material to mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToMesh2 => obj_SetMaterialToMesh2
+  !! Set materiall to mesh
+  GENERIC, PUBLIC :: SetMaterialToMesh => &
+    SetMaterialToMesh1, SetMaterialToMesh2
+  !! Set material to mesh
 
   ! IO:
   ! @IOMethods
@@ -200,19 +207,23 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_getMeshID
   !! Returns the mesh id if available
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshIDPointer => obj_getMeshIDPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshIDPointer => obj_GetMeshIDPointer
   !! returns pointer to mesh id
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemNumPointer => obj_GetElemNumPointer
+  !! returns pointer to mesh id
+
+  ! GET:
+  ! @GetElemNumMethods
 
   PROCEDURE, PASS(obj) :: GetTotalElemNum1 => obj_GetTotalElemNum1
   PROCEDURE, PASS(obj) :: GetTotalElemNum2 => obj_GetTotalElemNum2
   PROCEDURE, PASS(obj) :: GetTotalElemNum3 => obj_GetTotalElemNum3
   PROCEDURE, PASS(obj) :: GetTotalElemNum4 => obj_GetTotalElemNum4
-  GENERIC, PUBLIC :: GetTotalElemNum => &
-    GetTotalElemNum1, GetTotalElemNum2, GetTotalElemNum3, &
-    GetTotalElemNum4
+  GENERIC, PUBLIC :: GetTotalElemNum => GetTotalElemNum1, GetTotalElemNum2, &
+    GetTotalElemNum3, GetTotalElemNum4
 
   PROCEDURE, PASS(obj) :: obj_GetElemNum1
-
   !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: obj_GetElemNum2
   !! Returns the element numbers if available
@@ -220,8 +231,8 @@ CONTAINS
   !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: obj_GetElemNum4
   !! Returns the element numbers if available
-  GENERIC, PUBLIC :: GetElemNum => obj_GetElemNum1, &
-    obj_GetElemNum2, obj_GetElemNum3, obj_GetElemNum4
+  GENERIC, PUBLIC :: GetElemNum => obj_GetElemNum1, obj_GetElemNum2, &
+    obj_GetElemNum3, obj_GetElemNum4
   !! Returns the element numbers if available
 
   PROCEDURE, PASS(obj) :: GetTotalNodeNum1 => obj_GetTotalNodeNum1
@@ -513,6 +524,41 @@ INTERFACE MeshSelectionSet
 END INTERFACE MeshSelectionSet
 
 !----------------------------------------------------------------------------
+!                                               SetMaterialToMesh@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-29
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialToMesh1(obj, dom, dim, medium, material)
+    CLASS(MeshSelection_), INTENT(INOUT) :: obj
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE obj_SetMaterialToMesh1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetMaterialToMesh@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-29
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialToMesh2(obj, dom, medium, material)
+    CLASS(MeshSelection_), INTENT(INOUT) :: obj
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE obj_SetMaterialToMesh2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -633,13 +679,44 @@ END INTERFACE
 !                                                GetMeshIDPointer@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-29
+! summary:  Get mesh id pointer
+!
+!# Introduction
+!
+! Get pointer to pointMeshID, curveMeshID, surfaceMeshID, and volumeMeshID
+! for dim = 0, 1, 2, and 3 respectively
+
 INTERFACE
   MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), POINTER, INTENT(out) :: ans(:)
+    INTEGER(I4B), POINTER, INTENT(OUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
   END SUBROUTINE obj_GetMeshIDPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElemNumPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-29
+! summary:  Get element number pointer
+!
+!# Introduction
+!
+! Get pointer to pointElemnum, curveElemnum, surfaceElemNum,
+! and volumeElemnum for dim = 0, 1, 2, and 3 respectively
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNumPointer(obj, dim, ans, tsize)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), POINTER, INTENT(OUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetElemNumPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -706,12 +783,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetTotalElemNum@GetMethods
+!                                         GetTotalElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
 ! summary:  Get total element number
+!
+!# Introduction
+!
+! Get total number of elements in the mesh selection
+! This method works when isSelectionByElemNum is true
+!
+! For dim=0 it returns the size of pointElemNum
+! For dim=1 it returns the size of curveElemNum
+! For dim=2 it returns the size of surfaceElemNum
+! For dim=3 it returns the size of volumeElemNum
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemNum1(obj, dim) RESULT(ans)
@@ -722,12 +809,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetElemNum@GetMethods
+!                                               GetElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
 ! summary:  Get total element number
+!
+!# Introduction
+!
+! Get total number of elements in the mesh selection
+! This method works when isSelectionByMeshID is true
+!
+! For dim=0, it returns size of pointElemNum
+! For dim=1, it returns size of curveElemNum
+! For dim=2, it returns size of surfaceElemNum
+! For dim=3, it returns size of volumeElemNum
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemNum2(obj, dim, dom) RESULT(ans)
@@ -739,12 +836,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetTotalElemNum@GetMethods
+!                                          GetTotalElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
 ! summary:  Get total element number
+!
+!# Introduction
+!
+! Get total number of elements in the mesh selection
+!
+! This method returns the size sum of size of pointElemNum, curveElemNum,
+! surfaceElemNum, and volumeElemNum
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemNum3(obj) RESULT(ans)
@@ -754,8 +858,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetTotalElemNum@GetMethods
+!                                          GetTotalElemNum@GetElemNumMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-29
+! summary:  Get total element number
+!
+!# Introduction
+!
+! Get total number of elements in the mesh selection
+! This method returns the total number of elements in
+! pointMeshID, curveMeshID, surfaceMeshID, and volumeMeshID
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemNum4(obj, dom) RESULT(ans)
@@ -772,13 +886,27 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
 ! summary: Returns element number if isSelectionByElemNum is true
+!
+!# Introduction
+!
+! Get element number if isSelectionByElemNum is true
+! dim = 0, returns pointElemNum
+! dim = 1, returns curveElemNum
+! dim = 2, returns surfaceElemNum
+! dim = 3, returns volumeElemNum
 
 INTERFACE
   MODULE SUBROUTINE obj_GetElemNum1(obj, dim, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dim =0, pointElemnum
+    !! dim =1, curveElemnum
+    !! dim =2, surfaceElemnum
+    !! dim =3, volumeElemnum
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! element number
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of element number
   END SUBROUTINE obj_GetElemNum1
 END INTERFACE
 
@@ -793,7 +921,8 @@ END INTERFACE
 !
 !# Introduction
 !
-! This function returns the element number. It works when
+! This routine returns the element number by using dimension.
+! It works when
 !
 ! - [x] isSelectionByMeshID
 ! - [x] isSelectionByElemNum
@@ -804,9 +933,17 @@ INTERFACE
   MODULE SUBROUTINE obj_GetElemNum2(obj, dim, dom, ans, tsize)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension
+    !! dim=0, pointElemNum
+    !! dim=1, curveElemNum
+    !! dim=2, surfaceElemNum
+    !! dim=3, volumeElemNum
     CLASS(AbstractDomain_), INTENT(IN) :: dom
+    !! abstract domain
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! element number
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of element number
   END SUBROUTINE obj_GetElemNum2
 END INTERFACE
 
@@ -817,6 +954,18 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
 ! summary: Returns element number if isSelectionByElemNum is true
+!
+!# Introduction
+!
+! Get element number for all dimension
+!
+! this routine works when isSelectionByElemNum is true
+!
+! we get element number from
+! - pointElemNum
+! - curveElemNum
+! - surfaceElemNum
+! - volumeElemNum
 
 INTERFACE
   MODULE SUBROUTINE obj_GetElemNum3(obj, ans, tsize)
@@ -837,12 +986,15 @@ END INTERFACE
 !
 !# Introduction
 !
-! This function returns the element number. It works when
+! This function returns the element number from all dimension.
+! It works when
 !
 ! - [x] isSelectionByMeshID
 ! - [x] isSelectionByElemNum
 ! - [  ] isSelectionByNodeNum
 ! - [  ] isSelectionByBox
+!
+! this routine calls obj_GetElemNum2 for dim=0,1,2,3
 
 INTERFACE
   MODULE SUBROUTINE obj_GetElemNum4(obj, dom, ans, tsize)
