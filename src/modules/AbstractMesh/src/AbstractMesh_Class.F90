@@ -3999,6 +3999,11 @@ END INTERFACE
 ! date: 2021-12-09
 ! update: 2021-12-09
 ! summary: Set the materials id of a given medium
+!
+!# Introduction
+!
+! if obj%elementData(ii)%ptr%meshID is equal to entityNum then
+! set %material(medium) = material
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterial1(obj, entityNum, medium, material)
@@ -4063,7 +4068,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
-    & iface, facetElementType, islocal)
+                                            iface, facetElementType, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
