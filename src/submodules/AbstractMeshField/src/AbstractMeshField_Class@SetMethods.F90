@@ -106,10 +106,8 @@ mesh => obj%mesh
 telem = mesh%GetTotalElements()
 
 nns = mesh%GetMaxNNE()
-CALL Reallocate(nptrs, nns)
-
 nsd = mesh%GetNSD()
-CALL Reallocate(xij, nsd, nns)
+ALLOCATE (nptrs(nns), xij(nsd, nns))
 
 !$OMP PARALLEL DO PRIVATE(iel, tsize, nptrs, xij, fevar)
 DO iel = 1, telem
@@ -198,6 +196,58 @@ DO iel = 1, telem
 END DO
 
 END PROCEDURE obj_Set4
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set5
+CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
+LOGICAL(LGT) :: bool1
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+TYPE(FEVariable_) :: fevar
+CLASS(AbstractMesh_), POINTER :: mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+bool1 = obj%fieldType .EQ. TypeField%Constant
+IF (bool1) THEN
+  CALL func%Get(fevar=fevar)
+  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  RETURN
+END IF
+
+mesh => obj%mesh
+
+nns = mesh%GetMaxNNE()
+nsd = mesh%GetNSD()
+ALLOCATE (nptrs(nns), xij(nsd, nns))
+
+CALL mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
+                           ans=nptrs, tsize=tsize)
+
+CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
+                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
+
+CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
+
+CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+
+CALL FEVariable_Deallocate(fevar)
+DEALLOCATE (xij, nptrs)
+
+mesh => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
 !

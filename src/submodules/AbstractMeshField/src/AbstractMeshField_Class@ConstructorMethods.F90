@@ -120,7 +120,7 @@ LOGICAL(LGT) :: isok
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
@@ -186,7 +186,7 @@ prefix = ""
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 
 END PROCEDURE obj_Initiate1
 
@@ -244,7 +244,7 @@ CLASS(UserFunction_), POINTER :: func
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 isok = material%IsMaterialPresent(name)
 CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
@@ -261,7 +261,7 @@ NULLIFY (func)
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 
 END PROCEDURE obj_Initiate3
 
