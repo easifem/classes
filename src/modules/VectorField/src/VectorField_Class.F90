@@ -49,6 +49,7 @@ PUBLIC :: VectorField
 PUBLIC :: VectorField_Pointer
 PUBLIC :: VectorFieldDisplay
 PUBLIC :: VectorFieldExport
+PUBLIC :: VectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                              VectorField_
@@ -314,6 +315,28 @@ INTERFACE VectorFieldDeallocate
     TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE VectorFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                VectorFieldSafeAllocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-25
+! summary:  Safely allocate the vector field
+!
+!# Introduction
+!
+! This routine will allocate obj if it is not allocated
+! It will allocate obj if its current size is less than newsize
+
+INTERFACE VectorFieldSafeAllocate
+  MODULE SUBROUTINE obj_VectorFieldSafeAllocate1(obj, newsize)
+    TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! allocatable Vector field pointer
+    INTEGER(I4B), INTENT(IN) :: newsize
+    !! new size of obj
+  END SUBROUTINE obj_VectorFieldSafeAllocate1
+END INTERFACE VectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
