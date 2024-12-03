@@ -33,7 +33,7 @@
 
 MODULE AbstractField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stdin, INT64, Constant, &
-                      Space, Time
+                      Space, Time, SpaceTime
 USE BaseType, ONLY: RealVector_, DOF_
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
@@ -49,6 +49,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = Constant
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACE = Space
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_TIME = Time
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACETIME = SpaceTime
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = Time
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = Space
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
@@ -77,6 +78,7 @@ TYPE :: TypeField_
   INTEGER(I4B) :: constant = FIELD_TYPE_CONSTANT
   INTEGER(I4B) :: space = FIELD_TYPE_SPACE
   INTEGER(I4B) :: time = FIELD_TYPE_TIME
+  INTEGER(I4B) :: spaceTime = FIELD_TYPE_SPACETIME
 END TYPE TypeField_
 
 TYPE(TypeField_), PARAMETER :: TypeField = TypeField_()
