@@ -21,6 +21,8 @@
 SUBMODULE(MeshSelection_Class) SetMethods
 USE IntVector_Method, ONLY: Append, RemoveDuplicates, isAllocated
 USE BoundingBox_Method, ONLY: BB_Append => Append
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -227,7 +229,66 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
+!                                                         SetMaterialToMesh
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterialToMesh1
+CLASS(AbstractMesh_), POINTER :: mesh
+INTEGER(I4B), POINTER :: intptr(:)
+INTEGER(I4B) :: tsize, ii, iel
+LOGICAL(LGT) :: abool
+CHARACTER(*), PARAMETER :: myname = "obj_SetMaterialToMesh1()"
+
+mesh => dom%GetMeshPointer(dim=dim)
+
+#ifdef DEBUG_VER
+abool = ASSOCIATED(mesh)
+CALL AssertError1(abool, myname, &
+                  "Mesh pointer is not associated")
+#endif
+
+! isSelectionByMeshID
+intptr => NULL()
+CALL obj%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tsize)
+
+DO ii = 1, tsize
+  CALL mesh%SetMaterial(entityNum=intptr(ii), material=material, &
+                        medium=medium)
+END DO
+
+! isSelectionByElemNum
+intptr => NULL()
+CALL obj%GetElemNumPointer(dim=dim, ans=intptr, tsize=tsize)
+
+DO ii = 1, tsize
+  iel = intptr(ii)
+  CALL mesh%SetMaterial(medium=medium, material=material, &
+                        globalElement=iel, islocal=.FALSE.)
+END DO
+
+mesh => NULL()
+intptr => NULL()
+
+END PROCEDURE obj_SetMaterialToMesh1
+
+!----------------------------------------------------------------------------
+!                                                          SetMaterialToMesh
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterialToMesh2
+INTEGER(I4B) :: ii
+
+DO ii = 0, 3
+  CALL obj%SetMaterialToMesh1(dom=dom, dim=ii, medium=medium, &
+                              material=material)
+END DO
+
+END PROCEDURE obj_SetMaterialToMesh2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

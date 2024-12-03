@@ -117,7 +117,7 @@ IF (obj%ms(1)) THEN
 
 END IF
 
-! TODO enhance GetElemNum in [[MeshSelection_]] so that it works
+! TODO enhance GetElemNum in MeshSelection_ so that it works
 ! when isSelectionByNodeNum and isSelectionByBox is true.
 
 #ifdef DEBUG_VER
@@ -256,6 +256,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! isSelectionByElemNum
 CALL obj%GetElemNum(dim=dim, ans=ans, tsize=tsize)
 
 ! isSelectionByMeshID
@@ -356,5 +357,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetElemNum4
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE GetElemNumMethods

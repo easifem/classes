@@ -47,6 +47,9 @@ END PROCEDURE obj_GetMeshID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshIDPointer
+tsize = 0
+ans => NULL()
+
 SELECT CASE (dim)
 CASE (0)
   tsize = SIZE(obj%pointMeshID)
@@ -67,6 +70,35 @@ CASE (3)
 END SELECT
 
 END PROCEDURE obj_GetMeshIDPointer
+
+!----------------------------------------------------------------------------
+!                                                       GetElemNumPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNumPointer
+tsize = 0
+ans => NULL()
+
+SELECT CASE (dim)
+CASE (0)
+  tsize = SIZE(obj%pointElemNum)
+  ans => GetPointer(obj%pointElemNum, tsize)
+
+CASE (1)
+  tsize = SIZE(obj%curveElemNum)
+  ans => GetPointer(obj%curveElemNum, tsize)
+
+CASE (2)
+  tsize = SIZE(obj%surfaceElemNum)
+  ans => GetPointer(obj%surfaceElemNum, tsize)
+
+CASE (3)
+  tsize = SIZE(obj%volumeElemNum)
+  ans => GetPointer(obj%volumeElemNum, tsize)
+
+END SELECT
+
+END PROCEDURE obj_GetElemNumPointer
 
 !----------------------------------------------------------------------------
 !                                                         isMeshIDAllocated
@@ -101,7 +133,7 @@ CASE (2)
   ans = isAllocated(obj%surfaceElemNum)
 CASE (3)
   ans = isAllocated(obj%volumeElemNum)
-CASE default
+CASE DEFAULT
   ans = .FALSE.
 END SELECT
 END PROCEDURE obj_isElemNumAllocated
