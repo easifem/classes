@@ -371,6 +371,7 @@ MODULE PROCEDURE VectorField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "VectorField_Initiate1()"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
+LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -379,16 +380,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL param%Initiate()
 
-tsize = SIZE(obj)
-
-IF (SIZE(names) .LT. tsize) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    '[INTERNAL ERROR] :: The size of names should be atleast the size of obj')
-  RETURN
-END IF
+tsize = SIZE(names)
+isok = SIZE(obj) .GE. tsize
+CALL AssertError1(isok, myname, &
+                  "Size of obj is not enough it is less than size of names")
 
 DO ii = 1, tsize
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+
+  problem = ASSOCIATED(obj(ii)%ptr)
+
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
                     ") is already associated. We don't allocate like this"// &
@@ -483,6 +484,7 @@ MODULE PROCEDURE STVectorField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "STVectorField_Initiate1()"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
+LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -491,17 +493,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL param%Initiate()
 
-tsize = SIZE(obj)
-
-IF (SIZE(names) .LT. tsize) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[ARG ERROR] :: The size of names should be atleast the size of obj')
-  RETURN
-END IF
+tsize = SIZE(names)
+isok = SIZE(obj) .GE. tsize
+CALL AssertError1(isok, myname, &
+                  "Size of obj is not enough it is less than size of names")
 
 DO ii = 1, tsize
 
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+  problem = ASSOCIATED(obj(ii)%ptr)
+
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
                     ") is already associated. We don't allocate like this"// &
@@ -595,6 +596,7 @@ MODULE PROCEDURE ScalarField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "ScalarField_Initiate1()"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
+LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -603,16 +605,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL param%Initiate()
 
-tsize = SIZE(obj)
+tsize = SIZE(names)
+isok = SIZE(obj) .GE. tsize
 
-IF (SIZE(names) .LT. tsize) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[ARG ERROR] :: The size of names should be atleast the size of obj')
-  RETURN
-END IF
+CALL AssertError1(isok, myname, &
+                  "Size of obj is not enough it is less than size of names")
 
 DO ii = 1, tsize
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+
+  problem = ASSOCIATED(obj(ii)%ptr)
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
                     ") is already associated. We don't allocate like this"// &
@@ -704,24 +706,24 @@ MODULE PROCEDURE STScalarField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "STScalarField_Initiate1()"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
+LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 CALL param%Initiate()
 
-tsize = SIZE(obj)
-
-IF (SIZE(names) .LT. tsize) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[ARG ERROR] :: The size of names should be atleast the size of obj')
-  RETURN
-END IF
+tsize = SIZE(names)
+isok = SIZE(obj) .GE. tsize
+CALL AssertError1(isok, myname, &
+                  "Size of obj is not enough it is less than size of names")
 
 DO ii = 1, tsize
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+
+  problem = ASSOCIATED(obj(ii)%ptr)
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
                     ") is already associated. We don't allocate like this"// &
@@ -731,11 +733,8 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => STScalarFieldFactory(engine)
 
-  CALL SetSTScalarFieldParam(param=param, &
-                             name=names(ii)%Chars(), &
-                             timeCompo=timeCompo, &
-                             fieldType=fieldType, &
-                             engine=engine)
+  CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
+                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
 
   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
 END DO
@@ -814,5 +813,7 @@ END PROCEDURE STScalarField_Initiate2
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE NodeFieldFactoryMethods
