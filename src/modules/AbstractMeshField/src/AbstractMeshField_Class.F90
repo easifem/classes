@@ -66,33 +66,31 @@ TYPE, ABSTRACT :: AbstractMeshField_
 
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
+
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
+
   TYPE(String) :: name
   !! name of the field
+
   TYPE(String) :: engine
   !! Engine of the field, for example
-  !! NATIVE_SERIAL,
-  !! NATIVE_OMP,
-  !! NATIVE_MPI,
-  !! PETSC,
-  !! LIS_SERIAL,
-  !! LIS_OMP,
-  !! LIS_MPI
+  !! NATIVE_SERIAL, ! NATIVE_OMP, ! NATIVE_MPI, ! PETSC, ! LIS_SERIAL,
+  !! LIS_OMP, ! LIS_MPI
+
   INTEGER(I4B) :: tSize = 0
   !! total number of elements
+
   INTEGER(I4B) :: defineOn = 0
   !! Nodal: nodal values
   !! Quadrature: quadrature values
+
   INTEGER(I4B) :: rank = 0
-  !! Scalar
-  !! Vector
-  !! Matrix
+  !! Scalar ! Vector ! Matrix
+
   INTEGER(I4B) :: varType = 0
-  !! Space
-  !! Time
-  !! SpaceTime
-  !! Constant
+  !! Space ! Time ! SpaceTime ! Constant
+
   INTEGER(I4B), ALLOCATABLE :: ss(:)
   !! shape of the data
 
@@ -105,11 +103,13 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! indxVal(iel) gives the starting index of the element iel
   !! indxVal(iel+1)-indxVal(iel) gives the total number of values in element
   !! iel
+
   REAL(DFP), ALLOCATABLE :: val(:)
   !! values, val( :, iel ) corresponds to element number iel
   !! iel is local element number
   !! also, note that val( :, iel ) will be decoded
   !! based on the information stored in s(:)
+
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Mesh which contains the information of the finite element.
 
@@ -190,11 +190,12 @@ CONTAINS
   !! Setting the value by using UserFunction_
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Setting the value by using material
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set all values by using the FEVariable
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  !! Set all values by using the FEVariable
 
-  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5
 
   ! SET:
   ! @InsertMethods
@@ -289,7 +290,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: defineOn
     !! define on Nodal or Quadrature
     INTEGER(I4B), INTENT(IN) :: varType
-    !! variable type, space, time, spaceTime, constant
+    !! variable type
+    !! how the field varies inside the element
+    !! space, time, spaceTime, constant
     INTEGER(I4B), INTENT(IN) :: rank
     !! rank of the field, scalar, vector, matrix
     INTEGER(I4B), INTENT(IN) :: s(:)
@@ -338,7 +341,7 @@ END INTERFACE AbstractMeshFieldInitiate
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+                                  usePointer)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
@@ -675,6 +678,28 @@ INTERFACE
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: fevar
   END SUBROUTINE obj_Set4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Set values in AbstractMeshField_ by AbstractMaterial
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set5(obj, func, globalElement, islocal, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
