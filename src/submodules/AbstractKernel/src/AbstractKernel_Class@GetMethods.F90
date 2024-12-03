@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractKernel_Class) GetMethods
-! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -27,8 +26,8 @@ CONTAINS
 MODULE PROCEDURE obj_GetPrefix
 CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This method should be implemented by the '//  &
-  & ' children classes of AbstractKernel_')
+                '[WIP ERROR] :: This method should be implemented by the '// &
+                  ' children classes of AbstractKernel_')
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
