@@ -18,22 +18,28 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/AbstractKernel_Class@ConstructorMethods.F90
+  PRIVATE ${src_path}/KernelComponentsMethods.F90
+          ${src_path}/AbstractKernel_Class@ConstructorMethods.F90
           ${src_path}/AbstractKernel_Class@GetMethods.F90
+          ${src_path}/KernelMatrixField_Method.F90
           ${src_path}/AbstractKernel_Class@InitiateFieldsMethods.F90
-          ${src_path}/AbstractKernel_Class@SetMethods.F90
+          ${src_path}/KernelScalarProperty_Method.F90
           ${src_path}/AbstractKernel_Class@MaterialMethods.F90
-          ${src_path}/AbstractKernel_Class@BCMethods.F90
-          ${src_path}/AbstractKernel_Class@ApplyDirichletBCMethods.F90
-          ${src_path}/AbstractKernel_Class@ApplyICMethods.F90
-          ${src_path}/AbstractKernel_Class@IOMethods.F90
-          ${src_path}/AbstractKernel_Class@ImportHDFMethods.F90
-          ${src_path}/AbstractKernel_Class@ExportHDFMethods.F90
-          ${src_path}/AbstractKernel_Class@ImportTomlMethods.F90
-          ${src_path}/AbstractKernel_Class@RunMethods.F90
-          ${src_path}/AbstractKernel_Class@AssembleMethods.F90
-          ${src_path}/AbstractKernel_Class@AssembleTanmatMethods.F90
-          ${src_path}/AbstractKernel_Class@AssembleRHSMethods.F90
-          ${src_path}/AbstractKernel_Class@SolveMethods.F90
-          ${src_path}/AbstractKernel_Class@UpdateMethods.F90
-          ${src_path}/AbstractKernel_Class@ConvergenceMethods.F90)
+          ${src_path}/KernelTensorProperty_Method.F90
+          ${src_path}/KernelElasticityProperties_Method.F90
+          # ${src_path}/AbstractKernel_Class@SetMethods.F90
+          # ${src_path}/AbstractKernel_Class@BCMethods.F90
+          # ${src_path}/AbstractKernel_Class@ApplyDirichletBCMethods.F90
+          # ${src_path}/AbstractKernel_Class@ApplyICMethods.F90
+          # ${src_path}/AbstractKernel_Class@IOMethods.F90
+          # ${src_path}/AbstractKernel_Class@ImportHDFMethods.F90
+          # ${src_path}/AbstractKernel_Class@ExportHDFMethods.F90
+          # ${src_path}/AbstractKernel_Class@ImportTomlMethods.F90
+          # ${src_path}/AbstractKernel_Class@RunMethods.F90
+          # ${src_path}/AbstractKernel_Class@AssembleMethods.F90
+          # ${src_path}/AbstractKernel_Class@AssembleTanmatMethods.F90
+          # ${src_path}/AbstractKernel_Class@AssembleRHSMethods.F90
+          # ${src_path}/AbstractKernel_Class@SolveMethods.F90
+          # ${src_path}/AbstractKernel_Class@UpdateMethods.F90
+          # ${src_path}/AbstractKernel_Class@ConvergenceMethods.F90
+)
