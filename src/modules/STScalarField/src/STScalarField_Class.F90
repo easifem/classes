@@ -52,6 +52,7 @@ PUBLIC :: STScalarFieldDisplay
 PUBLIC :: STScalarFieldImport
 PUBLIC :: STScalarFieldExport
 PUBLIC :: STScalarFieldGetTimeCompo
+PUBLIC :: STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                                              STScalarField_
@@ -314,6 +315,28 @@ INTERFACE STScalarFieldDeallocate
     CLASS(STScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE STScalarFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                STScalarFieldSafeAllocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-09-25
+! summary:  Safely allocate the scalar field
+!
+!# Introduction
+!
+! This routine will allocate obj if it is not allocated
+! It will allocate obj if its current size is less than newsize
+
+INTERFACE STScalarFieldSafeAllocate
+  MODULE SUBROUTINE obj_STScalarFieldSafeAllocate1(obj, newsize)
+    TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! allocatable scalar field pointer
+    INTEGER(I4B), INTENT(IN) :: newsize
+    !! new size of obj
+  END SUBROUTINE obj_STScalarFieldSafeAllocate1
+END INTERFACE STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
