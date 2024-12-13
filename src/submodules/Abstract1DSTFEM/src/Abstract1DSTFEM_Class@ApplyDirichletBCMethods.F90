@@ -17,19 +17,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(ElastoDynamics1DSTFEM_Class) Methods
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_stat, toml_array, &
-                 toml_len => len
-
+SUBMODULE(Abstract1DSTFEM_Class) ApplyDirichletBCMethods
 USE Lapack_Method, ONLY: GetInvMat, SymLinSolve
 
 USE TomlUtility, ONLY: GetValue, GetValue_
 
 USE StringUtility, ONLY: UpperCase
-
-USE Display_Method, ONLY: ToString, Display
 
 USE GlobalData, ONLY: stdout, &
                       CHAR_LF, &
@@ -98,73 +91,116 @@ REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                              -                     obj_ImportFromToml1
+!                                                          ApplyDirichletBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_ApplyDirichletBC
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC()"
 #endif
+
+LOGICAL(LGT) :: isDirichletLeft, isDirichletRight
+INTEGER(I4B) :: ii, nnt, nipt, jj, tsize_dbc_idof, tsize, tsize_dbc_value
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+isDirichletLeft = ASSOCIATED(obj%velocityLeft)
+isDirichletRight = ASSOCIATED(obj%velocityRight)
+tsize_dbc_idof = 0
+tsize_dbc_value = 0
+
+IF (isDirichletLeft) THEN
+  CALL DOF_GetIndex_(obj=obj%dof, ans=obj%dbc_idof, tsize=tsize, &
+                     nodenum=1)
+
+  tsize_dbc_idof = tsize
+
+  nnt = obj%elemsdForTime%nns
+  nipt = obj%elemsdForTime%nips
+
+  DO ii = 1, nipt
+    ! obj%dbc_coeff(ii) = obj%velocityLeft(obj%elemsdForTime%coord(1, ii))
+    CALL obj%velocityLeft%Get(val=obj%dbc_coeff(ii), &
+                              args=obj%elemsdForTime%coord(1, ii:ii))
+  END DO
+
+  obj%dbc_rhs(1:nnt) = 0.0
+  DO ii = 1, nipt
+    DO jj = 1, nnt
+      obj%dbc_rhs(jj) = obj%dbc_rhs(jj) + obj%elemsdForTime%N(jj, ii) &
+                        * obj%elemsdForTime%ws(ii) * obj%dbc_coeff(ii)
+    END DO
+  END DO
+
+  CALL obj%GetMt(ans=obj%mt, nrow=ii, ncol=jj)
+
+  CALL SymLinSolve(X=obj%dbc_value(1:nnt), A=obj%mt(1:nnt, 1:nnt), &
+                   B=obj%dbc_rhs(1:nnt))
+
+  tsize_dbc_value = tsize_dbc_value + nnt
+END IF
+
+IF (isDirichletRight) THEN
+  CALL DOF_GetIndex_(obj=obj%dof, ans=obj%dbc_idof(tsize_dbc_idof + 1:), &
+                     tsize=tsize, &
+                     nodenum=obj%totalSpaceNodes)
+
+  tsize_dbc_idof = tsize_dbc_idof + tsize
+
+  nnt = obj%elemsdForTime%nns
+  nipt = obj%elemsdForTime%nips
+
+  DO ii = 1, nipt
+    CALL obj%velocityRight%Get(val=obj%dbc_coeff(ii), &
+                               args=obj%elemsdForTime%coord(1, ii:ii))
+  END DO
+
+  obj%dbc_rhs(1:nnt) = 0.0
+  DO ii = 1, nipt
+    DO jj = 1, nnt
+      obj%dbc_rhs(jj) = obj%dbc_rhs(jj) + obj%elemsdForTime%N(jj, ii) &
+                        * obj%elemsdForTime%ws(ii) * obj%dbc_coeff(ii)
+    END DO
+  END DO
+
+  CALL obj%GetMt(ans=obj%mt, nrow=ii, ncol=jj)
+
+  CALL SymLinSolve( &
+    X=obj%dbc_value(tsize_dbc_value + 1:tsize_dbc_value + nnt), &
+    A=obj%mt(1:nnt, 1:nnt), B=obj%dbc_rhs(1:nnt))
+
+  tsize_dbc_value = tsize_dbc_value + nnt
+END IF
+
+IF (tsize_dbc_value .NE. 0) THEN
+  CALL CSRMatrix_GetSubMatrix(obj=obj%tanmat, &
+                              cols=obj%dbc_idof(1:tsize_dbc_idof), &
+                              submat=obj%submat, subIndices=obj%subIndices)
+
+  CALL CSRMatrix_ApplyDBC(obj=obj%tanmat, &
+                          dbcptrs=obj%dbc_idof(1:tsize_dbc_idof))
+
+  CALL RealVector_Set(obj=obj%sol, VALUE=0.0_DFP)
+  CALL RealVector_Set(obj=obj%sol, nodenum=obj%dbc_idof(1:tsize_dbc_idof), &
+                      VALUE=obj%dbc_value(1:tsize_dbc_value))
+
+  CALL CSRMatrix_Matvec(obj=obj%submat, x=obj%sol, y=obj%rhs, &
+                        scale=minus_one, addContribution=.TRUE.)
+
+  CALL RealVector_Set(obj=obj%rhs, nodenum=obj%dbc_idof(1:tsize_dbc_idof), &
+                      VALUE=obj%dbc_value(1:tsize_dbc_value))
+
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                    Solve
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Run
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Run()"
-#endif
-
-INTEGER(I4B) :: ielTime
-REAL(DFP) :: x1, tij(1, 2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-x1 = obj%spaceDomain(1)
-tij(1, 1) = obj%timeDomain(1)
-
-CALL obj%SetInitialVelocity()
-CALL obj%SetInitialDisplacement()
-
-CALL obj%WriteData()
-
-DO ielTime = 1, obj%totalTimeElements
-  CALL Display(tij(1, 1), myname//" t1: ")
-  tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
-  CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
-  CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
-  CALL obj%ApplyDirichletBC(timeElemNum=ielTime, tij=tij)
-  CALL obj%Solve()
-  CALL obj%Update()
-  CALL obj%EvalErrorNorm(timeElemNum=ielTime, tij=tij)
-  IF (MOD(ielTime, obj%outputFreq) .EQ. 0_I4B) &
-    CALL obj%WriteData()
-  tij(1, 1) = tij(1, 2)
-END DO
-
-CALL obj%WriteErrorData()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Run
+END PROCEDURE obj_ApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !
@@ -172,4 +208,4 @@ END PROCEDURE obj_Run
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE ApplyDirichletBCMethods

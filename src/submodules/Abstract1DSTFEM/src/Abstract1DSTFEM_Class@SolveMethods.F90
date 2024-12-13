@@ -17,19 +17,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(ElastoDynamics1DSTFEM_Class) Methods
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_stat, toml_array, &
-                 toml_len => len
+SUBMODULE(Abstract1DSTFEM_Class) SolveMethods
 
 USE Lapack_Method, ONLY: GetInvMat, SymLinSolve
 
 USE TomlUtility, ONLY: GetValue, GetValue_
 
 USE StringUtility, ONLY: UpperCase
-
-USE Display_Method, ONLY: ToString, Display
 
 USE GlobalData, ONLY: stdout, &
                       CHAR_LF, &
@@ -98,73 +92,36 @@ REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                              -                     obj_ImportFromToml1
+!                                                                      Solve
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_Solve
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_Solve()"
 #endif
+
+INTEGER(I4B) :: n, solverName
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+n = CSRMatrix_Size(obj%tanmat, 1)
+solverName = LIS_GMRES
 
-END PROCEDURE obj_Initiate
+CALL CSRMatrixLinSolveInitiate(ipar=obj%ipar, fpar=obj%fpar, W=obj%work, &
+                               n=n, solverName=solverName)
 
-!----------------------------------------------------------------------------
-!                                                                    Solve
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Run
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Run()"
-#endif
-
-INTEGER(I4B) :: ielTime
-REAL(DFP) :: x1, tij(1, 2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-x1 = obj%spaceDomain(1)
-tij(1, 1) = obj%timeDomain(1)
-
-CALL obj%SetInitialVelocity()
-CALL obj%SetInitialDisplacement()
-
-CALL obj%WriteData()
-
-DO ielTime = 1, obj%totalTimeElements
-  CALL Display(tij(1, 1), myname//" t1: ")
-  tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
-  CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
-  CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
-  CALL obj%ApplyDirichletBC(timeElemNum=ielTime, tij=tij)
-  CALL obj%Solve()
-  CALL obj%Update()
-  CALL obj%EvalErrorNorm(timeElemNum=ielTime, tij=tij)
-  IF (MOD(ielTime, obj%outputFreq) .EQ. 0_I4B) &
-    CALL obj%WriteData()
-  tij(1, 1) = tij(1, 2)
-END DO
-
-CALL obj%WriteErrorData()
+CALL CSRMatrix_LinSolve(obj=obj%tanmat, sol=obj%sol%val(1:n), &
+               rhs=obj%rhs%val(1:n), ipar=obj%ipar, fpar=obj%fpar, W=obj%work)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Run
+END PROCEDURE obj_Solve
 
 !----------------------------------------------------------------------------
 !
@@ -172,4 +129,4 @@ END PROCEDURE obj_Run
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE SolveMethods
