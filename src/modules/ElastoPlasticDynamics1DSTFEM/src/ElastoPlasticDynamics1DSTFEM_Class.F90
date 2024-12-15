@@ -43,6 +43,8 @@ USE String_Class, ONLY: String
 
 USE CSVFile_Class, ONLY: CSVFile_
 
+USE GnuPlot_Class, ONLY: GnuPlot_
+
 USE tomlf, ONLY: toml_table
 
 PRIVATE
@@ -70,11 +72,13 @@ INTEGER(I4B), PARAMETER :: default_verbosity = 0
 !                                                   ElastoPlasticDynamics1DSTFEM_
 !----------------------------------------------------------------------------
 
-TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
-  LOGICAL(LGT) :: calDerivatives = .FALSE.
-  !! it will be removed soon
+TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   LOGICAL(LGT) :: converged = .FALSE.
+
+  LOGICAL(LGT) :: updateTanmat = .FALSE.
+  !! whether pure Newton-Raphson method or
+  !! modified Newton-Raphson method is used
 
   REAL(DFP) :: toleranceForNR = 1.0D-8
 
@@ -89,10 +93,6 @@ TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
   ! duplicate happens. Currently it is not considered
 
   INTEGER(I4B) :: maxNIPSpace, maxNIPTime
-
-  LOGICAL(LGT) :: updateTanmat = .FALSE.
-  !! whether pure Newton-Raphson method or
-  !! modified Newton-Raphson method is used
 
   !! NOTE: it can be expected that we can improve the computational time
   !! by storing Space-Time Mass matrix to calculate residual
@@ -121,7 +121,7 @@ TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
   !! the number of quadrature points in space-time element
   !!
 
-  CHARACTER(4) :: plasticityType = "BILI"
+  CHARACTER(4) :: plasticityType = "ILH"
   !! Type of elasto-plasticity
   !! Currently linear elasticity is assumed
   !! following values are allowed
@@ -132,6 +132,9 @@ TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
   REAL(DFP), ALLOCATABLE :: plasticModulus(:), yieldStress(:), &
                             extraPlasticParam1(:), extraPlasticParam2(:)
   !! plastic modulus and etc. for each element
+
+  LOGICAL(LGT) :: saveQPData(3) = .FALSE.
+  LOGICAL(LGT) :: plotQPData(3) = .FALSE.
 
   TYPE(CSVFile_) :: stressfile, tstrainfile, pstrainfile
 
@@ -160,7 +163,10 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTangentModulus => obj_GetTangentModulus
+  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTangentModulus => obj_GetTangentModulus
+  PROCEDURE(GetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
+
+  PROCEDURE(GetQPValue_), DEFERRED, PASS(obj) :: ReturnMapping
 
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateQPVariables &
     => obj_UpdateQPVariables
@@ -168,9 +174,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Update &
     => obj_Update
-
-  ! PROCEDURE, PUBLIC, PASS(obj) :: UpdateStrain => obj_UpdateStrain
-  !! Update
 
   PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
   !! Debug mode
@@ -309,14 +312,26 @@ END INTERFACE
 ! date:   2024-12-12
 ! summary:  Get tangent modulus at quadrature points
 
-INTERFACE
- MODULE SUBROUTINE obj_GetTangentModulus(obj, spaceElemNum, stress, tstrain, &
-                                          pstrain, pparam, ans)
+! INTERFACE
+!  MODULE SUBROUTINE obj_GetTangentModulus(obj, spaceElemNum, stress, tstrain, &
+!                                           pstrain, pparam, ans)
+!     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
+!     INTEGER(I4B), INTENT(IN) :: spaceElemNum
+!     REAL(DFP), INTENT(IN) :: stress, tstrain, pstrain, pparam
+!     REAL(DFP), INTENT(OUT) :: ans
+!   END SUBROUTINE obj_GetTangentModulus
+! END INTERFACE
+
+ABSTRACT INTERFACE
+  SUBROUTINE GetQPValue_(obj, spaceElemNum, stress, tstrain, &
+                         pstrain, pparam, ans)
+    IMPORT ElastoPlasticDynamics1DSTFEM_
+    IMPORT I4b, Dfp
     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceElemNum
-    REAL(DFP), INTENT(IN) :: stress, tstrain, pstrain, pparam
-    REAL(DFP), INTENT(OUT) :: ans
-  END SUBROUTINE obj_GetTangentModulus
+    REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: ans
+  END SUBROUTINE GetQPValue_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -360,20 +375,6 @@ INTERFACE
     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Update
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Update@Methods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-12-09
-! summary:  Update Strain components
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_UpdateStrain(obj)
-!     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
-!   END SUBROUTINE obj_UpdateStrain
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !

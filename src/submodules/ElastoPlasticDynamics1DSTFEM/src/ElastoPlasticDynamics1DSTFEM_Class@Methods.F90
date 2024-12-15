@@ -147,6 +147,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 INTEGER(I4B) :: origin, stat, tsize
 LOGICAL(LGT) :: abool, isok
 REAL(DFP), ALLOCATABLE :: temprealvec(:)
+LOGICAL(LGT), ALLOCATABLE :: tempboolvec(:)
+TYPE(toml_array), POINTER :: array
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -155,13 +157,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Abstract1DSTImportFromToml(obj, table)
 
-! CALL toml_get(table, "calStress", obj%calDerivatives, .FALSE., &
-!               stat=stat, origin=origin)
+CALL toml_get(table, "updateTanmat", obj%updateTanmat, .FALSE., &
+              stat=stat, origin=origin)
 CALL toml_get(table, "toleranceForNR", obj%toleranceForNR, &
               1.0D-8, stat=stat, origin=origin)
-
 CALL toml_get(table, "maxIterNumNR", obj%maxIterNumNR, &
               10_I4B, stat=stat, origin=origin)
+
+! INFO: saveQPData
+#ifdef DEBUG_VER
+CALL Display(myName//" saveQPData")
+#endif
+
+array => NULL()
+obj%saveQPData = .TRUE.
+CALL toml_get(table, "saveQPData", array, origin=origin, stat=stat)
+CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
+
+IF (SIZE(tempboolvec) .EQ. 3) THEN
+  obj%saveQPData = tempboolvec
+ELSEIF (SIZE(tempboolvec) .GT. 0) THEN
+  CALL AssertError1(.FALSE., myname, "saveQPData should have 3 values")
+END IF
+array => NULL()
+DEALLOCATE (tempboolvec)
+
+! INFO: plotQPData
+#ifdef DEBUG_VER
+CALL Display(myName//" plotQPData")
+#endif
+
+obj%plotQPData = .TRUE.
+CALL toml_get(table, "plotQPData", array, origin=origin, stat=stat)
+CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
+
+IF (SIZE(tempboolvec) .EQ. 3) THEN
+  obj%plotQPData = tempboolvec
+ELSEIF (SIZE(tempboolvec) .GT. 0) THEN
+  CALL AssertError1(.FALSE., myname, "plotQPData should have 3 values")
+END IF
+array => NULL()
+DEALLOCATE (tempboolvec)
 
 tsize = obj%totalSpaceElements
 
@@ -444,12 +480,12 @@ END SUBROUTINE AddKst
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTangentModulus
-CHARACTER(*), PARAMETER :: myName = "obj_GetTangentModulus()"
-
-ans = obj%elasticModulus(spaceElemNum)
-
-END PROCEDURE obj_GetTangentModulus
+! MODULE PROCEDURE obj_GetTangentModulus
+! CHARACTER(*), PARAMETER :: myName = "obj_GetTangentModulus()"
+!
+! ans = obj%elasticModulus(spaceElemNum)
+!
+! END PROCEDURE obj_GetTangentModulus
 
 !----------------------------------------------------------------------------
 !
@@ -824,7 +860,7 @@ END SUBROUTINE SetQuadratureVariables
 
 MODULE PROCEDURE obj_UpdateQPVariables
 CHARACTER(*), PARAMETER :: myName = "obj_UpdateQPVariables()"
-INTEGER(I4B) :: ielSpace, nips, nipt, ii, nns
+INTEGER(I4B) :: ielSpace, nips, nipt, ii, nns, iipt
 REAL(DFP) :: xij(1, 2), u0(MAX_ORDER_SPACE + 1), dx, twobydx
 REAL(DFP) :: vals(2 * MAX_ORDER_SPACE + 1), dt
 INTEGER(I4B) :: con(MAX_ORDER_SPACE + 1)
@@ -864,9 +900,12 @@ DO ii = 1, nipt
     CALL RealMatrix_Set(obj%stress(ielSpace), Indx=ii, &
                         ExtraOption=MATRIX_COLUMN, VAL=vals(1:nips))
 
-    ! call ReturnMapping(ielSpace, obj%stress(ielSpace)%val(:, ii), &
-    ! obj%tstrain(ielSpace)%val(:, ii), obj%pstrain(ielSpace)%val(:, ii), &
-    ! obj%pparam(ielSpace)%val(:, ii))
+    DO iipt = 1, nips
+      CALL obj%ReturnMapping(ielSpace, obj%stress(ielSpace)%val(iipt, ii), &
+                             obj%tstrain(ielSpace)%val(iipt, ii), &
+                             obj%pstrain(ielSpace)%val(iipt, ii), &
+                             obj%pparam(ielSpace)%val(iipt, ii))
+    END DO
 
     xij(1, 1) = xij(1, 2)
 
@@ -908,7 +947,7 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
   CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force
   CHARACTER(*), PARAMETER :: myName = "UpdateQPVariables_EndPoint()"
-  INTEGER(I4B) :: ielSpace, nns, nips, nipt
+  INTEGER(I4B) :: ielSpace, nns, nips, nipt, iipt
   REAL(DFP) :: xij(1, 2), u0(MAX_ORDER_SPACE + 1), dx, twobydx
   REAL(DFP) :: vals(2 * MAX_ORDER_SPACE + 1)
   INTEGER(I4B) :: con(MAX_ORDER_SPACE + 1)
@@ -966,9 +1005,12 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
 
     CALL RealVector_Set(obj%stress0(ielSpace), VALUE=vals(1:nips))
 
-    ! call ReturnMapping(ielSpace, obj%stress(ielSpace)%val(:, ii), &
-    ! obj%tstrain(ielSpace)%val(:, ii), obj%pstrain(ielSpace)%val(:, ii), &
-    ! obj%pparam(ielSpace)%val(:, ii))
+    DO iipt = 1, nips
+      CALL obj%ReturnMapping(ielSpace, obj%stress0(ielSpace)%val(iipt), &
+                             obj%tstrain0(ielSpace)%val(iipt), &
+                             obj%pstrain0(ielSpace)%val(iipt), &
+                             obj%pparam0(ielSpace)%val(iipt))
+    END DO
 
     xij(1, 1) = xij(1, 2)
 
@@ -1024,11 +1066,12 @@ MODULE PROCEDURE obj_WriteData
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData()"
 #endif
 
-REAL(DFP) :: stData(obj%totalQuadPointsForSpace, 2), &
-             xij(1, 2), dx
-REAL(DFP) :: xlim(2), ylim(2), t
-INTEGER(I4B) :: ielSpace, nips, ind, ii
-CHARACTER(:), ALLOCATABLE :: aline, filename_stress
+REAL(DFP) :: stData(obj%totalQuadPointsForSpace, 4), &
+             xij(1, 2), dx, t
+INTEGER(I4B) :: ielSpace, nips, ind
+CHARACTER(:), ALLOCATABLE :: filename_stress, filename_tstrain, &
+                             filename_pstrain
+LOGICAL(LGT) :: isok1, isok2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1037,11 +1080,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Abstract1DSTWriteData(obj)
 
+isok1 = ANY(obj%saveQPData)
+isok2 = ANY(obj%plotQPData)
+
+IF (.NOT. isok1 .AND. .NOT. isok2) RETURN
+
 t = obj%currentTime
 xij(1, 1) = obj%spaceDomain(1)
 
 filename_stress = obj%result_dir//CHAR_SLASH//obj%filename//'_stress_'// &
                   tostring(obj%currentTimeStep - 1_I4B)
+filename_tstrain = obj%result_dir//CHAR_SLASH//obj%filename//'_tstrain_'// &
+                   tostring(obj%currentTimeStep - 1_I4B)
+filename_pstrain = obj%result_dir//CHAR_SLASH//obj%filename//'_pstrain_'// &
+                   tostring(obj%currentTimeStep - 1_I4B)
 
 ind = 0
 
@@ -1057,6 +1109,8 @@ DO ielSpace = 1, obj%totalSpaceElements
 
   stData(ind + 1:ind + nips, 1) = obj%elemsdForSpace%coord(1, :)
   stData(ind + 1:ind + nips, 2) = obj%stress0(ielSpace)%val
+  stData(ind + 1:ind + nips, 3) = obj%tstrain0(ielSpace)%val
+  stData(ind + 1:ind + nips, 4) = obj%pstrain0(ielSpace)%val
 
   ind = ind + nips
 
@@ -1064,41 +1118,38 @@ DO ielSpace = 1, obj%totalSpaceElements
 
 END DO
 
-CALL obj%stressfile%Initiate(filename=filename_stress//".csv", unit=100, &
-                             status="REPLACE", action="WRITE", &
-                             comment="#", separator=",")
-CALL obj%stressfile%OPEN()
+IF (obj%saveQPData(1)) &
+  CALL ExportToCSVFile(obj=obj%stressfile, filename=filename_stress, &
+                       xdata=stData(:, 1), ydata=stData(:, 2), &
+                       timeVal=obj%currentTime, &
+                       timeStep=obj%currentTimeStep - 1, &
+                       tsize=obj%totalQuadPointsForSpace)
 
-aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
-        ", time = "//tostring(obj%currentTime)//" s"
-CALL obj%stressfile%WRITE(aline)
+IF (obj%plotQPData(1)) &
+  CALL plotData(obj%plot, filename_stress, stData(:, 1), stData(:, 2), &
+                obj%spaceDomain, 'stress')
 
-aline = "x, stress"
-CALL obj%stressfile%WRITE(aline)
+IF (obj%saveQPData(2)) &
+  CALL ExportToCSVFile(obj=obj%tstrainfile, filename=filename_tstrain, &
+                       xdata=stData(:, 1), ydata=stData(:, 3), &
+                       timeVal=obj%currentTime, &
+                       timeStep=obj%currentTimeStep - 1, &
+                       tsize=obj%totalQuadPointsForSpace)
 
-DO ii = 1, obj%totalQuadPointsForSpace
-  aline = tostring(stData(ii, 1))//", "//tostring(stData(ii, 2))
-  CALL obj%stressfile%WRITE(aline)
-END DO
-CALL obj%stressfile%DEALLOCATE()
+IF (obj%plotQPData(2)) &
+  CALL plotData(obj%plot, filename_tstrain, stData(:, 1), stData(:, 3), &
+                obj%spaceDomain, 'total strain')
 
-CALL obj%plot%filename(filename_stress//'.plt')
-CALL obj%plot%options('set terminal pngcairo; set output "' &
-                      //filename_stress//'.png"')
-xlim = obj%spaceDomain
-ylim(1) = MINVAL(stDATA(:, 2))
-ylim(2) = MAXVAL(stDATA(:, 2))
-xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
-xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
-ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
-ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+IF (obj%saveQPData(3)) &
+  CALL ExportToCSVFile(obj=obj%pstrainfile, filename=filename_pstrain, &
+                       xdata=stData(:, 1), ydata=stData(:, 4), &
+                       timeVal=obj%currentTime, &
+                       timeStep=obj%currentTimeStep - 1, &
+                       tsize=obj%totalQuadPointsForSpace)
 
-CALL obj%plot%xlim(xlim)
-CALL obj%plot%ylim(ylim)
-CALL obj%plot%xlabel('x')
-CALL obj%plot%ylabel('stress')
-CALL obj%plot%plot(x1=stDATA(:, 1), y1=stDATA(:, 2))
-CALL obj%plot%reset()
+IF (obj%plotQPData(3)) &
+  CALL plotData(obj%plot, filename_pstrain, stData(:, 1), stData(:, 4), &
+                obj%spaceDomain, 'plastic strain')
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1106,6 +1157,73 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_WriteData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE ExportToCSVFile(obj, filename, xdata, ydata,  timeVal, timeStep, tsize)
+  TYPE(CSVFile_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: filename
+  REAL(DFP), INTENT(IN) :: xdata(:), ydata(:)
+  REAL(DFP), INTENT(IN) :: timeVal
+  INTEGER(I4B), INTENT(IN) :: timeStep, tsize
+  CHARACTER(:), ALLOCATABLE :: aline
+  INTEGER(I4B) :: ii
+
+  CALL obj%Initiate(filename=filename//".csv", unit=100, &
+                    status="REPLACE", action="WRITE", &
+                    comment="#", separator=",")
+  CALL obj%OPEN()
+
+  aline = "# time-step = "//tostring(timeStep - 1_I4B)// &
+          ", time = "//tostring(timeVal)//" s"
+  CALL obj%WRITE(aline)
+
+  aline = "x, stress"
+  CALL obj%WRITE(aline)
+
+  DO ii = 1, tsize
+    aline = tostring(xdata(ii))//", "//tostring(ydata(ii))
+    CALL obj%WRITE(aline)
+  END DO
+  CALL obj%DEALLOCATE()
+
+END SUBROUTINE ExportToCSVFile
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE plotData(obj, filename, xdata, ydata, xlim, ylabel)
+  TYPE(GnuPlot_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(in) :: filename
+  REAL(DFP), INTENT(IN) :: xdata(:), ydata(:)
+  REAL(DFP), INTENT(IN) :: xlim(2)
+  CHARACTER(*), INTENT(IN) :: ylabel
+
+  REAL(DFP) :: xlim0(2), ylim(2)
+
+  CALL obj%filename(filename//'.plt')
+  CALL obj%options('set terminal pngcairo; set output "' &
+                   //filename//'.png"')
+
+  xlim0 = xlim
+  ylim(1) = MINVAL(yDATA(:))
+  ylim(2) = MAXVAL(yDATA(:))
+  xlim0(1) = xlim0(1) - 0.1 * (xlim0(2) - xlim0(1))
+  xlim0(2) = xlim0(2) + 0.1 * (xlim0(2) - xlim0(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+  CALL obj%xlim(xlim0)
+  CALL obj%ylim(ylim)
+  CALL obj%xlabel('x')
+  CALL obj%ylabel(ylabel)
+  CALL obj%plot(x1=xDATA(:), y1=yDATA(:))
+  CALL obj%reset()
+
+END SUBROUTINE plotData
 
 !----------------------------------------------------------------------------
 !                                                                    Solve
