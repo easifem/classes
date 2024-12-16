@@ -560,8 +560,9 @@ IF (isTractionRight) THEN
   CALL obj%GetTractionRight(ans=obj%rhse, tsize=tsize, &
                             timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
+  con(1:tsize) = obj%totalSpaceNodes
   CALL RealVector_Add(obj=obj%rhsf, VALUE=obj%rhse(1:tsize), &
-         scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
+       scale=one, dofobj=obj%dof, nodenum=con(1:tsize), conversion=conversion)
 
 END IF
 
@@ -570,8 +571,9 @@ IF (isTractionLeft) THEN
   CALL obj%GetTractionLeft(ans=obj%rhse, tsize=tsize, &
                            timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
+  con(1:tsize) = 1
   CALL RealVector_Add(obj=obj%rhsf, VALUE=obj%rhse(1:tsize), &
-         scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
+       scale=one, dofobj=obj%dof, nodenum=con(1:tsize), conversion=conversion)
 
 END IF
 
