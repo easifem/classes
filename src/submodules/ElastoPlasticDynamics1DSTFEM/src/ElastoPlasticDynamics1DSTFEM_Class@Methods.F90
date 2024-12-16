@@ -1288,12 +1288,11 @@ DO ielTime = 1, obj%totalTimeElements
       CALL obj%Solve()
       CALL obj%Update()
     END IF
+    IF (ii .EQ. obj%maxIterNumNR) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '!! Newton-Raphson iteration did not converge !!')
+    END IF
   END DO
-
-  IF (ii .EQ. obj%maxIterNumNR) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '!! Newton-Raphson iteration did not converge !!')
-  END IF
 
   CALL obj%EvalErrorNorm(timeElemNum=ielTime, tij=tij)
 
