@@ -69,6 +69,7 @@ PUBLIC :: Abstract1DSTSet
 PUBLIC :: Abstract1DSTUpdate
 PUBLIC :: Abstract1DSTSetInitialVelocity
 PUBLIC :: Abstract1DSTApplyDirichletBC
+PUBLIC :: Abstract1DSTAssembleTanmat
 PUBLIC :: Abstract1DSTAssembleRHS
 PUBLIC :: ElementDataImportFromToml
 
@@ -904,13 +905,13 @@ END INTERFACE
 !                                                     AssembleTanmat@Methods
 !----------------------------------------------------------------------------
 
-INTERFACE
+INTERFACE Abstract1DSTAssembleTanmat
   MODULE SUBROUTINE obj_AssembleTanmat(obj, timeElemNum, tij)
     CLASS(Abstract1DSTFEM_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeElemNum
     REAL(DFP), INTENT(IN) :: tij(1, 2)
   END SUBROUTINE obj_AssembleTanmat
-END INTERFACE
+END INTERFACE Abstract1DSTAssembleTanmat
 
 !----------------------------------------------------------------------------
 !                                                        AssembleRHS@Methods

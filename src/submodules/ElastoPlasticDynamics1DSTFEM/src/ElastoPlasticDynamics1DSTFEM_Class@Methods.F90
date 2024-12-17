@@ -249,27 +249,6 @@ ELSE
   obj%yieldStress(:) = temprealvec(1:obj%totalSpaceElements)
 END IF
 
-!INFO: yieldStress
-#ifdef DEBUG_VER
-CALL Display(myName//" yieldStress")
-#endif
-
-CALL ElementDataImportFromToml(table, "yieldStress", temprealvec, &
-                               obj%totalSpaceElements, isok)
-CALL AssertError1(isok, myname, "yieldStress is not found")
-
-CALL Reallocate(obj%yieldStress, obj%totalSpaceElements)
-
-abool = SIZE(temprealvec) .EQ. 1
-IF (abool) THEN
-  obj%yieldStress = temprealvec(1)
-ELSE
-  isok = SIZE(temprealvec) .EQ. obj%totalSpaceElements
-  CALL AssertError1(isok, myname, "yieldStress should have "// &
-                    "totalSpaceElements values")
-  obj%yieldStress(:) = temprealvec(1:obj%totalSpaceElements)
-END IF
-
 !INFO: extraPlasticParam1
 #ifdef DEBUG_VER
 CALL Display(myName//" extraPlasticParam1")
@@ -460,9 +439,13 @@ SUBROUTINE AddKst(obj, ielSpace, nrow, ncol, dt)
 
       CALL obj%GetTangentModulus(spaceElemNum=ielSpace, &
                                  stress=obj%stress(ielSpace)%val(ii, jj), &
+                                 stress0=obj%stress0(ielSpace)%val(ii), &
                                  tstrain=obj%tstrain(ielSpace)%val(ii, jj), &
+                                 tstrain0=obj%tstrain0(ielSpace)%val(ii), &
                                  pstrain=obj%pstrain(ielSpace)%val(ii, jj), &
+                                 pstrain0=obj%pstrain0(ielSpace)%val(ii), &
                                  pparam=obj%pparam(ielSpace)%val(ii, jj), &
+                                 pparam0=obj%pparam0(ielSpace)%val(ii), &
                                  ans=scale)
 
       CALL OTimesTilda(a=obj%kt_tilda(1:nnt, 1:nnt), &
@@ -475,17 +458,6 @@ SUBROUTINE AddKst(obj, ielSpace, nrow, ncol, dt)
   END DO
 
 END SUBROUTINE AddKst
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_GetTangentModulus
-! CHARACTER(*), PARAMETER :: myName = "obj_GetTangentModulus()"
-!
-! ans = obj%elasticModulus(spaceElemNum)
-!
-! END PROCEDURE obj_GetTangentModulus
 
 !----------------------------------------------------------------------------
 !
@@ -795,11 +767,9 @@ END PROCEDURE obj_Set
 
 MODULE PROCEDURE obj_SetInitialVelocity
 CHARACTER(*), PARAMETER :: myName = "obj_SetInitialVelocity()"
+INTEGER(I4B) :: nnt, ii
 
 CALL Abstract1DSTSetInitialVelocity(obj)
-
-! CALL RealVector_Add(obj1=obj%sol0, dofobj1=obj%dof, idof1=1_I4B, &
-!                     obj2=obj%v0, dofobj2=obj%dof, idof2=1_I4B, scale=one)
 
 END PROCEDURE obj_SetInitialVelocity
 
@@ -897,16 +867,19 @@ DO ii = 1, nipt
     CALL RealMatrix_Set(obj%tstrain(ielSpace), Indx=ii, &
                         ExtraOption=MATRIX_COLUMN, VAL=vals(1:nips))
 
+    vals(1:nips) = vals(1:nips) - obj%pstrain(ielSpace)%val(1:nips, ii)
     vals(1:nips) = obj%elasticModulus(ielSpace) * vals(1:nips)
 
     CALL RealMatrix_Set(obj%stress(ielSpace), Indx=ii, &
                         ExtraOption=MATRIX_COLUMN, VAL=vals(1:nips))
 
     DO iipt = 1, nips
-      CALL obj%ReturnMapping(ielSpace, obj%stress(ielSpace)%val(iipt, ii), &
-                             obj%tstrain(ielSpace)%val(iipt, ii), &
-                             obj%pstrain(ielSpace)%val(iipt, ii), &
-                             obj%pparam(ielSpace)%val(iipt, ii))
+      CALL obj%ReturnMapping(spaceElemNum=ielSpace, &
+                             stress=obj%stress(ielSpace)%val(iipt, ii), &
+                             tstrain=obj%tstrain(ielSpace)%val(iipt, ii), &
+                             pstrain=obj%pstrain(ielSpace)%val(iipt, ii), &
+                             pparam=obj%pparam(ielSpace)%val(iipt, ii) &
+                             )
     END DO
 
     xij(1, 1) = xij(1, 2)
@@ -975,6 +948,14 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
                           VALUE=obj%pstrain(ielSpace)%val(:, nipt))
       CALL RealVector_Set(obj%pparam0(ielSpace), &
                           VALUE=obj%pparam(ielSpace)%val(:, nipt))
+
+      DO iipt = 1, nipt - 1
+        obj%stress(ielSpace)%val(:, iipt) = obj%stress(ielSpace)%val(:, nipt)
+       obj%tstrain(ielSpace)%val(:, iipt) = obj%tstrain(ielSpace)%val(:, nipt)
+       obj%pstrain(ielSpace)%val(:, iipt) = obj%pstrain(ielSpace)%val(:, nipt)
+        obj%pparam(ielSpace)%val(:, iipt) = obj%pparam(ielSpace)%val(:, nipt)
+      END DO
+
     END DO
 
     RETURN
@@ -1008,10 +989,13 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
     CALL RealVector_Set(obj%stress0(ielSpace), VALUE=vals(1:nips))
 
     DO iipt = 1, nips
-      CALL obj%ReturnMapping(ielSpace, obj%stress0(ielSpace)%val(iipt), &
-                             obj%tstrain0(ielSpace)%val(iipt), &
-                             obj%pstrain0(ielSpace)%val(iipt), &
-                             obj%pparam0(ielSpace)%val(iipt))
+      CALL obj%ReturnMapping(spaceElemNum=ielSpace, &
+                             stress=obj%stress0(ielSpace)%val(iipt), &
+                             tstrain=obj%tstrain0(ielSpace)%val(iipt), &
+                             pstrain=obj%pstrain0(ielSpace)%val(iipt), &
+                             pparam=obj%pparam0(ielSpace)%val(iipt) &
+                             )
+
     END DO
 
     xij(1, 1) = xij(1, 2)
@@ -1028,6 +1012,7 @@ MODULE PROCEDURE obj_Update
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Update()"
 #endif
+INTEGER(I4B) :: ii, nnt
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1231,6 +1216,92 @@ END SUBROUTINE plotData
 !                                                                    Solve
 !----------------------------------------------------------------------------
 
+! MODULE PROCEDURE obj_Run
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_Run()"
+! #endif
+!
+! INTEGER(I4B) :: ielTime, ii
+! REAL(DFP) :: x1, tij(1, 2)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! x1 = obj%spaceDomain(1)
+! tij(1, 1) = obj%timeDomain(1)
+!
+! CALL obj%SetInitialVelocity()
+! CALL obj%SetInitialDisplacement()
+! CALL UpdateQPVariables_EndPoint(obj, force=.TRUE.)
+!
+! CALL obj%WriteData()
+!
+! DO ielTime = 1, obj%totalTimeElements
+!
+!   CALL Display(tij(1, 1), myname//" t1: ")
+!
+!   tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
+!   obj%converged = .FALSE.
+!
+!   CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
+!   CALL obj%AssembleRHSF(timeElemNum=ielTime)
+!   CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
+!   CALL Abstract1DSTApplyDirichletBC(obj=obj, &
+!                                     timeElemNum=ielTime, tij=tij)
+!   CALL obj%Solve()
+!   CALL obj%Update()
+!
+!   DO ii = 1, obj%maxIterNumNR
+!     CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
+!     CALL ApplyDirichletBC_Residual(obj=obj)
+!     CALL CheckConvergence(obj)
+!
+!     IF (obj%converged) THEN
+!       CALL Display(obj%currentResidualNorm, &
+!                    "NR Converged; final norm :: ")
+!       CALL obj%Update()
+!       EXIT
+!     ELSE
+!       CALL Display(obj%currentResidualNorm, &
+!                    "NR Continue; current norm :: ")
+!       IF (obj%updateTanmat) THEN
+!         CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
+!         CALL ApplyDirichletBC_Tanmat(obj)
+!       END IF
+!       CALL obj%Solve()
+!       CALL obj%Update()
+!     END IF
+!
+!     IF (ii .EQ. obj%maxIterNumNR) THEN
+!       CALL e%RaiseError(modName//'::'//myName//' - '// &
+!         & '!! Newton-Raphson iteration did not converge !!')
+!     END IF
+!   END DO
+!
+!   CALL obj%EvalErrorNorm(timeElemNum=ielTime, tij=tij)
+!
+!   IF (MOD(ielTime, obj%outputFreq) .EQ. 0_I4B) &
+!     CALL obj%WriteData()
+!
+!   tij(1, 1) = tij(1, 2)
+!
+! END DO
+!
+! CALL obj%WriteErrorData()
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+!
+! END PROCEDURE obj_Run
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_Run
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Run()"
@@ -1260,9 +1331,11 @@ DO ielTime = 1, obj%totalTimeElements
   tij(1, 2) = tij(1, 1) + obj%timeElemLength(ielTime)
   obj%converged = .FALSE.
 
-  CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
+  CALL Abstract1DSTAssembleTanmat(obj=obj, timeElemNum=ielTime, &
+                                  tij=tij)
   CALL obj%AssembleRHSF(timeElemNum=ielTime)
-  CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
+  CALL Abstract1DSTAssembleRHS(obj=obj, timeElemNum=ielTime, &
+                               tij=tij)
   CALL Abstract1DSTApplyDirichletBC(obj=obj, &
                                     timeElemNum=ielTime, tij=tij)
   CALL obj%Solve()
@@ -1282,12 +1355,14 @@ DO ielTime = 1, obj%totalTimeElements
       CALL Display(obj%currentResidualNorm, &
                    "NR Continue; current norm :: ")
       IF (obj%updateTanmat) THEN
+        CALL Display("Tangent matrix is updated")
         CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
         CALL ApplyDirichletBC_Tanmat(obj)
       END IF
       CALL obj%Solve()
       CALL obj%Update()
     END IF
+
     IF (ii .EQ. obj%maxIterNumNR) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '!! Newton-Raphson iteration did not converge !!')

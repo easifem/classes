@@ -27,6 +27,7 @@ USE Abstract1DSTFEM_Class, ONLY: Abstract1DSTFEM_, &
                                  Abstract1DSTUpdate, &
                                  Abstract1DSTWriteData, &
                                  Abstract1DSTAssembleRHS, &
+                                 Abstract1DSTAssembleTanmat, &
                                  ElementDataImportFromToml
 USE GlobalData, ONLY: DFP, I4B, LGT
 
@@ -149,8 +150,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import data from toml file
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetResidual => obj_GetResidual
-
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! set the problem
 
@@ -163,10 +162,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
 
-  ! PROCEDURE, PUBLIC, PASS(obj) :: GetTangentModulus => obj_GetTangentModulus
-  PROCEDURE(GetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
+  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
 
-  PROCEDURE(GetQPValue_), DEFERRED, PASS(obj) :: ReturnMapping
+  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: ReturnMapping
 
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateQPVariables &
     => obj_UpdateQPVariables
@@ -245,8 +243,8 @@ END INTERFACE
 !                                                 SetInitialVelocity@Methods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-18
+!> author: Shion Shimizu
+! date:   2024-12-17
 ! summary:  Set initial velocity
 
 INTERFACE
@@ -309,29 +307,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
-! date:   2024-12-12
-! summary:  Get tangent modulus at quadrature points
-
-! INTERFACE
-!  MODULE SUBROUTINE obj_GetTangentModulus(obj, spaceElemNum, stress, tstrain, &
-!                                           pstrain, pparam, ans)
-!     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
-!     INTEGER(I4B), INTENT(IN) :: spaceElemNum
-!     REAL(DFP), INTENT(IN) :: stress, tstrain, pstrain, pparam
-!     REAL(DFP), INTENT(OUT) :: ans
-!   END SUBROUTINE obj_GetTangentModulus
-! END INTERFACE
+! date:   2024-12-17
+! summary:  Abstract interface for return mapping and
+! get tangent modulus
 
 ABSTRACT INTERFACE
-  SUBROUTINE GetQPValue_(obj, spaceElemNum, stress, tstrain, &
-                         pstrain, pparam, ans)
+  SUBROUTINE SetQPValue_(obj, spaceElemNum, stress, stress0, tstrain, &
+                         tstrain0, pstrain, pstrain0, pparam, pparam0, ans)
     IMPORT ElastoPlasticDynamics1DSTFEM_
     IMPORT I4b, Dfp
     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceElemNum
     REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam
+    REAL(DFP), OPTIONAL, INTENT(IN) :: stress0, tstrain0, pstrain0, pparam0
     REAL(DFP), OPTIONAL, INTENT(OUT) :: ans
-  END SUBROUTINE GetQPValue_
+  END SUBROUTINE SetQPValue_
 END INTERFACE
 
 !----------------------------------------------------------------------------
