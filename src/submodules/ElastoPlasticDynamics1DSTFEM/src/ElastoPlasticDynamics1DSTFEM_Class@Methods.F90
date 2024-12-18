@@ -529,23 +529,23 @@ END DO
 
 ! Traction right
 IF (isTractionRight) THEN
+  CALL obj%GetConnectivity(spaceElemNum=obj%totalSpaceElements, ans=con, tsize=nns)
   CALL obj%GetTractionRight(ans=obj%rhse, tsize=tsize, &
                             timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
-  con(1:tsize) = obj%totalSpaceNodes
   CALL RealVector_Add(obj=obj%rhsf, VALUE=obj%rhse(1:tsize), &
-       scale=one, dofobj=obj%dof, nodenum=con(1:tsize), conversion=conversion)
+         scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
 END IF
 
 ! Traction left
 IF (isTractionLeft) THEN
+  CALL obj%GetConnectivity(spaceElemNum=1, ans=con, tsize=nns)
   CALL obj%GetTractionLeft(ans=obj%rhse, tsize=tsize, &
                            timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
-  con(1:tsize) = 1
   CALL RealVector_Add(obj=obj%rhsf, VALUE=obj%rhse(1:tsize), &
-       scale=one, dofobj=obj%dof, nodenum=con(1:tsize), conversion=conversion)
+         scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
 END IF
 
