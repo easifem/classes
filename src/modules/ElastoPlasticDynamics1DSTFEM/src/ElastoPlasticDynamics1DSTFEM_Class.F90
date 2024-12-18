@@ -85,6 +85,8 @@ TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   REAL(DFP) :: currentResidualNorm = 0.0_DFP
 
+  REAL(DFP) :: currentExternalForceNorm = 0.0_DFP
+
   INTEGER(I4B) :: maxIterNumNR = 10_I4B
 
   INTEGER(I4B) :: totalQuadPointsForSpace

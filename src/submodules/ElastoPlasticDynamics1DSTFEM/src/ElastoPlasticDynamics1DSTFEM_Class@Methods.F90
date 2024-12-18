@@ -472,6 +472,7 @@ REAL(DFP) :: dx, dx_by_2, two_by_dx, dt, &
              xij(1, 2)
 INTEGER(I4B), PARAMETER :: conversion(1) = [NONE]
 LOGICAL(LGT) :: isTractionLeft, isTractionRight
+INTEGER(I4B) :: idofs(MAX_ORDER_TIME + 1), nnt
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -548,6 +549,11 @@ IF (isTractionLeft) THEN
          scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
 END IF
+
+idofs(1:nnt) = arange(1_I4B, nnt)
+obj%currentExternalForceNorm = RealVector_Norm(obj=obj%rhsf, &
+                                               dof=obj%dof, &
+                                               idof=idofs(1:nnt))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1479,8 +1485,14 @@ SUBROUTINE CheckConvergence(obj)
                                             dof=obj%dof, &
                                             idof=idofs(1:nnt))
 
-  IF (obj%currentResidualNorm .LT. obj%toleranceForNR) &
-    obj%converged = .TRUE.
+  IF (obj%currentExternalForceNorm .EQ. zero) THEN
+    IF (obj%currentResidualNorm .LT. obj%toleranceForNR) &
+      obj%converged = .TRUE.
+  ELSE
+    IF (obj%currentResidualNorm / obj%currentExternalForceNorm &
+        .LT. obj%toleranceForNR) &
+      obj%converged = .TRUE.
+  END IF
 
 END SUBROUTINE CheckConvergence
 
