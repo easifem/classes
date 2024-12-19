@@ -293,6 +293,7 @@ END DO
 
 ! Traction right
 IF (isTractionRight) THEN
+  CALL obj%GetConnectivity(spaceElemNum=obj%totalSpaceElements, ans=con, tsize=nns)
   CALL obj%GetTractionRight(ans=obj%rhse, tsize=tsize, &
                             timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 
@@ -303,6 +304,7 @@ END IF
 
 ! Traction left
 IF (isTractionLeft) THEN
+  CALL obj%GetConnectivity(spaceElemNum=1, ans=con, tsize=nns)
   CALL obj%GetTractionLeft(ans=obj%rhse, tsize=tsize, &
                            timeElemNum=timeElemNum, anscoeff=zero, scale=one)
 

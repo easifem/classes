@@ -83,6 +83,8 @@ TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   REAL(DFP) :: toleranceForNR = 1.0D-8
 
+  INTEGER(I4B) :: currentNRStep = 0
+
   REAL(DFP) :: currentResidualNorm = 0.0_DFP
 
   REAL(DFP) :: currentExternalForceNorm = 0.0_DFP
