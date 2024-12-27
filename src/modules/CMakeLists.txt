@@ -432,6 +432,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DSTFEM/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSTFEM/CMakeLists.txt)
 # ElastoPlasticDynamicsSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSTFEM/CMakeLists.txt)
+# ElastoPlasticVSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DVSTFEM/CMakeLists.txt)
 
 # ElastoDynamicsSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSDFEM/CMakeLists.txt)

@@ -17,7 +17,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE ElastoPlasticDynamics1DSTFEM_Class
+MODULE ElastoPlasticDynamics1DVSTFEM_Class
 USE Abstract1DSTFEM_Class, ONLY: Abstract1DSTFEM_, &
                                  Abstract1DSTDeallocate, &
                                  Abstract1DSTImportFromToml, &
@@ -52,12 +52,12 @@ USE tomlf, ONLY: toml_table
 
 PRIVATE
 
-PUBLIC :: ElastoPlasticDynamics1DSTFEM_
+PUBLIC :: ElastoPlasticDynamics1DVSTFEM_
 
-CHARACTER(*), PARAMETER :: modName = 'ElastoPlasticDynamics1DSTFEM_Class'
+CHARACTER(*), PARAMETER :: modName = 'ElastoPlasticDynamics1DVSTFEM_Class'
 CHARACTER(*), PARAMETER :: prefix = "ElastoPlasticDynamics1DSTFEM"
 CHARACTER(*), PARAMETER :: default_result_dir = "./results"
-CHARACTER(*), PARAMETER :: default_filename = "ElastoPlasticDynamics1DSTFEM"
+CHARACTER(*), PARAMETER :: default_filename = "ElastoPlasticDynamics1DVSTFEM"
 CHARACTER(*), PARAMETER :: default_baseInterpolationForSpace = "LAGR"
 CHARACTER(*), PARAMETER :: default_baseInterpolationForTime = "LAGR"
 CHARACTER(*), PARAMETER :: default_baseTypeForSpace = "Monomial"
@@ -72,10 +72,10 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 10
 INTEGER(I4B), PARAMETER :: default_verbosity = 0
 
 !----------------------------------------------------------------------------
-!                                                   ElastoPlasticDynamics1DSTFEM_
+!                                                   ElastoPlasticDynamics1DVSTFEM_
 !----------------------------------------------------------------------------
 
-TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
+TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DVSTFEM_
 
   LOGICAL(LGT) :: converged = .FALSE.
 
@@ -145,10 +145,11 @@ TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   TYPE(CSVFile_) :: stressfile, tstrainfile, pstrainfile
 
-  REAL(DFP) :: T_tilde(MAX_ORDER_TIME + 1, 2 * MAX_ORDER_TIME + 2)
-
   TYPE(QuadraturePoint_) :: intQuadForTime
   TYPE(ElemShapeData_) :: intElemSDForTime
+
+  PROCEDURE(SetQPValue_), POINTER, NOPASS :: UserReturnMapping => NULL()
+  !PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
 
 CONTAINS
 
@@ -163,11 +164,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! set the problem
-  PROCEDURE, PUBLIC, PASS(obj) :: SetT_tilde => obj_SetT_tilde
-  !! set the problem
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetInitialVelocity => &
-    obj_SetInitialVelocity
+  ! PROCEDURE, PUBLIC, PASS(obj) :: SetInitialVelocity => &
+  ! obj_SetInitialVelocity
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
 
@@ -175,9 +174,28 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
 
-  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMt => obj_GetMt
+  !! Get Mt matrix
 
-  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: ReturnMapping
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMtPlus => obj_GetMtPlus
+  !! Get MtPlus matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCt => obj_GetCt
+  !! Get Ct matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetWt => obj_GetWt
+  !! Get Wt matrix
+  !! It needs Ct, Mt, Mtplus
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetAt => obj_GetAt
+  !! Get At matrix
+  !! it needs wt
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBt => obj_GetBt
+  !! Get Bt matrix
+  !! It needs Wt
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetKt_Tilda => obj_GetKt_Tilda
 
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateQPVariables &
     => obj_UpdateQPVariables
@@ -192,7 +210,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData => obj_WriteData
   !! write data
 
-END TYPE ElastoPlasticDynamics1DSTFEM_
+END TYPE ElastoPlasticDynamics1DVSTFEM_
 
 !----------------------------------------------------------------------------
 !                              -                            Initiate@Methods
@@ -204,7 +222,7 @@ END TYPE ElastoPlasticDynamics1DSTFEM_
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, param)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE
@@ -219,7 +237,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE
 
@@ -233,7 +251,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
@@ -248,8 +266,116 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetCt@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-03
+! summary:  Get Ct matrix (see notes)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCt(obj, ans, nrow, ncol)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetCt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           GetMt@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-03
+! summary:  Get Mt matrix (see notes)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMt(obj, ans, nrow, ncol)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetMt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetMtPlus@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-03
+! summary:  get MtPlus matrix (see notes), this matrix is due to the jump
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMtPlus(obj, ans, nrow, ncol)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetMtPlus
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetAt@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-08-05
+! summary:  It is coefficient of Un in disp-vel relation
+!
+!# Introduction
+!
+! Make sure ct, mtplus, timeShapeFunc0 is calculated before calling this
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAt(obj)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_GetAt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetBt@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-08-05
+! summary:  It is coefficient of Vn in disp-vel relation
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetBt(obj)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_GetBt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetWt@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-07
+! summary:  Wt matrix (see notes)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetWt(obj, ans, nrow, ncol)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetWt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetKt_Tilda(obj, ans, nrow, ncol)
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetKt_Tilda
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -260,12 +386,12 @@ END INTERFACE
 ! date:   2024-12-19
 ! summary:  Set T_tilde shape functions
 
-INTERFACE
-  MODULE SUBROUTINE obj_SetT_tilde(obj, timeElemNum)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: timeElemNum
-  END SUBROUTINE obj_SetT_tilde
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_SetT_tilde(obj, timeElemNum)
+!     CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: timeElemNum
+!   END SUBROUTINE obj_SetT_tilde
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 SetInitialVelocity@Methods
@@ -275,11 +401,11 @@ END INTERFACE
 ! date:   2024-12-17
 ! summary:  Set initial velocity
 
-INTERFACE
-  MODULE SUBROUTINE obj_SetInitialVelocity(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetInitialVelocity
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_SetInitialVelocity(obj)
+!     CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
+!   END SUBROUTINE obj_SetInitialVelocity
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                Set@Methods
@@ -291,7 +417,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_AssembleTanmat(obj, timeElemNum, tij)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeElemNum
     REAL(DFP), INTENT(IN) :: tij(1, 2)
   END SUBROUTINE obj_AssembleTanmat
@@ -308,7 +434,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_AssembleRHSF(obj, timeElemNum)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeElemNum
   END SUBROUTINE obj_AssembleRHSF
 END INTERFACE
@@ -324,7 +450,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_AssembleRHS(obj, timeElemNum, tij)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeElemNum
     REAL(DFP), INTENT(IN) :: tij(1, 2)
   END SUBROUTINE obj_AssembleRHS
@@ -342,9 +468,9 @@ END INTERFACE
 ABSTRACT INTERFACE
   SUBROUTINE SetQPValue_(obj, spaceElemNum, stress, stress0, tstrain, &
                          tstrain0, pstrain, pstrain0, pparam, pparam0, ans)
-    IMPORT ElastoPlasticDynamics1DSTFEM_
-    IMPORT I4b, Dfp
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
+    IMPORT ElastoPlasticDynamics1DVSTFEM_
+    IMPORT I4B, DFP
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(inout) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceElemNum
     REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam
     REAL(DFP), OPTIONAL, INTENT(IN) :: stress0, tstrain0, pstrain0, pparam0
@@ -362,7 +488,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Run(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Run
 END INTERFACE
 
@@ -376,7 +502,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_UpdateQPVariables(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_UpdateQPVariables
 END INTERFACE
 
@@ -390,7 +516,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Update(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Update
 END INTERFACE
 
@@ -400,8 +526,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteData(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+    CLASS(ElastoPlasticDynamics1DVSTFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_WriteData
 END INTERFACE
 
-END MODULE ElastoPlasticDynamics1DSTFEM_Class
+END MODULE ElastoPlasticDynamics1DVSTFEM_Class
