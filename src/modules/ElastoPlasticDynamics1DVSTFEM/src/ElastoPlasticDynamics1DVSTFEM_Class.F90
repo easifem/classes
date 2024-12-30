@@ -87,6 +87,8 @@ TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DVSTFEM_
 
   INTEGER(I4B) :: currentNRStep = 0
 
+  INTEGER(I4B), ALLOCATABLE :: NRConvergedSteps(:)
+
   REAL(DFP) :: currentResidualNorm = 0.0_DFP
 
   REAL(DFP) :: currentExternalForceNorm = 0.0_DFP
@@ -149,7 +151,7 @@ TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DVSTFEM_
   TYPE(ElemShapeData_) :: intElemSDForTime
 
   PROCEDURE(SetQPValue_), POINTER, NOPASS :: UserReturnMapping => NULL()
-  !PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
+  PROCEDURE(SetQPValue_), POINTER, NOPASS :: UserGetTangentModulus => NULL()
 
 CONTAINS
 
