@@ -71,13 +71,21 @@ SUBROUTINE KernelInitiateTangentMatrix1(mat, linsol, fedof, nsd, nnt, engine, &
   CLASS(AbstractLinSolver_), INTENT(INOUT) :: linsol
   CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
   INTEGER(I4B), INTENT(IN) :: nsd
+  !! number of spatial dimension
   INTEGER(I4B), INTENT(IN) :: nnt
+  !! number of nodes in time domain
   CHARACTER(*), INTENT(IN) :: engine
+  !! engine name
   CHARACTER(*), INTENT(IN) :: name
+  !! name of the matrix
   CHARACTER(*), INTENT(IN) :: matrixProp
+  !! matrix property
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+  !! communicator
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+  !! local size
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+  !! global size
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelInitiateTangentMatrix1()"
@@ -129,18 +137,31 @@ SUBROUTINE KernelInitiateTangentMatrix2(mat, linsol, fedof, fedofs, name, &
                 matrixProp, physicalVarNames, spaceCompo, timeCompo, engine, &
                                         comm, local_n, global_n)
   CLASS(AbstractMatrixField_), INTENT(INOUT) :: mat
+  !! abstract matrix field
   CLASS(AbstractLinSolver_), INTENT(INOUT) :: linsol
+  !! linear solver
   CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(INOUT) :: fedof
+  !! finite element degree of freedom
   TYPE(FEDOFPointer_), OPTIONAL, INTENT(INOUT) :: fedofs(:)
+  !! finite element degrees of freedom
   CHARACTER(*), INTENT(IN) :: name
+  !! name of the tangent matrix
   CHARACTER(*), INTENT(IN) :: matrixProp
+  !! matrix property
   CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+  !! name of physical variables
   INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+  !! spatial dimension of each physical variable
   INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+  !! number of time components in the physical variable
   CHARACTER(*), INTENT(IN) :: engine
+  !! name of the engine
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+  !! communicator
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+  !! local number of rows
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+  !! global number of rows
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelInitiateTangentMatrix2()"
@@ -154,7 +175,7 @@ SUBROUTINE KernelInitiateTangentMatrix2(mat, linsol, fedof, fedofs, name, &
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
-#endif DEBUG_VER
+#endif
 
 #ifdef DEBUG_VER
   a = SIZE(physicalVarNames)

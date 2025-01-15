@@ -104,7 +104,7 @@ CALL KernelInitiateTangentMatrix(mat=obj%tanmat, &
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 
 IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()

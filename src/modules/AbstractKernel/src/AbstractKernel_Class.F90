@@ -104,10 +104,11 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Domain of the problem
 
   TYPE(FEDomainPointer_), ALLOCATABLE :: domains(:)
-  !! Domain of the problem
+  !! Domains of the problem
 
   TYPE(KernelOpt_) :: opt
   !! options of the kernel
+  !! It is defined in the KernelComponents module
 
   TYPE(KernelFields_) :: fields
   !! fields of kernel
@@ -197,6 +198,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: PostCheckError => obj_PostCheckError
   !! Check error after setting kernel
 
+  ! GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Returns the prefix of the kernel
+  !! This method should be implemented by the specific kernel
+
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
 
@@ -226,13 +234,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateMatrixFields => &
     obj_InitiateMatrixFields
   !! Initiate vector fields
-
-  ! GET:
-  ! @GetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Returns the prefix of the kernel
-  !! This method should be implemented by the specific kernel
 
   ! SET:
   ! @MaterialMethods
@@ -358,24 +359,32 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: AddDirichletBC => obj_AddDirichletBC
   !! Add dirichlet boundary conditions
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddNeumannBC => obj_AddNeumannBC
   !! Add Neumann boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddPointSource => obj_AddPointSource
   !! Add point source in the nbcPointSource
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddNitscheBC => obj_AddNitscheBC
   !! Add weak dirichlet boundary conditions to wdbc
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCPointer => &
     obj_GetDirichletBCPointer
   !! Get pointer to the pressure dirichlet boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNitscheBCPointer => &
     obj_GetNitscheBCPointer
   !! Get pointer to the pressure dirichlet boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNeumannBCPointer => &
     obj_GetNeumannBCPointer
   !! Get pointer to the neumann boundary condition for velocity
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointSourcePointer => &
     obj_GetPointSourcePointer
   !! Get point source in the nbcPointSource
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetNitscheMeshData => &
     obj_SetNitscheMeshData
   !! This routine set mesh data necessary for implementing the

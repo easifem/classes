@@ -472,104 +472,104 @@ END PROCEDURE obj_SetMatIFaceConnectData
 ! END IF
 ! END PROCEDURE obj_SetFiniteElements
 
-! !----------------------------------------------------------------------------
-! !                                                     SetQuadPointsInSpace
-! !----------------------------------------------------------------------------
-!
-! MODULE PROCEDURE obj_SetQuadPointsInSpace
-! CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace()"
-! INTEGER(I4B) :: ii, tCell, order
-! LOGICAL(LGT) :: isok
-! CLASS(FiniteElement_), POINTER :: fe
-! TYPE(CPUTime_) :: TypeCPUTime
-!
-! IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[START] ')
-! #endif DEBUG_VER
-!
-! isok = ALLOCATED(obj%cellFE)
-! IF (.NOT. isok) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: AbstractKernel_::obj%cellFE not allocated')
-!   RETURN
-! END IF
-!
-! tCell = SIZE(obj%cellFE)
-! fe => NULL()
-!
-! isok = ALLOCATED(obj%quadratureForSpace)
-! IF (.NOT. isok) THEN
-!   ALLOCATE (obj%quadratureForSpace(tCell))
-! END IF
-!
-! DO ii = 1, tCell
-!   fe => obj%cellFE(ii)%ptr
-!   CALL fe%GetParam(order=order)
-!   order = order * 2
-!   CALL fe%GetQuadraturePoints( &
-!     & quad=obj%quadratureForSpace(ii), &
-!     & quadratureType=[obj%quadTypeForSpace],  &
-!     & order=[order],  &
-!     & alpha=[obj%alphaForSpace],  &
-!     & beta=[obj%betaForSpace],  &
-!     & lambda=[obj%lambdaForSpace])
-! END DO
-!
-! NULLIFY (fe)
-!
-! !----------------------------------------------------------------------------
-! !                                                                   facetFE
-! !----------------------------------------------------------------------------
-!
-! IF (obj%nsd .GE. 2_I4B) THEN
-!
-!   isok = ALLOCATED(obj%facetFE)
-!   IF (.NOT. isok) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!       & '[INTERNAL ERROR] :: AbstractKernel_::obj%facetFE not allocated')
-!     RETURN
-!   END IF
-!
-!   tCell = SIZE(obj%facetFE)
-!   fe => NULL()
-!
-!   isok = ALLOCATED(obj%quadratureForSpace_facet)
-!   IF (.NOT. isok) THEN
-!     ALLOCATE (obj%quadratureForSpace_facet(tCell))
-!   END IF
-!
-!   DO ii = 1, tCell
-!     fe => obj%facetFE(ii)%ptr
-!     CALL fe%GetParam(order=order)
-!     order = order * 2
-!     CALL fe%GetQuadraturePoints( &
-!       & quad=obj%quadratureForSpace_facet(ii), &
-!       & quadratureType=[obj%quadTypeForSpace],  &
-!       & order=[order],  &
-!       & alpha=[obj%alphaForSpace],  &
-!       & beta=[obj%betaForSpace],  &
-!       & lambda=[obj%lambdaForSpace])
-!   END DO
-!
-! END IF
-!
-! NULLIFY (fe)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[END] ')
-! #endif DEBUG_VER
-!
-! IF (obj%showTime) THEN
-!   CALL TypeCPUTime%SetEndTime()
-!   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-!   & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-!   & methodName=myName))
-! END IF
-! END PROCEDURE obj_SetQuadPointsInSpace
+!----------------------------------------------------------------------------
+!                                                     SetQuadPointsInSpace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadPointsInSpace
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace()"
+INTEGER(I4B) :: ii, tCell, order
+LOGICAL(LGT) :: isok
+CLASS(FiniteElement_), POINTER :: fe
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%cellFE)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%cellFE not allocated')
+  RETURN
+END IF
+
+tCell = SIZE(obj%cellFE)
+fe => NULL()
+
+isok = ALLOCATED(obj%quadratureForSpace)
+IF (.NOT. isok) THEN
+  ALLOCATE (obj%quadratureForSpace(tCell))
+END IF
+
+DO ii = 1, tCell
+  fe => obj%cellFE(ii)%ptr
+  CALL fe%GetParam(order=order)
+  order = order * 2
+  CALL fe%GetQuadraturePoints( &
+    & quad=obj%quadratureForSpace(ii), &
+    & quadratureType=[obj%quadTypeForSpace],  &
+    & order=[order],  &
+    & alpha=[obj%alphaForSpace],  &
+    & beta=[obj%betaForSpace],  &
+    & lambda=[obj%lambdaForSpace])
+END DO
+
+NULLIFY (fe)
+
+!----------------------------------------------------------------------------
+!                                                                   facetFE
+!----------------------------------------------------------------------------
+
+IF (obj%nsd .GE. 2_I4B) THEN
+
+  isok = ALLOCATED(obj%facetFE)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: AbstractKernel_::obj%facetFE not allocated')
+    RETURN
+  END IF
+
+  tCell = SIZE(obj%facetFE)
+  fe => NULL()
+
+  isok = ALLOCATED(obj%quadratureForSpace_facet)
+  IF (.NOT. isok) THEN
+    ALLOCATE (obj%quadratureForSpace_facet(tCell))
+  END IF
+
+  DO ii = 1, tCell
+    fe => obj%facetFE(ii)%ptr
+    CALL fe%GetParam(order=order)
+    order = order * 2
+    CALL fe%GetQuadraturePoints( &
+      & quad=obj%quadratureForSpace_facet(ii), &
+      & quadratureType=[obj%quadTypeForSpace],  &
+      & order=[order],  &
+      & alpha=[obj%alphaForSpace],  &
+      & beta=[obj%betaForSpace],  &
+      & lambda=[obj%lambdaForSpace])
+  END DO
+
+END IF
+
+NULLIFY (fe)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+END PROCEDURE obj_SetQuadPointsInSpace
 
 !----------------------------------------------------------------------------
 !                                                     SetQuadPointsInTime
