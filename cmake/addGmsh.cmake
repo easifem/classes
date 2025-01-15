@@ -29,10 +29,7 @@ if(USE_GMSH_SDK)
   # if(APPLE) set(GMSH_LIBRARIES "${PY_VENV}/lib/libgmsh.4.13.dylib")
   # elseif(LINUX) set(GMSH_LIBRARIES "${PY_VENV}/lib/libgmsh.so.4.13") endif()
 
-  find_library(
-    GMSH_LIBRARIES
-    NAMES gmsh gmsh.4.13.0 gmsh.4.13
-    PATHS "$ENV{HOME}/.easifem/easifem/install/gmsh/lib" REQUIRED)
+  find_library(GMSH_LIBRARIES NAMES gmsh gmsh.4.13.0 gmsh.4.13 REQUIRED)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC ${GMSH_LIBRARIES})
   message(STATUS "GMSH_LIBRARIES : ${GMSH_LIBRARIES}")
