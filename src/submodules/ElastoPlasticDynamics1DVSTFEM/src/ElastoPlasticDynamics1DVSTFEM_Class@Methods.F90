@@ -24,7 +24,11 @@ USE GlobalData, ONLY: stdout, &
                       GaussChebyshevLobatto, &
                       GaussUltrasphericalLobatto, &
                       GaussJacobiLobatto, &
-                      GaussLegendre
+                      GaussLegendre, &
+                      GaussLegendreRadauRight, &
+                      GaussJacobiRadauRight, &
+                      GaussChebyshevRadauRight, &
+                      GaussUltrasphericalRadauRight
 
 USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
                                     BaseType_ToInteger, &
@@ -496,6 +500,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 order = 1_I4B
+! order = obj%timeOrder(1)
 integralOrder = 2 * order
 refCoord(1, 1) = minus_one
 refCoord(1, 2) = one
@@ -510,7 +515,7 @@ CALL LagrangeElemShapeData(obj=obj%linElemsdForTime, &
                            elemtype=elem%line, &
                            refelemCoord=refCoord, &
                            domainName="B", &
-                           order=obj%timeOrder(1))
+                           order=1_I4B)
 
 nipt = obj%elemsdfortime%nips
 int_points = obj%intQuadForTime%points
@@ -1014,7 +1019,7 @@ SUBROUTINE AssembleRHS_predict(obj, timeElemNum, tij)
 #endif
 
   INTEGER(I4B) :: con(256), ielSpace, nrow, ncol, nns, nnt, tsize, &
-                  nips, nipt, ii
+                  nips, nipt, ii, jj
 
   REAL(DFP) :: dx, dx_by_2, two_by_dx, dt, &
                dt_by_2, minus_dt_by_2, &
@@ -1099,16 +1104,19 @@ SUBROUTINE AssembleRHS_predict(obj, timeElemNum, tij)
 
       scale = scale * obj%stress0(ielSpace)%val(ii)
 
-      obj%rhse(1:nns) = obj%rhse(1:nns) + &
-                        scale * obj%elemsdForSpace%dNdXi(1:nns, 1, ii)
+      f1(1:nns) = scale * obj%elemsdForSpace%dNdXi(1:nns, 1, ii)
 
+      DO jj = 1, nipt
+        scale = obj%elemsdForTime%ws(jj) * &
+                obj%elemsdForTime%thickness(jj)
+
+        CALL OTimesTilda(a=obj%elemsdForTime%N(1:nnt, jj), &
+                         b=f1(1:nns), ans=obj%rhse, tsize=tsize, &
+                         anscoeff=one, scale=scale)
+      END DO
     END DO
 
-    DO ii = 2, nnt
-      obj%rhse((ii - 1) * nns + 1:ii * nns) = obj%rhse(1:nns)
-    END DO
-
-    CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:nnt * nns), &
+    CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:tsize), &
          scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
     xij(1, 1) = xij(1, 2)
@@ -1470,7 +1478,11 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
 
   isLobatto = ANY([GaussLegendreLobatto, GaussLobatto, &
                    GaussChebyshevLobatto, GaussJacobiLobatto, &
-                   GaussUltrasphericalLobatto] &
+                   GaussUltrasphericalLobatto, &
+                   GaussLegendreRadauRight, &
+                   GaussJacobiRadauRight, &
+                   GaussChebyshevRadauRight, &
+                   GaussUltrasphericalRadauRight] &
                   .EQ. obj%quadTypeForTime)
 
   IF (isLobatto .AND. .NOT. force0) THEN

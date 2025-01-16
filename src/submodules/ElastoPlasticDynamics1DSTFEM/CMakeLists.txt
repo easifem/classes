@@ -18,16 +18,15 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE
-  ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@Methods.F90)
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ApplyDirichletBCMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@AssembleMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ConstructorMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ErrorMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@GetMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@IOMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@RunMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@SetMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@SolveMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@UpdateMethods.F90
-    # ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@WriteDataMethods.F90)
+  PRIVATE ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@Methods.F90)
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ApplyDirichletBCMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@AssembleMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ConstructorMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@ErrorMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@GetMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@IOMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@RunMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@SetMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@SolveMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@UpdateMethods.F90
+# ${src_path}/ElastoPlasticDynamics1DSTFEM_Class@WriteDataMethods.F90)

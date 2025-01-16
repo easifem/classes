@@ -75,7 +75,7 @@ INTEGER(I4B), PARAMETER :: default_verbosity = 0
 !                                                   ElastoPlasticDynamics1DSTFEM_
 !----------------------------------------------------------------------------
 
-TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
+TYPE, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   LOGICAL(LGT) :: converged = .FALSE.
 
@@ -86,6 +86,8 @@ TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
   REAL(DFP) :: toleranceForNR = 1.0D-8
 
   INTEGER(I4B) :: currentNRStep = 0
+
+  INTEGER(I4B), ALLOCATABLE :: NRConvergedSteps(:)
 
   REAL(DFP) :: currentResidualNorm = 0.0_DFP
 
@@ -145,10 +147,11 @@ TYPE, ABSTRACT, EXTENDS(Abstract1DSTFEM_) :: ElastoPlasticDynamics1DSTFEM_
 
   TYPE(CSVFile_) :: stressfile, tstrainfile, pstrainfile
 
-  REAL(DFP) :: T_tilde(MAX_ORDER_TIME + 1, 2 * MAX_ORDER_TIME + 2)
-
   TYPE(QuadraturePoint_) :: intQuadForTime
   TYPE(ElemShapeData_) :: intElemSDForTime
+
+  PROCEDURE(SetQPValue_), POINTER, NOPASS :: UserReturnMapping => NULL()
+  PROCEDURE(SetQPValue_), POINTER, NOPASS :: UserGetTangentModulus => NULL()
 
 CONTAINS
 
@@ -163,21 +166,15 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! set the problem
-  PROCEDURE, PUBLIC, PASS(obj) :: SetT_tilde => obj_SetT_tilde
-  !! set the problem
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetInitialVelocity => &
-    obj_SetInitialVelocity
+  ! PROCEDURE, PUBLIC, PASS(obj) :: SetInitialVelocity => &
+  ! obj_SetInitialVelocity
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHSF => obj_AssembleRHSF
 
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
-
-  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: GetTangentModulus
-
-  PROCEDURE(SetQPValue_), DEFERRED, PASS(obj) :: ReturnMapping
 
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateQPVariables &
     => obj_UpdateQPVariables
@@ -253,35 +250,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-12-19
-! summary:  Set T_tilde shape functions
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetT_tilde(obj, timeElemNum)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: timeElemNum
-  END SUBROUTINE obj_SetT_tilde
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 SetInitialVelocity@Methods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-12-17
-! summary:  Set initial velocity
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetInitialVelocity(obj)
-    CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetInitialVelocity
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                                Set@Methods
 !----------------------------------------------------------------------------
 
@@ -343,7 +311,7 @@ ABSTRACT INTERFACE
   SUBROUTINE SetQPValue_(obj, spaceElemNum, stress, stress0, tstrain, &
                          tstrain0, pstrain, pstrain0, pparam, pparam0, ans)
     IMPORT ElastoPlasticDynamics1DSTFEM_
-    IMPORT I4b, Dfp
+    IMPORT I4B, DFP
     CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(inout) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceElemNum
     REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam

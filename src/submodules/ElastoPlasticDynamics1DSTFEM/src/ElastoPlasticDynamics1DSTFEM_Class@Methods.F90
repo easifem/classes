@@ -24,7 +24,11 @@ USE GlobalData, ONLY: stdout, &
                       GaussChebyshevLobatto, &
                       GaussUltrasphericalLobatto, &
                       GaussJacobiLobatto, &
-                      GaussLegendre
+                      GaussLegendre, &
+                      GaussLegendreRadauRight, &
+                      GaussJacobiRadauRight, &
+                      GaussChebyshevRadauRight, &
+                      GaussUltrasphericalRadauRight
 
 USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
                                     BaseType_ToInteger, &
@@ -96,7 +100,7 @@ REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                              -                     obj_ImportFromToml1
+!                                                   obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
@@ -136,6 +140,14 @@ IF (ALLOCATED(obj%stress0)) DEALLOCATE (obj%stress0)
 IF (ALLOCATED(obj%tstrain0)) DEALLOCATE (obj%tstrain0)
 IF (ALLOCATED(obj%pstrain0)) DEALLOCATE (obj%pstrain0)
 IF (ALLOCATED(obj%pparam0)) DEALLOCATE (obj%pparam0)
+
+IF (ALLOCATED(obj%NRConvergedSteps)) &
+  DEALLOCATE (obj%NRConvergedSteps)
+
+IF (ASSOCIATED(obj%UserReturnMapping)) &
+  obj%UserReturnMapping => NULL()
+IF (ASSOCIATED(obj%UserGetTangentModulus)) &
+  obj%UserGetTangentModulus => NULL()
 
 END PROCEDURE obj_Deallocate
 
@@ -320,7 +332,7 @@ MODULE PROCEDURE obj_AssembleTanmat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleTanmat()"
 INTEGER(I4B) :: ielSpace, nrow, ncol, nns, nnt, tcon, con(256)
 REAL(DFP) :: dt, dt_by_2, dts, dts_by_2, dx, dx_by_2, &
-             dx2, dx2_by_2, two_by_dx, xij(1, 2)
+             dx2, dx2_by_2, two_by_dx, xij(1, 2), tanMod
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -331,14 +343,19 @@ dt = obj%timeElemLength(timeElemNum)
 dt_by_2 = dt * 0.5_DFP
 dts = dt * dt
 dts_by_2 = dts * 0.5_DFP
-
-CALL obj%SetElemsdForTime(timeElemNum, tij)
+tanMod = zero
 
 nnt = obj%elemsdForTime%nns
+
+CALL obj%SetQuadForTime(timeElemNum)
+CALL obj%SetElemsdForTime(timeElemNum, tij)
 
 xij(1, 1) = obj%spaceDomain(1)
 
 CALL CSRMatrix_Set(obj=obj%tanmat, VALUE=zero)
+
+IF (obj%currentNRStep .EQ. 0) &
+  CALL obj%GetKt_Tilda(ans=obj%kt_tilda, nrow=nrow, ncol=ncol)
 
 DO ielSpace = 1, obj%totalSpaceElements
 
@@ -355,13 +372,20 @@ DO ielSpace = 1, obj%totalSpaceElements
   CALL obj%SetQuadForSpace(ielSpace)
   CALL obj%SetElemsdForSpace(ielSpace, xij)
 
-  obj%ke = 0.0_DFP
+  obj%ke = zero
 
   CALL obj%GetMs(ans=obj%ms, nrow=nrow, ncol=ncol)
   obj%ms(1:nrow, 1:ncol) = obj%density(ielSpace) * dx_by_2 &
                            * obj%ms(1:nrow, 1:ncol)
 
   nns = nrow
+
+  IF (obj%currentNRStep .EQ. 0) THEN
+    CALL obj%GetKs(ans=obj%ks, nrow=nrow, ncol=ncol)
+    tanMod = obj%elasticModulus(ielSpace)
+    obj%ks(1:nrow, 1:ncol) = tanMod * &
+                             two_by_dx * obj%ks(1:nrow, 1:ncol)
+  END IF
 
   CALL obj%GetCs(ans=obj%cs, nrow=nrow, ncol=ncol, &
                  alpha=obj%rayleighAlpha(ielSpace), &
@@ -377,12 +401,19 @@ DO ielSpace = 1, obj%totalSpaceElements
                    ans=obj%ke, nrow=nrow, ncol=ncol, &
                    anscoeff=one, scale=one)
 
+  IF (obj%currentNRStep .EQ. 0) THEN
+    CALL OTimesTilda(a=obj%kt_tilda(1:nnt, 1:nnt), &
+                     b=obj%ks(1:nns, 1:nns), &
+                     ans=obj%ke, nrow=nrow, ncol=ncol, &
+                     anscoeff=one, scale=dts_by_2)
+  ELSE
+    CALL AddKst(obj, ielSpace, nrow=nrow, ncol=ncol, dt=dt)
+  END IF
+
   CALL OTimesTilda(a=obj%mt(1:nnt, 1:nnt), &
                    b=obj%cs(1:nns, 1:nns), &
                    ans=obj%ke, nrow=nrow, ncol=ncol, &
                    anscoeff=one, scale=dt_by_2)
-
-  CALL AddKst(obj, ielSpace, nrow=nrow, ncol=ncol, dt=dt)
 
   CALL CSRMatrix_Add(obj=obj%tanmat, VALUE=obj%ke(1:nrow, 1:ncol), &
                      scale=one, storageFMT=DOF_FMT, nodenum=con(1:tcon))
@@ -427,8 +458,7 @@ SUBROUTINE AddKst(obj, iel, nrow, ncol, dt)
     scale = obj%elemsdForTime%ws(jj) * &
             obj%elemsdForTime%thickness(jj)
     CALL OuterProd_(a=obj%elemsdForTime%N(1:nnt, jj), &
-                    b=obj%T_tilde(1:nnt, jj), &
-                    ! b=obj%bt(1:nnt, jj), &
+                    b=obj%bt(1:nnt, jj), &
                     ans=obj%kt_tilda, nrow=aint1, ncol=aint2, &
                     anscoeff=zero, scale=scale)
 
@@ -440,20 +470,17 @@ SUBROUTINE AddKst(obj, iel, nrow, ncol, dt)
                       ans=obj%ks, nrow=aint1, ncol=aint2, &
                       anscoeff=zero, scale=scale)
 
-      IF (obj%currentNRStep .EQ. 0 .OR. .NOT. obj%updateTanmat) THEN
-        scale = obj%elasticModulus(iel)
-      ELSE
-        CALL obj%GetTangentModulus(spaceElemNum=iel, &
-                                   stress=obj%stress(iel)%val(ii, jj), &
-                                   stress0=obj%stress0(iel)%val(ii), &
-                                   tstrain=obj%tstrain(iel)%val(ii, jj), &
-                                   tstrain0=obj%tstrain0(iel)%val(ii), &
-                                   pstrain=obj%pstrain(iel)%val(ii, jj), &
-                                   pstrain0=obj%pstrain0(iel)%val(ii), &
-                                   pparam=obj%pparam(iel)%val(ii, jj), &
-                                   pparam0=obj%pparam0(iel)%val(ii), &
-                                   ans=scale)
-      END IF
+      CALL obj%UserGetTangentModulus(obj=obj, &
+                                     spaceElemNum=iel, &
+                                     stress=obj%stress(iel)%val(ii, jj), &
+                                     stress0=obj%stress0(iel)%val(ii), &
+                                     tstrain=obj%tstrain(iel)%val(ii, jj), &
+                                     tstrain0=obj%tstrain0(iel)%val(ii), &
+                                     pstrain=obj%pstrain(iel)%val(ii, jj), &
+                                     pstrain0=obj%pstrain0(iel)%val(ii), &
+                                     pparam=obj%pparam(iel)%val(ii, jj), &
+                                     pparam0=obj%pparam0(iel)%val(ii), &
+                                     ans=scale)
 
       CALL OTimesTilda(a=obj%kt_tilda(1:nnt, 1:nnt), &
                        b=obj%ks(1:nns, 1:nns), &
@@ -465,6 +492,31 @@ SUBROUTINE AddKst(obj, iel, nrow, ncol, dt)
   END DO
 
 END SUBROUTINE AddKst
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetTangentModulus(obj, spaceElemNum, stress, stress0, &
+                   tstrain, tstrain0, pstrain, pstrain0, pparam, pparam0, ans)
+  CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: spaceElemNum
+  REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam
+  REAL(DFP), OPTIONAL, INTENT(IN) :: stress0, tstrain0, pstrain0, pparam0
+  REAL(DFP), OPTIONAL, INTENT(OUT) :: ans
+
+  REAL(DFP) :: eMod, pMod, sigY0, f0
+
+  eMod = obj%elasticModulus(spaceElemNum)
+  pMod = obj%plasticModulus(spaceElemNum)
+
+  IF (pparam .GT. pparam0) THEN
+    ans = eMod * pMod / (eMod + pMod)
+  ELSE
+    ans = eMod
+  END IF
+
+END SUBROUTINE GetTangentModulus
 
 !----------------------------------------------------------------------------
 !
@@ -690,7 +742,7 @@ SUBROUTINE AssembleRHS_predict(obj, timeElemNum, tij)
 #endif
 
   INTEGER(I4B) :: con(256), ielSpace, nrow, ncol, nns, nnt, tsize, &
-                  nips, nipt, ii
+                  nips, nipt, ii, jj
 
   REAL(DFP) :: dx, dx_by_2, two_by_dx, dt, &
                dt_by_2, minus_dt_by_2, &
@@ -754,13 +806,13 @@ SUBROUTINE AssembleRHS_predict(obj, timeElemNum, tij)
                               tsize=nns)
 
     f1(1:nns) = MATMUL(obj%ms(1:nrow, 1:ncol), v0(1:ncol))
-    ! f2(1:nns) = MATMUL(obj%ks(1:nrow, 1:ncol), u0(1:ncol))
+    f2(1:nns) = MATMUL(obj%ks(1:nrow, 1:ncol), u0(1:ncol))
 
     CALL OTimesTilda(a=obj%timeShapeFuncBndy(1:nnt, 1), b=f1(1:nns), &
                      ans=obj%rhse, tsize=tsize, anscoeff=zero, scale=one)
 
-    ! CALL OTimesTilda(a=obj%tat(1:nnt), b=f2(1:nns), ans=obj%rhse, &
-    !                  tsize=tsize, anscoeff=one, scale=minus_dt_by_2)
+    CALL OTimesTilda(a=obj%tat(1:nnt), b=f2(1:nns), ans=obj%rhse, &
+                     tsize=tsize, anscoeff=one, scale=minus_dt_by_2)
 
   !! Body force
     CALL obj%GetBodyForce(ans=obj%rhse, tsize=tsize, spaceElemNum=ielSpace, &
@@ -773,23 +825,25 @@ SUBROUTINE AssembleRHS_predict(obj, timeElemNum, tij)
     obj%rhse = zero
 
     DO ii = 1, nips
-
-      scale = minus_dt_by_2 * obj%elemsdForSpace%ws(ii) * &
+      scale = dt_by_2 * obj%elemsdForSpace%ws(ii) * &
               obj%elemsdForSpace%thickness(ii)
 
-      scale = scale * obj%elasticModulus(ielSpace) * &
-             (obj%tstrain0(ielSpace)%Val(ii) - obj%pstrain0(ielSpace)%Val(ii))
+      scale = scale * obj%pstrain0(ielSpace)%val(ii) * &
+              obj%elasticModulus(ielSpace)
 
-      obj%rhse(1:nns) = obj%rhse(1:nns) + &
-                        scale * obj%elemsdForSpace%dNdXi(1:nns, 1, ii)
+      f1(1:nns) = scale * obj%elemsdForSpace%dNdXi(1:nns, 1, ii)
 
+      DO jj = 1, nipt
+        scale = obj%elemsdForTime%ws(jj) * &
+                obj%elemsdForTime%thickness(jj)
+
+        CALL OTimesTilda(a=obj%elemsdForTime%N(1:nnt, jj), &
+                         b=f1(1:nns), ans=obj%rhse, tsize=tsize, &
+                         anscoeff=one, scale=scale)
+      END DO
     END DO
 
-    DO ii = 2, nnt
-      obj%rhse((ii - 1) * nns + 1:ii * nns) = obj%rhse(1:nns)
-    END DO
-
-    CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:nnt * nns), &
+    CALL RealVector_Add(obj=obj%rhs, VALUE=obj%rhse(1:tsize), &
          scale=one, dofobj=obj%dof, nodenum=con(1:nns), conversion=conversion)
 
     xij(1, 1) = xij(1, 2)
@@ -886,6 +940,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Abstract1DSTSet(obj)
 
+ALLOCATE (obj%NRConvergedSteps(obj%totalTimeElements))
+
 tnodes = obj%totalVertexDOFSpace + obj%totalEdgeDOFSpace
 CALL RealVector_Initiate(obj%u_theta, tnodes)
 
@@ -912,11 +968,13 @@ CALL obj%GetCt(ans=obj%ct, nrow=nrow, ncol=ncol)
 CALL obj%GetWt(ans=obj%ct, nrow=nrow, ncol=ncol)
 CALL obj%GetAt()
 CALL obj%GetBt()
-! CALL obj%GetKt_Tilda(ans=obj%kt_tilda, nrow=nrow, ncol=ncol)
-
-CALL obj%SetT_tilde(1)
+CALL obj%GetKt_Tilda(ans=obj%kt_tilda, nrow=nrow, ncol=ncol)
 
 CALL CSRMatrix_Set(obj=obj%tanmat, VALUE=zero)
+
+!! default user subroutine
+obj%UserReturnMapping => ReturnMapping
+obj%UserGetTangentModulus => GetTangentModulus
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -924,95 +982,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Set
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetT_tilde
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set()"
-#endif
-
-INTEGER(I4B) :: order, integralOrder, ii, jj, kk, &
-                nipt, nipt_int, nnt
-REAL(DFP) :: refCoord(1, 2), ja, scale
-REAL(DFP), ALLOCATABLE :: int_points(:, :)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-order = 1_I4B
-integralOrder = 2 * order
-refCoord(1, 1) = minus_one
-refCoord(1, 2) = one
-
-CALL QuadPoint_Initiate(obj=obj%intQuadForTime, elemType=elem%line, &
-                        domainName="B", order=integralOrder, &
-                        quadratureType=GaussLegendre)
-CALL LagrangeElemShapeData(obj=obj%linElemsdForTime, &
-                           quad=obj%intQuadForTime, &
-                           nsd=obj%elemsdForTime%nsd, &
-                           xidim=obj%elemsdForTime%xidim, &
-                           elemtype=elem%line, &
-                           refelemCoord=refCoord, &
-                           domainName="B", &
-                           order=obj%timeOrder(timeElemNum))
-
-nipt = obj%elemsdfortime%nips
-int_points = obj%intQuadForTime%points
-nipt_int = SIZE(int_points, 2)
-nnt = obj%elemsdForTime%nns
-
-obj%T_tilde = zero
-
-DO ii = 1, nipt
-  refCoord(1, 2) = obj%quadForTime%points(1, ii)
-  CALL Elemsd_Set(obj=obj%linElemsdForTime, val=refCoord, &
-                  N=obj%linElemsdForTime%N, dNdXi=obj%linElemsdForTime%dNdXi)
-  int_points(1, :) = obj%linElemsdForTime%coord(1, :)
-  ja = obj%linElemsdForTime%jacobian(1, 1, 1)
-  CALL QuadPoint_Initiate(obj=obj%intQuadForTime, &
-                          points=int_points)
-  refCoord(1, 2) = one
-  CALL LagrangeElemShapeData(obj=obj%intElemsdForTime, &
-                             quad=obj%intQuadForTime, &
-                             nsd=obj%elemsdForTime%nsd, &
-                             xidim=obj%elemsdForTime%xidim, &
-                             elemtype=elem%line, &
-                             refelemCoord=refCoord, &
-                             domainName="B", &
-                             order=obj%timeOrder(timeElemNum))
-
-  DO jj = 1, nnt
-    DO kk = 1, nipt_int
-      scale = obj%intElemsdForTime%ws(kk) * half * ja
-      obj%T_tilde(jj, ii) = obj%T_tilde(jj, ii) + &
-                            scale * int_points(2, kk) * &
-                            obj%intElemsdForTime%N(jj, kk)
-    END DO
-  END DO
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_SetT_tilde
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetInitialVelocity
-CHARACTER(*), PARAMETER :: myName = "obj_SetInitialVelocity()"
-
-CALL Abstract1DSTSetInitialVelocity(obj)
-
-END PROCEDURE obj_SetInitialVelocity
 
 !----------------------------------------------------------------------------
 !
@@ -1086,7 +1055,7 @@ dt = obj%timeElemLength(obj%currentTimeStep)
 
 DO ii = 1, nipt
 
-  CALL Get_dU_theta(obj=obj, iptid=ii, dt=dt)
+  CALL Set_dU_theta(obj=obj, iptid=ii, dt=dt)
 
   DO iel = 1, obj%totalSpaceElements
 
@@ -1101,59 +1070,39 @@ DO ii = 1, nipt
     CALL obj%SetElemsdForSpace(iel, xij)
     nips = obj%elemsdForSpace%nips
 
+    u0 = zero
     dstrain = zero
     dstress = zero
-    tanMod = zero
 
-    CALL RealVector_GetValue_(obj=obj%u_theta, nodenum=con(1:nns), VALUE=u0, &
-                              tsize=tsize)
+    CALL RealVector_GetValue_(obj=obj%u_theta, nodenum=con(1:nns), &
+                              VALUE=u0, tsize=tsize)
 
     dstrain(1:nips) = twobydx * MATMUL(u0(1:tsize), &
                                        obj%elemsdForSpace%dNdXi(:, 1, :))
 
-    CALL RealMatrix_Add(obj=obj%tstrain(iel), Indx=ii, &
-                        ExtraOption=MATRIX_COLUMN, VAL=dstrain(1:nips), &
-                        scale=one, op="+")
+    obj%tstrain(iel)%val(:, ii) = obj%tstrain0(iel)%val(:) + &
+                                  dstrain(1:nips)
+    ! obj%tstrain(iel)%val(:, ii) = obj%tstrain(iel)%val(:, ii) + &
+    !                               dstrain(1:nips)
 
-    IF (obj%currentNRStep .EQ. 0 .OR. .NOT. obj%updateTanmat) THEN
+    dstress(1:nips) = obj%elasticModulus(iel) * dstrain(1:nips)
 
-      dstress(1:nips) = obj%elasticModulus(iel) * dstrain(1:nips)
+    obj%stress(iel)%val(:, ii) = obj%stress0(iel)%val(:) + &
+                                 dstress(1:nips)
+    ! obj%stress(iel)%val(:, ii) = obj%stress(iel)%val(:, ii) + &
+    !                              dstress(1:nips)
 
-    ELSE
-
-      dstress(1:nips) = obj%elasticModulus(iel) * dstrain(1:nips)
-      ! DO jj = 1, nips
-      !   !! NOTE: total strain is already updated
-      !   CALL obj%GetTangentModulus(spaceElemNum=iel, &
-      !                              stress=obj%stress(iel)%val(jj, ii), &
-      !                              stress0=obj%stress0(iel)%val(jj), &
-      !                              tstrain=obj%tstrain(iel)%val(jj, ii), &
-      !                              tstrain0=obj%tstrain0(iel)%val(jj), &
-      !                              pstrain=obj%pstrain(iel)%val(jj, ii), &
-      !                              pstrain0=obj%pstrain0(iel)%val(jj), &
-      !                              pparam=obj%pparam(iel)%val(jj, ii), &
-      !                              pparam0=obj%pparam0(iel)%val(jj), &
-      !                              ans=tanMod)
-      !
-      !   dstress(jj) = tanMod * dstrain(jj)
-      !
-      ! END DO
-
-    END IF
-
-    CALL RealMatrix_Add(obj=obj%stress(iel), Indx=ii, &
-                        ExtraOption=MATRIX_COLUMN, &
-                        VAL=dstress(1:nips), &
-                        scale=one, op="+")
-
-    !! return mapping
     DO jj = 1, nips
-      CALL obj%ReturnMapping(spaceElemNum=iel, &
-                             stress=obj%stress(iel)%val(jj, ii), &
-                             tstrain=obj%tstrain(iel)%val(jj, ii), &
-                             pstrain=obj%pstrain(iel)%val(jj, ii), &
-                             pparam=obj%pparam(iel)%val(jj, ii) &
-                             )
+      CALL obj%UserReturnMapping(obj=obj, spaceElemNum=iel, &
+                                 stress=obj%stress(iel)%val(jj, ii), &
+                                 tstrain=obj%tstrain(iel)%val(jj, ii), &
+                                 pstrain=obj%pstrain(iel)%val(jj, ii), &
+                                 pparam=obj%pparam(iel)%val(jj, ii), &
+                                 stress0=obj%stress0(iel)%val(jj), &
+                                 tstrain0=obj%tstrain0(iel)%val(jj), &
+                                 pstrain0=obj%pstrain0(iel)%val(jj), &
+                                 pparam0=obj%pparam0(iel)%val(jj) &
+                                 )
     END DO
 
     xij(1, 1) = xij(1, 2)
@@ -1168,30 +1117,75 @@ END PROCEDURE obj_UpdateQPVariables
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Get_dU_theta(obj, iptid, dt)
+SUBROUTINE Set_dU_theta(obj, iptid, dt)
   CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: iptid
   REAL(DFP), INTENT(IN) :: dt
   INTEGER(I4B) :: nnt, ii
   REAL(DFP) :: scale
 
-  ! WARN: care about discontinuity of displacement is
-  ! necessary later
-
-  ! scale = obj%at(iptid)
   ! CALL RealVector_Set(obj=obj%u_theta, VALUE=obj%u0)
   CALL RealVector_Set(obj=obj%u_theta, VALUE=zero)
 
   nnt = obj%elemsdForTime%nns
 
+  !! NOTE: if obj2 is sol0 then the dU means an increment of displacement
+  !! from the last "time" step
+  !! On the other hand, if obj2 is sol then the dU represents the increment from
+  !! the last NR iteration step
   DO ii = 1, nnt
-    ! scale = obj%bt(ii, iptid) * dt
-    scale = obj%T_tilde(ii, iptid) * dt
+    scale = obj%bt(ii, iptid) * dt
     CALL RealVector_Add(obj1=obj%u_theta, dofobj1=obj%dof, idof1=1_I4B, &
-                        obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
+                        ! obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
+                        obj2=obj%sol0, dofobj2=obj%dof, idof2=ii, scale=scale)
   END DO
 
-END SUBROUTINE Get_dU_theta
+END SUBROUTINE Set_dU_theta
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!! default return mapping for bilinear elasto-plastic model
+SUBROUTINE ReturnMapping(obj, spaceElemNum, stress, stress0, &
+                   tstrain, tstrain0, pstrain, pstrain0, pparam, pparam0, ans)
+  CLASS(ElastoPlasticDynamics1DSTFEM_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: spaceElemNum
+  REAL(DFP), INTENT(INOUT) :: stress, tstrain, pstrain, pparam
+  REAL(DFP), OPTIONAL, INTENT(IN) :: stress0, tstrain0, pstrain0, pparam0
+  REAL(DFP), OPTIONAL, INTENT(OUT) :: ans
+
+  REAL(DFP), PARAMETER :: tolF = 1.0E-8
+  REAL(DFP) :: dlam, f0, f1, signS, eMod, pMod, sigY0, &
+               tmp, signP
+
+  eMod = obj%elasticModulus(spaceElemNum)
+  pMod = obj%plasticModulus(spaceElemNum)
+  sigY0 = obj%yieldStress(spaceElemNum)
+
+  pstrain = pstrain0
+  pparam = pparam0
+
+  signS = stress / ABS(stress)
+
+  f0 = ABS(stress) - (sigY0 + pMod * pparam)
+
+  IF (f0 .LE. zero) THEN
+    !! elastic domain
+    RETURN
+  ELSE
+    f1 = f0
+    DO WHILE (f1 .GT. f0 * tolF)
+      tmp = eMod + pMod
+      dlam = f1 / tmp
+      stress = stress - dlam * eMod * signS
+      pstrain = pstrain + dlam * signS
+      pparam = pparam + ABS(dlam)
+      f1 = ABS(stress) - (sigY0 + pMod * pparam)
+    END DO
+  END IF
+
+END SUBROUTINE ReturnMapping
 
 !----------------------------------------------------------------------------
 !
@@ -1205,17 +1199,20 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
   REAL(DFP) :: xij(1, 2), u0(MAX_ORDER_SPACE + 1), dx, twobydx
   REAL(DFP) :: vals(2 * MAX_ORDER_SPACE + 1)
   INTEGER(I4B) :: con(MAX_ORDER_SPACE + 1)
-  LOGICAL(LGT) :: isLobatto, force0
+  LOGICAL(LGT) :: hasRightEndPoint, force0
 
   force0 = Input(default=.FALSE., option=force)
 
-  isLobatto = ANY([GaussLegendreLobatto, GaussLobatto, &
-                   GaussChebyshevLobatto, GaussJacobiLobatto, &
-                   GaussUltrasphericalLobatto] &
-                  .EQ. obj%quadTypeForTime)
+  hasRightEndPoint = ANY([GaussLegendreLobatto, GaussLobatto, &
+                          GaussChebyshevLobatto, GaussJacobiLobatto, &
+                          GaussUltrasphericalLobatto, &
+                          GaussLegendreRadauRight, &
+                          GaussJacobiRadauRight, GaussChebyshevRadauRight, &
+                          GaussUltrasphericalRadauRight] &
+                         .EQ. obj%quadTypeForTime)
 
-  IF (isLobatto .AND. .NOT. force0) THEN
-    CALL Display("!! lobatto quadrature you use in time !!")
+  IF (hasRightEndPoint .AND. .NOT. force0) THEN
+    ! CALL Display("!! lobatto quadrature you use in time !!")
     nipt = obj%elemsdForTime%nips
     DO ielSpace = 1, obj%totalSpaceElements
 
@@ -1240,47 +1237,8 @@ SUBROUTINE UpdateQPVariables_EndPoint(obj, force)
     RETURN
   END IF
 
-  xij(1, 1) = obj%spaceDomain(1)
-
-  DO ielSpace = 1, obj%totalSpaceElements
-
-    CALL obj%GetConnectivity(spaceElemNum=ielSpace, ans=con, tsize=nns)
-
-    dx = obj%spaceElemLength(ielSpace)
-    twobydx = 2.0_DFP / dx
-
-    xij(1, 2) = xij(1, 1) + dx
-
-    CALL obj%SetQuadForSpace(ielSpace)
-    CALL obj%SetElemsdForSpace(ielSpace, xij)
-    nips = obj%elemsdForSpace%nips
-
-    CALL RealVector_GetValue_(obj=obj%u0, nodenum=con(1:nns), VALUE=u0, &
-                              tsize=nns)
-
-    vals(1:nips) = twobydx * &
-                   MATMUL(u0(1:nns), obj%elemsdForSpace%dNdXi(:, 1, :))
-
-    CALL RealVector_Set(obj%tstrain0(ielSpace), VALUE=vals(1:nips))
-
-    vals(1:nips) = vals(1:nips) - obj%pstrain0(ielSpace)%val(1:nips)
-    vals(1:nips) = obj%elasticModulus(ielSpace) * vals(1:nips)
-
-    CALL RealVector_Set(obj%stress0(ielSpace), VALUE=vals(1:nips))
-
-    DO iipt = 1, nips
-      CALL obj%ReturnMapping(spaceElemNum=ielSpace, &
-                             stress=obj%stress0(ielSpace)%val(iipt), &
-                             tstrain=obj%tstrain0(ielSpace)%val(iipt), &
-                             pstrain=obj%pstrain0(ielSpace)%val(iipt), &
-                             pparam=obj%pparam0(ielSpace)%val(iipt) &
-                             )
-
-    END DO
-
-    xij(1, 1) = xij(1, 2)
-
-  END DO
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NOT IMPLEMENTED] lobatto or radau quadrature rule is necessary')
 
 END SUBROUTINE UpdateQPVariables_EndPoint
 
@@ -1293,9 +1251,8 @@ MODULE PROCEDURE obj_Update
 CHARACTER(*), PARAMETER :: myName = "obj_Update()"
 #endif
 
-INTEGER(I4B) :: ii, nnt
+INTEGER(I4B) :: ii, nnt, nipt
 REAL(DFP) :: scale, dt
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -1311,6 +1268,7 @@ IF (obj%converged) THEN
   obj%currentTimeStep = obj%currentTimeStep + 1
 
   nnt = obj%elemsdForTime%nns
+  nipt = obj%elemsdForTime%nips
 
   IF (obj%saveErrorNorm(1)) &
     CALL RealVector_Set(obj=obj%um1, VALUE=obj%u0)
@@ -1328,12 +1286,11 @@ IF (obj%converged) THEN
     CALL RealVector_Add(obj1=obj%v0, dofobj1=obj%dof, idof1=1_I4B, &
                         obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
 
-    scale = obj%T_tilde(ii, 3) * dt
+    !! WARN: lobatto quadrature is assumed
+    scale = obj%bt(ii, nipt) * dt
     CALL RealVector_Add(obj1=obj%u0, dofobj1=obj%dof, idof1=1_I4B, &
                         obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
   END DO
-
-  ! CALL Abstract1DSTUpdate(obj)
 
   CALL UpdateQPVariables_EndPoint(obj)
 
@@ -1560,6 +1517,8 @@ DO ielTime = 1, obj%totalTimeElements
   CALL obj%AssembleTanmat(timeElemNum=ielTime, &
                           tij=tij)
   CALL obj%AssembleRHSF(timeElemNum=ielTime)
+  ! CALL Abstract1DSTAssembleRHS(obj=obj, timeElemNum=ielTime, &
+  !                              tij=tij)
   CALL AssembleRHS_predict(obj=obj, timeElemNum=ielTime, &
                            tij=tij)
   CALL Abstract1DSTApplyDirichletBC(obj=obj, &
@@ -1569,7 +1528,6 @@ DO ielTime = 1, obj%totalTimeElements
 
   DO ii = 1, obj%maxIterNumNR
     CALL obj%AssembleRHS(timeElemNum=ielTime, tij=tij)
-    ! CALL RealVector_Display(obj%rhs, "RHS ::")
     CALL ApplyDirichletBC_Residual(obj=obj)
     CALL CheckConvergence(obj)
 
@@ -1577,13 +1535,14 @@ DO ielTime = 1, obj%totalTimeElements
       CALL Display(obj%currentNRStep, " Current NR step :: ")
       CALL Display(obj%currentResidualNorm, &
                    "NR Converged ; final norm :: ")
+      obj%NRConvergedSteps(ielTime) = obj%currentNRStep
       CALL obj%Update()
       EXIT
     ELSE
-      obj%currentNRStep = ii
       CALL Display(obj%currentNRStep, " Current NR step :: ")
       CALL Display(obj%currentResidualNorm, &
                    "NR Continue; current norm :: ")
+      obj%currentNRStep = ii
       IF (obj%updateTanmat) THEN
         CALL Display("Tangent matrix is updated")
         CALL obj%AssembleTanmat(timeElemNum=ielTime, tij=tij)
