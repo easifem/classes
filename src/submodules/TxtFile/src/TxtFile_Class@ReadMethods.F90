@@ -165,7 +165,7 @@ END PROCEDURE txt_read_Char
 MODULE PROCEDURE txt_read_Int8
 CHARACTER(*), PARAMETER :: myName = "txt_read_Int8"
 INTEGER(INT8) :: val_kind
-#include "./Read_IntScalar.F90"
+#include "./Read_IntScalar.inc"
 END PROCEDURE txt_read_Int8
 
 !----------------------------------------------------------------------------
@@ -175,7 +175,7 @@ END PROCEDURE txt_read_Int8
 MODULE PROCEDURE txt_read_Int16
 CHARACTER(*), PARAMETER :: myName = "txt_read_Int16"
 INTEGER(INT16) :: val_kind
-#include "./Read_IntScalar.F90"
+#include "./Read_IntScalar.inc"
 END PROCEDURE txt_read_Int16
 
 !----------------------------------------------------------------------------
@@ -185,7 +185,7 @@ END PROCEDURE txt_read_Int16
 MODULE PROCEDURE txt_read_Int32
 CHARACTER(*), PARAMETER :: myName = "txt_read_Int32"
 INTEGER(INT32) :: val_kind
-#include "./Read_IntScalar.F90"
+#include "./Read_IntScalar.inc"
 END PROCEDURE txt_read_Int32
 
 !----------------------------------------------------------------------------
@@ -195,7 +195,7 @@ END PROCEDURE txt_read_Int32
 MODULE PROCEDURE txt_read_Int64
 CHARACTER(*), PARAMETER :: myName = "txt_read_Int64"
 INTEGER(INT64) :: val_kind
-#include "./Read_IntScalar.F90"
+#include "./Read_IntScalar.inc"
 END PROCEDURE txt_read_Int64
 
 !----------------------------------------------------------------------------
@@ -205,7 +205,7 @@ END PROCEDURE txt_read_Int64
 MODULE PROCEDURE txt_read_Real32
 CHARACTER(*), PARAMETER :: myName = "txt_read_Real32"
 REAL(REAL32) :: val_kind
-#include "./Read_RealScalar.F90"
+#include "./Read_RealScalar.inc"
 END PROCEDURE txt_read_Real32
 
 !----------------------------------------------------------------------------
@@ -215,7 +215,7 @@ END PROCEDURE txt_read_Real32
 MODULE PROCEDURE txt_read_Real64
 CHARACTER(*), PARAMETER :: myName = "txt_read_Real64"
 REAL(REAL64) :: val_kind
-#include "./Read_RealScalar.F90"
+#include "./Read_RealScalar.inc"
 END PROCEDURE txt_read_Real64
 
 !----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ MODULE PROCEDURE txt_read_vec_Int8
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int8"
 INTEGER(INT8) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Int8
 
 !----------------------------------------------------------------------------
@@ -237,7 +237,7 @@ MODULE PROCEDURE txt_read_vec_Int16
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int16"
 INTEGER(INT16) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Int16
 
 !----------------------------------------------------------------------------
@@ -248,7 +248,7 @@ MODULE PROCEDURE txt_read_vec_Int32
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int32"
 INTEGER(INT32) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Int32
 
 !----------------------------------------------------------------------------
@@ -259,7 +259,7 @@ MODULE PROCEDURE txt_read_vec_Int64
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int64"
 INTEGER(INT64) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Int64
 
 !----------------------------------------------------------------------------
@@ -271,7 +271,7 @@ CHARACTER(*), PARAMETER :: myName = "txt_read_IntVector"
 INTEGER(I4B) :: val_kind0
 TYPE(IntVector_) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_IntVector_RealVector.F90"
+#include "./Read_IntVector_RealVector.inc"
 END PROCEDURE txt_read_IntVector
 
 !----------------------------------------------------------------------------
@@ -281,7 +281,7 @@ END PROCEDURE txt_read_IntVector
 MODULE PROCEDURE txt_read_vec_IntVector
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_IntVector"
 INTEGER(I4B) :: val_kind
-#include "./Read_Vector_IntVector_RealVector.F90"
+#include "./Read_Vector_IntVector_RealVector.inc"
 END PROCEDURE txt_read_vec_IntVector
 
 !----------------------------------------------------------------------------
@@ -292,7 +292,7 @@ MODULE PROCEDURE txt_read_vec_Real32
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Real32"
 REAL(REAL32) :: val_kind
 TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Real32
 
 !----------------------------------------------------------------------------
@@ -303,7 +303,7 @@ MODULE PROCEDURE txt_read_vec_Real64
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Real64"
 REAL(REAL64) :: val_kind
 TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
+#include "./Read_Vector.inc"
 END PROCEDURE txt_read_vec_Real64
 
 !----------------------------------------------------------------------------
@@ -315,7 +315,7 @@ CHARACTER(*), PARAMETER :: myName = "txt_read_RealVector"
 REAL(DFP) :: val_kind0
 TYPE(RealVector_) :: val_kind
 TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_IntVector_RealVector.F90"
+#include "./Read_IntVector_RealVector.inc"
 END PROCEDURE txt_read_RealVector
 
 !----------------------------------------------------------------------------
@@ -325,7 +325,7 @@ END PROCEDURE txt_read_RealVector
 MODULE PROCEDURE txt_read_vec_RealVector
 CHARACTER(*), PARAMETER :: myName = "txt_read_vec_RealVector"
 REAL(DFP) :: val_kind
-#include "./Read_Vector_IntVector_RealVector.F90"
+#include "./Read_Vector_IntVector_RealVector.inc"
 END PROCEDURE txt_read_vec_RealVector
 
 !----------------------------------------------------------------------------
@@ -336,7 +336,7 @@ MODULE PROCEDURE txt_read_mat_Int8
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int8"
 INTEGER(INT8) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Int8
 
 !----------------------------------------------------------------------------
@@ -347,7 +347,7 @@ MODULE PROCEDURE txt_read_mat_Int16
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int16"
 INTEGER(INT16) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Int16
 
 !----------------------------------------------------------------------------
@@ -358,7 +358,7 @@ MODULE PROCEDURE txt_read_mat_Int32
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int32"
 INTEGER(INT32) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Int32
 
 !----------------------------------------------------------------------------
@@ -369,7 +369,7 @@ MODULE PROCEDURE txt_read_mat_Int64
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int64"
 INTEGER(INT64) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Int64
 
 !----------------------------------------------------------------------------
@@ -380,7 +380,7 @@ MODULE PROCEDURE txt_read_mat_Real32
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Real32"
 REAL(REAL32) :: val_kind
 TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Real32
 
 !----------------------------------------------------------------------------
@@ -391,7 +391,7 @@ MODULE PROCEDURE txt_read_mat_Real64
 CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Real64"
 REAL(REAL64) :: val_kind
 TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
+#include "./Read_Matrix.inc"
 END PROCEDURE txt_read_mat_Real64
 
 !----------------------------------------------------------------------------

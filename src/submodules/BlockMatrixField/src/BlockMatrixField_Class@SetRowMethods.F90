@@ -15,6 +15,234 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(BlockMatrixField_Class) SetRowMethods
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This module contains constructor method for [[MatrixField_]]
+
+SUBMODULE(BlockMatrixField_Class) SetRowMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                    SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow1
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow1"
+CALL e%raiseError(modName//'::'//myName//" - "// &
+& 'This routine is not callable for BlockMatrixField')
+END PROCEDURE obj_SetRow1
+
+!----------------------------------------------------------------------------
+!                                                                 SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow2
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & idof=idof, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & idof=idof, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & idof=idof, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow2
+
+!----------------------------------------------------------------------------
+!                                                                 SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow3
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow3
+
+!----------------------------------------------------------------------------
+!                                                                    SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow4
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow4
+
+!----------------------------------------------------------------------------
+!                                                                    SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow5
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow5
+
+!----------------------------------------------------------------------------
+!                                                                    SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow6
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow6
+
+!----------------------------------------------------------------------------
+!                                                                    SetRow
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetRow7
+REAL(DFP), POINTER :: realvec(:)
+IF (PRESENT(scalarVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=scalarVal)
+IF (PRESENT(vecVal)) &
+  & CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=vecVal)
+IF (PRESENT(nodeFieldVal)) THEN
+  realvec => nodeFieldVal%getPointer()
+  CALL SetRow( &
+  & obj=obj%mat, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo, &
+  & VALUE=realvec)
+END IF
+realvec => NULL()
+END PROCEDURE obj_SetRow7
+
+!----------------------------------------------------------------------------
 !
-! END SUBMODULE SetRowMethods
+!----------------------------------------------------------------------------
+
+END SUBMODULE SetRowMethods

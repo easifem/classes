@@ -16,12 +16,11 @@
 
 SUBMODULE(Domain_Class) IOMethods
 USE Display_Method
-
-USE AbstractDomain_Class, ONLY: AbstractDomainDisplay, &
-                                AbstractDomainDisplayDomainInfo, &
-                                AbstractDomainImport
-USE Mesh_Class, ONLY: Mesh_Pointer
-
+USE StringUtility
+USE ReallocateUtility
+USE tomlf, ONLY: toml_serialize, toml_get => get_value
+USE TomlUtility
+USE HDF5File_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -29,198 +28,340 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Display
-LOGICAL(LGT) :: abool
+MODULE PROCEDURE Domain_Display
+CALL Display(obj%isInitiated, "Domain_::obj Initiated: ", unitno=unitno)
+IF (.NOT. obj%isInitiated) RETURN
 
-CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
-abool = obj%IsInit()
-IF (.NOT. abool) RETURN
+CALL Display("engine: "//obj%engine, unitno=unitno)
+CALL Display("majorVersion: "//tostring(obj%majorVersion), unitno=unitNo)
+CALL Display("minorVersion: "//tostring(obj%minorVersion), unitno=unitNo)
+CALL Display("version: "//tostring(obj%version), unitno=unitNo)
+CALL Display("nsd: "//tostring(obj%nsd), unitno=unitNo)
+CALL Display("maxNptrs: "//tostring(obj%maxNptrs), unitno=unitNo)
+CALL Display("minNptrs: "//tostring(obj%minNptrs), unitno=unitNo)
+CALL Display("tNodes: "//tostring(obj%tNodes), unitno=unitNo)
+CALL Display(obj%isNodeNumberSparse, "isNodeNumberSparse: ", unitno=unitNo)
+CALL Display("maxElemNum: "//tostring(obj%maxElemNum), unitno=unitNo)
+CALL Display("minElemNum: "//tostring(obj%minElemNum), unitno=unitNo)
+CALL Display(obj%isElemNumberSparse, "isElemNumberSparse: ", unitno=unitNo)
+CALL Display("tEntitiesForNodes: "//tostring(obj%tEntitiesForNodes), &
+  & unitno=unitNo)
+CALL Display("tEntitiesForElements: "//tostring(obj%tEntitiesForElements), &
+  & unitno=unitNo)
+CALL Display("tEntitiesForElements: "//tostring(obj%tEntitiesForElements), &
+  & unitno=unitNo)
+CALL Display("tElements: "//tostring(obj%tElements), &
+  & unitno=unitno)
+CALL Display("tEntities: "//tostring(obj%tEntities), &
+  & unitno=unitno)
+CALL Display(ALLOCATED(obj%nodeCoord), "nodeCoord Allocated: ", &
+  &  unitno=unitno)
+CALL Display(ALLOCATED(obj%local_nptrs), "local_nptrs Allocated: ", &
+  & unitno=unitno)
+CALL Display(ALLOCATED(obj%global_nptrs), "global_nptrs Allocated: ", &
+  & unitno=unitno)
 
-abool = ALLOCATED(obj%local_nptrs)
-CALL Display(abool, "local_nptrs Allocated: ", unitno=unitno)
+CALL Display(ALLOCATED(obj%meshVolume), "meshVolume Allocated: ", &
+  & unitno=unitno)
 
-abool = ALLOCATED(obj%global_nptrs)
-CALL Display(abool, "global_nptrs Allocated: ", unitno=unitno)
+CALL Display(ALLOCATED(obj%meshSurface), "meshSurface Allocated: ", &
+  & unitno=unitno)
 
-abool = ALLOCATED(obj%meshVolume)
-CALL Display(abool, "meshVolume Allocated: ", unitno=unitno)
+CALL Display(ALLOCATED(obj%meshCurve), "meshCurve Allocated: ", &
+  & unitno=unitno)
 
-abool = ALLOCATED(obj%meshSurface)
-CALL Display(abool, "meshSurface Allocated: ", unitno=unitno)
+CALL Display(ALLOCATED(obj%meshPoint), "meshPoint Allocated: ", &
+  & unitno=unitno)
 
-abool = ALLOCATED(obj%meshCurve)
-CALL Display(abool, "meshCurve Allocated: ", unitno=unitno)
-
-abool = ALLOCATED(obj%meshPoint)
-CALL Display(abool, "meshPoint Allocated: ", unitno=unitno)
-
-abool = ALLOCATED(obj%meshFacetData)
-CALL Display(abool, "meshFacetData Allocated: ", unitno=unitno)
-
+CALL Display(ALLOCATED(obj%meshFacetData), "meshFacetData Allocated: ", &
+  & unitno=unitno)
 CALL Display(obj%meshMap%isInitiated, "meshMap Initiated: ", unitno=unitno)
 
-END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                          DisplaDomainInfo
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayDomainInfo
-LOGICAL(LGT) :: abool
-INTEGER(I4B) :: nsd
-
-CALL AbstractDomainDisplayDomainInfo(obj=obj, unitno=unitno, msg=msg)
-
-nsd = obj%GetNSD()
-
-SELECT CASE (nsd)
-CASE (0)
-  CALL callme(obj%meshPoint)
-CASE (1)
-  CALL callme(obj%meshCurve)
-CASE (2)
-  CALL callme(obj%meshSurface)
-CASE (3)
-  CALL callme(obj%meshVolume)
-END SELECT
-
-CONTAINS
-SUBROUTINE callme(meshes)
-  TYPE(AbstractMeshPointer_), ALLOCATABLE, INTENT(IN) :: meshes(:)
-
-  ! internal variables
-  CLASS(AbstractMesh_), POINTER :: meshptr
-  INTEGER(I4B) :: tsize, ii
-  LOGICAL(LGT) :: isok
-
-  isok = ALLOCATED(meshes)
-  IF (.NOT. isok) RETURN
-
-  tsize = SIZE(meshes)
-  DO ii = 1, tsize
-    meshptr => meshes(ii)%ptr
-    abool = ASSOCIATED(meshptr)
-
-    CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
-
-    IF (.NOT. abool) CYCLE
-
-    CALL meshptr%DisplayMeshInfo("Mesh Info:", unitno=unitno)
-
-  END DO
-
-  meshptr => NULL()
-
-END SUBROUTINE callme
-
-END PROCEDURE obj_DisplayDomainInfo
+END PROCEDURE Domain_Display
 
 !----------------------------------------------------------------------------
 !                                                       DisplayMeshFacetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_DisplayMeshFacetData
+MODULE PROCEDURE Domain_DisplayMeshFacetData
 INTEGER(I4B) :: telements, ii
 LOGICAL(LGT) :: abool
 
 CALL Display(msg, unitNo=unitNo)
 
 abool = ALLOCATED(obj%meshFacetData)
-CALL Display(abool, "meshFacetData ALLOCATED: ", unitNo=unitNo)
-IF (.NOT. abool) RETURN
+CALL Display(abool, "meshFacetData Allocated: ", unitNo=unitNo)
 
-telements = SIZE(obj%meshFacetData)
-DO ii = 1, telements
-  CALL obj%meshFacetData(ii)%Display(msg="meshFacetData(" &
-                                     //tostring(ii)//"): ", unitno=unitno)
-  CALL BlankLines(nol=2, unitno=unitno)
-END DO
-
-END PROCEDURE obj_DisplayMeshFacetData
+IF (abool) THEN
+  telements = SIZE(obj%meshFacetData)
+  DO ii = 1, telements
+    CALL obj%meshFacetData(ii)%Display( &
+      & msg="meshFacetData( "//tostring(ii) &
+      & //" ): ", unitno=unitno)
+    CALL BlankLines(nol=2, unitno=unitno)
+  END DO
+END IF
+END PROCEDURE Domain_DisplayMeshFacetData
 
 !----------------------------------------------------------------------------
 !                                                                   Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "AbstractDomain_Import()"
+MODULE PROCEDURE Domain_Import
+CHARACTER(*), PARAMETER :: myName = "Domain_Import()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-CALL AbstractDomainImport(obj=obj, hdf5=hdf5, group=group)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & 'Calling DomainImportCheckErr()')
+#endif
+
+CALL DomainImportCheckErr(obj=obj, hdf5=hdf5, myName=myName)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling DomainImportMesh() for volume')
+  & 'Calling DomainImportMetaData')
 #endif
 
-CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-                nsd=3_I4B, ent_name="/volumeEntities_", meshes=obj%meshVolume)
+CALL DomainImportMetaData(obj=obj, hdf5=hdf5, group=group, myName=myName)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling DomainImportMesh() for surface')
+  & 'Calling DomainImportMesh() for volume')
 #endif
 
-CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-              nsd=2_I4B, ent_name="/surfaceEntities_", meshes=obj%meshSurface)
+CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName,  &
+  & nsd=3_I4B, ent_name="/volumeEntities_", meshes=obj%meshVolume)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling DomainImportMesh() for curve')
+  & 'Calling DomainImportMesh() for surface')
 #endif
 
-CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-                  nsd=1_I4B, ent_name="/curveEntities_", meshes=obj%meshCurve)
+CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName,  &
+  & nsd=2_I4B, ent_name="/surfaceEntities_", meshes=obj%meshSurface)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling DomainImportMesh() for point')
+  & 'Calling DomainImportMesh() for curve')
 #endif
 
-CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-                  nsd=0_I4B, ent_name="/pointEntities_", meshes=obj%meshPoint)
+CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName,  &
+  & nsd=1_I4B, ent_name="/curveEntities_", meshes=obj%meshCurve)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & 'Calling DomainImportMesh() for point')
 #endif
 
-END PROCEDURE obj_Import
+CALL DomainImportMesh(obj=obj, hdf5=hdf5, group=group, myName=myName,  &
+  & nsd=0_I4B, ent_name="/pointEntities_", meshes=obj%meshPoint)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE Domain_Import
+
+!----------------------------------------------------------------------------
+!                                                       DomainImportCheckErr
+!----------------------------------------------------------------------------
+
+SUBROUTINE DomainImportCheckErr(obj, hdf5, myName)
+  CLASS(Domain_), INTENT(INOUT) :: obj
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  CHARACTER(*), INTENT(IN) :: myName
+
+  ! internal variable
+  LOGICAL(LGT) :: problem
+
+  problem = obj%isInitiated
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
+      & "[INTERNAL ERROR] :: Domain_Class::obj is already initiated.")
+    RETURN
+  END IF
+
+  problem = .NOT. hdf5%isOpen()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR] :: HDF5 file is not opened')
+    RETURN
+  END IF
+
+  problem = .NOT. hdf5%isRead()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+    RETURN
+  END IF
+END SUBROUTINE DomainImportCheckErr
+
+!----------------------------------------------------------------------------
+!                                                       DomainImportMetaData
+!----------------------------------------------------------------------------
+
+SUBROUTINE DomainImportMetaData(obj, hdf5, group, myName)
+  CLASS(Domain_), INTENT(INOUT) :: obj
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: myName
+
+  ! internal variables
+  INTEGER(I4B) :: ii, jj
+
+  obj%isInitiated = .TRUE.
+
+  ! read engine
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%engine, fieldname="engine", myName=myName, modName=modName)
+
+  ! read majorVersion
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%majorVersion, fieldname="majorVersion", myName=myName,  &
+    & modName=modName)
+
+  ! read minorVersion
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%minorVersion, fieldname="minorVersion", myName=myName,  &
+    & modName=modName)
+
+  ! read version
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%version, fieldname="version", myName=myName,  &
+    & modName=modName)
+
+  ! read NSD
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%NSD, fieldname="NSD", myName=myName,  &
+    & modName=modName)
+
+  ! maxNptrs
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%maxNptrs, fieldname="maxNptrs", myName=myName,  &
+    & modName=modName)
+
+  ! minNptrs
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%minNptrs, fieldname="minNptrs", myName=myName,  &
+    & modName=modName)
+
+  ! tNodes
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tNodes, fieldname="tNodes", myName=myName,  &
+    & modName=modName)
+
+  ! nodeCoord
+  CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%nodeCoord, fieldname="nodeCoord", myName=myName,  &
+    & modName=modName)
+
+  ! local_nptrs
+  CALL HDF5ReadVector(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%local_nptrs, fieldname="local_nptrs", myName=myName,  &
+    & modName=modName)
+
+  ! global_nptrs
+  CALL Reallocate(obj%global_nptrs, obj%tNodes)
+  DO ii = 1, SIZE(obj%local_nptrs)
+    jj = obj%local_nptrs(ii)
+    IF (jj .NE. 0) THEN
+      obj%global_nptrs(jj) = ii
+    ELSE
+      obj%global_nptrs(jj) = 0
+    END IF
+  END DO
+
+  ! is node number sparse
+  IF ((obj%maxNptrs - obj%minNptrs) .EQ. (obj%tNodes - 1)) THEN
+    obj%isNodeNumberSparse = .FALSE.
+  ELSE
+    obj%isNodeNumberSparse = .TRUE.
+  END IF
+
+  ! maxElemNum
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%maxElemNum, fieldname="maxElemNum", myName=myName,  &
+    & modName=modName)
+
+  ! minElemNum
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%minElemNum, fieldname="minElemNum", myName=myName,  &
+    & modName=modName)
+
+  ! tEntitiesForNodes
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntitiesForNodes, fieldname="tEntitiesForNodes",  &
+    & myName=myName, modName=modName)
+
+  ! tEntitiesForElements
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntitiesForElements, fieldname="tEntitiesForElements",  &
+    & myName=myName, modName=modName)
+
+  ! numVolumeEntities
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntities(3), fieldname="numVolumeEntities",  &
+    & myName=myName, modName=modName)
+
+  ! numSurfaceEntities
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntities(2), fieldname="numSurfaceEntities",  &
+    & myName=myName, modName=modName)
+
+  ! numCurveEntities
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntities(1), fieldname="numCurveEntities",  &
+    & myName=myName, modName=modName)
+
+  ! numPointEntities
+  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group,  &
+    & VALUE=obj%tEntities(0), fieldname="numPointEntities",  &
+    & myName=myName, modName=modName)
+
+  ALLOCATE (obj%meshVolume(obj%tEntities(3)))
+  ALLOCATE (obj%meshSurface(obj%tEntities(2)))
+  ALLOCATE (obj%meshCurve(obj%tEntities(1)))
+  ALLOCATE (obj%meshPoint(obj%tEntities(0)))
+
+END SUBROUTINE DomainImportMetaData
 
 !----------------------------------------------------------------------------
 !                                                        DomainImportMesh
 !----------------------------------------------------------------------------
 
-SUBROUTINE DomainImportMesh(obj, hdf5, group, myName, nsd, ent_name, &
-                            meshes)
+SUBROUTINE DomainImportMesh(obj, hdf5, group, myName, nsd, ent_name,  &
+  & meshes)
   CLASS(Domain_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
   CHARACTER(*), INTENT(IN) :: myName
   INTEGER(I4B), INTENT(IN) :: nsd
   CHARACTER(*), INTENT(IN) :: ent_name
-  TYPE(AbstractMeshPointer_), INTENT(INOUT) :: meshes(:)
+  TYPE(MeshPointer_), INTENT(INOUT) :: meshes(:)
 
   ! internal variables
-  INTEGER(I4B) :: ii, jj
-  CLASS(AbstractMesh_), POINTER :: meshptr
+  INTEGER(I4B) :: ii
+  TYPE(MeshPointer_) :: meshObj
   LOGICAL(LGT) :: problem
-  CHARACTER(:), ALLOCATABLE :: dsetname
+  TYPE(String) :: dsetname
 
-  meshptr => NULL()
+  meshObj%ptr => NULL()
   obj%tElements(nsd) = 0
 
   DO ii = 1, obj%tEntities(nsd)
 
-    dsetname = group//ent_name//tostring(ii)
-    meshptr => Mesh_Pointer(hdf5=hdf5, group=dsetname)
+    dsetname = TRIM(group)//ent_name//tostring(ii)
+    meshObj%ptr => Mesh_Pointer(hdf5=hdf5, group=dsetname%chars())
 
 #ifdef DEBUG_VER
-    problem = .NOT. ASSOCIATED(meshptr)
+    problem = .NOT. ASSOCIATED(meshObj%ptr)
     IF (problem) THEN
       CALL e%RaiseError(modName//'::'//myName//" - "// &
         & '[INTERNAL ERROR] :: mesh for '//dsetname//" not ASSOCIATED.")
@@ -228,16 +369,102 @@ SUBROUTINE DomainImportMesh(obj, hdf5, group, myName, nsd, ent_name, &
     END IF
 #endif
 
-    meshes(ii)%ptr => meshptr
-    jj = meshptr%GetTotalElements()
-    obj%tElements(nsd) = obj%tElements(nsd) + jj
+    meshes(ii)%ptr => meshObj%ptr
+    obj%tElements(nsd) = obj%tElements(nsd) + meshObj%ptr%GetTotalElements()
 
   END DO
 
-  NULLIFY (meshptr)
-  dsetname = ""
+  NULLIFY (meshObj%ptr)
 
 END SUBROUTINE DomainImportMesh
+
+!----------------------------------------------------------------------------
+!                                                              ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "Domain_ImportFromToml()"
+TYPE(HDF5File_) :: meshfile
+CHARACTER(:), ALLOCATABLE :: meshfilename, ext, group
+CHARACTER(*), PARAMETER :: default_meshfilename = "mesh.h5"
+CHARACTER(*), PARAMETER :: default_group = ""
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+CALL toml_get(table, "filename", meshfilename, default_meshfilename,  &
+  & origin=origin, stat=stat)
+
+ext = getExtension(meshfilename)
+problem = .NOT. ext .EQ. "h5"
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: given filename is not HDF5File. '//  &
+    & 'Extension should be "h5"')
+END IF
+
+CALL toml_get(table, "group", group, default_group,  &
+  & origin=origin, stat=stat)
+
+CALL meshfile%Initiate(meshfilename, mode="READ")
+CALL meshfile%OPEN()
+CALL obj%IMPORT(hdf5=meshfile, group=group)
+CALL meshfile%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE Domain_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                              ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "Domain_ImportFromToml2()"
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(node)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find '//tomlName//" table in config.")
+END IF
+
+CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "Domain toml config: "//CHAR_LF,  &
+    & unitNo=stdout)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+
+END PROCEDURE Domain_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !

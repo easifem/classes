@@ -23,5 +23,8 @@ if(USE_LIS)
     PRIVATE ${src_path}/STScalarFieldLis_Class@ConstructorMethods.F90
             ${src_path}/STScalarFieldLis_Class@IOMethods.F90
             ${src_path}/STScalarFieldLis_Class@SetMethods.F90
-            ${src_path}/STScalarFieldLis_Class@GetMethods.F90)
+            ${src_path}/STScalarFieldLis_Class@DBCMethods.F90
+            ${src_path}/STScalarFieldLis_Class@GetMethods.F90
+            ${src_path}/STScalarFieldLis_Class@BlasMethods.F90)
+
 endif()

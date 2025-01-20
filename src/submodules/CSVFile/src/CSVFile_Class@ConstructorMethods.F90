@@ -26,19 +26,19 @@ CONTAINS
 
 MODULE PROCEDURE txt_initiate
 CALL TxtFileInitiate( &
-  obj=obj, &
-  filename=filename, &
-  unit=unit, &
-  status=status, &
-  access=access, &
-  form=form, &
-  position=position, &
-  action=action, &
-  pad=pad, &
-  recl=recl, &
-  comment=comment, &
-  separator=INPUT(option=separator, default=comma), &
-  delimiter=delimiter)
+& obj=obj, &
+& filename=filename, &
+& unit=unit, &
+& status=status, &
+& access=access, &
+& form=form, &
+& position=position, &
+& action=action, &
+& pad=pad, &
+& recl=recl, &
+& comment=comment, &
+& separator=INPUT(option=separator, default=comma), &
+& delimiter=delimiter)
 END PROCEDURE txt_initiate
 
 !----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ obj%TrueChar = "T"
 obj%FalseChar = "F"
 obj%headerIndx = 0
 IF (ALLOCATED(obj%header)) DEALLOCATE (obj%header)
-IF (ALLOCATED(obj%DATA)) DEALLOCATE (obj%DATA)
+IF (ALLOCATED(obj%data)) DEALLOCATE (obj%data)
 IF (ALLOCATED(obj%skipRows)) DEALLOCATE (obj%skipRows)
 END PROCEDURE txt_Deallocate
 
@@ -66,7 +66,7 @@ END PROCEDURE txt_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_Final
-CALL obj%DEALLOCATE()
+CALL obj%Deallocate()
 END PROCEDURE txt_Final
 
 !----------------------------------------------------------------------------

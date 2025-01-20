@@ -27,15 +27,15 @@ CONTAINS
 
 MODULE PROCEDURE txt_initiate
 CHARACTER(*), PARAMETER :: myName = 'txt_initiate'
-IF (PRESENT(access)) CALL e%raiseDebug(modName//'::'//myName// &
+IF (PRESENT(access)) CALL e % raiseDebug(modName//'::'//myName// &
   & ' - Optional input "ACCESS" is being ignored. Value is "SEQUENTIAL".')
-IF (PRESENT(form)) CALL e%raiseDebug(modName//'::'//myName// &
+IF (PRESENT(form)) CALL e % raiseDebug(modName//'::'//myName// &
   & ' - Optional input "FORM" is being ignored. Value is "FORMATTED".')
-IF (PRESENT(pad)) CALL e%raiseDebug(modName//'::'//myName// &
+IF (PRESENT(pad)) CALL e % raiseDebug(modName//'::'//myName// &
   & ' - Optional input "PAD" is being ignored. Value is "YES".')
-IF (PRESENT(position)) CALL e%raiseDebug(modName//'::'//myName// &
+IF (PRESENT(position)) CALL e % raiseDebug(modName//'::'//myName// &
   & ' - Optional input "POSITION" is being ignored. Value is "REWIND".')
-IF (PRESENT(recl)) CALL e%raiseDebug(modName//'::'//myName// &
+IF (PRESENT(recl)) CALL e % raiseDebug(modName//'::'//myName// &
   & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
   !!
   !! Initialize the input file
@@ -61,8 +61,8 @@ END PROCEDURE txt_initiate
 
 MODULE PROCEDURE txt_Deallocate
 LOGICAL(LGT) :: bool
-obj%echounit = -1
-obj%echostat = .FALSE.
+obj % echounit = -1
+obj % echostat = .FALSE.
 bool = .FALSE.
 IF (PRESENT(Delete)) bool = Delete
 CALL FortranFileDeallocate(obj, bool)
@@ -73,7 +73,7 @@ END PROCEDURE txt_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_Final
-CALL obj%DEALLOCATE()
+CALL obj % DEALLOCATE()
 END PROCEDURE txt_Final
 
 !----------------------------------------------------------------------------

@@ -15,5 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(BlockMatrixFieldLis_Class) SetMethods
-! END SUBMODULE SetMethods
+SUBMODULE(BlockMatrixFieldLis_Class) SetMethods
+! USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+END SUBMODULE SetMethods

@@ -15,65 +15,61 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) SetMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
-USE Display_Method, ONLY: ToString
-
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
-                             FEVariable_SIZE => Size, &
-                             FEVariable_Shape => Shape
-
-USE ReallocateUtility, ONLY: Reallocate
-
+USE BaseMethod
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             MasterSet
-!----------------------------------------------------------------------------
-
-SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
-                     tshape)
-  REAL(DFP), INTENT(INOUT) :: val(:)
-  INTEGER(I4B), INTENT(IN) :: indxVal(:)
-  REAL(DFP), INTENT(IN) :: set_val(:)
-  INTEGER(I4B), INTENT(IN) :: indx
-  INTEGER(I4B), INTENT(IN) :: tsize
-  INTEGER(I4B), INTENT(INOUT) :: ss(:)
-  INTEGER(I4B), INTENT(IN) :: indxShape(:)
-  INTEGER(I4B), INTENT(IN) :: s(:)
-  INTEGER(I4B), INTENT(IN) :: tshape
-
-  val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
-  ss(indxShape(indx):indxShape(indx + 1) - 1) = s(1:tshape)
-
-END SUBROUTINE MasterSet
-
-!----------------------------------------------------------------------------
-!                                                                        Set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+INTEGER(I4B) :: iel, telem
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: size1, size2
+#endif DEBUG_VER
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+#ifdef DEBUG_VER
+
+size1 = SIZE(obj%val, 1)
+size2 = SIZE(fevar%val)
+problem = size1 .NE. size2
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR]  the size of obj%val is '//tostring(size1)//  &
+    & ' size of fevar%val is '//tostring(size2))
 END IF
 
-tsize = FEVariable_SIZE(fevar)
+#endif DEBUG_VER
 
-tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  obj%val(:, 1) = fevar%val(:)
+  RETURN
+END IF
 
-s(1:tshape) = FEVariable_Shape(fevar)
+IF (PRESENT(globalElement)) THEN
+  iel = obj%mesh%GetLocalElemNumber(globalElement)
+  obj%val(:, iel) = fevar%val(:)
+  RETURN
+END IF
 
-CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
-               tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
-               s=s, tshape=tshape)
+telem = obj%mesh%GetTotalElements()
+DO iel = 1, telem
+  obj%val(:, iel) = fevar%val(:)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE obj_Set1
 
@@ -83,55 +79,58 @@ END PROCEDURE obj_Set1
 
 MODULE PROCEDURE obj_Set2
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
-INTEGER(I4B) :: iel, telem, nns, nsd, tsize, nrow, ncol
+INTEGER(I4B) :: iel, telem, minelem, maxelem, nns, nsd
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(ReferenceElement_), POINTER :: refelem
+CLASS(Mesh_), POINTER :: mesh
 TYPE(FEVariable_) :: fevar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
-bool1 = obj%fieldType .EQ. TypeField%Constant
+bool1 = obj%fieldType .EQ. FIELD_TYPE_CONSTANT
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
-  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  obj%val(:, 1) = fevar%val(:)
   RETURN
 END IF
 
 mesh => obj%mesh
 telem = mesh%GetTotalElements()
 
-nns = mesh%GetMaxNNE()
-nsd = mesh%GetNSD()
-ALLOCATE (nptrs(nns), xij(nsd, nns))
+refelem => NULL()
+refelem => mesh%GetRefElemPointer()
+nns = .NNE.refelem
+CALL Reallocate(nptrs, nns)
+nsd = dom%GetNSD()
+CALL Reallocate(xij, nsd, nns)
 
-!$OMP PARALLEL DO PRIVATE(iel, tsize, nptrs, xij, fevar)
-DO iel = 1, telem
-  CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
-                             ans=nptrs, tsize=tsize)
+minelem = mesh%GetMinElemNumber()
+maxelem = mesh%GetMaxElemNumber()
 
-  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                        ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
+DO iel = minelem, maxelem
+  bool1 = mesh%IsElementPresent(iel)
+  IF (.NOT. bool1) CYCLE
 
-  CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
-
-  CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+  nptrs = mesh%GetConnectivity(globalElement=iel)
+  CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
+  CALL func%Get(fevar=fevar, xij=xij, times=times)
+  CALL obj%Set(fevar=fevar, globalElement=iel)
 END DO
-!$OMP END PARALLEL DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-CALL FEVariable_Deallocate(fevar)
-
+CALL DEALLOCATE (fevar)
+refelem => NULL()
 mesh => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_Set2
 
@@ -146,114 +145,38 @@ CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
-#ifdef DEBUG_VER
 isok = material%IsMaterialPresent(name)
-CALL AssertError1(isok, myName, &
-                  'material name = '//name//" not found.")
-#endif
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: material name = '//name//" not found.")
+  RETURN
+END IF
 
-#ifdef DEBUG_VER
 func => NULL()
-#endif
-
 func => material%GetMaterialPointer(name)
-
-#ifdef DEBUG_VER
 isok = ASSOCIATED(func)
-CALL AssertError1(isok, myName, &
-                  'material pointer not found.')
-#endif
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: material pointer not found.')
+  RETURN
+END IF
 
-CALL obj%Set(func=func, times=times)
+CALL obj%Set(func=func, dom=dom, times=times)
 
-func => NULL()
+NULLIFY (func)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set4
-INTEGER(I4B) :: iel, telem
-
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
-  telem = 1
-ELSE
-  telem = obj%mesh%GetTotalElements()
-END IF
-
-DO iel = 1, telem
-  CALL obj%Set(globalElement=iel, islocal=.TRUE., fevar=fevar)
-END DO
-
-END PROCEDURE obj_Set4
-
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set5
-CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
-INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
-LOGICAL(LGT) :: bool1
-REAL(DFP), ALLOCATABLE :: xij(:, :)
-INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-TYPE(FEVariable_) :: fevar
-CLASS(AbstractMesh_), POINTER :: mesh
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-bool1 = obj%fieldType .EQ. TypeField%Constant
-IF (bool1) THEN
-  CALL func%Get(fevar=fevar)
-  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
-  RETURN
-END IF
-
-mesh => obj%mesh
-
-nns = mesh%GetMaxNNE()
-nsd = mesh%GetNSD()
-ALLOCATE (nptrs(nns), xij(nsd, nns))
-
-CALL mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
-                           ans=nptrs, tsize=tsize)
-
-CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
-
-CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
-
-CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
-
-CALL FEVariable_Deallocate(fevar)
-DEALLOCATE (xij, nptrs)
-
-mesh => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif DEBUG_VER
-END PROCEDURE obj_Set5
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
-#include "./include/GetTotalRow.F90"
 
 END SUBMODULE SetMethods

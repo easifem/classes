@@ -110,7 +110,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ReadMatInt32 => txt_read_Mat_Int32
   PROCEDURE, PASS(obj) :: ReadMatInt64 => txt_read_Mat_Int64
   !! generic
-  GENERIC, PUBLIC :: READ => &
+  GENERIC, PUBLIC :: Read => &
     & ReadLine, ReadLines, ReadChar, &
     & ReadInt8, ReadInt16, ReadInt32, ReadInt64, &
     & ReadReal32, ReadReal64, &
@@ -156,7 +156,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: WriteMatInt32 => txt_write_Mat_Int32
   PROCEDURE, PASS(obj) :: WriteMatInt64 => txt_write_Mat_Int64
   !! generic
-  GENERIC, PUBLIC :: WRITE => &
+  GENERIC, PUBLIC :: Write => &
     & WriteBlank, &
     & WriteLine, WriteLines, WriteChar, &
     & WriteInt8, WriteInt16, WriteInt32, WriteInt64, &
@@ -421,103 +421,49 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Read a scalar integer
 
-INTERFACE
-  MODULE SUBROUTINE txt_read_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), INTENT(INOUT) :: val
-    INTEGER(I4B), INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Int8
+#define __SUBROUTINE_NAME__ txt_read_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./ReadIntScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), INTENT(INOUT) :: val
-    INTEGER(I4B), INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Int16
+#define __SUBROUTINE_NAME__ txt_read_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./ReadIntScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), INTENT(INOUT) :: val
-    INTEGER(I4B), INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Int32
+#define __SUBROUTINE_NAME__ txt_read_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./ReadIntScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), INTENT(INOUT) :: val
-    INTEGER(I4B), INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Int64
+#define __SUBROUTINE_NAME__ txt_read_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./ReadIntScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), INTENT(INOUT) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Real32
+!----------------------------------------------------------------------------
+!                                                          read@ReadMethods
+!----------------------------------------------------------------------------
 
-  MODULE SUBROUTINE txt_read_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), INTENT(INOUT) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_Real64
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a scalar real value
 
-  MODULE SUBROUTINE txt_read_IntVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(IntVector_), INTENT(INOUT) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_IntVector
+#define __SUBROUTINE_NAME__ txt_read_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./ReadRealScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_RealVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(RealVector_), INTENT(INOUT) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_RealVector
-END INTERFACE
+#define __SUBROUTINE_NAME__ txt_read_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./ReadRealScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
 !----------------------------------------------------------------------------
 !                                                           read@ReadMethods
@@ -527,105 +473,105 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Read an integer vector
 
-INTERFACE
+#define __SUBROUTINE_NAME__ txt_read_vec_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_vec_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Int8
+#define __SUBROUTINE_NAME__ txt_read_vec_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_vec_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Int16
+#define __SUBROUTINE_NAME__ txt_read_vec_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_vec_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Int32
+#define __SUBROUTINE_NAME__ txt_read_vec_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_vec_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Int64
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
 
-  MODULE SUBROUTINE txt_read_vec_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Real32
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a intvector
 
-  MODULE SUBROUTINE txt_read_vec_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_Real64
+#define __SUBROUTINE_NAME__ txt_read_IntVector
+#define __DATA_TYPE__ TYPE( IntVector_ )
+#include "./ReadRealScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_vec_IntVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(IntVector_), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_IntVector
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
 
-  MODULE SUBROUTINE txt_read_vec_RealVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(RealVector_), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_vec_RealVector
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of intvector
 
-END INTERFACE
+#define __SUBROUTINE_NAME__ txt_read_vec_IntVector
+#define __DATA_TYPE__ TYPE( IntVector_ )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+!----------------------------------------------------------------------------
+!                                                          read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a real value vector
+
+#define __SUBROUTINE_NAME__ txt_read_vec_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_read_vec_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a realvector
+
+#define __SUBROUTINE_NAME__ txt_read_RealVector
+#define __DATA_TYPE__ TYPE( RealVector_ )
+#include "./ReadRealScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of realvector
+
+#define __SUBROUTINE_NAME__ txt_read_vec_RealVector
+#define __DATA_TYPE__ TYPE( RealVector_ )
+#include "./ReadVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
 !----------------------------------------------------------------------------
 !                                                           read@ReadMethods
@@ -635,79 +581,45 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Read an integer matrix
 
-INTERFACE
-  MODULE SUBROUTINE txt_read_mat_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Int8
+#define __SUBROUTINE_NAME__ txt_read_mat_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_mat_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Int16
+#define __SUBROUTINE_NAME__ txt_read_mat_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_mat_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Int32
+#define __SUBROUTINE_NAME__ txt_read_mat_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_mat_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Int64
+#define __SUBROUTINE_NAME__ txt_read_mat_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
-  MODULE SUBROUTINE txt_read_mat_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Real32
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a real value vector
 
-  MODULE SUBROUTINE txt_read_mat_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-  END SUBROUTINE txt_read_mat_Real64
-END INTERFACE
+#define __SUBROUTINE_NAME__ txt_read_mat_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_read_mat_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./ReadMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
 
 !----------------------------------------------------------------------------
 !                                       ConvertMarkdownToSource@WriteMethods
@@ -749,7 +661,7 @@ END INTERFACE
 ! date: 19 July 2022
 ! summary: Write a single line (record)
 
-INTERFACE TxtFileWrite
+INTERFACE
   MODULE SUBROUTINE txt_write_Line(obj, val, iostat, iomsg, advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: val
@@ -758,6 +670,10 @@ INTERFACE TxtFileWrite
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES or NO
   END SUBROUTINE txt_write_Line
+END INTERFACE
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_Line
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -768,7 +684,7 @@ END INTERFACE TxtFileWrite
 ! date: 19 July 2022
 ! summary: Write a single line (record)
 
-INTERFACE TxtFileWrite
+INTERFACE
   MODULE SUBROUTINE txt_write_Lines(obj, val, iostat, iomsg, advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: val(:)
@@ -777,6 +693,10 @@ INTERFACE TxtFileWrite
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
   END SUBROUTINE txt_write_Lines
+END INTERFACE
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_Lines
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -787,7 +707,7 @@ END INTERFACE TxtFileWrite
 ! date: 19 July 2022
 ! summary: Write a single line (record)
 
-INTERFACE TxtFileWrite
+INTERFACE
   MODULE SUBROUTINE txt_write_Char(obj, val, iostat, iomsg, &
     &  advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -797,6 +717,10 @@ INTERFACE TxtFileWrite
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
   END SUBROUTINE txt_write_Char
+END INTERFACE
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_Char
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -807,281 +731,256 @@ END INTERFACE TxtFileWrite
 ! date: 20 July 2022
 ! summary: Write an integer
 
+#define __SUBROUTINE_NAME__ txt_write_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
 INTERFACE TxtFileWrite
-  MODULE SUBROUTINE txt_write_Int8(obj, val, iostat, iomsg, &
-                                   advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Int8
-
-  MODULE SUBROUTINE txt_write_Int16(obj, val, iostat, iomsg, &
-                                    advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Int16
-
-  MODULE SUBROUTINE txt_write_Int32(obj, val, iostat, iomsg, &
-                                    advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Int32
-
-  MODULE SUBROUTINE txt_write_Int64(obj, val, iostat, iomsg, &
-                                    advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Int64
-
-  MODULE SUBROUTINE txt_write_IntVector(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(IntVector_), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_IntVector
-
-  MODULE SUBROUTINE txt_write_Real32(obj, val, iostat, iomsg, &
-                                     advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Real32
-
-  MODULE SUBROUTINE txt_write_Real64(obj, val, iostat, iomsg, &
-                                     advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_Real64
-
-  MODULE SUBROUTINE txt_write_RealVector(obj, val, iostat, iomsg, &
-                                         advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(RealVector_), INTENT(IN) :: val
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! COL or ROW, default is COL
-  END SUBROUTINE txt_write_RealVector
-
-  MODULE SUBROUTINE txt_write_vec_Int8(obj, val, iostat, iomsg, &
-                                       advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Int8
-
-  MODULE SUBROUTINE txt_write_vec_Int16(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Int16
-
-  MODULE SUBROUTINE txt_write_vec_Int32(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Int32
-
-  MODULE SUBROUTINE txt_write_vec_Int64(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Int64
-
-  MODULE SUBROUTINE txt_write_vec_Real32(obj, val, iostat, iomsg, &
-                                         advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Real32
-
-  MODULE SUBROUTINE txt_write_vec_Real64(obj, val, iostat, iomsg, &
-                                         advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_Real64
-
-  MODULE SUBROUTINE txt_write_vec_IntVector(obj, val, iostat, iomsg, &
-                                            advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(IntVector_), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_IntVector
-
-  MODULE SUBROUTINE txt_write_vec_RealVector(obj, val, iostat, iomsg, &
-                                             advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(RealVector_), INTENT(IN) :: val(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! ROW: Write vector as a row
-    !! COL, TRANSPOSE: Write vector as column
-    !! default is COL
-  END SUBROUTINE txt_write_vec_RealVector
-
-  MODULE SUBROUTINE txt_write_mat_Int8(obj, val, iostat, iomsg, &
-                                       advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT8), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Int8
-
-  MODULE SUBROUTINE txt_write_mat_Int16(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT16), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Int16
-
-  MODULE SUBROUTINE txt_write_mat_Int32(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT32), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Int32
-
-  MODULE SUBROUTINE txt_write_mat_Int64(obj, val, iostat, iomsg, &
-                                        advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(INT64), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Int64
-
-  MODULE SUBROUTINE txt_write_mat_Real32(obj, val, iostat, iomsg, &
-                                         advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL32), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Real32
-
-  MODULE SUBROUTINE txt_write_mat_Real64(obj, val, iostat, iomsg, &
-                                         advance, orient)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    REAL(REAL64), INTENT(IN) :: val(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
-    !! "ROW" write lines rowwise,
-    !! that is row-1 is line-1, row-2 is line-2, etc.
-    !! "COL" or "TRANSPOSE" write lines columnwise.
-  END SUBROUTINE txt_write_mat_Real64
-
+  MODULE PROCEDURE txt_write_Int8, txt_write_Int16, txt_write_Int32, &
+    & txt_write_Int64
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a real value
+
+#define __SUBROUTINE_NAME__ txt_write_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_Real32, txt_write_Real64
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                           Write@WriteMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write an integer vector
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_vec_Int8, &
+    & txt_write_vec_Int16, &
+    & txt_write_vec_Int32, &
+    & txt_write_vec_Int64
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                         write@WriteMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a intvector
+
+#define __SUBROUTINE_NAME__ txt_write_IntVector
+#define __DATA_TYPE__ TYPE( IntVector_ )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_IntVector
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a vector of intvector
+
+#define __SUBROUTINE_NAME__ txt_write_vec_IntVector
+#define __DATA_TYPE__ TYPE( IntVector_ )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_vec_IntVector
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a real value vector
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_vec_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_vec_Real32, txt_write_vec_Real64
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                         write@WriteMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a RealVector
+
+#define __SUBROUTINE_NAME__ txt_write_RealVector
+#define __DATA_TYPE__ TYPE( RealVector_ )
+#include "./WriteScalar.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_RealVector
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a vector of RealVector
+
+#define __SUBROUTINE_NAME__ txt_write_vec_RealVector
+#define __DATA_TYPE__ TYPE( RealVector_ )
+#include "./WriteVector.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_vec_RealVector
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!                                                           Write@WriteMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write an integer matrix
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Int8
+#define __DATA_TYPE__ INTEGER( Int8 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Int16
+#define __DATA_TYPE__ INTEGER( Int16 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Int32
+#define __DATA_TYPE__ INTEGER( Int32 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Int64
+#define __DATA_TYPE__ INTEGER( Int64 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_mat_Int8, &
+    & txt_write_mat_Int16, &
+    & txt_write_mat_Int32, &
+    & txt_write_mat_Int64
+END INTERFACE TxtFileWrite
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Write a real value vector
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Real32
+#define __DATA_TYPE__ REAL( Real32 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+#define __SUBROUTINE_NAME__ txt_write_mat_Real64
+#define __DATA_TYPE__ REAL( Real64 )
+#include "./WriteMatrix.inc"
+#undef __SUBROUTINE_NAME__
+#undef __DATA_TYPE__
+
+INTERFACE TxtFileWrite
+  MODULE PROCEDURE txt_write_mat_Real32, &
+    & txt_write_mat_Real64
+END INTERFACE TxtFileWrite
 
 END MODULE TxtFile_Class

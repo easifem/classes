@@ -20,26 +20,22 @@
 ! summary: This module defines LIS library based linear solver
 
 MODULE LinSolverLis_Class
-USE GlobalData, ONLY: I4B, DFP, LGT, INT64
+USE GlobalData
+USE BaseType
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE AbstractLinSolver_Class, ONLY: AbstractLinSolver_
-USE LinSolver_Class, ONLY: LinSolver_
-
-! #include "lisf.h"
+USE Field
+USE AbstractLinSolver_Class
+USE LinSolver_Class
+USE HDF5File_Class
+#include "lisf.h"
 
 IMPLICIT NONE
-
 PRIVATE
 
-PUBLIC :: LinSolverLis_
-PUBLIC :: TypeLinSolverLis
-PUBLIC :: LinSolverLisPointer_
-
-CHARACTER(*), PARAMETER :: modName = "LinSolverLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "LinSolver"
+CHARACTER(*), PARAMETER :: modName = "LinsolverLis_Class"
+CHARACTER(*), PARAMETER :: myPrefix = "Linsolver"
 CHARACTER(*), PARAMETER :: myengine = "LIS_OMP"
 
 !----------------------------------------------------------------------------
@@ -51,48 +47,36 @@ CHARACTER(*), PARAMETER :: myengine = "LIS_OMP"
 ! summary: Lis library based linear solver
 
 TYPE, EXTENDS(LinSolver_) :: LinSolverLis_
-  PRIVATE
   INTEGER(INT64) :: lis_precon = 0
   INTEGER(INT64) :: lis_solver = 0
-
 CONTAINS
-
   PRIVATE
-
-  ! CONSTRUCTOR:
-  ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ls_Deallocate
     !! Deallocate Data
-
-  FINAL :: obj_final
-
-  ! SET:
-  ! @SetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  FINAL :: ls_final
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
     !! Set the matrix and preconditioning matrix
-
-  ! SOLVE:
-  ! @SolveMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_solve
+  PROCEDURE, PUBLIC, PASS(obj) :: Solve => ls_solve
     !! Solve the system of linear equation
-
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => ls_Display
 END TYPE LinSolverLis_
 
+PUBLIC :: LinSolverLis_
+
 !----------------------------------------------------------------------------
-!                                                              TypeLinSolver
+!                                                             TypeLinSolver
 !----------------------------------------------------------------------------
 
-TYPE(LinSolverLis_), PARAMETER :: TypeLinSolverLis = LinSolverLis_()
+TYPE(LinSolverLis_), PUBLIC, PARAMETER :: &
+  & TypeLinSolverLis = LinSolverLis_()
 
 TYPE :: LinSolverLisPointer_
   CLASS(LinSolverLis_), POINTER :: Ptr => NULL()
 END TYPE LinSolverLisPointer_
+
+PUBLIC :: LinSolverLisPointer_
 
 !-----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
@@ -114,30 +98,10 @@ END TYPE LinSolverLisPointer_
 ! these algorithms. Default value is set to 20.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE ls_Initiate(obj, param)
     CLASS(LinSolverLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate(obj)
-    CLASS(LinSolverLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   Final@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_final(obj)
-    TYPE(LinSolverLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_final
+  END SUBROUTINE ls_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -145,10 +109,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set(obj, Amat)
+  MODULE SUBROUTINE ls_Set(obj, Amat)
     CLASS(LinSolverLis_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
-  END SUBROUTINE obj_Set
+  END SUBROUTINE ls_Set
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -164,11 +128,43 @@ END INTERFACE
 ! On entry `sol` can contain the initial guess
 
 INTERFACE
-  MODULE SUBROUTINE obj_Solve(obj, sol, rhs)
+  MODULE SUBROUTINE ls_Solve(obj, sol, rhs)
     CLASS(LinSolverLis_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
-  END SUBROUTINE obj_Solve
+  END SUBROUTINE ls_Solve
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE ls_Display(obj, msg, unitno)
+    CLASS(LinSolverLis_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE ls_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE ls_Deallocate(obj)
+    CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  END SUBROUTINE ls_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE ls_final(obj)
+    TYPE(LinSolverLis_), INTENT(INOUT) :: obj
+  END SUBROUTINE ls_final
 END INTERFACE
 
 END MODULE LinSolverLis_Class

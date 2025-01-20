@@ -26,7 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Show
-CALL Show()
+  CALL Show()
 END PROCEDURE plot_Show
 
 !----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ END PROCEDURE plot_Show
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Figure
-CALL Figure()
+  CALL Figure()
 END PROCEDURE plot_Figure
 
 !----------------------------------------------------------------------------
@@ -42,8 +42,7 @@ END PROCEDURE plot_Figure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Subplot
-CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
+  CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
 END PROCEDURE plot_Subplot
 
 END SUBMODULE PlotMethods
-

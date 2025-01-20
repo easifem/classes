@@ -19,19 +19,18 @@
 ! summary: Scalar field data type with LIS engine is defined
 
 MODULE ScalarFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE String_Class, ONLY: String
-USE BaseType, ONLY: FEVariable_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ScalarField_Class, ONLY: ScalarField_
+USE GlobalData
+USE String_Class
+USE Basetype
+USE AbstractField_Class
+USE AbstractNodeField_Class
+USE ScalarField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-
+USE HDF5File_Class
+USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "ScalarField"
 PUBLIC :: ScalarFieldLis_
@@ -54,6 +53,13 @@ CONTAINS
   PRIVATE
   FINAL :: obj_Final
 END TYPE ScalarFieldLis_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+TYPE(ScalarFieldLis_), PARAMETER, PUBLIC :: TypeScalarFieldLis = &
+  & ScalarFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_
@@ -82,11 +88,11 @@ END SUBROUTINE obj_Final
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarFieldLis_]]
 
-FUNCTION ScalarFieldLis(param, fedof) RESULT(Ans)
+FUNCTION ScalarFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(ScalarFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%initiate(param, dom)
 END FUNCTION
 
 !----------------------------------------------------------------------------
@@ -97,12 +103,11 @@ END FUNCTION
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarFieldLis_]]
 
-FUNCTION ScalarFieldLis_Pointer(param, fedof) RESULT(Ans)
+FUNCTION ScalarFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   CLASS(ScalarFieldLis_), POINTER :: ans
-  ALLOCATE (ScalarFieldLis_ :: ans)
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%initiate(param, dom)
 END FUNCTION
 
 END MODULE ScalarFieldLis_Class

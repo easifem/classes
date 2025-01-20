@@ -17,11 +17,7 @@
 
 SUBMODULE(AbstractMaterial_Class) IOMethods
 USE BaseMethod
-USE HashTables, ONLY: Hashkey, &
-                      HashTableIter_, &
-                      Hashkey_, &
-                      HashTableIter
-
+USE fhash, ONLY: fhash_tbl_t, key => fhash_key, fhash_iter_t, fhash_key_t
 USE TomlUtility
 USE tomlf, ONLY:  &
   & toml_serialize,  &
@@ -39,8 +35,8 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: matalloc, isOK
-TYPE(HashTableIter_) :: iter
-CLASS(HashKey_), ALLOCATABLE :: ikey
+TYPE(fhash_iter_t) :: iter
+CLASS(fhash_key_t), ALLOCATABLE :: ikey
 CLASS(*), ALLOCATABLE :: idata
 
 CALL Display(msg, unitNo=unitNo)
@@ -51,7 +47,7 @@ CALL Display("name : "//obj%name%chars(), unitNo=unitNo)
 CALL Display(obj%tProperties, "total Properties: ", unitNo=unitNo)
 CALL BlankLines(unitNo=unitNo, nol=1)
 
-iter = HashTableIter(obj%tbl)
+iter = fhash_iter_t(obj%tbl)
 
 DO WHILE (iter%next(ikey, idata))
 

@@ -42,7 +42,7 @@ END PROCEDURE Chebyshev1Space1D_Pointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Final
-CALL obj%DEALLOCATE()
+CALL obj%Deallocate()
 END PROCEDURE Orthopol_Final
 
 !----------------------------------------------------------------------------
@@ -250,8 +250,8 @@ END PROCEDURE Orthopol_GradientEvalSum4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Transform1
-ans = Chebyshev1Transform(n=n, &
-                          coeff=coeff, x=x, w=w, quadType=quadType)
+ans = Chebyshev1Transform(n=n,  &
+  & coeff=coeff, x=x, w=w, quadType=quadType)
 END PROCEDURE Orthopol_Transform1
 
 !----------------------------------------------------------------------------
@@ -259,7 +259,8 @@ END PROCEDURE Orthopol_Transform1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Transform2
-ans = Chebyshev1Transform(n=n, f=f, x1=x1, x2=x2, quadType=quadType)
+ans = Chebyshev1Transform(n=n,  &
+  & f=f, quadType=quadType)
 END PROCEDURE Orthopol_Transform2
 
 !----------------------------------------------------------------------------

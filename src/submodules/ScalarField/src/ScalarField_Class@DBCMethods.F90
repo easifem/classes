@@ -16,8 +16,7 @@
 !
 
 SUBMODULE(ScalarField_Class) DBCMethods
-USE Display_Method, ONLY: ToString
-USE ReallocateUtility, ONLY: Reallocate
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -26,20 +25,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC1
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: aint
-#endif
-
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-LOGICAL(LGT) :: istimes
-INTEGER(I4B) :: idof, nrow, ncol
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: idof, aint
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -50,42 +44,34 @@ IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+      & tostring(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
 #endif
 
-ncol = 1
-nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
-ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
-
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 
 IF (istimes) THEN
-  DO idof = 1, ncol
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:ncol, idof), &
-                 islocal=.FALSE.)
+  aint = SIZE(nodalvalue, 2)
+  DO idof = 1, aint
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof))
   END DO
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
   RETURN
 END IF
 
-CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-             islocal=.TRUE.)
-
+CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif
-
 END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -94,17 +80,14 @@ END PROCEDURE obj_ApplyDirichletBC1
 
 MODULE PROCEDURE obj_ApplyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
-INTEGER(I4B), PARAMETER :: expandFactor = 2
-LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
-
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, tsize, aint, idof, nrow, ncol
+INTEGER(I4B) :: ibc, tsize, aint, idof
 LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -115,24 +98,15 @@ IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+      & tostring(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
 #endif
 
 tsize = SIZE(dbc)
-
-ncol = 1
-DO ibc = 1, tsize
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-END DO
 
 IF (istimes) THEN
   DO ibc = 1, tsize
@@ -150,11 +124,8 @@ IF (istimes) THEN
 END IF
 
 DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol, fedof=obj%fedof)
-
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               islocal=.TRUE.)
+  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -162,9 +133,8 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif
-
 END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------

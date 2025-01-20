@@ -15,169 +15,52 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) GetMethods
-
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
-USE Display_Method, ONLY: ToString
-
-USE ReallocateUtility, ONLY: Reallocate
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                      Shape
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Shape
-INTEGER(I4B) :: iel
-
-iel = obj%mesh%GetLocalElemNumber(globalelement=globalElement, &
-                                  islocal=islocal)
-
-SELECT CASE (obj%rank)
-
-CASE (Scalar)
-
-  SELECT CASE (obj%vartype)
-
-  CASE (Constant)
-
-    ALLOCATE (ans(1))
-    ans(1) = obj%ss(obj%indxShape(iel))
-
-  CASE (Space, Time)
-
-    ALLOCATE (ans(1))
-    ans(1) = obj%ss(obj%indxShape(iel))
-
-  CASE (SpaceTime)
-
-    ALLOCATE (ans(2))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-
-  CASE default
-
-    CALL no_case_found_error
-
-  END SELECT
-
-CASE (Vector)
-
-  SELECT CASE (obj%vartype)
-
-  CASE (Constant)
-
-    ALLOCATE (ans(1))
-    ans(1) = obj%ss(obj%indxShape(iel))
-
-  CASE (Space, Time)
-
-    ALLOCATE (ans(2))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-
-  CASE (SpaceTime)
-
-    ALLOCATE (ans(3))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-    ans(3) = obj%ss(obj%indxShape(iel) + 2)
-
-  CASE default
-
-    CALL no_case_found_error
-
-  END SELECT
-
-CASE (Matrix)
-
-  SELECT CASE (obj%vartype)
-
-  CASE (Constant)
-
-    ALLOCATE (ans(2))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-
-  CASE (Space, Time)
-
-    ALLOCATE (ans(3))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-    ans(3) = obj%ss(obj%indxShape(iel) + 2)
-
-  CASE (SpaceTime)
-
-    ALLOCATE (ans(4))
-    ans(1) = obj%ss(obj%indxShape(iel))
-    ans(2) = obj%ss(obj%indxShape(iel) + 1)
-    ans(3) = obj%ss(obj%indxShape(iel) + 2)
-    ans(4) = obj%ss(obj%indxShape(iel) + 3)
-
-  CASE default
-
-    CALL no_case_found_error
-
-  END SELECT
-
-CASE default
-
-  CALL no_case_found_error
-
-END SELECT
-
-CONTAINS
-
-SUBROUTINE no_case_found_error
-
-  CHARACTER(*), PARAMETER :: myName = "obj_Shape()"
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found')
-
-END SUBROUTINE no_case_found_error
-
-END PROCEDURE obj_Shape
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get
-INTEGER(I4B) :: iel, ii, a, b
+CHARACTER(*), PARAMETER :: myName = "obj_Get"
+INTEGER(I4B) :: iel
+LOGICAL(LGT) :: problem
 
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
-
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  fevar%val = obj%val(:, 1)
+  fevar%s = obj%s
+  fevar%defineOn = obj%defineOn
+  fevar%varType = obj%varType
+  fevar%rank = obj%rank
+  RETURN
 END IF
 
-a = obj%indxVal(iel)
-b = obj%indxVal(iel + 1)
+problem = .NOT. PRESENT(globalElement)
 
-fevar%len = b - a
-fevar%capacity = MAX(fevar%len, fevar%capacity)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement should be present, '//  &
+    & 'when mesh field is not constant')
+  RETURN
+END IF
 
-CALL Reallocate(fevar%val, fevar%capacity)
+problem = .NOT. (obj%mesh%IsElementPresent(globalElement))
 
-DO ii = a, b - 1
-  fevar%val(ii - a + 1) = obj%val(ii)
-END DO
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement = '//tostring(globalElement)//  &
+    & 'is not present in the mesh.')
+  RETURN
+END IF
 
-a = obj%indxShape(iel)
-b = obj%indxShape(iel + 1) - 1
-DO ii = a, b
-  fevar%s(ii - a + 1) = obj%ss(ii)
-END DO
-
+iel = obj%mesh%GetLocalElemNumber(globalElement)
+fevar%val = obj%val(:, iel)
+fevar%s = obj%s
 fevar%defineOn = obj%defineOn
 fevar%varType = obj%varType
 fevar%rank = obj%rank
-
 END PROCEDURE obj_Get
 
 !----------------------------------------------------------------------------
@@ -185,16 +68,81 @@ END PROCEDURE obj_Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-ans = ""
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+  & '[WIP ERROR] :: This routine is under development')
+ans = ""
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                                      Shape
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Shape
+SELECT CASE (obj%rank)
+CASE (Scalar)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = [1]
+  CASE (Space, Time)
+    ans = obj%s(1:1)
+  CASE (SpaceTime)
+    ans = obj%s(1:2)
+  END SELECT
+CASE (Vector)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = obj%s(1:1)
+  CASE (Space, Time)
+    ans = obj%s(1:2)
+  CASE (SpaceTime)
+    ans = obj%s(1:3)
+  END SELECT
+CASE (Matrix)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = obj%s(1:2)
+  CASE (Space, Time)
+    ans = obj%s(1:3)
+  CASE (SpaceTime)
+    ans = obj%s(1:4)
+  END SELECT
+END SELECT
+END PROCEDURE obj_Shape
+
+!----------------------------------------------------------------------------
+!                                                                      Size
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Size
+IF (PRESENT(dim)) THEN
+  ans = obj%s(dim)
+ELSE
+  SELECT CASE (obj%rank)
+  CASE (Scalar)
+    ans = 1
+  CASE (Vector)
+    ans = obj%s(1)
+  CASE (Matrix)
+    ans = obj%s(1) * obj%s(2)
+  END SELECT
+END IF
+END PROCEDURE obj_Size
+
+!----------------------------------------------------------------------------
+!                                                                GetPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointer
+IF (ALLOCATED(obj%val)) THEN
+  ans => obj%val
+ELSE
+  ans => NULL()
+END IF
+END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

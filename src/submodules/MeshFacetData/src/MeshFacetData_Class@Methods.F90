@@ -21,77 +21,45 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                               Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate1
-IF (ALLOCATED(obj%masterCellNumber)) DEALLOCATE (obj%masterCellNumber)
-IF (ALLOCATED(obj%slaveCellNumber)) DEALLOCATE (obj%slaveCellNumber)
-IF (ALLOCATED(obj%masterLocalFacetID)) DEALLOCATE (obj%masterLocalFacetID)
-IF (ALLOCATED(obj%slaveLocalFacetID)) DEALLOCATE (obj%slaveLocalFacetID)
-END PROCEDURE obj_Deallocate1
-
-!----------------------------------------------------------------------------
-!                                                   MeshFacetDataDeallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate2
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
-
-isok = .NOT. ALLOCATED(obj)
-IF (isok) RETURN
-
-tsize = SIZE(obj)
-
-DO ii = 1, tsize
-  CALL obj(ii)%DEALLOCATE()
-END DO
-
-DEALLOCATE (obj)
-
-END PROCEDURE obj_Deallocate2
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE MeshFacetData_Initiate
 CALL Reallocate(obj%masterCellNumber, n)
 CALL Reallocate(obj%slaveCellNumber, n)
 CALL Reallocate(obj%masterLocalFacetID, n)
 CALL Reallocate(obj%slaveLocalFacetID, n)
-END PROCEDURE obj_Initiate
+END PROCEDURE MeshFacetData_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                isInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isInitiated
+MODULE PROCEDURE MeshFacetData_isInitiated
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-END PROCEDURE obj_isInitiated
+END PROCEDURE MeshFacetData_isInitiated
 
 !----------------------------------------------------------------------------
 !                                                                      Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Size
+MODULE PROCEDURE MeshFacetData_Size
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = SIZE(obj%masterCellNumber)
 ELSE
   ans = 0
 END IF
-END PROCEDURE obj_Size
+END PROCEDURE MeshFacetData_Size
 
 !----------------------------------------------------------------------------
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Display
+MODULE PROCEDURE MeshFacetData_Display
 LOGICAL(LGT) :: abool
 
 CALL Display(msg, unitno=unitno)
@@ -132,6 +100,6 @@ IF (abool) THEN
     & unitno=unitno)
 END IF
 
-END PROCEDURE obj_Display
+END PROCEDURE MeshFacetData_Display
 
 END SUBMODULE Methods

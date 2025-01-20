@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(MatrixField_Class) DiagonalScalingMethods
-USE CSRMatrix_Method, ONLY: DiagonalScaling
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE obj_DiagonalScaling
 IF (PRESENT(diag)) THEN
   CALL DiagonalScaling(obj=obj%mat, side=side, diag=diag, &
-                       OPERATOR=OPERATOR)
+    & OPERATOR=OPERATOR)
 ELSE
   CALL DiagonalScaling(obj=obj%mat, side=side, OPERATOR=OPERATOR)
 END IF

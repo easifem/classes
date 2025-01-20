@@ -25,6 +25,7 @@ USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
+USE VTKFile_Class
 USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
   & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode
 USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
@@ -45,8 +46,9 @@ PUBLIC :: Mesh_
 PUBLIC :: MeshPointer_
 PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
-PUBLIC :: MeshPointerDeallocate
+PUBLIC :: meshPointerDeallocate
 PUBLIC :: MeshDisplay
+PUBLIC :: MeshGetFacetConnectivity
 
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 
@@ -61,23 +63,33 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 !{!pages/docs-api/Mesh/Mesh_.md!}
 
 TYPE, EXTENDS(AbstractMesh_) :: Mesh_
-  PRIVATE
   INTEGER(I4B) :: elemType = 0
     !! type of element present inside the mesh
 
-  TYPE(ReferenceElement_), ALLOCATABLE :: facetElements(:)
+  TYPE(ReferenceElement_), PUBLIC, ALLOCATABLE :: facetElements(:)
     !! Facet Elements in the reference element
 
-  CLASS(ReferenceElement_), POINTER :: refelem => NULL()
+  CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
+
+  INTEGER(I4B), ALLOCATABLE :: material(:)
+    !! materials mapped to the mesh
+    !! material(1) is the material id of medium 1
+    !! material(2) is the material id of medium 2
+    !! ...
+    !! material(n) is the material id of medium n
+    !!
+    !! For example, soil is a porous medium n = 1,
+    !! fluid is a medium n =2
+    !! then material(1) denotes the type of soil => clay, sand, silt
+    !! and material(2) denotes the type of fluid, water, oil, air
 
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   FINAL :: obj_Final
     !! mesh finalizer
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -85,29 +97,82 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+    !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
     !! Display the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
-    obj_DisplayFacetElements
+    & obj_DisplayFacetElements
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer => obj_GetRefElemPointer
+  ! SET:
+  ! @NodeDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
+    & obj_InitiateExtraNodetoNodes
+  !! Initiate Node to nodes mapping
+
+  ! SET:
+  ! @ElementDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
+    & obj_InitiateElementToElements
+  !! Initiate element to elements mapping
+
+  ! SET:
+  ! @BoundaryDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
+    & obj_InitiateBoundaryData
+
+  ! SET:
+  ! @FacetDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
+    & obj_InitiateFacetElements
+  !! Initiate boundary data
+
+  !  GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
+    & obj_GetRefElemPointer
   !! Returns pointer to the reference element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder1 => obj_GetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
+    & obj_GetOrder
   !! Returns the order ofthe element of mesh
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity =>  &
+    & obj_GetFacetConnectivity
+  !! Return the node nubmers in the facet element of a cellElement
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
 
-  !GET:
-  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial2 => obj_GetMaterial2
+  !! returns the material id of a given medium
+  !! this is a backward compatibility only
 
-  PROCEDURE, PUBLIC, PASS(obj) :: isFacetElement => obj_isFacetElement
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
-    obj_GetTotalFacetElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial2 => &
+    obj_GetTotalMaterial2
+  !! returns the total number of material this is for
+  !! backward compatibility only
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_setSparsity2
+  PROCEDURE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
+  PROCEDURE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
+  !! Set mesh quality
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial2 => &
+    obj_SetTotalMaterial2
+  !! Set total materials in materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial2 => &
+    obj_SetMaterial2
+  !! Set total materials in materials
 
 END TYPE Mesh_
 
@@ -180,7 +245,7 @@ END INTERFACE DEALLOCATE
 ! summary: Free up the memory stored in [[obj_]]
 
 INTERFACE DEALLOCATE
-  MODULE SUBROUTINE MeshPointerDeallocate(obj)
+  MODULE SUBROUTINE meshPointerDeallocate(obj)
     TYPE(MeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE meshPointerDeallocate
 END INTERFACE DEALLOCATE
@@ -236,6 +301,40 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ExportToVTK@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 Sept 2021
+! summary: Export mesh to a VTK file
+!
+!# Introduction
+!
+! - If `filename` is present then call [[VTKFile_:InitiateVTKFile]] method
+! - If `nodeCoord` is present then write Points by calling
+! [[VTKFile_:WritePoints]] method
+! - If `content` is present then write cell data by calling
+! [[VTKFile_:WriteCells]] methods
+! - If openTag is true then write piece info
+! - If cloSetag is true then close the piece
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtkFile, nodeCoord, filename, &
+    & OpenTag, Content, CloSetag)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtkFile
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: OpenTag
+    !! Default is true
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloSetag
+    !! Default is true
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Content
+    !! Default is true
+  END SUBROUTINE obj_ExportToVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -316,6 +415,61 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                           GetFacetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element
+!
+!# Introduction
+!
+! - Returns the connectivity of a given facet element
+! - facetElement is local facet element number
+
+INTERFACE
+  MODULE FUNCTION MeshGetFacetConnectivity(obj, facetElement, &
+    & elementType, isMaster) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: facetElement
+    INTEGER(I4B), INTENT(IN) :: elementType
+    LOGICAL(LGT), INTENT(IN) :: isMaster
+      !! if isMaster is true then connectivity of facet in master-cell
+      !! is returned, otherwise connectivity of facet in slave-cell
+      !! is returned. This is only applicable for internal facet element
+      !! because for domain facet we do not have slave-cell.
+      !! Currently, we do not support slave-cell for meshFacet because
+      !! the slave of meshFacet lives in different instance of obj_
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION MeshGetFacetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity of a given facet element of a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE FUNCTION obj_GetFacetConnectivity(obj, globalElement, &
+    & iface, islocal) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetFacetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetQuery@GetMethods
 !----------------------------------------------------------------------------
 
@@ -347,25 +501,309 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 isFacetElement@GetMethods
+!                                                     GetMaterial@GetMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
 INTERFACE
-  MODULE FUNCTION obj_isFacetElement(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetMaterial2(obj, medium) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_isFacetElement
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetTotalFacetElements@GetMethods
+!                                                     GetMaterial@GetMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the materials id of a given medium
+
 INTERFACE
-  MODULE FUNCTION obj_GetTotalFacetElements(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalMaterial2(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalFacetElements
+  END FUNCTION obj_GetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateExtraNodeToNode@NodeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 June 2021
+! summary: Initiate node to node connectivity data
+!
+!# Introduction
+!
+!- This routine generate the node to nodes mapping
+!- This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
+!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes
+! global node data surrounding the local node number used for edge-based
+!  stabilization. This list does not include self node.
+!
+!- This methods needs information about `nodeToNodes`, `nodeToElements`,
+! and `elementToElements`. Therefore,
+!- If `nodeToNodes` is not Initiated, then this method initiates it.
+!- If `nodeToElements` is not Initiated, then this method initiates it.
+!- If `elementToElements` is not Initiated, then this method initiates it.
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateExtraNodetoNodes(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateExtraNodetoNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               InitiateElementToElements@ElementDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date:  15 June 2021
+! summary: Initiate element to element data
+!
+!# Introduction
+!
+!- This routine creates the element surrounding a given element data
+!- Before calling this routine make sure the `refelem` in mesh is allocated.
+!- By using `refelem`, this routine forms the FacetElements.
+!- This routine needs `nodeToElements` information, therefore, if
+! `nodeToElements` is not Initiated then it calls `initiateNodeToelements`
+! method
+!- This method forms the following data:
+!- `obj%elementData(ielem)%globalElements`
+!- It also identifies those elements which are boundary element of mesh, and
+!- Set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those element
+!- Note that at this point boundary element are those which has at least
+! one orphan face.
+!- Note that at this point these boundary element can be interface element
+! between two mesh, or domain-boundary element.
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateElementToElements(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateBoundaryData@BoundaryDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 June 2021
+! summary: Initiate boundary data
+!
+!# Introduction
+!
+! This method construct the boundary element data.
+! It marks elements of mesh as BOUNDARY_ELEMENT and INTERNAL_ELEMENT
+! In this case boundary elements are those which contains the boundary node.
+! Boundary node information is available by reading the mesh file, see
+! mesh import method.
+! It also forms `obj%elementData(ii)%boundaryData`
+!
+! This methods needs following information:
+!
+!- `ElementToElements`
+!- `refelem` to construct the FacetElements
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE obj_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateFacetElements@FacetDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Compute the total number of facet elements in the mesh
+!
+!# Introduction
+!
+! This routine needs following information:
+!
+!- `ElementToElements`
+!- `BoundaryData`
+!
+! It makes following data
+!
+!- `InternalFacetData`
+!- `BoundaryFacetData`
+!- `FacetElementType`
+!
+! Note that at this point all boundaryFacet element are of type
+! `DOMAIN_BOUNDARY_ELEMENT`. This information can be corrected only when
+! we call SetFacetElementType from Domain_ class. This is because,
+! at this point we only know that a boundary facet is a domain boundary
+! element, as we have no information about the neighbouring mesh.
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFacetElements(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      SetSparsity@SetMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat, localNodeNumber, lbound, &
+    & ubound)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! [[Mesh_]] class
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: lbound
+    INTEGER(I4B), INTENT(IN) :: ubound
+    INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
+    !! Global to local node number map
+  END SUBROUTINE obj_SetSparsity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetSparsity@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 Oct 2021
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity2(obj, mat)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! Mesh_ class
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! CSRMatrix object
+  END SUBROUTINE obj_SetSparsity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity3(obj, colMesh, nodeToNode, mat, &
+    & ivar, jvar)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! [[Mesh_]] class
+    CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
+    !! [[Mesh_]] class
+    INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
+    !! Node to node connectivity between obj and colMesh
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+  END SUBROUTINE obj_SetSparsity3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
+  & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
+  & colLBOUND, colUBOUND, ivar, jvar)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! [[Mesh_]] class
+    CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
+    !! [[Mesh_]] class
+    INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
+    !! node to node connectivity between obj and colMesh
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: rowLBOUND
+    INTEGER(I4B), INTENT(IN) :: rowUBOUND
+    INTEGER(I4B), INTENT(IN) :: rowGlobalToLocalNodeNum( &
+      & rowLBOUND:rowUBOUND)
+    !! Global to local node number map
+    INTEGER(I4B), INTENT(IN) :: colLBOUND
+    INTEGER(I4B), INTENT(IN) :: colUBOUND
+    INTEGER(I4B), INTENT(IN) :: colGlobalToLocalNodeNum( &
+      & colLBOUND:colUBOUND)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+  END SUBROUTINE obj_SetSparsity4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuality@setMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-27
+! summary:  Set mesh quality
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
+    & min_measures, nodeCoord, local_nptrs)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
+    INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
+  END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE obj_SetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterial2(obj, medium, material)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE obj_SetMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------

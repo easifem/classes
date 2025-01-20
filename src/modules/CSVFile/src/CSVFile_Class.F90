@@ -153,7 +153,7 @@ PUBLIC :: CSVFilePointer_
 
 INTERFACE
   MODULE SUBROUTINE txt_initiate(obj, filename, unit, status, access, form, &
-                   position, action, pad, recl, comment, separator, delimiter)
+    & position, action, pad, recl, comment, separator, delimiter)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: filename
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unit

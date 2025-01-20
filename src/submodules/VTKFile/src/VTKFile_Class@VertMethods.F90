@@ -25,10 +25,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteVerts
-CALL obj%WriteStartTag(name=String('Verts'))
-CALL obj%WriteDataArray(name=String('connectivity'), x=connectivity)
-CALL obj%WriteDataArray(name=String('offsets'), x=offsets)
-CALL obj%WriteEndTag(name=String('Verts'))
+  CALL obj%WriteStartTag(name=String('Verts'))
+  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
+  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
+  CALL obj%WriteEndTag(name=String('Verts'))
 END PROCEDURE VTKFile_WriteVerts
 
 END SUBMODULE VertMethods

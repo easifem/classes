@@ -53,7 +53,7 @@ END PROCEDURE Orthopol_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Final
-CALL obj%DEALLOCATE()
+CALL obj%Deallocate()
 END PROCEDURE Orthopol_Final
 
 !----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ END PROCEDURE Orthopol_Transform1
 
 MODULE PROCEDURE Orthopol_Transform2
 ans = UltrasphericalTransform(n=n, lambda=obj%lambda, &
-                              f=f, quadType=quadType, x1=x1, x2=x2)
+  & f=f, quadType=quadType)
 END PROCEDURE Orthopol_Transform2
 
 !----------------------------------------------------------------------------

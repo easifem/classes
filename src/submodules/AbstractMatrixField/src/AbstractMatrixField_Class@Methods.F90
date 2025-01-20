@@ -16,11 +16,7 @@
 !
 
 SUBMODULE(AbstractMatrixField_Class) Methods
-USE AbstractField_Class, ONLY: AbstractFieldDisplay, &
-                               AbstractFieldDeallocate
-
-USE Display_Method, ONLY: Display
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -30,7 +26,11 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
-CALL Display(obj%isPmatInitiated, msg="PmatInitiated: ", unitNo=unitNo)
+IF (obj%isPmatInitiated) THEN
+  CALL Display("# isPmatInitiated : TRUE ", unitNo)
+ELSE
+  CALL Display("# isPmatInitiated : FALSE", unitNo)
+END IF
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -55,9 +55,9 @@ END PROCEDURE obj_isPreconditionSet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SPY
-CHARACTER(*), PARAMETER :: myName = "obj_SPY()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+CHARACTER(*), PARAMETER :: myName = "obj_SPY"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
 END PROCEDURE obj_SPY
 
 !----------------------------------------------------------------------------
@@ -65,9 +65,9 @@ END PROCEDURE obj_SPY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymSchurLargestEigenVal
-CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
 END PROCEDURE obj_SymSchurLargestEigenVal
 
 !----------------------------------------------------------------------------
@@ -75,9 +75,9 @@ END PROCEDURE obj_SymSchurLargestEigenVal
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymLargestEigenVal
-CHARACTER(*), PARAMETER :: myName = "obj_SymLargestEigenVal()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+CHARACTER(*), PARAMETER :: myName = "obj_SymLargestEigenVal"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
 END PROCEDURE obj_SymLargestEigenVal
 
 END SUBMODULE Methods

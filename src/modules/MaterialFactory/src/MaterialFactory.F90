@@ -27,13 +27,9 @@ USE SolidMaterial_Class, ONLY: SolidMaterial_
 USE FluidMaterial_Class, ONLY: FluidMaterial_
 USE PorousMaterial_Class, ONLY: PorousMaterial_
 USE ExceptionHandler_Class, ONLY: e
-
 IMPLICIT NONE
-
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "MaterialFactory"
-
 PUBLIC :: SolidMechanicsModelFactory
 PUBLIC :: FluidMechanicsModelFactory
 PUBLIC :: PoroMechanicsModelFactory

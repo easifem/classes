@@ -15,5 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 ! SUBMODULE(BlockMatrixField_Class) MatVecMethods
-!
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
 ! END SUBMODULE MatVecMethods

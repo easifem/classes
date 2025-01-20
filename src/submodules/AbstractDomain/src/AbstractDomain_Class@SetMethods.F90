@@ -25,7 +25,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                               SetShowTime
+!                                                           SetShowTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetShowTime
@@ -37,9 +37,8 @@ END PROCEDURE obj_SetShowTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-CLASS(AbstractMesh_), POINTER :: meshptr
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
+#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -48,10 +47,22 @@ IF (.NOT. obj%isInitiated) THEN
 END IF
 #endif
 
-meshptr => obj%GetMeshPointer()
-CALL meshptr%SetSparsity(mat)
+SELECT CASE (obj%nsd)
+CASE (0)
+  CALL obj%meshPoint%SetSparsity(mat=mat)
+CASE (1)
+  CALL obj%meshCurve%SetSparsity(mat=mat)
+CASE (2)
+  CALL obj%meshSurface%SetSparsity(mat=mat)
+CASE (3)
+  CALL obj%meshVolume%SetSparsity(mat=mat)
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for nsd='//tostring(obj%nsd))
+  RETURN
+END SELECT
+
 CALL SetSparsity(mat)
-meshptr => NULL()
 
 END PROCEDURE obj_SetSparsity1
 
@@ -122,7 +133,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSparsity2
 
 !----------------------------------------------------------------------------
-!                                                   part1_obj_Set_sparsity2
+!                                                 part1_obj_Set_sparsity2
 !----------------------------------------------------------------------------
 
 SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
@@ -282,58 +293,63 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
 END SUBROUTINE part2_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalMaterial
+!                                                          SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMaterial
-INTEGER(I4B) :: ii, tsize
-CLASS(AbstractMesh_), POINTER :: meshptr
-
-IF (PRESENT(entityNum)) THEN
-
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-  CALL meshptr%SetTotalMaterial(n)
-  meshptr => NULL()
-
-  RETURN
-END IF
-
-tsize = obj%GetTotalEntities(dim=dim)
-DO ii = 1, tsize
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-  CALL meshptr%SetTotalMaterial(n)
-END DO
-meshptr => NULL()
-
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%SetTotalMaterial(n)
+CASE (1)
+  CALL obj%meshCurve%SetTotalMaterial(n)
+CASE (2)
+  CALL obj%meshSurface%SetTotalMaterial(n)
+CASE (3)
+  CALL obj%meshVolume%SetTotalMaterial(n)
+END SELECT
 END PROCEDURE obj_SetTotalMaterial
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalMaterial
+!                                                          SetTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial
-CLASS(AbstractMesh_), POINTER :: meshptr
-LOGICAL(LGT) :: isok
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial()"
+#endif
 
-meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
-isok = ASSOCIATED(meshptr)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::obj_SetMaterial - '// &
-    & '[INTERNAL ERROR] :: meshptr not associated')
-  RETURN
-END IF
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%SetMaterial(medium=medium, material=material, &
+                                 entityNum=entityNum)
+CASE (1)
+  CALL obj%meshCurve%SetMaterial(medium=medium, material=material, &
+                                 entityNum=entityNum)
+CASE (2)
+  CALL obj%meshSurface%SetMaterial(medium=medium, material=material, &
+                                   entityNum=entityNum)
+CASE (3)
+  CALL obj%meshVolume%SetMaterial(medium=medium, material=material, &
+                                  entityNum=entityNum)
+END SELECT
 
-CALL meshptr%SetMaterial(medium=medium, material=material, &
-                         entityNum=entityNum)
-meshptr => NULL()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
-!                                                              SetNodeCoord
+!                                                           SetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetNodeCoord
+MODULE PROCEDURE obj_SetNodeCoord1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord1()"
 LOGICAL(LGT) :: problem
@@ -380,7 +396,7 @@ DO CONCURRENT(ii=1:tnodes)
   obj%nodeCoord(1:nsd, ii) = nodeCoord(1:nsd, ii)
 END DO
 
-END PROCEDURE obj_SetNodeCoord
+END PROCEDURE obj_SetNodeCoord1
 
 !----------------------------------------------------------------------------
 !                                                                 SetQuality

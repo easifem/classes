@@ -16,8 +16,9 @@
 !
 
 SUBMODULE(ScalarField_Class) IOMethods
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
-USE Display_Method, ONLY: ToString
+USE BaseMethod
+USE HDF5File_Method
+USE Mesh_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -26,18 +27,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+! info
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Import()")
 
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                             fedof=fedof, fedofs=fedofs)
+CALL AbstractNodeFieldImport( &
+  & obj=obj, &
+  & hdf5=hdf5, &
+  & group=group, &
+  & dom=dom, &
+  & domains=domains)
 
 dsetname = TRIM(group)//"/tSize"
 bools(1) = hdf5%pathExists(dsetname%chars())
@@ -47,68 +51,22 @@ dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
 IF (.NOT. ALL(bools)) THEN
-
+! Initiate
   CALL param%initiate()
-  CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
-                           engine=obj%engine%chars(), fieldType=obj%fieldType)
+  CALL SetScalarFieldParam( &
+    & param=param, &
+    & name=obj%name%chars(), &
+    & engine=obj%engine%chars(), &
+    & fieldType=obj%fieldType)
   obj%isInitiated = .FALSE.
-  CALL obj%Initiate(param=param, fedof=fedof)
+  CALL obj%initiate(param=param, dom=dom)
   CALL param%DEALLOCATE()
 END IF
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+! info
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[END] Import()")
 
 END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                               ExportToVTK
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ExportToVTK
-CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
-
-INTEGER(I4B) :: tsize, tnodes
-REAL(DFP), ALLOCATABLE :: VALUE(:)
-TYPE(String) :: name
-CHARACTER(1), ALLOCATABLE :: dofnames(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = obj%GetTotalPhysicalVars()
-ALLOCATE (dofnames(tsize))
-CALL obj%GetPhysicalNames(dofnames)
-
-tsize = obj%fedof%GetTotalDOF()
-tnodes = obj%fedof%GetTotalVertexDOF()
-
-ALLOCATE (VALUE(tsize))
-CALL obj%Get(VALUE=VALUE, tsize=tsize)
-
-! name = obj%name%chars()//"_"//dofnames(1)
-name = obj%name%Join(array=dofnames, sep="_")
-
-CALL vtk%WriteDataArray(name=name, x=VALUE(1:tnodes), numberOfComponents=1)
-
-name = ''
-DEALLOCATE (dofnames)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_ExportToVTK
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

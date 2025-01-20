@@ -16,5 +16,7 @@
 !
 
 ! SUBMODULE(BlockMatrixField_Class) LUSolveMethods
-!
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
 ! END SUBMODULE LUSolveMethods

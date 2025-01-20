@@ -16,20 +16,18 @@
 !
 
 MODULE ScalarMeshField_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData
+USE BaSetype
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
-USE UserFunction_Class, ONLY: UserFunction_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE AbstractMeshField_Class, ONLY: AbstractScalarMeshField_
-
+USE AbstractField_Class
+USE AbstractMeshField_Class
+USE UserFunction_Class
+USE Mesh_Class
 IMPLICIT NONE
-
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "ScalarMeshField"
-
 PUBLIC :: ScalarMeshField_
 PUBLIC :: ScalarMeshFieldPointer_
 PUBLIC :: SetScalarMeshFieldParam
@@ -47,7 +45,7 @@ TYPE, EXTENDS(AbstractScalarMeshField_) :: ScalarMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE ScalarMeshField_
 
 !----------------------------------------------------------------------------
@@ -96,7 +94,7 @@ END INTERFACE ScalarMeshFieldDeallocate
 
 INTERFACE
   MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, fieldType, varType, &
-                                            engine, defineOn, nns)
+    & engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -121,7 +119,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(ScalarMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
     !! mesh
     CLASS(UserFunction_), INTENT(INOUT) :: func
     !! Abstract material

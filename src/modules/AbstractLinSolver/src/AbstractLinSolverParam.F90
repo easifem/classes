@@ -16,34 +16,40 @@
 !
 
 MODULE AbstractLinSolverParam
-USE GlobalData, ONLY: DFP, I4B, LGT, &
-                      LIS_CG, NO_PRECONDITION, PRECOND_NONE, &
-                      convergenceInRes, relativeConvergence, &
-                      LIS_SOR
-
+USE GlobalData
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER, PUBLIC :: default_engine = "NATIVE_SERIAL"
 CHARACTER(*), PARAMETER, PUBLIC :: default_solverName_char = "CG"
-INTEGER(I4B), PARAMETER, PUBLIC :: default_solverName = LIS_CG
+INTEGER(I4B), PARAMETER, PUBLIC :: default_solverName = lis_cg
 CHARACTER(*), PARAMETER, PUBLIC :: default_preconditionOption_char = "NO"
-INTEGER(I4B), PARAMETER, PUBLIC :: default_preconditionOption = NO_PRECONDITION
-CHARACTER(*), PARAMETER, PUBLIC :: default_p_name_char = "NONE"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_preconditionOption =  &
+  & NO_PRECONDITION
+CHARACTER(*), PARAMETER, PUBLIC :: default_p_name_char = &
+  & "NONE"
 INTEGER(I4B), PARAMETER, PUBLIC :: default_p_name = PRECOND_NONE
 
 INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceIn = convergenceInRes
 CHARACTER(*), PARAMETER, PUBLIC :: default_convergenceIn_char = "RESIDUAL"
 
-INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceType = relativeConvergence
-CHARACTER(*), PARAMETER, PUBLIC :: default_convergenceType_char = "RELATIVE"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceType &
+  & = relativeConvergence
+CHARACTER(*), PARAMETER, PUBLIC :: default_convergenceType_char =  &
+  & "RELATIVE"
 
-INTEGER(I4B), PARAMETER, PUBLIC :: default_maxIter = 1000
-LOGICAL(LGT), PARAMETER, PUBLIC :: default_relativeToRHS = .FALSE.
-INTEGER(I4B), PARAMETER, PUBLIC :: default_KrylovSubspaceSize = 50
-REAL(DFP), PARAMETER, PUBLIC :: default_rtol = 1.0E-8
-REAL(DFP), PARAMETER, PUBLIC :: default_atol = 1.0E-8
-REAL(DFP), PARAMETER, PUBLIC :: default_sor_omega = 1.9_DFP
+INTEGER(I4B), PARAMETER, PUBLIC :: default_maxIter &
+  & = 1000
+LOGICAL(LGT), PARAMETER, PUBLIC :: default_relativeToRHS &
+  & = .FALSE.
+INTEGER(I4B), PARAMETER, PUBLIC :: default_KrylovSubspaceSize &
+  & = 50
+REAL(DFP), PARAMETER, PUBLIC :: default_rtol &
+  & = 1.0E-8
+REAL(DFP), PARAMETER, PUBLIC :: default_atol &
+  & = 1.0E-8
+REAL(DFP), PARAMETER, PUBLIC :: default_sor_omega &
+  & = 1.9_DFP
 INTEGER(I4B), PARAMETER, PUBLIC :: default_bicgstab_ell = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_none = 0
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_jacobi = 1

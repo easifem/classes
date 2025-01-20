@@ -15,68 +15,32 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) AddMethods
-USE FEVariable_Method, ONLY: FEVariable_Size => Size
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                             MasterAdd
-!----------------------------------------------------------------------------
-
-SUBROUTINE MasterAdd(val, indxVal, add_val, indx, tsize, scale)
-  REAL(DFP), INTENT(INOUT) :: val(:)
-  INTEGER(I4B), INTENT(INOUT) :: indxVal(:)
-  REAL(DFP), INTENT(IN) :: add_val(:)
-  INTEGER(I4B), INTENT(IN) :: indx
-  INTEGER(I4B), INTENT(IN) :: tsize
-  REAL(DFP), INTENT(IN) :: scale
-
-  INTEGER(I4B) :: ii
-
-  indxVal(indx + 1) = indxVal(indx) + tsize
-
-  DO ii = indxVal(indx), indxVal(indx + 1) - 1
-    val(ii) = val(ii) + scale * add_val(ii - indxVal(indx) + 1)
-  END DO
-
-END SUBROUTINE MasterAdd
 
 !----------------------------------------------------------------------------
 !                                                                       Add
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Add1
-INTEGER(I4B) :: iel, tsize
-
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
-  iel = 1
+MODULE PROCEDURE obj_Add
+  !!
+INTEGER(I4B) :: iel
+  !!
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  obj%val(:, 1) = obj%val(:, 1) + scale * fevar%val(:)
 ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
+  IF (PRESENT(globalElement)) THEN
+    iel = obj%mesh%getLocalElemNumber(globalElement)
+    obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
+  ELSE
+    DO iel = 1, obj%mesh%getTotalElements()
+      obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
+    END DO
+  END IF
 END IF
-
-tsize = FEVariable_Size(fevar)
-
-CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
-               scale=scale, indx=iel, tsize=tsize)
-END PROCEDURE obj_Add1
-
-!----------------------------------------------------------------------------
-!                                                                        Add
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Add2
-INTEGER(I4B) :: iel, telem, tsize
-
-telem = obj%mesh%GetTotalElements()
-tsize = FEVariable_Size(fevar)
-
-DO iel = 1, telem
-  CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
-                 scale=scale, indx=iel, tsize=tsize)
-END DO
-
-END PROCEDURE obj_Add2
+  !!
+END PROCEDURE obj_Add
 
 !----------------------------------------------------------------------------
 !

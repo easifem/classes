@@ -18,8 +18,8 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/MatrixField_Class@ConstructorMethods.F90
-          ${src_path}/MatrixFieldUtility.F90
+  PRIVATE ${src_path}/MatrixFieldUtility.F90
+          ${src_path}/MatrixField_Class@ConstructorMethods.F90
           ${src_path}/MatrixField_Class@IOMethods.F90
           ${src_path}/MatrixField_Class@GetMethods.F90
           ${src_path}/MatrixField_Class@GetRowMethods.F90

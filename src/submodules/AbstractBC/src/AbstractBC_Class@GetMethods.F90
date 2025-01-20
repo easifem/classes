@@ -15,171 +15,172 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString
-
-USE GlobalData, ONLY: CHAR_LF
-
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-
+USE BaseMethod
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                                 GetMeshID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshID
-ans = obj%boundary%GetMeshID(dim=dim)
-END PROCEDURE obj_GetMeshID
-
-!----------------------------------------------------------------------------
-!                                                           GetMeshIDPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshIDPointer
-CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=ans, tsize=tsize)
-END PROCEDURE obj_GetMeshIDPointer
+MODULE PROCEDURE bc_GetMeshID
+ans = obj%boundary%getMeshID(dim=dim)
+END PROCEDURE bc_GetMeshID
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetDOFNo
+MODULE PROCEDURE bc_GetDOFNo
 ans = obj%idof
-END PROCEDURE obj_GetDOFNo
+END PROCEDURE bc_GetDOFNo
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get1
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-CHARACTER(6) :: casename
+MODULE PROCEDURE bc_Get
+CHARACTER(*), PARAMETER :: myName = "bc_Get()"
+INTEGER(I4B) :: ii, tsize, tNodes, tTimes
+LOGICAL(LGT) :: isNodalValuePresent, isNOTOK
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START]')
 #endif
 
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-
-  CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
-
-CASE ("H1HIER", "H1HEIR")
-
-  CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
-
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: AbstractBC_ object is not initiated'//  &
+  & ', initiate it first.')
   RETURN
+END IF
 
+! get node numbers
+IF (.NOT. ASSOCIATED(obj%dom)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: AbstractBC_::obj%dom is not associated!')
+  RETURN
+END IF
+
+nodeNum = obj%boundary%GetNodeNum(domain=obj%dom)
+tNodes = SIZE(nodeNum)
+
+tTimes = 1
+IF (PRESENT(times)) tTimes = SIZE(times)
+
+isNodalValuePresent = PRESENT(nodalValue)
+
+IF (isNodalValuePresent .AND. obj%isUserFunction) THEN
+  CALL obj%GetFromUserFunction(nodeNum=nodeNum, nodalValue=nodalValue,  &
+    & times=times)
+  RETURN
+END IF
+
+isNOTOK = isNodalValuePresent .AND. (.NOT. ALLOCATED(obj%nodalValue))
+
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: AbstractBC_::obj%nodalValue is not allocated!')
+  RETURN
+END IF
+
+IF (.NOT. isNodalValuePresent) RETURN
+
+! get nodal values
+SELECT CASE (obj%nodalValueType)
+
+! Constant
+CASE (CONSTANT)
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+  nodalValue = obj%nodalValue(1, 1)
+
+! Space
+CASE (SPACE)
+  isNOTOK = SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)
+  IF (isNOTOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
+    RETURN
+  END IF
+
+  nodalValue = obj%nodalValue
+
+! Time
+CASE (TIME)
+  tsize = SIZE(obj%nodalValue, 1)
+  IF (PRESENT(times)) THEN
+    IF (tsize .NE. SIZE(times)) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+       & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
+    END IF
+  END IF
+
+  CALL Reallocate(nodalValue, SIZE(nodeNum), tsize)
+
+  DO ii = 1, tsize
+    nodalValue(:, ii) = obj%nodalValue(ii, 1)
+  END DO
+
+! SpaceTime
+CASE (SpaceTime)
+  IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
+  END IF
+
+  IF (PRESENT(times)) THEN
+    IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+        & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
+    END IF
+  END IF
+
+  nodalValue = obj%nodalValue
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  & '[END]')
 #endif
-END PROCEDURE obj_Get1
+END PROCEDURE bc_Get
 
 !----------------------------------------------------------------------------
-!                                                                 Get
+!                                                           bc_GetFEVar
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get2
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-CHARACTER(6) :: casename
+MODULE PROCEDURE bc_GetFEVar
+CHARACTER(*), PARAMETER :: myName = "bc_GetFEVar()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development.')
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+! If useFunction is true  then
+!    if constant
+!    if time
+!    if space
+!    if space-time
 
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-
-  CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
-CASE ("H1HIER", "H1HEIR")
-
-  CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Get2
-
-!----------------------------------------------------------------------------
-!                                                           GetTotalNodeNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalNodenum
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodenum()"
-CHARACTER(6) :: casename
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-
-  ans = obj%GetTotalNodeNumH1Lagrange(fedof=fedof)
-
-CASE ("H1HIER", "H1HEIR")
-
-  ans = obj%GetTotalNodeNumH1Hierarchical(fedof=fedof)
-
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_GetTotalNodenum
+! If useFunction is not true then
+END PROCEDURE bc_GetFEVar
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isuseFunction
+MODULE PROCEDURE bc_isuseFunction
 ans = obj%isUserFunction
-END PROCEDURE obj_isuseFunction
+END PROCEDURE bc_isuseFunction
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetParam
-CALL obj%boundary%GetParam(isSelectionByBox=isSelectionByBox, &
-                           isSelectionByMeshID=isSelectionByMeshID, &
-                           isSelectionByElemNum=isSelectionByElemNum, &
-                           isSelectionByNodeNum=isSelectionByNodeNum)
+MODULE PROCEDURE bc_GetQuery
+CALL obj%boundary%GetQuery(&
+  & isSelectionByBox=isSelectionByBox, &
+  & isSelectionByMeshID=isSelectionByMeshID, &
+  & isSelectionByElemNum=isSelectionByElemNum, &
+  & isSelectionByNodeNum=isSelectionByNodeNum)
 
 IF (PRESENT(idof)) idof = obj%idof
 IF (PRESENT(isTangent)) isTangent = obj%isTangent
@@ -188,23 +189,154 @@ IF (PRESENT(useFunction)) useFunction = obj%isUserFunction
 IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
 IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
-IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
-END PROCEDURE obj_GetParam
+IF (PRESENT(useExternal)) useExternal = obj%useExternal
+END PROCEDURE bc_GetQuery
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+MODULE PROCEDURE bc_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "bc_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE obj_GetPrefix
+  & '[WIP ERROR] :: This routine should be implemented by child class.')
+END PROCEDURE bc_GetPrefix
 
 !----------------------------------------------------------------------------
-!
+!                                                       GetFromUserFunction
 !----------------------------------------------------------------------------
 
-#include "../../include/errors.F90"
+MODULE PROCEDURE bc_GetFromUserFunction
+CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
+INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes, argType
+REAL(DFP) :: xij(4, 1), ans
+LOGICAL(LGT) :: problem
+
+! get pointer to nodecoord
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+problem = .NOT. ASSOCIATED(obj%func)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[INTERNAL ERROR] :: When nodalValueType is "//  &
+  & CHAR_LF//"Space and useFunction is specified, "//  &
+  & CHAR_LF//"then SpaceFunction is needed, "//  &
+  & CHAR_LF//"but it is not associated")
+  RETURN
+END IF
+
+retType = obj%func%GetReturnType()
+problem = retType .NE. Scalar
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Return type of user function should be '//  &
+    & 'scalar.')
+  RETURN
+END IF
+
+problem = (obj%nodalValueType .EQ. Time) .AND. (.NOT. PRESENT(times))
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[INTERNAL ERROR] :: When `nodalValueType` is Time "//  &
+    & " and `IsUserFunction` is TRUE, "//  &
+    & " then `times` is needed in the passing argument,"//  &
+    & " but it is not present")
+  RETURN
+END IF
+
+problem = (obj%nodalValueType .EQ. SpaceTime) .AND. (.NOT. PRESENT(times))
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[INTERNAL ERROR] :: When `nodalValueType` is SpaceTime "//  &
+    & " and `IsUserFunction` is TRUE, "//  &
+    & " then `times` is needed in the passing argument,"//  &
+    & " but it is not present")
+  RETURN
+END IF
+
+argType = obj%func%GetArgType()
+problem = argType .NE. obj%nodalValueType
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: argType='//tostring(argType)//  &
+    & ' in user function is not same '//  &
+    & 'as nodalValueType '//tostring(obj%nodalValueType)//  &
+    & ' in AbstractBC_')
+  RETURN
+END IF
+
+tNodes = SIZE(nodeNum)
+nsd = obj%dom%GetNSD()
+
+SELECT CASE (obj%nodalValueType)
+
+! Constant
+CASE (Constant)
+  CALL Reallocate(nodalValue, tNodes, 1)
+
+  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1), &
+    & globalNode=nodeNum(1:1))
+
+  CALL obj%func%Get(val=ans)
+
+  nodalValue(:, 1) = ans
+
+! Space
+CASE (Space)
+  CALL Reallocate(nodalValue, tNodes, 1)
+
+  DO ii = 1, tNodes
+    CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+      & globalNode=nodeNum(ii:ii))
+
+    CALL obj%func%Get(val=ans, args=xij(1:3, 1))
+
+    nodalValue(ii, 1) = ans
+  END DO
+
+! Time
+CASE (Time)
+
+  tTimes = SIZE(times)
+
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+
+  DO ii = 1, tTimes
+    CALL obj%func%Get(val=ans, args=times(ii:ii))
+
+    nodalValue(:, ii) = ans
+  END DO
+
+! SpaceTime
+CASE (SpaceTime)
+  tTimes = SIZE(times)
+
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+
+  DO kk = 1, tTimes
+    xij(nsd + 1, 1) = times(kk)
+
+    DO ii = 1, tNodes
+      CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+        & globalNode=nodeNum(ii:ii))
+
+      CALL obj%func%Get(val=ans, args=xij(1:4, 1))
+
+      nodalValue(ii, kk) = ans
+    END DO
+  END DO
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE bc_GetFromUserFunction
 
 END SUBMODULE GetMethods

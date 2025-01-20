@@ -21,19 +21,7 @@
 
 SUBMODULE(FieldFactory) NodeFieldFactoryMethods
 USE FPL, ONLY: ParameterList_
-
-USE Display_Method, ONLY: ToString
-
-USE AssertUtility, ONLY: Assert
-
-USE ScalarField_Class, ONLY: SetScalarFieldParam
-
-USE STScalarField_Class, ONLY: SetSTScalarFieldParam
-
-USE STVectorField_Class, ONLY: SetSTVectorFieldParam
-
-USE VectorField_Class, ONLY: SetVectorFieldParam
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -46,68 +34,61 @@ CHARACTER(*), PARAMETER :: myName = "NodeFieldFactory()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
-ans => NULL()
-
-SELECT CASE (engine)
+SELECT CASE (TRIM(engine))
 
 CASE ("NATIVE_SERIAL")
 
-  SELECT CASE (datatype)
-  CASE ("SCALAR")
+  IF (TRIM(datatype) .EQ. "SCALAR") THEN
     ALLOCATE (ScalarField_ :: ans)
-  CASE ("ST_SCALAR")
+  ELSE IF (TRIM(datatype) .EQ. "ST_SCALAR") THEN
     ALLOCATE (STScalarField_ :: ans)
-  CASE ("VECTOR")
+  ELSE IF (TRIM(datatype) .EQ. "VECTOR") THEN
     ALLOCATE (VectorField_ :: ans)
-  CASE ("ST_VECTOR")
+  ELSE IF (TRIM(datatype) .EQ. "ST_VECTOR") THEN
     ALLOCATE (STVectorField_ :: ans)
-  CASE ("BLOCK")
+  ELSE IF (TRIM(datatype) .EQ. "BLOCK") THEN
     ALLOCATE (BlockNodeField_ :: ans)
-  CASE default
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: No case found for given datatype')
-    RETURN
-  END SELECT
+  END IF
 
 CASE ("NATIVE_OMP")
 
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_OMP engine is not available currently!!')
+    & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
 
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
 
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
 
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
 
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given engine')
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE NodeFieldFactory
 
@@ -116,12 +97,12 @@ END PROCEDURE NodeFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE BlockNodeFieldFactory
-CHARACTER(*), PARAMETER :: myName = "BlockNodeFieldFactory()"
+CHARACTER(*), PARAMETER :: myName = "BlockNodeFieldFactory"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -130,37 +111,34 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_OMP engine is not available currently!!')
+    & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given engine')
-
-  RETURN
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE BlockNodeFieldFactory
 
 !----------------------------------------------------------------------------
@@ -168,11 +146,11 @@ END PROCEDURE BlockNodeFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarFieldFactory
-CHARACTER(*), PARAMETER :: myName = "ScalarFieldFactory()"
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldFactory"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
@@ -182,33 +160,33 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-        '[INTERNAL ERRROR] :: NATIVE_OMP engine is not available currently!!')
+    & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given engine')
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE ScalarFieldFactory
@@ -218,11 +196,11 @@ END PROCEDURE ScalarFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VectorFieldFactory
-CHARACTER(*), PARAMETER :: myName = "VectorFieldFactory()"
+CHARACTER(*), PARAMETER :: myName = "VectorFieldFactory"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
@@ -232,34 +210,34 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'NATIVE_OMP engine is not available currently!!')
+    & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    'No case found for given engine')
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE VectorFieldFactory
 
@@ -268,11 +246,11 @@ END PROCEDURE VectorFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STVectorFieldFactory
-CHARACTER(*), PARAMETER :: myName = "STVectorFieldFactory()"
+CHARACTER(*), PARAMETER :: myName = "STVectorFieldFactory"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
@@ -282,33 +260,33 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_OMP engine is not available currently!!')
+    & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given engine')
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE STVectorFieldFactory
@@ -322,7 +300,7 @@ CHARACTER(*), PARAMETER :: myName = "STScalarFieldFactory"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
@@ -332,33 +310,33 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'NATIVE_OMP engine is not available, currently!!')
+    & 'NATIVE_OMP engine is not available, currently!!')
 
 CASE ("NATIVE_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'NATIVE_MPI engine is not available currently!!')
+    & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'PETSC engine is not available currently!!')
+    & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'LIS_OMP engine is not available currently!!')
+    & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'LIS_MPI engine is not available currently!!')
+    & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    'No case found for given engine')
+    & 'No case found for given engine')
 
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE STScalarFieldFactory
@@ -368,50 +346,50 @@ END PROCEDURE STScalarFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VectorField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "VectorField_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate1"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL param%Initiate()
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
 
 DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-
-  IF (problem) THEN
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
   END IF
 
   obj(ii)%ptr => VectorFieldFactory(engine)
 
-  CALL SetVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                    spaceCompo=spaceCompo, fieldType=fieldType, engine=engine)
+  CALL SetVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
-
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE VectorField_Initiate1
 
@@ -420,13 +398,13 @@ END PROCEDURE VectorField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VectorField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "VectorField_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate2"
 INTEGER(I4B) :: tsize, ii, nn(6)
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
@@ -435,43 +413,46 @@ tsize = SIZE(obj)
 
 nn = [ &
   & tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), SIZE(engine),  &
-  & SIZE(fedof) &
+  & SIZE(dom) &
 ]
 
-CALL Assert(nn=nn, &
-      msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
-            "engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
 
 DO ii = 1, tsize
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[ALLOCATION ERROR] :: VectorField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
+      & '[ALLOCATION ERROR] :: VectorField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
   END IF
 
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
   END IF
 
   obj(ii)%ptr => VectorFieldFactory(engine(ii)%Chars())
 
-  CALL SetVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                           spaceCompo=spaceCompo(ii), &
-                           fieldType=fieldType(ii), &
-                           engine=engine(ii)%chars())
+  CALL SetVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE VectorField_Initiate2
@@ -481,50 +462,51 @@ END PROCEDURE VectorField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STVectorField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "STVectorField_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "STVectorFieldIntiate1"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL param%Initiate()
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
 
 DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-
-  IF (problem) THEN
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
   END IF
 
   obj(ii)%ptr => STVectorFieldFactory(engine)
 
-  CALL SetSTVectorFieldParam(param=param, name=names(ii)%chars(), &
-            spaceCompo=spaceCompo, timeCompo=timeCompo, fieldType=fieldType, &
-                             engine=engine)
+  CALL SetSTVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo,  &
+    & timeCompo=timeCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE STVectorField_Initiate1
 
@@ -533,57 +515,62 @@ END PROCEDURE STVectorField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STVectorField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "STVectorField_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "STVectorFieldIntiate2"
 INTEGER(I4B) :: tsize, ii, nn(7)
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
 
 tsize = SIZE(obj)
 
-nn = [ tsize, SIZE(names), SIZE(spaceCompo), SIZE(timeCompo), SIZE(fieldType), &
-      SIZE(engine), SIZE(fedof)]
+nn = [ &
+  & tsize, SIZE(names), SIZE(spaceCompo), SIZE(timeCompo), SIZE(fieldType),  &
+  & SIZE(engine), SIZE(dom) &
+]
 
-CALL Assert(nn=nn, &
-       msg="[ARG ERROR] :: The size of obj, names, spaceCompo, timeCompo,"// &
-            "fieldType, engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, timeCompo,"//  &
+  & "fieldType, engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
 
 DO ii = 1, tsize
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[ALLOCATION ERROR] :: STVectorField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: STVectorField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
   END IF
 
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
   END IF
 
   obj(ii)%ptr => STVectorFieldFactory(engine(ii)%Chars())
 
-  CALL SetSTVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                         spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
-                           fieldType=fieldType(ii), engine=engine(ii)%chars())
+  CALL SetSTVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo(ii),  &
+    & timeCompo=timeCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE STVectorField_Initiate2
@@ -593,49 +580,49 @@ END PROCEDURE STVectorField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "ScalarField_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldIntiate1"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
+tsize = SIZE(obj)
 
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
 
 DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-  IF (problem) THEN
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
   END IF
 
   obj(ii)%ptr => ScalarFieldFactory(engine)
 
-  CALL SetScalarFieldParam(param=param, name=names(ii)%chars(), &
-                           fieldType=fieldType, engine=engine)
+  CALL SetScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & fieldType=fieldType,  &
+    & engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE ScalarField_Initiate1
 
@@ -644,57 +631,60 @@ END PROCEDURE ScalarField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "ScalarField_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldIntiate2"
 INTEGER(I4B) :: tsize, ii, nn(5)
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
 
 tsize = SIZE(obj)
 
-nn = [tsize, SIZE(names), SIZE(fieldType), SIZE(engine), SIZE(fedof)]
+nn = [ &
+  & tsize, SIZE(names), SIZE(fieldType), SIZE(engine),  &
+  & SIZE(dom) &
+]
 
-CALL Assert(nn=nn, &
-            msg="[ARG ERROR] :: The size of obj, names, fieldType, "// &
-            "engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, fieldType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
 
 DO ii = 1, tsize
-
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[ALLOCATION ERROR] :: ScalarField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: ScalarField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
   END IF
 
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
   END IF
 
   obj(ii)%ptr => ScalarFieldFactory(engine(ii)%Chars())
 
-  CALL SetScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                           fieldType=fieldType(ii), engine=engine(ii)%Chars())
+  CALL SetScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
-
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE ScalarField_Initiate2
 
@@ -703,47 +693,49 @@ END PROCEDURE ScalarField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STScalarField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "STScalarField_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "STScalarFieldIntiate1"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL param%Initiate()
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
 
 DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-  IF (problem) THEN
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
   END IF
 
   obj(ii)%ptr => STScalarFieldFactory(engine)
 
-  CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
+  CALL SetSTScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & timeCompo=timeCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE STScalarField_Initiate1
@@ -753,67 +745,62 @@ END PROCEDURE STScalarField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STScalarField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "STScalarField_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "STScalarFieldIntiate2"
 INTEGER(I4B) :: tsize, ii, nn(6)
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
 
 tsize = SIZE(obj)
 
-nn = [tsize, SIZE(names), SIZE(timeCompo), SIZE(fieldType), SIZE(engine), &
-      SIZE(fedof)]
+nn = [ &
+  & tsize, SIZE(names), SIZE(timeCompo), SIZE(fieldType), SIZE(engine),  &
+  & SIZE(dom) &
+]
 
-CALL Assert(nn=nn, &
-       msg="[ARG ERROR] :: The size of obj, names, timeCompo, fieldType, "// &
-            "engine,  fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, timeCompo, fieldType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
 
 DO ii = 1, tsize
-
   IF (ASSOCIATED(obj(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[ALLOCATION ERROR] :: STScalarField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
+      & '[ALLOCATION ERROR] :: STScalarField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
   END IF
 
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
   END IF
 
   obj(ii)%ptr => STScalarFieldFactory(engine(ii)%Chars())
 
-  CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                             timeCompo=timeCompo(ii), &
-                             fieldType=fieldType(ii), &
-                             engine=engine(ii)%Chars())
+  CALL SetSTScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & timeCompo=timeCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE STScalarField_Initiate2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE NodeFieldFactoryMethods

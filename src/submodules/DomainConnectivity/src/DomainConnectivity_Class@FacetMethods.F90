@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(DomainConnectivity_Class) FacetMethods
+SUBMODULE(DomainConnectivity_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -25,12 +25,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
-                                isMaster)
+& isMaster)
   CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
-  CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
+  CLASS(Mesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
-  CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
+  CLASS(Mesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
   INTEGER(I4B), INTENT(IN) :: dim
   INTEGER(I4B), INTENT(IN) :: entityNum
@@ -46,13 +46,14 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
 
   ii = 0
 
-  tfacet = cellMesh%GetTotalFacetElements()
-  IF (tfacet .EQ. 0_I4B) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-     '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+  IF (.NOT. ALLOCATED(cellMesh%facetElements)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Mesh_::cellMesh%facetElements should be allocated!')
+  ELSE
+    tfacet = SIZE(cellMesh%facetElements)
   END IF
 
-  DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
+  DO iface = facetMesh%minElemNum, facetMesh%maxElemNum
     IF (.NOT. facetMesh%isElementPresent(globalElement=iface)) CYCLE
     nptrs = facetMesh%getConnectivity(globalElement=iface)
 
@@ -93,7 +94,7 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
         END DO
 
         IF (localFacetID .EQ. 0) THEN
-          CALL e%RaiseError(modName//'::'//myName//' - '// &
+          CALL e%raiseError(modName//'::'//myName//' - '// &
             & 'No local facet found')
         END IF
 
@@ -168,7 +169,7 @@ END PROCEDURE dc_InitiateFacetToCellData1
 MODULE PROCEDURE dc_InitiateFacetToCellData2
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData2"
 INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, nsd
-CLASS(AbstractMesh_), POINTER :: meshptr
+CLASS(Mesh_), POINTER :: meshptr
 LOGICAL(LGT) :: isVar
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -185,7 +186,7 @@ dim_facet = facetMesh%getXidimension()
 nsd = masterDomain%getNSD()
 
 IF (dim_facet .GE. nsd) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'xidimension of facet mesh is >= to spatial dimension of masterDomain')
 END IF
 
@@ -263,10 +264,11 @@ LOGICAL(LGT) :: isVar
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START] InitiateFacetToCellData()')
 
-tfacet = cellMesh%GetTotalFacetElements()
-IF (tfacet .EQ. 0) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-   & '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+IF (.NOT. ALLOCATED(cellMesh%facetElements)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Mesh_::cellMesh%facetElements should be allocated!')
+ELSE
+  tfacet = SIZE(cellMesh%facetElements)
 END IF
 
 CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
@@ -289,7 +291,7 @@ ALLOCATE (obj%facetToCell(tface))
 
 ii = 0
 
-DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
+DO iface = facetMesh%minElemNum, facetMesh%maxElemNum
   IF (.NOT. facetMesh%isElementPresent(globalElement=iface)) CYCLE
   nptrs = facetMesh%getConnectivity(globalElement=iface)
 
@@ -332,14 +334,14 @@ DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
       END DO
 
       IF (localFacetID .EQ. 0) THEN
-        CALL e%RaiseError(modName//'::'//myName//' - '// &
+        CALL e%raiseError(modName//'::'//myName//' - '// &
           & 'No local facet found')
       END IF
 
       colID = colID + 1
 
       IF (colID .GT. 2) THEN
-        CALL e%RaiseError(modName//"::"//myName//" - "// &
+        CALL e%raiseError(modName//"::"//myName//" - "// &
           & "It seems the facet element has more than 2 cell element")
       ELSE
         obj%facetToCell(ii)%GlobalCellData(1, colID) = cellGlobalNum
@@ -351,7 +353,7 @@ DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
   END DO
 
   IF (colID .EQ. 0) THEN
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
       & "It seems the facet element has no cell element")
   END IF
 
@@ -374,7 +376,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData4"
 INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, ii, iface, icell, &
 & nsd, tfacet, cellGlobalNum, localFacetID, jj
-CLASS(AbstractMesh_), POINTER :: cellMesh
+CLASS(Mesh_), POINTER :: cellMesh
 INTEGER(I4B), ALLOCATABLE :: colID(:), nptrs(:), pt2elem(:), &
   & cellNptrs(:), facetNptrs(:)
 LOGICAL(LGT) :: isVar
@@ -393,7 +395,7 @@ dim_facet = facetMesh%getXidimension()
 nsd = cellDomain%getNSD()
 
 IF (dim_facet .GE. nsd) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'xidimension of facet mesh is >= to spatial dimension of cellDomain')
 END IF
 
@@ -417,16 +419,17 @@ DO icellMesh = 1, tCellMesh
   ! Check if the mesh is not empty
   !
   IF (.NOT. ASSOCIATED(cellMesh)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Mesh_::cellMesh is not associated!')
   END IF
 
   IF (cellMesh%getTotalElements() .EQ. 0) CYCLE
 
-  tfacet = cellMesh%GetTotalFacetElements()
-  IF (tfacet .EQ. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-     '[INTERNAL ERROR] :: Mesh_::cellMesh%facetElements should be allocated!')
+  IF (.NOT. ALLOCATED(cellMesh%facetElements)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Mesh_::cellMesh%facetElements should be allocated!')
+  ELSE
+    tfacet = SIZE(cellMesh%facetElements)
   END IF
 
   CALL cellMesh%GetParam(isNodeToElementsInitiated=isVar)
@@ -440,7 +443,7 @@ DO icellMesh = 1, tCellMesh
 
   ii = 0
 
-  DO iface = facetMesh%GetMinElemNumber(), facetMesh%GetMaxElemNumber()
+  DO iface = facetMesh%minElemNum, facetMesh%maxElemNum
 
     IF (.NOT. facetMesh%isElementPresent(globalElement=iface)) CYCLE
     nptrs = facetMesh%getConnectivity(globalElement=iface)
@@ -483,14 +486,14 @@ DO icellMesh = 1, tCellMesh
         END DO
 
         IF (localFacetID .EQ. 0) THEN
-          CALL e%RaiseError(modName//'::'//myName//' - '// &
+          CALL e%raiseError(modName//'::'//myName//' - '// &
             & 'No local facet found')
         END IF
 
         colID(ii) = colID(ii) + 1
 
         IF (colID(ii) .GT. 2) THEN
-          CALL e%RaiseError(modName//"::"//myName//" - "// &
+          CALL e%raiseError(modName//"::"//myName//" - "// &
             & "It seems the facet element = "//TOSTRING(iface)// &
             & " has more than 2 cell element")
         ELSE
@@ -821,4 +824,4 @@ END PROCEDURE dc_GetTotalFacet
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE FacetMethods
+END SUBMODULE Methods

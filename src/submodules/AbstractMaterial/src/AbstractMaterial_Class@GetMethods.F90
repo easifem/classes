@@ -17,7 +17,8 @@
 
 SUBMODULE(AbstractMaterial_Class) GetMethods
 USE BaseMethod
-USE HashTables, ONLY: Hashkey
+USE Fhash, ONLY: key => fhash_key
+USE fhash_tbl, ONLY: FHASH_KEY_NOT_FOUND
 IMPLICIT NONE
 CONTAINS
 
@@ -49,7 +50,7 @@ IF (.NOT. isOK) THEN
 END IF
 
 indx = 0
-CALL obj%tbl%Get(Hashkey(name), indx)
+CALL obj%tbl%Get(key(name), indx)
 
 isOK = indx .LE. obj%tProperties
 
@@ -69,7 +70,7 @@ END PROCEDURE obj_GetMaterialPointer
 
 MODULE PROCEDURE obj_IsMaterialPresent
 INTEGER(I4B) :: stat
-CALL obj%tbl%check_key(key=Hashkey(name), stat=stat)
+CALL obj%tbl%check_key(key=key(name), stat=stat)
 IF (stat .EQ. 0_I4B) THEN
   ans = .TRUE.
 ELSE

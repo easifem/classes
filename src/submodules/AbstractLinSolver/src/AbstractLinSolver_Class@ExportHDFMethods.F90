@@ -16,9 +16,7 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ExportHDFMethods
-USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -26,68 +24,63 @@ CONTAINS
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myname = "obj_Export()"
+MODULE PROCEDURE als_Export
+CHARACTER(*), PARAMETER :: myName = "als_Export"
 TYPE(String) :: dsetname, strval
-LOGICAL(LGT) :: isok
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Export()")
 
-CALL AssertError1(obj%isInit, myname, &
-                  'The object is not initiated, initiate it first!')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'The object is not initiated, initiate it first!')
+END IF
 
-isok = hdf5%isOpen()
-CALL AssertError1(isok, myname, &
-                  'The object is not initiated, initiate it first!')
+IF (.NOT. hdf5%isOpen()) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'HDF5 file is not opened')
+END IF
 
-isok = hdf5%isWrite()
-CALL AssertError1(isok, myname, &
-                  'HDF5 file does not have write permission')
+IF (.NOT. hdf5%isWrite()) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'HDF5 file does not have write permission')
+END IF
 
 dsetname = TRIM(group)//"/engine"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%engine)
 
 dsetname = TRIM(group)//"/solverName"
-strval = obj%GetLinSolverNameFromCode(obj%solverName)
+strval = obj%getLinSolverNameFromCode(obj%solverName)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 dsetname = TRIM(group)//"/preconditionOption"
 SELECT CASE (obj%preconditionOption)
-CASE (TypePrecondOpt%NONE)
+CASE (NO_PRECONDITION)
   strval = "NONE"
-CASE (TypePrecondOpt%left)
+CASE (LEFT_PRECONDITION)
   strval = "LEFT"
-CASE (TypePrecondOpt%right)
+CASE (RIGHT_PRECONDITION)
   strval = "RIGHT"
-CASE (TypePrecondOpt%both)
+CASE (LEFT_RIGHT_PRECONDITION)
   strval = "LEFT_RIGHT"
-CASE default
-  CALL no_case_found("preconditionOption")
 END SELECT
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 dsetname = TRIM(group)//"/convergenceIn"
 SELECT CASE (obj%convergenceIn)
-CASE (TypeConvergenceOpt%res)
+CASE (convergenceInRes)
   strval = "RESIDUAL"
-CASE (TypeConvergenceOpt%sol)
+CASE (convergenceInSol)
   strval = "SOLUTION"
-CASE default
-  CALL no_case_found("convergenceIn")
 END SELECT
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 dsetname = TRIM(group)//"/convergenceType"
 SELECT CASE (obj%convergenceType)
-CASE (TypeConvergenceOpt%absolute)
+CASE (absoluteConvergence)
   strval = "ABSOLUTE"
-CASE (TypeConvergenceOpt%relative)
+CASE (relativeConvergence)
   strval = "RELATIVE"
-CASE default
-  CALL no_case_found("convergenceType")
 END SELECT
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
@@ -107,20 +100,7 @@ dsetname = TRIM(group)//"/absoluteTolerance"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%atol)
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
-                        "[END] Export()")
-
-CONTAINS
-SUBROUTINE no_case_found(name)
-  CHARACTER(*), INTENT(in) :: name
-  CALL AssertError1(.FALSE., myname, &
-                    'No case found for '//name)
-END SUBROUTINE no_case_found
-END PROCEDURE obj_Export
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
+& "[END] Export()")
+END PROCEDURE als_Export
 
 END SUBMODULE ExportHDFMethods

@@ -26,8 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE dc_InitiateNodeToNodeData1
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateNodeToNodeData1"
-CLASS(AbstractMesh_), POINTER :: mesh1 => NULL()
-CLASS(AbstractMesh_), POINTER :: mesh2 => NULL()
+CLASS(Mesh_), POINTER :: mesh1 => NULL()
+CLASS(Mesh_), POINTER :: mesh2 => NULL()
 TYPE(BoundingBox_) :: box, box1, box2
 LOGICAL(LGT) :: isvar, problem, isok
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:), nptrs2(:)
@@ -41,14 +41,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-isok = domain1%isInit()
+isok = domain1%isInitiated
 ! check domain1 initiated
 IF (.NOT. isok) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-1 is not initiated, first initiate")
 END IF
 
-IF (.NOT. domain2%isInit()) THEN
+IF (.NOT. domain2%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-2 is not initiated, first initiate")
 END IF
@@ -62,8 +62,8 @@ mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
 mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 ! TODO
 ! is it possible to have bounds of obj%NodeToNode from
-! mesh1%GetMinNodeNumber() to mesh1%GetMaxNodeNumber(), it will save the space
-CALL Reallocate(obj%NodeToNode, mesh1%GetMaxNodeNumber())
+! mesh1%minNptrs to mesh1%maxNptrs, it will save the space
+CALL Reallocate(obj%NodeToNode, mesh1%maxNptrs)
 obj%isNodeToNode = .TRUE.
 
 !> make intersection box
@@ -129,12 +129,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. domain1%isInit()) THEN
+IF (.NOT. domain1%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-1 is not initiated, first initiate")
 END IF
 
-IF (.NOT. domain2%isInit()) THEN
+IF (.NOT. domain2%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-2 is not initiated, first initiate")
 END IF
@@ -146,10 +146,9 @@ END IF
 
 ! TODO:
 ! is it possible to have bounds of obj%NodeToNode from
-! domain1%GetMinNodeNumber() to
-! domain1%GetMaxNodeNumber(), it will save the space
+! domain1%minNptrs to domain1%maxNptrs, it will save the space
 
-CALL Reallocate(obj%NodeToNode, domain1%GetMaxNodeNumber())
+CALL Reallocate(obj%NodeToNode, domain1%maxNptrs)
 obj%isNodeToNode = .TRUE.
 
 CALL Display("Make intersection box ")

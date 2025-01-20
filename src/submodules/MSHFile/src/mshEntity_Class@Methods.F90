@@ -66,7 +66,7 @@ LOGICAL(LGT) :: isNotOpen, isNotRead, isNotInit
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] GotoTag()')
+  & '[START] GotoTag()')
 #endif
 
 isNotOpen = .NOT. mshFile%isOpen()
@@ -75,8 +75,8 @@ isNotInit = .NOT. mshFile%isInitiated()
 
 IF (isNotOpen .OR. isNotRead .OR. isNotInit) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: mshFile is either not opened or '// &
-                    'does not have read access!')
+    & '[INTERNAL ERROR] :: mshFile is either not opened or '//  &
+    & 'does not have read access!')
   error = -1
   RETURN
 END IF
@@ -106,9 +106,9 @@ DO
   IF (IOSTAT .GT. 0 .AND. Reopen .GT. 1) THEN
 
     CALL e%raiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: Could not find $Entities !'//' :: Reopen='// &
-                      TOSTRING(Reopen)//' :: IOSTAT='//TOSTRING(IOSTAT) &
-                      //" :: IOMSG="//TRIM(IOMSG))
+    & '[INTERNAL ERROR] :: Could not find $Entities !'//' :: Reopen='// &
+    & TOSTRING(Reopen)//' :: IOSTAT='//TOSTRING(IOSTAT) &
+    & //" :: IOMSG="//TRIM(IOMSG))
     error = -2
     EXIT
 
@@ -134,7 +134,7 @@ CHARACTER(*), PARAMETER :: myName = "ent_Write()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] Write()')
+  & '[START] Write()')
 #endif
 
 SELECT CASE (dim)
@@ -150,7 +150,7 @@ END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] Write()')
+  & '[END] Write()')
 #endif
 END PROCEDURE ent_Write
 
@@ -169,9 +169,9 @@ SUBROUTINE WritePointEntity(obj, afile)
   TYPE(String) :: astr
 
   astr = tostring(obj%uid)//" " &
-         //tostring(obj%x)//" " &
-         //tostring(obj%y)//" " &
-         //tostring(obj%z)
+  & //tostring(obj%x)//" " &
+  & //tostring(obj%y)//" " &
+  & //tostring(obj%z)
 
   IF (ALLOCATED(obj%physicalTag)) THEN
     numPhysicalTags = SIZE(obj%physicalTag)
@@ -205,12 +205,12 @@ SUBROUTINE WriteCurveEntity(obj, afile)
   TYPE(String) :: astr
 
   astr = tostring(obj%uid)//" " &
-         //tostring(obj%minx)//" " &
-         //tostring(obj%miny)//" " &
-         //tostring(obj%minz)//" " &
-         //tostring(obj%maxx)//" " &
-         //tostring(obj%maxy)//" " &
-         //tostring(obj%maxz)
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
 
   IF (ALLOCATED(obj%physicalTag)) THEN
     n = SIZE(obj%physicalTag)
@@ -255,12 +255,12 @@ SUBROUTINE WriteSurfaceEntity(obj, afile)
   TYPE(String) :: astr
 
   astr = tostring(obj%uid)//" " &
-         //tostring(obj%minx)//" " &
-         //tostring(obj%miny)//" " &
-         //tostring(obj%minz)//" " &
-         //tostring(obj%maxx)//" " &
-         //tostring(obj%maxy)//" " &
-         //tostring(obj%maxz)
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
 
   IF (ALLOCATED(obj%physicalTag)) THEN
     n = SIZE(obj%physicalTag)
@@ -305,12 +305,12 @@ SUBROUTINE WriteVolumeEntity(obj, afile)
   TYPE(String) :: astr
 
   astr = tostring(obj%uid)//" " &
-         //tostring(obj%minx)//" " &
-         //tostring(obj%miny)//" " &
-         //tostring(obj%minz)//" " &
-         //tostring(obj%maxx)//" " &
-         //tostring(obj%maxy)//" " &
-         //tostring(obj%maxz)
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
 
   IF (ALLOCATED(obj%physicalTag)) THEN
     n = SIZE(obj%physicalTag)
@@ -352,7 +352,8 @@ INTEGER(I4B) :: jj
 
 unitNo = afile%getUnitNo()
 astr = tostring(obj%xidim)//" "// &
-       tostring(obj%uid)//" "//"0 "
+  & tostring(obj%uid)//" "// &
+  & "0 "
 
 IF (ALLOCATED(obj%intNodeNumber)) THEN
   n = SIZE(obj%intNodeNumber)
@@ -395,8 +396,8 @@ IF (ALLOCATED(obj%ElemNumber)) THEN
   IF (n .GT. 0) THEN
     unitNo = afile%getUnitNo()
     astr = tostring(obj%xidim)//" "// &
-           tostring(obj%uid)//" "// &
-           tostring(obj%elemType)//" "//tostring(n)
+      & tostring(obj%uid)//" "// &
+      & tostring(obj%elemType)//" "//tostring(n)
 
     WRITE (unitNo, "(A)") astr%chars()
 
@@ -519,7 +520,7 @@ END IF
 IF (error .EQ. 0) THEN
   obj%XiDim = 0
   READ (mshFile%getUnitNo(), *) obj%Uid, obj%X, obj%Y, obj%Z, &
-    n, (Intvec(i), i=1, n)
+    & n, (Intvec(i), i=1, n)
   IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
   IF (n .NE. 0) THEN
     ALLOCATE (obj%physicalTag(n))
@@ -578,7 +579,7 @@ CHARACTER(*), PARAMETER :: myName = "ReadSurfaceEntity()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  & '[START] ReadSurfaceEntity()')
 #endif
 
 IF (ReadTag) THEN
@@ -589,7 +590,7 @@ END IF
 
 IF (error .NE. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: Some error occured while finding tag')
+   & '[INTERNAL ERROR] :: Some error occured while finding tag')
 END IF
 
 obj%XiDim = 2
@@ -598,8 +599,8 @@ CALL mshFile%ReadLine(val=aline, iostat=error)
 
 IF (error .GT. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[INTERNAL ERROR] :: Error occured in reading the line '// &
-                    ' error = '//tostring(error))
+    & '[INTERNAL ERROR] :: Error occured in reading the line '// &
+    & ' error = '//tostring(error))
 END IF
 
 CALL aline%split(tokens=entries, sep=' ')
@@ -607,7 +608,7 @@ CALL aline%split(tokens=entries, sep=' ')
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 8) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 1] :: Error reading surface entities!')
+      & '[INTERNAL ERROR 1] :: Error reading surface entities!')
     error = -1
     RETURN
   END IF
@@ -629,7 +630,7 @@ n = entries(8)%to_number(kind=I4B)
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 8 + n) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 2] :: Error reading surface entities!')
+      & '[INTERNAL ERROR 2] :: Error reading surface entities!')
     error = -2
     RETURN
   END IF
@@ -648,7 +649,7 @@ m = entries(9 + n)%to_number(kind=I4B)
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 9 + n + m) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 3] :: Error reading surface entities!')
+      & '[INTERNAL ERROR 3] :: Error reading surface entities!')
     error = -3
     RETURN
   END IF
@@ -698,7 +699,7 @@ CHARACTER(*), PARAMETER :: myName = "ReadVolumeEntity()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  & '[START] ReadVolumeEntity()')
 #endif
 
 IF (ReadTag) THEN
@@ -717,7 +718,7 @@ CALL mshFile%readLine(val=aline, iostat=error)
 
 IF (error .GT. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: error in reading a line.')
+    & '[INTERNAL ERROR] :: error in reading a line.')
 END IF
 
 CALL aline%split(tokens=entries, sep=' ')
@@ -725,7 +726,7 @@ CALL aline%split(tokens=entries, sep=' ')
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 8) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 1] :: Error reading volume entities!')
+      & '[INTERNAL ERROR 1] :: Error reading volume entities!')
     error = -1
     RETURN
   END IF
@@ -747,7 +748,7 @@ n = entries(8)%to_number(kind=I4B)
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 8 + n) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 2] :: Error reading volume entities!')
+      & '[INTERNAL ERROR 2] :: Error reading volume entities!')
     error = -2
     RETURN
   END IF
@@ -765,7 +766,7 @@ m = entries(9 + n)%to_number(kind=I4B)
 IF (ALLOCATED(entries)) THEN
   IF (SIZE(entries) .LT. 9 + n + m) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR 3] :: Error reading volume entities!')
+      & '[INTERNAL ERROR 3] :: Error reading volume entities!')
     error = -3
     RETURN
   END IF
@@ -797,7 +798,7 @@ IF (ALLOCATED(entries)) DEALLOCATE (Entries)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  & '[END] ReadVolumeEntity()')
 #endif
 END PROCEDURE ReadVolumeEntity
 

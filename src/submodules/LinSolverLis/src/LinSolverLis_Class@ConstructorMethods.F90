@@ -16,36 +16,17 @@
 !
 
 SUBMODULE(LinSolverLis_Class) ConstructorMethods
-USE BaseType, ONLY: TypePrecondOpt, &
-                    TypeConvergenceOpt, &
-                    TypeSolverNameOpt
-
-USE InputUtility, ONLY: Input
-USE AbstractLinSolverParam
-
-USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
-                                   AbstractLinSolverDeallocate
-
-USE LinSolver_Class, ONLY: LinSolverInitiate, &
-                           LinSolverDeallocate
-
-USE Display_Method, ONLY: ToString
-
-USE String_Class, ONLY: String
-
+USE BaseMethod
 IMPLICIT NONE
-
-#include "lisf.h"
-
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-
+MODULE PROCEDURE ls_Initiate
+#include "lisf.h"
+CHARACTER(*), PARAMETER :: myName = "ls_Initiate"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: solverName
 INTEGER(I4B) :: preconditionOption
@@ -117,72 +98,71 @@ INTEGER(I4B) :: p_adds_iter
 ! ILUT Additive Schwarz number of iteration
 TYPE(String) :: opt
 
-CALL LinSolverInitiate(obj=obj, param=param)
+CALL LinSolverInitiate(obj, param)
 
 CALL lis_solver_create(obj%lis_solver, ierr)
+CALL chkerr(ierr)
 
-CALL CHKERR(ierr)
-
-CALL GetAbstractLinSolverParam( &
-  param=param, &
-  prefix=myPrefix, &
-  solverName=solverName, &
-  preconditionOption=preconditionOption, &
-  maxIter=maxIter, &
-  atol=atol, &
-  rtol=rtol, &
-  convergenceIn=convergenceIn, &
-  convergenceType=convergenceType, &
-  relativeToRHS=relativeToRHS, &
-  KrylovSubspaceSize=KrylovSubspaceSize, &
-  scale=scale, &
-  initx_zeros=initx_zeros, &
-  bicgstab_ell=bicgstab_ell, &
-  sor_omega=sor_omega, &
-  p_name=p_name, &
-  p_ilu_lfil=p_ilu_lfil, &
-  p_ilu_mbloc=p_ilu_mbloc, &
-  p_ilu_droptol=p_ilu_droptol, &
-  p_ilu_permtol=p_ilu_permtol, &
-  p_ilu_alpha=p_ilu_alpha, &
-  p_ilu_fill=p_ilu_fill, &
-  p_ssor_omega=p_ssor_omega, &
-  p_hybrid_i=p_hybrid_i, &
-  p_hybrid_maxiter=p_hybrid_maxiter, &
-  p_hybrid_tol=p_hybrid_tol, &
-  p_hybrid_omega=p_hybrid_omega, &
-  p_hybrid_ell=p_hybrid_ell, &
-  p_hybrid_restart=p_hybrid_restart, &
-  p_is_alpha=p_is_alpha, &
-  p_is_m=p_is_m, &
-  p_sainv_drop=p_sainv_drop, &
-  p_saamg_unsym=p_saamg_unsym, &
-  p_saamg_theta=p_saamg_theta, &
-  p_iluc_drop=p_iluc_drop, &
-  p_iluc_rate=p_iluc_rate, &
-  p_adds=p_adds, &
-  p_adds_iter=p_adds_iter)
+CALL getAbstractLinSolverParam( &
+  & param=param, &
+  & prefix=myPrefix, &
+  & solverName=solverName, &
+  & preconditionOption=preconditionOption, &
+  & maxIter=maxIter, &
+  & atol=atol, &
+  & rtol=rtol, &
+  & convergenceIn=convergenceIn, &
+  & convergenceType=convergenceType, &
+  & relativeToRHS=relativeToRHS, &
+  & KrylovSubspaceSize=KrylovSubspaceSize, &
+  & scale=scale, &
+  & initx_zeros=initx_zeros, &
+  & bicgstab_ell=bicgstab_ell, &
+  & sor_omega=sor_omega, &
+  & p_name=p_name, &
+  & p_ilu_lfil=p_ilu_lfil, &
+  & p_ilu_mbloc=p_ilu_mbloc, &
+  & p_ilu_droptol=p_ilu_droptol, &
+  & p_ilu_permtol=p_ilu_permtol, &
+  & p_ilu_alpha=p_ilu_alpha, &
+  & p_ilu_fill=p_ilu_fill, &
+  & p_ssor_omega=p_ssor_omega, &
+  & p_hybrid_i=p_hybrid_i, &
+  & p_hybrid_maxiter=p_hybrid_maxiter, &
+  & p_hybrid_tol=p_hybrid_tol, &
+  & p_hybrid_omega=p_hybrid_omega, &
+  & p_hybrid_ell=p_hybrid_ell, &
+  & p_hybrid_restart=p_hybrid_restart, &
+  & p_is_alpha=p_is_alpha, &
+  & p_is_m=p_is_m, &
+  & p_sainv_drop=p_sainv_drop, &
+  & p_saamg_unsym=p_saamg_unsym, &
+  & p_saamg_theta=p_saamg_theta, &
+  & p_iluc_drop=p_iluc_drop, &
+  & p_iluc_rate=p_iluc_rate, &
+  & p_adds=p_adds, &
+  & p_adds_iter=p_adds_iter &
+  & )
 
 opt = ""
 
 SELECT CASE (SolverName)
 
-CASE (TypeSolverNameOpt%BICGSTABL)
+CASE (LIS_BICGSTABL)
 
   opt = opt//' -i bicgstabl -ell '//tostring(bicgstab_ell)
 
-CASE (TypeSolverNameOpt%ORTHOMIN, TypeSolverNameOpt%GMRES, &
-      TypeSolverNameOpt%FGMRES)
+CASE (LIS_ORTHOMIN, LIS_GMRES, LIS_FGMRES)
 
   opt = ' -i '//tostring(SolverName)// &
-        ' -restart '//tostring(KrylovSubspaceSize)
+      & ' -restart '//tostring(KrylovSubspaceSize)
 
-CASE (TypeSolverNameOpt%IDRS)
+CASE (LIS_IDRS)
 
   opt = ' -i '//tostring(SolverName)// &
-        ' -irestart '//tostring(KrylovSubspaceSize)
+      & ' -irestart '//tostring(KrylovSubspaceSize)
 
-CASE (TypeSolverNameOpt%SOR)
+CASE (LIS_SOR)
   opt = ' -i sor -omega '//tostring(sor_omega)
 
 CASE DEFAULT
@@ -191,7 +171,7 @@ CASE DEFAULT
 END SELECT
 
 opt = opt//' -maxiter '//tostring(maxIter)//" -print 3 "// &
-      " -scale "//tostring(scale)//' -tol '//tostring(rtol)
+  & " -scale "//tostring(scale)//' -tol '//tostring(rtol)
 
 IF (initx_zeros) THEN
   opt = opt//' -initx_zeros true '
@@ -205,86 +185,84 @@ ELSE
   opt = opt//" -conv_cond 0 "
 END IF
 
-IF (preconditionOption .NE. TypePrecondOpt%NONE) THEN
+IF (preconditionOption .NE. NO_PRECONDITION) THEN
 
   SELECT CASE (p_name)
-  CASE (TypePrecondOpt%NONE)
+  CASE (PRECOND_NONE)
     opt = opt//' -p none '
-  CASE (TypePrecondOpt%JACOBI)
+  CASE (PRECOND_JACOBI)
     opt = opt//' -p jacobi '
-  CASE (TypePrecondOpt%ILU)
+  CASE (PRECOND_ILU)
     opt = opt//' -p ilu -ilu_fill '//tostring(p_ilu_fill)
-  CASE (TypePrecondOpt%SSOR)
+  CASE (PRECOND_SSOR)
     opt = opt//' -p ssor -ssor_omega '//tostring(p_ssor_omega)
 
-  CASE (TypePrecondOpt%HYBRID)
+  CASE (PRECOND_HYBRID)
     opt = opt//' -p hybrid -hybrid_i '//tostring(p_hybrid_i)// &
-          ' -hybrid_maxiter '//tostring(p_hybrid_maxiter)// &
-          ' -hybrid_ell '//tostring(p_hybrid_ell)// &
-          ' -hybrid_restart '//tostring(p_hybrid_restart)// &
-          ' -hybrid_tol '//tostring(p_hybrid_tol)// &
-          ' -hybrid_omega '//tostring(p_hybrid_omega)
+      & ' -hybrid_maxiter '//tostring(p_hybrid_maxiter)// &
+      & ' -hybrid_ell '//tostring(p_hybrid_ell)// &
+      & ' -hybrid_restart '//tostring(p_hybrid_restart)// &
+      & ' -hybrid_tol '//tostring(p_hybrid_tol)// &
+      & ' -hybrid_omega '//tostring(p_hybrid_omega)
 
-  CASE (TypePrecondOpt%IS)
+  CASE (PRECOND_IS)
     opt = opt//' -p is ' &
-          //' -is_m '//tostring(p_is_m) &
-          //' -is_alpha '//tostring(p_is_alpha)
+      & //' -is_m '//tostring(p_is_m) &
+      & //' -is_alpha '//tostring(p_is_alpha)
 
-  CASE (TypePrecondOpt%SAINV)
+  CASE (PRECOND_SAINV)
     opt = opt//' -p sainv -sainv_drop '//tostring(p_sainv_drop)
 
-  CASE (TypePrecondOpt%SAAMG)
+  CASE (PRECOND_SAAMG)
     IF (p_saamg_unsym) THEN
       opt = opt//' -p saamg -sammg_unsym true -saamg_theta ' &
-            //tostring(p_saamg_theta)
+          & //tostring(p_saamg_theta)
     ELSE
       opt = opt//' -p saamg -sammg_unsym false -saamg_theta ' &
-            //tostring(p_saamg_theta)
+          & //tostring(p_saamg_theta)
     END IF
 
-  CASE (TypePrecondOpt%ILUC)
+  CASE (PRECOND_ILUC)
     opt = opt//' -p iluc -iluc_drop ' &
-          //tostring(p_iluc_drop) &
-          //' -iluc_rate ' &
-          //tostring(p_iluc_rate)
+        & //tostring(p_iluc_drop) &
+        & //' -iluc_rate ' &
+        & //tostring(p_iluc_rate)
 
-  CASE (TypePrecondOpt%ADDS)
+  CASE (PRECOND_ADDS)
     opt = opt//' -p ilut -adds true -adds_iter ' &
           //tostring(p_adds_iter)
 
   CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: Unknown precondition option')
-    RETURN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Unknown precondition option')
 
   END SELECT
 
 END IF
 
 CALL lis_solver_set_option(opt%chars(), obj%lis_solver, ierr)
+CALL chkerr(ierr)
 
-CALL CHKERR(ierr)
-
-END PROCEDURE obj_Initiate
+END PROCEDURE ls_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Deallocate
+MODULE PROCEDURE ls_Deallocate
 INTEGER(I4B) :: ierr
 CALL lis_solver_destroy(obj%lis_solver, ierr)
-CALL CHKERR(ierr)
+CALL chkerr(ierr)
 CALL LinSolverDeallocate(obj)
-END PROCEDURE obj_Deallocate
+END PROCEDURE ls_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_final
+MODULE PROCEDURE ls_final
 CALL obj%DEALLOCATE()
-END PROCEDURE obj_final
+END PROCEDURE ls_final
 
 !----------------------------------------------------------------------------
 !

@@ -16,13 +16,8 @@
 !
 
 SUBMODULE(VectorFieldLis_Class) ConstructorMethods
-USE VectorField_Class, ONLY: VectorFieldInitiate1, &
-                             VectorFieldDeallocate
-
+USE BaseMethod
 IMPLICIT NONE
-
-#include "lisf.h"
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -39,7 +34,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%initiate(param=param, fedof=fedof)
+CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -47,20 +42,26 @@ END PROCEDURE obj_Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#include "lisf.h"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 INTEGER(I4B) :: ierr
 
-CALL VectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL VectorFieldInitiate1(obj=obj, param=param, dom=dom)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 
 CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-                         obj%global_n, ierr)
+& obj%global_n, ierr)
 CALL CHKERR(ierr)
 
-CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+CALL lis_vector_get_range( &
+& obj%lis_ptr, &
+& obj%is, &
+& obj%ie, &
+& ierr &
+& )
 CALL CHKERR(ierr)
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -83,7 +84,14 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!
+!                                                                 Size
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_Size
+ans = obj%local_n
+END PROCEDURE obj_Size
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 END SUBMODULE ConstructorMethods

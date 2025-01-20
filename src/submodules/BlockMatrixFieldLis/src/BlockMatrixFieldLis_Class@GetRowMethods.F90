@@ -19,5 +19,9 @@
 ! date: 16 July 2021
 ! summary: This module contains constructor method for [[MatrixField_]]
 
-! SUBMODULE(BlockMatrixFieldLis_Class) GetRowMethods
-! END SUBMODULE GetRowMethods
+SUBMODULE(BlockMatrixFieldLis_Class) GetRowMethods
+! USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+END SUBMODULE GetRowMethods

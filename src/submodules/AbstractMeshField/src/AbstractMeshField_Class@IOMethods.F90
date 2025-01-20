@@ -15,17 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) IOMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix, Nodal, Quadrature
-
-USE Display_Method, ONLY: Display
-
-USE AbstractField_Class, ONLY: FIELD_TYPE_NAME
-
-USE SafeSizeUtility, ONLY: SafeSize
-
+USE BaseMethod
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -35,61 +26,57 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 
-CALL Display(obj%isInit, 'Object INITIATED: ', unitno=unitno)
+CALL Display(obj%isInitiated, 'Object INITIATED: ', unitNo=unitNo)
 
-IF (.NOT. obj%isInit) RETURN
+IF (.NOT. obj%isInitiated) RETURN
 
-CALL Display('name: '//obj%name%chars(), unitno=unitno)
-CALL Display('prefix: '//obj%GetPrefix(), unitno=unitno)
+CALL Display('name: '//obj%name%chars(), unitNo=unitNo)
+CALL Display('prefix: '//obj%GetPrefix(), unitNo=unitNo)
 
-CALL Display('fieldType: '//FIELD_TYPE_NAME(obj%fieldType), unitno=unitno)
+CALL Display('fieldType: '//FIELD_TYPE_NAME(obj%fieldType), &
+  & unitNo=unitNo)
 
-CALL Display('engine: '//obj%engine%chars(), unitno=unitno)
+CALL Display('engine: '//obj%engine%chars(), &
+  & unitNo=unitNo)
 
-CALL Display(obj%tSize, 'tSize: ', unitno=unitno)
+CALL Display(obj%tSize, 'tSize: ', unitNo=unitNo)
 
 IF (obj%defineOn .EQ. Nodal) THEN
-  CALL Display('defineOn: Nodal', unitno=unitno)
+  CALL Display('defineOn: Nodal', unitNo=unitNo)
 ELSE
-  CALL Display('defineOn: Quadrature', unitno=unitno)
+  CALL Display('defineOn: Quadrature', unitNo=unitNo)
 END IF
 
 SELECT CASE (obj%rank)
 CASE (Scalar)
-  CALL Display('rank: Scalar', unitno=unitno)
+  CALL Display('rank: Scalar', unitNo=unitNo)
 CASE (Vector)
-  CALL Display('rank: Vector', unitno=unitno)
+  CALL Display('rank: Vector', unitNo=unitNo)
 CASE (Matrix)
-  CALL Display('rank: Matrix', unitno=unitno)
-CASE DEFAULT
-  CALL Display('rank: Unknown', unitno=unitno)
+  CALL Display('rank: Matrix', unitNo=unitNo)
 END SELECT
 
 SELECT CASE (obj%varType)
 CASE (Constant)
-  CALL Display('varType: Constant', unitno=unitno)
+  CALL Display('varType: Constant', unitNo=unitNo)
 CASE (Space)
-  CALL Display('varType: Space', unitno=unitno)
+  CALL Display('varType: Space', unitNo=unitNo)
 CASE (Time)
-  CALL Display('varType: Time', unitno=unitno)
+  CALL Display('varType: Time', unitNo=unitNo)
 CASE (SpaceTime)
-  CALL Display('varType: SpaceTime', unitno=unitno)
-CASE DEFAULT
-  CALL Display('varType: Unknown', unitno=unitno)
+  CALL Display('varType: SpaceTime', unitNo=unitNo)
 END SELECT
 
-bool1 = ALLOCATED(obj%val)
-CALL Display(bool1, 'val ALLOCATED: ', unitno=unitno)
-CALL Display(SafeSize(obj%val), "Size of val:", unitno=unitno)
+CALL Display(obj%SHAPE(), 'shape: ', unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%indxVal)
-CALL Display(bool1, 'indxVal ALLOCATED: ', unitno=unitno)
-CALL Display(SafeSize(obj%indxVal), "Size of indxVal:", unitno=unitno)
+bool1 = ALLOCATED(obj%val)
+CALL Display(bool1, 'val ALLOCATED: ', unitNo=unitNo)
+! IF (bool1) THEN
+!   CALL Display(obj%val, 'val: ', unitNo=unitNo)
+! END IF
 
 bool1 = ASSOCIATED(obj%mesh)
-CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)
-
-! CALL Display(obj%SHAPE(), 'shape: ', unitno=unitno)
+CALL Display(bool1, 'mesh ASSOCIATED: ', unitNo=unitNo)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -97,9 +84,9 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'This routine is under development!!')
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'This routine is under development!!')
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -107,69 +94,87 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: strval, dsetname
-
-IF (.NOT. obj%isInit) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'MeshField object is not initiated initiated')
-END IF
-
+!
+! main program
+!
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MeshField object is not initiated initiated')
+!
+! info
+!
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "Exporting AbstractMeshField_")
+!
+! check
+!
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file is not opened')
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'HDF5 file is not opened')
 END IF
-
+!
+! check
+!
 IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file does not have write permission')
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'HDF5 file does not have write permission')
 END IF
-
+!
+! fieldType
+!
 dsetname = TRIM(group)//"/fieldType"
 strval = FIELD_TYPE_NAME(obj%fieldType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
-
+!
+! name
+!
 dsetname = TRIM(group)//"/name"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
-
+!
+! engine
+!
 dsetname = TRIM(group)//"/engine"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%engine)
-
+!
+! tSize
+!
 dsetname = TRIM(group)//"/tSize"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tSize)
-
+!
+! defineOn
+!
 dsetname = TRIM(group)//"/defineOn"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%defineOn)
-
+!
+! rank
+!
 dsetname = TRIM(group)//"/rank"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%rank)
-
+!
+! varType
+!
 dsetname = TRIM(group)//"/varType"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%varType)
-
+!
+! shape
+!
+dsetname = TRIM(group)//"/shape"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%s)
+!
+! val
+!
 IF (ALLOCATED(obj%val)) THEN
   dsetname = TRIM(group)//"/val"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
 END IF
-
-IF (ALLOCATED(obj%indxVal)) THEN
-  dsetname = TRIM(group)//"/indxVal"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
-END IF
-
-IF (ALLOCATED(obj%ss)) THEN
-  dsetname = TRIM(group)//"/shape"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ss)
-END IF
-
-IF (ALLOCATED(obj%indxShape)) THEN
-  dsetname = TRIM(group)//"/indxShape"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxShape)
-END IF
-
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[INTERNAL ERROR] :: Exporting AbstractMeshField_")
-
+!
+! info
+!
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "Exporting AbstractMeshField_")
+!
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
@@ -177,9 +182,9 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExportInVTK
-CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[INTERNAL ERROR] :: This routine is under development.')
+CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine is under development.')
 END PROCEDURE obj_ExportInVTK
 
 !----------------------------------------------------------------------------

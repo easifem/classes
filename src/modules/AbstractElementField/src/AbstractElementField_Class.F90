@@ -16,20 +16,20 @@
 !
 
 MODULE AbstractElementField_Class
-USE AbstractField_Class, ONLY: AbstractField_
-
+USE GlobalData
+USE BaseType
+USE AbstractField_Class
 IMPLICIT NONE
-
 PRIVATE
-
-PUBLIC :: AbstractElementField_
 
 !----------------------------------------------------------------------------
 !                                                     AbstractElementField_
 !----------------------------------------------------------------------------
 
-TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractElementField_
+TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractElementField_
   !> To be added
 END TYPE AbstractElementField_
+
+PUBLIC :: AbstractElementField_
 
 END MODULE AbstractElementField_Class

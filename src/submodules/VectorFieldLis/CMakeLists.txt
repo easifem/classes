@@ -22,5 +22,7 @@ if(USE_LIS)
     PRIVATE ${src_path}/VectorFieldLis_Class@ConstructorMethods.F90
             ${src_path}/VectorFieldLis_Class@IOMethods.F90
             ${src_path}/VectorFieldLis_Class@SetMethods.F90
-            ${src_path}/VectorFieldLis_Class@GetMethods.F90)
+            ${src_path}/VectorFieldLis_Class@GetMethods.F90
+            ${src_path}/VectorFieldLis_Class@DBCMethods.F90
+            ${src_path}/VectorFieldLis_Class@BlasMethods.F90)
 endif()

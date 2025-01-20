@@ -31,8 +31,8 @@ CONTAINS
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+MODULE PROCEDURE bc_Import
+CHARACTER(*), PARAMETER :: myName = "bc_Import"
 TYPE(String) :: dsetname, strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -114,12 +114,12 @@ IF (obj%isUserFunction) THEN
   CALL obj%func%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-dsetname = TRIM(group)//"/isUseExternal"
+dsetname = TRIM(group)//"/useExternal"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataset isUseExternal should be present')
+  & 'The dataset useExternal should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isUseExternal)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%useExternal)
 END IF
 
 dsetname = TRIM(group)//"/boundary"
@@ -158,14 +158,14 @@ IF (ALLOCATED(real2)) DEALLOCATE (real2)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE obj_Import
+END PROCEDURE bc_Import
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+MODULE PROCEDURE bc_Export
+CHARACTER(*), PARAMETER :: myName = "bc_Export"
 TYPE(String) :: dsetname, strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -224,9 +224,9 @@ IF (ASSOCIATED(obj%func)) THEN
   CALL obj%func%Export(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-! WRITE isUseExternal
-dsetname = TRIM(group)//"/isUseExternal"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUseExternal)
+! WRITE useExternal
+dsetname = TRIM(group)//"/useExternal"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%useExternal)
 
 ! WRITE Boundary
 dsetname = TRIM(group)//"/boundary"
@@ -259,13 +259,13 @@ END IF
 
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
-END PROCEDURE obj_Export
+END PROCEDURE bc_Export
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Display
+MODULE PROCEDURE bc_Display
 TYPE(String) :: strval
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
@@ -293,7 +293,7 @@ END SELECT
 CALL Display("nodalValueType : "//TRIM(strval%chars()), unitNo=unitNo)
 
 CALL Display(obj%isUserFunction, "isUserFunction : ", unitNo=unitNo)
-CALL Display(obj%isUseExternal, "isUseExternal: ", unitNo=unitNo)
+CALL Display(obj%useExternal, "useExternal : ", unitNo=unitNo)
 CALL obj%Boundary%Display(msg="Boundary : ", unitNo=unitNo)
 
 IF (.NOT. obj%isUserFunction) THEN
@@ -325,16 +325,16 @@ END IF
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
 
-END PROCEDURE obj_Display
+END PROCEDURE bc_Display
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
+MODULE PROCEDURE bc_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "bc_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat, nodalValueType, idof
-LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, isUseExternal
+LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, useExternal
 TYPE(String) :: nodalValueType_string, name, astr
 
 #ifdef DEBUG_VER
@@ -351,7 +351,7 @@ CALL toml_get(table, "isTangent", isTangent,  &
 CALL toml_get(table, "isNormal", isNormal,  &
   & default_isNormal, origin=origin, stat=stat)
 
-CALL toml_get(table, "isUseExternal", isUseExternal,  &
+CALL toml_get(table, "useExternal", useExternal,  &
   & default_useExternal, origin=origin, stat=stat)
 
 CALL toml_get(table, "nodalValueType", nodalValueType_string%raw,  &
@@ -386,7 +386,7 @@ CALL SetAbstractBCParam( &
   & isUserFunction=isUserFunction,  &
   & isNormal=isNormal,  &
   & isTangent=isTangent,  &
-  & isUseExternal=isUseExternal &
+  & useExternal=useExternal &
   & )
 
 name = ""
@@ -396,14 +396,14 @@ nodalValueType_string = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE obj_ImportParamFromToml
+END PROCEDURE bc_ImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+MODULE PROCEDURE bc_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml1()"
 TYPE(ParameterList_) :: param
 TYPE(toml_table), POINTER :: node
 TYPE(MeshSelection_) :: boundary
@@ -512,14 +512,14 @@ CALL param%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE obj_ImportFromToml1
+END PROCEDURE bc_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+MODULE PROCEDURE bc_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -532,29 +532,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
 
 IF (.NOT. ASSOCIATED(node)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[CONFIG ERROR] :: following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
 END IF
 
 CALL obj%ImportFromToml(table=node, dom=dom)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
+    & unitNo=stdout)
 END IF
 #endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  & '[END]')
 #endif
-END PROCEDURE obj_ImportFromToml2
+END PROCEDURE bc_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !

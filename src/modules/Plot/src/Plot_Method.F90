@@ -19,6 +19,4 @@ MODULE Plot_Method
 USE AbstractPlot_Class
 USE VTKPlot_Class
 USE PLPlot_Class
-USE GnuPlot_Class
 END MODULE Plot_Method
-

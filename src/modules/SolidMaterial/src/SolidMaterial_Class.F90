@@ -40,15 +40,11 @@ USE MeshSelection_Class
 USE Domain_Class, ONLY: Domain_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-
 IMPLICIT NONE
-
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "SolidMaterial_Class"
 CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
 CHARACTER(*), PARAMETER :: default_stress_strain_toml = "stressStrainModel"
-
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
 PUBLIC :: SolidMaterialDeallocate
@@ -270,8 +266,14 @@ END INTERFACE
 ! summary:  Add a solid material to the vector of SolidMaterialPointer_
 
 INTERFACE AddSolidMaterial
-  MODULE SUBROUTINE obj_AddSolidMaterial(obj, tMaterials, materialNo, &
-                             materialName, solidMaterialToMesh, param, region)
+  MODULE SUBROUTINE obj_AddSolidMaterial( &
+    & obj, &
+    & tMaterials,   &
+    & materialNo, &
+    & materialName,  &
+    & solidMaterialToMesh, &
+    & param, &
+    & region)
     TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
     INTEGER(I4B), INTENT(IN) :: tMaterials
     INTEGER(I4B), INTENT(IN) :: materialNo

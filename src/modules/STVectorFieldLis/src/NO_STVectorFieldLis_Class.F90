@@ -19,17 +19,22 @@
 ! summary: STVector field data type is defined
 
 MODULE STVectorFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
+USE GlobalData
+USE Basetype
+USE AbstractField_Class
+USE AbstractNodeField_Class
+USE STVectorField_Class
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE FEDOF_Class, ONLY: FEDOF_
-USE STVectorField_Class, ONLY: STVectorField_
-
+USE HDF5File_Class
+USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorFieldLis_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
-
 PUBLIC :: STVectorFieldLis_
+PUBLIC :: TypeSTVectorFieldLis
 PUBLIC :: STVectorFieldLisPointer_
 PUBLIC :: STVectorFieldLis
 PUBLIC :: STVectorFieldLis_Pointer
@@ -47,25 +52,28 @@ PUBLIC :: STVectorFieldLis_Pointer
 TYPE, EXTENDS(STVectorField_) :: STVectorFieldLis_
 END TYPE STVectorFieldLis_
 
+TYPE(STVectorFieldLis_), PARAMETER :: TypeSTVectorFieldLis =  &
+  & STVectorFieldLis_(domains=NULL())
+
 TYPE :: STVectorFieldLisPointer_
   CLASS(STVectorFieldLis_), POINTER :: ptr => NULL()
 END TYPE STVectorFieldLisPointer_
 
 CONTAINS
 
-FUNCTION STVectorFieldLis(param, fedof) RESULT(Ans)
+FUNCTION STVectorFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(STVectorFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%Initiate(param, dom)
 END FUNCTION
 
-FUNCTION STVectorFieldLis_Pointer(param, fedof) RESULT(Ans)
+FUNCTION STVectorFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   CLASS(STVectorFieldLis_), POINTER :: ans
   ALLOCATE (ans)
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%initiate(param, dom)
 END FUNCTION STVectorFieldLis_Pointer
 
 END MODULE STVectorFieldLis_Class

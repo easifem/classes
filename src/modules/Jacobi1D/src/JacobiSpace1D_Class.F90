@@ -47,7 +47,7 @@ TYPE, EXTENDS(AbstractOrthopolSpace1D_) :: JacobiSpace1D_
   REAL(DFP) :: beta = 0.0_DFP
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
     !! Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => Orthopol_GetParam
     !! Returns alpha and beta
@@ -781,8 +781,8 @@ END INTERFACE
 ! summary: Discrete Jacobi Transform of a function
 
 INTERFACE
-  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType, x1, x2) &
-    RESULT(ans)
+  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType) &
+    & RESULT(ans)
     CLASS(JacobiSpace1D_), INTENT(IN) :: obj
     !! orthopol
     INTEGER(I4B), INTENT(IN) :: n
@@ -792,8 +792,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: quadType
     !! Quadrature type, Gauss, GaussLobatto, GaussRadau, GaussRadauLeft
     !! GaussRadauRight
-    REAL(DFP), INTENT(IN) :: x1, x2
-    !! interval
     REAL(DFP) :: ans(0:n)
     !! modal values  or coefficients
   END FUNCTION Orthopol_Transform2

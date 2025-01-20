@@ -16,12 +16,14 @@
 !
 
 MODULE STTensorMeshField_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData
+USE BaseType
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
-USE UserFunction_Class, ONLY: UserFunction_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE AbstractMeshField_Class, ONLY: AbstractTensorMeshField_
+USE AbstractField_Class
+USE AbstractMeshField_Class
+USE Mesh_Class, ONLY: Mesh_
+USE UserFunction_Class
 
 IMPLICIT NONE
 PRIVATE
@@ -44,7 +46,7 @@ TYPE, EXTENDS(AbstractTensorMeshField_) :: STTensorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE STTensorMeshField_
 
 !----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ END TYPE STTensorMeshFieldPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetSTTensorMeshFieldParam(param, name, &
-                   fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
+    & fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -96,7 +98,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(STTensorMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
     !! mesh
     CLASS(UserFunction_), INTENT(INOUT) :: func
     !! Abstract material

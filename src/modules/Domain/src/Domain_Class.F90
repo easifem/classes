@@ -23,16 +23,17 @@
 ! summary: This module contains methods for domain data type
 
 MODULE Domain_Class
-USE BaseType, ONLY: CSRSparsity_, CSRMatrix_, BoundingBox_
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshPointer_
+USE BaseType
+USE String_Class
+USE GlobalData
+USE Mesh_Class
+USE MeshPointerVector_Class
+USE ElementFactory
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE MeshFacetData_Class, ONLY: MeshFacetData_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-
-USE AbstractDomain_Class
-
+USE HDF5File_Class
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class
+USE MeshFacetData_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -45,158 +46,245 @@ PUBLIC :: DomainSetSparsity
 CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 !----------------------------------------------------------------------------
-!                                                                   obj_
+!                                                                   Domain_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
-! summary: obj_ contains finite element mesh data of a domain
+! summary: Domain_ contains finite element mesh data of a domain
 !
-!{!pages/docs-api/Domain/obj_.md!}
+!{!pages/docs-api/Domain/Domain_.md!}
 
-TYPE, EXTENDS(AbstractDomain_) :: Domain_
+TYPE :: Domain_
   PRIVATE
-  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshVolume(:)
+  LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
+    !! flag
+  TYPE(String) :: engine
+    !! Engine used for generating the meshes
+  INTEGER(I4B) :: majorVersion = 0
+    !! Major version
+  INTEGER(I4B) :: minorVersion = 0
+    !! Minor version
+  REAL(DFP) :: version = 0.0_DFP
+    !! Version  MajorVersion.MinorVersion
+  INTEGER(I4B) :: nsd = 0_I4B
+    !! number of spatial dimension
+  INTEGER(I4B), PUBLIC :: maxNptrs = 0
+    !! Largest node number in the domain
+  INTEGER(I4B), PUBLIC :: minNptrs = 0
+    !! Smallest node number in the domain
+  INTEGER(I4B) :: tNodes = 0
+    !! Total number of nodes in the mesh
+  LOGICAL(I4B) :: isNodeNumberSparse = .FALSE.
+    !! True if node numbers are not continuous
+  INTEGER(I4B), PUBLIC :: maxElemNum = 0
+    !! Largest element number in the domain
+  INTEGER(I4B), PUBLIC :: minElemNum = 0
+    !! Smallest element number in the domain
+  LOGICAL(LGT) :: isElemNumberSparse = .FALSE.
+    !! True if element numbers are sparse
+  INTEGER(I4B) :: tEntitiesForNodes = 0
+    !! Total number of entities required for reading nodes
+  INTEGER(I4B) :: tEntitiesForElements = 0
+    !! Total number of entities required for reading elements
+  INTEGER(I4B) :: tElements(0:3) = [0, 0, 0, 0]
+    !! Total number of elements inside the domain
+    !! tElements( 0 ) = total number of point elements
+    !! tElements( 1 ) = total number of line elements
+    !! tElements( 2 ) =  total number of surface elements
+    !! tElements( 3 ) = total number of volume/cell elements
+  INTEGER(I4B) :: tEntities(0:3) = [0, 0, 0, 0]
+    !! Total number of entities inside the domain
+    !! tEntities( 0 ) = total number of point mesh entities, mesh of Points
+    !! tEntities( 1 ) = total number of line mesh entities, mesh of Edge
+    !! tEntities( 2 ) = total number of surface mesh entities, mesh Boundary
+    !! tEntities( 3 ) = total number of volume mesh entities, Omega
+  REAL(DFP), ALLOCATABLE, PUBLIC :: nodeCoord(:, :)
+    !! Nodal coordinates in XiJ format
+    !! Number of rows are 3, and number of columns is total nodes
+  INTEGER(I4B), ALLOCATABLE, PUBLIC :: local_nptrs(:)
+    !! local_nptrs are required to access the nodeCoord
+  INTEGER(I4B), ALLOCATABLE, PUBLIC :: global_nptrs(:)
+    !! global nptrs
+
+  TYPE(MeshPointer_), ALLOCATABLE :: meshVolume(:)
     !! meshVolume list of meshes of volume entities
-  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshSurface(:)
+  TYPE(MeshPointer_), ALLOCATABLE :: meshSurface(:)
     !! meshSurface list of meshes of surface entities
-  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshCurve(:)
+  TYPE(MeshPointer_), ALLOCATABLE :: meshCurve(:)
     !! meshCurve list of meshes of curve entities
-  TYPE(AbstractMeshPointer_), ALLOCATABLE :: meshPoint(:)
+  TYPE(MeshPointer_), ALLOCATABLE :: meshPoint(:)
     !! meshPoint list of meshes of point entities
-  TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData(:)
+
+  TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData(:)
   !! Mesh facet data
   TYPE(CSRSparsity_) :: meshMap
   !! Sparse mesh data in CSR format
-  INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
-  INTEGER(I4B), ALLOCATABLE :: global_nptrs(:)
-
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => Domain_Initiate
+  !! Initiate an instance of domain
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => Domain_Deallocate
   !! Deallocate data stored inside an instance of domain
   !! TODO Rename Deallocate to Deallocate
-  FINAL :: obj_Final
+  FINAL :: Domain_Final
   !! Finalizer for domain
 
   ! IO:
   ! @IOMethods
-
-  PROCEDURE, PUBLIC, PASS(Obj) :: IMPORT => obj_Import
+  PROCEDURE, PASS(Obj) :: IMPORT => Domain_Import
   !! Initiates an instance of domain by importing data from meshfile
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  !! Display the content of domain
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo => obj_DisplayDomainInfo
-  !! Display the domain info
-
+  !! TODO Add an export method to [[Domain_]] class
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => Domain_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => Domain_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1,  &
+  & ImportFromToml2
+  !! Initiates an instance of domain by importing meshfile name from
+  !! Toml file
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => Domain_Display
+  !! TODO Add a display method to [[Domain_]] class
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshFacetData => &
-    & obj_DisplayMeshFacetData
+    & Domain_DisplayMeshFacetData
   !! Display mesh facet data
 
   ! GET:
   ! @GetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
-  !! This routine a pointer to Abstract mesh object
-
-  PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
-  !! Returns true if the global element is present in the mesh
-
-  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
-  !! Get the list of elements connnected to a specified node
-  PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
-  !! Get the list of elements connnected to many specified nodes
-
-  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
-  !! Get the list of elements connnected to a specified node
-  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
-  !! Get the list of elements connnected to many specified nodes
-
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
-  !! Local element number
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
-  !! Local element number
-
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
+  PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => Domain_IsNodePresent
+  PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => Domain_IsElementPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => Domain_GetConnectivity
+  PROCEDURE, PASS(obj) :: Domain_GetNodeToElements1
+  PROCEDURE, PASS(obj) :: Domain_GetNodeToElements2
+  GENERIC, PUBLIC :: GetNodeToElements => &
+    & Domain_GetNodeToElements1, &
+    & Domain_GetNodeToElements2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => Domain_GetTotalNodes
+    !! returns the total number of nodes in the domain, mesh, or part of mesh
+  PROCEDURE, PASS(obj) :: Domain_tNodes1
+    !! Returns the total nodes in domain
+  PROCEDURE, PASS(obj) :: Domain_tNodes2
+    !! Returns the total nodes in a dimension
+  GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
+    & Domain_tNodes1, Domain_tNodes2
+  !! Generic method for getting total nodes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => Domain_GetTotalElements
+  !! returns the total number of Elements in domain, mesh, or part of mesh
+  PROCEDURE, PASS(obj) :: &
+    & Domain_tElements1,  &
+    & Domain_tElements2,  &
+    & Domain_tElements3
+  !! returns total number of elements in domain, mesh, or part of domain
+  GENERIC, PUBLIC :: OPERATOR(.tElements.) => &
+    & Domain_tElements1,  &
+    & Domain_tElements2,  &
+    & Domain_tElements3
+  !! return total number of elements in domain, mesh, or part of domain
+  PROCEDURE, PASS(obj) :: Domain_GetLocalNodeNumber1
+  PROCEDURE, PASS(obj) :: Domain_GetLocalNodeNumber2
+  GENERIC, PUBLIC :: &
+    & GetLocalNodeNumber => &
+    & Domain_GetLocalNodeNumber1, &
+    & Domain_GetLocalNodeNumber2
+  PROCEDURE, PASS(obj) :: Domain_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
+  PROCEDURE, PASS(obj) :: Domain_GetGlobalNodeNumber2
   !! Returns the global node number of a local node number
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
-  !! Get the node numbers
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
-  !! Get the node numbers
-
+  GENERIC, PUBLIC :: GetGlobalNodeNumber => &
+    & Domain_GetGlobalNodeNumber1, &
+    & Domain_GetGlobalNodeNumber2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => Domain_GetTotalMesh
+  !! This routine returns total number of meshes of given dimension
+  PROCEDURE, PASS(obj) :: Domain_GetMeshPointer1
+  PROCEDURE, PASS(obj) :: Domain_GetMeshPointer2
+  GENERIC, PUBLIC :: GetMeshPointer => &
+    & Domain_GetMeshPointer1, &
+    & Domain_GetMeshPointer2
+  !! This routine a pointer to [[Mesh_]] object
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => Domain_GetDimEntityNum
+  !! Returns a dim entity-num of mesh which contains the element number
+  PROCEDURE, PASS(obj) :: GetNodeCoord1 => Domain_GetNodeCoord
+  !! This routine returns the nodal coordinate in rank2 array
+  PROCEDURE, PASS(obj) :: GetNodeCoord2 => Domain_GetNodeCoord2
+  !! This routine returns the nodal coordinate in rank2 array
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2
+  !! Generic method which returns the nodal coordinates
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
+    & Domain_GetNodeCoordPointer
+  !! This routine returns the pointer to nodal coordinate
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalToLocalNodeNumPointer => &
+    & Domain_GetGlobalToLocalNodeNumPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => &
+    & Domain_GetNptrs
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
-    & obj_GetInternalNptrs
-  ! Get the internal node numbers in the mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
-  !! Get Order of meshes
-
+    & Domain_GetInternalNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => Domain_GetBoundingBox
+  !! returns bounding box
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetNSD => Domain_GetNSD
+  !! Returns the spatial dimension of each physical entities
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => Domain_GetOrder
+  !! Get Order
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
-    & obj_GetTotalMeshFacetData
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
+    & Domain_GetTotalMeshFacetData
+  PROCEDURE, PRIVATE, PASS(obj) :: Domain_GetTotalMaterial1, &
+    & Domain_GetTotalMaterial2
+  GENERIC, PUBLIC :: GetTotalMaterial => &
+    & Domain_GetTotalMaterial1, &
+    & Domain_GetTotalMaterial2
+  !! Get total number of materials
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => Domain_GetElemType
   !! Returns the element type of each mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType =>  &
+    & Domain_GetUniqueElemType
+  !! Returns the unique element type in each mesh
+  !! The size of returned integer vector can be different from
+  !! the total number of meshes present in domain.
 
   ! SET:
-  ! @SetMethods
-
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
-  !! Set sparsity of csrmatrix
-
-  PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
-  !! Set sparsity
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
+  ! @setMethods
+  PROCEDURE, PASS(obj) :: SetSparsity1 => Domain_SetSparsity1
+  PROCEDURE, NOPASS :: SetSparsity2 => Domain_SetSparsity2
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => Domain_SetTotalMaterial
+  !! set the total number of materials
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => Domain_SetMaterial
+  !! set the material
+  PROCEDURE, PASS(obj) :: SetNodeCoord1 => Domain_SetNodeCoord1
+  !! setNodeCoord
+  GENERIC, PUBLIC :: SetNodeCoord => SetNodeCoord1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => Domain_SetQuality
 
   ! SET:
   ! @MeshDataMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-    obj_InitiateNodeToElements
+    & Domain_InitiateNodeToElements
   !! Initiate node to element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-    obj_InitiateNodeToNodes
+    & Domain_InitiateNodeToNodes
   !! Initiate node to node data
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-    obj_InitiateElementToElements
+      & Domain_InitiateElementToElements
   !! Initiate element to element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-      & obj_InitiateBoundaryData
+      & Domain_InitiateBoundaryData
   !! Initiate element to element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-      & obj_InitiateFacetElements
+      & Domain_InitiateFacetElements
   !! Initiate element to element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-      & obj_InitiateExtraNodeToNodes
+      & Domain_InitiateExtraNodeToNodes
   !! Initiate extra node to nodes information for edge based methods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-    & obj_SetFacetElementType
+    & Domain_SetFacetElementType
   !! Set facet element of meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
-    & obj_SetDomainFacetElement
+    & Domain_SetDomainFacetElement
   !! Set facet element of meshes
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
-
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => &
+    & Domain_SetMeshmap
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-    & obj_SetMeshFacetElement
+    & Domain_SetMeshFacetElement
 
 END TYPE Domain_
 
@@ -209,6 +297,25 @@ TYPE :: DomainPointer_
 END TYPE DomainPointer_
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 June 2021
+! summary: Initiate the instance of [[Domain_]] object
+
+INTERFACE
+  MODULE SUBROUTINE Domain_Initiate(obj, hdf5, group)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    !! DomainData object
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file
+    CHARACTER(*), INTENT(IN) :: group
+    !! Group name (directory name)
+  END SUBROUTINE Domain_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -217,10 +324,10 @@ END TYPE DomainPointer_
 ! summary: Deallocate data stored in Domain object
 
 INTERFACE DomainDeallocate
-  MODULE SUBROUTINE obj_Deallocate(obj)
+  MODULE SUBROUTINE Domain_Deallocate(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
     !! Domain object
-  END SUBROUTINE obj_Deallocate
+  END SUBROUTINE Domain_Deallocate
 END INTERFACE DomainDeallocate
 
 !----------------------------------------------------------------------------
@@ -232,13 +339,13 @@ END INTERFACE DomainDeallocate
 ! summary: Finalizer
 
 INTERFACE
-  MODULE SUBROUTINE obj_Final(obj)
+  MODULE SUBROUTINE Domain_Final(obj)
     TYPE(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Final
+  END SUBROUTINE Domain_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          obj_Pointer@ConstructorMethods
+!                                          Domain_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -246,11 +353,11 @@ END INTERFACE
 ! summary: This function returns pointer to a newly constructed Domain obj
 
 INTERFACE Domain_Pointer
-  MODULE FUNCTION obj_Constructor_1(hdf5, group) RESULT(ans)
+  MODULE FUNCTION Domain_Constructor_1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
+  END FUNCTION Domain_Constructor_1
 END INTERFACE Domain_Pointer
 
 !----------------------------------------------------------------------------
@@ -258,16 +365,64 @@ END INTERFACE Domain_Pointer
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-15
+! date: 18 June 2021
 ! summary: Construct an instance of domain by importing data from mesh
 
-INTERFACE DomainImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
+INTERFACE
+  MODULE SUBROUTINE Domain_Import(obj, hdf5, group)
     CLASS(Domain_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_Import
-END INTERFACE DomainImport
+  END SUBROUTINE Domain_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-20
+! summary:  Initiate an instance of domain by importing meshfile name from
+! Toml file
+!
+! NOTE: default meshfile name is "mesh.h5"
+! and default group in hdf5 is ""
+!
+! NOTE: meshfile (hdf5) is internally initiated and is deallocated
+! after initiation of domain
+
+INTERFACE
+  MODULE SUBROUTINE Domain_ImportFromToml1(obj, table)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE Domain_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml1@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-20
+! summary:  Initiate an instance of domain by importing meshfile name from
+! Toml file
+!
+! NOTE: default meshfile name is "mesh.h5"
+! and default group in hdf5 is ""
+!
+! NOTE: meshfile (hdf5) is internally initiated and is deallocated
+! after initiation of domain
+
+INTERFACE
+  MODULE SUBROUTINE Domain_ImportFromToml2(obj, tomlName, afile, filename,  &
+  & printToml)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE Domain_ImportFromToml2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
@@ -278,27 +433,11 @@ END INTERFACE DomainImport
 ! summary: Display the domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(Domain_), INTENT(INOUT) :: obj
+  MODULE SUBROUTINE Domain_Display(obj, msg, unitno)
+    CLASS(Domain_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               DisplayDomainInfo@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-15
-! summary: Display the domain
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayDomainInfo(obj, msg, unitno)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayDomainInfo
+  END SUBROUTINE Domain_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -310,11 +449,371 @@ END INTERFACE
 ! summary: Display mesh facet data
 
 INTERFACE
-  MODULE SUBROUTINE obj_DisplayMeshFacetData(obj, msg, unitno)
-    CLASS(Domain_), INTENT(INOUT) :: obj
+  MODULE SUBROUTINE Domain_DisplayMeshFacetData(obj, msg, unitno)
+    CLASS(Domain_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayMeshFacetData
+  END SUBROUTINE Domain_DisplayMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   IsNodePresent@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns true if the global node number is present
+
+INTERFACE
+  MODULE FUNCTION Domain_IsNodePresent(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT) :: ans
+  END FUNCTION Domain_IsNodePresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               IsElementPresent@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: Returns true if the element number is present inside the domain
+
+INTERFACE
+  MODULE FUNCTION Domain_IsElementPresent(obj, globalElement, dim) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! If dim is not present, then search is performed in all meshes
+    LOGICAL(LGT) :: ans
+  END FUNCTION Domain_IsElementPresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: Returns the connectivity vector of a given element number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetConnectivity(obj, globalElement, dim) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! If dim is not present, then search is performed in all meshes
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! vertex connectivity
+  END FUNCTION Domain_GetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE FUNCTION Domain_GetNodeToElements1(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_GetNodeToElements1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeToElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE FUNCTION Domain_GetNodeToElements2(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_GetNodeToElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+!
+!# Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+! - `entityNum` should not be out of bound
+!
+! Note: Both `dim` and `entityNum` should be present or absent.
+! This is because two entities of same dimension can have common nodes
+! which this routine cannot predict.
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalNodes(obj, dim, entityNum) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of the mesh entity
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         tNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+!
+!# Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+! Here, opt = [dim, entityNum]
+!
+! This function is used for defining an operator [[.tNodes.]]
+!
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+! - `entityNum` should not be out of bound
+
+INTERFACE
+  MODULE FUNCTION Domain_tNodes1(obj, opt) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: opt(2)
+    !! opt(1) is dim
+    !! opt(2) is entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          tNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+
+INTERFACE
+  MODULE FUNCTION Domain_tNodes2(obj) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getTotalElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of elements in the domain
+!
+!# Introduction
+!
+! This function returns the total number of elements in
+!
+! - entire Domain
+! - selected region of domain
+! - The mesh selection can be made by specifying the `dim` and `entityNum`
+!
+!@note
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+!@endnote
+!
+!@warn
+! `entityNum` should not be out of bound
+!@endwarn
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalElements(obj, dim, entityNum) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entities
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! mesh entity number
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns total elements in domain
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements1(obj) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns total elements in given dimension
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements2(obj, dim) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns the total elements in a given mesh
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements3(obj, opt) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: opt(2)
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetLocalNodeNumber1(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetLocalNodeNumber2(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B) :: ans(SIZE(globalNode))
+  END FUNCTION Domain_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getGlobalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetGlobalNodeNumber1(obj, localNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: localNode
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetGlobalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getGlobalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetGlobalNodeNumber2(obj, localNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: localNode(:)
+    INTEGER(I4B) :: ans(SIZE(localNode))
+  END FUNCTION Domain_GetGlobalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getTotalMesh@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This function returns the total number of mesh
+!
+!# Introduction
+!
+! This function returns the total number of mesh
+!
+! - `dim=0` returns the total number of mesh of point entities
+! - `dim=1` returns the total number of mesh of curve entities
+! - `dim=2` returns the total number of mesh of surface entities
+! - `dim=3` returns the total number of mesh of volume entities
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalMesh(obj, dim) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalMesh
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -331,235 +830,155 @@ END INTERFACE
 ! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
 ! curve, surface, volume meshes.
 ! - tag, is the number of mesh
-!
-! Calling example:
-!
-!```fortran
-! GetMeshPointer(dim, entityNum)
-! GetMeshPointer(globalElement)
-! GetMeshPointer(dim, globalElement, islocal)
-!```
 
 INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-                                      globalElement, islocal) RESULT(Ans)
+  MODULE FUNCTION Domain_GetMeshPointer1(obj, dim, entityNum) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of mesh entity
-    !! The default value of dim is obj%nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-    !! entity number, it is used for domain_
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! is global element a local element
-    CLASS(AbstractMesh_), POINTER :: ans
-    !! abstract mesh pointer
-  END FUNCTION obj_GetMeshPointer1
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    !! entity number
+    CLASS(Mesh_), POINTER :: ans
+  END FUNCTION Domain_GetMeshPointer1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               IsElementPresent@GetMethods
+!                                                  getMeshPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-15
-! summary: Returns true if the element number is present inside the domain
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: Returns pointer to the mesh
+!
+!# Introduction
+!
+! This function returns the pointer to the mesh which contains the global
+! element number
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
-    & islocal) RESULT(ans)
+  MODULE FUNCTION Domain_GetMeshPointer2(obj, globalElement) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
-    !! Element number
+    CLASS(Mesh_), POINTER :: ans
+  END FUNCTION Domain_GetMeshPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getDimEntityNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: Returns dim and entity number
+
+INTERFACE
+  MODULE FUNCTION Domain_GetDimEntityNum(obj, globalElement) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION Domain_GetDimEntityNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getNodeCoord@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the nodal coordinates
+!
+!# Introduction
+! - This routine returns the nodal coordinates in the form of rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+! - If `dim` and `tag` are absent then this routine returns the nodal
+! coordinates of the entire domain
+! - If `dim` and `tag` are present then the routine selects the mesh and
+! returns its nodal coordinates
+
+INTERFACE
+  MODULE SUBROUTINE Domain_GetNodeCoord(obj, nodeCoord, dim, entityNum)
+    CLASS(Domain_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-    !! Dimension, if dim is present then
-    !! if dim=0, then search is performed in meshPoint
-    !! if dim=1, then search is performed in meshCurve
-    !! if dim=2, then search is performed in meshSurface
-    !! if dim=3, then search is performed in meshVolume
-    !! The default value of dim is obj%nsd
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-    !! entity number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_IsElementPresent
+  END SUBROUTINE Domain_GetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetNodeToElements@GetMethods
+!                                                     getNodeCoord@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-12
-! update: 2021-11-12
-! summary: returns the elements connected to a node
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode, islocal) &
-    & RESULT(ans)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-      !! we can init the node to element data if necessary
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END FUNCTION obj_GetNodeToElements1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetNodeToElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-12
-! update: 2021-11-12
-! summary: returns the elements connected to a node
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeToElements2(obj, globalNode, islocal) &
-    & RESULT(ans)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-      !! we can init the node to element data if necessary
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END FUNCTION obj_GetNodeToElements2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetNodeToElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-03-28
-! summary: returns the elements connected to a node
+! date: 23 July 2021
+! summary: This routine returns the nodal coordinates
 !
 !# Introduction
-!
-! For obj%nsd = 3, we use meshVolume
-! For obj%nsd = 2, we use meshSurface
-! For obj%nsd = 1, we use meshCurve
-! for obj%nsd = 0, we use meshPoint
+! - This routine returns the nodal coordinates in the form of rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+! - If `dim` and `tag` are absent then this routine returns the nodal
+! coordinates of the entire domain
+! - If `dim` and `tag` are present then the routine selects the mesh and
+! returns its nodal coordinates
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
-                                            globalNode, islocal)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-      !! We can init the node to element
-    INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! node to elements, it should be atleast tsize long
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! actual size of ans, it is returned by this routine
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    !! global node number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! is true it means globalNode is actually local node
-  END SUBROUTINE obj_GetNodeToElements1_
+  MODULE SUBROUTINE Domain_GetNodeCoord2(obj, nodeCoord, globalNode)
+    CLASS(Domain_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! It should be allocated by the user.
+    !! SIZE(nodeCoord, 1) is equal to nsd
+    !! Size(nodeCoord, 2) is equal to the size(globalNode)
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  END SUBROUTINE Domain_GetNodeCoord2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetNodeToElements@GetMethods
+!                                             getNodeCoordPointer@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-03-28
-! summary: returns the elements connected to a node
+! date: 23 July 2021
+! summary: This routine returns the pointer to nodal coordinates
 !
 !# Introduction
+! - This routine returns the pointer to nodal coordinates in the form of
+! rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+
+INTERFACE
+  MODULE FUNCTION Domain_GetNodeCoordPointer(obj) RESULT(ans)
+    CLASS(Domain_), TARGET, INTENT(IN) :: obj
+    REAL(DFP), POINTER :: ans(:, :)
+  END FUNCTION Domain_GetNodeCoordPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  getGlobalToLocalNodeNumPointer@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the pointer to nodal coordinates
 !
-! For obj%nsd = 3, we use meshVolume
-! For obj%nsd = 2, we use meshSurface
-! For obj%nsd = 1, we use meshCurve
-! for obj%nsd = 0, we use meshPoint
+!# Introduction
+! - This routine returns the pointer to nodal coordinates in the form of
+! rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
-                                            globalNode, islocal)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-      !! We can ionit the node to element data
-    INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! node to elements, it should be atleast tsize long
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! actual size of ans, it is returned by this routine
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    !! global node number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! is true it means globalNode is actually local node
-  END SUBROUTINE obj_GetNodeToElements2_
+  MODULE FUNCTION Domain_GetGlobalToLocalNodeNumPointer(obj) RESULT(ans)
+    CLASS(Domain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), POINTER :: ans(:)
+  END FUNCTION Domain_GetGlobalToLocalNodeNumPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetLocalNodeNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Sept 2021
-! summary: Returns local node number of a global node number
-
-INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
-    RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode
-    !! Global node number in mesh of obj%nsd dimension
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    INTEGER(I4B) :: ans
-    !! Local node number in mesh of obj%nsd dimension
-  END FUNCTION obj_GetLocalNodeNumber1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              getLocalNodeNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Sept 2021
-! summary: Returns local node number of a global node number
-
-INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
-    RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    INTEGER(I4B) :: ans(SIZE(globalNode))
-  END FUNCTION obj_GetLocalNodeNumber2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             getGlobalNodeNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-16
-! summary: Returns local node number of a global node number
-
-INTERFACE
-  MODULE PURE FUNCTION obj_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: localNode
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetGlobalNodeNumber1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              getGlobalNodeNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-16
-! summary: Returns local node number of a global node number
-
-INTERFACE
-  MODULE PURE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: localNode(:)
-    INTEGER(I4B) :: ans(SIZE(localNode))
-  END FUNCTION obj_GetGlobalNodeNumber2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         GetNptrs@GetMethods
+!                                                         getNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -571,43 +990,16 @@ END INTERFACE
 ! xidim is the dimension of the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION Domain_GetNptrs(obj, entityNum, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum(:)
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetNptrs
+  END FUNCTION Domain_GetNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetNptrs@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-17
-! summary: this routine returns the global node number
-!
-!# Introduction
-! This routine returns the global node number
-! xidim is the dimension of the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, entityNum, tsize)
-    CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dim = 0 meshPoint is called
-    !! dim=1 meshCurve is called
-    !! dim=2, meshSurface is called
-    !! dim=~3, meshVolume is called
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tsize
-    !! Returns the size of nptrs where data has been written
-  END SUBROUTINE obj_GetNptrs_
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetInternalNptrs@GetMethods
+!                                                         getNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -619,12 +1011,27 @@ END INTERFACE
 ! xidim is the dimension of the mesh
 
 INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION Domain_GetInternalNptrs(obj, entityNum, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum(:)
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum(:)
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetInternalNptrs
+  END FUNCTION Domain_GetInternalNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           getNSD@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This routine returns the number of spatial dimensions
+
+INTERFACE
+  MODULE FUNCTION Domain_GetNSD(obj) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -636,15 +1043,30 @@ END INTERFACE
 ! summary: This routine returns the order of meshes of dimensions=dim
 
 INTERFACE
-  MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
+  MODULE FUNCTION Domain_GetOrder(obj, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetOrder
+  END FUNCTION Domain_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetTotalMeshFacetData@GetMethods
+!                                                  getBoundingBox@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Oct 2021
+! summary: Returns bounding box
+
+INTERFACE
+  MODULE FUNCTION Domain_GetBoundingBox(obj) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    TYPE(BoundingBox_) :: ans
+  END FUNCTION Domain_GetBoundingBox
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          getTotalMeshFacetData@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -652,16 +1074,51 @@ END INTERFACE
 ! summary: returns size of meshFacetData
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalMeshFacetData(obj, imeshFacetData) &
-    RESULT(ans)
+  MODULE FUNCTION Domain_GetTotalMeshFacetData(obj, imeshFacetData) &
+    & RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalMeshFacetData
+  END FUNCTION Domain_GetTotalMeshFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetElemType@GetMethods
+!                                               GetTotalMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalMaterial1(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_GetTotalMaterial1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalMaterial2(obj, dim, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetElemType@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -669,11 +1126,27 @@ END INTERFACE
 ! summary:  Returns the element type of each mesh in domain
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
+  MODULE FUNCTION Domain_GetElemType(obj, dim) RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION obj_GetElemType
+  END FUNCTION Domain_GetElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetUniqueElemType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-23
+! summary: Returns only the unique elements in the meshes of domain
+
+INTERFACE
+  MODULE FUNCTION Domain_GetUniqueElemType(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_GetUniqueElemType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -682,13 +1155,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: Set sparsity in [[CSRMatrix_]] from [[obj_]]
+! summary: Set sparsity in [[CSRMatrix_]] from [[Domain_]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
-    CLASS(Domain_), INTENT(INOUT) :: obj
+  MODULE SUBROUTINE Domain_SetSparsity1(obj, mat)
+    CLASS(Domain_), INTENT(IN) :: obj
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity1
+  END SUBROUTINE Domain_SetSparsity1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -696,34 +1169,74 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-04-16
+! date: 12 Oct 2021
 ! summary: Set sparsity in [[CSRMatrix_]] from [[Domain_]]
 
 INTERFACE DomainSetSparsity
-  MODULE SUBROUTINE obj_SetSparsity2(domains, mat)
-    CLASS(AbstractDomainPointer_), INTENT(INOUT) :: domains(:)
+  MODULE SUBROUTINE Domain_SetSparsity2(domains, mat)
+    CLASS(DomainPointer_), INTENT(IN) :: domains(:)
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity2
+  END SUBROUTINE Domain_SetSparsity2
 END INTERFACE DomainSetSparsity
 
 !----------------------------------------------------------------------------
-!                                                   SetQuality@SetMethods
+!                                               setTotalMaterial@setMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary:
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    & min_measures, dim, entityNum)
+  MODULE SUBROUTINE Domain_SetTotalMaterial(obj, dim, n)
     CLASS(Domain_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: measures(:)
-    REAL(DFP), INTENT(OUT) :: max_measures(:)
-    REAL(DFP), INTENT(OUT) :: min_measures(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
-  END SUBROUTINE obj_SetQuality
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE Domain_SetTotalMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     InitiateNodeToElements@MeshDataMethods
+!                                                     SetMaterial@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetMaterial(obj, dim, entityNum, &
+    & medium, material)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B), INTENT(IN) :: medium
+    INTEGER(I4B), INTENT(IN) :: material
+  END SUBROUTINE Domain_SetMaterial
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetNodeCoord@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-24
+! summary: SetNodeCoord
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetNodeCoord1(obj, nodeCoord, scale, &
+    & addContribution)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
+    !! nodal coordinate in xij Format
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE Domain_SetNodeCoord1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateNodeToElements@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -731,13 +1244,13 @@ END INTERFACE
 ! summary: This routine sets the node-to-elements data in mesh of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
+  MODULE SUBROUTINE Domain_InitiateNodeToElements(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateNodeToElements
+  END SUBROUTINE Domain_InitiateNodeToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        InitiateNodeToNodes@MeshDataMethods
+!                                       InitiateNodeToNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -745,9 +1258,9 @@ END INTERFACE
 ! summary: This routine sets the node-to-nodes data in mesh of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
+  MODULE SUBROUTINE Domain_InitiateNodeToNodes(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateNodeToNodes
+  END SUBROUTINE Domain_InitiateNodeToNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -759,9 +1272,9 @@ END INTERFACE
 ! summary: This routine sets the element-to-element data in mesh of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateElementToElements(obj)
+  MODULE SUBROUTINE Domain_InitiateElementToElements(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateElementToElements
+  END SUBROUTINE Domain_InitiateElementToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -779,9 +1292,9 @@ END INTERFACE
 ! Then, it calls SetFacetElementType() on domain object.
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
+  MODULE SUBROUTINE Domain_InitiateBoundaryData(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateBoundaryData
+  END SUBROUTINE Domain_InitiateBoundaryData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -793,13 +1306,13 @@ END INTERFACE
 ! summary: This routine sets the facet elements data in mesh of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateFacetElements(obj)
+  MODULE SUBROUTINE Domain_InitiateFacetElements(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateFacetElements
+  END SUBROUTINE Domain_InitiateFacetElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   InitiateExtraNodeToNodes@MeshDataMethods
+!                                  InitiateExtraNodeToNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -807,9 +1320,9 @@ END INTERFACE
 ! summary: This routine sets the node-to-nodes data in mesh of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateExtraNodeToNodes(obj)
+  MODULE SUBROUTINE Domain_InitiateExtraNodeToNodes(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateExtraNodeToNodes
+  END SUBROUTINE Domain_InitiateExtraNodeToNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -839,9 +1352,9 @@ END INTERFACE
 ! a call to InitiateBoundaryElementData is necessary
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetFacetElementType(obj)
+  MODULE SUBROUTINE Domain_SetFacetElementType(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetFacetElementType
+  END SUBROUTINE Domain_SetFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -866,8 +1379,7 @@ END INTERFACE
 ! as `DOMAIN_BOUNDARY_ELEMENT`.
 !
 ! However, some of these boundary facet-elements will be located at the
-! domain’s boundary.
-! These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
+! domain’s boundary. These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
 !
 ! Some of the facet elements will be at located at the interface of two
 ! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
@@ -876,9 +1388,9 @@ END INTERFACE
 ! `DOMAIN_BOUNDARY_ELEMENT`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetDomainFacetElement(obj)
+  MODULE SUBROUTINE Domain_SetDomainFacetElement(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetDomainFacetElement
+  END SUBROUTINE Domain_SetDomainFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -890,9 +1402,9 @@ END INTERFACE
 ! summary: This routine sets meshMap
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMeshmap(obj)
+  MODULE SUBROUTINE Domain_SetMeshmap(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetMeshmap
+  END SUBROUTINE Domain_SetMeshmap
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -904,9 +1416,25 @@ END INTERFACE
 ! summary: This routine sets meshFacetData
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMeshFacetElement(obj)
+  MODULE SUBROUTINE Domain_SetMeshFacetElement(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetMeshFacetElement
+  END SUBROUTINE Domain_SetMeshFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuality@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetQuality(obj, measures, max_measures, &
+    & min_measures, dim, entityNum)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+  END SUBROUTINE Domain_SetQuality
 END INTERFACE
 
 !----------------------------------------------------------------------------

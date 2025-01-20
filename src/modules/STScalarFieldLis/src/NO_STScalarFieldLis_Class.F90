@@ -15,24 +15,30 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2024-05-31
+! date: 28 June 2021
 ! summary: STScalar field data type is defined
 
 MODULE STScalarFieldLis_Class
-USE STScalarField_Class, ONLY: STScalarField_
+USE GlobalData
+USE Basetype
+USE String_Class
+USE AbstractField_Class
+USE AbstractNodeField_Class
+USE STScalarField_Class
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE FEDOF_Class, ONLY: FEDOF_
-
+USE HDF5File_Class
+USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
-
 PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
 PUBLIC :: STScalarFieldLis
 PUBLIC :: STScalarFieldLis_Pointer
+PUBLIC :: TypeSTScalarField
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -48,6 +54,13 @@ TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+TYPE(STScalarFieldLis_), PARAMETER :: TypeSTScalarField = &
+  & STScalarFieldLis_(domains=NULL())
+
+!----------------------------------------------------------------------------
 !                                                   STScalarFieldLisPointer_
 !----------------------------------------------------------------------------
 
@@ -57,19 +70,19 @@ END TYPE STScalarFieldLisPointer_
 
 CONTAINS
 
-FUNCTION STScalarFieldLis(param, fedof) RESULT(Ans)
+FUNCTION STScalarFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(STScalarFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%Initiate(param=param, dom=dom)
 END FUNCTION STScalarFieldLis
 
-FUNCTION STScalarFieldLis_Pointer(param, fedof) RESULT(Ans)
+FUNCTION STScalarFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   CLASS(STScalarFieldLis_), POINTER :: ans
   ALLOCATE (ans)
-  CALL ans%initiate(param=param, fedof=fedof)
+  CALL ans%initiate(param, dom)
 END FUNCTION STScalarFieldLis_Pointer
 
 END MODULE STScalarFieldLis_Class

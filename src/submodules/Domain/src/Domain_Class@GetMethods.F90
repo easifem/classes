@@ -19,410 +19,497 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(Domain_Class) GetMethods
-USE BaseType, ONLY: IntVector_
-USE IntVector_Method
-USE AppendUtility
-USE ReallocateUtility
-USE InputUtility
-USE ArangeUtility
-USE IntegerUtility
-USE Display_Method
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             getMeshPointer
+!                                                             isNodePresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshPointer1
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-LOGICAL(LGT) :: acase
-
-ans => NULL()
-
-acase = PRESENT(entityNum) .AND. PRESENT(dim)
-IF (acase) THEN
-  CALL getmeshpointer_case1(obj, dim, entityNum, ans)
-  RETURN
+MODULE PROCEDURE Domain_IsNodePresent
+ans = .TRUE.
+IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
+  ans = .FALSE.
+ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
+  ans = .FALSE.
 END IF
-
-acase = PRESENT(globalElement) .AND. (.NOT. PRESENT(dim))
-IF (acase) THEN
-  CALL getmeshpointer_case2(obj, globalElement, ans, islocal)
-  RETURN
-END IF
-
-acase = PRESENT(globalElement) .AND. PRESENT(dim)
-IF (acase) THEN
-  CALL getmeshpointer_case3(obj, globalElement, dim, ans, islocal)
-  RETURN
-END IF
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: No case found')
-
-END PROCEDURE obj_GetMeshPointer1
-
-!----------------------------------------------------------------------------
-!                                                            GetMeshPointer
-!----------------------------------------------------------------------------
-
-SUBROUTINE getmeshpointer_case3(obj, globalElement, dim, ans, islocal)
-  CLASS(Domain_), INTENT(IN) :: obj
-  INTEGER(I4B), INTENT(IN) :: globalElement, dim
-  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-
-  ! internal variables
-  INTEGER(I4B) :: ii, jj, nsd, tsize
-  LOGICAL(LGT) :: isok, found
-
-  ans => NULL()
-  nsd = obj%GetNSD()
-  found = .FALSE.
-  ii = dim
-
-  tsize = obj%GetTotalEntities(dim=ii)
-
-  elemloop: DO jj = 1, tsize
-
-    ans => obj%GetMeshPointer(dim=ii, entityNum=jj)
-
-    CALL getmeshpointer_case1(obj, ii, jj, ans)
-
-    isok = ASSOCIATED(ans)
-    IF (.NOT. isok) CYCLE elemloop
-
-    found = ans%IsElementPresent(globalElement=globalElement, &
-                                 islocal=islocal)
-
-    IF (found) EXIT elemloop
-
-  END DO elemloop
-
-  IF (.NOT. found) ans => NULL()
-
-END SUBROUTINE getmeshpointer_case3
-
-!----------------------------------------------------------------------------
-!                                                            GetMeshPointer
-!----------------------------------------------------------------------------
-
-SUBROUTINE getmeshpointer_case2(obj, globalElement, ans, islocal)
-  CLASS(Domain_), INTENT(IN) :: obj
-  INTEGER(I4B), INTENT(IN) :: globalElement
-  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-
-  ! internal variables
-  INTEGER(I4B) :: ii, jj, nsd, tsize
-  LOGICAL(LGT) :: isok, found
-
-  ans => NULL()
-  nsd = obj%GetNSD()
-  found = .FALSE.
-
-  dimloop: DO ii = 0, nsd
-
-    tsize = obj%GetTotalEntities(dim=ii)
-
-    elemloop: DO jj = 1, tsize
-
-      ans => obj%GetMeshPointer(dim=ii, entityNum=jj)
-
-      CALL getmeshpointer_case1(obj, ii, jj, ans)
-
-      isok = ASSOCIATED(ans)
-      IF (.NOT. isok) CYCLE
-
-      found = ans%IsElementPresent(globalElement=globalElement, &
-                                   islocal=islocal)
-
-      IF (found) EXIT dimloop
-
-    END DO elemloop
-
-  END DO dimloop
-
-  IF (.NOT. found) ans => NULL()
-
-END SUBROUTINE getmeshpointer_case2
-
-!----------------------------------------------------------------------------
-!                                                                    case1
-!----------------------------------------------------------------------------
-
-SUBROUTINE getmeshpointer_case1(obj, dim, entityNum, ans)
-  CLASS(Domain_), INTENT(IN) :: obj
-  INTEGER(I4B), INTENT(IN) :: dim, entityNum
-  CLASS(AbstractMesh_), POINTER, INTENT(INOUT) :: ans
-
-  CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-  LOGICAL(LGT) :: problem
-  INTEGER(I4B) :: aint
-
-  ans => NULL()
-
-  aint = obj%GetTotalEntities(dim)
-  problem = entityNum .GT. aint
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
-      & "[INTERNAL ERROR] :: entityNum are out of bound")
-    RETURN
-  END IF
-
-  SELECT CASE (dim)
-  CASE (0)
-    ans => obj%meshPoint(entityNum)%ptr
-  CASE (1)
-    ans => obj%meshCurve(entityNum)%ptr
-  CASE (2)
-    ans => obj%meshSurface(entityNum)%ptr
-  CASE (3)
-    ans => obj%meshVolume(entityNum)%ptr
-  CASE DEFAULT
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
-      & "[INTERNAL ERROR] :: no case found for nsd")
-  END SELECT
-
-END SUBROUTINE getmeshpointer_case1
+END PROCEDURE Domain_IsNodePresent
 
 !----------------------------------------------------------------------------
 !                                                          isElementPresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_IsElementPresent
-CLASS(AbstractMesh_), POINTER :: meshptr
-INTEGER(I4B) :: ii, jj, tsize, nsd
-LOGICAL(LGT) :: acase
+MODULE PROCEDURE Domain_IsElementPresent
+CLASS(Mesh_), POINTER :: meshptr
+INTEGER(I4B) :: dim0, entityNum
 
 ans = .FALSE.
 
-!! case1
-acase = PRESENT(dim) .AND. PRESENT(entityNum)
-IF (acase) THEN
+IF (PRESENT(dim)) THEN
 
-  ii = entityNum
-
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-  ans = meshptr%IsElementPresent(globalElement=globalElement, &
-                                 islocal=islocal)
-  NULLIFY (meshptr)
-
-  RETURN
-END IF
-
-!! case 2
-acase = PRESENT(dim) .AND. (.NOT. PRESENT(entityNum))
-IF (acase) THEN
-
-  tsize = obj%GetTotalEntities(dim=dim)
-
-  ent_loop: DO ii = 1, tsize
-
-    meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-    ans = meshptr%IsElementPresent(globalElement=globalElement, &
-                                   islocal=islocal)
-    IF (ans) EXIT ent_loop
-
-  END DO ent_loop
-
-  NULLIFY (meshptr)
-
-  RETURN
-END IF
-
-nsd = obj%GetNSD()
-
-dimloop: DO ii = 0, nsd
-
-  tsize = obj%GetTotalEntities(dim=ii)
-
-  DO jj = 1, tsize
-
-    meshptr => obj%GetMeshPointer(dim=ii, entityNum=jj)
-    ans = meshptr%IsElementPresent(globalElement=globalElement, &
-                                   islocal=islocal)
-
-    IF (ans) EXIT dimloop
-
+  DO entityNum = 1, obj%GetTotalMesh(dim=dim)
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+    ans = meshptr%IsElementPresent(globalElement=globalElement)
+    IF (ans) EXIT
   END DO
 
-END DO dimloop
+  NULLIFY (meshptr)
+
+ELSE
+
+  dimloop: DO dim0 = 0, obj%nsd
+    DO entityNum = 1, obj%GetTotalMesh(dim=dim0)
+      meshptr => obj%GetMeshPointer(dim=dim0, entityNum=entityNum)
+      ans = meshptr%isElementPresent(globalElement=globalElement)
+      IF (ans) EXIT dimloop
+    END DO
+  END DO dimloop
+
+  NULLIFY (meshptr)
+
+END IF
+
+END PROCEDURE Domain_IsElementPresent
+
+!----------------------------------------------------------------------------
+!                                                          getConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetConnectivity
+CLASS(Mesh_), POINTER :: meshptr
+
+! main
+meshptr => NULL()
+meshptr => obj%GetMeshPointer(globalElement=globalElement)
+
+IF (ASSOCIATED(meshptr)) THEN
+  ans = meshptr%GetConnectivity(globalElement)
+ELSE
+  ALLOCATE (ans(0))
+END IF
 
 NULLIFY (meshptr)
-
-END PROCEDURE obj_IsElementPresent
+END PROCEDURE Domain_GetConnectivity
 
 !----------------------------------------------------------------------------
 !                                                         getNodeToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeToElements1
-CLASS(AbstractMesh_), POINTER :: meshptr
+MODULE PROCEDURE Domain_GetNodeToElements1
+CLASS(Mesh_), POINTER :: meshptr
 INTEGER(I4B) :: dim, entityNum
 INTEGER(I4B), ALLOCATABLE :: ivec(:)
 LOGICAL(LGT) :: isok
 
 meshptr => NULL()
-isok = obj%IsNodePresent(globalNode=globalNode)
-IF (.NOT. isok) THEN
-  CALL Reallocate(ans, 0)
-  RETURN
+isok = obj%isNodePresent(globalNode=globalNode)
+
+IF (isok) THEN
+  dimloop: DO dim = 0, obj%nsd
+    DO entityNum = 1, obj%GetTotalMesh(dim=dim)
+      meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+      ivec = meshptr%GetNodeToElements(globalNode=globalNode)
+      CALL Append(ans, ivec)
+    END DO
+  END DO dimloop
+  meshptr => NULL()
+  IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+ELSE
+  ALLOCATE (ans(0))
 END IF
-
-dimloop: DO dim = 0, obj%GetNSD()
-  DO entityNum = 1, obj%GetTotalEntities(dim=dim)
-    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-    ivec = meshptr%GetNodeToElements(globalNode=globalNode, &
-                                     islocal=islocal)
-    CALL Append(ans, ivec)
-  END DO
-END DO dimloop
-
-meshptr => NULL()
-
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-
-END PROCEDURE obj_GetNodeToElements1
+END PROCEDURE Domain_GetNodeToElements1
 
 !----------------------------------------------------------------------------
 !                                                         getNodeToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeToElements2
+MODULE PROCEDURE Domain_GetNodeToElements2
 TYPE(IntVector_) :: intvec
 INTEGER(I4B), ALLOCATABLE :: ivec(:)
 INTEGER(I4B) :: ii
 
-DO ii = 1, SIZE(globalNode)
-  ivec = obj%GetNodeToElements(globalNode=GlobalNode(ii), islocal=islocal)
+DO ii = 1, SIZE(GlobalNode)
+  ivec = obj%GetNodeToElements(GlobalNode=GlobalNode(ii))
   CALL Append(intvec, ivec)
 END DO
-
 ans = intvec
 CALL DEALLOCATE (intvec)
 IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-
-END PROCEDURE obj_GetNodeToElements2
+END PROCEDURE Domain_GetNodeToElements2
 
 !----------------------------------------------------------------------------
-!                                                         getNodeToElements
+!                                                             getTotalNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeToElements1_
-INTEGER(I4B), ALLOCATABLE :: temp(:)
+MODULE PROCEDURE Domain_GetTotalNodes
+CHARACTER(*), PARAMETER :: myName = "Domain_GetTotalNodes()"
+CLASS(Mesh_), POINTER :: meshPtr
 INTEGER(I4B) :: ii
+LOGICAL(LGT) :: case1, isEntityNum, isDim, problem, case2
 
-temp = obj%GetNodeToElements(globalNode=globalNode, islocal=islocal)
-tsize = SIZE(temp)
-DO ii = 1, tsize
-  ans(ii) = temp(ii)
-END DO
+isEntityNum = PRESENT(entityNum)
+isDim = PRESENT(dim)
 
-IF (ALLOCATED(temp)) DEALLOCATE (temp)
+case1 = isEntityNum .AND. isDim
 
-END PROCEDURE obj_GetNodeToElements1_
+IF (case1) THEN
 
-!----------------------------------------------------------------------------
-!                                                         getNodeToElements
-!----------------------------------------------------------------------------
+#ifdef DEBUG_VER
+  problem = entityNum .GT. obj%tEntities(dim)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//'-'// &
+    & '[INTERNAL ERROR] :: The the enitityNum='//tostring(entityNum) &
+    & //" for dimension="//tostring(dim)// &
+    & " is out of bound.")
+    RETURN
+  END IF
+#endif
 
-MODULE PROCEDURE obj_GetNodeToElements2_
-INTEGER(I4B), ALLOCATABLE :: temp(:)
-INTEGER(I4B) :: ii
+  meshPtr => NULL()
+  meshPtr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 
-temp = obj%GetNodeToElements(globalNode=globalNode, islocal=islocal)
-tsize = SIZE(temp)
-DO ii = 1, tsize
-  ans(ii) = temp(ii)
-END DO
+#ifdef DEBUG_VER
+  problem = .NOT. ASSOCIATED(meshPtr)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//'-'// &
+      & '[INTERNAL ERROR] :: There is some issue in getting pointer to mesh')
+  END IF
+#endif
 
-IF (ALLOCATED(temp)) DEALLOCATE (temp)
+  ans = meshPtr%GetTotalNodes()
+  NULLIFY (meshPtr)
 
-END PROCEDURE obj_GetNodeToElements2_
+  RETURN
 
-!----------------------------------------------------------------------------
-!                                                         GetLocalNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalNodeNumber1
-LOGICAL(LGT) :: isok
-ans = 0
-isok = obj%IsNodePresent(globalNode=globalNode, islocal=islocal)
-IF (.NOT. isok) RETURN
-
-isok = Input(default=.FALSE., option=islocal)
-IF (isok) THEN
-  ans = globalNode
-ELSE
-  ans = obj%local_nptrs(globalNode)
 END IF
-END PROCEDURE obj_GetLocalNodeNumber1
+
+#ifdef DEBUG_VER
+
+case2 = .NOT. isEntityNum .AND. isDim
+IF (case2) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: both entityNum and dim  should be PRESENT.')
+  RETURN
+END IF
+
+#endif
+
+ans = obj%tNodes
+END PROCEDURE Domain_GetTotalNodes
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tNodes1
+ans = obj%GetTotalNodes(dim=opt(1), entityNum=opt(2))
+END PROCEDURE Domain_tNodes1
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tNodes2
+ans = obj%GetTotalNodes()
+END PROCEDURE Domain_tNodes2
+
+!----------------------------------------------------------------------------
+!                                                           getTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetTotalElements
+CLASS(Mesh_), POINTER :: meshptr
+LOGICAL(LGT) :: case1, isDim, isEntityNum
+
+isEntityNum = PRESENT(entityNum)
+isDim = PRESENT(dim)
+case1 = isDim .AND. isEntityNum
+
+IF (case1) THEN
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+  ans = meshptr%GetTotalElements()
+  meshptr => NULL()
+  RETURN
+END IF
+
+case1 = isDim .AND. (.NOT. isEntityNum)
+
+IF (case1) THEN
+  ans = obj%tElements(dim)
+  RETURN
+END IF
+
+ans = SUM(obj%tElements)
+END PROCEDURE Domain_GetTotalElements
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements1
+ans = obj%GetTotalElements()
+END PROCEDURE Domain_tElements1
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements2
+ans = obj%GetTotalElements(dim=dim)
+END PROCEDURE Domain_tElements2
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements3
+ans = obj%GetTotalElements(dim=opt(1), entityNum=opt(2))
+END PROCEDURE Domain_tElements3
 
 !----------------------------------------------------------------------------
 !                                                         getLocalNodeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetLocalNodeNumber2
-INTEGER(I4B) :: ii, tsize
-tsize = SIZE(globalNode)
-DO ii = 1, tsize
-  ans(ii) = obj%GetLocalNodeNumber(globalNode=globalNode(ii), &
-                                   islocal=islocal)
+MODULE PROCEDURE Domain_GetLocalNodeNumber1
+LOGICAL(LGT) :: isok
+
+ans = 0
+isok = obj%isNodePresent(globalNode)
+IF (isok) THEN
+  ans = obj%local_nptrs(globalNode)
+END IF
+END PROCEDURE Domain_GetLocalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetLocalNodeNumber2
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+DO ii = 1, SIZE(globalNode)
+  isok = obj%isNodePresent(globalNode(ii))
+  ans(ii) = 0
+  IF (isok) THEN
+    ans(ii) = obj%local_nptrs(globalNode(ii))
+  END IF
 END DO
-END PROCEDURE obj_GetLocalNodeNumber2
+END PROCEDURE Domain_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                       getGlobalNodeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetGlobalNodeNumber1
-! LOGICAL(LGT) :: isok
-! ans = 0
-! isok = localNode .LE. obj%GetTotalNodes()
-! IF (.NOT. isok) RETURN
-ans = obj%global_nptrs(localNode)
-END PROCEDURE obj_GetGlobalNodeNumber1
+MODULE PROCEDURE Domain_GetGlobalNodeNumber1
+LOGICAL(LGT) :: isok
+
+ans = 0
+isok = localNode .LE. obj%tNodes
+IF (isok) THEN
+  ans = obj%global_nptrs(localNode)
+END IF
+END PROCEDURE Domain_GetGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
 !                                                         getGlobalNodeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetGlobalNodeNumber2
-INTEGER(I4B) :: ii, tsize
-tsize = SIZE(localNode)
-DO ii = 1, tsize
-  ans(ii) = obj%GetGlobalNodeNumber(localNode=localNode(ii))
+MODULE PROCEDURE Domain_GetGlobalNodeNumber2
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+DO ii = 1, SIZE(localNode)
+  ans(ii) = 0
+  isok = localNode(ii) .LE. obj%tNodes
+  IF (isok) THEN
+    ans(ii) = obj%global_nptrs(localNode(ii))
+  END IF
 END DO
-END PROCEDURE obj_GetGlobalNodeNumber2
+END PROCEDURE Domain_GetGlobalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                              getTotalMesh
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetTotalMesh
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: problem
+CHARACTER(*), PARAMETER :: myName = "Domain_GetTotalMesh()"
+
+problem = dim .LT. 0 .OR. dim .GT. 3
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: dim of the mesh should be in [0,1,2,3]")
+END IF
+#endif
+
+ans = obj%tEntities(dim)
+END PROCEDURE Domain_GetTotalMesh
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetMeshPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Domain_GetMeshPointer1()"
+LOGICAL(LGT) :: problem
+
+problem = entityNum .GT. obj%tEntities(dim)
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: entityNum are out of bound")
+  RETURN
+END IF
+#endif
+
+SELECT CASE (dim)
+CASE (0)
+  ans => obj%meshPoint(entityNum)%ptr
+CASE (1)
+  ans => obj%meshCurve(entityNum)%ptr
+CASE (2)
+  ans => obj%meshSurface(entityNum)%ptr
+CASE (3)
+  ans => obj%meshVolume(entityNum)%ptr
+END SELECT
+
+END PROCEDURE Domain_GetMeshPointer1
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetMeshPointer2
+! CHARACTER(*), PARAMETER :: myname = "Domain_GetMeshPointer2()"
+INTEGER(i4b) :: dim, entityNum
+LOGICAL(LGT) :: abool
+
+ans => NULL()
+
+dimloop: DO dim = 0, obj%nsd
+
+  DO entityNum = 1, obj%GetTotalMesh(dim=dim)
+
+    ans => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+    abool = ans%isElementPresent(globalElement=globalElement)
+
+    IF (abool) THEN
+      EXIT dimloop
+    END IF
+
+  END DO
+
+END DO dimloop
+
+END PROCEDURE Domain_GetMeshPointer2
+
+!----------------------------------------------------------------------------
+!                                                           getDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetDimEntityNum
+INTEGER(i4b) :: dim, entityNum
+CLASS(Mesh_), POINTER :: meshptr
+! main
+ans = 0
+dimloop: DO dim = 0, obj%nsd
+  DO entityNum = 1, obj%GetTotalMesh(dim=dim)
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+    IF (meshptr%isElementPresent(globalElement=globalElement)) THEN
+      ans = [dim, entityNum]
+      EXIT dimloop
+    END IF
+  END DO
+END DO dimloop
+END PROCEDURE Domain_GetDimEntityNum
+
+!----------------------------------------------------------------------------
+!                                                               getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetNodeCoord
+CHARACTER(*), PARAMETER :: myName = "Domain_GetNodeCoord()"
+CLASS(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: np, ii, jj
+
+#ifdef DEBUG_VER
+
+LOGICAL(LGT) :: problem
+problem = .NOT. ALLOCATED(obj%nodeCoord)
+IF (problem) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
+  RETURN
+END IF
+
+#endif
+
+IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
+  meshPtr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+  np = meshPtr%GetTotalNodes()
+  CALL Reallocate(nodeCoord, 3_I4B, np)
+  jj = SIZE(nodeCoord, 1)
+  DO ii = 1, np
+    nodeCoord(1:jj, ii) = obj%nodeCoord(1:jj, &
+      & obj%GetLocalNodeNumber(globalNode= &
+      & meshPtr%GetGlobalNodeNumber(localNode=ii)))
+  END DO
+  NULLIFY (meshPtr)
+ELSE
+  nodeCoord = obj%nodeCoord
+END IF
+
+END PROCEDURE Domain_GetNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                       getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetNodeCoord2
+INTEGER(I4B) :: localNode(SIZE(globalNode))
+INTEGER(I4B) :: nsd
+localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
+nsd = SIZE(nodeCoord, 1)
+nodeCoord = obj%nodeCoord(1:nsd, localNode)
+END PROCEDURE Domain_GetNodeCoord2
+
+!----------------------------------------------------------------------------
+!                                                        getNodeCoordPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetNodeCoordPointer
+ans => obj%nodeCoord
+END PROCEDURE Domain_GetNodeCoordPointer
+
+!----------------------------------------------------------------------------
+!                                            getGlobalToLocalNodeNumPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetGlobalToLocalNodeNumPointer
+ans => obj%local_nptrs
+END PROCEDURE Domain_GetGlobalToLocalNodeNumPointer
 
 !----------------------------------------------------------------------------
 !                                                                   getNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNptrs
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs()"
+MODULE PROCEDURE Domain_GetNptrs
+CHARACTER(*), PARAMETER :: myName = "Domain_GetNptrs()"
 INTEGER(I4B) :: ii, tentity, tnodes
-CLASS(AbstractMesh_), POINTER :: meshptr
+CLASS(Mesh_), POINTER :: meshptr
 TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), ent0(:)
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 LOGICAL(LGT) :: problem
 
 meshptr => NULL()
-IF (PRESENT(entityNum)) THEN
-  ent0 = entityNum
-  tentity = SIZE(ent0)
-ELSE
-  tentity = obj%GetTotalEntities(dim=dim)
-  ent0 = arange(1_I4B, tentity)
-END IF
-
+tentity = SIZE(entityNum)
 DO ii = 1, tentity
 
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ent0(ii))
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
 
   problem = .NOT. ASSOCIATED(meshptr)
   IF (problem) CYCLE
@@ -441,7 +528,7 @@ CALL RemoveDuplicates(intvec)
 IF (isAllocated(intvec)) THEN
   ans = intvec
 ELSE
-  CALL Reallocate(ans, 0)
+  CALL reallocate(ans, 0)
 END IF
 
 CALL DEALLOCATE (intvec)
@@ -449,120 +536,45 @@ CALL DEALLOCATE (intvec)
 NULLIFY (meshptr)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 
-END PROCEDURE obj_GetNptrs
+END PROCEDURE Domain_GetNptrs
 
 !----------------------------------------------------------------------------
-!                                                                 GetNptrs_
+!                                                                   getNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNptrs_
-INTEGER(I4B) :: ii, tentity, offset, n, jj
-CLASS(AbstractMesh_), POINTER :: meshptr
-LOGICAL(LGT) :: problem
-
-meshptr => NULL()
-offset = 1
-
-IF (PRESENT(entityNum)) THEN
-  tentity = SIZE(entityNum)
-
-  DO ii = 1, tentity
-    jj = entityNum(ii)
-    CALL macro
-  END DO
-
-ELSE
-
-  tentity = obj%GetTotalEntities(dim=dim)
-  DO ii = 1, tentity
-    jj = ii
-    CALL macro
-  END DO
-
-END IF
-
-n = offset - 1
-CALL RemoveDuplicates_(obj=nptrs(1:n), tsize=n, isSorted=.FALSE.)
-IF (PRESENT(tsize)) tsize = n
-
-NULLIFY (meshptr)
-
-CONTAINS
-
-SUBROUTINE macro
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=jj)
-
-  problem = .NOT. ASSOCIATED(meshptr)
-  IF (problem) RETURN
-
-  problem = meshptr%isEmpty()
-  IF (problem) RETURN
-
-  CALL meshptr%GetNptrs_(ans=nptrs(offset:), tsize=n)
-
-  offset = offset + n
-END SUBROUTINE macro
-
-END PROCEDURE obj_GetNptrs_
-
-!----------------------------------------------------------------------------
-!                                                         GetInternalNptrs
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetInternalNptrs
-CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs()"
-INTEGER(I4B) :: ii, tentity, tnodes
-CLASS(AbstractMesh_), POINTER :: meshptr
+MODULE PROCEDURE Domain_GetInternalNptrs
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
 TYPE(IntVector_) :: intvec
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), ent0(:)
-LOGICAL(LGT) :: problem
 
 meshptr => NULL()
-IF (PRESENT(entityNum)) THEN
-  ent0 = entityNum
-  tentity = SIZE(ent0)
-ELSE
-  tentity = obj%GetTotalEntities(dim=dim)
-  ent0 = arange(1_I4B, tentity)
-END IF
-
-DO ii = 1, tentity
-
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ent0(ii))
-
-  problem = .NOT. ASSOCIATED(meshptr)
-  IF (problem) CYCLE
-
-  problem = meshptr%isEmpty()
-  IF (problem) CYCLE
-
-  nptrs = meshptr%GetInternalNptrs()
-
-  CALL APPEND(intvec, nptrs)
-
+DO ii = 1, SIZE(entityNum)
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
+  IF (ASSOCIATED(meshptr)) THEN
+    CALL APPEND(intvec, meshptr%GetInternalNptrs())
+  END IF
 END DO
-
 CALL RemoveDuplicates(intvec)
-
-IF (isAllocated(intvec)) THEN
-  ans = intvec
-ELSE
-  CALL Reallocate(ans, 0)
-END IF
-
+ans = intvec
 CALL DEALLOCATE (intvec)
-
 NULLIFY (meshptr)
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-END PROCEDURE obj_GetInternalNptrs
+END PROCEDURE Domain_GetInternalNptrs
+
+!----------------------------------------------------------------------------
+!                                                                     getNSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetNSD
+ans = obj%NSD
+END PROCEDURE Domain_GetNSD
 
 !----------------------------------------------------------------------------
 !                                                                    getNSD
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetOrder
+MODULE PROCEDURE Domain_GetOrder
 INTEGER(I4B) :: ii
-CLASS(AbstractMesh_), POINTER :: meshptr
+CLASS(Mesh_), POINTER :: meshptr
 
 CALL Reallocate(ans, obj%GetTotalMesh(dim=dim))
 
@@ -576,41 +588,82 @@ DO ii = 1, SIZE(ans)
   meshptr => NULL()
 END DO
 
-END PROCEDURE obj_GetOrder
+END PROCEDURE Domain_GetOrder
+
+!----------------------------------------------------------------------------
+!                                                             getBoundingBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetBoundingBox
+REAL(DFP) :: lim(6)
+INTEGER(I4B) :: nsd
+!> main
+lim = 0.0_DFP
+nsd = SIZE(obj%nodeCoord, 1)
+lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
+lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
+CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
+END PROCEDURE Domain_GetBoundingBox
 
 !----------------------------------------------------------------------------
 !                                                     getTotalMeshFacetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalMeshFacetData
-LOGICAL(LGT) :: isok, isok2
-
-ans = 0
+MODULE PROCEDURE Domain_GetTotalMeshFacetData
 IF (PRESENT(imeshFacetData)) THEN
-
-  isok = ALLOCATED(obj%meshFacetData)
-  IF (isok) THEN
-
-    isok2 = obj%meshFacetData(imeshFacetData)%isInitiated()
-    IF (isok2) &
+  IF (ALLOCATED(obj%meshFacetData)) THEN
+    IF (obj%meshFacetData(imeshFacetData)%isInitiated()) THEN
       ans = obj%meshFacetData(imeshFacetData)%SIZE()
-
+    ELSE
+      ans = 0
+    END IF
+  ELSE
+    ans = 0
   END IF
-  RETURN
+ELSE
+  IF (ALLOCATED(obj%meshFacetData)) THEN
+    ans = SIZE(obj%meshFacetData)
+  ELSE
+    ans = 0
+  END IF
 END IF
-
-isok = ALLOCATED(obj%meshFacetData)
-IF (isok) &
-  ans = SIZE(obj%meshFacetData)
-END PROCEDURE obj_GetTotalMeshFacetData
+END PROCEDURE Domain_GetTotalMeshFacetData
 
 !----------------------------------------------------------------------------
-!                                                       obj_GetElemType
+!                                                          getTotalMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetElemType
-CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
-CLASS(AbstractMesh_), POINTER :: meshptr
+MODULE PROCEDURE Domain_GetTotalMaterial1
+INTEGER(I4B) :: ii, n
+CLASS(Mesh_), POINTER :: meshptr
+meshptr => NULL()
+n = obj%GetTotalMesh(dim=dim)
+ALLOCATE (ans(n))
+DO ii = 1, n
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
+  ans(ii) = meshptr%GetTotalMaterial()
+END DO
+meshptr => NULL()
+END PROCEDURE Domain_GetTotalMaterial1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetTotalMaterial2
+CLASS(mesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+ans = meshptr%GetTotalMaterial()
+meshptr => NULL()
+END PROCEDURE Domain_GetTotalMaterial2
+
+!----------------------------------------------------------------------------
+!                                                       Domain_GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetElemType
+CHARACTER(*), PARAMETER :: myName = "Domain_GetElemType()"
+CLASS(mesh_), POINTER :: meshptr
 INTEGER(I4B) :: ii, tMesh, idim, nsd, jj
 
 #ifdef DEBUG_VER
@@ -661,10 +714,18 @@ END DO
 
 meshptr => NULL()
 
-END PROCEDURE obj_GetElemType
+END PROCEDURE Domain_GetElemType
+
+!----------------------------------------------------------------------------
+!                                                         GetUniqueElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetUniqueElemType
+ans = obj%GetElemType(dim=dim)
+CALL RemoveDuplicates(ans)
+END PROCEDURE Domain_GetUniqueElemType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 END SUBMODULE GetMethods

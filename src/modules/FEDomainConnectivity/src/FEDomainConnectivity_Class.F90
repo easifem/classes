@@ -21,8 +21,8 @@
 
 MODULE FEDomainConnectivity_Class
 USE GlobalData, ONLY: LGT, DFP, I4B
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE AbstractMesh_Class
+USE AbstractDomain_Class
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
@@ -38,6 +38,18 @@ INTEGER(I4B), PARAMETER :: pType = 1
 INTEGER(I4B), PARAMETER :: hType = 2
 INTEGER(I4B), PARAMETER :: rType = 3
 INTEGER(I4B), PARAMETER :: oversetType = 4
+
+#ifdef MAX_NNE
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = MAX_NNE
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NNE = 128
+#endif
+
+#ifdef MAX_NODE_TO_ELEM
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = MAX_NODE_TO_ELEM
+#else
+INTEGER(I4B), PARAMETER :: PARAM_MAX_NODE_TO_ELEM = 128
+#endif
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
@@ -98,7 +110,7 @@ TYPE :: FEDomainConnectivity_
     !! Cell to cell connectivity
     !! CellToCell(ielem) => global elem number in domain-2,
     !! corresponding to
-    !! global elem number `ielem` in domain-1
+    !! global node number `ielem` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:, :)
     !! Currently, cellToCellExtraData has two rows
     !! the first row is dim
@@ -124,10 +136,8 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate1
   !! Deallocate data stored in the object
-
   FINAL :: obj_Final
   !! finalizer
 
@@ -136,56 +146,45 @@ CONTAINS
 
   PROCEDURE, PASS(obj) :: InitiateNodeToNodeData1 => &
     obj_InitiateNodeToNodeData1
-  !! Initiate [[FEDomainConnectivity_:nodeToNode]] between two domains
-
-  PROCEDURE, PASS(obj) :: InitiateNodeToNodeData2 => &
-    obj_InitiateNodeToNodeData2
-  !! Initiate [[FEDomainConnectivity_:nodeToNode]] between two meshes
-
+  !! Initiate [[FEDomainConnectivity_:nodeToNode]]
   GENERIC, PUBLIC :: InitiateNodeToNodeData => &
-    InitiateNodeToNodeData1, InitiateNodeToNodeData2
+    InitiateNodeToNodeData1
   !! Initiate [[FEDomainConnectivity_:nodeToNode]]
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeToNodePointer => &
-    obj_GetNodeToNodePointer
+    & obj_GetNodeToNodePointer
   !! Return pointer to the [[FEDomainConnectivity_:nodeToNode]]
 
   ! SET:
   ! @CellMethods
 
-  PROCEDURE, PASS(obj) :: obj_InitiateCellToCellData1
-  !! Initiates [[FEDomainConnectivity_:cellToCell]] data between two domains
-
-  PROCEDURE, PASS(obj) :: obj_InitiateCellToCellData2
-  !! Initiates [[FEDomainConnectivity_:cellToCell]] data between two meshes
-
+  PROCEDURE, PUBLIC, PASS(obj) :: obj_InitiateCellToCellData1
+  !! Initiates [[FEDomainConnectivity_:cellToCell]] data
   GENERIC, PUBLIC :: InitiateCellToCellData => &
-    obj_InitiateCellToCellData1, obj_InitiateCellToCellData2
+    & obj_InitiateCellToCellData1
+  !! Initiates [[FEDomainConnectivity_:cellToCell]] data
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellToCellPointer => &
     obj_GetCellToCellPointer
   !! Return pointer to the [[FEDomainConnectivity_:CellToCell]]
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => &
-    obj_GetDimEntityNum
+    & obj_GetDimEntityNum
   !! Returns the dim and entity num of mesh which contains
   !! the element (in domain2) which is connected to element
   !! in domain 1.
 
-  ! SET:
   ! @FacetMethods
-
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData1
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData2
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData3
   PROCEDURE, PASS(obj) :: obj_InitiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[FEDomainConnectivity_:facetToCell]]
-  GENERIC, PUBLIC :: InitiateFacetToCellData => &
-    obj_InitiateFacetToCellData1, &
-    obj_InitiateFacetToCellData2, &
-    obj_InitiateFacetToCellData3, &
-    obj_InitiateFacetToCellData4
+  GENERIC, PUBLIC :: InitiateFacetToCellData =>  &
+    & obj_InitiateFacetToCellData1, &
+    & obj_InitiateFacetToCellData2, &
+    & obj_InitiateFacetToCellData3, &
+    & obj_InitiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[FEDomainConnectivity_:facetToCell]]
 
@@ -195,10 +194,10 @@ CONTAINS
   !! Return the masterCell numbers of given facet elements
   PROCEDURE, PASS(obj) :: MasterCellNumber3 => obj_MasterCellNumber3
   !! Return the masterCell numbers of given facet elements
-  GENERIC, PUBLIC :: MasterCellNumber => &
-    MasterCellNumber1, &
-    MasterCellNumber2, &
-    MasterCellNumber3
+  GENERIC, PUBLIC :: MasterCellNumber =>  &
+    & MasterCellNumber1, &
+    & MasterCellNumber2, &
+    & MasterCellNumber3
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
     obj_GetMasterCellNumber
@@ -282,19 +281,18 @@ CONTAINS
   PROCEDURE, PRIVATE, PASS(obj) :: GlobalFacetID3 => obj_GlobalFacetID3
   !! global facet id of local facet id is returned
   GENERIC, PUBLIC :: GlobalFacetID => &
-    GlobalFacetID1, &
-    GlobalFacetID2, &
-    GlobalFacetID3
+    & GlobalFacetID1, &
+    & GlobalFacetID2, &
+    & GlobalFacetID3
   !! global facet id of local facet id is returned
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetID => obj_GetGlobalFacetID
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => obj_GetTotalFacet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => &
+    & obj_GetTotalFacet
   !! returns size of facetToCell
-
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetToCellData => &
-    obj_DisplayFacetToCellData
-
+    & obj_DisplayFacetToCellData
 END TYPE FEDomainConnectivity_
 
 !----------------------------------------------------------------------------
@@ -414,40 +412,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         InitiateNodeToNodeData@NodeMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-06-09
-! summary: Generate node to node connectivity
-!
-!# Introduction
-!
-!  This subroutine generates the node to node connectivity between two domains
-!
-!@note
-!In this routine nodeToNode connectivity info of all meshes in domain1 to
-!all meshes in the domain2 will be generated!
-!@endnote
-!
-! - `obj%nodeToNode` will be Initiated
-! - `mesh1` main mesh
-! - `mesh2` secondary mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateNodeToNodeData2(obj, mesh1, mesh2)
-    CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
-    !! FEDomain connectivity object
-    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh1
-    !! Primary domain, in nodeToNode(i), i denotes the
-    !! global node number in domain1 domain.
-    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh2
-    !! Secondary domain => nodeToNode(i) denotes the
-    !! global node number in domain2 domain.
-  END SUBROUTINE obj_InitiateNodeToNodeData2
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                           getNodeToNodePointer@NodeMethods
 !----------------------------------------------------------------------------
 !> authors: Vikas Sharma, Ph. D.
@@ -474,6 +438,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Generate cell to cell connectivity
 !
 !# Introduction
@@ -532,65 +497,6 @@ INTERFACE
     !! Secondary domain => CellToCell(i) denotes the
     !! global element number in domain2 domain.
   END SUBROUTINE obj_InitiateCellToCellData1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        InitiateCellToCellData@NodeMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! summary: Generate cell to cell connectivity
-!
-!# Introduction
-!
-!This subroutine generates the cell to cell connectivity between
-!two meshes.
-!
-! - `obj%cellToCell` will be Initiated
-! - `mesh1` main mesh
-! - `mesh2` secondary mesh
-!
-!@note
-!All **CELL** elements in mesh-1 will be mapped to **CELL**
-!elements in mesh-2.
-!@endnote
-!
-!@note
-!If cellToCell(iel) is equal to zero then it means there is
-!no element found in mesh-2 corresponding to element number
-!iel in mesh-1.
-!@endnote
-!
-!@note
-!The size of [[FEmeshConnectivity_:cellToCell]] is total
-! number of elements in in mesh1.
-!@endnote
-!
-!@note
-!Following points should be noted before calling this routine
-!
-! - This routine provides map between cell elements of one mesh to
-! cell elements of another mesh.
-! - The topology of the both elements should be the same
-! - There is one to one mapping between elements of mesh 1
-! and elements of mesh2
-! - This routine works well for two meshs of same region
-! with same/different order. For example, mesh of tri3 and mesh
-! of tri6 elements.
-!@endnote
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateCellToCellData2(obj, mesh1, mesh2)
-    CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
-    !! FEDomain connectivity object
-    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh1
-    !! Primary domain, in CellToCell(i), i denotes the
-    !! global element number in domain1 domain.
-    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh2
-    !! Secondary domain => CellToCell(i) denotes the
-    !! global element number in domain2 domain.
-  END SUBROUTINE obj_InitiateCellToCellData2
 END INTERFACE
 
 !----------------------------------------------------------------------------

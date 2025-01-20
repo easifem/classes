@@ -16,9 +16,7 @@
 !
 
 SUBMODULE(MatrixField_Class) SpectralMethods
-USE CSRMatrix_Method, ONLY: SymSchurLargestEigenVal, &
-                            SymLargestEigenVal
-
+USE BaseMethod
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,18 +24,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymSchurLargestEigenVal
-CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal()"
-
-SELECT TYPE (B); CLASS IS (MatrixField_)
-  ans = SymSchurLargestEigenVal(A=obj%mat, B=B%mat, nev=nev, which=which, &
-                                NCV=NCV, maxIter=maxIter, tol=tol)
-
-CLASS DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for type of B')
-  RETURN
-
+SELECT TYPE (B)
+CLASS IS (MatrixField_)
+  ans = SymSchurLargestEigenVal(&
+    & A=obj%mat, &
+    & B=B%mat, &
+    & nev=nev, &
+    & which=which, &
+    & NCV=NCV, &
+    & maxIter=maxIter, &
+    & tol=tol)
 END SELECT
 END PROCEDURE obj_SymSchurLargestEigenVal
 
@@ -46,8 +42,13 @@ END PROCEDURE obj_SymSchurLargestEigenVal
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymLargestEigenVal
-ans = SymLargestEigenVal(mat=obj%mat, nev=nev, which=which, &
-                         NCV=NCV, maxIter=maxIter, tol=tol)
+ans = SymLargestEigenVal(&
+  & mat=obj%mat, &
+  & nev=nev, &
+  & which=which, &
+  & NCV=NCV, &
+  & maxIter=maxIter, &
+  & tol=tol)
 END PROCEDURE obj_SymLargestEigenVal
 
 !----------------------------------------------------------------------------

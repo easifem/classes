@@ -15,15 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(STScalarMeshField_Class) ConstructorMethods
-
-USE GlobalData, ONLY: Constant, Time, Scalar, Nodal
-
-USE AbstractField_Class, ONLY: TypeField
-
-USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
-
-USE Display_Method, ONLY: ToString
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -34,22 +26,36 @@ CONTAINS
 MODULE PROCEDURE SetSTScalarMeshFieldParam
 INTEGER(I4B) :: s(2), n
 
-IF (fieldType .EQ. TypeField%Constant) THEN
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   s = 1; n = 1
 ELSE
   s = [nns, nnt]; n = 2
 END IF
 
 IF (varType .EQ. Time) THEN
-  CALL SetAbstractMeshFieldParam(param=param, prefix="STScalarMeshField", &
-             name=name, fieldType=fieldType, varType=varType, engine=engine, &
-                                 defineOn=defineOn, rank=Scalar, s=s(n:n))
+  CALL SetAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="STScalarMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Scalar, &
+    & s=s(n:n))
   RETURN
 END IF
 
-CALL SetAbstractMeshFieldParam(param=param, prefix="STScalarMeshField", &
-             name=name, fieldType=fieldType, varType=varType, engine=engine, &
-                               defineOn=defineOn, rank=Scalar, s=s(1:n))
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="STScalarMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Scalar, &
+  & s=s(1:n))
 
 END PROCEDURE SetSTScalarMeshFieldParam
 
@@ -62,44 +68,63 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: returnType, argType, nns, varType, fieldType
 TYPE(ParameterList_) :: param
+CLASS(ReferenceElement_), POINTER :: refelem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
-nns = mesh%GetMaxNNE()
+refelem => NULL()
+refelem => mesh%GetRefElemPointer()
+isok = ASSOCIATED(refelem)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: refelem pointer not found.')
+  RETURN
+END IF
+nns = (.NNE.refelem)
+
 returnType = func%GetReturnType()
+argType = func%GetArgType()
 
 isok = returnType .EQ. Scalar
-CALL AssertError1(isok, myName, 'returnType should be Scalar.')
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: returnType should be Scalar.')
+  RETURN
+END IF
 
 fieldType = TypeField%normal
-argType = func%GetArgType()
 varType = argType
-
 IF (argType .EQ. Constant) THEN
   fieldType = TypeField%constant
   varType = Constant
 END IF
 
 isok = PRESENT(nnt)
-CALL AssertError1(isok, myName, &
-   'NNT should be present when varType in userFunction is Time or SpaceTime.')
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: NNT should be present when varType'//  &
+    & ' in userFunction is Time or SpaceTime.')
+  RETURN
+END IF
 
 CALL param%Initiate()
 
-CALL SetSTScalarMeshFieldParam(param=param, name=name, &
-                        fieldType=fieldType, varType=varType, engine=engine, &
-                               defineOn=Nodal, nns=nns, nnt=nnt)
+CALL SetSTScalarMeshFieldParam(param=param, name=name,  &
+  & fieldType=fieldType, varType=varType, engine=engine, &
+  & defineOn=Nodal, nns=nns, nnt=nnt)
 
 CALL obj%Initiate(param=param, mesh=mesh)
 
 CALL param%DEALLOCATE()
 
+NULLIFY (refelem)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate4
@@ -146,7 +171,5 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -16,248 +16,122 @@
 !
 
 SUBMODULE(TomlUtility) GetMethods
-USE ReallocateUtility, ONLY: Reallocate
-
-USE Display_Method, ONLY: ToString, Display
-
-USE tomlf, ONLY: toml_error, &
-                 toml_load, &
-                 toml_parser_config, &
-                 toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_context, &
-                 toml_terminal, &
-                 toml_load, &
-                 toml_array, &
-                 toml_stat
-
+USE String_Class
+USE TxtFile_Class
+USE BaseMethod
+USE tomlf, ONLY:  &
+  & toml_error,  &
+  & toml_load,  &
+  & toml_parser_config,  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_len => len, &
+  & toml_context,  &
+  & toml_terminal,  &
+  & toml_load,  &
+  & toml_array,  &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_string
-CHARACTER(:), ALLOCATABLE :: temp_char
-LOGICAL(LGT) :: isok
-
-VALUE = default_value
-
-CALL toml_get(table, key, temp_char, origin=origin, stat=stat)
-isok = ALLOCATED(temp_char)
-
-IF (isok) THEN
-  VALUE = temp_char
-  DEALLOCATE (temp_char)
-  IF (PRESENT(isFound)) isFound = .TRUE.
-  RETURN
-END IF
-
-IF (PRESENT(isFound)) isFound = .FALSE.
-END PROCEDURE toml_get_string
 
 !----------------------------------------------------------------------------
 !                                                                      Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int8
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int8
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int16
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int16
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int32
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int32
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int64
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int64
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_real32
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_real32
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_real64
-#include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_real64
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE toml_get_int8_r1
-INTEGER(INT8) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_int8_r1
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int8_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int8_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int16_r1
-INTEGER(INT16) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_int16_r1
 
 !----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int16_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int16_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int32_r1
-INTEGER(INT32) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_int32_r1
 
 !----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int32_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int32_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int64_r1
-INTEGER(INT64) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_int64_r1
 
 !----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_int64_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int64_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real32_r1
-REAL(REAL32) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_real32_r1
 
 !----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_real32_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_real32_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real64_r1
-REAL(REAL64) :: temp
-#include "./include/ReadVector.F90"
+#include "./include/ReadVector.inc"
 END PROCEDURE toml_get_real64_r1
 
 !----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE toml_get_real64_r1_static
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_real64_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int8_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_int8_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int16_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_int16_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int32_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_int32_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_int64_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_int64_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real32_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_real32_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_real64_r2
-#include "./include/ReadMatrix.F90"
+#include "./include/ReadMatrix.inc"
 END PROCEDURE toml_get_real64_r2
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                         toml_get_from_file
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_from_file
@@ -271,7 +145,7 @@ TYPE(toml_terminal) :: terminal
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[START] ')
 #endif DEBUG_VER
 
 terminal = toml_terminal(color)
@@ -280,28 +154,32 @@ isNotRead = .NOT. afile%IsRead()
 
 IF (isNotRead .OR. isNotOpen) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[INTERNAL ERROR] :: The file is not open or does not have '// &
-                    'the access to read!')
+    & '[INTERNAL ERROR] :: The file is not open or does not have '//  &
+    & 'the access to read!')
 END IF
 
-CALL toml_load(table, afile%GetUnitNo(), context=context, error=error, &
-             config=toml_parser_config(color=terminal, context_detail=detail))
+CALL toml_load(table,  &
+  & afile%GetUnitNo(),  &
+  & context=context,  &
+  & config=toml_parser_config(color=terminal, context_detail=detail), &
+  & error=error  &
+  & )
 
 IF (ALLOCATED(error)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: Some error occured while parsing toml file'// &
-                    ' with following message: '//CHAR_LF//error%message)
+    & '[INTERNAL ERROR] :: Some error occured while parsing toml file'//  &
+    & ' with following message: '//CHAR_LF//error%message)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  & '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE toml_get_from_file
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_from_filename
@@ -339,7 +217,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE toml_get_from_filename
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_get_from_file_master
@@ -366,7 +244,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE toml_get_from_file_master
 
 !----------------------------------------------------------------------------
-!                                                            TomlArrayLength
+!                                                     TomlArrayLength
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE toml_array_length

@@ -43,7 +43,7 @@ TYPE, EXTENDS(AbstractOrthopolSpace1D_) :: UltrasphericalSpace1D_
   REAL(DFP) :: lambda = 0.5_DFP
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
     !! Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => Orthopol_GetParam
     !! Returns alpha and beta
@@ -772,8 +772,8 @@ END INTERFACE
 ! summary: Discrete Ultraspherical Transform of a function
 
 INTERFACE
-  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType, x1, x2) &
-    RESULT(ans)
+  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType) &
+    & RESULT(ans)
     CLASS(UltrasphericalSpace1D_), INTENT(IN) :: obj
     !! orthopol
     INTEGER(I4B), INTENT(IN) :: n
@@ -785,8 +785,6 @@ INTERFACE
     !! GaussRadauRight
     REAL(DFP) :: ans(0:n)
     !! modal values  or coefficients
-    REAL(DFP), INTENT(IN) :: x1, x2
-    !! interval
   END FUNCTION Orthopol_Transform2
 END INTERFACE
 

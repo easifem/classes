@@ -19,18 +19,23 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorFieldLis_Class
-USE GlobalData, ONLY: DFP, LGT, I4B
-USE VectorField_Class, ONLY: VectorField_
+USE GlobalData
+USE Basetype
+USE String_Class
+USE AbstractField_Class
+USE AbstractNodeField_Class
+USE VectorField_Class
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE FEDOF_Class, ONLY: FEDOF_
-
+USE HDF5File_Class
+USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "VectorFieldLis_Class"
 CHARACTER(*), PARAMETER :: myprefix = "VectorField"
-
 PUBLIC :: VectorFieldLis_
+PUBLIC :: TypeVectorFieldLis
 PUBLIC :: VectorFieldLisPointer_
 PUBLIC :: VectorFieldLis
 PUBLIC :: VectorFieldLis_Pointer
@@ -51,6 +56,9 @@ CONTAINS
   FINAL :: obj_Final
 END TYPE VectorFieldLis_
 
+TYPE(VectorFieldLis_), PARAMETER :: TypeVectorFieldLis =  &
+  & VectorFieldLis_(domains=NULL())
+
 !----------------------------------------------------------------------------
 !                                                     VectorFieldLisPointer_
 !----------------------------------------------------------------------------
@@ -66,20 +74,20 @@ SUBROUTINE obj_Final(obj)
   CALL obj%DEALLOCATE()
 END SUBROUTINE obj_Final
 
-FUNCTION VectorFieldLis(param, fedof) RESULT(Ans)
+FUNCTION VectorFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(VectorFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
+  CALL ans%Initiate(param, dom)
 END FUNCTION VectorFieldLis
 
-FUNCTION VectorFieldLis_Pointer(param, fedof) RESULT(Ans)
+FUNCTION VectorFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
-  CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+  TYPE(Domain_), TARGET, INTENT(IN) :: dom
   CLASS(VectorFieldLis_), POINTER :: ans
 
   ALLOCATE (ans)
-  CALL ans%initiate(param=param, fedof=fedof)
+  CALL ans%initiate(param, dom)
 END FUNCTION VectorFieldLis_Pointer
 
 END MODULE VectorFieldLis_Class

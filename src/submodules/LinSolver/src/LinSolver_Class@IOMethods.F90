@@ -15,5 +15,58 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(LinSolver_Class) IOMethods
-! END SUBMODULE IOMethods
+SUBMODULE(LinSolver_Class) IOMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_Display
+CALL AbstractLinSolverDisplay(obj, msg, unitno)
+IF (ALLOCATED(obj%W)) &
+  & CALL Display("# obj%W is ALLOCATED : ", unitNo=unitno)
+CALL Display(obj%IPAR, "# IPAR : ", unitNo=unitno)
+CALL Display(obj%FPAR, "# FPAR : ", unitNo=unitno)
+END PROCEDURE ls_Display
+
+!----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_Import
+CHARACTER(*), PARAMETER :: myName = "ls_Import"
+TYPE(ParameterList_) :: param
+
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Import()")
+
+CALL AbstractLinSolverImport(obj=obj, hdf5=hdf5, group=group)
+obj%isInitiated = .FALSE.
+
+CALL param%initiate()
+CALL SetAbstractLinSolverParam( &
+  & param=param, &
+  & prefix=obj%GetPrefix(), &
+  & engine=myengine, &
+  & solverName=obj%solverName,&
+  & preconditionOption=obj%preconditionOption, &
+  & convergenceIn=obj%convergenceIn, &
+  & convergenceType=obj%convergenceType, &
+  & maxIter=obj%maxIter, &
+  & relativeToRHS=obj%relativeToRHS, &
+  & KrylovSubspaceSize=obj%KrylovSubspaceSize, &
+  & rtol=obj%rtol, &
+  & atol=obj%atol)
+
+CALL obj%Initiate(param)
+CALL param%DEALLOCATE()
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+& '[END] Import()')
+
+END PROCEDURE ls_Import
+
+END SUBMODULE IOMethods

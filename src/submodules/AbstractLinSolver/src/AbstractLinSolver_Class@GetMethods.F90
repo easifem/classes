@@ -16,31 +16,9 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) GetMethods
-
-USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
-
-USE StringUtility, ONLY: UpperCase
-
-USE FPL_Method, ONLY: GetValue
-
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                IsInitiated
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_IsInitiated
-ans = obj%isInit
-END PROCEDURE obj_IsInitiated
-
-!----------------------------------------------------------------------------
-!                                                           GetMatrixPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMatrixPointer
-ans => obj%amat
-END PROCEDURE obj_GetMatrixPointer
 
 !----------------------------------------------------------------------------
 !                                                     solverName_ToInteger
@@ -55,27 +33,20 @@ END PROCEDURE solverName_ToInteger
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE preconditionOption_ToInteger
-CHARACTER(:), ALLOCATABLE :: astr
-
+TYPE(String) :: astr
 astr = UpperCase(name)
-
-SELECT CASE (astr)
+ans = NO_PRECONDITION
+SELECT CASE (astr%chars())
+CASE ("NO", "NONE", "NO_PRECONDITION")
+  ans = NO_PRECONDITION
 CASE ("LEFT", "LEFT_PRECONDITION")
-  ans = TypePrecondOpt%left
-
+  ans = LEFT_PRECONDITION
 CASE ("RIGHT", "RIGHT_PRECONDITION")
-  ans = TypePrecondOpt%right
-
-CASE ("LEFTRIGHT", "RIGHTLEFT", "LEFTRIGHT_PRECONDITION", &
-      "RIGHTLEFT_PRECONDITION")
-  ans = TypePrecondOpt%both
-
-CASE DEFAULT
-  ans = TypePrecondOpt%NONE
+  ans = RIGHT_PRECONDITION
+CASE ("LEFTRIGHT", "RIGHTLEFT", "LEFTRIGHT_PRECONDITION",  &
+  & "RIGHTLEFT_PRECONDITION")
+  ans = LEFT_RIGHT_PRECONDITION
 END SELECT
-
-astr = ""
-
 END PROCEDURE preconditionOption_ToInteger
 
 !----------------------------------------------------------------------------
@@ -83,23 +54,17 @@ END PROCEDURE preconditionOption_ToInteger
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE convergenceIn_ToInteger
-CHARACTER(:), ALLOCATABLE :: astr
-
+TYPE(String) :: astr
 astr = UpperCase(name)
-
-SELECT CASE (astr)
+ans = ConvergenceInRes
+SELECT CASE (astr%chars())
 CASE ("RESIDUAL")
-  ans = TypeConvergenceOpt%res
+  ans = ConvergenceInRes
 CASE ("SOL")
-  ans = TypeConvergenceOpt%sol
+  ans = ConvergenceInSol
 CASE ("RESIDUALSOL", "SOLRESIDUAL")
-  ans = TypeConvergenceOpt%both
-CASE DEFAULT
-  ans = TypeConvergenceOpt%res
+  ans = ConvergenceInResSol
 END SELECT
-
-astr = ""
-
 END PROCEDURE convergenceIn_ToInteger
 
 !----------------------------------------------------------------------------
@@ -107,24 +72,14 @@ END PROCEDURE convergenceIn_ToInteger
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE convergenceType_ToInteger
-CHARACTER(:), ALLOCATABLE :: astr
-
+TYPE(String) :: astr
 astr = UpperCase(name)
-
-SELECT CASE (astr)
+SELECT CASE (astr%chars())
 CASE ("RELATIVE")
-  ans = TypeConvergenceOpt%relative
-
+  ans = RelativeConvergence
 CASE ("ABSOLUTE")
-  ans = TypeConvergenceOpt%absolute
-
-CASE default
-  ans = TypeConvergenceOpt%relative
-
+  ans = AbsoluteConvergence
 END SELECT
-
-astr = ""
-
 END PROCEDURE convergenceType_ToInteger
 
 !----------------------------------------------------------------------------
@@ -132,30 +87,16 @@ END PROCEDURE convergenceType_ToInteger
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE scale_ToInteger
-CHARACTER(:), ALLOCATABLE :: astr
-
+TYPE(String) :: astr
 astr = UpperCase(name)
-
-SELECT CASE (astr)
-CASE ("JACOBI")
-
-  ! INFO: scale_jacobi is defined in AbstractLinSolverParam module
-  ans = scale_jacobi
-
-CASE ("SYMDIAG")
-
-  ! INFO: scale_symm_diag is defined in AbstractLinSolverParam module
-  ans = scale_symm_diag
-
-CASE default
-
-  ! INFO: scale_none is defined in AbstractLinSolverParam module
+SELECT CASE (astr%chars())
+CASE ("NO", "NONE")
   ans = scale_none
-
+CASE ("JACOBI")
+  ans = scale_jacobi
+CASE ("SYMDIAG")
+  ans = scale_symm_diag
 END SELECT
-
-astr = ""
-
 END PROCEDURE scale_ToInteger
 
 !----------------------------------------------------------------------------
@@ -163,62 +104,57 @@ END PROCEDURE scale_ToInteger
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE preconditionName_ToInteger
-CHARACTER(:), ALLOCATABLE :: astr
-
+TYPE(String) :: astr
 astr = UpperCase(name)
 
-SELECT CASE (astr)
-
+SELECT CASE (astr%chars())
 CASE ("NONE")
-  ans = TypePrecondOpt%NONE
+  ans = PRECOND_NONE
 
 CASE ("JACOBI")
-  ans = TypePrecondOpt%jacobi
+  ans = PRECOND_JACOBI
 
 CASE ("ILU")
-  ans = TypePrecondOpt%ilu
+  ans = PRECOND_ILU
 
 CASE ("SSOR")
-  ans = TypePrecondOpt%ssor
+  ans = PRECOND_SSOR
 
 CASE ("HYBRID")
-  ans = TypePrecondOpt%hybrid
+  ans = PRECOND_HYBRID
 
 CASE ("IS")
-  ans = TypePrecondOpt%IS
+  ans = PRECOND_IS
 
 CASE ("SAINV")
-  ans = TypePrecondOpt%SAINV
+  ans = PRECOND_SAINV
 
 CASE ("SAAMG")
-  ans = TypePrecondOpt%SAAMG
+  ans = PRECOND_SAAMG
 
 CASE ("ILUC")
-  ans = TypePrecondOpt%ILUC
+  ans = PRECOND_ILUC
 
 CASE ("ADDS")
-  ans = TypePrecondOpt%ADDS
+  ans = PRECOND_ADDS
 
 CASE ("ILUTP")
-  ans = TypePrecondOpt%ILUTP
+  ans = PRECOND_ILUTP
 
 CASE ("ILUD")
-  ans = TypePrecondOpt%ILUD
+  ans = PRECOND_ILUD
 
 CASE ("ILUDP")
-  ans = TypePrecondOpt%ILUDP
+  ans = PRECOND_ILUDP
 
 CASE ("ILU0")
-  ans = TypePrecondOpt%ILU0
+  ans = PRECOND_ILU0
 
 CASE ("ILUK")
-  ans = TypePrecondOpt%ILUK
+  ans = PRECOND_ILUK
 
 CASE ("ILUT")
-  ans = TypePrecondOpt%ILUT
-
-CASE DEFAULT
-  ans = TypePrecondOpt%NONE
+  ans = PRECOND_ILUT
 END SELECT
 END PROCEDURE preconditionName_ToInteger
 
@@ -226,16 +162,16 @@ END PROCEDURE preconditionName_ToInteger
 !                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
+MODULE PROCEDURE als_GetPrefix
 ans = myprefix
-END PROCEDURE obj_GetPrefix
+END PROCEDURE als_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                                 GetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetParam
-IF (PRESENT(isInitiated)) isInitiated = obj%isInit
+MODULE PROCEDURE als_GetParam
+IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
 IF (PRESENT(engine)) engine = obj%engine%chars()
 IF (PRESENT(solverName)) solverName = obj%solverName
 IF (PRESENT(ierr)) ierr = obj%ierr
@@ -256,170 +192,272 @@ IF (PRESENT(globalNumRow)) globalNumRow = obj%globalNumRow
 IF (PRESENT(globalNumColumn)) globalNumColumn = obj%globalNumColumn
 IF (PRESENT(localNumRow)) localNumRow = obj%localNumRow
 IF (PRESENT(localNumColumn)) localNumColumn = obj%localNumColumn
-IF (PRESENT(res)) res = obj%res
-IF (PRESENT(Amat)) amat => obj%amat
-END PROCEDURE obj_GetParam
+IF (PRESENT(RES)) RES = obj%RES
+IF (PRESENT(Amat)) Amat => obj%Amat
+END PROCEDURE als_GetParam
 
 !----------------------------------------------------------------------------
 !                                                     getPreconditionOption
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPreconditionOption
+MODULE PROCEDURE als_getPreconditionOption
 ans = obj%preconditionOption
-END PROCEDURE obj_GetPreconditionOption
+END PROCEDURE als_getPreconditionOption
 
 !----------------------------------------------------------------------------
 !                                                 getAbstractLinSolverParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE GetAbstractLinSolverParam
-IF (PRESENT(engine)) &
-  CALL GetValue(obj=param, prefix=prefix, key="engine", &
-                VALUE=engine)
+MODULE PROCEDURE getAbstractLinSolverParam
+INTEGER(I4B) :: ierr
+CHARACTER(:), ALLOCATABLE :: char_var
 
-IF (PRESENT(solverName)) &
-  CALL GetValue(obj=param, prefix=prefix, key="solverName", &
-                VALUE=solverName)
+IF (PRESENT(engine)) THEN
 
-IF (PRESENT(preconditionOption)) &
-  CALL GetValue(obj=param, prefix=prefix, key="preconditionOption", &
-                VALUE=preconditionOption)
+  ALLOCATE ( &
+    & CHARACTER(LEN=param%DataSizeInBytes( &
+    & key=TRIM(prefix)//"/engine")) :: char_var)
+  ierr = param%get( &
+    & key=TRIM(prefix)//"/engine", &
+    & VALUE=char_var)
+  engine = TRIM(char_var)
+  DEALLOCATE (char_var)
 
-IF (PRESENT(maxIter)) &
-  CALL GetValue(obj=param, prefix=prefix, key="maxIter", &
-                VALUE=maxIter)
+END IF
 
-IF (PRESENT(atol)) &
-  CALL GetValue(obj=param, prefix=prefix, key="atol", &
-                VALUE=atol)
+IF (PRESENT(solverName)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/solverName", VALUE=solverName)
+END IF
 
-IF (PRESENT(rtol)) &
-  CALL GetValue(obj=param, prefix=prefix, key="rtol", &
-                VALUE=rtol)
+IF (PRESENT(preconditionOption)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/preconditionOption", &
+  & VALUE=preconditionOption)
+END IF
 
-IF (PRESENT(convergenceIn)) &
-  CALL GetValue(obj=param, prefix=prefix, key="convergenceIn", &
-                VALUE=convergenceIn)
+IF (PRESENT(maxIter)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/maxIter", &
+  & VALUE=maxIter)
+END IF
 
-IF (PRESENT(convergenceType)) &
-  CALL GetValue(obj=param, prefix=prefix, key="convergenceType", &
-                VALUE=convergenceType)
+IF (PRESENT(atol)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/atol", &
+  & VALUE=atol)
+END IF
 
-IF (PRESENT(relativeToRHS)) &
-  CALL GetValue(obj=param, prefix=prefix, key="relativeToRHS", &
-                VALUE=relativeToRHS)
+IF (PRESENT(rtol)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/rtol", &
+  & VALUE=rtol)
+END IF
 
-IF (PRESENT(KrylovSubspaceSize)) &
-  CALL GetValue(obj=param, prefix=prefix, key="KrylovSubspaceSize", &
-                VALUE=KrylovSubspaceSize)
+IF (PRESENT(convergenceIn)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/convergenceIn", &
+  & VALUE=convergenceIn)
+END IF
 
+IF (PRESENT(convergenceType)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/convergenceType", &
+  & VALUE=convergenceType)
+END IF
+
+IF (PRESENT(relativeToRHS)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/relativeToRHS", &
+  & VALUE=relativeToRHS)
+END IF
+
+IF (PRESENT(KrylovSubspaceSize)) THEN
+  ierr = param%get(key=TRIM(prefix)//"/KrylovSubspaceSize", &
+  & VALUE=KrylovSubspaceSize)
+END IF
+
+!
+! scale
+!
 IF (PRESENT(scale)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/scale", &
-                VALUE=scale)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/scale", &
+  & VALUE=scale)
+!
+! initx_zeros
+!
 IF (PRESENT(initx_zeros)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/initx_zeros", &
-                VALUE=initx_zeros)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/initx_zeros", &
+  & VALUE=initx_zeros)
+!
+! bicgstab_ell
+!
 IF (PRESENT(bicgstab_ell)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/bicgstab_ell", &
-                VALUE=bicgstab_ell)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/bicgstab_ell", &
+  & VALUE=bicgstab_ell)
+!
+! sor_omega
+!
 IF (PRESENT(sor_omega)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/sor_omega", &
-                VALUE=sor_omega)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/sor_omega", &
+  & VALUE=sor_omega)
+!
+! p_name
+!
 IF (PRESENT(p_name)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/name", &
-                VALUE=p_name)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/name", &
+  & VALUE=p_name)
+!
+! p_ilu_lfil
+!
 IF (PRESENT(p_ilu_lfil)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_lfil", &
-                VALUE=p_ilu_lfil)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_lfil", &
+  & VALUE=p_ilu_lfil)
+!
+! p_ilu_mbloc
+!
 IF (PRESENT(p_ilu_mbloc)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_mbloc", &
-                VALUE=p_ilu_mbloc)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_mbloc", &
+  & VALUE=p_ilu_mbloc)
+!
+! p_ilu_droptol
+!
 IF (PRESENT(p_ilu_droptol)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_droptol", &
-                VALUE=p_ilu_droptol)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_droptol", &
+  & VALUE=p_ilu_droptol)
+!
+! p_ilu_permtol
+!
 IF (PRESENT(p_ilu_permtol)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_permtol", &
-                VALUE=p_ilu_permtol)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_permtol", &
+  & VALUE=p_ilu_permtol)
+!
+! p_ilu_alpha
+!
 IF (PRESENT(p_ilu_alpha)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_alpha", &
-                VALUE=p_ilu_alpha)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_alpha", &
+  & VALUE=p_ilu_alpha)
+!
+! p_ilu_fill
+!
 IF (PRESENT(p_ilu_fill)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ilu_fill", &
-                VALUE=p_ilu_fill)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ilu_fill", &
+  & VALUE=p_ilu_fill)
+!
+! p_ssor_omega
+!
 IF (PRESENT(p_ssor_omega)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/ssor_omega", &
-                VALUE=p_ssor_omega)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/ssor_omega", &
+  & VALUE=p_ssor_omega)
+!
+! p_hybrid_i
+!
 IF (PRESENT(p_hybrid_i)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_i", &
-                VALUE=p_hybrid_i)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_i", &
+  & VALUE=p_hybrid_i)
+!
+! p_hybrid_maxiter
+!
 IF (PRESENT(p_hybrid_maxiter)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_maxiter", &
-                VALUE=p_hybrid_maxiter)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_maxiter", &
+  & VALUE=p_hybrid_maxiter)
+!
+! p_hybrid_tol
+!
 IF (PRESENT(p_hybrid_tol)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_tol", &
-                VALUE=p_hybrid_tol)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_tol", &
+  & VALUE=p_hybrid_tol)
+!
+! p_hybrid_omega
+!
 IF (PRESENT(p_hybrid_omega)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_omega", &
-                VALUE=p_hybrid_omega)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_omega", &
+  & VALUE=p_hybrid_omega)
+!
+! p_hybrid_ell
+!
 IF (PRESENT(p_hybrid_ell)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_ell", &
-                VALUE=p_hybrid_ell)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_ell", &
+  & VALUE=p_hybrid_ell)
+!
+! p_hybrid_restart
+!
 IF (PRESENT(p_hybrid_restart)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/hybrid_restart", &
-                VALUE=p_hybrid_restart)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/hybrid_restart", &
+  & VALUE=p_hybrid_restart)
+!
+! p_is_alpha
+!
 IF (PRESENT(p_is_alpha)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/is_alpha", &
-                VALUE=p_is_alpha)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/is_alpha", &
+  & VALUE=p_is_alpha)
+!
+! p_is_m
+!
 IF (PRESENT(p_is_m)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/is_m", &
-                VALUE=p_is_m)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/is_m", &
+  & VALUE=p_is_m)
+!
+! p_sainv_drop
+!
 IF (PRESENT(p_sainv_drop)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/sainv_drop", &
-                VALUE=p_sainv_drop)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/sainv_drop", &
+  & VALUE=p_sainv_drop)
+!
+! p_saamg_unsym
+!
 IF (PRESENT(p_saamg_unsym)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/saamg_unsym", &
-                VALUE=p_saamg_unsym)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/saamg_unsym", &
+  & VALUE=p_saamg_unsym)
+!
+! p_saamg_theta
+!
 IF (PRESENT(p_saamg_theta)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/saamg_theta", &
-                VALUE=p_saamg_theta)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/saamg_theta", &
+  & VALUE=p_saamg_theta)
+!
+! p_iluc_drop
+!
 IF (PRESENT(p_iluc_drop)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/iluc_drop", &
-                VALUE=p_iluc_drop)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/iluc_drop", &
+  & VALUE=p_iluc_drop)
+!
+! p_iluc_rate
+!
 IF (PRESENT(p_iluc_rate)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/iluc_rate", &
-                VALUE=p_iluc_rate)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/iluc_rate", &
+  & VALUE=p_iluc_rate)
+!
+! p_adds
+!
 IF (PRESENT(p_adds)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/adds", &
-                VALUE=p_adds)
-
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/adds", &
+  & VALUE=p_adds)
+!
+! p_adds_iter
+!
 IF (PRESENT(p_adds_iter)) &
-  CALL GetValue(obj=param, prefix=prefix, key="Precond/adds_iter", &
-                VALUE=p_adds_iter)
+  & ierr = param%get( &
+  & key=TRIM(prefix)//"/Precond/adds_iter", &
+  & VALUE=p_adds_iter)
 
 END PROCEDURE getAbstractLinSolverParam
 

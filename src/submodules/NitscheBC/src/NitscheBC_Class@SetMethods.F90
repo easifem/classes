@@ -41,7 +41,7 @@ INTEGER(I4B), ALLOCATABLE :: intvec(:)
 tmeshID = SIZE(meshID)
 tsize = SIZE(localID)
 
-CALL obj%GetParam(isSelectionByMeshID=isVar)
+CALL obj%GetQuery(isSelectionByMeshID=isVar)
 IF (.NOT. isVar) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & "NitscheBC_::obj has isSelectionByMeshID = .FALSE. ")
