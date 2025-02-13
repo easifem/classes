@@ -36,9 +36,9 @@ PRIVATE
 PUBLIC :: ElastoDynamics1DSTFEM_
 
 CHARACTER(*), PARAMETER :: modName = 'ElastoDynamics1DSTFEM_Class'
-CHARACTER(*), PARAMETER :: prefix = "ElastoDyanmics1DSTFEM"
+CHARACTER(*), PARAMETER :: prefix = "ElastoDynamics1DSTFEM"
 CHARACTER(*), PARAMETER :: default_result_dir = "./results"
-CHARACTER(*), PARAMETER :: default_filename = "ElastoDyanmics1DSTFEM"
+CHARACTER(*), PARAMETER :: default_filename = "ElastoDynamics1DSTFEM"
 CHARACTER(*), PARAMETER :: default_baseInterpolationForSpace = "LAGR"
 CHARACTER(*), PARAMETER :: default_baseInterpolationForTime = "LAGR"
 CHARACTER(*), PARAMETER :: default_baseTypeForSpace = "Monomial"

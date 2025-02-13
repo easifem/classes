@@ -17,18 +17,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(ElastoDynamics1DSDFEM_Class) Methods
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_stat, toml_array
+SUBMODULE(Abstract1DSDFEM_Class) ApplyDirichletBCMethods
 
 USE Lapack_Method, ONLY: GetInvMat, SymLinSolve
 
 USE TomlUtility, ONLY: GetValue, GetValue_
 
 USE StringUtility, ONLY: UpperCase
-
-USE Display_Method, ONLY: ToString, Display
 
 USE GlobalData, ONLY: stdout, &
                       CHAR_LF, &
@@ -96,65 +91,70 @@ REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                              -                     obj_ImportFromToml1
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_ApplyDirichletBC
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC()"
 #endif
+
+LOGICAL(LGT) :: isDirichletLeft, isDirichletRight
+INTEGER(I4B) :: tsize, tsize_dbc_value
+REAL(DFP) :: args(1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+isDirichletLeft = ASSOCIATED(obj%displacementLeft)
+isDirichletRight = ASSOCIATED(obj%displacementRight)
+tsize_dbc_value = 0
+
+args = obj%currentTime + obj%timeStepSize(obj%currentTimeStep)
+
+IF (isDirichletLeft) THEN
+  CALL DOF_GetIndex_(obj=obj%dof, ans=obj%dbc_idof, tsize=tsize, &
+                     nodenum=1)
+  CALL obj%displacementLeft%Get(val=obj%dbc_coeff(1), args=args)
+  tsize_dbc_value = tsize_dbc_value + 1
+END IF
+
+IF (isDirichletRight) THEN
+  CALL DOF_GetIndex_(obj=obj%dof, ans=obj%dbc_idof(tsize_dbc_value + 1:), &
+                     tsize=tsize, &
+                     nodenum=obj%totalSpaceNodes)
+  CALL obj%displacementRight%Get(val=obj%dbc_coeff(2), args=args)
+  tsize_dbc_value = tsize_dbc_value + 1
+END IF
+
+IF (tsize_dbc_value .NE. 0) THEN
+  CALL CSRMatrix_GetSubMatrix(obj=obj%tanmat, &
+                              cols=obj%dbc_idof(1:tsize_dbc_value), &
+                              submat=obj%submat, subIndices=obj%subIndices)
+
+  CALL CSRMatrix_ApplyDBC(obj=obj%tanmat, &
+                          dbcptrs=obj%dbc_idof(1:tsize_dbc_value))
+
+  CALL RealVector_Set(obj=obj%sol, VALUE=0.0_DFP)
+  CALL RealVector_Set(obj=obj%sol, nodenum=obj%dbc_idof(1:tsize_dbc_value), &
+                      VALUE=obj%dbc_coeff(1:tsize_dbc_value))
+
+  CALL CSRMatrix_Matvec(obj=obj%submat, x=obj%sol, y=obj%rhs, &
+                        scale=minus_one, addContribution=.TRUE.)
+
+  CALL RealVector_Set(obj=obj%rhs, nodenum=obj%dbc_idof(1:tsize_dbc_value), &
+                      VALUE=obj%dbc_coeff(1:tsize_dbc_value))
+
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                    Solve
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Run
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Run()"
-#endif
-
-INTEGER(I4B) :: iTime
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%SetInitialVelocity()
-CALL obj%SetInitialDisplacement()
-CALL obj%SetInitialAcceleration()
-
-CALL obj%writeData()
-
-DO iTime = 1, obj%totalTimeSteps
-  CALL Display(obj%currentTime, myname//" current time: ")
-  CALL obj%AssembleTanmat()
-  CALL obj%AssembleRHS()
-  CALL obj%ApplyDirichletBC()
-  CALL obj%Solve()
-  CALL obj%Update()
-  IF (MOD(iTime, obj%outputFreq) .EQ. 0_I4B) &
-    CALL obj%WriteData()
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Run
+END PROCEDURE obj_ApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !
@@ -162,4 +162,4 @@ END PROCEDURE obj_Run
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE ApplyDirichletBCMethods

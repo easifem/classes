@@ -347,8 +347,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSTFEM/CMakeLists.txt)
 # ElastoPlasticVSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DVSTFEM/CMakeLists.txt)
 
+# AbstractSDFEM
+include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DSDFEM/CMakeLists.txt)
 # ElastoDynamicsSDFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSDFEM/CMakeLists.txt)
+# ElastoPlasticDynamicsSDFEM
+include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSDFEM/CMakeLists.txt)
 
 # HelmholtzFEM
 include(${CMAKE_CURRENT_LIST_DIR}/Helmholtz1DFEM/CMakeLists.txt)
