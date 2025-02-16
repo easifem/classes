@@ -427,6 +427,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
 # ----------------------------------------------------------------------------
 
 # AbstractSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DUVSTFEM/CMakeLists.txt)
+# ElastoDynamicsSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DUVSTFEM/CMakeLists.txt)
+
+# AbstractSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DSTFEM/CMakeLists.txt)
 # ElastoDynamicsSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSTFEM/CMakeLists.txt)
