@@ -225,7 +225,7 @@ IF (isDBCRightVelocity .AND. isDBCRightDisplacement) THEN
 
   tsize_dbc_value = tsize_dbc_value + nnt
 
-ELSEIF (isDBCRightVelocity .OR. isDBCLeftDisplacement) THEN
+ELSEIF (isDBCRightVelocity .OR. isDBCRightDisplacement) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
 & '[Internal Error] :: Both displacement and velocity conditions are needed.')
 
