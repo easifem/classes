@@ -339,6 +339,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 # ----------------------------------------------------------------------------
 
 # AbstractSTFEM
+include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DFEM/CMakeLists.txt)
+
+# AbstractSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DUVSTFEM/CMakeLists.txt)
 # AbstractSTFEM
 include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DUVSTFEM/CMakeLists.txt)
