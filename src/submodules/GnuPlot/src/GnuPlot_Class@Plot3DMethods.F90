@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(GnuPlot_Class) Plot3DMethods
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,6 +35,7 @@ CHARACTER(*), PARAMETER :: datablock = '$xyz'
 
 pltstring = ''
 !   Check the input data
+! TODO: separate the plot method when only x data is sent
 nrx = SIZE(x)
 IF (PRESENT(y) .AND. PRESENT(z)) THEN
   xyz_data = .TRUE.
@@ -44,7 +47,7 @@ ELSE
 END IF
 
 obj%txtdatastyle = 'lines'
-CALL create_outputfile(obj)
+CALL obj%Initiate()
 
 IF (PRESENT(logScale)) THEN
   obj%plotscale = logScale
@@ -52,25 +55,27 @@ END IF
 CALL processcmd(obj)
 obj%plotscale = "linear"
 
-CALL obj%writeScript(script='#data x y z')
-! Rev 0.20
+CALL obj%pltfile%WRITE('#data x y z')
+
 ! write the $xyz datablocks
-CALL obj%writeScript(script=datablock//' << EOD')
+CALL obj%pltfile%WRITE(datablock//' << EOD')
 IF (xyz_data) THEN
   DO ii = 1, nrx
-    WRITE (obj%file_unit, *) x(ii), y(ii), z(ii)
+    CALL obj%pltfile%WRITE([x(ii), y(ii), z(ii)], &
+                           orient="ROW")
   END DO
-ELSE !only Z has been sent (i.e. single matrix data)
+ELSE
   DO ii = 1, nrx
-    WRITE (obj%file_unit, *) ii, x(ii)
+    CALL obj%pltfile%WRITE([REAL(ii, dfp), x(ii)], &
+                           orient="ROW")
   END DO
 END IF
-CALL obj%writeScript() ! an empty line
-CALL obj%writeScript(script='EOD') ! an empty line
+CALL obj%pltfile%WriteBlank()
+CALL obj%pltfile%WRITE('EOD')
 
 IF (PRESENT(paletteName)) THEN
-  CALL obj%writeScript(script=color_palettes(paletteName))
-  CALL obj%writeScript(script='set pm3d') ! a conflict with lspec
+  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+  CALL obj%pltfile%WRITE('set pm3d')
 END IF
 
 pltstring = "splot "//datablock//" "
@@ -88,13 +93,9 @@ ELSE
   pltstring = pltstring//" with lines"
 END IF
 
-CALL obj%writeScript(script=TRIM(pltstring))
+CALL obj%pltfile%WRITE(TRIM(pltstring))
 
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL finalize_plot(obj)
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%DEALLOCATE()
 
 END PROCEDURE obj_plot3d_vvv
 

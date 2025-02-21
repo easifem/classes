@@ -12,6 +12,7 @@ USE ParameterList, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: LowerCase
+USE TxtFile_Class
 USE AbstractPlot_Class
 IMPLICIT NONE
 PRIVATE
@@ -58,6 +59,7 @@ END TYPE Label_
 ! calls the gnuplot by shell command to plot the data
 
 TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
+  TYPE(TxtFile_) :: pltfile
   TYPE(Label_) :: tpplottitle
   TYPE(Label_) :: tpxlabel
   TYPE(Label_) :: tpx2label
@@ -97,8 +99,6 @@ TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
   !Message from plot procedures
   INTEGER(i4b) :: status = 0
   !Status from plot procedures
-  INTEGER(i4b) :: file_unit
-  ! file unit identifier
   CHARACTER(:), ALLOCATABLE :: txtfilename
   ! the name of physical file
   ! to write the gnuplot script
@@ -135,6 +135,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: plot4 => obj_plot4
   GENERIC, PUBLIC :: plot => plot1, plot2, plot3, plot4
 
+  PROCEDURE, PUBLIC, PASS(obj) :: plotData1 => obj_plotData1
+  GENERIC, PUBLIC :: plotData => plotData1
+
   !! 3d line plot
   PROCEDURE, PUBLIC, PASS(obj) :: plot3d_1 => obj_plot3d_vvv
   GENERIC, PUBLIC :: plot3d => plot3d_1
@@ -151,12 +154,9 @@ CONTAINS
   ! TODO: make a interface for these subroutines
   PROCEDURE, PASS(obj) :: preset_gnuplot_config
 
-  PROCEDURE, PUBLIC, PASS(obj) :: create_outputfile
   PROCEDURE, PUBLIC, PASS(obj) :: processcmd
-  PROCEDURE, PUBLIC, PASS(obj) :: finalize_plot
-  !> 0.22
   PROCEDURE, PASS(obj) :: set_label
-  ! public procedures
+
   PROCEDURE, PUBLIC, PASS(obj) :: options => set_options
   PROCEDURE, PUBLIC, PASS(obj) :: title => set_plottitle
   PROCEDURE, PUBLIC, PASS(obj) :: xlabel => set_xlabel
@@ -177,7 +177,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
   PROCEDURE, PUBLIC, PASS(obj) :: animationShow => obj_animationShow
 
-  PROCEDURE, PUBLIC, PASS(obj) :: writeScript => obj_writeScript
+  PROCEDURE, PUBLIC, PASS(obj) :: writeData => obj_writeData_xy
 
 END TYPE GnuPlot_
 
@@ -195,6 +195,7 @@ END TYPE GnuPlotPointer_
 
 !> author: Shion Shimizu
 ! date:   2024-06-06
+! update: 2025-02-21
 ! summary:  Initialize the Gnuplot object
 
 INTERFACE
@@ -210,6 +211,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2024-06-06
+! update: 2025-02-21
 ! summary: Deallocate the Gnuplot object
 
 INTERFACE
@@ -304,6 +306,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
+! update : 2025-02-18
 ! summary:  Plot 1D data
 ! logScale option can be "semilogx", "semilogy" or "loglog"
 
@@ -341,6 +344,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
+! update: 2025-02-18
 ! summary:  Plot 2D data
 ! logScale option can be "semilogx", "semilogy" or "loglog"
 
@@ -361,6 +365,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
+! update : 2025-02-18
 ! summary:  Plot 2D data
 ! logScale option can be "semilogx", "semilogy" or "loglog"
 
@@ -405,11 +410,31 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2025-02-18
+! summary:  plot data exporting png file
+
+INTERFACE
+  MODULE SUBROUTINE obj_plotData1(obj, filename, xdata, ydata, &
+                                  xlim, ylim, xlabel, ylabel)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: filename
+    REAL(DFP), INTENT(IN) :: xdata(:), ydata(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xlim(2), ylim(2)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: xlabel, ylabel
+  END SUBROUTINE obj_plotData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                 plot3d
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
 ! date:   2024-09-22
+! update: 2025-02-21
 ! summary:  plot line in 3D
 !..............................................................................
 ! lplot3d create a line plot in 3d
@@ -435,6 +460,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-09-22
+! update: 2025-02-21
 ! summary:  plot surface
 !..............................................................................
 ! splot create a surface plot
@@ -452,21 +478,6 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
   !! default is no logscale
   END SUBROUTINE obj_surf1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               finalize_plot@PlotMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-08-23
-! summary:  To finalize writing of gnuplot commands/data
-! and close the output file.
-
-INTERFACE
-  MODULE SUBROUTINE finalize_plot(obj)
-    CLASS(GnuPlot_) :: obj
-  END SUBROUTINE finalize_plot
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -878,25 +889,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           create_outputfile@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  create output file
-!
-!# Introduction
-!
-! Create an output file, assign a file_unit
-! for writing the gnuplot commands
-
-INTERFACE
-  MODULE SUBROUTINE create_outputfile(obj)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
-  END SUBROUTINE create_outputfile
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                 processcmd@UtilityMethods
 !----------------------------------------------------------------------------
 
@@ -919,20 +911,19 @@ END INTERFACE
 !                                               write_xydata@UtilityMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  write xy data
+!> author: Shion Shimizu
+! date:   2025-02-21
+! summary:  write_xydata to plt file
 !
 !# Introduction
 ! Writes set of xy data into a file
 
 INTERFACE
-  MODULE SUBROUTINE write_xydata(file_unit, ndata, x, y)
-    INTEGER, INTENT(in) :: file_unit
-    INTEGER, INTENT(in) :: ndata
+  MODULE SUBROUTINE obj_writeData_xy(obj, x, y)
+    CLASS(GnuPlot_), INTENT(inout) :: obj
     REAL(DFP), INTENT(in) :: x(:)
-    REAL(DFP), INTENT(in), OPTIONAL :: y(:)
-  END SUBROUTINE write_xydata
+    REAL(DFP), INTENT(in) :: y(:)
+  END SUBROUTINE obj_writeData_xy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1012,22 +1003,6 @@ INTERFACE
   MODULE SUBROUTINE preset_gnuplot_config(obj)
     CLASS(GnuPlot_) :: obj
   END SUBROUTINE preset_gnuplot_config
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         writeScript
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary:  write gnuplot script to file
-
-INTERFACE
-  MODULE SUBROUTINE obj_writeScript(obj, script, fmt)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: script
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: fmt
-  END SUBROUTINE obj_writeScript
 END INTERFACE
 
 !----------------------------------------------------------------------------

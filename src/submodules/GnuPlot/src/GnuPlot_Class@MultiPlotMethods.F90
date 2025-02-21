@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(GnuPlot_Class) MultiPlotMethods
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -32,19 +34,16 @@ END IF
 
 IF (rows > 0) THEN
   obj%multiplot_rows = rows
-ELSE
-
 END IF
+
 IF (cols > 0) THEN
   obj%multiplot_cols = cols
-ELSE
-
 END IF
 
 obj%hasmultiplot = .TRUE.
 obj%multiplot_total_plots = 0
 
-CALL create_outputfile(obj)
+CALL obj%Initiate()
 
 END PROCEDURE obj_multiplot
 

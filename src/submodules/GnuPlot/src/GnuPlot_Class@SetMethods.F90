@@ -109,6 +109,7 @@ END PROCEDURE set_zlim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE set_axis
+CHARACTER(*), PARAMETER :: myName = "set_axis"
 INTEGER :: n
 
 n = SIZE(rng, dim=1)
@@ -130,7 +131,8 @@ CASE (6)
   obj%yrange = rng(3:4)
   obj%zrange = rng(5:6)
 CASE default
-  PRINT *, 'GnuPlot_ error: wrong axis range setting!'
+  CALL e%raiseWarning(modName//'::'//myName//' - '// &
+    & '[GNUPLOT] :: wrong axis range setting')
   RETURN
 END SELECT
 
@@ -141,6 +143,7 @@ END PROCEDURE set_axis
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE set_secondary_axis
+CHARACTER(*), PARAMETER :: myName = "set_secondary_axis"
 INTEGER :: n
 
 n = SIZE(rng, dim=1)
@@ -155,7 +158,8 @@ CASE (4)
   obj%x2range = rng(1:2)
   obj%y2range = rng(3:4)
 CASE default
-  PRINT *, 'GnuPlot_ error: wrong axis range setting!'
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[GNUPLOT] :: wrong secondary axis range setting')
   RETURN
 END SELECT
 

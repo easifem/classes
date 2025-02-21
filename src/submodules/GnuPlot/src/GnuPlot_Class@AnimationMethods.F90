@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(GnuPlot_Class) AnimationMethods
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -38,8 +40,8 @@ END IF
 
 obj%frame_number = 0
 
-CALL create_outputfile(obj)
-obj%hasfileopen = .TRUE.
+CALL obj%Initiate()
+
 obj%hasanimation = .TRUE.
 
 END PROCEDURE obj_animationStart
@@ -53,7 +55,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_animationShow"
 obj%frame_number = 0
 obj%hasanimation = .FALSE.
 
-CALL finalize_plot(obj)
+CALL obj%DEALLOCATE()
 
 END PROCEDURE obj_animationShow
 
