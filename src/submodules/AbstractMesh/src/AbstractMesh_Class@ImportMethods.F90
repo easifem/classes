@@ -1124,8 +1124,9 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   tsize = obj%GetTotalNodes()
   x = 0.0_DFP
   DO ii = 1, tsize
-    x(1:jj) = xij(1:jj, ii)
-    kk = obj%GetLocalNodeNumber(globalNode=ii, islocal=.FALSE.)
+    kk = obj%GetGlobalNodeNumber(ii)
+    x(1:jj) = xij(1:jj, kk)
+    kk = obj%GetLocalNodeNumber(globalNode=kk, islocal=.FALSE.)
     CALL NodeData_SetNodeCoord(obj%nodeData(kk)%ptr, x)
   END DO
 
