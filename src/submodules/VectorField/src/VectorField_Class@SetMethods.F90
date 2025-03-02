@@ -55,6 +55,8 @@ USE ReallocateUtility, ONLY: Reallocate
 
 USE SafeSizeUtility, ONLY: SafeSize
 
+USE StringUtility, ONLY: UpperCase
+
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
@@ -639,11 +641,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 baseInterpolation = obj%fedof%GetBaseInterpolation()
 
-IF (baseInterpolation(1:3) .NE. "Lag") THEN
+IF (UpperCase(baseInterpolation(1:3)) .NE. "LAG") THEN
 
   baseInterpolation = ""
   CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine is only valid for Lagrange interpolation.')
+                    '[INTERNAL ERROR] :: This routine is only valid '// &
+                    'for Lagrange interpolation.')
   RETURN
 
 END IF
