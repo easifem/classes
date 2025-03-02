@@ -21,6 +21,7 @@ USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
 USE Domain_Class, ONLY: Domain_
+USE FEDomain_Class, ONLY: FEDomain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE DirichletBC_Class
@@ -119,7 +120,7 @@ INTERFACE AddNeumannBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(FEDomain_), INTENT(IN) :: dom
   END SUBROUTINE obj_AddNeumannBC
 END INTERFACE AddNeumannBC
 
@@ -140,7 +141,7 @@ INTERFACE AppendNeumannBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(FEDomain_), INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
     !! Dirichlet boundary number
   END SUBROUTINE obj_AppendNeumannBC
@@ -193,7 +194,7 @@ INTERFACE NeumannBCImportFromToml
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDomain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml1
@@ -211,7 +212,7 @@ INTERFACE NeumannBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile,  &
     & filename, printToml)
     TYPE(NeumannBCPointer_), INTENT(INOUT) :: obj(:)
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
