@@ -37,7 +37,9 @@ USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
                                     BaseType_ToChar, &
                                     BaseInterpolation_ToChar
 
-USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
+USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_, &
+                                    InterpolationPoint_Line_, &
+                                    LagrangeGradientEvalAll_Line_
 
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -405,7 +407,8 @@ MODULE PROCEDURE obj_SetElemsdForTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetElemsdForTime()"
 INTEGER(I4B) :: nips, nns, cellOrder(1), order, cellOrient(1), nrow, ncol, &
                 ii, jj
-REAL(DFP) :: refElemCoord(1, 2), temp(2, MAX_ORDER_TIME + 1)
+REAL(DFP) :: refElemCoord(1, 2), temp(2, MAX_ORDER_TIME + 1), &
+             ipxij(1, MAX_ORDER_TIME + 1), tempgrad(2, max_order_time + 1, 1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -451,6 +454,20 @@ CASE ("LAGR")
   obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
   obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
 
+  CALL InterpolationPoint_Line_(order=order, &
+                                ipType=obj%ipTypeForTime, &
+                                ans=ipxij, &
+                                nrow=nrow, ncol=ncol, &
+                                layout="V")
+
+  CALL LagrangeGradientEvalAll_Line_(order=order, x=refElemCoord, &
+                                     xij=ipxij(1:nrow, 1:ncol), &
+                                     ans=tempgrad, &
+                                     dim1=nrow, dim2=ncol, dim3=ii)
+
+  obj%timeShapeFuncGradBndy(1:nns, 1) = tempgrad(1, 1:ncol, 1)
+  obj%timeShapeFuncGradBndy(1:nns, 2) = tempgrad(2, 1:ncol, 1)
+
 CASE ("HIER", "HEIR")
 
   cellOrder = order
@@ -469,6 +486,12 @@ CASE ("HIER", "HEIR")
 
   obj%timeShapeFuncBndy(1:nns, 2) = 0.0_DFP
   obj%timeShapeFuncBndy(2, 2) = 1.0_DFP
+
+  obj%timeShapeFuncGradBndy(1:nns, 1) = zero
+  obj%timeShapeFuncGradBndy(1, 1) = -half
+  obj%timeShapeFuncGradBndy(2, 1) = half
+
+  obj%timeShapeFuncGradBndy(1:nns, 2) = obj%timeShapeFuncGradBndy(1:nns, 1)
 
 CASE ("ORTH")
 
@@ -489,6 +512,9 @@ CASE ("ORTH")
   DO CONCURRENT(ii=1:nrow, jj=1:ncol)
     obj%timeShapeFuncBndy(jj, ii) = temp(ii, jj)
   END DO
+
+  !TODO: implement gradient
+  obj%timeShapeFuncGradBndy = zero
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &

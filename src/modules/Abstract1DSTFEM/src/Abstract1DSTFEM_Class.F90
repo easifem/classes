@@ -250,6 +250,9 @@ TYPE, ABSTRACT :: Abstract1DSTFEM_
   REAL(DFP) :: timeShapeFuncBndy(MAX_ORDER_TIME + 1, 2)
   !! Value of time shape function at theta = -1
 
+  REAL(DFP) :: timeShapeFuncGradBndy(MAX_ORDER_TIME + 1, 2)
+  !! Value of time shape function at theta = -1
+
   REAL(DFP) :: spaceShapeFuncBndy(MAX_ORDER_SPACE + 1, 2)
   !! Value of space shape function at xi = 1
 

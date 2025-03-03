@@ -146,7 +146,7 @@ CASE DEFAULT
   totalNodes = obj%totalVertexDOFSpace
 END SELECT
 
-ALLOCATE (DATA(totalNodes, 3))
+ALLOCATE (DATA(totalNodes, 4))
 
 abool1 = obj%saveData(1) .OR. obj%plotData(1) .OR. obj%saveData(4)
 abool2 = obj%saveData(2) .OR. obj%plotData(2) .OR. obj%saveData(4)
@@ -172,9 +172,9 @@ DO ielSpace = 1, obj%totalSpaceElements
     CALL RealVector_GetValue_(obj=obj%v0, nodenum=con(1:nns), VALUE=v0, &
                               tsize=nns)
 
-  ! IF (abool3) &
-  !   CALL RealVector_GetValue_(obj=obj%a0, nodenum=con(1:nns), VALUE=a0, &
-  !                             tsize=nns)
+  IF (abool3) &
+    CALL RealVector_GetValue_(obj=obj%a0, nodenum=con(1:nns), VALUE=a0, &
+                              tsize=nns)
 
   SELECT CASE (obj%baseInterpolationForSpace)
   CASE ("LAGR")
@@ -187,20 +187,20 @@ DO ielSpace = 1, obj%totalSpaceElements
     DATA(n, 1) = ips(1, 1)
     IF (abool1) DATA(n, 2) = u0(1)
     IF (abool2) DATA(n, 3) = v0(1)
-    ! IF (abool3) DATA(n, 4) = a0(1)
+    IF (abool3) DATA(n, 4) = a0(1)
 
     DO jj = 1, nns - 2
       DATA(n + jj, 1) = ips(1, jj + 2)
       IF (abool1) DATA(n + jj, 2) = u0(jj + 2)
       IF (abool2) DATA(n + jj, 3) = v0(jj + 2)
-      ! IF (abool3) DATA(n + jj, 4) = a0(jj + 2)
+      IF (abool3) DATA(n + jj, 4) = a0(jj + 2)
     END DO
 
     n = n + inds(2) - 1
     DATA(n, 1) = ips(1, 2)
     IF (abool1) DATA(n, 2) = u0(2)
     IF (abool2) DATA(n, 3) = v0(2)
-    ! IF (abool3) DATA(n, 4) = a0(2)
+    IF (abool3) DATA(n, 4) = a0(2)
 
   CASE DEFAULT
     DATA(con(1), 1) = xij(1, 1)
@@ -216,10 +216,11 @@ DO ielSpace = 1, obj%totalSpaceElements
     IF (abool2) DATA(con(2), 3) = DOT_PRODUCT(v0(1:nns), &
                                              obj%spaceShapeFuncBndy(1:nns, 2))
 
-    ! IF (abool3) DATA(con(1), 4) = DOT_PRODUCT(a0(1:nns), &
-    !                                          obj%spaceShapeFuncBndy(1:nns, 1))
-    ! IF (abool3) DATA(con(2), 4) = DOT_PRODUCT(a0(1:nns), &
-    !                                          obj%spaceShapeFuncBndy(1:nns, 2))
+    IF (abool3) DATA(con(1), 4) = DOT_PRODUCT(a0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 1))
+    IF (abool3) DATA(con(2), 4) = DOT_PRODUCT(a0(1:nns), &
+                                             obj%spaceShapeFuncBndy(1:nns, 2))
+
   END SELECT
 
   xij(1, 1) = xij(1, 2)
@@ -276,27 +277,26 @@ IF (obj%saveData(2)) THEN
 END IF
 
 ! acc
-! TODO: implement acc
-! IF (obj%saveData(3)) THEN
-! #ifdef DEBUG_VER
-!   CALL Display("Writing data to file: "//filename_acc//".csv")
-! #endif
-!   CALL obj%accfile%Initiate(filename=filename_acc//".csv", &
-!                  status="REPLACE", action="WRITE", comment="#", separator=",")
-!   CALL obj%accfile%OPEN()
-!
-!   aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
-!           ", time = "//tostring(obj%currentTime)//" s"
-!   CALL obj%accfile%WRITE(aline)
-!   aline = "x, acc"
-!   CALL obj%accfile%WRITE(aline)
-!
-!   DO ii = 1, totalNodes
-!     aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 4))
-!     CALL obj%accfile%WRITE(aline)
-!   END DO
-!   CALL obj%accfile%DEALLOCATE()
-! END IF
+IF (obj%saveData(3)) THEN
+#ifdef DEBUG_VER
+  CALL Display("Writing data to file: "//filename_acc//".csv")
+#endif
+  CALL obj%accfile%Initiate(filename=filename_acc//".csv", &
+                 status="REPLACE", action="WRITE", comment="#", separator=",")
+  CALL obj%accfile%OPEN()
+
+  aline = "# time-step = "//tostring(obj%currentTimeStep - 1_I4B)// &
+          ", time = "//tostring(obj%currentTime)//" s"
+  CALL obj%accfile%WRITE(aline)
+  aline = "x, acc"
+  CALL obj%accfile%WRITE(aline)
+
+  DO ii = 1, totalNodes
+    aline = tostring(DATA(ii, 1))//", "//tostring(DATA(ii, 4))
+    CALL obj%accfile%WRITE(aline)
+  END DO
+  CALL obj%accfile%DEALLOCATE()
+END IF
 
 ! write all data
 IF (obj%saveData(4)) THEN
@@ -311,9 +311,9 @@ IF (obj%saveData(4)) THEN
           ", time = "//tostring(obj%currentTime)//" s"
   CALL obj%datafile%WRITE(aline)
 
-  aline = "x, disp, vel"
+  aline = "x, disp, vel, acc"
   CALL obj%datafile%WRITE(aline)
-  CALL obj%datafile%WRITE(val=DATA(1:totalNodes, 1:3), orient="ROW")
+  CALL obj%datafile%WRITE(val=DATA(1:totalNodes, 1:4), orient="ROW")
 
   CALL obj%datafile%DEALLOCATE()
 END IF
@@ -391,24 +391,24 @@ IF (obj%plotData(2)) THEN
   CALL obj%plot%reset()
 END IF
 
-! IF (obj%plotData(3)) THEN
-!   CALL obj%plot%filename(filename_acc//'.plt')
-! CALL obj%plot%options('set terminal pngcairo; set output "'//filename_acc//'.png"')
-!   xlim = obj%spaceDomain
-!   ylim(1) = MINVAL(DATA(1:totalNodes, 4))
-!   ylim(2) = MAXVAL(DATA(1:totalNodes, 4))
-!   xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
-!   xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
-!   ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
-!   ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
-!
-!   CALL obj%plot%xlim(xlim)
-!   CALL obj%plot%ylim(ylim)
-!   CALL obj%plot%xlabel('x')
-!   CALL obj%plot%ylabel('a')
-!   CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 4))
-!   CALL obj%plot%reset()
-! END IF
+IF (obj%plotData(3)) THEN
+  CALL obj%plot%filename(filename_acc//'.plt')
+CALL obj%plot%options('set terminal pngcairo; set output "'//filename_acc//'.png"')
+  xlim = obj%spaceDomain
+  ylim(1) = MINVAL(DATA(1:totalNodes, 4))
+  ylim(2) = MAXVAL(DATA(1:totalNodes, 4))
+  xlim(1) = xlim(1) - 0.1 * (xlim(2) - xlim(1))
+  xlim(2) = xlim(2) + 0.1 * (xlim(2) - xlim(1))
+  ylim(1) = ylim(1) - 0.1 * (ylim(2) - ylim(1))
+  ylim(2) = ylim(2) + 0.1 * (ylim(2) - ylim(1))
+
+  CALL obj%plot%xlim(xlim)
+  CALL obj%plot%ylim(ylim)
+  CALL obj%plot%xlabel('x')
+  CALL obj%plot%ylabel('a')
+  CALL obj%plot%plot(x1=DATA(1:totalNodes, 1), y1=DATA(1:totalNodes, 4))
+  CALL obj%plot%reset()
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
