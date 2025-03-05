@@ -1278,10 +1278,15 @@ IF (obj%converged) THEN
 !   CALL RealVector_Set(obj=obj%am1, VALUE=obj%a0)
 
   CALL RealVector_Set(obj=obj%v0, VALUE=zero)
+  CALL RealVector_Set(obj=obj%a0, VALUE=zero)
 
   CALL RealVector_Scale(obj%u0, one)
 
   DO ii = 1, nnt
+    scale = obj%timeShapeFuncGradBndy(ii, 2)
+    CALL RealVector_Add(obj1=obj%a0, dofobj1=obj%dof, idof1=1_I4B, &
+                        obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
+
     scale = obj%timeShapeFuncBndy(ii, 2)
     CALL RealVector_Add(obj1=obj%v0, dofobj1=obj%dof, idof1=1_I4B, &
                         obj2=obj%sol, dofobj2=obj%dof, idof2=ii, scale=scale)
