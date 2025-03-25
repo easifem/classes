@@ -51,6 +51,8 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 USE ReallocateUtility, ONLY: Reallocate
 
+USE StringUtility, ONLY: UpperCase
+
 IMPLICIT NONE
 
 #ifdef USE_LIS
@@ -332,7 +334,7 @@ MODULE PROCEDURE obj_SetByFunction
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
 LOGICAL(LGT) :: istimes, problem
 INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, nrow, ncol
-REAL(DFP), ALLOCATABLE :: xij(:, :)
+REAL(DFP) :: xij(3, 1)
 REAL(DFP) :: args(4), VALUE
 INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
 CLASS(AbstractMesh_), POINTER :: meshptr
@@ -340,7 +342,7 @@ CHARACTER(:), ALLOCATABLE :: baseInterpolation
 
 baseInterpolation = obj%fedof%GetBaseInterpolation()
 
-IF (baseInterpolation(1:3) .NE. "Lag") THEN
+IF (UpperCase(baseInterpolation(1:3)) .NE. "LAG") THEN
 
   baseInterpolation = ""
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -384,7 +386,6 @@ END IF
 
 nsd = meshptr%GetNSD()
 tnodes = meshptr%GetTotalNodes()
-CALL Reallocate(xij, nsd, 1)
 
 DO ii = 1, tnodes
   CALL meshptr%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE., &
@@ -394,7 +395,6 @@ DO ii = 1, tnodes
   CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
 baseInterpolation = ""
 
 END PROCEDURE obj_SetByFunction

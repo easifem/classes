@@ -44,7 +44,7 @@ ELSE
 END IF
 
 obj%txtdatastyle = 'lines'
-CALL create_outputfile(obj)
+CALL obj%Initiate()
 
 IF (PRESENT(logScale)) THEN
   obj%plotscale = logScale
@@ -52,30 +52,32 @@ END IF
 CALL processcmd(obj)
 obj%plotscale = "linear"
 
-CALL obj%writeScript(script='#data x y z')
+CALL obj%pltfile%WRITE('#data x y z')
 ! Rev 0.20
 ! write the $xyz datablocks
-CALL obj%writeScript(script=datablock//' << EOD')
+CALL obj%pltfile%WRITE(datablock//' << EOD')
 IF (xyz_data) THEN
   DO jj = 1, ncx
     DO ii = 1, nrx
-      WRITE (obj%file_unit, *) x(ii, jj), y(ii, jj), z(ii, jj)
+      CALL obj%pltfile%WRITE([x(ii, jj), y(ii, jj), z(ii, jj)], &
+                             orient="ROW")
     END DO
-    CALL obj%writeScript() ! an empty line
+    CALL obj%pltfile%WRITE() ! an empty line
   END DO
-ELSE !only Z has been sent (i.e. single matrix data)
+ELSE
   DO jj = 1, ncx
     DO ii = 1, nrx
-      WRITE (obj%file_unit, *) ii, jj, x(ii, jj)
+      CALL obj%pltfile%WRITE([REAL(ii, dfp), REAL(jj, dfp), x(ii, jj)], &
+                             orient="ROW")
     END DO
-    CALL obj%writeScript() ! an empty line
+    CALL obj%pltfile%WRITE()
   END DO
 END IF
-WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
+CALL obj%pltfile%WRITE('EOD')
 
 IF (PRESENT(paletteName)) THEN
-  CALL obj%writeScript(script=color_palettes(paletteName))
-  CALL obj%writeScript(script='set pm3d') ! a conflict with lspec
+  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+  CALL obj%pltfile%WRITE('set pm3d')
 END IF
 
 pltstring = "splot "//datablock//" "
@@ -91,13 +93,9 @@ IF (PRESENT(lspec)) THEN
   pltstring = pltstring//TRIM(lspec)
 END IF
 
-CALL obj%writeScript(script=TRIM(pltstring))
+CALL obj%pltfile%WRITE(TRIM(pltstring))
 
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL finalize_plot(obj)
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%DEALLOCATE()
 
 END PROCEDURE obj_surf1
 

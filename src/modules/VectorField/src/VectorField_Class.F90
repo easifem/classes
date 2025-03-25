@@ -29,6 +29,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
+USE VTKFile_Class, ONLY: VTKFile_
 
 IMPLICIT NONE
 
@@ -82,6 +83,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
   ! SET:
   ! @SetMethods
@@ -429,6 +431,19 @@ INTERFACE VectorFieldExport
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE VectorFieldExport
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! node field object
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    !! vtkfile object
+  END SUBROUTINE obj_ExportToVTK
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -1217,7 +1232,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    TYPE(DirichletBC_), INTENT(INOUT) :: dbc
+    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField

@@ -138,8 +138,7 @@ IF (istimes) THEN
   DO ibc = 1, tsize
     CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
                           times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
-    aint = SIZE(nodalvalue, 2)
-    DO idof = 1, aint
+    DO idof = 1, ncol
     CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
                    islocal=.TRUE.)
     END DO

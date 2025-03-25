@@ -414,7 +414,6 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   TYPE(toml_table), POINTER :: node, node2
   INTEGER(I4B) :: origin, stat
   REAL(DFP) :: alpha, beta, gamma, theta, areal
-  CHARACTER(:), ALLOCATABLE :: algorithm
   LOGICAL(LGT) :: problem
   TYPE(String) :: astr
 
@@ -444,8 +443,8 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
 
   CASE ("NEWM")
 
-    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
-      & stat=stat)
+    CALL toml_get(table, astr%chars(), node, origin=origin, &
+                  requested=.FALSE., stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       beta = 0.25_DFP; gamma = 0.5_DFP
@@ -459,8 +458,8 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
 
   CASE ("HHTA")
 
-    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
-      & stat=stat)
+  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+            & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       alpha = -0.30_DFP
@@ -481,8 +480,8 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
 
   CASE ("COLL")
 
-    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
-      & stat=stat)
+  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+            & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       beta = 1.0_DFP / 6.0_DFP
@@ -501,13 +500,13 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
 
   CASE DEFAULT
     node => NULL()
-    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
-      & stat=stat)
+  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
+            & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[CONFIG ERROR] :: following error occured while reading '//  &
-        & 'the toml file :: cannot find '//algorithm//" table")
+        & 'the toml file :: cannot find '//astr%chars()//" table")
       RETURN
     END IF
 

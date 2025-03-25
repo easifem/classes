@@ -16,148 +16,84 @@
 !
 
 SUBMODULE(GnuPlot_Class) PlotMethods
+USE InputUtility
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Plot1
+!
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_plot1
 CHARACTER(*), PARAMETER :: myName = "obj_plot1()"
 
-INTEGER :: nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, number_of_plots, i
+INTEGER :: ii, nplot
+INTEGER(I4B), PARAMETER :: maxplot = 4
 CHARACTER(3) :: plottype
-CHARACTER(80) :: pltstring(4) ! Four 80 characters string
-LOGICAL(LGT) :: acase, isok
+CHARACTER(80) :: pltstring(4)
+LOGICAL(LGT) :: isok, doplot(4)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-!Initialize variables
 plottype = ''
 pltstring = ''
+nplot = 0
 
-!   Check the input
-nx1 = SIZE(x1)
-acase = PRESENT(y1)
-
-IF (acase) THEN
-  ny1 = SIZE(y1)
-
-  isok = nx1 .EQ. ny1
-
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                     '[INTERNAL ERROR] :: length of x1 and y1 does not match')
-    RETURN
-  END IF
-
-  plottype = 'xy1'
-  number_of_plots = 1
-
-ELSE !plot only x againest its element indices
-  plottype = 'xi'
-  number_of_plots = 1
-END IF
-
-!Process line spec and axes set for first data set if present
+doplot = .FALSE.
+doplot(1) = CheckInput(x1, y1)
+IF (.NOT. doplot(1)) CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[ERROR] :: x1 and y1 must be present for plot1')
+nplot = nplot + 1
 CALL process_linespec(1, pltstring(1), ls1, axes1)
 
-acase = PRESENT(x2) .AND. PRESENT(y2)
-IF (acase) THEN
-  nx2 = SIZE(x2)
-  ny2 = SIZE(y2)
-
-  isok = nx2 .EQ. ny2
-  IF (.NOT. isok) RETURN
-
-  plottype = 'xy2'
-  number_of_plots = 2
-
-  !Process line spec for 2nd data set if present
-  CALL process_linespec(2, pltstring(2), ls2, axes2)
+doplot(2) = CheckInput(x2, y2)
+IF (doplot(2)) THEN
+  nplot = nplot + 1
+  CALL process_linespec(nplot, pltstring(2), ls2, axes2)
+END IF
+doplot(3) = CheckInput(x3, y3)
+IF (doplot(3)) THEN
+  nplot = nplot + 1
+  CALL process_linespec(nplot, pltstring(3), ls3, axes3)
+END IF
+doplot(4) = CheckInput(x4, y4)
+IF (doplot(4)) THEN
+  nplot = nplot + 1
+  CALL process_linespec(nplot, pltstring(4), ls4, axes4)
 END IF
 
-acase = PRESENT(x3) .AND. PRESENT(y3)
-
-IF (acase) THEN
-  nx3 = SIZE(x3)
-  ny3 = SIZE(y3)
-
-  isok = nx3 .EQ. ny3
-  IF (.NOT. isok) RETURN
-
-  plottype = 'xy3'
-  number_of_plots = 3
-
-  !Process line spec for 3rd data set if present
-  CALL process_linespec(3, pltstring(3), ls3, axes3)
-END IF
-
-acase = PRESENT(x4) .AND. PRESENT(y4)
-IF (acase) THEN
-  nx4 = SIZE(x4)
-  ny4 = SIZE(y4)
-
-  isok = nx4 .EQ. ny4
-  IF (.NOT. isok) RETURN
-
-  plottype = 'xy4'
-  number_of_plots = 4
-
-  !Process line spec for 4th data set if present
-  CALL process_linespec(4, pltstring(4), ls4, axes4)
-END IF
-
-CALL create_outputfile(obj)
+CALL obj%Initiate()
 
 IF (PRESENT(logScale)) THEN
   obj%plotscale = logScale
+ELSE
+  obj%plotscale = defaultPlotScale
 END IF
-! Write plot title, axis labels and other annotations
 CALL processcmd(obj)
 
-obj%plotscale = defaultPlotScale
-
-! Write plot command and line styles and legend if any
-isok = number_of_plots .EQ. 1
+isok = nplot .EQ. 1
 IF (isok) THEN
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring(1))
+  CALL obj%pltfile%WRITE(TRIM(pltstring(1)))
 ELSE
-  WRITE (obj%file_unit, '(a)') (TRIM(pltstring(i))//' \', &
-                                i=1, number_of_plots - 1)
-  WRITE (obj%file_unit, '(a)') TRIM(pltstring(number_of_plots))
+  CALL obj%pltfile%WRITE(TRIM(pltstring(1)), advance="NO")
+  DO ii = 2, maxplot
+    IF (doplot(ii)) THEN
+      CALL obj%pltfile%WRITE(" \", advance="YES")
+      CALL obj%pltfile%WRITE(TRIM(pltstring(ii)), advance="NO")
+    END IF
+  END DO
+  CALL obj%pltfile%WRITE("", advance="YES")
 END IF
-! Write xy data into file
-SELECT CASE (plottype)
-CASE ('xi')
-  CALL write_xydata(obj%file_unit, nx1, x1)
-CASE ('xy1')
-  CALL write_xydata(obj%file_unit, nx1, x1, y1)
-CASE ('xy2')
-  CALL write_xydata(obj%file_unit, nx1, x1, y1)
-  CALL write_xydata(obj%file_unit, nx2, x2, y2)
-CASE ('xy3')
-  CALL write_xydata(obj%file_unit, nx1, x1, y1)
-  CALL write_xydata(obj%file_unit, nx2, x2, y2)
-  CALL write_xydata(obj%file_unit, nx3, x3, y3)
-CASE ('xy4')
-  CALL write_xydata(obj%file_unit, nx1, x1, y1)
-  CALL write_xydata(obj%file_unit, nx2, x2, y2)
-  CALL write_xydata(obj%file_unit, nx3, x3, y3)
-  CALL write_xydata(obj%file_unit, nx4, x4, y4)
-END SELECT
 
-!> Rev 0.2
-! if there is no animation finalize
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL finalize_plot(obj)
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%writeData(x1, y1)
+IF (doplot(2)) CALL obj%writeData(x2, y2)
+IF (doplot(3)) CALL obj%writeData(x3, y3)
+IF (doplot(4)) CALL obj%writeData(x4, y4)
+
+CALL obj%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -183,7 +119,8 @@ IF (.NOT. nx .EQ. ny) THEN
     & '[INTERNAL ERROR] :: The length of xv and ymat does not match')
 END IF
 
-CALL create_outputfile(obj)
+CALL obj%Initiate()
+
 IF (PRESENT(logScale)) THEN
   obj%plotscale = logScale
 END IF
@@ -239,23 +176,20 @@ END IF
 
 ! Write plot command and line styles and legend if any
 DO ii = 1, number_of_curves - 1
-  CALL obj%writeScript(script=TRIM(pltstring(ii))//' \')
+  CALL obj%pltfile%WRITE(TRIM(pltstring(ii))//' \')
 END DO
-CALL obj%writeScript(script=TRIM(pltstring(number_of_curves)))
+CALL obj%pltfile%WRITE(TRIM(pltstring(number_of_curves)))
 
 ! Write data into script file
 DO jj = 1, number_of_curves
   DO ii = 1, nx
-    WRITE (obj%file_unit, *) xv(ii), ymat(ii, jj)
+    CALL obj%pltfile%WRITE([xv(ii), ymat(ii, jj)], &
+                           orient="ROW")
   END DO
-  WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
+  CALL obj%pltfile%WRITE("e")
 END DO
 
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL finalize_plot(obj)
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%DEALLOCATE()
 
 !Release memory
 IF (ALLOCATED(pltstring)) THEN
@@ -288,7 +222,8 @@ IF (.NOT. nx .EQ. ny) THEN
     & '[INTERNAL ERROR] :: The column length of xmat and ymat does not match')
 END IF
 
-CALL create_outputfile(obj)
+CALL obj%Initiate()
+
 IF (PRESENT(logScale)) THEN
   obj%plotscale = logScale
 END IF
@@ -345,22 +280,19 @@ ELSE !No lspec is available
 END IF
 
 DO ii = 1, number_of_curves - 1
-  CALL obj%writeScript(script=TRIM(pltstring(ii))//' \')
+  CALL obj%pltfile%WRITE(TRIM(pltstring(ii))//' \')
 END DO
-CALL obj%writeScript(script=TRIM(pltstring(number_of_curves)))
+CALL obj%pltfile%WRITE(TRIM(pltstring(number_of_curves)))
 
 DO jj = 1, number_of_curves
   DO ii = 1, mx
-    WRITE (obj%file_unit, *) xmat(ii, jj), ymat(ii, jj)
+    CALL obj%pltfile%WRITE([xmat(ii, jj), ymat(ii, jj)], &
+                           orient="ROW")
   END DO
-  WRITE (obj%file_unit, '(a)') 'e' !end of jth set of data
+  CALL obj%pltfile%WRITE("e")
 END DO
 
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL finalize_plot(obj)
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%DEALLOCATE()
 
 IF (ALLOCATED(pltstring)) THEN
   DEALLOCATE (pltstring)
@@ -403,66 +335,70 @@ IF (ALLOCATED(y)) DEALLOCATE (y)
 END PROCEDURE obj_plot4
 
 !----------------------------------------------------------------------------
-!                                                              finalize_plot
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE finalize_plot
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: a, b
+MODULE PROCEDURE obj_plotData1
 
-! check for multiplots
-IF (obj%hasmultiplot) THEN
-  a = obj%multiplot_total_plots
-  b = obj%multiplot_rows * obj%multiplot_cols - 1
-  isok = a .LT. b
+CHARACTER(:), ALLOCATABLE :: xlabel0, ylabel0
+REAL(DFP) :: xlim0(2), ylim0(2), areal
 
-  IF (isok) THEN
-    ! increment the number of plots
-    obj%multiplot_total_plots = obj%multiplot_total_plots + 1
-    RETURN ! do not finalize plot, still there is places in multiplot
-  END IF
+CALL obj%filename(filename//'.plt')
+CALL obj%options('set terminal pngcairo; set output "' &
+                 //filename//'.png"')
 
-  ! close multiplot
-  WRITE (obj%file_unit, fmt='(a)') 'unset multiplot'
-  ! reset multiplot flag
-  obj%hasmultiplot = .FALSE.
-
-END IF
-
-WRITE (obj%file_unit, fmt='(a)') 'pause mouse close'
-CLOSE (unit=obj%file_unit) ! close the script file
-obj%hasfileopen = .FALSE. ! reset file open flag
-obj%hasanimation = .FALSE.
-! Use shell command to run gnuplot
-IF (get_os_type() == 1) THEN
-  CALL execute_command_line('wgnuplot -persist '//obj%txtfilename) !   Now plot the results
+IF (PRESENT(xlim)) THEN
+  xlim0 = xlim
 ELSE
-  CALL execute_command_line('gnuplot -persist '//obj%txtfilename) !   Now plot the results
+  xlim0 = [MINVAL(xDATA(:)), MAXVAL(xDATA(:))]
+  areal = (xlim0(2) - xlim0(1))
+  xlim0(1) = xlim0(1) - 0.1_DFP * areal
+  xlim0(2) = xlim0(2) + 0.1_DFP * areal
 END IF
 
-CONTAINS
-INTEGER FUNCTION get_os_type() RESULT(r)
-  !! Returns one of OS_WINDOWS, others
-  !! At first, the environment variable `OS` is checked, which is usually
-  !! found on Windows.
-  !! Copy from fpm/fpm_environment: https://github.com/fortran-lang/fpm/blob/master/src/fpm_environment.f90
-  CHARACTER(32) :: val
-  INTEGER :: length, rc
+IF (PRESENT(ylim)) THEN
+  ylim0 = ylim
+ELSE
+  ylim0 = [MINVAL(yDATA(:)), MAXVAL(yDATA(:))]
+  areal = (ylim0(2) - ylim0(1))
+  ylim0(1) = ylim0(1) - 0.1 * areal
+  ylim0(2) = ylim0(2) + 0.1 * areal
+END IF
 
-  INTEGER, PARAMETER :: OS_OTHERS = 0
-  INTEGER, PARAMETER :: OS_WINDOWS = 1
+xlabel0 = Input(default="x", option=xlabel)
+ylabel0 = Input(default="y", option=ylabel)
 
-  r = OS_OTHERS
-  ! Check environment variable `OS`.
-  CALL GET_ENVIRONMENT_VARIABLE('OS', val, length, rc)
+CALL obj%xlim(xlim0)
+CALL obj%ylim(ylim0)
+CALL obj%xlabel(xlabel0)
+CALL obj%ylabel(ylabel0)
+CALL obj%plot(x1=xDATA(:), y1=yDATA(:), ls1="w l")
+CALL obj%reset()
 
-  IF (rc .EQ. 0 .AND. length > 0 .AND. INDEX(val, 'Windows_NT') > 0) THEN
-    r = OS_WINDOWS
-    RETURN
+END PROCEDURE obj_plotData1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+FUNCTION CheckInput(xdata, ydata) RESULT(isok)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: xdata(:), ydata(:)
+  LOGICAL(LGT) :: isok
+
+  LOGICAL(LGT) :: abool
+  INTEGER(I4B) :: nx, ny
+
+  abool = PRESENT(xdata) .AND. PRESENT(ydata)
+
+  IF (abool) THEN
+    nx = SIZE(xdata)
+    ny = SIZE(ydata)
+
+    isok = nx .EQ. ny
+  ELSE
+    isok = .FALSE.
   END IF
 
-END FUNCTION
-
-END PROCEDURE finalize_plot
+END FUNCTION CheckInput
 
 END SUBMODULE PlotMethods

@@ -117,104 +117,39 @@ END SELECT
 END PROCEDURE process_linespec
 
 !----------------------------------------------------------------------------
-!                                                       create_outputfile
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE create_outputfile
-
-IF (obj%hasfileopen) THEN
-  ! there is nothing to do, file has been already open!
-  RETURN
-END IF
-
-!> Rev 0.2 animation
-
-! animation handling
-IF (obj%hasanimation) THEN
-  obj%frame_number = obj%frame_number + 1 ! for future use
-END IF
-
-! Open the output file
-
-IF (.NOT. (obj%hasfilename)) THEN ! check if no file has been set by user
-  obj%txtfilename = gnuplot_output_filename
-END IF
-
-        open ( newunit = obj%file_unit, file = obj%txtfilename, status = 'replace', iostat = obj%status )
-
-IF (obj%status /= 0) THEN
-  PRINT *, "md_helperproc, create_outputfile: cannot open file for output"
-  STOP
-END IF
-
-! Set the gnuplot terminal, write oGnuPlot_ configuration (customized setting)
-! Can be overwritten by options
-
-! write signature
-WRITE (obj%file_unit, '(a)') '# '//md_name
-WRITE (obj%file_unit, '(a)') '# '//md_rev
-WRITE (obj%file_unit, '(a)') '# '//md_lic
-WRITE (obj%file_unit, '(a)') ! emptyline
-
-! write the global settings
-WRITE (obj%file_unit, '(a)') '# gnuplot global setting'
-WRITE (unit=obj%file_unit, fmt='(a)') 'set term '//gnuplot_term_type// &
-  ' size '//gnuplot_term_size//' enhanced font "'// &
-  gnuplot_term_font//'"'// &
-  ' title "'//md_name//': '//md_rev//'"' ! library name and version
-
-! write the preset configuration for gnuplot (ogpf customized settings)
-IF (obj%preset_configuration) THEN
-  CALL obj%preset_gnuplot_config()
-END IF
-! write multiplot setting
-IF (obj%hasmultiplot) THEN
-  WRITE (obj%file_unit, fmt='(a, I2, a, I2)') 'set multiplot layout ', &
-    obj%multiplot_rows, ',', obj%multiplot_cols
-END IF
-! set flag true for file is opened
-obj%hasfileopen = .TRUE.
-
-END PROCEDURE create_outputfile
-
-!----------------------------------------------------------------------------
-!                                                             processcmd
+!
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE processcmd
 ! write the plot style for data
 ! obj is used only when 3D plots (splot, cplot) is used
 IF (ALLOCATED(obj%txtdatastyle)) THEN
-  WRITE (obj%file_unit, '("set style data ", a)') obj%txtdatastyle
-  WRITE (obj%file_unit, '(a)')
+  CALL obj%pltfile%WRITE("set style data "//obj%txtdatastyle)
+  CALL obj%pltfile%WriteBlank()
 END IF
 
 ! Write options
 IF (obj%hasoptions) THEN
-  WRITE (obj%file_unit, '(" ")')
-  WRITE (obj%file_unit, '("# options")')
-  WRITE (obj%file_unit, '(a)') obj%txtoptions
-  WRITE (obj%file_unit, '(a)')
+  CALL obj%pltfile%WRITE("# options")
+  CALL obj%pltfile%WRITE(obj%txtoptions)
+  CALL obj%pltfile%WriteBlank()
 END IF
 
 ! Check with plot scale: i.e linear, logx, logy, or log xy
-WRITE (obj%file_unit, '(" ")')
-WRITE (obj%file_unit, '("# plot scale")')
+CALL obj%pltfile%WRITE("# plot scale")
 SELECT CASE (obj%plotscale)
 CASE ('semilogx')
-  WRITE (obj%file_unit, '("set logscale  x")')
+  CALL obj%pltfile%WRITE("set logscale  x")
 CASE ('semilogy')
-  WRITE (obj%file_unit, '("set logscale  y")')
+  CALL obj%pltfile%WRITE("set logscale  y")
 CASE ('loglog')
-  WRITE (obj%file_unit, '("set logscale  xy")')
-CASE default !for no setting
-  !pass
+  CALL obj%pltfile%WRITE("set logscale  xy")
+CASE default
+  ! do nothing
 END SELECT
 
-        !!>0.22
 ! write annotation
-WRITE (obj%file_unit, '(" ")')
-WRITE (obj%file_unit, '("# Annotation: title and labels")')
+CALL obj%pltfile%WRITE("# Annotation: title and labels")
 CALL write_label(obj, 'plot_title')
 CALL write_label(obj, 'xlabel')
 CALL write_label(obj, 'x2label')
@@ -223,52 +158,33 @@ CALL write_label(obj, 'y2label')
 CALL write_label(obj, 'zlabel')
 
 ! axes range
-WRITE (obj%file_unit, '(" ")')
-WRITE (obj%file_unit, '("# axes setting")')
+CALL obj%pltfile%WRITE("# axes setting")
 IF (obj%hasxrange) THEN
-  WRITE (obj%file_unit, '("set xrange [",G0,":",G0,"]")') obj%xrange
+  CALL obj%pltfile%WRITE("set xrange ["//tostring(obj%xrange(1))// &
+                         ":"//tostring(obj%xrange(2))//"]")
 END IF
 IF (obj%hasyrange) THEN
-  WRITE (obj%file_unit, '("set yrange [",G0,":",G0,"]")') obj%yrange
+  CALL obj%pltfile%WRITE("set yrange ["//tostring(obj%yrange(1))// &
+                         ":"//tostring(obj%yrange(2))//"]")
 END IF
 IF (obj%haszrange) THEN
-  WRITE (obj%file_unit, '("set zrange [",G0,":",G0,"]")') obj%zrange
+  CALL obj%pltfile%WRITE("set zrange ["//tostring(obj%zrange(1))// &
+                         ":"//tostring(obj%zrange(2))//"]")
 END IF
 
 ! secondary axes range
 IF (obj%hasx2range) THEN
-  WRITE (obj%file_unit, '("set x2range [",G0,":",G0,"]")') obj%x2range
+  CALL obj%pltfile%WRITE("set x2range ["//tostring(obj%x2range(1))// &
+                         ":"//tostring(obj%x2range(2))//"]")
 END IF
 IF (obj%hasy2range) THEN
-  WRITE (obj%file_unit, '("set y2range [",G0,":",G0,"]")') obj%y2range
+  CALL obj%pltfile%WRITE("set y2range ["//tostring(obj%y2range(1))// &
+                         ":"//tostring(obj%y2range(2))//"]")
 END IF
 ! finish by new line
-WRITE (obj%file_unit, '(a)') ! emptyline
+CALL obj%pltfile%WriteBlank()
 
 END PROCEDURE processcmd
-
-!----------------------------------------------------------------------------
-!                                                              write_xydata
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE write_xydata
-INTEGER :: i
-
-! TODO (Mohammad#1#12/22/17): The format string shall be modified to write the
-! number in more suitable form
-! Rev 0.18
-IF (PRESENT(y)) THEN !both x and y are present, data are xy set
-  DO i = 1, ndata
-    WRITE (file_unit, *) x(i), y(i)
-  END DO
-ELSE !only x is passed, data are index-x set
-  DO i = 1, ndata
-    WRITE (file_unit, *) x(i)
-  END DO
-END IF
-WRITE (file_unit, '(a)') 'e' !end of set of data
-
-END PROCEDURE write_xydata
 
 !----------------------------------------------------------------------------
 !                                                                  hasTitle
@@ -364,8 +280,9 @@ IF (label%rotate /= NOT_INITIALIZED) THEN
   lblstring = lblstring//' rotate by '//tostring(label%rotate)
 END IF
 
-! write to ogpf script file
-WRITE (obj%file_unit, '(a)') lblstring
+IF (obj%pltfile%IsOpen()) THEN
+  CALL obj%pltfile%WRITE(lblstring)
+END IF
 
 END PROCEDURE write_label
 
@@ -450,62 +367,56 @@ MODULE PROCEDURE preset_gnuplot_config
 ! To write the preset configuration for gnuplot (ogpf customized settings)
 !..............................................................................
 
-CALL obj%writeScript()
-CALL obj%writeScript(script='# ogpf extra configuration')
-CALL obj%writeScript(script=commentLineGnuplot)
+CALL obj%pltfile%WriteBlank()
+CALL obj%pltfile%WRITE('# ogpf extra configuration')
+CALL obj%pltfile%WRITE(commentLineGnuplot)
 
 ! color definition
-CALL obj%writeScript(script='# color definitions')
-CALL obj%writeScript(script='set style line 1 lc rgb "#800000" lt 1 lw 2')
-CALL obj%writeScript(script='set style line 2 lc rgb "#ff0000" lt 1 lw 2')
+CALL obj%pltfile%WRITE('# color definitions')
+CALL obj%pltfile%WRITE('set style line 1 lc rgb "#800000" lt 1 lw 2')
+CALL obj%pltfile%WRITE('set style line 2 lc rgb "#ff0000" lt 1 lw 2')
 
-CALL obj%writeScript(script='set style line 3 lc rgb "#ff4500" lt 1 lw 2')
-CALL obj%writeScript(script='set style line 4 lc rgb "#ffa500" lt 1 lw 2')
-CALL obj%writeScript(script='set style line 5 lc rgb "#006400" lt 1 lw 2')
-CALL obj%writeScript(script='set style line 6 lc rgb "#0000ff" lt 1 lw 2')
-CALL obj%writeScript(script='set style line 7 lc rgb "#9400d3" lt 1 lw 2')
-CALL obj%writeScript()
+CALL obj%pltfile%WRITE('set style line 3 lc rgb "#ff4500" lt 1 lw 2')
+CALL obj%pltfile%WRITE('set style line 4 lc rgb "#ffa500" lt 1 lw 2')
+CALL obj%pltfile%WRITE('set style line 5 lc rgb "#006400" lt 1 lw 2')
+CALL obj%pltfile%WRITE('set style line 6 lc rgb "#0000ff" lt 1 lw 2')
+CALL obj%pltfile%WRITE('set style line 7 lc rgb "#9400d3" lt 1 lw 2')
+CALL obj%pltfile%WriteBlank()
 ! axes setting
-CALL obj%writeScript(script='# Axes')
-CALL obj%writeScript(script='set border linewidth 1.15')
-CALL obj%writeScript(script='set tics nomirror')
-CALL obj%writeScript()
+CALL obj%pltfile%WRITE('# Axes')
+CALL obj%pltfile%WRITE('set border linewidth 1.15')
+CALL obj%pltfile%WRITE('set tics nomirror')
+CALL obj%pltfile%WriteBlank()
 
-CALL obj%writeScript(script='# grid')
-CALL obj%writeScript(script='# Add light grid to plot')
-CALL obj%writeScript(script='set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
-CALL obj%writeScript(script='set grid back ls 102')
-CALL obj%writeScript()
+CALL obj%pltfile%WRITE('# grid')
+CALL obj%pltfile%WRITE('# Add light grid to plot')
+CALL obj%pltfile%WRITE('set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
+CALL obj%pltfile%WRITE('set grid back ls 102')
+CALL obj%pltfile%WriteBlank()
 ! set the plot style
-CALL obj%writeScript(script='# plot style')
-CALL obj%writeScript(script='set style data linespoints')
-CALL obj%writeScript()
+CALL obj%pltfile%WRITE('# plot style')
+CALL obj%pltfile%WRITE('set style data linespoints')
+CALL obj%pltfile%WriteBlank()
 
-CALL obj%writeScript(script=commentLineGnuplot)
-CALL obj%writeScript()
+CALL obj%pltfile%WRITE(commentLineGnuplot)
+CALL obj%pltfile%WriteBlank()
 
 END PROCEDURE preset_gnuplot_config
 
 !----------------------------------------------------------------------------
-!                                                            writeScript
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_writeScript
-CHARACTER(:), ALLOCATABLE :: fmt0
+MODULE PROCEDURE obj_writeData_xy
+INTEGER(I4B) :: ii, ndata
 
-IF (PRESENT(fmt)) THEN
-  fmt0 = fmt
-ELSE
-  fmt0 = defaultFmtGnuplot
-END IF
+ndata = SIZE(x)
+DO ii = 1, ndata
+  CALL obj%pltfile%WRITE([x(ii), y(ii)], orient="ROW")
+END DO
+CALL obj%pltfile%WRITE("e")
 
-IF (PRESENT(script)) THEN
-  WRITE (obj%file_unit, fmt0) script
-ELSE
-  WRITE (obj%file_unit, fmt0)
-END IF
-
-END PROCEDURE obj_writeScript
+END PROCEDURE obj_writeData_xy
 
 !----------------------------------------------------------------------------
 !                                                            color_palettes
@@ -564,12 +475,12 @@ END PROCEDURE obj_addscript
 
 MODULE PROCEDURE obj_runscript
 
-CALL create_outputfile(obj)
+CALL obj%Initiate()
 
 CALL processcmd(obj)
-CALL obj%writeScript(script=obj%txtscript)
+CALL obj%pltfile%WRITE(obj%txtscript)
 
-CALL finalize_plot(obj)
+CALL obj%DEALLOCATE()
 
 END PROCEDURE obj_runscript
 

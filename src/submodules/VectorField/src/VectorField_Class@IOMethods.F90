@@ -133,4 +133,47 @@ END PROCEDURE obj_Export
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_ExportToVTK
+CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
+
+INTEGER(I4B) :: tsize, tnodes, nrow, ncol
+REAL(DFP), ALLOCATABLE :: VALUE(:, :)
+TYPE(String) :: name
+CHARACTER(1), ALLOCATABLE :: dofnames(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalPhysicalVars()
+ALLOCATE (dofnames(tsize))
+CALL obj%GetPhysicalNames(dofnames)
+
+ncol = obj%spaceCompo
+tsize = obj%fedof%GetTotalDOF()
+tnodes = obj%fedof%GetTotalVertexDOF()
+
+ALLOCATE (VALUE(tsize, 3))
+CALL obj%Get(VALUE=VALUE, nrow=nrow, ncol=ncol, storageFMT=DOF_FMT)
+
+VALUE(:, 3) = 0.0_DFP
+! name = obj%name%chars()//"_"//dofnames(1)
+name = obj%name%Join(array=dofnames, sep="_")
+
+! CALL vtk%WriteDataArray(name=name, x=VALUE(1:nrow, 1:ncol), &
+!                         numberOfComponents=1)
+CALL vtk%WriteDataArray(name=name, x=VALUE(1:nrow, 1), &
+                        y=VALUE(1:nrow, 2), z=VALUE(1:nrow, 3))
+
+name = ''
+DEALLOCATE (dofnames)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_ExportToVTK
+
 END SUBMODULE IOMethods
