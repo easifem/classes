@@ -304,7 +304,7 @@ IF (PRESENT(delete)) bool = delete
 IF (obj%initstat) THEN
   IF (bool) THEN
     CALL obj%delete()
-  ELSE
+  ELSE IF (obj%IsOpen()) THEN
     CALL obj%CLOSE()
   END IF
 END IF
