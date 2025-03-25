@@ -239,7 +239,7 @@ IF (tsize_dbc_value .NE. 0) THEN
   CALL CSRMatrix_ApplyDBC(obj=obj%tanmat, &
                           dbcptrs=obj%dbc_idof(1:tsize_dbc_idof))
 
-  CALL RealVector_Set(obj=obj%sol, VALUE=0.0_DFP)
+  ! CALL RealVector_Set(obj=obj%sol, VALUE=0.0_DFP)
   CALL RealVector_Set(obj=obj%sol, nodenum=obj%dbc_idof(1:tsize_dbc_idof), &
                       VALUE=obj%dbc_value(1:tsize_dbc_value))
 

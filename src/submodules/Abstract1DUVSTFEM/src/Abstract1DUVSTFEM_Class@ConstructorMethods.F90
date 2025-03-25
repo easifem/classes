@@ -174,6 +174,7 @@ END DO
 CALL CSRMatrix_SetSparsity(obj=obj%tanmat)
 
 CALL RealVector_Initiate(obj%sol, nrow)
+CALL realvector_set(obj%sol, zero)
 CALL RealVector_Initiate(obj%rhs, nrow)
 
 #ifdef DEBUG_VER

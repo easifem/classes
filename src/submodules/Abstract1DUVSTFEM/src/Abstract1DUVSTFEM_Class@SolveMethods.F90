@@ -124,35 +124,10 @@ CALL CSRMatrix_LUSolve(A=obj%tanmat, X=obj%sol%val(:), &
                        B=obj%rhs%val(:))
 RETURN
 
-! lapack solve
-CALL csrmatrix_convert(mat, obj%tanmat)
-
-CALL solve(A=mat, B=obj%rhs%val(:), X=obj%sol%val(:))
-
-DEALLOCATE (mat)
-RETURN
-
-! gmres
-CALL CSRMatrixLinSolveInitiate(ipar=obj%ipar, fpar=obj%fpar, W=obj%work, &
-                               n=n, solverName=solverName, &
-                               maxIter=500 * n, &
-                               ! convergenceType=RelativeConvergence, &
-                               ! convergenceIn=ConvergenceInSol, &
-                               rtol=1.0D-8, &
-                               atol=1.0D-8)
-
-CALL csrmatrix_getdiagonal(obj%tanmat, diag)
-CALL CSRMatrix_DiagScaling(obj=obj%tanmat, diag=diag, side="BOTH")
-
-obj%sol%val(:) = obj%sol%val(:) * SQRT(diag)
-obj%rhs%val(:) = obj%rhs%val(:) / SQRT(diag)
-
 ! WARN: the below method does not converge at all
 ! maybe we should consider to use preconditioner
-CALL CSRMatrix_LinSolve(obj=obj%tanmat, sol=obj%sol%val(:), &
-                 rhs=obj%rhs%val(:), ipar=obj%ipar, fpar=obj%fpar, W=obj%work)
-
-obj%sol%val(:) = obj%sol%Val(:) / SQRT(diag)
+! CALL CSRMatrix_LinSolve(obj=obj%tanmat, sol=obj%sol%val(1:n), &
+!                rhs=obj%rhs%val(1:n), ipar=obj%ipar, fpar=obj%fpar, W=obj%work)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
