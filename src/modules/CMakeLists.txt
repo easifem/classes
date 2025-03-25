@@ -452,3 +452,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSDFEM/CMakeLists.txt)
 
 # HelmholtzFEM
 include(${CMAKE_CURRENT_LIST_DIR}/Helmholtz1DFEM/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# 2D solver
+# ----------------------------------------------------------------------------
+
+# Scalar Wave Solver
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarWave2DFEM/CMakeLists.txt)
