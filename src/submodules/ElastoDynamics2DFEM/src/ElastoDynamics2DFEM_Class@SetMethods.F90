@@ -44,6 +44,7 @@ obj%currentTime = obj%timeRange(1)
 
 CALL obj%InitiateFEDOF()
 CALL obj%InitiateFields()
+CALL obj%InitiateStressStrainFields()
 
 isok = ALLOCATED(obj%dbc)
 

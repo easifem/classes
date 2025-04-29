@@ -126,6 +126,8 @@ CALL obj%solidMaterial(1)%ptr%Display("solidMaterial: ", unitno=unitno)
 
 CALL Display("Output Controll")
 CALL Display(obj%saveData, "saveData: ", unitno=unitno)
+CALL Display(obj%saveMeshFieldData, "saveMeshFieldData: ", unitno=unitno)
+CALL Display(obj%saveStressAtCenter, "saveStressAtCenter: ", unitno=unitno)
 CALL Display(obj%outputFreq, "outputFreq: ", unitno=unitno)
 
 #ifdef DEBUG_VER
@@ -270,6 +272,27 @@ SUBROUTINE ImportEssentialsFromToml(obj, table)
   END IF
   array => NULL()
   DEALLOCATE (tempboolvec)
+
+  IF (debug) CALL Display(myName//" saveMeshFieldData")
+
+  obj%saveMeshFieldData = .TRUE.
+  CALL toml_get(table, "saveMeshFieldData", array, origin=origin, stat=stat)
+  CALL toml_get(array, tempboolvec, origin=origin, stat=stat)
+
+  abool = SIZE(tempboolvec) .EQ. 1
+  IF (abool) THEN
+    obj%saveMeshFieldData = tempboolvec(1)
+  ELSE
+    isok = SIZE(tempboolvec) .EQ. 2
+    CALL AssertError1(isok, myname, "saveMeshFieldData should have 2 values")
+    obj%saveMeshFieldData = tempboolvec
+  END IF
+  array => NULL()
+  DEALLOCATE (tempboolvec)
+
+  obj%saveStressAtCenter = .TRUE.
+  CALL toml_get(table, "saveStressAtCenter", obj%saveStressAtCenter, &
+                origin=origin, stat=stat)
 
   IF (debug) CALL Display(myName//" outputFreq")
 

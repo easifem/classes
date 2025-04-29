@@ -72,6 +72,8 @@ USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE SolidMaterial_Class, ONLY: SolidMaterialPointer_
 USE LinSolver_Class, ONLY: LinSolver_
 USE FEMesh_Class, ONLY: FEMesh_, FEMeshPointer_
+USE AbstractMeshField_Class
+USE VectorMeshField_Class
 
 PRIVATE
 
@@ -133,7 +135,8 @@ TYPE :: ElastoDynamics2DFEM_
   INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 
   INTEGER(I4B) :: maxNNE = 0, maxCON = 0, &
-                  maxNodeNum_pointSource = 0
+                  maxNodeNum_pointSource = 0, &
+                  maxNIP = 0
 
   TYPE(MatrixFieldPointer_) :: matrixFields(3)
   TYPE(MatrixField_), POINTER :: tanmat, massMat, stiffMat
@@ -142,6 +145,8 @@ TYPE :: ElastoDynamics2DFEM_
   TYPE(VectorField_), POINTER :: rhs, sol, rhs0, &
                                  force1, force2, tmp1, &
                                  u0, v0, a0
+
+  TYPE(VectorMeshField_) :: stress, strain
 
   INTEGER(I4B) :: tnbc = 0, tdbc = 0, tnbc_point = 0
 
@@ -206,7 +211,8 @@ TYPE :: ElastoDynamics2DFEM_
   TYPE(String) :: result_dir
   !! Result directory name
 
-  TYPE(QuadraturePoint_) :: quadForSpace, quadForSpaceBnd
+  TYPE(QuadraturePoint_) :: quadForSpace, quadForSpaceBnd, &
+                            quadForStress
   !! Quadrature points in space
 
   TYPE(ElemshapeData_) :: elemsdForSpace, elemsdForSpaceBnd
@@ -230,6 +236,10 @@ TYPE :: ElastoDynamics2DFEM_
   LOGICAL(LGT) :: saveData(4)
   !! boolean to decide write the data of
   !! diaplacement, velocity, acceleration, and all
+  LOGICAL(LGT) :: saveMeshFieldData(2)
+  LOGICAL(LGT) :: saveStressAtCenter = .TRUE.
+  !! boolean to decide write the data of
+  !! stress and strain
 
   INTEGER(I4B) :: outputFreq = 1
   !! output frequency
@@ -261,6 +271,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => obj_InitiateFields
   !! Initiate tangent matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateStressStrainFields => obj_InitiateStressStrainFields
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! set the problem
@@ -299,6 +311,8 @@ CONTAINS
   !! Solve
 
   PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
+
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateStressStrain => obj_UpdateStressStrain
    !! Update
 
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData => obj_WriteData
@@ -525,6 +539,16 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                initiateStressStrain@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateStressStrainFields(obj)
+    CLASS(ElastoDynamics2DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateStressStrainFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     AssembleTanmat@Methods
 !----------------------------------------------------------------------------
 
@@ -706,6 +730,20 @@ INTERFACE
   MODULE SUBROUTINE obj_Update(obj)
     CLASS(ElastoDynamics2DFEM_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Update
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 UpdateStresssStrain@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2025-04-28
+! summary:  Update Stress and strain
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateStressStrain(obj)
+    CLASS(ElastoDynamics2DFEM_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_UpdateStressStrain
 END INTERFACE
 
 !----------------------------------------------------------------------------

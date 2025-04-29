@@ -15,9 +15,23 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(ElastoDynamics2DFEM_Class) UpdateMethods
+USE GlobalData, ONLY: NODES_FMT
+USE SymUtility
+USE RealMatrix_Method, ONLY: RealMatrix_sym => SYM
+
+USE FEVariable_Method, ONLY: QuadratureVariable, &
+                             OPERATOR(*), &
+                             fevar_Display => Display, &
+                             Get_
+USE BaseType, ONLY: TypeFEVariableOpt, &
+                    TypeFEVariableSpace, &
+                    TypeFEVariableVector, &
+                    TypeFEVariableMatrix, &
+                    TypeFEVariableConstant
+
+USE ElemshapeData_Method
 
 IMPLICIT NONE
 
@@ -142,6 +156,85 @@ IF (debug) CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                                    '[END] ')
 
 END PROCEDURE obj_Update
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_UpdateStressStrain
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateStressStrain()"
+INTEGER(I4B) :: iel, nrow, ncol, tsize, ii, order
+REAL(DFP) :: xij(3, obj%maxNNE), uiJ(2, obj%maxNNE), &
+             strain_val(3, obj%maxNIP), coeff(3, 3)
+! NOTE: later it will be replaced with static array
+REAL(DFP), ALLOCATABLE :: lgval(:, :, :)
+TYPE(FEVariable_) :: strain, stress
+
+IF (obj%saveStressAtCenter) THEN
+  order = 1
+ELSE
+  order = 2 * obj%spaceOrder
+END IF
+
+DO iel = 1, obj%totalSpaceElements
+
+  CALL Get_(obj=obj%cijkl, rank=TypeFEVariableMatrix, &
+            vartype=TypeFEVariableConstant, &
+            val=coeff, nrow=nrow, ncol=ncol)
+
+  CALL obj%fedof%GetQuadraturePoints1(quad=obj%quadForStress, &
+                                      globalElement=iel, &
+                                      quadratureType=obj%quadTypeForSpace, &
+                                      order=order, &
+                                      islocal=.TRUE.)
+
+  CALL obj%fedof%GetLocalElemShapeData(globalElement=iel, &
+                                       elemsd=obj%elemsdForSpace, &
+                                       quad=obj%quadForStress, &
+                                       islocal=.TRUE.)
+
+  CALL obj%cellmesh%GetNodeCoord(nodecoord=xij, nrow=nrow, ncol=ncol, &
+                                 globalElement=iel, islocal=.TRUE.)
+
+  CALL obj%fedof%GetGlobalElemShapeData(globalElement=iel, &
+                                        elemsd=obj%elemsdForSpace, &
+                                        xij=xij, islocal=.TRUE.)
+
+  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+                                  ans=obj%cellcon, tsize=tsize, opt="A")
+
+  CALL obj%u0%Get(VALUE=uiJ, nrow=nrow, ncol=ncol, storageFMT=NODES_FMT, &
+                  globalNode=obj%cellcon(1:tsize), islocal=.TRUE.)
+
+  ! CALL obj%u0%Get(VALUE=u_fevar, globalNode=obj%cellcon(1:tsize), &
+  !                 islocal=.TRUE.)
+
+  CALL GetSpatialGradient(obj%elemsdForSpace, lg=lgval, &
+                          val=uiJ(1:nrow, 1:ncol))
+  tsize = SIZE(lgval, 3)
+
+  DO ii = 1, tsize
+    ! strain at integration point
+    lgval(:, :, ii) = half * RealMatrix_sym(lgval(:, :, ii))
+    strain_val(1, ii) = lgval(1, 1, ii)
+    strain_val(2, ii) = lgval(2, 2, ii)
+    strain_val(3, ii) = lgval(1, 2, ii) + lgval(2, 1, ii)
+
+  END DO
+
+  strain = QuadratureVariable(val=strain_val(:, 1:tsize), rank=TypeFEVariableVector, &
+                              vartype=TypeFEVariableSpace)
+
+  stress = QuadratureVariable(val=MATMUL(coeff, strain_val(:, 1:tsize)), &
+                              rank=TypeFEVariableVector, &
+                              vartype=TypeFEVariableSpace)
+
+  CALL obj%strain%Set(iel, fevar=strain, islocal=.TRUE.)
+  CALL obj%stress%Set(iel, fevar=stress, islocal=.TRUE.)
+
+END DO
+
+END PROCEDURE obj_UpdateStressStrain
 
 !----------------------------------------------------------------------------
 !

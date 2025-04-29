@@ -92,6 +92,7 @@ DO iel = 1, obj%totalSpaceElements
 
   obj%ms = zero
   CALL MassMatrix_(test=obj%elemsdForSpace, trial=obj%elemsdForSpace, &
+                   rho=obj%density, rhorank=TypeFEVariableScalar, &
                    ans=obj%ms, nrow=nrow, ncol=ncol, opt=spaceCompo)
 
   CALL obj%massMat%Set(globalNode=obj%cellcon(1:tsize), islocal=.TRUE., &
@@ -409,6 +410,7 @@ DO nbcNo = 1, tnbc
                       spaceCompo=idof, &
                       scale=one, addContribution=.TRUE., &
                       islocal=.TRUE.)
+
 END DO
 
 NULLIFY (nbc)

@@ -39,6 +39,13 @@ USE VectorField_Class, ONLY: SetVectorFieldParam
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractField_Class, ONLY: TypeField
 USE FieldFactory
+USE VectorMeshField_Class
+USE AbstractMeshField_Class
+USE BaseType, ONLY: TypeFEVariableOpt, &
+                    TypeFEVariableSpace, &
+                    TypeFEVariableVector
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturepoints
+USE FEVariable_Method, ONLY: QuadratureVariable
 
 IMPLICIT NONE
 
@@ -130,8 +137,10 @@ CALL meshfile%DEALLOCATE()
 obj%cellmesh => obj%dom%GetMeshPointer(nsd)
 obj%maxNNE = obj%cellmesh%GetMaxNNE()
 obj%totalSpaceElements = obj%cellmesh%GetTotalElements()
-! TODO: improve it
+
+! TODO: currently uniform order is assumed
 obj%spaceOrder = obj%cellmesh%GetOrder(globalelement=1, islocal=.TRUE.)
+obj%maxSpaceOrder = obj%spaceOrder
 
 IF (debug) CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                                    '[END] ')
@@ -156,6 +165,14 @@ CALL obj%fedof%Initiate(baseContinuity=obj%baseContinuityForSpace, &
 
 obj%maxCON = obj%fedof%GetMaxTotalConnectivity()
 CALL Reallocate(obj%cellcon, obj%maxcon)
+
+! NOTE: uniform order mesh is assumed
+CALL obj%fedof%GetQuadraturePoints1(quad=obj%quadForSpace, &
+                                    globalElement=1, &
+                                    quadratureType=obj%quadTypeForSpace, &
+                                    order=2 * obj%maxSpaceOrder, &
+                                    islocal=.TRUE.)
+obj%maxNIP = GetTotalQuadraturepoints(obj%quadForSpace, 1)
 
 ! TODO: implement it
 ! IF (ALLOCATED(obj%nbc)) CALL InitiateFEDOF_NBC(obj)
@@ -215,7 +232,7 @@ MODULE PROCEDURE obj_InitiateFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFields()"
 #endif
 
-INTEGER(I4B) :: aint, id
+INTEGER(I4B) :: aint, id, iel
 TYPE(String) :: matNames(3), fieldNames(9)
 
 IF (debug) CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -291,7 +308,59 @@ IF (debug) CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_InitiateFields
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalDOFSpace
+!                                                       initiateStressStrain
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateStressStrainFields
+
+INTEGER(I4B) :: tsize, ii
+REAL(DFP), ALLOCATABLE :: tmp(:, :)
+TYPE(FEVariable_) :: fevar
+
+! NOTE: uniform order in mesh is assumed
+
+IF (obj%saveStressAtCenter) THEN
+  tsize = 1
+ELSE
+  tsize = obj%maxNIP
+END IF
+
+CALL SetVectorMeshFieldParam(param=obj%param, name="stress", &
+                             fieldType=TypeField%normal, &
+                             varType=TypeField%space, &
+                             engine="NATIVE_SERIAL", &
+                             defineOn=TypeFEVariableOpt%quadrature, &
+                             spaceCompo=nsd + 1, &
+                             nns=tsize)
+CALL obj%stress%Initiate(obj%param, obj%cellmesh)
+
+CALL SetVectorMeshFieldParam(param=obj%param, name="strain", &
+                             fieldType=TypeField%normal, &
+                             varType=TypeField%space, &
+                             engine="NATIVE_SERIAL", &
+                             defineOn=TypeFEVariableOpt%quadrature, &
+                             spaceCompo=nsd + 1, &
+                             nns=tsize)
+
+CALL obj%strain%Initiate(obj%param, obj%cellmesh)
+
+! zero reset stress and strain field
+ALLOCATE (tmp(nsd + 1, tsize))
+tmp = zero
+fevar = QuadratureVariable(val=tmp, rank=TypeFEVariableVector, &
+                           vartype=TypeFEVariableSpace)
+
+DO ii = 1, obj%totalSpaceElements
+
+  CALL obj%stress%Insert(ii, fevar=fevar, islocal=.TRUE.)
+  CALL obj%strain%Insert(ii, fevar=fevar, islocal=.TRUE.)
+
+END DO
+
+END PROCEDURE obj_InitiateStressStrainFields
+
+!----------------------------------------------------------------------------
+!
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
