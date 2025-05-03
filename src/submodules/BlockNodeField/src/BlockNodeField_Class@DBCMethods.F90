@@ -40,10 +40,11 @@ ivar0 = Input(default=1_I4B, option=ivar)
 ttimecompo = obj%dof.timecomponents.ivar0
 spacecompo = dbc%GetDOFNo()
 ncol = ttimecompo
-nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
+
+nrow = dbc%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
 ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+             ncol=ncol, fedof=obj%fedofs(ivar0)%ptr)
 
 aint = SIZE(nodalvalue, 2)
 case1 = aint .EQ. 1
@@ -98,7 +99,8 @@ tsize = SIZE(dbc)
 ncol = ttimecompo
 
 DO ibc = 1, tsize
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+
+  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
                   expandFactor=expandFactor)
 
@@ -108,7 +110,8 @@ END DO
 
 DO ibc = 1, tsize
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                        times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+                        times=times, nrow=nrow, ncol=ncol, &
+                        fedof=obj%fedofs(ivar0)%ptr)
 
   spacecompo = dbc(ibc)%ptr%GetDOFNo()
 

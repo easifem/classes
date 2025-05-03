@@ -32,6 +32,8 @@ USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 
 USE STVectorField_Class, ONLY: STVectorField_
 
+USE BlockNodeField_Class, ONLY: Blocknodefield_
+
 USE RealVector_Method, ONLY: Set, Add, GetPointer
 
 USE Display_Method, ONLY: tostring
@@ -516,6 +518,16 @@ TYPE IS (VectorField_)
   realvec => NULL()
 
 TYPE IS (STVectorField_)
+
+  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+                       istart=s(1), iend=s(2), stride=s(3), &
+                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
+  realvec => NULL()
+
+TYPE IS (BlockNodeField_)
 
   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
 

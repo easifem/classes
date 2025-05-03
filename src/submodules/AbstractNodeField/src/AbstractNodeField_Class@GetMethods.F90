@@ -502,10 +502,11 @@ spaceCompo(1) = dbc%GetDOFNo()
 
 ivar0 = Input(default=1_I4B, option=ivar)
 
-tsize = dbc%GetTotalNodeNum(obj%fedof)
+tsize = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
 ALLOCATE (globalNode(tsize))
 
-CALL dbc%Get(nodeNum=globalNode, tsize=tsize, fedof=obj%fedof)
+CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
+             fedof=obj%fedofs(ivar0)%ptr)
 ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar, &
                      spaceCompo=spaceCompo, &
                      timeCompo=Arange(1_I4B, timeCompo(ivar0)))
