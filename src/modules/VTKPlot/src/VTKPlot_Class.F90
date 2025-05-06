@@ -526,7 +526,6 @@ END SUBROUTINE vts_plot_x2y2f
 !----------------------------------------------------------------------------
 
 SUBROUTINE vts_plot_x3y3z3f(obj, x, y, z, f, filename)
-  USE String_Class, ONLY: String
   CLASS(VTKPlot_), INTENT(IN) :: obj
   REAL(DFP), INTENT(IN) :: x(:, :, :)
   REAL(DFP), INTENT(IN) :: y(:, :, :)
