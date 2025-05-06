@@ -26,6 +26,7 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: encodeVTKdataArray
+
 CHARACTER(*), PARAMETER :: modName = "VTKFile_Class"
 INTEGER(I4B), PARAMETER :: MAX_LEN_data_STRUCTURENAME = 256
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_Imagedata = 1
@@ -40,15 +41,15 @@ INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_Polydata = 9
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
 CHARACTER(*), PARAMETER, DIMENSION(10) :: dataStructureName = &
   & [ &
-  & "ImageData        ", &
+  & "Imagedata        ", &
   & "RectilinearGrid  ", &
   & "StructuredGrid   ", &
-  & "PolyData         ", &
+  & "Polydata         ", &
   & "UnstructuredGrid ", &
-  & "PImageData       ", &
+  & "PImagedata       ", &
   & "PRectilinearGrid ", &
   & "PStructuredGrid  ", &
-  & "PPolyData        ", &
+  & "PPolydata        ", &
   & "PUnstructuredGrid"  &
   & ]
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ASCII = 1

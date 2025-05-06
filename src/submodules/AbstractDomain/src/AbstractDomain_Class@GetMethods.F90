@@ -19,29 +19,51 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(AbstractDomain_Class) GetMethods
-USE ReallocateUtility
-USE InputUtility
-USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside
+USE ReallocateUtility, ONLY: Reallocate
+USE InputUtility, ONLY: Input
+USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
+                              BoundingBox_Initiate => Initiate
 USE F95_BLAS, ONLY: Copy
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
+USE Display_Method, ONLY: Display, ToString
+USE IntegerUtility, ONLY: RemoveDuplicates
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             GetMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer1
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+ans => NULL()
+END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
 !                                                             IsNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsNodePresent
-SELECT CASE (obj%nsd)
-CASE (0)
-  ans = obj%meshPoint%IsNodePresent(globalNode, islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%IsNodePresent(globalNode, islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%IsNodePresent(globalNode, islocal=islocal)
-CASE (3)
-  ans = obj%meshVolume%IsNodePresent(globalNode, islocal=islocal)
-END SELECT
+LOGICAL(LGT) :: islocal0
+INTEGER(I4B) :: aint
+
+islocal0 = Input(default=.FALSE., option=islocal)
+
+IF (islocal0) THEN
+  ans = (globalNode .GT. 0) .AND. (globalNode .LE. obj%tNodes)
+  RETURN
+END IF
+
+ans = (globalNode .GE. obj%minNptrs) .AND. (globalNode .LE. obj%maxNptrs)
+
+IF (ans) THEN
+  aint = obj%GetLocalNodeNumber(globalNode)
+  ans = aint .NE. 0_I4B
+END IF
+
 END PROCEDURE obj_IsNodePresent
 
 !----------------------------------------------------------------------------
@@ -49,24 +71,10 @@ END PROCEDURE obj_IsNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsElementPresent
-INTEGER(I4B) :: dim0
-
-dim0 = Input(default=obj%nsd, option=dim)
-SELECT CASE (dim0)
-CASE (3)
-  ans = obj%meshVolume%IsElementPresent(globalElement=globalElement,  &
-  & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%IsElementPresent(globalElement=globalElement, &
-  & islocal=islocal)
-END SELECT
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+ans = meshptr%IsElementPresent(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_IsElementPresent
 
 !----------------------------------------------------------------------------
@@ -74,79 +82,25 @@ END PROCEDURE obj_IsElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
-#endif
-
-INTEGER(I4B) :: dim0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (3)
-  ans = obj%meshVolume%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetConnectivity(globalElement=globalElement, &
-  & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
+ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
-!                                                          GetConnectivity
+!                                                          GetConnectivity_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
-#endif
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-INTEGER(I4B) :: dim0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (3)
-  CALL obj%meshVolume%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetConnectivity_(globalElement=globalElement, &
-  & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
+CALL meshptr%GetConnectivity_(globalElement=globalElement, &
+                              islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
@@ -154,38 +108,11 @@ END PROCEDURE obj_GetConnectivity_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNNE
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNNE()"
-#endif
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-INTEGER(I4B) :: dim0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-dim0 = Input(default=obj%nsd, option=dim)
-
-SELECT CASE (dim0)
-CASE (3)
-  ans = obj%meshVolume%GetNNE(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetNNE(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetNNE(globalElement=globalElement, &
-  & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetNNE(globalElement=globalElement, &
-  & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
+                              globalElement=globalElement, islocal=islocal)
+ans = meshptr%GetNNE(globalElement=globalElement, islocal=islocal)
 
 END PROCEDURE obj_GetNNE
 
@@ -194,35 +121,10 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+ans = meshptr%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -230,35 +132,10 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  ans = obj%meshVolume%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (2)
-  ans = obj%meshSurface%GetNodeToElements(globalNode=globalNode,  &
-    & islocal=islocal)
-CASE (1)
-  ans = obj%meshCurve%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-CASE (0)
-  ans = obj%meshPoint%GetNodeToElements(globalNode=globalNode, &
-    & islocal=islocal)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+ans = meshptr%GetNodeToElements(globalNode=globalNode, islocal=islocal)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------
@@ -266,35 +143,11 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1_()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  CALL obj%meshVolume%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+CALL meshptr%GetNodeToElements_(globalNode=globalNode,  &
+  & islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements1_
 
 !----------------------------------------------------------------------------
@@ -302,35 +155,11 @@ END PROCEDURE obj_GetNodeToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2_()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-SELECT CASE (obj%nsd)
-CASE (3)
-  CALL obj%meshVolume%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (2)
-  CALL obj%meshSurface%GetNodeToElements_(globalNode=globalNode,  &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (1)
-  CALL obj%meshCurve%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-CASE (0)
-  CALL obj%meshPoint%GetNodeToElements_(globalNode=globalNode, &
-    & islocal=islocal, ans=ans, tsize=tsize)
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer()
+CALL meshptr%GetNodeToElements_(globalNode=globalNode,  &
+  & islocal=islocal, ans=ans, tsize=tsize)
+meshptr => NULL()
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
@@ -338,21 +167,24 @@ END PROCEDURE obj_GetNodeToElements2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
-IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (3)
-    ans = obj%meshVolume%GetTotalNodes()
-  CASE (2)
-    ans = obj%meshSurface%GetTotalNodes()
-  CASE (1)
-    ans = obj%meshCurve%GetTotalNodes()
-  CASE (0)
-    ans = obj%meshPoint%GetTotalNodes()
-  END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: case1, problem
 
-ELSE
+ans = 0
+case1 = (.NOT. PRESENT(dim)) .AND. (.NOT. PRESENT(entityNum))
+IF (case1) THEN
   ans = obj%tNodes
+  RETURN
 END IF
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+problem = .NOT. ASSOCIATED(meshptr)
+IF (problem) RETURN
+
+ans = meshptr%GetTotalNodes()
+NULLIFY (meshptr)
+
 END PROCEDURE obj_GetTotalNodes
 
 !----------------------------------------------------------------------------
@@ -372,25 +204,39 @@ ans = obj%GetTotalNodes()
 END PROCEDURE obj_tNodes2
 
 !----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tNodes3
+ans = obj%GetTotalNodes(dim=opt(1), entityNum=opt(2))
+END PROCEDURE obj_tNodes3
+
+!----------------------------------------------------------------------------
 !                                                           GetTotalElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements
-IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (3)
-    ans = obj%meshVolume%GetTotalElements()
-  CASE (2)
-    ans = obj%meshSurface%GetTotalElements()
-  CASE (1)
-    ans = obj%meshCurve%GetTotalElements()
-  CASE (0)
-    ans = obj%meshPoint%GetTotalElements()
-  END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: case1, isDim, isEntityNum
 
-ELSE
-  ans = SUM(obj%tElements)
+isEntityNum = PRESENT(entityNum)
+isDim = PRESENT(dim)
+
+case1 = isDim .AND. isEntityNum
+IF (case1) THEN
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+  ans = meshptr%GetTotalElements()
+  meshptr => NULL()
+  RETURN
 END IF
+
+case1 = isDim .AND. (.NOT. isEntityNum)
+IF (case1) THEN
+  ans = obj%tElements(dim)
+  RETURN
+END IF
+
+ans = SUM(obj%tElements)
 END PROCEDURE obj_GetTotalElements
 
 !----------------------------------------------------------------------------
@@ -410,36 +256,19 @@ ans = obj%GetTotalElements(dim=dim)
 END PROCEDURE obj_tElements2
 
 !----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_tElements3
+ans = obj%GetTotalElements(dim=opt(1), entityNum=opt(2))
+END PROCEDURE obj_tElements3
+
+!----------------------------------------------------------------------------
 !                                                         GetLocalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
 ans = globalNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
-!   & islocal=islocal)
-! CASE (2)
-!   ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (1)
-!   ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (0)
-!   ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
-
 END PROCEDURE obj_GetLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -448,31 +277,6 @@ END PROCEDURE obj_GetLocalNodeNumber1
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
 ans = globalNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetLocalNodeNumber(globalNode=globalNode,  &
-!   & islocal=islocal)
-! CASE (2)
-!   ans = obj%meshSurface%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (1)
-!   ans = obj%meshCurve%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE (0)
-!   ans = obj%meshPoint%GetLocalNodeNumber(globalNode=globalNode, &
-!   & islocal=islocal)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
-
 END PROCEDURE obj_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -481,26 +285,6 @@ END PROCEDURE obj_GetLocalNodeNumber2
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber1
 ans = localNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber1()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetGlobalNodeNumber(localNode=localNode)
-! CASE (2)
-!   ans = obj%meshSurface%GetGlobalNodeNumber(localNode=localNode)
-! CASE (1)
-!   ans = obj%meshCurve%GetGlobalNodeNumber(localNode=localNode)
-! CASE (0)
-!   ans = obj%meshPoint%GetGlobalNodeNumber(localNode=localNode)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -509,26 +293,6 @@ END PROCEDURE obj_GetGlobalNodeNumber1
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber2
 ans = localNode
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
-! #endif
-!
-! SELECT CASE (obj%nsd)
-! CASE (3)
-!   ans = obj%meshVolume%GetGlobalNodeNumber(localNode=localNode)
-! CASE (2)
-!   ans = obj%meshSurface%GetGlobalNodeNumber(localNode=localNode)
-! CASE (1)
-!   ans = obj%meshCurve%GetGlobalNodeNumber(localNode=localNode)
-! CASE (0)
-!   ans = obj%meshPoint%GetGlobalNodeNumber(localNode=localNode)
-! CASE DEFAULT
-!   ans = 0
-! #ifdef DEBUG_VER
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: No case found')
-! #endif
-! END SELECT
 END PROCEDURE obj_GetGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -536,68 +300,99 @@ END PROCEDURE obj_GetGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: problem
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities()"
-
-problem = dim .LT. 0 .OR. dim .GT. 3
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: dim of the mesh should be in [0,1,2,3]")
-END IF
-#endif
-
 ans = obj%tEntities(dim)
 END PROCEDURE obj_GetTotalEntities
 
 !----------------------------------------------------------------------------
-!                                                             GetMeshPointer
+!                                                           GetDimEntityNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshPointer1
-SELECT CASE (dim)
-CASE (0)
-  ans => obj%meshPoint
-CASE (1)
-  ans => obj%meshCurve
-CASE (2)
-  ans => obj%meshSurface
-CASE (3)
-  ans => obj%meshVolume
-END SELECT
+MODULE PROCEDURE obj_GetDimEntityNum
+INTEGER(I4B) :: dim, entityNum, tsize
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-END PROCEDURE obj_GetMeshPointer1
+! main
+ans = 0
+dimloop: DO dim = 0, obj%nsd
+
+  tsize = obj%GetTotalEntities(dim=dim)
+  DO entityNum = 1, tsize
+
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+    IF (meshptr%IsElementPresent(globalElement=globalElement, &
+                                 islocal=islocal)) THEN
+      ans = [dim, entityNum]
+      EXIT dimloop
+    END IF
+
+  END DO
+
+END DO dimloop
+
+meshptr => NULL()
+END PROCEDURE obj_GetDimEntityNum
 
 !----------------------------------------------------------------------------
 !                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeCoord
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
-LOGICAL(LGT) :: problem
+MODULE PROCEDURE obj_GetNodeCoord1
+INTEGER(I4B) :: ii, tsize, nsd, jj
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
+LOGICAL(LGT) :: isok
+CLASS(AbstractMesh_), POINTER :: meshptr
 
-problem = .NOT. ALLOCATED(obj%nodeCoord)
-IF (problem) THEN
+isok = ALLOCATED(obj%nodeCoord)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Nodecoord is not allocated.")
+                    "[INTERNAL ERROR] :: Nodecoord is not allocated.")
   RETURN
 END IF
-#endif
 
-nodeCoord(1:obj%nsd, :) = obj%nodeCoord(1:obj%nsd, :)
+isok = (.NOT. PRESENT(dim)) .AND. (.NOT. PRESENT(entityNum))
+IF (isok) THEN
 
-END PROCEDURE obj_GetNodeCoord
+  tsize = SIZE(obj%nodeCoord, 2)
+  nsd = SIZE(obj%nodeCoord, 1)
+  CALL Reallocate(nodeCoord, nsd, tsize)
+
+  DO CONCURRENT(ii=1:tsize)
+    nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, ii)
+  END DO
+
+  RETURN
+END IF
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+tsize = meshptr%GetTotalNodes()
+CALL Reallocate(nodeCoord, 3_I4B, tsize)
+nsd = SIZE(obj%nodeCoord, 1)
+DO ii = 1, tsize
+  jj = meshptr%GetGlobalNodeNumber(localNode=ii)
+  jj = obj%GetLocalNodeNumber(globalNode=jj)
+  nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, jj)
+END DO
+
+NULLIFY (meshptr)
+
+END PROCEDURE obj_GetNodeCoord1
 
 !----------------------------------------------------------------------------
 !                                                       GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord2
-INTEGER(I4B) :: localNode(SIZE(globalNode))
-localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
-nodeCoord(1:obj%nsd, 1:SIZE(globalNode)) = obj%nodeCoord(1:obj%nsd, localNode)
+INTEGER(I4B) :: ii, localnode
+
+ncol = SIZE(globalNode)
+nrow = obj%nsd
+
+DO ii = 1, ncol
+  localnode = obj%GetLocalNodeNumber(globalNode=globalNode(ii), &
+                                     islocal=islocal)
+  nodeCoord(1:nrow, ii) = obj%nodeCoord(1:nrow, localNode)
+END DO
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
@@ -606,22 +401,41 @@ END PROCEDURE obj_GetNodeCoord2
 
 MODULE PROCEDURE obj_GetNodeCoord3
 INTEGER(I4B) :: localNode
+tsize = obj%nsd
 localNode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
-nodeCoord(1:obj%nsd) = obj%nodeCoord(1:obj%nsd, localNode)
+nodeCoord(1:tsize) = obj%nodeCoord(1:tsize, localNode)
 END PROCEDURE obj_GetNodeCoord3
+
+!----------------------------------------------------------------------------
+!                                                        GetNodeCoordPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoordPointer
+ans => obj%nodeCoord
+END PROCEDURE obj_GetNodeCoordPointer
 
 !----------------------------------------------------------------------------
 !                                                           GetNearestNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode1
+#ifdef DEBUG_VER
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode1()"
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 LOGICAL(LGT) :: isok
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
 IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  END IF
+
   CALL obj%InitiateKdtree()
 END IF
 
@@ -639,14 +453,24 @@ END PROCEDURE obj_GetNearestNode1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNearestNode2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNearestNode2()"
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
 IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                 'AbstractDomain_::obj%kdtree is not initiating, initing it.')
+  END IF
+
   CALL obj%InitiateKdtree()
 END IF
 
@@ -662,28 +486,14 @@ END DO
 END PROCEDURE obj_GetNearestNode2
 
 !----------------------------------------------------------------------------
-!                                                        GetNodeCoordPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetNodeCoordPointer
-ans => obj%nodeCoord
-END PROCEDURE obj_GetNodeCoordPointer
-
-!----------------------------------------------------------------------------
 !                                                                   GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetNptrs()
-CASE (2)
-  ans = obj%meshSurface%GetNptrs()
-CASE (1)
-  ans = obj%meshCurve%GetNptrs()
-CASE (0)
-  ans = obj%meshPoint%GetNptrs()
-END SELECT
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetNptrs()
+meshptr => NULL()
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
@@ -691,67 +501,44 @@ END PROCEDURE obj_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs_
-SELECT CASE (dim)
-CASE (3)
-  CALL obj%meshVolume%GetNptrs_(nptrs=nptrs)
-CASE (2)
-  CALL obj%meshSurface%GetNptrs_(nptrs=nptrs)
-CASE (1)
-  CALL obj%meshCurve%GetNptrs_(nptrs=nptrs)
-CASE (0)
-  CALL obj%meshPoint%GetNptrs_(nptrs=nptrs)
-END SELECT
+INTEGER(I4B) :: jj
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+CALL meshptr%GetNptrs_(ans=nptrs, tsize=jj)
+IF (PRESENT(tsize)) tsize = jj
+meshptr => NULL()
 END PROCEDURE obj_GetNptrs_
+
+!----------------------------------------------------------------------------
+!                                                                   GetNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInternalNptrs
+CLASS(AbstractMesh_), POINTER :: meshptr
+meshptr => obj%GetMeshPointer(dim=dim)
+ans = meshptr%GetInternalNptrs()
+meshptr => NULL()
+END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
 !                                                             GetNptrsInBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox()"
-REAL(DFP) :: qv(3), r2
-INTEGER(I4B) :: tnodes, ii, nsd
-LOGICAL(LGT) :: isok
-LOGICAL(LGT), ALLOCATABLE :: bools(:)
+INTEGER(I4B) :: tnodes, ii
 INTEGER(I4B), ALLOCATABLE :: nptrs0(:)
 
-isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
-IF (isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+tnodes = obj%GetTotalNodes()
+ALLOCATE (nptrs0(tnodes))
+CALL obj%GetNptrsInBox_(box=box, nptrs=nptrs0, tnodes=tnodes, &
+                        isStrict=isStrict)
 
-  CALL obj%InitiateKdtree()
-END IF
-
-qv = Center(box)
-r2 = GetRadiusSqr(box)
-nsd = obj%nsd
-
-CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
-               nfound=tnodes, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
-
-isok = Input(default=.TRUE., option=isStrict)
-
-IF (.NOT. isok) THEN
-  CALL Reallocate(nptrs, tnodes)
-  DO CONCURRENT(ii=1:tnodes)
-    nptrs(ii) = obj%kdresult(ii)%idx
-  END DO
-  RETURN
-END IF
-
-CALL Reallocate(nptrs0, tnodes)
-CALL Reallocate(bools, tnodes)
+ALLOCATE (nptrs(tnodes))
 DO CONCURRENT(ii=1:tnodes)
-  nptrs0(ii) = obj%kdresult(ii)%idx
-  bools(ii) = isInside(box, obj%nodeCoord(1:nsd, obj%kdresult(ii)%idx))
+  nptrs(ii) = nptrs0(ii)
 END DO
-
-nptrs = PACK(nptrs0, bools)
-
-IF (ALLOCATED(bools)) DEALLOCATE (bools)
-IF (ALLOCATED(nptrs0)) DEALLOCATE (nptrs0)
-
+DEALLOCATE (nptrs0)
 END PROCEDURE obj_GetNptrsInBox
 
 !----------------------------------------------------------------------------
@@ -759,16 +546,25 @@ END PROCEDURE obj_GetNptrsInBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+LOGICAL(LGT), PARAMETER :: debug = .TRUE.
+#else
+LOGICAL(LGT), PARAMETER :: debug = .FALSE.
+#endif
+
 ! nptrs = box.Nptrs.obj%nodeCoord
 REAL(DFP) :: qv(3), r2
 INTEGER(I4B) :: ii, jj, kk, nsd
-CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
 LOGICAL(LGT) :: isok, abool
 
 isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
 IF (isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+
+  IF (debug) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                'AbstractDomain_::obj%kdtree not initiated, initiating it...')
+  END IF
 
   CALL obj%InitiateKdtree()
 END IF
@@ -785,7 +581,7 @@ isok = SIZE(nptrs) .LT. tnodes
 IF (isok) THEN
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: size of nptrs is not enough')
+                    '[INTERNAL ERROR] :: size of nptrs is not enough')
   RETURN
 
 END IF
@@ -817,21 +613,52 @@ tnodes = jj
 END PROCEDURE obj_GetNptrsInBox_
 
 !----------------------------------------------------------------------------
-!                                                                   GetNptrs
+!                                                             GetBoundingBox
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetInternalNptrs
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetInternalNptrs()
-CASE (2)
-  ans = obj%meshSurface%GetInternalNptrs()
-CASE (1)
-  ans = obj%meshCurve%GetInternalNptrs()
-CASE (0)
-  ans = obj%meshPoint%GetInternalNptrs()
-END SELECT
-END PROCEDURE obj_GetInternalNptrs
+MODULE PROCEDURE obj_GetBoundingBox
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox()"
+#endif
+
+LOGICAL(LGT) :: acase
+
+acase = (.NOT. PRESENT(entityNum)) .AND. (.NOT. PRESENT(dim))
+IF (acase) THEN; CALL case1; ELSE; CALL case2; END IF
+
+CONTAINS
+
+SUBROUTINE case1
+  REAL(DFP) :: lim(6)
+  INTEGER(I4B) :: nsd
+  !> main
+  lim = 0.0_DFP
+  nsd = SIZE(obj%nodeCoord, 1)
+  lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
+  lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
+  CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
+END SUBROUTINE case1
+
+SUBROUTINE case2
+  CLASS(AbstractMesh_), POINTER :: meshptr
+  LOGICAL(LGT) :: isok
+
+  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(meshptr)
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'meshptr is not initiated.')
+    RETURN
+  END IF
+#endif
+
+  ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
+  meshptr => NULL()
+END SUBROUTINE case2
+
+END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
 !                                                                     GetNSD
@@ -842,25 +669,16 @@ ans = obj%nsd
 END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
-!                                                             GetBoundingBox
+!                                                             GetOrder
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetBoundingBox
-INTEGER(I4B) :: dim0
-
-dim0 = Input(default=obj%nsd, option=dim)
-SELECT CASE (dim0)
-CASE (0_I4B)
-  ans = obj%meshPoint%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (1_I4B)
-  ans = obj%meshCurve%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (2_I4B)
-  ans = obj%meshSurface%GetBoundingBox(nodes=obj%nodeCoord)
-CASE (3_I4B)
-  ans = obj%meshVolume%GetBoundingBox(nodes=obj%nodeCoord)
-END SELECT
-
-END PROCEDURE obj_GetBoundingBox
+MODULE PROCEDURE obj_GetOrder
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+ans = 0
+END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
 !                                                     GetTotalMeshFacetData
@@ -869,7 +687,7 @@ END PROCEDURE obj_GetBoundingBox
 MODULE PROCEDURE obj_GetTotalMeshFacetData
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMeshFacetData()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[DEPRECATED] :: We are working on alternative')
+                  '[DEPRECATED] :: We are working on alternative')
 ans = 0
 END PROCEDURE obj_GetTotalMeshFacetData
 
@@ -877,27 +695,40 @@ END PROCEDURE obj_GetTotalMeshFacetData
 !                                                          GetTotalMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalMaterial1
-SELECT CASE (dim)
-CASE (3)
-  ans = obj%meshVolume%GetTotalMaterial()
-CASE (2)
-  ans = obj%meshSurface%GetTotalMaterial()
-CASE (1)
-  ans = obj%meshCurve%GetTotalMaterial()
-CASE (0)
-  ans = obj%meshPoint%GetTotalMaterial()
-END SELECT
-END PROCEDURE obj_GetTotalMaterial1
+MODULE PROCEDURE obj_GetTotalMaterial
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+ans = 0
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+isok = ASSOCIATED(meshptr)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::obj_GetTotalMaterial - '// &
+                    '[INTERNAL ERROR] :: meshptr is not initiated.')
+  RETURN
+END IF
+
+ans = meshptr%GetTotalMaterial(globalElement=globalElement, islocal=islocal)
+meshptr => NULL()
+END PROCEDURE obj_GetTotalMaterial
+
+!----------------------------------------------------------------------------
+!                                                               GetElemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemType
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
 !                                                         GetUniqueElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetUniqueElemType
-CHARACTER(*), PARAMETER :: myName = "obj_GetUniqueElemType()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[DEPRECATED] :: We are working on alternative.')
+ans = obj%GetElemType(dim=dim)
+CALL RemoveDuplicates(ans)
 END PROCEDURE obj_GetUniqueElemType
 
 !----------------------------------------------------------------------------
@@ -923,11 +754,47 @@ IF (PRESENT(tEntitiesForNodes)) tEntitiesForNodes = obj%tEntitiesForNodes
 IF (PRESENT(tElements)) tElements = obj%tElements
 IF (PRESENT(tEntities)) tEntities = obj%tEntities
 IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
-IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
-IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
-IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
-IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
 END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                           GetMinElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMinElemNumber
+ans = obj%minElemNum
+END PROCEDURE obj_GetMinElemNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxElemNumber
+ans = obj%maxElemNum
+END PROCEDURE obj_GetMaxElemNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMinNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMinNodeNumber
+ans = obj%minNptrs
+END PROCEDURE obj_GetMinNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetMaxNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxNodeNumber
+ans = obj%maxNptrs
+END PROCEDURE obj_GetMaxNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                           GetDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInit
+ans = obj%isInitiated
+END PROCEDURE obj_IsInit
 
 !----------------------------------------------------------------------------
 !

@@ -16,12 +16,20 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
-USE ReallocateUtility
-USE Display_Method
-USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES
+USE ReallocateUtility, ONLY: Reallocate
+
+USE Display_Method, ONLY: ToString
+
+USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => &
+                                   PARAM_REFELEM_MAX_FACES
+
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
-  & InitiateElementToElements2D, &
-  & InitiateElementToElements1D
+                               InitiateElementToElements2D, &
+                               InitiateElementToElements1D
+
+USE NodeData_Class, ONLY: TypeNode, &
+                          NodeData_SetNodeType
+
 IMPLICIT NONE
 CONTAINS
 
@@ -35,61 +43,56 @@ LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 problem = .NOT. ALLOCATED(obj%elementData)
 
-#ifdef DEBUG_VER
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
+        '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
   RETURN
 END IF
-#endif
+
+IF (obj%isElementToElementsInitiated) RETURN
+obj%isElementToElementsInitiated = .TRUE.
 
 SELECT CASE (obj%xidim)
 CASE (0_I4B)
 
 CASE (1_I4B)
 
-  CALL InitiateElementToElements1D( &
-    & elementData=obj%elementData,  &
-    & tNodesInMesh=obj%tNodes, &
-    & showTime=obj%showTime, &
-    & local_nptrs=obj%local_nptrs)
+  CALL InitiateElementToElements1D(elementData=obj%elementData, &
+                             tNodesInMesh=obj%tNodes, showTime=obj%showTime, &
+                                   local_nptrs=obj%local_nptrs)
 
 CASE (2_I4B)
 
-  problem = .NOT. obj%isEdgeConnectivityInitiated
-  IF (problem) THEN
-    CALL obj%InitiateEdgeConnectivity()
-  END IF
-  CALL InitiateElementToElements2D( &
-    & elementData=obj%elementData,  &
-    & tEdgeInMesh=obj%tEdges, &
-    & showTime=obj%showTime)
+  problem = .NOT. obj%isFaceConnectivityInitiated
+  IF (problem) CALL obj%InitiateFaceConnectivity()
+
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
 CASE (3_I4B)
 
   problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) THEN
-    CALL obj%InitiateFaceConnectivity()
-  END IF
-  CALL InitiateElementToElements3D(elementData=obj%elementData,  &
-    & tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+  IF (problem) CALL obj%InitiateFaceConnectivity()
+
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for xidim '  &
-    & //tostring(obj%xidim))
+                    '[INTERNAL ERROR] :: No case found for xidim ' &
+                    //ToString(obj%xidim))
 END SELECT
 
 CALL MarkInternalNodes(obj=obj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateElementToElements
@@ -101,14 +104,14 @@ END PROCEDURE obj_InitiateElementToElements
 SUBROUTINE MarkInternalNodes(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
-  INTEGER(I4B) :: ii, jj, tsize, tElements, kk
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-  CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
 
 #ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+                          '[START] ')
 #endif
 
   IF (obj%xidim .EQ. 0) RETURN
@@ -117,16 +120,19 @@ SUBROUTINE MarkInternalNodes(obj)
 
   DO ii = 1, tElements
 
-    isok = .NOT. (obj%isBoundaryElement(ii, isLocal=.TRUE.))
-    IF (isok) CYCLE
+    isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
+    IF (.NOT. isok) CYCLE
 
-    tsize = SIZE(obj%elementData(ii)%boundaryData)
+    tsize = SIZE(obj%elementData(ii)%ptr%boundaryData)
     DO jj = 1, tsize
-      nptrs = obj%GetFacetConnectivity(globalElement=ii,  &
-        & iface=obj%elementData(ii)%boundaryData(jj),  &
-        & isLocal=.TRUE.)
+      nptrs = obj%GetFacetConnectivity(globalElement=ii, &
+                             iface=obj%elementData(ii)%ptr%boundaryData(jj), &
+                                       isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
-        obj%nodeData(nptrs(kk))%nodeType = TypeNode%domainBoundary
+        ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
+        ! obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
+        CALL NodeData_SetNodeType(obj%nodeData(ll)%ptr, &
+                                  TypeNode%domainBoundary)
       END DO
     END DO
 
@@ -134,7 +140,7 @@ SUBROUTINE MarkInternalNodes(obj)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+                          '[END] ')
 #endif
 
 END SUBROUTINE MarkInternalNodes

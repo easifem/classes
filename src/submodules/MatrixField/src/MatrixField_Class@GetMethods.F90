@@ -20,16 +20,26 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetMethods
-USE CSRMatrix_Method
+USE CSRMatrix_Method, ONLY: CSRMatrix_Size => Size, &
+                            CSRMatrix_Shape => Shape, &
+                            GetValue
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                  GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                                       SIZE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Size
-ans = SIZE(obj%mat, dim)
+ans = CSRMatrix_SIZE(obj%mat, dim)
 END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
@@ -37,7 +47,7 @@ END PROCEDURE obj_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Shape
-ans = SHAPE(obj%mat)
+ans = CSRMatrix_SHAPE(obj%mat)
 END PROCEDURE obj_Shape
 
 !----------------------------------------------------------------------------
@@ -45,29 +55,15 @@ END PROCEDURE obj_Shape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-INTEGER(I4B) :: storageFMT0
-INTEGER(I4B) :: nodenum(SIZE(globalNode))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
 #endif
 
-IF (PRESENT(storageFMT)) THEN
-  storageFMT0 = GetStorageFMT(obj%mat, 1)
-ELSE
-  storageFMT0 = storageFMT
-END IF
+#include "./localNodeError.F90"
 
-nodenum = obj%domain%GetLocalNodeNumber(globalNode)
-CALL GetValue(obj=obj%mat, VALUE=VALUE, nodenum=nodenum,  &
-& storageFMT=storageFMT0)
+CALL GetValue(obj=obj%mat, VALUE=VALUE, nodenum=globalNode, &
+              storageFMT=storageFMT, nrow=nrow, ncol=ncol)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -75,28 +71,24 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
-CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
-INTEGER(I4B) :: iNodeNum0, jNodeNum0
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, idof=idof, jdof=jdof, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Get2
@@ -106,28 +98,24 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
-INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum, nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Get3
@@ -137,30 +125,25 @@ END PROCEDURE obj_Get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
-INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, idof=idof, jdof=jdof)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum, idof=idof, jdof=jdof, &
+              nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -168,28 +151,23 @@ END PROCEDURE obj_Get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get5
-CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
-INTEGER(I4B) :: iNodeNum0, jNodeNum0
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, idof=idof, jdof=jdof)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum, idof=idof, jdof=jdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Get5
@@ -199,29 +177,24 @@ END PROCEDURE obj_Get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get6
-CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
-INTEGER(I4B) :: iNodeNum0, jNodeNum0
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, ispacecompo=ispacecompo,  &
-  & jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum, ispacecompo=ispacecompo, &
+        jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Get6
@@ -231,29 +204,25 @@ END PROCEDURE obj_Get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get7
-CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
-INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
 #endif
 
-IF (obj%isRectangle) THEN
-  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
-ELSE
-  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
-  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./localNodeError.F90"
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
-  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, ispacecompo=ispacecompo,  &
-  & jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
+              iNodeNum=iNodeNum, jNodeNum=jNodeNum, ispacecompo=ispacecompo, &
+      jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo, &
+              nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Get7

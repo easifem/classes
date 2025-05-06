@@ -79,13 +79,13 @@ CONTAINS
   GENERIC, PUBLIC :: READ => MSHFileRead
       !! initiate the object
   PROCEDURE, PUBLIC, PASS(obj) :: ReadPointEntities => &
-    & msh_ReadPointEntities
+    msh_ReadPointEntities
   PROCEDURE, PUBLIC, PASS(obj) :: ReadCurveEntities => &
-    & msh_ReadCurveEntities
+    msh_ReadCurveEntities
   PROCEDURE, PUBLIC, PASS(obj) :: ReadSurfaceEntities => &
-    & msh_ReadSurfaceEntities
+    msh_ReadSurfaceEntities
   PROCEDURE, PUBLIC, PASS(obj) :: ReadVolumeEntities => &
-    & msh_ReadVolumeEntities
+    msh_ReadVolumeEntities
   PROCEDURE, PUBLIC, PASS(obj) :: ReadNodes => msh_ReadNodes
   PROCEDURE, PUBLIC, PASS(obj) :: ReadElements => msh_ReadElements
 

@@ -15,7 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(UserFunction_Class) IOMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display
+USE BaseType, ONLY: varopt => TypeFEVariableOpt
 IMPLICIT NONE
 CONTAINS
 
@@ -25,29 +26,29 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
+
 CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInitiated, "isInitiated: ", unitNo=unitNo)
 
-IF (.NOT. obj%isInitiated) THEN
-  RETURN
-END IF
+IF (.NOT. obj%isInitiated) RETURN
 
 CALL Display("name: "//obj%name, unitNo=unitNo)
 CALL Display(obj%isUserFunctionSet, "isUserFunctionSet: ", unitNo=unitNo)
 CALL Display(obj%isLuaScript, "isLuaScript: ", unitNo=unitNo)
 IF (obj%isLuaScript) THEN
-  CALL display(obj%luaScript, "luaScript: ", unitNo=unitNo)
-  CALL display(obj%luaFunctionName, "luaFunctionName: ", unitNo=unitNo)
+  CALL Display(obj%luaScript%chars(), "luaScript: ", unitNo=unitNo)
+  CALL Display(obj%luaFunctionName%chars(), "luaFunctionName: ", &
+               unitNo=unitNo)
 END IF
 
-CALL Display(NAME_RETURN_TYPE(obj%returnType), "returnType: ",  &
-  & unitNo=unitNo)
-IF (obj%returnType .EQ. Matrix) THEN
+CALL Display(NAME_RETURN_TYPE(obj%returnType), "returnType: ", &
+             unitNo=unitNo)
+IF (obj%returnType .EQ. varopt%matrix) THEN
   CALL Display(obj%returnShape, "shape of returnType: ", unitNo=unitNo)
 END IF
 
-CALL Display(NAME_ARG_TYPE(obj%argType), "argType: ",  &
-  & unitNo=unitNo)
+CALL Display(NAME_ARG_TYPE(obj%argType), "argType: ", &
+             unitNo=unitNo)
 
 CALL Display(obj%numArgs, "number of arguments: ", unitNo=unitNo)
 CALL Display(obj%numReturns, "number of returns: ", unitNo=unitNo)
@@ -61,17 +62,17 @@ CALL Display(bool1, msg="vectorFunction ASSOCIATED: ", unitno=unitno)
 bool1 = ASSOCIATED(obj%matrixFunction)
 CALL Display(bool1, msg="matrixFunction ASSOCIATED: ", unitno=unitno)
 
-IF (obj%argType .EQ. CONSTANT) THEN
+IF (obj%argType .EQ. varopt%constant) THEN
   SELECT CASE (obj%returnType)
-  CASE (Scalar)
+  CASE (varopt%Scalar)
     CALL Display(obj%scalarValue, "scalarValue: ", unitNo=unitNo)
-  CASE (Vector)
+  CASE (varopt%Vector)
     IF (ALLOCATED(obj%vectorValue)) THEN
       CALL Display(obj%vectorValue, "vectorValue: ", unitNo=unitNo)
     ELSE
       CALL Display("vectorValue: NOT ALLOCATED", unitNo=unitNo)
     END IF
-  CASE (Matrix)
+  CASE (varopt%Matrix)
     IF (ALLOCATED(obj%matrixValue)) THEN
       CALL Display(obj%matrixValue, "matrixValue: ", unitNo=unitNo)
     ELSE
@@ -87,22 +88,22 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Import()")
+                        "[START]")
 #endif
 
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+                    '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 IF (.NOT. hdf5%isRead()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
 END IF
 
 !> name
@@ -111,7 +112,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: name should be present.')
+                    '[CONFIG ERROR] :: name should be present.')
 END IF
 
 !> isUserFunctionSet
@@ -128,7 +129,7 @@ IF (obj%isUserFunctionSet) THEN
   ! ALLOCATE (obj%userFunction)
   ! CALL obj%userFunction%IMPORT(hdf5=hdf5, group=dsetname%chars())
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP ERROR] :: currently import does not work for useFunction')
+              '[WIP ERROR] :: currently import does not work for useFunction')
 END IF
 
 IF (.NOT. obj%isUserFunctionSet) THEN
@@ -136,7 +137,7 @@ IF (.NOT. obj%isUserFunctionSet) THEN
   dsetname = TRIM(group)//"/returnType"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & 'dsetname '//dsetname%chars()//'is not present in HDFFile_')
+                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
     obj%returnType = UserFunctionGetReturnType(strval%chars())
@@ -146,29 +147,29 @@ IF (.NOT. obj%isUserFunctionSet) THEN
   dsetname = TRIM(group)//"/argType"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & 'dsetname '//dsetname%chars()//'is not present in HDFFile_')
+                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
     obj%argType = UserFunctionGetArgType(strval%chars())
   END IF
 
   !> check the argType, and decide the importer
-  IF (obj%argType .EQ. CONSTANT) THEN
+  IF (obj%argType .EQ. varopt%constant) THEN
     !> scalarValue, vectorValue, matrixValue
     SELECT CASE (obj%returnType)
-    CASE (SCALAR)
+    CASE (varopt%scalar)
       !> scalarValue
       dsetname = TRIM(group)//"/scalarValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
         CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%scalarValue)
       END IF
-    CASE (VECTOR)
+    CASE (varopt%vector)
       !> vectorValue
       dsetname = TRIM(group)//"/vectorValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
         CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%vectorValue)
       END IF
-    CASE (MATRIX)
+    CASE (varopt%matrix)
       !> matrixValue
       dsetname = TRIM(group)//"/matrixValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
@@ -177,13 +178,13 @@ IF (.NOT. obj%isUserFunctionSet) THEN
     END SELECT
   ELSE
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & 'Currently, EASIFEM Supports import of constant userFunction.')
+               'Currently, EASIFEM Supports import of constant userFunction.')
   END IF
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Import()')
+                        '[END]')
 #endif
 END PROCEDURE obj_Import
 
@@ -197,19 +198,19 @@ TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Export()')
+                        '[START] Export()')
 #endif
 
 !> check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+                    '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 !> check
 IF (.NOT. hdf5%isWrite()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file does not have write permission')
+               '[INTERNAL ERROR] :: HDF5 file does not have write permission')
 END IF
 
 !> name
@@ -225,8 +226,8 @@ IF (obj%isUserFunctionSet) THEN
   ! dsetname = TRIM(group)//"/userFunction"
   ! CALL obj%userFunction%Export(hdf5=hdf5, group=dsetname%chars())
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP ERROR] :: Currently export function does not work '//  &
-    & ' for UserFunction.')
+                 '[WIP ERROR] :: Currently export function does not work '// &
+                    ' for UserFunction.')
 END IF
 
 IF (.NOT. obj%isUserFunctionSet) THEN
@@ -244,32 +245,32 @@ IF (.NOT. obj%isUserFunctionSet) THEN
   strval = NAME_ARG_TYPE(obj%argType)
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
   !>
-  IF (obj%argType .EQ. CONSTANT) THEN
+  IF (obj%argType .EQ. varopt%constant) THEN
     SELECT CASE (obj%returnType)
-    CASE (SCALAR)
+    CASE (varopt%Scalar)
       !> scalarValue
       dsetname = TRIM(group)//"/scalarValue"
       CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%scalarValue)
-    CASE (VECTOR)
+    CASE (varopt%vector)
       !> vectorValue
       dsetname = TRIM(group)//"/vectorValue"
       IF (ALLOCATED(obj%vectorValue)) &
-        & CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%vectorValue)
-    CASE (MATRIX)
+        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%vectorValue)
+    CASE (varopt%matrix)
       !> matrixValue
       dsetname = TRIM(group)//"/matrixValue"
       IF (ALLOCATED(obj%matrixValue)) &
-        & CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%matrixValue)
+        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%matrixValue)
     END SELECT
   ELSE
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & 'Currently, EASIFEM Supports import of constant userFunction.')
+               'Currently, EASIFEM Supports import of constant userFunction.')
   END IF
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Export()')
+                        '[END]')
 #endif
 END PROCEDURE obj_Export
 

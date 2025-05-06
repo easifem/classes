@@ -15,10 +15,41 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractKernel_Class) MaterialMethods
-USE BaseMethod
-USE FieldFactory
+
+USE CPUTime_Class, ONLY: CPUTime_
+
+USE SolidMaterial_Class, ONLY: AddSolidMaterial, &
+                               GetSolidMaterialPointer
+
+USE Display_Method, ONLY: ToString
+
+USE FieldFactory, ONLY: ScalarMeshFieldFactory, &
+                        TensorMeshFieldFactory
+
+USE KernelScalarProperty_Method, ONLY: KernelInitiateScalarProperty, &
+                                       KernelSetScalarProperty
+
+USE KernelTensorProperty_Method, ONLY: KernelInitiateTensorProperty, &
+                                       KernelSetTensorProperty
+
+USE MeshSelection_Class, ONLY: MeshSelectionSet
+
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                  InitiateConstantMatProps
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateMaterialProperties
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
 !                                                         AddSolidMaterial
@@ -27,51 +58,55 @@ CONTAINS
 MODULE PROCEDURE obj_AddSolidMaterial
 CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial()"
 LOGICAL(LGT) :: isok
+
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-isok = ALLOCATED(obj%solidMaterialToMesh)
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%materials%solidMaterialToMesh)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterialToMesh '//  &
-    & 'is not allocated!')
+           '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterialToMesh '// &
+                    'is not allocated!')
   RETURN
 END IF
 
-isok = ALLOCATED(obj%solidMaterial)
+isok = ALLOCATED(obj%materials%solidMaterial)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterial '//  &
-    & 'is not allocated!')
+                 '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterial '// &
+                    'is not allocated!')
   RETURN
 END IF
 
-CALL AddSolidMaterial(obj=obj%solidMaterial,  &
-  & tMaterials=obj%tSolidMaterials,  &
-  & materialNo=materialNo,  &
-  & param=param,  &
-  & materialName=materialName,  &
-  & region=region,  &
-  & solidMaterialToMesh=obj%solidMaterialToMesh)
-!! INFO: AddSolidMaterial is defined in SolidMaterial_Class
+#endif
+
+CALL AddSolidMaterial(obj=obj%materials%solidMaterial, &
+                      tMaterials=obj%materials%tSolidMaterials, &
+                      materialNo=materialNo, param=param, &
+                      materialName=materialName, region=region, &
+                      solidMaterialToMesh=obj%materials%solidMaterialToMesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
+
 END PROCEDURE obj_AddSolidMaterial
 
 !----------------------------------------------------------------------------
@@ -83,35 +118,37 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer()"
 LOGICAL(LGT) :: isok
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 ans => NULL()
 
-isok = ALLOCATED(obj%solidMaterialToMesh)
+isok = ALLOCATED(obj%materials%solidMaterialToMesh)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterialToMesh '// &
-    & 'is not allocated!')
+           '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterialToMesh '// &
+                    'is not allocated!')
   RETURN
 END IF
 
-ans => GetSolidMaterialPointer(obj=obj%solidMaterial, materialNo=materialNo)
+ans => GetSolidMaterialPointer(obj=obj%materials%solidMaterial, &
+                               materialNo=materialNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_GetSolidMaterialPointer
 
@@ -122,49 +159,59 @@ END PROCEDURE obj_GetSolidMaterialPointer
 MODULE PROCEDURE obj_InitiateMassDensity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMassDensity()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ii, tsize
 TYPE(CPUTime_) :: TypeCPUTime
+CHARACTER(:), ALLOCATABLE :: astr
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
-
-isok = ALLOCATED(obj%solidMaterial)
-IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
-  RETURN
-END IF
 
 isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
-  RETURN
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%dom is not ASSOCIATED.')
+
+obj%meshfields%massDensity => NULL()
+
+IF (obj%opt%nnt .EQ. 1) THEN
+  astr = "SCALAR"
+ELSE
+  astr = "STSCALAR"
+  isok = obj%meshfields%massDensityMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%massDensityMaxNNT is not greater than zero.")
 END IF
 
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%massDensity(tsize))
-DO ii = 1, tsize; obj%massDensity(ii)%ptr => NULL(); END DO
+obj%meshfields%massDensity => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
 
-CALL KernelInitiateScalarProperty(vars=obj%massDensity,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="massDensity", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+isok = obj%meshfields%massDensityMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%massDensityMaxNNS is not greater than zero.")
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%massDensity, &
+                                  dom=obj%dom, &
+                                  maxNNS=obj%meshfields%massDensityMaxNNS, &
+                                  maxNNT=obj%meshfields%massDensityMaxNNT, &
+                                  propname="massDensity", &
+                                  engine=obj%opt%engine%chars(), &
+                              fieldType=obj%meshfields%massDensityFieldType, &
+                                  varType=obj%meshfields%massDensityVarType, &
+                                  defineOn=obj%meshfields%massDensityDefineOn)
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateMassDensity
 
@@ -175,72 +222,122 @@ END PROCEDURE obj_InitiateMassDensity
 MODULE PROCEDURE obj_InitiateElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElasticityProperties()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ii, tsize
 TYPE(CPUTime_) :: TypeCPUTime
+CHARACTER(:), ALLOCATABLE :: astr
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-isok = ALLOCATED(obj%solidMaterial)
-IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
-  RETURN
-END IF
+isok = ALLOCATED(obj%materials%solidMaterial)
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%solidMaterial is not allocated.')
 
 isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
-  RETURN
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%dom is not ASSOCIATED.')
+
+obj%meshfields%youngsModulus => NULL()
+
+IF (obj%opt%nnt .EQ. 1) THEN
+  astr = "SCALAR"
+
+ELSE
+  astr = "STSCALAR"
+
+  isok = obj%meshfields%youngsModulusMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%youngsModulusMaxNNT is not greater than zero.")
+
+  isok = obj%meshfields%shearModulusMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%shearModulusMaxNNT is not greater than zero.")
+
+  isok = obj%meshfields%cijklMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+      "AbstractKernel_::obj%meshfields%cijklMaxNNT is not greater than zero.")
+
 END IF
 
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%youngsModulus(tsize))
-DO ii = 1, tsize; obj%youngsModulus(ii)%ptr => NULL(); END DO
+obj%meshfields%youngsModulus => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
 
-CALL KernelInitiateScalarProperty(vars=obj%youngsModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="youngsModulus", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+obj%meshfields%shearModulus => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
 
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%shearModulus(tsize))
-DO ii = 1, tsize; obj%shearModulus(ii)%ptr => NULL(); END DO
+obj%meshfields%cijkl => TensorMeshFieldFactory(name=astr, &
+                                               engine=obj%opt%engine%chars())
 
-CALL KernelInitiateScalarProperty(vars=obj%shearModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="shearModulus", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+isok = obj%meshfields%youngsModulusMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%youngsModulusMaxNNS is not greater than zero.")
 
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%Cijkl(tsize))
-DO ii = 1, tsize; obj%Cijkl(ii)%ptr => NULL(); END DO
+isok = obj%meshfields%shearModulusMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%shearModulusMaxNNS is not greater than zero.")
 
-CALL KernelInitiateTensorProperty(vars=obj%Cijkl,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="cijkl", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+isok = obj%meshfields%cijklMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%shearModulusMaxNNS is not greater than zero.")
 
-CALL KernelInitiateConstantElasticityProperties(youngsModulus=obj%youngsModulus,  &
-  & shearModulus=obj%shearModulus, Cijkl=obj%Cijkl, dom=obj%dom,  &
-  & nnt=obj%nnt, engine=obj%engine%chars())
+isok = obj%meshfields%cijklDim1 .GT. 0
+CALL AssertError1(isok, myname, &
+        "AbstractKernel_::obj%meshfields%cijklDim1 is not greater than zero.")
+
+isok = obj%meshfields%cijklDim2 .GT. 0
+CALL AssertError1(isok, myname, &
+        "AbstractKernel_::obj%meshfields%cijklDim2 is not greater than zero.")
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%youngsModulus, &
+                     dom=obj%dom, maxNNS=obj%meshfields%youngsModulusMaxNNS, &
+        maxNNT=obj%meshfields%youngsModulusMaxNNT, propname="youngsModulus", &
+                                  engine=obj%opt%engine%chars(), &
+                            fieldType=obj%meshfields%youngsModulusFieldType, &
+                                varType=obj%meshfields%youngsModulusVarType, &
+                                defineOn=obj%meshfields%youngsModulusDefineOn)
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%shearModulus, &
+                      dom=obj%dom, maxNNS=obj%meshfields%shearModulusMaxNNS, &
+                                  maxNNT=obj%meshfields%shearModulusMaxNNT, &
+                                  propname="shearModulus", &
+                                  engine=obj%opt%engine%chars(), &
+                             fieldType=obj%meshfields%shearModulusFieldType, &
+                                 varType=obj%meshfields%shearModulusVarType, &
+                                 defineOn=obj%meshfields%shearModulusDefineOn)
+
+CALL KernelInitiateTensorProperty(prop=obj%meshfields%cijkl, &
+                             dom=obj%dom, maxNNS=obj%meshfields%cijklMaxNNS, &
+                                  maxNNT=obj%meshfields%cijklMaxNNT, &
+                                  propname="cijkl", &
+                                  engine=obj%opt%engine%chars(), &
+                                  fieldType=obj%meshfields%cijklFieldType, &
+                                  varType=obj%meshfields%cijklVarType, &
+                                  defineOn=obj%meshfields%cijklDefineOn, &
+                                  dim1=obj%meshfields%cijklDim1, &
+                                  dim2=obj%meshfields%cijklDim2)
+
+! CALL KernelInitiateConstantElasticityProperties( &
+!   youngsModulus=obj%meshfields%youngsModulus, &
+!   shearModulus=obj%meshfields%shearModulus, &
+!   cijkl=obj%meshfields%cijkl, &
+!   dom=obj%dom, nnt=obj%opt%nnt, engine=obj%opt%engine%chars())
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
+
 END PROCEDURE obj_InitiateElasticityProperties
 
 !----------------------------------------------------------------------------
@@ -249,56 +346,76 @@ END PROCEDURE obj_InitiateElasticityProperties
 
 MODULE PROCEDURE obj_InitiateDampingProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateDampingProperties()"
-INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 TYPE(CPUTime_) :: TypeCPUTime
+CHARACTER(:), ALLOCATABLE :: astr
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-#ifdef DEBUG_VER
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%dampCoeff_alpha(tsize))
-DO ii = 1, tsize; obj%dampCoeff_alpha(ii)%ptr => NULL(); END DO
-
-CALL KernelInitiateScalarProperty(vars=obj%dampCoeff_alpha,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="rayleigh_alpha", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
-
-ALLOCATE (obj%dampCoeff_beta(tsize))
-DO ii = 1, tsize; obj%dampCoeff_beta(ii)%ptr => NULL(); END DO
-
-CALL KernelInitiateScalarProperty(vars=obj%dampCoeff_beta,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="rayleigh_beta", matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[START]')
 #endif
 
-IF (obj%showTime) THEN
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%dom is not ASSOCIATED.')
+
+obj%meshfields%dampCoeff_alpha => NULL()
+obj%meshfields%dampCoeff_beta => NULL()
+
+IF (obj%opt%nnt .EQ. 1) THEN
+  astr = "SCALAR"
+ELSE
+  astr = "STSCALAR"
+  isok = obj%meshfields%dampCoeffMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+  "AbstractKernel_::obj%meshfields%dampCoeffMaxNNT is not greater than zero.")
+END IF
+
+obj%meshfields%dampCoeff_alpha => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
+
+obj%meshfields%dampCoeff_beta => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
+
+isok = obj%meshfields%dampCoeffMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+  "AbstractKernel_::obj%meshfields%dampCoeffMaxNNS is not greater than zero.")
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%dampCoeff_alpha, &
+                                  dom=obj%dom, &
+                                  maxNNS=obj%meshfields%dampCoeffMaxNNS, &
+                                  maxNNT=obj%meshfields%dampCoeffMaxNNT, &
+                                  propname="rayleigh_alpha", &
+                                  engine=obj%opt%engine%chars(), &
+                                fieldType=obj%meshfields%dampCoeffFieldType, &
+                                  varType=obj%meshfields%dampCoeffVarType, &
+                                  defineOn=obj%meshfields%dampCoeffDefineOn)
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%dampCoeff_beta, &
+                                  dom=obj%dom, &
+                                  maxNNS=obj%meshfields%dampCoeffMaxNNS, &
+                                  maxNNT=obj%meshfields%dampCoeffMaxNNT, &
+                                  propname="rayleigh_beta", &
+                                  engine=obj%opt%engine%chars(), &
+                                fieldType=obj%meshfields%dampCoeffFieldType, &
+                                  varType=obj%meshfields%dampCoeffVarType, &
+                                  defineOn=obj%meshfields%dampCoeffDefineOn)
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateDampingProperties
-
-!----------------------------------------------------------------------------
-!                                                  InitiateConstantMatProps
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateMaterialProperties
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
-END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
 !                                                  InitiateScalarCoefficient
@@ -307,56 +424,65 @@ END PROCEDURE obj_InitiateMaterialProperties
 MODULE PROCEDURE obj_InitiateScalarCoefficient
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarCoefficient()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ii, tsize
-CHARACTER(:), ALLOCATABLE :: varname0
+CHARACTER(:), ALLOCATABLE :: varname0, astr
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
-
-isok = ALLOCATED(obj%solidMaterial)
-IF (.NOT. isok) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
-  RETURN
-END IF
-
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
-  RETURN
-END IF
 
 IF (PRESENT(varname)) THEN
   varname0 = varname
 ELSE
-  varname0 = "scalarCoefficient"
+  varname0 = "scalarCoeff"
 END IF
 
-tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%scalarCoefficient(tsize))
-DO ii = 1, tsize; obj%scalarCoefficient(ii)%ptr => NULL(); END DO
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%dom is not ASSOCIATED.')
 
-CALL KernelInitiateScalarProperty(vars=obj%scalarCoefficient,  &
-  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname=varname0, matid=obj%SOLID_MATERIAL_ID,  &
-  & engine=obj%engine%chars())
+obj%meshfields%scalarCoeff => NULL()
+
+IF (obj%opt%nnt .EQ. 1) THEN
+  astr = "SCALAR"
+ELSE
+  astr = "STSCALAR"
+  isok = obj%meshfields%scalarCoeffMaxNNT .GT. 0
+  CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%scalarCoeffMaxNNT is not greater than zero.")
+END IF
+
+obj%meshfields%scalarCoeff => ScalarMeshFieldFactory(name=astr, &
+                                                engine=obj%opt%engine%chars())
+
+isok = obj%meshfields%scalarCoeffMaxNNS .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%meshfields%scalarCoeffMaxNNS is not greater than zero.")
+
+CALL KernelInitiateScalarProperty(prop=obj%meshfields%scalarCoeff, &
+                                  dom=obj%dom, &
+                                  maxNNS=obj%meshfields%scalarCoeffMaxNNS, &
+                                  maxNNT=obj%meshfields%scalarCoeffMaxNNT, &
+                                  propname="scalarCoeff", &
+                                  engine=obj%opt%engine%chars(), &
+                              fieldType=obj%meshfields%scalarCoeffFieldType, &
+                                  varType=obj%meshfields%scalarCoeffVarType, &
+                                  defineOn=obj%meshfields%scalarCoeffDefineOn)
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateScalarCoefficient
 
@@ -368,27 +494,28 @@ MODULE PROCEDURE obj_SetMassDensity
 CHARACTER(*), PARAMETER :: myName = "obj_SetMassDensity()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-CALL KernelSetScalarProperty(vars=obj%massDensity,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="massDensity", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%massDensity, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+               propname="massDensity", medium=obj%materials%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_SetMassDensity
 
@@ -400,71 +527,72 @@ MODULE PROCEDURE obj_SetElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetElasticityProperties()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-CALL KernelSetScalarProperty(vars=obj%youngsModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="youngsModulus", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%youngsModulus, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+             propname="youngsModulus", medium=obj%materials%SOLID_MATERIAL_ID)
 
-CALL KernelSetScalarProperty(vars=obj%shearModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="shearModulus", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%shearModulus, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+              propname="shearModulus", medium=obj%materials%SOLID_MATERIAL_ID)
 
-CALL KernelSetTensorProperty(vars=obj%Cijkl,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="cijkl", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetTensorProperty(prop=obj%meshfields%cijkl, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+                     propname="cijkl", medium=obj%materials%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+   currentTime=obj%opt%currentTime, currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_SetElasticityProperties
 
 !----------------------------------------------------------------------------
-!                                                    SetElasticityProperties
+!                                                       SetDampingProperties
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetDampingProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetDampingProperties()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-CALL KernelSetScalarProperty(vars=obj%dampCoeff_alpha,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="rayleigh_alpha", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%dampCoeff_alpha, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+            propname="rayleigh_alpha", medium=obj%materials%SOLID_MATERIAL_ID)
 
-CALL KernelSetScalarProperty(vars=obj%dampCoeff_beta,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="rayleigh_beta", matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%dampCoeff_beta, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+             propname="rayleigh_beta", medium=obj%materials%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_SetDampingProperties
 
@@ -477,33 +605,34 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetScalarCoefficient()"
 TYPE(CPUTime_) :: TypeCPUTime
 CHARACTER(:), ALLOCATABLE :: varname0
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 IF (PRESENT(varname)) THEN
   varname0 = varname
 ELSE
-  varname0 = "scalarCoefficient"
+  varname0 = "scalarCoeff"
 END IF
 
-CALL KernelSetScalarProperty(vars=obj%scalarCoefficient,  &
-  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname=varname0, matid=obj%SOLID_MATERIAL_ID)
+CALL KernelSetScalarProperty(prop=obj%meshfields%scalarCoeff, &
+      materials=obj%materials%solidMaterial, dom=obj%dom, times=obj%timeVec, &
+                    propname=varname0, medium=obj%materials%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_SetScalarCoefficient
 
@@ -515,27 +644,27 @@ MODULE PROCEDURE obj_SetMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetConstantMatProp"
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is should be implemented by '// &
-  & ' subclass.')
+     '[INTERNAL ERROR] :: This routine is should be implemented by subclass.')
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_SetMaterialProperties
 
@@ -546,124 +675,88 @@ END PROCEDURE obj_SetMaterialProperties
 MODULE PROCEDURE obj_SetMaterialToDomain
 CHARACTER(*), PARAMETER :: myName = "obj_SetMaterialToDomain()"
 INTEGER(I4B) :: ii, kk, jj, nsd
-INTEGER(I4B), ALLOCATABLE :: indx(:)
 LOGICAL(LGT) :: isok
-CLASS(Domain_), POINTER :: dom
 TYPE(CPUTime_) :: TypeCPUTime
+CLASS(AbstractMesh_), POINTER :: mesh
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-isok = ALLOCATED(obj%solidMaterialToMesh)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%solidMaterialToMesh '//  &
-    & 'not allocated.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%materials%solidMaterialToMesh)
+CALL AssertError1(isok, myname, &
+                 'AbstractKernel_::obj%solidMaterialToMesh is not allocated.')
 
 isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not ASSOCIATED.')
-  RETURN
-END IF
+CALL AssertError1(isok, myname, &
+                  'AbstractKernel_::obj%dom is not ASSOCIATED.')
 
-CALL MeshSelectionSet(obj%solidMaterialToMesh)
+#endif
 
-dom => obj%dom
-nsd = dom%GetNSD()
-DO ii = 1, nsd
-  CALL dom%SetTotalMaterial(dim=ii, n=obj%tOverlappedMaterials)
-  !! Add one material to all meshes of domain
-  indx = dom%GetTotalMaterial(dim=ii)
-  indx = indx - indx(1)
-  IF (ANY(indx .NE. 0)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Some error occured.')
-    RETURN
-  END IF
+CALL MeshSelectionSet(obj%materials%solidMaterialToMesh)
+
+#ifdef DEBUG_VER
+
+isok = obj%materials%tOverlappedMaterials .GT. 0
+CALL AssertError1(isok, myname, &
+"AbstractKernel_::obj%materials%tOverlappedMaterials is not greater than zero.")
+
+#endif
+
+nsd = obj%dom%GetNSD()
+mesh => obj%dom%GetMeshPointer(dim=nsd)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(mesh)
+CALL AssertError1(isok, myname, 'mesh is not ASSOCIATED.')
+#endif
+
+CALL mesh%SetTotalMaterial(n=obj%materials%tOverlappedMaterials)
+! Set total number of materials to the mesh
+
+obj%materials%SOLID_MATERIAL_ID = mesh%GetTotalMaterial(globalElement=1_I4B, &
+                                                        islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+
+isok = obj%materials%SOLID_MATERIAL_ID .GT. 0
+CALL AssertError1(isok, myname, &
+ "AbstractKernel_::obj%materials%SOLID_MATERIAL_ID is not greater than zero.")
+
+#endif
+
+!! Set material in the mesh
+DO ii = 1, obj%materials%tSolidMaterials
+  CALL obj%materials%SolidMaterialToMesh(ii)%SetMaterialToMesh(dom=obj%dom, &
+                 dim=nsd, medium=obj%materials%SOLID_MATERIAL_ID, material=ii)
 END DO
 
-obj%SOLID_MATERIAL_ID = dom%GetTotalMaterial(dim=nsd, entityNum=1)
-
-DO ii = 1, obj%tSolidMaterials
-  DO kk = 1, obj%nsd
-    indx = obj%solidMaterialToMesh(ii)%GetMeshID(dim=kk)
-    DO jj = 1, SIZE(indx)
-      CALL dom%SetMaterial( &
-        & dim=kk, &
-        & entityNum=indx(jj), &
-        & medium=obj%SOLID_MATERIAL_ID, &
-        & material=ii)
-    END DO
-  END DO
-END DO
-
-IF (ALLOCATED(indx)) DEALLOCATE (indx)
-NULLIFY (dom)
+NULLIFY (mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
+
 END PROCEDURE obj_SetMaterialToDomain
 
 !----------------------------------------------------------------------------
-!                                                         SetElementToMatID
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetElementToMatID
-CHARACTER(*), PARAMETER :: myName = "obj_SetElementToMatID()"
-INTEGER(I4B) :: ii
-INTEGER(I4B), ALLOCATABLE :: indx(:)
-LOGICAL(LGT) :: problem
-TYPE(CPUTime_) :: TypeCPUTime
-
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-#ifdef DEBUG_VER
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
-problem = obj%SOLID_MATERIAL_ID .EQ. 0
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: SOLID_MATERIAL_ID cannot be zero')
-  RETURN
-END IF
-
-ii = obj%dom%GetTotalElements()
-CALL Reallocate(obj%elemToMatId, ii, obj%tOverlappedMaterials)
-DO ii = 1, obj%tSolidMaterials
-  indx = obj%solidMaterialToMesh(ii)%GetElemNum(domain=obj%dom)
-  obj%elemToMatId(indx, obj%SOLID_MATERIAL_ID) = ii
-END DO
-IF (ALLOCATED(indx)) DEALLOCATE (indx)
-
-#ifdef DEBUG_VER
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
-#endif
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
-END IF
-END PROCEDURE obj_SetElementToMatID
+#include "../../include/errors.F90"
 
 END SUBMODULE MaterialMethods

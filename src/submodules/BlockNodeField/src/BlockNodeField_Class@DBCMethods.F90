@@ -16,7 +16,12 @@
 !
 
 SUBMODULE(BlockNodeField_Class) DBCMethods
-USE BaseMethod
+USE InputUtility, ONLY: Input
+
+USE DOF_Method, ONLY: OPERATOR(.timecomponents.)
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -24,17 +29,12 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
+MODULE PROCEDURE obj_ApplyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, spacecompo, ttimecompo, ivar0, aint
+INTEGER(I4B) :: idof, spacecompo, ttimecompo, ivar0, aint, nrow, ncol
 LOGICAL(LGT) :: case1, problem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
 
 ivar0 = Input(default=1_I4B, option=ivar)
 ttimecompo = obj%dof.timecomponents.ivar0
@@ -51,12 +51,8 @@ case1 = aint .EQ. 1
 
 IF (case1) THEN
   DO idof = 1, ttimecompo
-    CALL obj%Set( &
-      & globalNode=nodenum, &
-      & VALUE=nodalvalue(:, 1), &
-      & ivar=ivar0, &
-      & spacecompo=spacecompo, &
-      & timecompo=idof)
+    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
   END DO
 
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -67,26 +63,18 @@ END IF
 problem = aint .NE. ttimecompo
 IF (problem) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
+                  '[INTERNAL ERROR] :: SIZE( nodalvalue, 2 ) .NE. ttimecompo')
   RETURN
 END IF
 
 DO idof = 1, ttimecompo
-  CALL obj%Set( &
-    & globalNode=nodenum, &
-    & VALUE=nodalvalue(:, idof), &
-    & ivar=ivar0, &
-    & spacecompo=spacecompo, &
-    & timecompo=idof)
+  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
+            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
 END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -95,21 +83,20 @@ END PROCEDURE obj_applyDirichletBC1
 
 MODULE PROCEDURE obj_applyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
+LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo, ivar0, tsize, aint
+INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo, ivar0, tsize, aint, nrow, &
+                ncol
 LOGICAL(LGT) :: case1, problem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
 
 ivar0 = Input(default=1_I4B, option=ivar)
 ttimecompo = obj%dof.timecomponents.ivar0
 tsize = SIZE(dbc)
 
-DO ibc = 1, tsize
+ncol = ttimecompo
 
   nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
@@ -126,38 +113,36 @@ DO ibc = 1, tsize
 
   spacecompo = dbc(ibc)%ptr%GetDOFNo()
 
-  aint = SIZE(nodalvalue, 2)
-
-  case1 = aint .EQ. 1
+  case1 = ncol .EQ. 1
 
   IF (case1) THEN
     DO idof = 1, ttimecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & VALUE=nodalvalue(:, 1), &
-        & ivar=ivar0, &
-        & spacecompo=spacecompo, &
-        & timecompo=idof)
+
+      CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
+
     END DO
   END IF
 
+#ifdef DEBUG_VER
   IF (.NOT. case1) THEN
-    problem = aint .NE. ttimecompo
-
+    problem = ncol .NE. ttimecompo
     IF (problem) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
-        & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
+                  '[INTERNAL ERROR] :: SIZE( nodalvalue, 2 ) .NE. ttimecompo')
       RETURN
     END IF
+  END IF
+#endif
+
+  IF (.NOT. case1) THEN
 
     DO idof = 1, ttimecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & VALUE=nodalvalue(:, idof), &
-        & ivar=ivar0, &
-        & spacecompo=spacecompo, &
-        & timecompo=idof)
+    CALL obj%Set(globalNode=nodenum(1:nrow), timecompo=idof, islocal=.TRUE., &
+            VALUE=nodalvalue(1:nrow, idof), ivar=ivar0, spacecompo=spacecompo)
+
     END DO
+
   END IF
 
 END DO
@@ -165,10 +150,6 @@ END DO
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
 END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------

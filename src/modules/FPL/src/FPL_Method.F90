@@ -40,6 +40,7 @@ INTERFACE Set
   MODULE PROCEDURE fpl_Set1
   MODULE PROCEDURE fpl_Set_Int
   MODULE PROCEDURE fpl_Set_Int_R1
+  MODULE PROCEDURE fpl_Set_Int_R2
   MODULE PROCEDURE fpl_Set_Real
   MODULE PROCEDURE fpl_Set_Real_R1
   MODULE PROCEDURE fpl_Set_Real_R2
@@ -57,6 +58,7 @@ INTERFACE GetValue
   MODULE PROCEDURE fpl_GetValue2
   MODULE PROCEDURE fpl_Get_Int
   MODULE PROCEDURE fpl_Get_Int_R1
+  MODULE PROCEDURE fpl_Get_Int_R2
   MODULE PROCEDURE fpl_Get_Int_IntVec
   MODULE PROCEDURE fpl_Get_Real
   MODULE PROCEDURE fpl_Get_Real_R1
@@ -218,6 +220,25 @@ SUBROUTINE fpl_Set_Int_R1(obj, datatype, prefix, key, VALUE)
     ierr = obj%Set(key=TRIM(prefix)//"/"//TRIM(key), VALUE=VALUE)
   END IF
 END SUBROUTINE fpl_Set_Int_R1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE fpl_Set_Int_R2(obj, datatype, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  INTEGER(I4B), INTENT(IN) :: datatype(:, :)
+  !! This argument is only to create unique interface
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: VALUE(:, :)
+  ! Internal variable
+  INTEGER(I4B) :: ierr
+  IF (PRESENT(VALUE)) THEN
+    ierr = obj%Set(key=TRIM(prefix)//"/"//TRIM(key), VALUE=VALUE)
+  END IF
+END SUBROUTINE fpl_Set_Int_R2
 
 !----------------------------------------------------------------------------
 !                                                                 fpl_Set
@@ -460,6 +481,26 @@ SUBROUTINE fpl_Get_Int_R1(obj, prefix, key, VALUE)
   END IF
   varname = ""
 END SUBROUTINE fpl_Get_Int_R1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE fpl_Get_Int_R2(obj, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  INTEGER(I4B), INTENT(OUT) :: VALUE(:, :)
+  ! Internal variable
+  INTEGER(I4B) :: ierr
+  TYPE(String) :: varname
+  varname = TRIM(prefix)//"/"//TRIM(key)
+  IF (obj%isPresent(key=varname%chars())) THEN
+    ierr = obj%Get(key=varname%chars(), VALUE=VALUE)
+  END IF
+  varname = ""
+END SUBROUTINE fpl_Get_Int_R2
 
 !----------------------------------------------------------------------------
 !                                                                  GetValue

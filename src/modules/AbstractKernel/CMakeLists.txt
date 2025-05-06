@@ -19,22 +19,21 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/AbstractKernelParam.F90
+          ${src_path}/KernelComponents.F90
           ${src_path}/AbstractKernel_Class.F90
-          ${src_path}/KernelAssembleMassMatrix_Method.F90
-          ${src_path}/KernelAssembleStiffnessMatrix_Method.F90
-          ${src_path}/KernelAssembleDiffusionMatrix_Method.F90
-          ${src_path}/KernelAssembleDampingMatrix_Method.F90
-          ${src_path}/KernelAssembleElastoDynaMatrix_Method.F90
-          ${src_path}/KernelAssembleSTElastoDynaMatrix_Method.F90
-          ${src_path}/KernelAssembleSTAcousticMatrix_Method.F90
-          ${src_path}/KernelAssembleBodySource_Method.F90
-          ${src_path}/KernelAssembleSurfaceSource_Method.F90
-          ${src_path}/KernelAssemblePointSource_Method.F90
-          ${src_path}/KernelTensorProperty_Method.F90
-          ${src_path}/KernelScalarProperty_Method.F90
-          ${src_path}/KernelMatrixField_Method.F90
-          ${src_path}/KernelElasticityProperties_Method.F90
-          ${src_path}/SDAlgorithms.F90
-          ${src_path}/CSDAlgorithms.F90
-          ${src_path}/VST2Algorithms.F90
-          ${src_path}/KernelUtility.F90)
+          # ${src_path}/KernelAssembleMassMatrix_Method.F90
+          # ${src_path}/KernelAssembleStiffnessMatrix_Method.F90
+          # ${src_path}/KernelAssembleDiffusionMatrix_Method.F90
+          # ${src_path}/KernelAssembleDampingMatrix_Method.F90
+          # ${src_path}/KernelAssembleElastoDynaMatrix_Method.F90
+          # ${src_path}/KernelAssembleSTElastoDynaMatrix_Method.F90
+          # ${src_path}/KernelAssembleSTAcousticMatrix_Method.F90
+          # ${src_path}/KernelAssembleBodySource_Method.F90
+          # ${src_path}/KernelAssembleSurfaceSource_Method.F90
+          # ${src_path}/KernelAssemblePointSource_Method.F90
+          # ${src_path}/KernelTensorProperty_Method.F90
+          # ${src_path}/KernelScalarProperty_Method.F90
+          # ${src_path}/SDAlgorithms.F90
+  # ${src_path}/CSDAlgorithms.F90 ${src_path}/VST2Algorithms.F90
+  # ${src_path}/KernelUtility.F90
+)

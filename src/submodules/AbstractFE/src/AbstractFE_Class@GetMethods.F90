@@ -15,111 +15,27 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) GetMethods
-USE BaseMethod
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
+                                HierarchicalElemShapeData, &
+                                Set
+
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                    GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-isok = obj%isInitiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractFE_::obj is not initiated.')
-  RETURN
-END IF
-
-SELECT TYPE (baseContinuity => obj%baseContinuity)
-CLASS IS (H1_)
-  CALL obj%GetLocalElemShapeData_H1(elemsd=elemsd, quad=quad)
-CLASS is (HDIV_)
-  CALL obj%GetLocalElemShapeData_HDiv(elemsd=elemsd, quad=quad)
-CLASS is (HCURL_)
-  CALL obj%GetLocalElemShapeData_HCurl(elemsd=elemsd, quad=quad)
-CLASS IS (DG_)
-  CALL obj%GetLocalElemShapeData_DG(elemsd=elemsd, quad=quad)
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for type of '//  &
-    & '  AbstractFE_::obj%baseContinuity')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                    GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-isok = obj%isInitiated
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: It seems AbstractFE_::obj is not initiated.')
-  RETURN
-END IF
-
-SELECT TYPE (baseContinuity => obj%baseContinuity)
-CLASS IS (H1_)
-  CALL obj%GetGlobalElemShapeData_H1(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS is (HDIV_)
-  CALL obj%GetGlobalElemShapeData_HDiv(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS is (HCURL_)
-  CALL obj%GetGlobalElemShapeData_HCurl(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS IS (DG_)
-  CALL obj%GetGlobalElemShapeData_DG(elemsd=elemsd, xij=xij,  &
-    & geoElemsd=geoElemsd)
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  '//  &
-    & 'AbstractFE_::obj%baseContinuity.')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
-END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+#endif
+
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 IF (PRESENT(nsd)) nsd = obj%nsd
@@ -127,21 +43,18 @@ IF (PRESENT(order)) order = obj%order
 IF (PRESENT(anisoOrder)) anisoOrder = obj%anisoOrder
 
 IF (PRESENT(edgeOrder)) THEN
-  CALL Reallocate(edgeOrder, obj%tEdgeOrder)
   DO ii = 1, obj%tEdgeOrder
     edgeOrder(ii) = obj%edgeOrder(ii)
   END DO
 END IF
 
 IF (PRESENT(faceOrder)) THEN
-  CALL Reallocate(faceOrder, obj%tfaceOrder)
   DO ii = 1, obj%tfaceOrder
-    faceOrder(ii) = obj%faceOrder(ii)
+    faceOrder(1:3, ii) = obj%faceOrder(1:3, ii)
   END DO
 END IF
 
 IF (PRESENT(cellOrder)) THEN
-  CALL Reallocate(cellOrder, obj%tcellOrder)
   DO ii = 1, obj%tcellOrder
     cellOrder(ii) = obj%cellOrder(ii)
   END DO
@@ -155,11 +68,11 @@ IF (PRESENT(dofType)) dofType = obj%dofType
 IF (PRESENT(transformType)) transformType = obj%transformType
 
 IF (PRESENT(baseContinuity)) THEN
-  baseContinuity = obj%baseContinuity0
+  baseContinuity = obj%baseContinuity
 END IF
 
 IF (PRESENT(baseInterpolation)) THEN
-  baseInterpolation = obj%baseInterpolation0
+  baseInterpolation = obj%baseInterpolation
 END IF
 
 IF (PRESENT(refElemDomain)) refElemDomain = obj%refElemDomain
@@ -180,20 +93,91 @@ IF (PRESENT(lambda)) lambda = obj%lambda
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                             GetPrefix
+!                                                            GetTopologyType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+MODULE PROCEDURE obj_GetTopologyType
+ans = obj%topoType
+END PROCEDURE obj_GetTopologyType
+
+!----------------------------------------------------------------------------
+!                                                     GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+#endif
+
+SELECT CASE (obj%baseInterpolation)
+CASE ("LAGR")
+  CALL obj%GetLagrangeLocalElemShapeData(quad=quad, elemsd=elemsd)
+
+CASE ("HIER", "HEIR")
+  CALL obj%GetHierarchicalLocalElemShapeData(quad=quad, elemsd=elemsd)
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
+  RETURN
+#endif
+END SELECT
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLagrangeLocalElemShapeData
+CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
+           domainName=obj%refelemDomain, order=obj%order, ipType=obj%ipType, &
+       basisType=obj%basisType(1), coeff=obj%coeff, firstCall=obj%firstCall, &
+                   alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
+END PROCEDURE obj_GetLagrangeLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHierarchicalLocalElemShapeData
+CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
+                      domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
+                           faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
+                       cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
+                               edgeOrient=obj%edgeOrient)
+END PROCEDURE obj_GetHierarchicalLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+IF (PRESENT(geoelemsd)) THEN
+  CALL Set(obj=elemsd, val=xij, N=geoelemsd%N, dNdXi=geoelemsd%dNdXi)
+  RETURN
+END IF
+
+CALL Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
+END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetPrefix
+                  '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !

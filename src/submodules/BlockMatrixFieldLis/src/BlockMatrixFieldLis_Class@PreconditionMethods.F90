@@ -19,9 +19,5 @@
 ! date: 16 July 2021
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE(BlockMatrixFieldLis_Class) PreconditionMethods
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-END SUBMODULE PreconditionMethods
+! SUBMODULE(BlockMatrixFieldLis_Class) PreconditionMethods
+! END SUBMODULE PreconditionMethods

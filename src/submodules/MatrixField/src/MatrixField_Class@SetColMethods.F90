@@ -20,63 +20,62 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) SetColMethods
-USE BaseMethod
+USE Basetype, ONLY: DOF_
+
+USE DOF_Method, ONLY: GetIDOF
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+
+USE Display_Method, ONLY: ToString
+
+USE CSRMatrix_Method, ONLY: SetColumn, GetDOFPointer
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 SetColumn
+!                                                                    SetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn1
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn1()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn1"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
-! main
+#include "./localNodeError.F90"
+
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(2)%ptr%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  ELSE
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & idof=idof, &
-      & VALUE=vecVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & idof=idof, &
-      & VALUE=realvec)
-  END IF
-END IF
 
-realvec => NULL()
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
+END IF
 
 END PROCEDURE obj_SetColumn1
 
@@ -85,54 +84,13 @@ END PROCEDURE obj_SetColumn1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn2
-REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn2"
+INTEGER(I4B) :: indx
+TYPE(DOF_), POINTER :: adof
+adof => GetDOFPointer(obj%mat, 1)
+indx = GetIDOF(obj=adof, ivar=ivar, idof=idof)
+CALL obj%SetColumn(globalNode=globalNode, islocal=islocal, idof=indx, &
+                scalarVal=scalarVal, vecVal=vecVal, nodeFieldVal=nodeFieldVal)
 
-! main
-IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=scalarVal)
-  END IF
-END IF
-
-IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & idof=idof, &
-    & VALUE=vecVal)
-  END IF
-END IF
-
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & idof=idof, &
-      & VALUE=realvec)
-  END IF
-END IF
-
-realvec => NULL()
 END PROCEDURE obj_SetColumn2
 
 !----------------------------------------------------------------------------
@@ -140,290 +98,215 @@ END PROCEDURE obj_SetColumn2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn3
-REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn3"
-
-IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=scalarVal)
-  END IF
-END IF
-
-IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=vecVal)
-  END IF
-END IF
-
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
-END IF
-
-realvec => NULL()
+INTEGER(I4B) :: indx
+TYPE(DOF_), POINTER :: adof
+adof => GetDOFPointer(obj%mat, 1)
+indx = GetIDOF(obj=adof, ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo)
+CALL obj%SetColumn(globalNode=globalNode, islocal=islocal, idof=indx, &
+                scalarVal=scalarVal, vecVal=vecVal, nodeFieldVal=nodeFieldVal)
 
 END PROCEDURE obj_SetColumn3
 
 !----------------------------------------------------------------------------
-!                                                                 SetColumn
+!                                                                    SetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn4
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn4()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn4"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=scalarVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=vecVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetColumn4
 
 !----------------------------------------------------------------------------
-!                                                                 SetColumn
+!                                                                    SetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn5
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn5()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn5"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=scalarVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=vecVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetColumn5
 
 !----------------------------------------------------------------------------
-!                                                                 SetColumn
+!                                                                    SetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn6
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn6()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn6"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
-! main
+#include "./localNodeError.F90"
+
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=scalarVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=vecVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetColumn6
 
 !----------------------------------------------------------------------------
-!                                                                 SetColumn
+!                                                                    SetColumn
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetColumn7
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn7()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_SetColumn7"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(scalarVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-   & obj=obj%mat, &
-   & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-   & ivar=ivar, &
-   & spacecompo=spacecompo, &
-   & timecompo=timecompo, &
-   & VALUE=scalarVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=scalarVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(vecVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    CALL SetColumn( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & ivar=ivar, &
-    & spacecompo=spacecompo, &
-    & timecompo=timecompo, &
-    & VALUE=vecVal)
-  END IF
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=vecVal)
+  RETURN
+
 END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'This routine not implemented for rectangle matrix')
-  ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL SetColumn( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec)
-  END IF
+
+  realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, "Cannot get pointer from nodeFieldVal")
+
+  ii = SIZE(realvec)
+
+  CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                                stride=1, tsize=tsize)
+
+  CALL SetColumn(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+                 spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec)
+
+  realvec => NULL()
+  RETURN
 END IF
 
-realvec => NULL()
 END PROCEDURE obj_SetColumn7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetColMethods

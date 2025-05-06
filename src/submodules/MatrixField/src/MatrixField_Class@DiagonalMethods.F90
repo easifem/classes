@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(MatrixField_Class) DiagonalMethods
-USE BaseMethod
+
+USE CSRMatrix_Method, ONLY: GetDiagonal
+
 IMPLICIT NONE
 CONTAINS
 
