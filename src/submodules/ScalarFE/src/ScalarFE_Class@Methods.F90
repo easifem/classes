@@ -17,10 +17,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(GnuPlot_Class) MultiPlotMethods
-
+SUBMODULE(ScalarFE_Class) Methods
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,19 +28,16 @@ CONTAINS
 MODULE PROCEDURE Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 
-IF (rows > 0) THEN
-  obj%multiplot_rows = rows
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
 END IF
 
-IF (cols > 0) THEN
-  obj%multiplot_cols = cols
-END IF
+END PROCEDURE Deallocate_Ptr_Vector
 
-obj%hasmultiplot = .TRUE.
-obj%multiplot_total_plots = 0
-
-CALL obj%Initiate()
-
-END PROCEDURE obj_multiplot
-
-END SUBMODULE MultiPlotMethods
+END SUBMODULE Methods
