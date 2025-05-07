@@ -494,13 +494,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
 
+ALLOCATE (timeCompo(tPhysicalVars))
+
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
+
+spaceCompo(1) = dbc%GetDOFNo()
+
 ivar0 = Input(default=1_I4B, option=ivar)
 
-tsize = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
-ALLOCATE (globalNode(tsize))
+IF (ALLOCATED(obj%fedofs)) THEN
+  IF (ivar0 .GT. SIZE(obj%fedofs)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: ivar is greater than size of '// &
+                      ' AbstractNodeField_::obj%fedofs.')
+    RETURN
+  END IF
 
-CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
-             fedof=obj%fedofs(ivar0)%ptr)
+  tsize = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
+  ALLOCATE (globalNode(tsize))
+
+  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
+               fedof=obj%fedofs(ivar0)%ptr)
+ELSE
+  tsize = dbc%GetTotalNodeNum(obj%fedof)
+  ALLOCATE (globalNode(tsize))
+
+  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
+               fedof=obj%fedof)
+END IF
+
 ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar, &
                      spaceCompo=spaceCompo, &
                      timeCompo=Arange(1_I4B, timeCompo(ivar0)))
