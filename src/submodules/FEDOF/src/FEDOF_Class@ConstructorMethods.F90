@@ -113,8 +113,7 @@ CASE ("H1HIER")
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for baseContinuity &
-    & and baseInterpolation')
+ '[INTERNAL ERROR] :: No case found for baseContinuity and baseInterpolation')
   RETURN
 END SELECT
 
