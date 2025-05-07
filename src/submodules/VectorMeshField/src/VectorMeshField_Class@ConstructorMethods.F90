@@ -15,7 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(VectorMeshField_Class) ConstructorMethods
-USE BaseMethod
+
+USE GlobalData, ONLY: Constant, SpaceTime, Vector, Nodal
+
+USE AbstractField_Class, ONLY: TypeField
+
+USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -26,30 +34,22 @@ CONTAINS
 MODULE PROCEDURE SetVectorMeshFieldParam
 CHARACTER(*), PARAMETER :: myName = "SetVectorMeshFieldParam()"
 INTEGER(I4B) :: s(2), n
+LOGICAL(LGT) :: isok
 
-IF (varType .EQ. SpaceTime) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: For ScalarMeshField varType cannot be SpaceTime.'// &
-    & ' In this situation you should use STScalarMeshField.')
-  RETURN
-END IF
+isok = varType .NE. SpaceTime
+CALL AssertError1(isok, myName, &
+                  'For ScalarMeshField varType cannot be SpaceTime.'// &
+                  ' In this situation you should use STScalarMeshField.')
 
-IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (fieldType .EQ. TypeField%constant) THEN
   s = spaceCompo; n = 1
 ELSE
   s = [spaceCompo, nns]; n = 2
 END IF
 
-CALL SetAbstractMeshFieldParam( &
-  & param=param, &
-  & prefix="VectorMeshField", &
-  & name=name, &
-  & fieldType=fieldType, &
-  & varType=varType, &
-  & engine=engine, &
-  & defineOn=defineOn, &
-  & rank=Vector, &
-  & s=s(1:n))
+CALL SetAbstractMeshFieldParam(param=param, prefix="VectorMeshField", &
+             name=name, fieldType=fieldType, varType=varType, engine=engine, &
+                               defineOn=defineOn, rank=Vector, s=s(1:n))
 
 END PROCEDURE SetVectorMeshFieldParam
 
@@ -62,52 +62,41 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: returnType, argType, nns, varType, fieldType, numReturns
 TYPE(ParameterList_) :: param
-CLASS(ReferenceElement_), POINTER :: refelem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-refelem => NULL()
-refelem => mesh%GetRefElemPointer()
-isok = ASSOCIATED(refelem)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: refelem pointer not found.')
-  RETURN
-END IF
-nns = (.NNE.refelem)
+nns = mesh%GetMaxNNE()
 
 returnType = func%GetReturnType()
 isok = returnType .EQ. Vector
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: returnType should be Vector')
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'For VectorMeshField returnType should be Vector.')
 
 argType = func%GetArgType()
 numReturns = func%GetNumReturns()
 fieldType = TypeField%normal
 varType = argType
+
 IF (argType .EQ. Constant) THEN
   fieldType = TypeField%constant
   varType = Constant
 END IF
 
 CALL param%Initiate()
-CALL SetVectorMeshFieldParam(param=param, name=name,  &
-   & fieldType=fieldType, varType=varType, engine=engine,  &
-   & defineOn=Nodal, spaceCompo=numReturns, nns=nns)
+
+CALL SetVectorMeshFieldParam(param=param, name=name, &
+                        fieldType=fieldType, varType=varType, engine=engine, &
+                             defineOn=Nodal, spaceCompo=numReturns, nns=nns)
+
 CALL obj%Initiate(param=param, mesh=mesh)
 CALL param%DEALLOCATE()
 
-NULLIFY (refelem)
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate4
@@ -154,5 +143,7 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

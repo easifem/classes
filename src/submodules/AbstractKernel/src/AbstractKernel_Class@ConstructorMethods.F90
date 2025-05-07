@@ -16,9 +16,39 @@
 !
 
 SUBMODULE(AbstractKernel_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+! USE BaseMethod
+
+USE InputUtility, ONLY: Input
+
+USE FPL_Method, ONLY: Set
+
+USE AbstractKernelParam, ONLY: TypeKernelBasisOpt, &
+                               TypeKernelTimeOpt
+
+USE QuadraturePoint_Method, ONLY: QuadraturePointNameToID
+
+USE Display_Method, ONLY: ToString
+
+USE CPUTime_Class, ONLY: CPUTime_
+
+USE LinSolverFactory, ONLY: LinearSolverFactory
+
+USE KernelComponentsMethods, ONLY: KernelOptInitiate, &
+                                   KernelBCInitiate, &
+                                   KernelMaterialsInitiate, &
+                                   KernelOptCheckEssentialParam, &
+                                   KernelBasisCheckEssentialParam, &
+                                   KernelBCCheckEssentialParam, &
+                                   KernelMaterialsCheckEssentialParam, &
+                                   KernelOptDeallocate, &
+                                   KernelFieldsDeallocate, &
+                                   KernelMeshFieldsDeallocate, &
+                                   KernelMaterialsDeallocate, &
+                                   KernelElemshapeDataDeallocate, &
+                                   KernelBCDeallocate
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,263 +56,318 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractKernelParam
-INTEGER(I4B) :: aint
-INTEGER(I4B) :: ii
 CHARACTER(*), PARAMETER :: myName = "SetAbstractKernelParam()"
+
+INTEGER(I4B), PARAMETER :: DEFAULT_tSolidMaterials = 0_I4B, &
+                           DEFAULT_tOverlappedMaterials = 1_I4B
+
+REAL(DFP), PARAMETER :: DEFAULT_nitscheAlpha = 100.0_DFP
+
+LOGICAL(LGT), PARAMETER :: DEFAULT_isSymNitsche = .FALSE., &
+                           DEFAULT_isConstantMatProp = .FALSE., &
+                           DEFAULT_isIsotropic = .TRUE., &
+                           DEFAULT_isIncompressible = .FALSE.
+
+INTEGER(I4B) :: aint, ii
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal, areal3(3)
+CHARACTER(:), ALLOCATABLE :: astr
+CHARACTER(*), PARAMETER :: default_tanmatProp = "UNSYM", &
+                           default_tanmatName = "MATRIX", &
+                           default_outputPath = "./results/"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 ! char
 CALL Set(obj=param, datatype="char", prefix=prefix, &
-  & key="name", VALUE=name)
+         key="name", VALUE=name)
 CALL Set(obj=param, datatype="char", prefix=prefix, &
-  & key="engine", VALUE=engine)
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="domainFile", VALUE=domainFile)
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="domainFile", VALUE=domainFile)
+         key="engine", VALUE=engine)
+CALL Set(param, datatype="char", prefix=prefix, &
+         key="domainFile", VALUE=domainFile)
+CALL Set(param, datatype="char", prefix=prefix, &
+         key="domainFile", VALUE=domainFile)
 
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseInterpolationForSpace",  &
-  & VALUE=Input(option=baseInterpolationForSpace,  &
-  & default=DEFAULT_baseInterpolationForSpace))
+CALL SetBasisOpt(param=param, myname=myname, prefix=prefix, suffix="Space", &
+                 baseInterpolation=baseInterpolationForSpace, &
+                 baseContinuity=baseContinuityForSpace, &
+                 quadratureType=quadratureTypeForSpace, &
+                 ipType=ipTypeForSpace, basisType=basisTypeForSpace, &
+                alpha=alphaForSpace, beta=betaForSpace, lambda=lambdaForSpace)
 
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseContinuityForSpace",  &
-  & VALUE=Input(option=baseContinuityForSpace,  &
-  & default=DEFAULT_baseContinuityForSpace))
+CALL SetBasisOpt(param=param, myname=myname, prefix=prefix, suffix="Time", &
+                 baseInterpolation=baseInterpolationForTime, &
+                 baseContinuity=baseContinuityForTime, &
+                 quadratureType=quadratureTypeForTime, &
+                 ipType=ipTypeForTime, basisType=basisTypeForTime, &
+                 alpha=alphaForTime, beta=betaForTime, lambda=lambdaForTime)
 
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="quadratureTypeForSpace",  &
-  & VALUE=Input(option=quadratureTypeForSpace,  &
-  & default=DEFAULT_quadratureTypeForSpace))
+astr = Input(option=tanmatProp, default=default_tanmatProp)
+CALL Set(param, datatype="char", prefix=prefix, key="tanmatProp", VALUE=astr)
 
-aint = QuadraturePointNameToID(Input(option=quadratureTypeForSpace,  &
-  & default=DEFAULT_quadratureTypeForSpace))
-CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
-  & VALUE=aint)
+astr = Input(option=tanmatName, default=default_tanmatName)
+CALL Set(param, datatype="char", prefix=prefix, key="tanmatName", VALUE=astr)
 
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForSpace",   &
-  & Input(option=ipTypeForSpace, default=DEFAULT_ipTypeForSpace))
-
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace",  &
-  & Input(option=basisTypeForSpace, default=DEFAULT_basisTypeForSpace))
-
-CALL Set(param, TypeDFP, prefix, "alphaForSpace",  &
-& Input(default=DEFAULT_alphaForSpace, option=alphaForSpace))
-
-CALL Set(param, TypeDFP, prefix, "betaForSpace",  &
-& Input(default=DEFAULT_betaForSpace, option=betaForSpace))
-
-CALL Set(param, TypeDFP, prefix, "lambdaForSpace",  &
-& Input(default=DEFAULT_lambdaForSpace, option=lambdaForSpace))
-
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseInterpolationForTime",  &
-  & VALUE=Input(option=baseInterpolationForTime,  &
-  & default=DEFAULT_baseInterpolationForTime))
-
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseContinuityForTime",  &
-  & VALUE=Input(option=basecontinuityfortime,  &
-  & default=default_basecontinuityfortime))
-
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="quadratureTypeForTime",  &
-  & VALUE=Input(option=quadratureTypeForTime,  &
-  & default=DEFAULT_quadratureTypeForTime))
-
-aint = QuadraturePointNameToID(Input(option=quadratureTypeForTime,  &
-  & default=DEFAULT_quadratureTypeForTime))
-CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
-  & VALUE=aint)
-
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime",  &
-  & Input(option=ipTypeForTime, default=DEFAULT_ipTypeForTime))
-
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime",  &
-  & Input(option=basisTypeForTime, default=DEFAULT_basisTypeForTime))
-
-CALL Set(param, TypeDFP, prefix, "alphaForTime",  &
-& Input(default=DEFAULT_alphaForTime, option=alphaForTime))
-
-CALL Set(param, TypeDFP, prefix, "betaForTime",  &
-& Input(default=DEFAULT_betaForTime, option=betaForTime))
-
-CALL Set(param, TypeDFP, prefix, "lambdaForTime",  &
-& Input(default=DEFAULT_lambdaForTime, option=lambdaForTime))
-
-CALL Set(param, datatype="char", prefix=prefix, key="tanmatProp",  &
-  & VALUE=Input(option=tanmatProp, default=DEFAULT_TANMAT_PROP))
-
-CALL Set(param, datatype="char", prefix=prefix, key="outputPath",  &
-  & VALUE=Input(option=outputPath, default=DEFAULT_OUTPUT_PATH))
+astr = Input(option=outputPath, default=default_outputPath)
+CALL Set(param, datatype="char", prefix=prefix, key="outputPath", VALUE=astr)
 
 !! int
-CALL Set(param, TypeIntI4B, prefix, "problemType", problemType)
-CALL Set(param, TypeIntI4B, prefix, "coordinateSystem", coordinateSystem)
-CALL Set(param, TypeIntI4B, prefix, "timeDependency",  &
-  & Input(option=timeDependency, default=KERNEL_STEADY))
+CALL Set(param, datatype=problemType, prefix=prefix, key="problemType", &
+         VALUE=problemType)
 
-!! NOTE: KERNEL_STEADY is defined in AbstractKernelParam module
-CALL Set(param, TypeIntI4B, prefix, "maxIter",  &
-  & Input(option=maxIter, default=default_maxIter))
-CALL Set(param, TypeIntI4B, prefix, "nsd",  &
-  & Input(option=nsd, default=0_I4B))
-CALL Set(param, TypeIntI4B, prefix, "nnt",  &
-  & Input(option=nnt, default=1_I4B))
-CALL Set(param, TypeIntI4B, prefix, "tdof",  &
-  & Input(option=tdof, default=0_I4B))
-CALL Set(param, TypeIntI4B, prefix, "currentTimeStep",  &
-  & Input(option=currentTimeStep, default=1_I4B))
-CALL Set(param, TypeIntI4B, prefix, "totalTimeStep",  &
-  & Input(option=totalTimeStep, default=1_I4B))
-CALL Set(param, TypeIntI4B, prefix, "postProcessOpt", postProcessOpt)
+CALL Set(param, datatype=coordinateSystem, prefix=prefix, &
+         key="coordinateSystem", VALUE=coordinateSystem)
 
-CALL Set(param, TypeIntI4B, prefix, "tDirichletBC",  &
-  & Input(option=tDirichletBC, default=0_I4B))
+aint = Input(option=timeDependency, default=TypeKernelTimeOpt%default)
+CALL Set(param, datatype=aint, prefix=prefix, key="timeDependency", &
+         VALUE=aint)
 
-CALL Set(param, TypeIntI4B, prefix, "tNeumannBC",  &
-  & Input(option=tNeumannBC, default=0_I4B))
+aint = Input(option=maxIter, default=TypeKernelOpt%maxIter)
+CALL Set(param, datatype=aint, prefix=prefix, key="maxIter", VALUE=aint)
 
-CALL Set(param, TypeIntI4B, prefix, "tPointSource",  &
-  & Input(option=tPointSource, default=0_I4B))
+aint = Input(option=nsd, default=TypeKernelOpt%nsd)
+CALL Set(param, datatype=aint, prefix=prefix, key="nsd", VALUE=aint)
 
-CALL Set(param, TypeIntI4B, prefix, "tWeakDirichletBC",  &
-  & Input(option=tWeakDirichletBC, default=0_I4B))
+aint = Input(option=nnt, default=TypeKernelOpt%nnt)
+CALL Set(param, datatype=aint, prefix=prefix, key="nnt", VALUE=aint)
 
-CALL Set(param, .TRUE., prefix, "isSymNitsche",  &
-  & Input(option=isSymNitsche, default=DEFAULT_isSymNitsche))
-! INFO: DEFAULT_isSymNitsche is definedin AbstractElasticityParam module
+aint = Input(option=tdof, default=TypeKernelOpt%tdof)
+CALL Set(param, aint, prefix, "tdof", aint)
 
-CALL Set(param, TypeIntI4B, prefix, "tOverlappedMaterials",  &
-  & Input(option=tOverlappedMaterials, default=DEFAULT_tOverlappedMaterials))
+aint = Input(option=currentTimeStep, default=TypeKernelOpt%currentTimeStep)
+CALL Set(param, aint, prefix, "currentTimeStep", aint)
+
+aint = Input(option=totalTimeStep, default=TypeKernelOpt%totalTimeStep)
+CALL Set(param, aint, prefix, "totalTimeStep", aint)
+
+aint = Input(option=postProcessOpt, default=TypeKernelOpt%postProcessOpt)
+CALL Set(param, aint, prefix, "postProcessOpt", aint)
+
+aint = Input(option=tDirichletBC, default=0_I4B)
+CALL Set(param, aint, prefix, "tDirichletBC", aint)
+
+aint = Input(option=tNeumannBC, default=0_I4B)
+CALL Set(param, aint, prefix, "tNeumannBC", aint)
+
+aint = Input(option=tPointSource, default=0_I4B)
+CALL Set(param, aint, prefix, "tPointSource", aint)
+
+aint = Input(option=tWeakDirichletBC, default=0_I4B)
+CALL Set(param, aint, prefix, "tWeakDirichletBC", aint)
+
+abool = Input(option=isSymNitsche, default=DEFAULT_isSymNitsche)
+CALL Set(param, .TRUE., prefix, "isSymNitsche", abool)
+
+aint = Input(option=tOverlappedMaterials, &
+             default=DEFAULT_tOverlappedMaterials)
+CALL Set(param, aint, prefix, "tOverlappedMaterials", aint)
 
 ! real
-CALL Set(param, TypeDFP, prefix, "nitscheAlpha",  &
-  & Input(option=nitscheAlpha, default=DEFAULT_nitscheAlpha))
+areal = Input(option=nitscheAlpha, default=DEFAULT_nitscheAlpha)
+CALL Set(param, areal, prefix, "nitscheAlpha", areal)
 
-CALL Set(param, TypeDFP, prefix, "rtoleranceForDisplacement",  &
-  & VALUE=Input(default=DEFAULT_rtoleranceForDisplacement, &
-  & option=rtoleranceForDisplacement))
+areal = Input(default=TypeKernelOpt%dispError%rtol, &
+              option=rtoleranceForDisplacement)
+CALL Set(param, areal, prefix, "rtoleranceForDisplacement", areal)
 
-CALL Set(param, TypeDFP, prefix, "atoleranceForDisplacement",  &
-  & VALUE=Input(default=DEFAULT_atoleranceForDisplacement, &
-  & option=atoleranceForDisplacement))
+areal = Input(default=TypeKernelOpt%dispError%rtol, &
+              option=atoleranceForDisplacement)
+CALL Set(param, areal, prefix, "atoleranceForDisplacement", areal)
 
-CALL Set(param, TypeDFP, prefix, "rtoleranceForVelocity",  &
-  & VALUE=Input(default=DEFAULT_rtoleranceForVelocity, &
-  & option=rtoleranceForVelocity))
+areal = Input(default=TypeKernelOpt%velError%rtol, &
+              option=rtoleranceForVelocity)
+CALL Set(param, areal, prefix, "rtoleranceForVelocity", areal)
 
-CALL Set(param, TypeDFP, prefix, "atoleranceForVelocity",  &
-  & VALUE=Input(default=DEFAULT_atoleranceForVelocity, &
-  & option=atoleranceForVelocity))
+areal = Input(default=TypeKernelOpt%velError%rtol, &
+              option=atoleranceForVelocity)
+CALL Set(param, areal, prefix, "atoleranceForVelocity", areal)
 
-CALL Set(param, TypeDFP, prefix, "rtoleranceForResidual",  &
-  & VALUE=Input(default=DEFAULT_rtoleranceForResidual, &
-  & option=rtoleranceForResidual))
+areal = Input(default=TypeKernelOpt%resError%rtol, &
+              option=rtoleranceForResidual)
+CALL Set(param, areal, prefix, "rtoleranceForResidual", areal)
 
-CALL Set(param, TypeDFP, prefix, "atoleranceForResidual",  &
-  & VALUE=Input(default=DEFAULT_atoleranceForResidual, &
-  & option=atoleranceForResidual))
-! INFO: All of the above floating point default values are defined
-! AbstractElasticityParam module.
+areal = Input(default=TypeKernelOpt%resError%rtol, &
+              option=atoleranceForResidual)
+CALL Set(param, areal, prefix, "atoleranceForResidual", areal)
 
 !! bool
-CALL Set(param, .TRUE., prefix, "isCommonDomain",  &
-  & Input(default=DEFAULT_isCommonDomain, option=isCommonDomain))
+abool = Input(default=TypeKernelOpt%isCommonDomain, option=isCommonDomain)
+CALL Set(param, abool, prefix, "isCommonDomain", abool)
 
 !! real
-CALL Set(param, [TypeDFP], prefix, "gravity",  &
-  & Input(default=[0.0_DFP, 0.0_DFP, 0.0_DFP], option=gravity))
-CALL Set(param, TypeDFP, prefix, "dt",  &
-  & Input(option=dt, default=0.0_DFP))
-CALL Set(param, TypeDFP, prefix, "startTime",  &
-  & Input(option=startTime, default=0.0_DFP))
-CALL Set(param, TypeDFP, prefix, "endTime",  &
-  & Input(option=endTime, default=0.0_DFP))
-CALL Set(param, TypeDFP, prefix, "currentTime",  &
-  & Input(option=currentTime, default=0.0_DFP))
+IF (PRESENT(gravity)) THEN
+  areal3 = gravity
+ELSE
+  areal3 = TypeKernelOpt%gravity
+END IF
 
-CALL Set(param, TypeIntI4B, prefix, "algorithm",  &
- & Input(option=algorithm, default=DEFAULT_algorithm))
-! INFO: DEFAULT_algorithm is defined in AbstractElasticityParam module
-! INFO: Set method is defined in FPL_Method
+CALL Set(param, areal3, prefix, "gravity", areal3)
+
+areal = Input(option=dt, default=TypeKernelOpt%dt)
+CALL Set(param, areal, prefix, "dt", areal)
+
+areal = Input(option=startTime, default=TypeKernelOpt%startTime)
+CALL Set(param, areal, prefix, "startTime", areal)
+
+areal = Input(option=endTime, default=TypeKernelOpt%endTime)
+CALL Set(param, areal, prefix, "endTime", areal)
+
+areal = Input(option=currentTime, default=TypeKernelOpt%currentTime)
+CALL Set(param, areal, prefix, "currentTime", areal)
+
+aint = Input(option=algorithm, default=TypeKernelOpt%algorithm)
+CALL Set(param, aint, prefix, "algorithm", aint)
 
 ii = 0_I4B
 IF (PRESENT(materialInterfaces)) THEN
   ii = SIZE(materialInterfaces)
-  IF (ii .GT. 0_I4B) THEN
-    CALL Set(  &
-    & param,  &
-    & [TypeIntI4B],  &
-    & prefix,  &
-    & "materialInterfaces",  &
-    & materialInterfaces)
-  END IF
-END IF
-CALL Set(param, TypeIntI4B, prefix, "tMaterialInterfaces", ii)
 
-CALL Set(param, TypeIntI4B, prefix, "tSolidMaterials",  &
- & Input(option=tSolidMaterials, default=1_I4B))
+  IF (ii .GT. 0_I4B) THEN
+    CALL Set(param, datatype=materialInterfaces, prefix=prefix, &
+             key="materialInterfaces", VALUE=materialInterfaces)
+  END IF
+
+END IF
+CALL Set(param, datatype=ii, prefix=prefix, key="tMaterialInterfaces", &
+         VALUE=ii)
+
+aint = Input(option=tSolidMaterials, default=DEFAULT_tSolidMaterials)
+CALL Set(param, datatype=aint, prefix=prefix, key="tSolidMaterials", &
+         VALUE=aint)
 
 !bool
-CALL Set(param, .TRUE., prefix, "isConstantMatProp",  &
-  & Input(option=isConstantMatProp, default=DEFAULT_isConstantMatProp))
-! INFO: DEFAULT_isConstantMatProp is definedin AbstractElasticityParam module
+abool = Input(option=isConstantMatProp, &
+              default=DEFAULT_isConstantMatProp)
+CALL Set(param, abool, prefix, "isConstantMatProp", abool)
 
-! int
-CALL Set(param, .TRUE., prefix, "isIsotropic",  &
-  & Input(option=isIsotropic, default=DEFAULT_isIsotropic))
-! INFO: DEFAULT_isIsotropic is definedin AbstractElasticityParam module
+abool = Input(option=isIsotropic, default=DEFAULT_isIsotropic)
+CALL Set(param, abool, prefix, "isIsotropic", abool)
 
-CALL Set(param, .TRUE., prefix, "isIncompressible",  &
-  & Input(option=isIncompressible, default=DEFAULT_isIncompressible))
-! INFO: DEFAULT_isIncompressible is definedin AbstractElasticityParam module
+abool = Input(option=isIncompressible, default=DEFAULT_isIncompressible)
+CALL Set(param, abool, prefix, "isIncompressible", abool)
 
-CALL Set(param, .TRUE., prefix, "showTime",  &
-  & Input(option=showTime, default=.FALSE.))
+abool = Input(option=showTime, default=.FALSE.)
+CALL Set(param, abool, prefix, "showTime", abool)
 
-CALL Set(param, .TRUE., prefix, "unifyVTK",  &
-  & Input(option=unifyVTK, default=.FALSE.))
+abool = Input(option=unifyVTK, default=.FALSE.)
+CALL Set(param, abool, prefix, "unifyVTK", abool)
 
-CALL Set(param, .TRUE., prefix, "createPVD",  &
-  & Input(option=createPVD, default=.FALSE.))
+abool = Input(option=createPVD, default=.FALSE.)
+CALL Set(param, abool, prefix, "createPVD", abool)
 
-CALL Set(param, TypeIntI4B, prefix, "vtkOutputFreq",  &
- & Input(option=vtkOutputFreq, default=1))
+aint = Input(option=vtkOutputFreq, default=1)
+CALL Set(param, aint, prefix, "vtkOutputFreq", aint)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
 END PROCEDURE SetAbstractKernelParam
+
+!----------------------------------------------------------------------------
+!                                                                SetBasisOpt
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetBasisOpt(param, myname, prefix, suffix, baseInterpolation, &
+       baseContinuity, quadratureType, ipType, basisType, alpha, beta, lambda)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: suffix
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: quadratureType
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+
+  !! internal variables
+  CHARACTER(:), ALLOCATABLE :: astr
+  INTEGER(I4B) :: aint
+  REAL(DFP) :: areal
+  LOGICAL(LGT) :: isok
+
+  astr = Input(option=baseInterpolation, &
+               default=TypeKernelBasisOpt%baseInterpolation)
+  CALL Set(param, datatype="char", prefix=prefix, &
+           key="baseInterpolationFor"//suffix, VALUE=astr)
+
+  astr = Input(option=baseContinuity, &
+               default=TypeKernelBasisOpt%baseContinuity)
+  CALL Set(param, datatype="char", prefix=prefix, &
+           key="baseContinuityFor"//suffix, VALUE=astr)
+
+  astr = Input(option=quadratureType, &
+               default=TypeKernelBasisOpt%quadratureType_char)
+  CALL Set(param, datatype="char", prefix=prefix, &
+           key="quadratureTypeFor"//suffix, VALUE=astr)
+
+  aint = QuadraturePointNameToID(astr)
+
+  isok = aint .GE. 0
+  CALL AssertError1(isok, myname, &
+                    "Error in converting quadrature point to integer")
+
+  CALL Set(param, datatype=aint, prefix=prefix, key="quadTypeFor"//suffix, &
+           VALUE=aint)
+
+  aint = Input(option=ipType, default=TypeKernelBasisOpt%ipType)
+  CALL Set(param, datatype=aint, prefix=prefix, key="ipTypeFor"//suffix, &
+           VALUE=aint)
+
+  aint = Input(option=basisType, default=TypeKernelBasisOpt%basisType)
+  CALL Set(param, datatype=aint, prefix=prefix, key="basisTypeFor"//suffix, &
+           VALUE=aint)
+
+  areal = Input(option=alpha, default=TypeKernelBasisOpt%alpha)
+  CALL Set(param, datatype=areal, prefix=prefix, key="alphaFor"//suffix, &
+           VALUE=areal)
+
+  areal = Input(option=beta, default=TypeKernelBasisOpt%beta)
+  CALL Set(param, datatype=areal, prefix=prefix, key="betaFor"//suffix, &
+           VALUE=areal)
+
+  areal = Input(option=lambda, default=TypeKernelBasisOpt%lambda)
+  CALL Set(param, datatype=areal, prefix=prefix, key="lambdaFor"//suffix, &
+           VALUE=areal)
+END SUBROUTINE SetBasisOpt
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CHARACTER(:), ALLOCATABLE :: prefix0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-prefix0 = Input(default=obj%GetPrefix(), option=prefix)
+IF (PRESENT(prefix)) THEN
+  prefix0 = prefix
+ELSE
+  prefix0 = obj%GetPrefix()
+END IF
 
-CALL CheckEssentialParam(obj=param,  &
-  & keys=AbstractKernelEssentialParam,  &
-  & prefix=prefix0,  &
-  & myName=myName,  &
-  & modName=modName)
-!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+CALL KernelOptCheckEssentialParam(param=param, prefix=prefix0, &
+                                  myname=myname)
+
+CALL KernelBasisCheckEssentialParam(param=param, prefix=prefix0, &
+                                    myname=myname)
+
+CALL KernelBCCheckEssentialParam(param=param, prefix=prefix0, &
+                                 myname=myname)
+
+CALL KernelMaterialsCheckEssentialParam(param=param, prefix=prefix0, &
+                                        myname=myname)
 
 ! linsol
 IF (ASSOCIATED(obj%linsol)) THEN
@@ -294,23 +379,11 @@ IF (ASSOCIATED(obj%tanmat)) THEN
   CALL obj%tanmat%CheckEssentialParam(param=param)
 END IF
 
-IF (ASSOCIATED(obj%displacement)) &
-  & CALL obj%displacement%CheckEssentialParam(param=param)
-
-IF (ASSOCIATED(obj%velocity)) &
-  & CALL obj%velocity%CheckEssentialParam(param=param)
-
-IF (ASSOCIATED(obj%acceleration)) &
-  & CALL obj%acceleration%CheckEssentialParam(param=param)
-
-IF (ASSOCIATED(obj%nodeCoord)) &
-  & CALL obj%nodeCoord%CheckEssentialParam(param=param)
-
 prefix0 = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE obj_CheckEssentialParam
@@ -321,115 +394,55 @@ END PROCEDURE obj_CheckEssentialParam
 
 MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+LOGICAL(LGT) :: isok
+
 INTEGER(I4B) :: ii
-INTEGER(I4B) :: tDirichletBC
-INTEGER(I4B) :: tWeakDirichletBC
-INTEGER(I4B) :: tPointSource
-INTEGER(I4B) :: tNeumannBC
-LOGICAL(LGT) :: isSymNitsche
-CHARACTER(:), ALLOCATABLE :: prefix, temp_str
-INTEGER(I4B) :: tMaterialInterfaces
+CHARACTER(:), ALLOCATABLE :: astr, prefix
 TYPE(CPUTime_) :: TypeCPUTime
 
 CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-! check
-IF (obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[CONFIG ERROR] :: The object is already initiated, deallocate first!')
-  RETURN
+prefix = obj%GetPrefix()
+
+CALL KernelOptInitiate(obj=obj%opt, param=param, prefix=prefix, &
+                       myname=myname)
+
+CALL obj%CheckEssentialParam(param=param, prefix=prefix)
+
+CALL KernelBCInitiate(obj=obj%bc, param=param, prefix=prefix, myname=myname)
+
+CALL KernelMaterialsInitiate(obj=obj%materials, param=param, prefix=prefix, &
+                             myname=myname)
+
+IF (obj%opt%showTime) THEN
+  astr = obj%opt%outputPath//obj%opt%name//"_time_stat.csv"
+  CALL obj%showTimeFile%Initiate(filename=astr, status="REPLACE", &
+                                 action="WRITE", separator=",")
+  CALL obj%showTimeFile%OPEN()
+  astr = ""
+  astr = "currentTimeStep,currentTime,method,cpu-time"
+!$ astr = astr//",wtime"
+  CALL obj%showTimeFile%WRITE(val=astr)
 END IF
 
-obj%isInitiated = .TRUE.
-prefix = obj%GetPrefix()
-CALL obj%CheckEssentialParam(param, prefix)
-
-CALL GetValue(param, prefix, "problemType", obj%problemType)
-CALL GetValue(param, prefix, "isCommonDomain", obj%isCommonDomain)
-CALL GetValue(param, prefix, "name", obj%name)
-CALL GetValue(param, prefix, "engine", obj%engine)
-CALL GetValue(param, prefix, "coordinateSystem", obj%coordinateSystem)
-CALL GetValue(param, prefix, "maxIter", obj%maxIter)
-CALL GetValue(param, prefix, "timeDependency", obj%timeDependency)
-CALL GetValue(param, prefix, "nsd", obj%nsd)
-CALL GetValue(param, prefix, "nnt", obj%nnt)
-CALL GetValue(param, prefix, "tdof", obj%tdof)
-CALL GetValue(param, prefix, "dt", obj%dt)
-CALL GetValue(param, prefix, "startTime", obj%startTime)
-CALL GetValue(param, prefix, "endTime", obj%endTime)
-CALL GetValue(param, prefix, "currentTime", obj%currentTime)
-CALL GetValue(param, prefix, "currentTimeStep", obj%currentTimeStep)
-CALL GetValue(param, prefix, "totalTimeStep", obj%totalTimeStep)
-CALL GetValue(param, prefix, "postProcessOpt", obj%postProcessOpt)
-CALL GetValue(param, prefix, "gravity", obj%gravity)
-CALL GetValue(param, prefix, "baseContinuityForSpace",  &
-  & obj%baseContinuityForSpace)
-CALL GetValue(param, prefix, "baseContinuityForTime",  &
-  & obj%baseContinuityForTime)
-CALL GetValue(param, prefix, "baseInterpolationForSpace",  &
-  & obj%baseInterpolationForSpace)
-CALL GetValue(param, prefix, "baseInterpolationForTime",  &
-  & obj%baseInterpolationForTime)
-CALL GetValue(param, prefix, "quadratureTypeForSpace",  &
-  & obj%quadratureTypeForSpace)
-CALL GetValue(param, prefix, "quadratureTypeForTime",  &
-  & obj%quadratureTypeForTime)
-CALL GetValue(param, prefix, "quadTypeForSpace", obj%quadTypeForSpace)
-CALL GetValue(param, prefix, "quadTypeForTime", obj%quadTypeForTime)
-CALL GetValue(param, prefix, "domainFile", obj%domainFile)
-CALL GetValue(param, prefix, "tanmatProp", obj%tanmatProp)
-CALL GetValue(param, prefix, "outputPath", obj%outputPath)
-CALL GetValue(param, prefix, "tOverlappedMaterials",  &
-  & obj%tOverlappedMaterials)
-
-obj%ipTypeForSpace = DEFAULT_ipTypeForSpace
-obj%ipTypeForTime = DEFAULT_ipTypeForTime
-
-obj%basisTypeForSpace = DEFAULT_basisTypeForSpace
-obj%basisTypeForTime = DEFAULT_basisTypeForTime
-
-obj%alphaForSpace = DEFAULT_alphaForSpace
-obj%betaForSpace = DEFAULT_betaForSpace
-obj%lambdaForSpace = DEFAULT_lambdaForSpace
-
-obj%alphaForTime = DEFAULT_alphaForTime
-obj%betaForTime = DEFAULT_betaForTime
-obj%lambdaForTime = DEFAULT_lambdaForTime
-
-CALL GetValue(param, prefix, "ipTypeForSpace", obj%ipTypeForSpace)
-CALL GetValue(param, prefix, "ipTypeForTime", obj%ipTypeForTime)
-CALL GetValue(param, prefix, "basisTypeForSpace", obj%basisTypeForSpace)
-CALL GetValue(param, prefix, "basisTypeForTime", obj%basisTypeForTime)
-CALL GetValue(param, prefix, "alphaForSpace", obj%alphaForSpace)
-CALL GetValue(param, prefix, "betaForSpace", obj%betaForSpace)
-CALL GetValue(param, prefix, "lambdaForSpace", obj%lambdaForSpace)
-CALL GetValue(param, prefix, "alphaForTime", obj%alphaForTime)
-CALL GetValue(param, prefix, "betaForTime", obj%betaForTime)
-CALL GetValue(param, prefix, "lambdaForTime", obj%lambdaForTime)
-
-! iterData
-CALL Initiate( &
-  & obj=obj%iterdata, &
-  & maxIter=obj%maxIter, &
-  & convergenceType=absoluteConvergence, &
-  & convergenceIn=convergenceInSol, &
-  & normType=NormL2, &
-  & timeAtStart=obj%currentTime, &
-  & timeAtEnd=obj%currentTime + obj%dt)
+IF (obj%opt%createPVD) THEN
+  astr = obj%opt%outputPath//prefix//"_results.pvd"
+  CALL obj%pvdFile%InitiatePVDFile(filename=astr)
+END IF
 
 ! linsol
-obj%linsol => LinearSolverFactory(obj%engine%chars())
+obj%linsol => LinearSolverFactory(obj%opt%engine%chars())
 CALL obj%linsol%initiate(param=param)
 
 IF (PRESENT(dom)) THEN
   obj%dom => dom
-  obj%isCommonDomain = .TRUE.
-  obj%nsd = dom%GetNSD()
+  obj%opt%isCommonDomain = .TRUE.
+  obj%opt%nsd = dom%GetNSD()
 END IF
 
 IF (PRESENT(domains)) THEN
@@ -439,110 +452,23 @@ IF (PRESENT(domains)) THEN
   END DO
 END IF
 
-IF (.NOT. PRESENT(domains) .AND. .NOT. PRESENT(dom)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[ARGUMENT ERROR] :: Either dom or domains should be present.')
-  RETURN
-END IF
-
-tDirichletBC = 0
-CALL GetValue(param, prefix, "tDirichletBC", tDirichletBC)
-ALLOCATE (obj%dbc(tDirichletBC))
-
-CALL GetValue(param, prefix, "tNeumannBC", tNeumannBC)
-ALLOCATE (obj%nbc(tNeumannBC))
-
-CALL GetValue(param, prefix, "tPointSource", tPointSource)
-ALLOCATE (obj%nbcPointSource(tPointSource))
-
-tWeakDirichletBC = 0
-CALL GetValue(param, prefix, "tWeakDirichletBC", tWeakDirichletBC)
-ALLOCATE (obj%wdbc(tWeakDirichletBC))
-obj%isNitsche = .FALSE.
-IF (tWeakDirichletBC .GT. 0) obj%isNitsche = .TRUE.
-
-CALL GetValue(param, prefix, "isSymNitsche", isSymNitsche)
-obj%NitscheType = Nitsche_SkewSym
-IF (isSymNitsche) obj%NitscheType = Nitsche_Sym
-
-CALL GetValue(param, prefix, "nitscheAlpha", obj%nitscheAlpha)
-
-CALL GetValue(obj=param, prefix=prefix, key="isConstantMatProp",  &
-& VALUE=obj%isConstantMatProp)
-CALL GetValue(param, prefix, "isIsotropic", obj%isIsotropic)
-CALL GetValue(param, prefix, "isIncompressible", obj%isIncompressible)
-
-! tSolidMaterials
-obj%tSolidMaterials = 0
-CALL GetValue(param, prefix, "tSolidMaterials", obj%tSolidMaterials)
-ALLOCATE (obj%solidMaterial(obj%tSolidMaterials))
-ALLOCATE (obj%solidMaterialToMesh(obj%tSolidMaterials))
-
-! materialInterfaces
-tMaterialInterfaces = 0
-CALL GetValue(param, prefix, "tMaterialInterfaces", tMaterialInterfaces)
-ALLOCATE (obj%materialInterfaces(tMaterialInterfaces))
-ALLOCATE (obj%matIfaceConnectData(tMaterialInterfaces))
-obj%isMaterialInterfaces = .FALSE.
-IF (tMaterialInterfaces .GT. 0) THEN
-  obj%isMaterialInterfaces = .TRUE.
-  CALL GetValue(param, prefix, "materialInterfaces", obj%materialInterfaces)
-END IF
-
-CALL GetValue(param, prefix, "atoleranceForDisplacement",  &
-& obj%atoleranceForDisplacement)
-CALL GetValue(param, prefix, "rtoleranceForDisplacement",  &
-& obj%rtoleranceForDisplacement)
-CALL GetValue(param, prefix, "atoleranceForVelocity", &
-& obj%atoleranceForVelocity)
-CALL GetValue(param, prefix, "rtoleranceForVelocity",  &
-& obj%rtoleranceForVelocity)
-CALL GetValue(param, prefix, "atoleranceForResidual",  &
-& obj%atoleranceForResidual)
-CALL GetValue(param, prefix, "rtoleranceForResidual",  &
-& obj%rtoleranceForResidual)
-
-obj%tDOF = obj%nsd * obj%nnt
-
-CALL GetValue(param, prefix, "showTime", obj%showTime)
-
-IF (obj%showTime) THEN
-  temp_str = obj%outputPath//obj%name//"_time_stat.csv"
-  CALL obj%showTimeFile%Initiate(filename=temp_str,  &
-    & status="REPLACE", action="WRITE", separator=",")
-  CALL obj%showTimeFile%OPEN()
-  temp_str = ""
-  temp_str = "currentTimeStep,currentTime,method,cpu-time"
-!$ temp_str = temp_str//",wtime"
-  CALL obj%showTimeFile%WRITE(val=temp_str)
-END IF
-
-CALL GetValue(param, prefix, "unifyVTK", obj%unifyVTK)
-
-CALL GetValue(param, prefix, "createPVD", obj%createPVD)
-
-IF (obj%createPVD) THEN
-  temp_str = obj%outputPath//prefix//"_results.pvd"
-  CALL obj%pvdFile%InitiatePVDFile(filename=temp_str)
-END IF
-
-CALL GetValue(param, prefix, "vtkOutputFreq", obj%vtkOutputFreq)
-
-IF (obj%vtkOutputFreq .LT. 0) THEN
-  obj%vtkOutputFreq = 1
-END IF
+isok = PRESENT(domains) .OR. PRESENT(dom)
+CALL AssertError1(isok, myname, &
+                  "Either dom or domains should be present.")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
+
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -550,241 +476,70 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-INTEGER(I4B) :: ii, jj
+INTEGER(I4B) :: ii, jj, tsize
+LOGICAL(LGT) :: abool
 
-obj%tOverlappedMaterials = 0
-obj%outputPath = ""
-obj%unifyVTK = .FALSE.
-obj%createPVD = .FALSE.
-obj%vtkOutputFreq = 0
-obj%tanmatProp = ""
-obj%problemType = 0
-obj%IsInitiated = .FALSE.
-obj%name = ""
-obj%engine = ""
-obj%coordinateSystem = 0
-obj%domainFile = ""
-obj%isCommonDomain = .TRUE.
-obj%timeDependency = 0
-obj%maxIter = 0
-obj%nsd = 0
-obj%nnt = 0
-obj%tdof = 0
-obj%normRHS = 0.0_DFP
-obj%dt = 0.0
-obj%startTime = 0.0
-obj%endTime = 0.0
-obj%currentTime = 0.0
-obj%currentTimeStep = 0
-obj%totalTimeStep = 0
-IF (ALLOCATED(obj%elemToMatId)) DEALLOCATE (obj%elemToMatId)
-IF (ALLOCATED(obj%dbcIndx)) DEALLOCATE (obj%dbcIndx)
-obj%postProcessOpt = 0
-CALL DEALLOCATE (obj%iterData)
-obj%baseContinuityForSpace = ''
-obj%baseInterpolationForSpace = ''
-obj%quadratureTypeForSpace = ''
-obj%baseContinuityForTime = ''
-obj%quadTypeForSpace = 0_I4B
-obj%baseInterpolationForTime = ''
-obj%quadratureTypeForTime = ''
-obj%quadTypeForTime = 0_I4B
-obj%linsol => NULL()
-obj%tanmat => NULL()
-CALL DEALLOCATE (obj%refTimeElem)
-CALL DEALLOCATE (obj%refGeoTimeElem)
 obj%dom => NULL()
-IF (ALLOCATED(obj%domains)) THEN
-  DO ii = 1, SIZE(obj%domains)
+
+abool = ALLOCATED(obj%domains)
+IF (abool) THEN
+  tsize = SIZE(obj%domains)
+  DO ii = 1, tsize
     obj%domains(ii)%ptr => NULL()
   END DO
   DEALLOCATE (obj%domains)
 END IF
 
-IF (ALLOCATED(obj%quadratureForSpace)) THEN
-  DO ii = 1, SIZE(obj%quadratureForSpace)
-    CALL DEALLOCATE (obj%quadratureForSpace(ii))
-  END DO
-  DEALLOCATE (obj%quadratureForSpace)
+CALL KernelOptDeallocate(obj%opt)
+CALL KernelFieldsDeallocate(obj%fields)
+CALL KernelMeshFieldsDeallocate(obj%meshFields)
+CALL KernelMaterialsDeallocate(obj%materials)
+CALL KernelElemshapeDataDeallocate(obj%elemsd)
+CALL KernelBCDeallocate(obj%bc)
+
+abool = ASSOCIATED(obj%fedof)
+IF (abool) THEN
+  CALL obj%fedof%DEALLOCATE()
 END IF
+obj%fedof => NULL()
 
-IF (ALLOCATED(obj%quadratureForSpace_facet)) THEN
-  DO ii = 1, SIZE(obj%quadratureForSpace_facet)
-    CALL DEALLOCATE (obj%quadratureForSpace_facet(ii))
-  END DO
-  DEALLOCATE (obj%quadratureForSpace_facet)
+abool = ASSOCIATED(obj%geofedof)
+IF (abool) THEN
+  CALL obj%geofedof%DEALLOCATE()
 END IF
+obj%geofedof => NULL()
 
-CALL DEALLOCATE (obj%quadratureForTime)
-
-CALL FiniteElementDeallocate(obj%cellFE)
-CALL FiniteElementDeallocate(obj%geoCellFE)
-CALL FiniteElementDeallocate(obj%facetFE)
-CALL FiniteElementDeallocate(obj%geoFacetFE)
-CALL FiniteElementDeallocate(obj%edgeFE)
-CALL FiniteElementDeallocate(obj%geoEdgeFE)
-CALL obj%timeFE%DEALLOCATE()
-CALL obj%geoTimeFE%DEALLOCATE()
-
-obj%ipTypeForSpace = 0
-obj%ipTypeForTime = 0
-obj%basisTypeForSpace = 0
-obj%basisTypeForTime = 0
-obj%alphaForSpace = 0
-obj%betaForSpace = 0
-obj%lambdaForSpace = 0
-obj%alphaForTime = 0
-obj%betaForTime = 0
-obj%lambdaForTime = 0
-
-CALL DEALLOCATE (obj%geoTimeElemSD)
-CALL DEALLOCATE (obj%timeElemSD)
-
-IF (ALLOCATED(obj%geoSpaceElemSD)) THEN
-  DO ii = 1, SIZE(obj%geoSpaceElemSD)
-    CALL DEALLOCATE (obj%geoSpaceElemSD(ii))
-  END DO
-  DEALLOCATE (obj%geoSpaceElemSD)
+abool = ASSOCIATED(obj%timeFE)
+IF (abool) THEN
+  CALL obj%timeFE%DEALLOCATE()
 END IF
+obj%timeFE => NULL()
 
-IF (ALLOCATED(obj%spaceElemSD)) THEN
-  DO ii = 1, SIZE(obj%spaceElemSD)
-    CALL DEALLOCATE (obj%spaceElemSD(ii))
-  END DO
-  DEALLOCATE (obj%spaceElemSD)
+abool = ASSOCIATED(obj%geoTimeFE)
+IF (abool) THEN
+  CALL obj%geoTimeFE%DEALLOCATE()
 END IF
-
-IF (ALLOCATED(obj%geoSpaceElemSD_facet)) THEN
-  DO ii = 1, SIZE(obj%geoSpaceElemSD_facet)
-    CALL DEALLOCATE (obj%geoSpaceElemSD_facet(ii))
-  END DO
-  DEALLOCATE (obj%geoSpaceElemSD_facet)
-END IF
-
-IF (ALLOCATED(obj%spaceElemSD_facet)) THEN
-  DO ii = 1, SIZE(obj%spaceElemSD_facet)
-    CALL DEALLOCATE (obj%spaceElemSD_facet(ii))
-  END DO
-  DEALLOCATE (obj%spaceElemSD_facet)
-END IF
-
-IF (ALLOCATED(obj%stelemsd)) THEN
-  DO jj = 1, SIZE(obj%stelemsd, 2)
-    DO ii = 1, SIZE(obj%stelemsd, 1)
-      CALL DEALLOCATE (obj%stelemsd(ii, jj))
-    END DO
-  END DO
-  DEALLOCATE (obj%stelemsd)
-END IF
-
-CALL DirichletBCDeallocate(obj%dbc)
-CALL NeumannBCDeallocate(obj%nbc)
-CALL NeumannBCDeallocate(obj%nbcPointSource)
-CALL NitscheBCDeallocate(obj%wdbc)
-
-obj%isNitsche = .FALSE.
-obj%nitscheAlpha = DEFAULT_nitscheAlpha
-obj%nitscheType = Nitsche_Sym
-
-CALL DomainConnectivityDeallocate(obj%nitscheFacetToCell)
-IF (ALLOCATED(obj%nitscheLocalID)) DEALLOCATE (obj%nitscheLocalID)
-
-obj%isConstantMatProp = DEFAULT_isConstantMatProp
-obj%isIsotropic = DEFAULT_isIsotropic
-obj%isIncompressible = DEFAULT_isIncompressible
-obj%isMaterialInterfaces = .FALSE.
-IF (ALLOCATED(obj%materialInterfaces)) DEALLOCATE (obj%materialInterfaces)
-CALL DomainConnectivityDeallocate(obj%matIfaceConnectData)
-obj%tSolidMaterials = 0
-obj%SOLID_MATERIAL_ID = 0
-
-CALL SolidMaterialDeallocate(obj%solidMaterial)
-CALL MeshSelectionDeallocate(obj%solidMaterialToMesh)
-
-obj%incrementScale = 1.0_DFP
-obj%rtoleranceForDisplacement = DEFAULT_rtoleranceForDisplacement
-obj%atoleranceForDisplacement = DEFAULT_atoleranceForDisplacement
-obj%rtoleranceForVelocity = DEFAULT_rtoleranceForVelocity
-obj%atoleranceForVelocity = DEFAULT_atoleranceForVelocity
-obj%rtoleranceForResidual = DEFAULT_rtoleranceForResidual
-obj%atoleranceForResidual = DEFAULT_atoleranceForResidual
-obj%displacementError0 = 0.0_DFP
-obj%displacementError = 0.0_DFP
-obj%velocityError0 = 0.0_DFP
-obj%velocityError = 0.0_DFP
-
-! matrixField
-CALL MatrixFieldDeallocate(obj%matrixFields)
-
-! VectorField
-CALL VectorFieldDeallocate(obj%vectorFields)
-CALL STVectorFieldDeallocate(obj%stVectorFields)
-
-! ScalarField
-CALL ScalarFieldDeallocate(obj%scalarFields)
-
-! STScalarField
-CALL STScalarFieldDeallocate(obj%stScalarFields)
-
-! displacement
-IF (ASSOCIATED(obj%displacement)) THEN
-  CALL obj%displacement%DEALLOCATE()
-  obj%displacement => NULL()
-END IF
-
-! velocity
-IF (ASSOCIATED(obj%velocity)) THEN
-  CALL obj%velocity%DEALLOCATE()
-  obj%velocity => NULL()
-END IF
-
-! acceleration
-IF (ASSOCIATED(obj%acceleration)) THEN
-  CALL obj%acceleration%DEALLOCATE()
-  obj%acceleration => NULL()
-END IF
-
-! nodeCoord
-IF (ASSOCIATED(obj%nodeCoord)) THEN
-  CALL obj%nodeCoord%DEALLOCATE()
-  obj%nodeCoord => NULL()
-END IF
-
-! stiffnessMat
-IF (ASSOCIATED(obj%stiffnessMat)) THEN
-  CALL obj%stiffnessMat%DEALLOCATE()
-  obj%stiffnessMat => NULL()
-END IF
-
-! massMat
-IF (ASSOCIATED(obj%massMat)) THEN
-  CALL obj%massMat%DEALLOCATE()
-  obj%massMat => NULL()
-END IF
-
-! dampingMat
-IF (ASSOCIATED(obj%dampingMat)) THEN
-  CALL obj%dampingMat%DEALLOCATE()
-  obj%dampingMat => NULL()
-END IF
-
-CALL VectorMeshFieldDeallocate(obj%solidMechData)
-CALL AbstractMeshFieldDeallocate(obj%massDensity)
-CALL AbstractMeshFieldDeallocate(obj%shearModulus)
-CALL AbstractMeshFieldDeallocate(obj%youngsModulus)
-CALL AbstractMeshFieldDeallocate(obj%dampCoeff_alpha)
-CALL AbstractMeshFieldDeallocate(obj%dampCoeff_beta)
-CALL AbstractMeshFieldDeallocate(obj%Cijkl)
-CALL AbstractMeshFieldDeallocate(obj%stress)
-CALL AbstractMeshFieldDeallocate(obj%strain)
-CALL AbstractMeshFieldDeallocate(obj%scalarCoefficient)
-
-NULLIFY (obj%bodySourceFunc)
-
-obj%showTime = .FALSE.
-CALL obj%showTimeFile%DEALLOCATE()
+obj%geoTimeFE => NULL()
 
 CALL obj%pvdFile%DEALLOCATE()
+
+abool = ASSOCIATED(obj%linsol)
+IF (abool) THEN
+  CALL obj%linsol%DEALLOCATE()
+END IF
+obj%linsol => NULL()
+
+abool = ASSOCIATED(obj%tanmat)
+IF (abool) THEN
+  CALL obj%tanmat%DEALLOCATE()
+END IF
+obj%tanmat => NULL()
+
+CALL obj%showTimeFile%DEALLOCATE()
+
+IF (ALLOCATED(obj%timeVec)) DEALLOCATE (obj%timeVec)
+
+IF (ALLOCATED(obj%dbcIndx)) DEALLOCATE (obj%dbcIndx)
 
 END PROCEDURE obj_Deallocate
 
@@ -797,10 +552,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_PreCheckError()"
 LOGICAL(LGT) :: problem
 
 ! Check
-problem = obj%tOverlappedMaterials .LE. 0_I4B
+problem = obj%materials%tOverlappedMaterials .LE. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[CONFIG ERROR] :: in tOverlappedMaterials.')
+                    '[INTERNAL ERROR] :: tOverlappedMaterials is negative.')
   RETURN
 END IF
 
@@ -808,24 +563,32 @@ END IF
 problem = (.NOT. ASSOCIATED(obj%dom)) .AND. (.NOT. ALLOCATED(obj%domains))
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[WRONG CONFIG] Domain_::dom is not associated')
+      '[INTERNAL ERROR] :: dom is not associated or domains is not allocated')
   RETURN
 END IF
 
 ! Check
-problem = obj%problemType .EQ. 0_I4B
+problem = (.NOT. ASSOCIATED(obj%fedof)) .AND. (.NOT. ALLOCATED(obj%fedofs))
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[WRONG CONFIG] AbstractKernel_::obj%problemType is not set.')
+     '[INTERNAL ERROR] :: fedof is not associated or fedofs is not allocated')
   RETURN
 END IF
 
-IF (obj%showTime) THEN
+! Check
+problem = obj%opt%problemType .EQ. 0_I4B
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    '[INTERNAL ERROR] :: problemType is not set.')
+  RETURN
+END IF
+
+IF (obj%opt%showTime) THEN
   problem = .NOT. obj%showTimeFile%isOpen()
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: you have set showTime=true, '//  &
-      & 'but showTimeFile is not opened')
+                      '[INTERNAL ERROR] :: you have set showTime=true, '// &
+                      'but showTimeFile is not opened')
     RETURN
   END IF
 END IF
@@ -842,16 +605,14 @@ LOGICAL(LGT) :: isok
 isok = ASSOCIATED(obj%tanmat)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
-    & " ASSOCIATED.")
+     '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not ASSOCIATED.')
   RETURN
 END IF
 
 isok = ASSOCIATED(obj%linsol)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
-    & " associated.")
+     '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not ASSOCIATED.')
   RETURN
 END IF
 END PROCEDURE obj_PostCheckError
@@ -859,5 +620,7 @@ END PROCEDURE obj_PostCheckError
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

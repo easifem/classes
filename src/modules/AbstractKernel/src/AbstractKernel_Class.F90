@@ -20,54 +20,55 @@
 ! summary: This module defines the abstract class for physicsKernel
 
 MODULE AbstractKernel_Class
-USE BaseType
-USE CPUTime_Class
-USE String_Class, ONLY: String
-USE AbstractKernelParam
-USE AbstractMatrixField_Class
-USE Mesh_Class
-USE Domain_Class
-USE DomainConnectivity_Class
-USE DirichletBC_Class
-USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+
+USE FEDomain_Class, ONLY: FEDomain_, FEDomainPointer_
+
 USE FPL, ONLY: ParameterList_
-USE GlobalData
-USE HDF5File_Class
-USE LinSolverFactory
-USE MeshSelection_Class
-USE DirichletBC_Class
-USE NeumannBC_Class
-USE NitscheBC_Class
-USE TxtFile_Class
-USE VTKFile_Class
-USE FiniteElement_Class
-USE tomlf, ONLY: toml_table
-USE SolidMaterial_Class
-USE Field
-USE TxtFile_Class
-USE PVDFile_Class
-USE KernelUtility
-USE UserFunction_Class
+
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
+USE AbstractFE_Class, ONLY: AbstractFE_
+
+USE PVDFile_Class, ONLY: PVDFile_
+
+USE AbstractLinSolver_Class, ONLY: AbstractLinSolver_
+
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+
+USE TxtFile_Class, ONLY: TxtFile_
+
+USE UserFunction_Class, ONLY: UserFunction_
+
+USE String_Class, ONLY: String
+
+USE MeshSelection_Class, ONLY: MeshSelection_
+
+USE SolidMaterial_Class, ONLY: SolidMaterial_
+
+USE DirichletBC_Class, ONLY: DirichletBC_
+
+USE NitscheBC_Class, ONLY: NitscheBC_
+
+USE NeumannBC_Class, ONLY: NeumannBC_
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+
+USE Tomlf, ONLY: toml_table
+
+USE HDF5File_Class, ONLY: HDF5File_
+
+USE Domain_Class, ONLY: Domain_
+
+USE ExceptionHandler_Class, ONLY: e
+
+USE KernelComponents
 
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "AbstractKernel_Class"
-CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
-  & "/name/engine/coordinateSystem/domainFile/isCommonDomain/gravity/"// &
-  & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
-  & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
-  & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "ipTypeForSpace/basisTypeForSpace/"//  &
-  & "alphaForSpace/betaForSpace/lambdaForSpace/betaForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime/"//&
-  & "ipTypeForTime/basisTypeForTime/"//  &
-  & "alphaForTime/betaForTime/lambdaForTime/"//  &
-  & "/tMaterialInterfaces/tSolidMaterials/tDirichletBC/tWeakDirichletBC/"//  &
-  & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
-  & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
-  & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
-  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
-  & "problemType/tOverlappedMaterials/outputPath/tPointSource/showTime"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -75,6 +76,10 @@ PUBLIC :: SetAbstractKernelParam
 PUBLIC :: AbstractKernelCheckEssentialParam
 PUBLIC :: AbstractKernelInitiate
 PUBLIC :: AbstractKernelDeallocate
+PUBLIC :: AbstractKernelPreCheckError
+PUBLIC :: AbstractKernelPostCheckError
+PUBLIC :: AbstractKernelCheckError
+
 PUBLIC :: AbstractKernelDisplay
 PUBLIC :: AbstractKernelExport
 PUBLIC :: AbstractKernelImport
@@ -82,680 +87,416 @@ PUBLIC :: AbstractKernelImportParamFromToml
 PUBLIC :: AbstractKernelImportFromToml
 PUBLIC :: AbstractKernelInitiateTangentMatrix
 PUBLIC :: AbstractKernelInitiateFields
-PUBLIC :: AbstractKernelPreCheckError
-PUBLIC :: AbstractKernelPostCheckError
 PUBLIC :: AbstractKernelApplyDirichletBC
 PUBLIC :: AbstractKernelApplyIC
-PUBLIC :: AbstractAlgoParam_
-
-!----------------------------------------------------------------------------
-!                                                        AbstractAlgoParam_
-!----------------------------------------------------------------------------
-
-TYPE :: AbstractAlgoParam_
-END TYPE AbstractAlgoParam_
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> authors: Vikas Sharma, Ph. D., Shion Shimizu
 ! date: 27 April 2022
-!> author: Shion Shimizu
-! update:  2024-02-10
 ! summary: Abstract class for kernel
 
 TYPE, ABSTRACT :: AbstractKernel_
-  LOGICAL(LGT) :: showTime = .FALSE.
-  !! If it is set to true then we create a file called
-  !! KernelName_time_stat.csv
-  !! This file contains the statics of time taken by the kernel
-  !! It will be helpful in improving the kernel
-  LOGICAL(LGT) :: isConstantMatProp = DEFAULT_isConstantMatProp
-  !! Set it to True if the material properties are constant
-  LOGICAL(LGT) :: isInitiated = .FALSE.
-  !! This variable is Set to true when we initiate the kernel
-  LOGICAL(LGT) :: isCommonDomain = DEFAULT_isCommonDomain
-  !! This variable is True when the domain is common
-  !! It is useful in the case of multi-physics simulations.
-  !! In multi-physics applications different fields can have different
-  !! type and order of shape functions. To construct such shape functions
-  !! we may have to use different finite element meshes (hence, domains).
-  !! For example, in the fluid mechanics, we often use Taylor-Hood element
-  !! Which employs different order of interpolation for pressure and velocity.
-  !! NOTE: In most of the application isCommonDomain is TRUE.
-  LOGICAL(LGT) :: ismaterialInterfaces = .FALSE.
-  !! True if materialInterfaces are allocated
-  !! We can have multiple solids
-  LOGICAL(LGT) :: isIsotropic = DEFAULT_isIsotropic
-  !! Set it to True for isotropic elasticity.
-  LOGICAL(LGT) :: isIncompressible = DEFAULT_isIncompressible
-    !! TRUE if the material is incompressible
-  LOGICAL(LGT) :: isNitsche = .FALSE.
-  !! If true, then it means weak dirichlet boundary condition is used
-  !! This variable is set in Initiate method
-  !! This variable is set to true if the tWeakDirichletBCForDisplacement
-  !! is greater than zero, otherwise it is set to false
-  INTEGER(I4B) :: problemType = DEFAULT_PROBLEM_TYPE
-  !! Kernel problem type
-  !! KernelProblemType%scalar
-  !! KernelProblemType%Vector
-  !! KernelProblemType%MultiPhysics
-  INTEGER(I4B) :: tOverlappedMaterials = DEFAULT_tOverlappedMaterials
-  !! Total overlapped materials (like fluid, soil, solid)
-  INTEGER(I4B) :: tSolidMaterials = 0
-  !! Total number of solid materials
-  INTEGER(I4B) :: SOLID_MATERIAL_ID = 0
-  !! solid material id
-  INTEGER(I4B) :: algorithm = 0
-  !! algorithm
-  INTEGER(I4B) :: vtkOutputFreq = 0
-  !! frequency of output with WriteData_vtk
-  INTEGER(I4B) :: hdfOutputFreq = 0
-  !! frequency of output with WriteData_vtk
-  TYPE(String) :: name
-  !! This is the name of the kernel. It can be anything you want.
-  TYPE(String) :: engine
-  !! Which type of linear solver library (engine) we use to
-  !! solve system of linear equations. We can specify following
-  !! values.
-  !! `NATIVE_SERIAL`, `NATIVE_OMP`, `NATIVE_MPI`, `LIS_SERIAL`
-  !! `LIS_OMP`, `LIS_MPI`, `PETSC`
-  TYPE(String) :: tanmatProp
-  !! Symmetric or Unsymmetric tangent matrix
-  TYPE(String) :: outputPath
-  !! Path to put output files
-  !! Default is results
-  LOGICAL(LGT) :: unifyVTK = .FALSE.
-  !! if it is true all data are exported into one vtu file
-  !! in WriteData_vtk method
-  LOGICAL(LGT) :: createPVD = .FALSE.
-  !! if true paraview data file is created
-  !! in WriteData_vtk method
+
+  TYPE(FEDomain_), POINTER :: dom => NULL()
+  !! Domain of the problem
+
+  TYPE(FEDomainPointer_), ALLOCATABLE :: domains(:)
+  !! Domains of the problem
+
+  TYPE(KernelOpt_) :: opt
+  !! options of the kernel
+  !! It is defined in the KernelComponents module
+
+  TYPE(KernelFields_) :: fields
+  !! fields of kernel
+
+  TYPE(KernelMeshFields_) :: meshFields
+  !! mesh fields of kernel
+
+  TYPE(KernelMaterials_) :: materials
+  !! materials of kernel
+
+  TYPE(KernelElemshapeData_) :: elemsd
+  !! element shape data used in kernels
+
+  TYPE(KernelBC_) :: bc
+  !! boundary conditions of the kernel
+
+  CLASS(FEDOF_), POINTER :: fedof => NULL()
+  !! Degree of freedom of the problem
+
+  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+  !! Degree of freedom of the problem
+
+  CLASS(FEDOF_), POINTER :: geofedof => NULL()
+  !! Degree of freedom of the geometry of the problem
+
+  CLASS(AbstractFE_), POINTER :: timeFE => NULL()
+  !! Time finite element
+
+  CLASS(AbstractFE_), POINTER :: geoTimeFE => NULL()
+  !! Linear time finite element
+
   TYPE(PVDFile_) :: pvdFile
   !! instance of pvd file class
-  INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
-  !! Spatial coordinate system type. It can take following values
-  !! `KERNEL_CARTESIAN` for Cartesian coordinates
-  !! `KERNEL_CYLINDRICAL` for Cylinderical coordinates
-  !! `KERNEL_SPHERICAL` for Sperical coordinates
-  !! NOTE: These parameters are defined in the AbstractKernelParam module.
-  INTEGER(I4B) :: maxIter = DEFAULT_maxIter
-  !! Maximum  number of iteration iterations
-  !! This is useful when when we use iterative solvers like
-  !! Newton method, Modified Newton method, or Iterative-predictor solvers.
-  !! NOTE: DEFAULT_maxIter is defined in AbstractKernelParam
-  INTEGER(I4B) :: timeDependency = DEFAULT_TimeDependency
-  !! This variable indicates if the problem is time dependent or not.
-  !! It can take following values:
-  !! KERNEL_STEADY  or KERNEL_STATIC
-  !! KERNEL_PSEUDOSTATIC
-  !! KERNEL_TRANSIENT or KERNEL_DYNAMIC
-  !! NOTE: These variables are defined in AbstractKernelParam
-  INTEGER(I4B) :: nsd = 0
-  !! Spatial dimension of the problem,
-  INTEGER(I4B) :: nnt = 1
-  !! Number of nodes in time element
-  !! NOTE: This variables is used only in space-time finite element methods
-  INTEGER(I4B) :: tdof = 0
-  !! Total number of degree of freedom per node
-  !! NOTE: This variable is Set internally by each kernel while
-  !! Setting the kernel.
-  REAL(DFP), ALLOCATABLE :: timeVec(:)
-  !! time vector
-  REAL(DFP) :: normRHS = 0.0_DFP
-  !! norm of the right-hand-side vector in the system of linear equations
-  !! NOTE: This variable is used internally
-  REAL(DFP) :: dt = 0.0_DFP
-  !! Time step size used in the pseudostatic and dynamic problems
-  !! Needed in transient case
-  REAL(DFP) :: startTime = 0.0
-  !! Starting time of simulation
-  !! NOTE: This varible is needed in the transient or pseudostatic simulation
-  REAL(DFP) :: endTime = 0.0
-  !! Final time of the simulation
-  !! NOTE: This varible is needed in the transient or pseudostatic simulation
-  REAL(DFP) :: currentTime = 0.0
-  !! The current time of the simulation
-  !! NOTE: This varible is needed in the transient simulation only.
-  INTEGER(I4B) :: currentTimeStep = 1
-  !! Current time step number of the simulation.
-  !! NOTE: This varible is needed in the transient simulation only.
-  INTEGER(I4B) :: totalTimeStep = 0
-  !! Total number of time step number in the simulation.
-  !! NOTE: This varible is needed in the transient simulation only.
-  REAL(DFP) :: lengthScale = 1.0_DFP
-  !! This variable denotes the length scale of the problem.
-  !! NOTE: This variable is for internal use only.
-  INTEGER(I4B) :: postProcessOpt = 0
-  !! Postprocessing options
-  !! INFO: The actual action depends upon the specific kernels
-  REAL(DFP) :: gravity(3) = 0.0_DFP
-  !! Acceleration vector due to gravity
-  REAL(DFP) :: nitscheAlpha = DEFAULT_nitscheAlpha
-  !! coefficient for nitsche formulation
-  REAL(DFP) :: nitscheType = Nitsche_Sym
-  !! -1.0 for symmetric formulation
-  !! 1.0 for skew symmetric formulation
-  REAL(DFP) :: incrementScale = 1.0_DFP
-  !! x = x + incrementScale * displacement
-  REAL(DFP) :: rtoleranceForDisplacement = DEFAULT_rtoleranceForDisplacement
-  !! relative tolerance for convergence in displacement field
-  REAL(DFP) :: atoleranceForDisplacement = DEFAULT_atoleranceForDisplacement
-  !! absolute tolerance for displacement field
-  REAL(DFP) :: displacementError0 = 0.0_DFP
-  !! initial displacement error
-  REAL(DFP) :: displacementError = 0.0_DFP
-  !! displacement error
-  REAL(DFP) :: rtoleranceForVelocity = DEFAULT_rtoleranceForVelocity
-  !! relative tolerance for convergence in velocity field
-  REAL(DFP) :: atoleranceForVelocity = DEFAULT_atoleranceForVelocity
-  !! absolute tolerance for convergence in velocity field
-  REAL(DFP) :: velocityError0 = 0.0_DFP
-  !! initial velocity error
-  REAL(DFP) :: velocityError = 0.0_DFP
-  !! velocity error
-  REAL(DFP) :: rtoleranceForResidual = DEFAULT_rtoleranceForResidual
-  !! relative tolerance for convergence in velocity field
-  REAL(DFP) :: atoleranceForResidual = DEFAULT_atoleranceForResidual
-  !! absolute tolerance for convergence in velocity field
-  REAL(DFP) :: residualError0 = 0.0_DFP
-  !! initial velocity error
-  REAL(DFP) :: residualError = 0.0_DFP
-  !! velocity error
-  TYPE(IterationData_) :: iterData
-  !! Iteration data
-  !! INFO: The actual action depends upon the specific kernels
-  INTEGER(I4B), ALLOCATABLE :: elemToMatId(:, :)
-  !! This variable denotes the Element number to material mapping.
-  !! For example, `elemToMatID( iel, POROUS_MATERIAL_ID )` denotes the
-  !! porous material type assigned to element number `iel`
-  !! Similarly, `elemToMatID( iel, FLUID_MATERIAL_ID )` denotes
-  !! the fluid material type assigned to element number `iel`.
-  INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
-  !! Indices where Dirichlet boundary conditions is prescribed
-  !! INFO: This variable is for internal use only.
-  !! It is formed from the Dirichlet boundary conditions.
+
   CLASS(AbstractLinSolver_), POINTER :: linsol => NULL()
   !! A pointer to a Linear iterative solver
   !! NOTE: The actual linear solver depends upon the
   !! engine and type of problem. linsol is initiated in
   !! KernelInitiateFromParam routine.
+
   CLASS(AbstractMatrixField_), POINTER :: tanmat => NULL()
   !! Global tangent matrix
   !! NOTE: The actual form of tangent matrix depends upon the engine
   !! and type of problem.
-  CLASS(Domain_), POINTER :: dom => NULL()
-  !! Domain of the problem
-  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
-  !! Domain of the problem
-  TYPE(ReferenceLine_) :: refTimeElem
-  !! reference element for time domain
-  TYPE(ReferenceLine_) :: refGeoTimeElem
-  !! reference element for time domain
-  TYPE(String) :: baseContinuityForSpace
-  !! Continuity of basis function in space
-  TYPE(String) :: baseInterpolationForSpace
-  !! Interpolation of shape function in space
-  TYPE(String) :: quadratureTypeForSpace
-  !! Quadrature type in space
-  INTEGER(I4B) :: quadTypeForSpace
-  !! Quadrature type in space
-  INTEGER(I4B) :: ipTypeForSpace = DEFAULT_ipTypeForSpace
-  !! Interpolation grid used for Lagrange polynomials
-  INTEGER(I4B) :: basisTypeForSpace = DEFAULT_basisTypeForSpace
-  !! Basis type for space
-  REAL(DFP) :: alphaForSpace = DEFAULT_alphaForSpace
-  !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: betaForSpace = DEFAULT_betaForSpace
-  !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: lambdaForSpace = DEFAULT_lambdaForSpace
-  !! Parameter for Ultraspherical polynomials in  space
-  TYPE(String) :: baseContinuityForTime
-  !! Continuity of basis function in time in time domain
-  TYPE(String) :: baseInterpolationForTime
-  !! Interpolation of basis function in time
-  TYPE(String) :: quadratureTypeForTime
-  !! Quadrature type in time
-  INTEGER(I4B) :: quadTypeForTime
-  !! Quadrature type in time
-  INTEGER(I4B) :: ipTypeForTime
-  !! Interpolation grid used for Lagrange polynomials
-  INTEGER(I4B) :: basisTypeForTime
-  !! Basis type for space
-  REAL(DFP) :: alphaForTime = DEFAULT_alphaForTime
-  !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: betaForTime = DEFAULT_betaForTime
-  !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: lambdaForTime = DEFAULT_lambdaForTime
-  !! Parameter for Ultraspherical polynomials in space
-  TYPE(String) :: domainFile
-  !! Domain file name
-  TYPE(QuadraturePoint_), ALLOCATABLE :: quadratureForSpace(:)
-  !! Quadrature points in space element (cell element)
-  !! The size of quadratureForSpace is same as the total number of
-  !! mesh in the domain
-  TYPE(QuadraturePoint_), ALLOCATABLE :: quadratureForSpace_facet(:)
-  !! Quadrature points in space element (facet element)
-  !! The size of quadratureForSpace is same as the total number of
-  !! mesh in the domain
-  TYPE(QuadraturePoint_) :: quadratureForTime
-  !! Quadrature points in time element
-  !! INFO: This is used in space-time computation
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: cellFE(:)
-  !! Cell finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoCellFE(:)
-  !! Linear cell finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: facetFE(:)
-  !! Facet finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoFacetFE(:)
-  !! Linear facet finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: edgeFE(:)
-  !! Edge finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoEdgeFE(:)
-  !! Linear edge finite element
-  TYPE(FiniteElement_) :: timeFE
-  !! Time finite element
-  TYPE(FiniteElement_) :: geoTimeFE
-  !! Linear time finite element
-  TYPE(ElemshapeData_) :: geoTimeElemSD
-    !! Element shape data on linear time element #STFEM
-  TYPE(ElemshapeData_) :: timeElemSD
-    !! Element shape data on time element #STFEM
-  TYPE(ElemshapeData_), ALLOCATABLE :: geoSpaceElemSD(:)
-    !! Element shape data on linear space (simplex) element
-    !! cell data only
-  TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD(:)
-    !! Element shape data on space element
-    !! cell data only
-  TYPE(ElemshapeData_), ALLOCATABLE :: geoSpaceElemSD_facet(:)
-    !! Element shape data on linear space (simplex) element
-    !! facet element
-  TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD_facet(:)
-    !! Element shape data on space element
-    !! Facet element
-  TYPE(STElemshapeData_), ALLOCATABLE :: stelemsd(:, :)
-    !! Element shape data on space-time element
-  TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
-  !! Dirichlet boundary condition for displacement
-  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
-  !! Neumann boundary condition for displacement
-  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbcPointSource(:)
-  !! Neumann boundary condition for displacement
-  TYPE(NitscheBCPointer_), ALLOCATABLE :: wdbc(:)
-  !! Weak dirichlet boundary condition for displacement
-  INTEGER(I4B), ALLOCATABLE :: nitscheLocalID(:)
-  !! nitscheLocalID is a mapping from global mesh-id (of dimension
-  !! nsd-1), to local id.
-  !! If nitscheLocalID(meshID) = 0, then it means
-  !! meshID of dimension nsd-1 is not a nitsche boundary.
-  !! This mapping is used to access entries in nitscheFacetToCell.
-  TYPE(DomainConnectivityPointer_), ALLOCATABLE :: nitscheFacetToCell(:)
-  !! Nitsche facet to cell data connectivity information
-  !! We form FacetToCellData for each Nitsche boundary
-  !! The size of nitscheFacetToCell is same as the
-  !! total number of boundaries (mesh-ids) in wdbcForDisplacement
-  !! This data is initiated in Set Method
-  ! TYPE(ScalarMeshField_), ALLOCATABLE :: shearModulus(:)
-  !! Young's modulus, needed in case of Isotropic elasticity
-  ! TYPE(ScalarMeshField_), ALLOCATABLE :: youngsModulus(:)
-  !! Poisson's ratio, needed in case of Isotropic elasticity
-  ! TYPE(TensorMeshField_), ALLOCATABLE :: Cijkl(:)
-  !! Elasticity tensor used for non isotropic materials
-  ! TYPE(TensorMeshField_), ALLOCATABLE :: stress(:)
-  !! Stress field
-  ! TYPE(TensorMeshField_), ALLOCATABLE :: strain(:)
-  !! Strain field
-  INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
-  !! mesh id of material interfaces
-  TYPE(DomainConnectivity_), ALLOCATABLE :: matIfaceConnectData(:)
-  !! facet to cell data for each materialInterface mesh
-  !! The size of matIfaceConnectData is same as the size of
-  !! materialInterfaces
-  TYPE(MeshSelection_), ALLOCATABLE :: solidMaterialToMesh(:)
-  !! Map solid material to the mesh portion
-  !! The size of solidMaterialToMesh is the same as `tSolidMaterials`
-  !! In this way, solidMaterialToMesh(i) gives the mesh region of ith element
-  TYPE(SolidMaterialPointer_), ALLOCATABLE :: solidMaterial(:)
-  !! Pointer to the solid material
-  TYPE(MatrixFieldPointer_), ALLOCATABLE :: matrixFields(:)
-  !! List of vectorfields
-  TYPE(VectorFieldPointer_), ALLOCATABLE :: vectorFields(:)
-  !! List of vectorfields
-  TYPE(STVectorFieldPointer_), ALLOCATABLE :: stVectorFields(:)
-  !! List of space-time vector fields
-  TYPE(ScalarFieldPointer_), ALLOCATABLE :: scalarFields(:)
-  !! List of scalarFields
-  TYPE(STScalarFieldPointer_), ALLOCATABLE :: stScalarFields(:)
-  !! List of space-time scalar fields
-  CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
-  !! Global Stiffness matrix
-  CLASS(MatrixField_), POINTER :: diffusionMat => NULL()
-  !! Global diffusion matrix
-  CLASS(MatrixField_), POINTER :: massMat => NULL()
-  !! Global mass matrix
-  CLASS(MatrixField_), POINTER :: dampingMat => NULL()
-  !! Global damping matrix
-  CLASS(VectorField_), POINTER :: displacement => NULL()
-  !! Vector field for nodal displacement
-  CLASS(VectorField_), POINTER :: velocity => NULL()
-  !! Vector field for nodal displacement
-  CLASS(VectorField_), POINTER :: acceleration => NULL()
-  !! Vector field for nodal acceleration
-  CLASS(VectorField_), POINTER :: nodeCoord => NULL()
-  !! Vector field for nodal coordinates
-  CLASS(ScalarField_), POINTER :: pressure => NULL()
-  !! scalar field for nodal pressure
-  CLASS(ScalarField_), POINTER :: p_velocity => NULL()
-  !! scalar field for nodal pressure
-  CLASS(ScalarField_), POINTER :: p_acceleration => NULL()
-  !! scalar field for nodal pressure
-  TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
-  !! Constitutive data for solid materials
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: massDensity(:)
-  !! Mass density
-  !! This will be a scalar mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: shearModulus(:)
-  !! Lame parameter
-  !! NOTE: It is need in the case of Isotropic elasticity
-  !! This will be a scalar mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: youngsModulus(:)
-  !! Lame parameter
-  !! NOTE: It is need in the case of Isotropic elasticity
-  !! This will be a scalar mesh field
-  TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE :: Cijkl(:)
-  !! Elasticity tensor
-  !! NOTE: It is used for non Isotropic elasticity
-  !! This will be a tensor mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_alpha(:)
-  !! Rayleigh damping coefficient alpha
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_beta(:)
-  !! Rayleigh damping coefficient beta
-  TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: stress(:)
-  !! Stress tensor
-  !! This will be a tensor mesh field
-  TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
-  !! Strain tensor
-  !! This will be a tensor mesh field
-  ! TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE, target:: phase_velocity(:)
-  !! phase_velocity
-  !! This will be a scalar mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: scalarCoefficient(:)
-  !! it can be phase velocity or coefficient of permiabillity for isotropic medium
-  !! this will be a scalar mesh field
+
+  TYPE(TxtFile_) :: showTimeFile
+  !! File which keeps the time statics of the kernel (performance related)
+  !! This file is created when showTime is set to true.
+  !! The name of this file will be
+  !! outputPath / name + _time_stat.csv
+
   CLASS(UserFunction_), POINTER :: bodySourceFunc => NULL()
   !! body force function
 
-  TYPE(TxtFile_) :: showTimeFile
-    !! File which keeps the time statics of the kernel (performance related)
-    !! This file is created when showTime is set to true.
-    !! The name of this file will be
-    !! outputPath / name + _time_stat.csv
+  REAL(DFP), ALLOCATABLE :: timeVec(:)
+  !! time vector
+
+  INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
+  !! Indices where Dirichlet boundary conditions is prescribed
+  !! INFO: This variable is for internal use only.
+  !! It is formed from the Dirichlet boundary conditions.
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
   !! Check the essential parameter of the kernel
   !! NOTE: When you want to add or remove a param from
   !! essential param, then just modify the
   !! astr variable in obj_CheckEssentialParam method.
+
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the kernel. This is a constructor method.
-  !! WARN: This routine is an interface only. It means
-  !! it should be implemented by the subclass.
+  !! WARN: This routine is an interface only. It means it should be
+  !! implemented by the subclass.
+
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
+
   PROCEDURE, PUBLIC, PASS(obj) :: PreCheckError => obj_PreCheckError
   !! Check error before setting kernel
+
   PROCEDURE, PUBLIC, PASS(obj) :: PostCheckError => obj_PostCheckError
   !! Check error after setting kernel
 
-  ! CONSTRUCTOR:
-  ! @InitiateFieldsMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => obj_InitiateFields
-  !! Initiate the fields
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateTangentMatrix =>  &
-    & obj_InitiateTangentMatrix
-  !! Initiate tangent matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarFields =>  &
-    & obj_InitiateScalarFields
-  !! Initiate scalar fields
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTScalarFields =>  &
-    & obj_InitiateSTScalarFields
-  !! Initiate scalar fields
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVectorFields => &
-    & obj_InitiateVectorFields
-  !! Initiate vector fields
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTVectorFields => &
-    & obj_InitiateSTVectorFields
-  !! Initiate vector fields
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMatrixFields => &
-    & obj_InitiateMatrixFields
-  !! Initiate vector fields
-
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Returns the prefix of the kernel
   !! This method should be implemented by the specific kernel
 
+  ! CONSTRUCTOR:
+  ! @InitiateFieldsMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => obj_InitiateFields
+  !! Initiate the fields
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateTangentMatrix => &
+    obj_InitiateTangentMatrix
+  !! Initiate tangent matrix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarFields => &
+    obj_InitiateScalarFields
+  !! Initiate scalar fields
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTScalarFields => &
+    obj_InitiateSTScalarFields
+  !! Initiate scalar fields
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVectorFields => &
+    obj_InitiateVectorFields
+  !! Initiate vector fields
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTVectorFields => &
+    obj_InitiateSTVectorFields
+  !! Initiate vector fields
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMatrixFields => &
+    obj_InitiateMatrixFields
+  !! Initiate vector fields
+
+  ! SET:
+  ! @MaterialMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMaterialProperties => &
+    obj_InitiateMaterialProperties
+  !! Initiate material properties
+
+  PROCEDURE, PUBLIC, PASS(obj) :: AddSolidMaterial => obj_AddSolidMaterial
+  !! Add a solid material to the kernel
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSolidMaterialPointer => &
+    obj_GetSolidMaterialPointer
+  !! Get a solid material to the kernel
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialProperties => &
+    obj_SetMaterialProperties
+  !! Set material properties
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMassDensity => &
+    obj_InitiateMassDensity
+  !! Initiate mass density field if massDensity is defined in the materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMassDensity => &
+    obj_SetMassDensity
+  !! Set mass density if mass density is defined in the materials
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElasticityProperties => &
+    obj_InitiateElasticityProperties
+  !! Initiate lame parameters for isotropic elasticity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties => &
+    obj_SetElasticityProperties
+  !! Set Lame parameters for isotropic elasticity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDampingProperties => &
+    obj_InitiateDampingProperties
+  !! Initiate rayleight damping properties
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties => &
+    obj_SetDampingProperties
+  !! Set Lame parameters for isotropic elasticity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarCoefficient => &
+    obj_InitiateScalarCoefficient
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarCoefficient => &
+    obj_SetScalarCoefficient
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain => &
+    obj_SetMaterialToDomain
+  !! Set material to mesh
+
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
+  !! Set show time
+
   PROCEDURE, PUBLIC, PASS(obj) :: PreSet => obj_PreSet
   !! Perform final check, before starting the actual computations
+
   PROCEDURE, PUBLIC, PASS(obj) :: PostSet => obj_PostSet
   !! Perform final check, before starting the actual computations
+
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Perform final check, before starting the actual computations
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetCurrentTimeStep => &
-    & obj_SetCurrentTimeStep
+    obj_SetCurrentTimeStep
   !! Sets the current time step of the kernel
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetIterationNumber => &
-    & obj_SetIterationNumber
+    obj_SetIterationNumber
   !! Sets the current time step of the kernel
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshData => obj_SetMeshData
   !! This method is called from Set method.
   !! It Sets the mesh data.
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetFiniteElements => obj_SetFiniteElements
   !! Set finite elements
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInSpace =>  &
-    & obj_SetQuadPointsInSpace
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInTime =>  &
-    & obj_SetQuadPointsInTime
-  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInSpace =>  &
-    & obj_SetLocalElemShapeDataInSpace
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInSpace => &
+    obj_SetQuadPointsInSpace
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInTime => &
+    obj_SetQuadPointsInTime
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInSpace => &
+    obj_SetLocalElemShapeDataInSpace
   !! Set local element shape data in space
-  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInTime =>  &
-    & obj_SetLocalElemShapeDataInTime
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInTime => &
+    obj_SetLocalElemShapeDataInTime
   !! Set local element shape data in time
-  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInSpace =>  &
-    & obj_SetGlobalElemShapeDataInSpace
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInSpace => &
+    obj_SetGlobalElemShapeDataInSpace
   !! Set global element shape data in space
   ! TODO: Implement SetGlobalElemShapeDataInSpace
-  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInTime =>  &
-    & obj_SetGlobalElemShapeDataInTime
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInTime => &
+    obj_SetGlobalElemShapeDataInTime
   !! Set global element shape data in time
   ! TODO: Implement SetGlobalElemShapeDataInTime
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetFiniteElements =>  &
-    & obj_SetFacetFiniteElements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetFiniteElements => &
+    obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
   !! TODO: Implement SetFacetFiniteElements method
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMatIFaceConnectData =>  &
-    & obj_SetMatIFaceConnectData
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatIFaceConnectData => &
+    obj_SetMatIFaceConnectData
   !! Set material to facet connection data
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetAlgorithm => obj_SetAlgoParam
   !! Set algorithm param
   !! This routine should be implemented by subclasses
 
   ! SET:
   ! @BCMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddDirichletBC => obj_AddDirichletBC
   !! Add dirichlet boundary conditions
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddNeumannBC => obj_AddNeumannBC
   !! Add Neumann boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddPointSource => obj_AddPointSource
   !! Add point source in the nbcPointSource
+
   PROCEDURE, PUBLIC, PASS(obj) :: AddNitscheBC => obj_AddNitscheBC
   !! Add weak dirichlet boundary conditions to wdbc
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCPointer => &
-    & obj_GetDirichletBCPointer
+    obj_GetDirichletBCPointer
   !! Get pointer to the pressure dirichlet boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNitscheBCPointer => &
-    & obj_GetNitscheBCPointer
+    obj_GetNitscheBCPointer
   !! Get pointer to the pressure dirichlet boundary condition
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNeumannBCPointer => &
-    & obj_GetNeumannBCPointer
+    obj_GetNeumannBCPointer
   !! Get pointer to the neumann boundary condition for velocity
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointSourcePointer =>  &
-    & obj_GetPointSourcePointer
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointSourcePointer => &
+    obj_GetPointSourcePointer
   !! Get point source in the nbcPointSource
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetNitscheMeshData => &
-    & obj_SetNitscheMeshData
+    obj_SetNitscheMeshData
   !! This routine set mesh data necessary for implementing the
   !! Nitsche boundary condition.
 
   ! SET:
   ! @ApplyDirichletBCMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC =>  &
-    & obj_ApplyDirichletBC
-  !! Apply Dirichlet boundary condition
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC => &
+  !   obj_ApplyDirichletBC
+  ! !! Apply Dirichlet boundary condition
 
   ! SET:
   ! @ApplyICMethods
-  PROCEDURE, PASS(obj) :: ApplyIC1 => obj_ApplyIC
-  PROCEDURE, PASS(obj) :: ApplyIC2 => obj_ApplyICFromToml
-  GENERIC, PUBLIC :: ApplyIC => ApplyIC1, ApplyIC2
-  !! Apply Dirichlet boundary condition
 
-  ! SET:
-  ! @MaterialMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AddSolidMaterial => obj_AddSolidMaterial
-  !! Add a solid material to the kernel
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSolidMaterialPointer =>  &
-    & obj_GetSolidMaterialPointer
-  !! Get a solid material to the kernel
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMaterialProperties =>  &
-    & obj_InitiateMaterialProperties
-  !! Initiate material properties
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialProperties =>  &
-    & obj_SetMaterialProperties
-  !! Set material properties
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMassDensity =>  &
-    & obj_InitiateMassDensity
-  !! Initiate mass density field if massDensity is defined in the materials
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMassDensity =>  &
-    & obj_SetMassDensity
-  !! Set mass density if mass density is defined in the materials
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElasticityProperties =>  &
-    & obj_InitiateElasticityProperties
-  !! Initiate lame parameters for isotropic elasticity
-  PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties =>  &
-    & obj_SetElasticityProperties
-  !! Set Lame parameters for isotropic elasticity
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDampingProperties =>  &
-    & obj_InitiateDampingProperties
-  !! Initiate rayleight damping properties
-  PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties =>  &
-    & obj_SetDampingProperties
-  !! Set Lame parameters for isotropic elasticity
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarCoefficient =>  &
-    & obj_InitiateScalarCoefficient
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarCoefficient =>  &
-    & obj_SetScalarCoefficient
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
-    & obj_SetMaterialToDomain
-  !! Set material to mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: SetElementToMatID =>  &
-    & obj_SetElementToMatID
-  !! Set element to material id
+  ! PROCEDURE, PASS(obj) :: ApplyIC1 => obj_ApplyIC
+  ! PROCEDURE, PASS(obj) :: ApplyIC2 => obj_ApplyICFromToml
+  ! GENERIC, PUBLIC :: ApplyIC => ApplyIC1, ApplyIC2
+  ! !! Apply Dirichlet boundary condition
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Import data from the input file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export data to an external file
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  !! Displays the content of kernel
-  PROCEDURE, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
-  !! Write simulation results in hdf5 file format
-  PROCEDURE, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
-  !! Write simulation data in vtk file format
-  ! PROCEDURE, PASS( obj ) :: WriteData_xdmf => obj_WriteData_xdmf
-  GENERIC, PUBLIC :: WriteData => WriteData_hdf5, WriteData_vtk
-  !! Export data to an external file
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & obj_ImportParamFromToml
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToToml => obj_ExportToToml
+  ! PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  ! !! Import data from the input file
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  ! !! Export data to an external file
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  ! !! Displays the content of kernel
+  !
+  ! PROCEDURE, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
+  ! !! Write simulation results in hdf5 file format
+  ! PROCEDURE, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  ! !! Write simulation data in vtk file format
+  ! ! PROCEDURE, PASS( obj ) :: WriteData_xdmf => obj_WriteData_xdmf
+  ! GENERIC, PUBLIC :: WriteData => WriteData_hdf5, WriteData_vtk
+  ! !! Export data to an external file
+  !
+  ! PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  ! PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  ! GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+  !
+  ! PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
+  !   obj_ImportParamFromToml
+  ! PROCEDURE, PUBLIC, PASS(obj) :: ExportToToml => obj_ExportToToml
 
   ! GET:
   ! @RunMethods
-  PROCEDURE, PASS(obj) :: Run1 => obj_Run1
-  PROCEDURE, PASS(obj) :: Run2 => obj_Run2
-  GENERIC, PUBLIC :: Run => Run1, Run2
-  !! Run the kernel
+
+  ! PROCEDURE, PASS(obj) :: Run1 => obj_Run1
+  ! PROCEDURE, PASS(obj) :: Run2 => obj_Run2
+  ! GENERIC, PUBLIC :: Run => Run1, Run2
+  ! !! Run the kernel
 
   ! SET:
   ! @AssembleMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Assemble => obj_Assemble
-  !! This procedure pointer assembles the problem
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Assemble => obj_Assemble
+  ! !! This procedure pointer assembles the problem
 
   ! SET:
   ! @AssembleTanmatMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
-  !! This procedure pointer assembles the global tangent matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleMassMat => obj_AssembleMassMat
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleStiffnessMat =>  &
-    & obj_AssembleStiffnessMat
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleDiffusionMat =>  &
-    & obj_AssembleDiffusionMat
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleDampingMat =>  &
-    & obj_AssembleDampingMat
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleNitscheMat =>  &
-    & obj_AssembleNitscheMat
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
+  ! !! This procedure pointer assembles the global tangent matrix
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleMassMat => obj_AssembleMassMat
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleStiffnessMat => &
+  !   obj_AssembleStiffnessMat
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleDiffusionMat => &
+  !   obj_AssembleDiffusionMat
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleDampingMat => &
+  !   obj_AssembleDampingMat
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleNitscheMat => &
+  !   obj_AssembleNitscheMat
 
   ! SET:
   ! @AssembleRHSMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
-  !! This procedure pointer assembles the right-hand-side vector
-  PROCEDURE, PUBLIC, PASS(obj) :: SetBodySourceFunc => obj_SetBodySourceFunc
-  !! Set body force function
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodySource => &
-    & obj_AssembleBodySource
-  !! This procedure assemble the body force term to RHS
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceSource => &
-    & obj_AssembleSurfaceSource
-  !! This procedure assemble the surface force term to RHS
-  PROCEDURE, PUBLIC, PASS(obj) :: AssemblePointSource => &
-    & obj_AssemblePointSource
-  !! This procedure assemble the point source to rhs
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
+  ! !! This procedure pointer assembles the right-hand-side vector
+  ! PROCEDURE, PUBLIC, PASS(obj) :: SetBodySourceFunc => obj_SetBodySourceFunc
+  ! !! Set body force function
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodySource => &
+  !   obj_AssembleBodySource
+  ! !! This procedure assemble the body force term to RHS
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceSource => &
+  !   obj_AssembleSurfaceSource
+  ! !! This procedure assemble the surface force term to RHS
+  ! PROCEDURE, PUBLIC, PASS(obj) :: AssemblePointSource => &
+  !   obj_AssemblePointSource
+  ! !! This procedure assemble the point source to rhs
 
   ! GET:
   ! @SolveMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_Solve
-  !! This procedure pointer solves the problem
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_Solve
+  ! !! This procedure pointer solves the problem
 
   ! SET:
   ! @UpdateMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
-  !! This procedure pointer update the problem
-  PROCEDURE, PUBLIC, PASS(obj) :: UpdateIteration => obj_UpdateIteration
-  !! This procedure pointer update the problem
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
+  ! !! This procedure pointer update the problem
+  ! PROCEDURE, PUBLIC, PASS(obj) :: UpdateIteration => obj_UpdateIteration
+  ! !! This procedure pointer update the problem
 
   ! GET:
   ! @ConvergenceMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IsConverged => obj_IsConverged
-  !! This procedure pointer checks the convergence
+
+  ! PROCEDURE, PUBLIC, PASS(obj) :: IsConverged => obj_IsConverged
+  ! !! This procedure pointer checks the convergence
+
 END TYPE AbstractKernel_
 
 !----------------------------------------------------------------------------
@@ -778,31 +519,33 @@ END TYPE AbstractKernelPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractKernelParam( &
-    & param, prefix, problemType, name, engine, coordinateSystem, &
-    & domainFile, isCommonDomain, gravity, timeDependency, &
-    & maxIter, nsd, nnt, tdof, dt, startTime, endTime, &
-    & currentTime, currentTimeStep, totalTimeStep, &
-    & baseInterpolationForSpace, baseContinuityForSpace, &
-    & quadratureTypeForSpace, ipTypeForSpace, &
-    & basisTypeForSpace, alphaForSpace, &
-    & betaForSpace, lambdaForSpace, baseInterpolationForTime,  &
-    & baseContinuityForTime, quadratureTypeForTime, ipTypeForTime,  &
-    & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
-    & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
-    & isSymNitsche, nitscheAlpha,  &
-    & materialInterfaces, isConstantMatProp, tSolidMaterials,  &
-    & algorithm, vtkOutputFreq, isIsotropic, isIncompressible,  &
-    & rtoleranceForDisplacement, atoleranceForDisplacement, &
-    & rtoleranceForVelocity, atoleranceForVelocity,  &
-    & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials, outputPath, tPointSource, showTime,  &
-    & unifyVTK, createPVD)
+    param, prefix, problemType, name, engine, coordinateSystem, &
+    domainFile, isCommonDomain, gravity, timeDependency, &
+    maxIter, nsd, nnt, tdof, dt, startTime, endTime, &
+    currentTime, currentTimeStep, totalTimeStep, &
+    baseInterpolationForSpace, baseContinuityForSpace, &
+    quadratureTypeForSpace, ipTypeForSpace, &
+    basisTypeForSpace, alphaForSpace, &
+    betaForSpace, lambdaForSpace, baseInterpolationForTime, &
+    baseContinuityForTime, quadratureTypeForTime, ipTypeForTime, &
+    basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
+    postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
+    isSymNitsche, nitscheAlpha, &
+    materialInterfaces, isConstantMatProp, tSolidMaterials, &
+    algorithm, vtkOutputFreq, isIsotropic, isIncompressible, &
+    rtoleranceForDisplacement, atoleranceForDisplacement, &
+    rtoleranceForVelocity, atoleranceForVelocity, &
+    rtoleranceForResidual, atoleranceForResidual, tanmatProp, &
+    tanmatName, tOverlappedMaterials, outputPath, tPointSource, showTime, &
+    unifyVTK, createPVD)
+
     CHARACTER(*), INTENT(IN) :: prefix
+    !! prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
-    !! KernelProblemType%Scalar
-    !! KernelProblemType%Vector
-    !! KernelProblemType%MultiPhysics
+    !! TypeKernelProblemOpt%Scalar
+    !! TypeKernelProblemOpt%Vector
+    !! TypeKernelProblemOpt%MultiPhysics
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
     !! Type of continuity of basis function for Space
     !! NOTE: Default value is given in AbstractKernelParam
@@ -932,6 +675,9 @@ INTERFACE
     !! absolute tolerance for velocity
     CHARACTER(*), OPTIONAL, INTENT(IN) :: tanmatProp
     !! Tangent matrix properties
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: tanmatName
+    !! Tangent matrix name
+    !! MATRIX, BLOCKMATRIX
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tOverlappedMaterials
     !! Total number of overlapped materials
     CHARACTER(*), OPTIONAL, INTENT(IN) :: outputPath
@@ -984,9 +730,9 @@ INTERFACE AbstractKernelInitiate
     !! Kernel object
     TYPE(ParameterList_), INTENT(IN) :: param
     !! Parameter list
-    CLASS(Domain_), OPTIONAL, TARGET, INTENT(INOUT) :: dom
+    CLASS(FEDomain_), OPTIONAL, TARGET, INTENT(INOUT) :: dom
     !! Domain of computation
-    TYPE(DomainPointer_), OPTIONAL, TARGET, INTENT(INOUT) :: domains(:)
+    TYPE(FEDomainPointer_), OPTIONAL, INTENT(INOUT) :: domains(:)
     !! multiple domains is necessary when isCommonDomain is false
   END SUBROUTINE obj_Initiate
 END INTERFACE AbstractKernelInitiate
@@ -1057,7 +803,7 @@ END INTERFACE AbstractKernelCheckError
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Oct 2022
-! summary: This routine initiates the tangent matrix
+! summary: This routine initiates the tangent matrix of the kernel
 
 INTERFACE AbstractKernelInitiateTangentMatrix
   MODULE SUBROUTINE obj_InitiateTangentMatrix(obj)
@@ -1071,7 +817,7 @@ END INTERFACE AbstractKernelInitiateTangentMatrix
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Oct 2022
-! summary: This routine initiates the matrix and vector fields
+! summary: This routine initiates the scalar fieldds of the kernel
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateScalarFields(obj, names)
@@ -1134,8 +880,8 @@ END INTERFACE
 ! summary: This routine initiates the matrix and vector fields
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateMatrixFields(obj, names, matrixProp,  &
-    & spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_InitiateMatrixFields(obj, names, matrixProp, &
+                                             spaceCompo, timeCompo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: names(:)
     TYPE(String), INTENT(IN) :: matrixProp(:)
@@ -1294,7 +1040,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           SetQuadPointsInTime@SetMethods
+!                                            SetQuadPointsInTime@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1386,20 +1132,6 @@ END INTERFACE
 ! summary:  Set material to mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMaterialToDomain(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetMaterialToDomain
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetMaterialToMesh@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-07
-! summary:  Set material to mesh
-
-INTERFACE
   MODULE SUBROUTINE obj_SetElementToMatID(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetElementToMatID
@@ -1426,7 +1158,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetAlgoParam(obj, algoParam)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    CLASS(AbstractAlgoParam_), INTENT(IN) :: algoParam
+    CLASS(KernelAlgoParam_), INTENT(IN) :: algoParam
   END SUBROUTINE obj_SetAlgoParam
 END INTERFACE
 
@@ -1454,7 +1186,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_AddSolidMaterial(obj, materialNo, materialName, &
-    & param, region)
+                                         param, region)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: materialNo
     !! material number should be lesser than or equal to the
@@ -1627,6 +1359,21 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: varname
   END SUBROUTINE obj_SetScalarCoefficient
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaterialToMesh@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-07
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialToDomain(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMaterialToDomain
+END INTERFACE
+
 !----------------------------------------------------------------------------
 !                                                   AddDirichletBC@BCMethods
 !----------------------------------------------------------------------------
@@ -1871,8 +1618,8 @@ END INTERFACE AbstractKernelApplyDirichletBC
 ! summary: Apply initial conditions to the fields
 
 INTERFACE AbstractKernelApplyIC
-  MODULE SUBROUTINE obj_ApplyIC(obj, name, func, extField, times, ivar,  &
-    & idof, spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_ApplyIC(obj, name, func, extField, times, ivar, &
+                                idof, spaceCompo, timeCompo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Abstract kernel
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
@@ -2053,7 +1800,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  AssembleSurfaceSource@AssembleRHSMethods
+!                                   AssembleSurfaceSource@AssembleRHSMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

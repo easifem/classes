@@ -15,6 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) BlasMethods
+USE RealVector_Method, ONLY: Axpy, Copy, Norm1, Norm2, Normi, &
+                             Dot_Product, PMUL, Reciprocal, &
+                             SCAL
+USE AbstractField_Class, ONLY: TypeEngineName
 IMPLICIT NONE
 
 #ifdef USE_LIS
@@ -34,17 +38,18 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 SELECT CASE (obj%engine%chars())
+
 CASE (TypeEngineName%native_serial)
 
 #ifdef DEBUG_VER
   problem = x%engine .NE. "NATIVE_SERIAL"
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x should be NATIVE_SERIAL.')
+                   '[INTERNAL ERROR] :: engine of x should be NATIVE_SERIAL.')
     RETURN
   END IF
 #endif
@@ -74,14 +79,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_AXPY1
 
@@ -96,19 +101,20 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 SELECT CASE (obj%engine%chars())
+
 CASE (TypeEngineName%native_serial)
 
 #ifdef DEBUG_VER
-  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
-          & x2%engine .NE. "NATIVE_SERIAL"
+  problem = x1%engine .NE. "NATIVE_SERIAL" .OR. &
+            x2%engine .NE. "NATIVE_SERIAL"
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x1 and x2'// &
-      & 'should be NATIVE_SERIAL.')
+                      '[INTERNAL ERROR] :: engine of x1 and x2'// &
+                      'should be NATIVE_SERIAL.')
     RETURN
   END IF
 #endif
@@ -141,14 +147,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_AXPY2
 
@@ -163,20 +169,20 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 SELECT CASE (obj%engine%chars())
 CASE (TypeEngineName%native_serial)
 
 #ifdef DEBUG_VER
-  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
-          & x2%engine .NE. "NATIVE_SERIAL" .OR. &
-          & x3%engine .NE. "NATIVE_SERIAL"
+  problem = x1%engine .NE. "NATIVE_SERIAL" .OR. &
+            x2%engine .NE. "NATIVE_SERIAL" .OR. &
+            x3%engine .NE. "NATIVE_SERIAL"
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x1, x2 and x3'// &
-      & 'should be NATIVE_SERIAL.')
+                      '[INTERNAL ERROR] :: engine of x1, x2 and x3'// &
+                      'should be NATIVE_SERIAL.')
     RETURN
   END IF
 #endif
@@ -213,15 +219,16 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
+
 END PROCEDURE obj_AXPY3
 
 !----------------------------------------------------------------------------
@@ -234,10 +241,11 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 SELECT CASE (obj%engine%chars())
+
 CASE (TypeEngineName%native_serial)
 
   CALL SCAL(x=obj%realvec, A=scale)
@@ -262,15 +270,16 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
+
 END PROCEDURE obj_SCAL
 
 !----------------------------------------------------------------------------
@@ -284,17 +293,18 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 SELECT CASE (obj%engine%chars())
+
 CASE (TypeEngineName%native_serial)
 
 #ifdef DEBUG_VER
   problem = obj2%engine .NE. "NATIVE_SERIAL"
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of obj2 should be NATIVE_SERIAL.')
+                '[INTERNAL ERROR] :: engine of obj2 should be NATIVE_SERIAL.')
     RETURN
   END IF
 #endif
@@ -323,15 +333,16 @@ CASE (TypeEngineName%lis_omp)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
+
 END PROCEDURE obj_COPY
 
 !----------------------------------------------------------------------------
@@ -344,13 +355,15 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
 
 SELECT CASE (obj%engine%chars())
+
 CASE (TypeEngineName%native_serial)
+
   ans = NORM2(obj=obj%realvec)
 
 #ifdef USE_LIS
@@ -373,14 +386,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Norm2
@@ -395,7 +408,7 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0
@@ -424,14 +437,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Norm1
@@ -446,7 +459,7 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
@@ -474,14 +487,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Normi
@@ -496,7 +509,7 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
@@ -526,14 +539,14 @@ CASE (TypeEngineName%lis_omp)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_DOT_PRODUCT
@@ -548,7 +561,7 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 SELECT CASE (obj%engine%chars())
@@ -578,14 +591,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_PMUL
@@ -600,7 +613,7 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 SELECT CASE (obj%engine%chars())
@@ -627,14 +640,14 @@ CASE (TypeEngineName%lis_omp)
 CASE DEFAULT
 
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
+                    '[INTERNAL ERROR] :: No case found given engine = '// &
+                    obj%engine%chars())
   RETURN
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Reciprocal
 

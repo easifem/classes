@@ -15,23 +15,27 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractBC_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE BaseType, ONLY: TypeFEVariableOpt, &
+                    FEVariable_
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class
-USE Domain_Class
-USE HDF5File_Class
-USE UserFunction_Class
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE HDF5File_Class, ONLY: HDF5File_
+USE UserFunction_Class, ONLY: UserFunction_
 USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
-USE TxtFile_Class
+USE TxtFile_Class, ONLY: TxtFile_
+USE FEDOF_Class, ONLY: FEDOF_
+
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
 INTEGER(I4B), PARAMETER :: default_idof = 1_I4B
-INTEGER(I4B), PARAMETER :: default_nodalValueType = Constant
+INTEGER(I4B), PARAMETER :: default_nodalValueType = TypeFEVariableOpt%constant
 CHARACTER(*), PARAMETER :: default_nodalValueType_char = "NONE"
 LOGICAL(LGT), PARAMETER :: default_isUserFunction = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isNormal = .FALSE.
@@ -56,6 +60,8 @@ PUBLIC :: AbstractBCImportParamFromToml
 ! summary: This is an abstract data type for boundary conditions
 
 TYPE, ABSTRACT :: AbstractBC_
+  PRIVATE
+
   LOGICAL(LGT) :: isInitiated = .FALSE.
   !! It is true if the object is initiated
   TYPE(String) :: name
@@ -64,80 +70,166 @@ TYPE, ABSTRACT :: AbstractBC_
   !! degree of freedom number
   INTEGER(I4B) :: nodalValueType = default_nodalValueType
   !! Constant, Space, SpaceTime, Time
+  INTEGER(I4B) :: nrow = 0
+  !! number of rows in nodalValue
+  !! constantNodalValue nrow = 1
+  !! spaceNodalValue nrow = size of nodenum
+  !! timeNodalValue nrow = size of timenodalvalue
+  !! spaceTimeNodalValue nrow = size of nodenum
+  INTEGER(I4B) :: ncol = 0
+  !! number of columns in nodalvalue
+  !! constantNodalValue ncol = 1
+  !! spaceNodalValue ncol = 1
+  !! timeNodalValue ncol = 1
+  !! spaceTimeNodalValue ncol = size of times
   LOGICAL(LGT) :: isNormal = default_isNormal
   !! True if the boundary condition is normal to the boundary
   LOGICAL(LGT) :: isTangent = default_isTangent
   !! True if the boundary condition is tangent to the boundary
-  LOGICAL(LGT) :: useExternal = default_useExternal
+  LOGICAL(LGT) :: isUseExternal = default_useExternal
   !! if true then nodal values are used externally
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
   !! instance of AbstractBC_
   LOGICAL(LGT) :: isUserFunction = default_isUserFunction
   !! True if userFunction is set
+  LOGICAL(LGT) :: isElemToFace = .FALSE.
+  !! When elemToFace is set then isElemToFace is true
+  LOGICAL(LGT) :: isElemToEdge = .FALSE.
+  !! When elemToEdge is set then isElemToEdge is true
+  INTEGER(I4B) :: tElemToFace = 0
+  !! number of col in elemToFace
+  INTEGER(I4B) :: tElemToEdge = 0
+  !! number of col in elemToEdge
+  INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+  !! node numbers, where dirichlet boundary condition will be imposed
+  !! INFO: to be used soon
+
+  INTEGER(I4B), ALLOCATABLE :: elemToFace(:, :)
+  !! each col contains the following data:
+  !! localCellNum, localFaceNum
+  !! two col are ordered with respect to localCellNum
+  !! For example, if a cell has two or more faces where boundary condition
+  !! is applied, then this data will be stored in two consequtive rows:
+  !! col1:       localCellNum1, localFace1
+  !! col2:       localCellNum1, localFace2
+  !!
+  !! if the value of localFace is zero, then it means
+  !! boundary condition is not applied on that face
+
+  INTEGER(I4B), ALLOCATABLE :: elemToEdge(:, :)
+  !! It is used for 3D mesh
+  !! each cols contains the following data:
+  !! localCellNum, localEdgeNum
+  !! two cols are ordered with respect to localCellNum
+  !! For example, if a cell has two or more faces where boundary condition
+  !! is applied, then this data will be stored in two consequtive rows:
+  !! col1:       localCellNum1, localEdge1
+  !! col2:       localCellNum1, localEdge2
+  !!
+  !! if the value of localEdge is zero, then it means
+  !! boundary condition is not applied on that edge
+
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
+  !! nodalValue is used when useFunction and useExternal is false
+
   CLASS(UserFunction_), POINTER :: func => NULL()
   !! User function
   TYPE(MeshSelection_) :: boundary
   !! Boundary
-  CLASS(Domain_), POINTER :: dom => NULL()
+  CLASS(AbstractDomain_), POINTER :: dom => NULL()
   !! Domain
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by AbstractBC
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
-    & bc_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
   !! Check essential parameter
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of AbstractBC
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5File
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to HDF5File
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display content of AbstractBC
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => bc_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate from toml
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => bc_ImportFromToml2
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Initiate from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
-    & ImportFromToml2
+    ImportFromToml2
   !! Import abstract kernel from toml
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & bc_ImportParamFromToml
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
+    obj_ImportParamFromToml
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  !! set the boundary condition value
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElemToLocalBoundary => &
+    obj_SetElemToLocalBoundary
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_GetMeshID
   !! Get MeshID
-  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => bc_Get
-  !! Get value of boundary condition
-  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => bc_GetFEVar
-  !! Get value of boundary condition in FEVariable_
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshIDPointer => obj_GetMeshIDPointer
+  !! Get mesh id pointer
+
+  PROCEDURE, PASS(obj) :: GetH1Lagrange1 => obj_Get_H1_Lagrange1
+  !! Get nodenum and nodal value for H1 and Lagrange polynomial
+  PROCEDURE, PASS(obj) :: GetH1Lagrange2 => obj_Get_H1_Lagrange2
+  !! Get the node number for H1 and Lagrange polynomials
+  GENERIC, PUBLIC :: GetH1Lagrange => GetH1Lagrange1, GetH1Lagrange2
+
+  PROCEDURE, PASS(obj) :: GetH1Hierarchical1 => obj_Get_H1_Hierarchical1
+  !! Get node number and nodal value for H1 Hierarchical polynomials
+  PROCEDURE, PASS(obj) :: GetH1Hierarchical2 => obj_Get_H1_Hierarchical2
+  !! Get the node number for H1 and Lagrange polynomials
+  GENERIC, PUBLIC :: GetH1Hierarchical => GetH1Hierarchical1, &
+    GetH1Hierarchical2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
+  !! Get the nodal value of boundary condition
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
+  !! Get node numbers where boundary condition is applied
+
   GENERIC, PUBLIC :: Get => Get1, Get2
   !! Generic method to get the boundary condition
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFromUserFunction =>  &
-    & bc_GetFromUserFunction
-  !! Get value from userfunction
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeNum => obj_GetTotalNodeNum
+  !! Get total node number
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeNumH1Lagrange => &
+    obj_H1_Lagrange_GetTotalNodeNum
+  !! Get total node number for H1 Lagrange element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeNumH1Hierarchical => &
+    obj_H1_Hierarchical_GetTotalNodeNum
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => obj_GetDOFNo
   !! Get degree of freedom number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => bc_GetQuery
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => bc_GetQuery
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: IsUseFunction => bc_IsUseFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: IsUseFunction => obj_IsUseFunction
   !! Returns true if the useFunction is true
 END TYPE AbstractBC_
 
@@ -158,11 +250,11 @@ END TYPE AbstractBCPointer_
 ! summary:  Check essential parameters
 
 INTERFACE AbstractBCcheckEssentialParam
-  MODULE SUBROUTINE bc_CheckEssentialParam(obj, param, prefix)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE bc_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE AbstractBCcheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -175,8 +267,8 @@ END INTERFACE AbstractBCcheckEssentialParam
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractBCParam(param, prefix, &
-    & name, idof, nodalValueType, isNormal, isTangent, &
-    & useExternal, isUserFunction)
+                            name, idof, nodalValueType, isNormal, isTangent, &
+                                       isUseExternal, isUserFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
@@ -194,7 +286,7 @@ INTERFACE
     !! default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
     !! default is false
   END SUBROUTINE SetAbstractBCParam
 END INTERFACE
@@ -208,12 +300,12 @@ END INTERFACE
 ! summary:  Initiate abstract boundary condition
 
 INTERFACE AbstractBCInitiate
-  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
+  MODULE SUBROUTINE obj_Initiate(obj, param, boundary, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(MeshSelection_), INTENT(IN) :: boundary
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Initiate
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_Initiate
 END INTERFACE AbstractBCInitiate
 
 !----------------------------------------------------------------------------
@@ -225,9 +317,9 @@ END INTERFACE AbstractBCInitiate
 ! summary: Deallocate data
 
 INTERFACE AbstractBCDeallocate
-  MODULE SUBROUTINE bc_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -239,12 +331,12 @@ END INTERFACE AbstractBCDeallocate
 ! summary:  Import AbstractBC from HDF5File
 
 INTERFACE
-  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Import
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -256,11 +348,11 @@ END INTERFACE
 ! summary: Export in hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE bc_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -272,11 +364,11 @@ END INTERFACE
 ! summary:  Initiate param by reading the toml table
 
 INTERFACE AbstractBCImportParamFromToml
-  MODULE SUBROUTINE bc_ImportParamFromToml(obj, param, table)
+  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE bc_ImportParamFromToml
+  END SUBROUTINE obj_ImportParamFromToml
 END INTERFACE AbstractBCImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -288,11 +380,11 @@ END INTERFACE AbstractBCImportParamFromToml
 ! summary:  Initiate param from the toml file
 
 INTERFACE AbstractBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_ImportFromToml1
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE AbstractBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -304,15 +396,15 @@ END INTERFACE AbstractBCImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
-    & filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, &
+                                        filename, printToml)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE bc_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE AbstractBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -324,11 +416,11 @@ END INTERFACE AbstractBCImportFromToml
 ! summary: Display the content
 
 INTERFACE
-  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -340,66 +432,211 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE FUNCTION bc_GetMeshID(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetMeshID(obj, dim) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION bc_GetMeshID
+  END FUNCTION obj_GetMeshID
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
+!                                               GetMeshIDPointer@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), POINTER, INTENT(OUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetMeshIDPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-02-12
-! summary: Get the node number and nodal value
+! date:
+! summary:  Get the nodenum and nodalvalue
 
 INTERFACE
-  MODULE SUBROUTINE bc_Get(obj, nodeNum, nodalValue, times)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nodeNum(:)
-    REAL(DFP), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+MODULE SUBROUTINE obj_Get1(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nrow = size of nodeNum
+    !! ncol = 1 or size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !!
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-  END SUBROUTINE bc_Get
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-02-12
-! summary: Get the dirichlet boundary condition in FEVariable
-
 INTERFACE
-  MODULE SUBROUTINE bc_GetFEVar(obj, fevar, globalNode,  &
-    & spaceQuadPoints, timeQuadPoints, atime, timeVec)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: fevar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceQuadPoints(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeQuadPoints(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: atime
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
-  END SUBROUTINE bc_GetFEVar
+  MODULE SUBROUTINE obj_Get2(obj, fedof, nodeNum, tsize)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! finite element degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetFromFunction@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get value from function
+! date: 2023-02-12
+! summary:  Get the nodenum and nodalvalue
 
 INTERFACE
-  MODULE SUBROUTINE bc_GetFromUserFunction(obj, nodeNum, nodalValue, times)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+  MODULE SUBROUTINE obj_Get_H1_Lagrange1(obj, fedof, nodeNum, &
+                                         nodalValue, nrow, ncol, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nrow = Size of nodeNum
+    !! ncol = 1 or Size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-  END SUBROUTINE bc_GetFromUserFunction
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_Get_H1_Lagrange1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetH1Lagrange@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-26
+! summary:  Get number of nodes from abstract boundary conditions
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_H1_Lagrange2(obj, fedof, nodeNum, tsize)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom object
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_Get_H1_Lagrange2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetH1Hierarchical@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-26
+! summary:  Get number of node and nodal values for H1 and Hierarchical
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_H1_Hierarchical1(obj, fedof, nodeNum, &
+                                             nodalValue, nrow, ncol, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! Degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nrow = Size of nodeNum
+    !! ncol = 1 or Size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_Get_H1_Hierarchical1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetH1Lagrange@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-26
+! summary: Get number of nodes from abstract boundary conditions
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_H1_Hierarchical2(obj, fedof, nodeNum, tsize)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !!
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! degreee of freedom object
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_Get_H1_Hierarchical2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeNum(obj, fedof) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(IN) :: fedof
+    !! FEDOF
+    INTEGER(I4B) :: ans
+    !! ans
+  END FUNCTION obj_GetTotalNodeNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalNodeNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-27
+! summary:  Get total node number
+
+INTERFACE
+  MODULE FUNCTION obj_H1_Lagrange_GetTotalNodeNum(obj, fedof) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(IN) :: fedof
+    !! FEDOF
+    INTEGER(I4B) :: ans
+    !! ans
+  END FUNCTION obj_H1_Lagrange_GetTotalNodeNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalNodeNum@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-07-27
+! summary: Get total node number
+
+INTERFACE
+  MODULE FUNCTION obj_H1_Hierarchical_GetTotalNodeNum(obj, fedof) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(IN) :: fedof
+    !! FEDOF
+    INTEGER(I4B) :: ans
+    !! ans
+  END FUNCTION obj_H1_Hierarchical_GetTotalNodeNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -411,10 +648,10 @@ END INTERFACE
 ! summary: Get degree of freedom number
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetDOFNo(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetDOFNo(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetDOFNo
+  END FUNCTION obj_GetDOFNo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -426,10 +663,10 @@ END INTERFACE
 ! summary:  Get field values of abstract boundary condition
 
 INTERFACE
-  MODULE PURE SUBROUTINE bc_GetQuery(obj, isInitiated, &
-    & isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
-    & isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
-    & nodalValueType, useExternal, isUserFunction)
+  MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, &
+                isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
+               isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
+                                nodalValueType, isUseExternal, isUserFunction)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
@@ -441,9 +678,9 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useFunction
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useExternal
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUseExternal
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
-  END SUBROUTINE bc_GetQuery
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -455,10 +692,10 @@ END INTERFACE
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION bc_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -470,10 +707,10 @@ END INTERFACE
 ! summary:  Returns true if useFunction is true
 
 INTERFACE
-  MODULE PURE FUNCTION bc_IsUseFunction(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_IsUseFunction(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION bc_IsUseFunction
+  END FUNCTION obj_IsUseFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -485,15 +722,41 @@ END INTERFACE
 ! summary:  Set fields of abstract boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, constantNodalValue, spaceNodalValue, &
-    & timeNodalValue, spaceTimeNodalValue, userFunction)
+  MODULE SUBROUTINE obj_Set(obj, constantNodalValue, spaceNodalValue, &
+                            timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    !! constant nodal value
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    !! space nodal value
+    !! size should be same as the number of boundary nodes
+
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    !! time nodal value
+    !! size is total number of time nodes
+
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+    !! space time nodal value
+    !! rowsize is total number of boundary nodes
+    !! colsize is total number of time nodes
+
     TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
-  END SUBROUTINE bc_Set
+    !! user function
+  END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetElemToLocalBoundary@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-19
+! summary:  Set the element to local boundary data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetElemToLocalBoundary(obj)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetElemToLocalBoundary
 END INTERFACE
 
 END MODULE AbstractBC_Class

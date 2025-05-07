@@ -15,23 +15,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE BlockMatrixFieldLis_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE FPL, ONLY: ParameterList_
-USE FPL_Method
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE AbstractMatrixField_Class
-USE BlockMatrixField_Class
-USE Domain_Class
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE BlockMatrixField_Class, ONLY: BlockMatrixField_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
+
 PUBLIC :: BlockMatrixFieldLis_
-PUBLIC :: TypeBlockMatrixFieldLis
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -44,38 +44,45 @@ PUBLIC :: TypeBlockMatrixFieldLis
 TYPE, EXTENDS(BlockMatrixField_) :: BlockMatrixFieldLis_
   INTEGER(I4B), ALLOCATABLE :: lis_ia(:)
   INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
-  !! Initiate from the parameter list
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => mField_Initiate2
-  !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => mField_Initiate3
-  !! Initiate for block matrices
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mField_Deallocate
-  FINAL :: mField_Final
-  !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => mField_Display
-  !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
-  !! Import from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => mField_Export
-  !! export matrix field in hdf5file_
-  PROCEDURE, PASS(obj) :: Matvec2 => mField_Matvec2
-  !! Matrix vector multiplication
-END TYPE BlockMatrixFieldLis_
 
-TYPE(BlockMatrixFieldLis_), PARAMETER :: TypeBlockMatrixFieldLis = &
-  & BlockMatrixFieldLis_(domains=NULL())
+CONTAINS
+
+  PRIVATE
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate from the parameter list
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate by copy
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate for block matrices
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
+  !! Finalizer
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the field
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import from hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! export matrix field in hdf5file_
+
+  ! GET:
+  ! @MatvecMethods
+  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
+  !! Matrix vector multiplication
+
+END TYPE BlockMatrixFieldLis_
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE mField_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE mField_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -105,16 +112,16 @@ END INTERFACE
 !
 ! OPTIONAL PARAMETERS
 !
-! - `spaceCompo`, INT, default is 1
+! - `timeCompo `, INT, default is 1
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE mField_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE mField_Initiate1
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -138,15 +145,15 @@ END INTERFACE
 !@endtodo
 
 INTERFACE
-  MODULE SUBROUTINE mField_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be an instance of MatrixField_
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE mField_Initiate2
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -157,11 +164,11 @@ END INTERFACE
 ! summary: This routine initiates the Matrix Field
 
 INTERFACE
-  MODULE SUBROUTINE mField_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE mField_Initiate3
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -173,9 +180,9 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the matrix
 
 INTERFACE
-  MODULE SUBROUTINE mField_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE mField_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -187,11 +194,11 @@ END INTERFACE
 ! summary: This routine displays the content
 
 INTERFACE
-  MODULE SUBROUTINE mField_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE mField_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -203,11 +210,11 @@ END INTERFACE
 ! summary: This routine Exports the content of matrixfield_ to hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE mField_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE mField_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -219,13 +226,13 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE mField_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE mField_Import
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -245,8 +252,8 @@ END INTERFACE
 ! outside and it should have same length as the input vector.
 
 INTERFACE
-  MODULE SUBROUTINE mField_Matvec2(obj, x, y, isTranspose, &
-    & addContribution, scale)
+  MODULE SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, &
+                                addContribution, scale)
     CLASS(BlockMatrixFieldLis_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
@@ -255,7 +262,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-  END SUBROUTINE mField_Matvec2
+  END SUBROUTINE obj_Matvec2
 END INTERFACE
 
 END MODULE BlockMatrixFieldLis_Class

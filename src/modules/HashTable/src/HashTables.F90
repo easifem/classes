@@ -18,4 +18,12 @@
 MODULE HashTables
 USE IntIntDict_Class
 USE IntSet_Class
+USE HashTable_Class, ONLY: HashTable_
+USE HashTableIter_Class, ONLY: HashTableIter_, HashTableIter
+USE Hashkey_Class, ONLY: Hashkey_
+USE HashkeyChar_Class, ONLY: HashkeyChar_, Hashkey
+USE HashkeyInt32_Class, ONLY: HashkeyInt32_, Hashkey
+USE HashkeyInt64_Class, ONLY: HashkeyInt64_, Hashkey
+USE HashkeyInt32Vec_Class, ONLY: HashkeyInt32Vec_, Hashkey
+USE HashkeyInt64Vec_Class, ONLY: HashkeyInt64Vec_, Hashkey
 END MODULE HashTables

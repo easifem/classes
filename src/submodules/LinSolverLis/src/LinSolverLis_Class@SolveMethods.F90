@@ -16,8 +16,15 @@
 !
 
 SUBMODULE(LinSolverLis_Class) SolveMethods
-USE BaseMethod
+USE GlobalData, ONLY: stdout
+
+USE Display_Method, ONLY: EqualLine, Display, Blanklines, &
+                          ToString
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,54 +37,71 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
   CHARACTER(*), INTENT(IN) :: myName
   ! internal variable
   INTEGER(I4B) :: ierr, unitNo
+  CHARACTER(:), ALLOCATABLE :: msg
 
   ierr = IPAR(1)
+
   SELECT CASE (ierr)
+
   CASE (-1)
-    IF (e%isLogActive()) THEN
-      unitNo = e%getLogFileUnit()
+
+    IF (e%IsLogActive()) THEN
+      unitNo = e%GetLogFileUnit()
     ELSE
       unitNo = stdout
     END IF
+
     CALL EqualLine(unitNo=unitNo)
-    CALL Display(IPAR(7), "# Number of Matrix-Vector Multiplication = ",&
-      & unitNo=unitNo)
-    CALL Display(FPAR(3), "# Initial residual/error norm = ",&
-      & unitNo=unitNo)
-    CALL Display(FPAR(4), "# Target residual/error norm = ",&
-      & unitNo=unitNo)
-    CALL Display(FPAR(6), "# Current residual/error norm = ",&
-      & unitNo=unitNo)
-    CALL Display(FPAR(5), "# Current residual norm = ",&
-      & unitNo=unitNo)
-    CALL Display(FPAR(7), "# Convergence rate = ",&
-      & unitNo=unitNo)
+
+    CALL Display(IPAR(7), "Number of Matrix-Vector Multiplication: ", &
+                 unitNo=unitNo)
+    CALL Display(FPAR(3), "Initial residual/error norm: ", &
+                 unitNo=unitNo)
+    CALL Display(FPAR(4), "Target residual/error norm: ", &
+                 unitNo=unitNo)
+    CALL Display(FPAR(6), "Current residual/error norm: ", &
+                 unitNo=unitNo)
+    CALL Display(FPAR(5), "Current residual norm: ", &
+                 unitNo=unitNo)
+    CALL Display(FPAR(7), "Convergence rate: ", &
+                 unitNo=unitNo)
+
     CALL EqualLine(unitNo=unitNo)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Termination because iteration number exceeds the limit")
+
+    msg = "Termination because iteration number exceeds the limit"
+
   CASE (-2)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Return due to insufficient work space")
+
+    msg = "Return due to insufficient work space"
+
   CASE (-3)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Return due to anticipated break-down / divide by zero")
+
+    msg = "Return due to anticipated break-down / divide by zero"
+
   CASE (-4)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "The values of `fpar(1)` and `fpar(2)` are both <= 0, &
+
+    msg = "The values of `fpar(1)` and `fpar(2)` are both <= 0, &
       & the valid ranges are `0 <= fpar(1) < 1`, `0 <= fpar(2)`, &
-      & and they can not be zero at the same time")
+      & and they can not be zero at the same time"
+
   CASE (-9)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "While trying to detect a break-down, &
-      & an abnormal number is detected")
+
+    msg = "While trying to detect a break-down, &
+      & an abnormal number is detected"
+
   CASE (-10)
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Return due to some non-numerical reasons, &
-      & e.g. invalid floating-point numbers etc")
+
+    msg = "Return due to some non-numerical reasons, &
+      & e.g. invalid floating-point numbers etc"
+
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Unknown error encountered. Cannot read the error message")
+
+    msg = "Unknown error encountered. Cannot read the error message"
+
   END SELECT
+
+  CALL AssertError1(.FALSE., myname, msg)
+
 END SUBROUTINE CHECKERROR
 
 !----------------------------------------------------------------------------
@@ -97,22 +121,23 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
     unitno = stdout
   END IF
 
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'Convergence is achieved 🎖')
+  CALL e%RaiseInformation(modName//'::'//myName//" - "// &
+                          'Convergence is achieved')
+
   CALL Blanklines(nol=2, unitno=unitno)
   ! CALL EqualLine(unitNo=unitNo)
-  CALL Display(iter, "# Number of Matrix-Vector Multiplication = ",&
-    & unitno=unitno)
-  CALL Display(fpar(3), "# Initial residual/error norm = ",&
-    & unitno=unitno)
-  CALL Display(fpar(4), "# Target residual/error norm = ",&
-    & unitno=unitno)
-  CALL Display(fpar(6), "# Current residual/error norm = ",&
-    & unitno=unitno)
-  CALL Display(fpar(5), "# Current residual norm = ",&
-    & unitno=unitno)
-  CALL Display(fpar(7), "# Convergence rate = ",&
-    & unitno=unitno)
+  CALL Display(iter, "Number of Matrix-Vector Multiplication: ", &
+               unitno=unitno)
+  CALL Display(fpar(3), "Initial residual/error norm: ", &
+               unitno=unitno)
+  CALL Display(fpar(4), "Target residual/error norm: ", &
+               unitno=unitno)
+  CALL Display(fpar(6), "Current residual/error norm: ", &
+               unitno=unitno)
+  CALL Display(fpar(5), "Current residual norm: ", &
+               unitno=unitno)
+  CALL Display(fpar(7), "Convergence rate: ", &
+               unitno=unitno)
   CALL EqualLine(unitNo=unitNo)
 END SUBROUTINE DisplayConvergence
 
@@ -120,41 +145,72 @@ END SUBROUTINE DisplayConvergence
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Solve
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "ls_Solve"
+MODULE PROCEDURE obj_Solve
+CHARACTER(*), PARAMETER :: myName = "obj_Solve()"
 INTEGER(I4B) :: ierr
+LOGICAL(LGT) :: isok
+CLASS(AbstractMatrixField_), POINTER :: amat
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolverLis_::obj is not initiated, initiate first!')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+
+isok = obj%isInitiated()
+
+CALL AssertError1(isok, myName, &
+                  'LinSolverLis_::obj is not initiated, initiate first!')
 
 CALL lis_vector_is_null(sol%lis_ptr, ierr)
+
 CALL CHKERR(ierr)
-IF (.NOT. sol%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractNodeField_::sol not initiated'// &
-  & " or, lis_ptr is not available")
-END IF
+
+CALL AssertError1(sol%isInitiated, myname, &
+                  'AbstractNodeField_::sol not initiated')
+
+isok = ierr .NE. LIS_TRUE
+
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::sol not initiated')
+
+CALL AssertError1(rhs%isInitiated, myname, &
+                  'AbstractNodeField_::rhs not initiated')
 
 CALL lis_vector_is_null(rhs%lis_ptr, ierr)
-CALL CHKERR(ierr)
-IF (.NOT. rhs%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractNodeField_::rhs not initiated'// &
-  & " or, lis_ptr is not available")
-END IF
+isok = ierr .NE. LIS_TRUE
 
-IF (.NOT. ASSOCIATED(obj%Amat)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'LinSolverLis_::obj%Amat is not ASSOCIATED')
-END IF
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::rhs not initiated')
 
-CALL lis_solve(obj%Amat%lis_ptr, rhs%lis_ptr, sol%lis_ptr, obj%lis_solver, ierr)
+#endif
 
+amat => obj%GetMatrixPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(amat)
+CALL AssertError1(isok, myname, &
+                  'LinSolverLis_::obj%amat is not ASSOCIATED')
+#endif
+
+CALL lis_solve(amat%lis_ptr, rhs%lis_ptr, sol%lis_ptr, obj%lis_solver, ierr)
+
+#ifdef DEBUG_VER
 CALL chkerr(ierr)
+#endif
 
-END PROCEDURE ls_Solve
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_Solve
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SolveMethods

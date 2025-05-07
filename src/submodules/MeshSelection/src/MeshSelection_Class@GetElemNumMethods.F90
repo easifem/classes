@@ -19,166 +19,347 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) GetElemNumMethods
-USE BaseMethod
-USE Mesh_Class, ONLY: Mesh_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+USE AppendUtility, ONLY: Append
+
+USE IntVector_Method, ONLY: isAllocated, ASSIGNMENT(=), size, &
+                            GetPointer
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemNum1
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElemNum1()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = 0
+
+isok = obj%ms(2)
+IF (.NOT. isok) RETURN
+
+SELECT CASE (dim)
+CASE (0)
+  ans = SIZE(obj%pointElemNum)
+CASE (1)
+  ans = SIZE(obj%curveElemNum)
+CASE (2)
+  ans = SIZE(obj%surfaceElemNum)
+CASE (3)
+  ans = SIZE(obj%volumeElemNum)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalElemNum1
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemNum2
+CHARACTER(*), PARAMETER :: myname = "obj_GetTotalElemNum2()"
+CLASS(AbstractMesh_), POINTER :: meshptr
+INTEGER(I4B) :: ii, tsize
+INTEGER(I4B), POINTER :: intptr(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%GetTotalElemNum(dim=dim)
+
+! isSelectionByMeshID
+IF (obj%ms(1)) THEN
+
+  meshptr => dom%GetMeshPointer(dim=dim)
+
+  SELECT CASE (dim)
+
+  CASE (0)
+    tsize = SIZE(obj%pointMeshID)
+    intptr => GetPointer(obj%pointMeshID, 1_I4B)
+
+  CASE (1)
+    tsize = SIZE(obj%curveMeshID)
+    intptr => GetPointer(obj%curveMeshID, 1_I4B)
+
+  CASE (2)
+    tsize = SIZE(obj%surfaceMeshID)
+    intptr => GetPointer(obj%surfaceMeshID, 1_I4B)
+
+  CASE (3)
+    tsize = SIZE(obj%volumeMeshID)
+    intptr => GetPointer(obj%volumeMeshID, 1_I4B)
+
+  END SELECT
+
+  DO ii = 1, tsize
+    ans = ans + meshptr%GetTotalElements(meshid=intptr(ii))
+  END DO
+  intptr => NULL()
+
+END IF
+
+! TODO enhance GetElemNum in MeshSelection_ so that it works
+! when isSelectionByNodeNum and isSelectionByBox is true.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalElemNum2
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemNum3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElemNum3()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = 0
+DO ii = 0, 3
+  ans = ans + obj%GetTotalElemNum(dim=ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalElemNum3
+
+!----------------------------------------------------------------------------
+!                                                            GetTotalElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemNum4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElemNum4()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = 0
+
+DO ii = 0, 3
+  ans = ans + obj%GetTotalElemNum(dim=ii, dom=dom)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalElemNum4
 
 !----------------------------------------------------------------------------
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum1()"
+MODULE PROCEDURE obj_GetElemNum1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum1()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B), POINTER :: intptr(:)
+INTEGER(I4B) :: ii
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-IF (.NOT. obj%isSelectionByElemNum) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: This method works only when '//  &
-    & ' obj%isSelectionByElemNum is true')
-  CALL Reallocate(ans, 0)
-  RETURN
-END IF
+tsize = 0
+
+isok = obj%ms(2)
+IF (.NOT. isok) RETURN
 
 SELECT CASE (dim)
 CASE (0)
-  IF (isAllocated(obj%PointElemNum)) ans = obj%PointElemNum
+  tsize = SIZE(obj%pointElemNum)
+  intptr => GetPointer(obj%pointElemNum, 1_I4B)
+
 CASE (1)
-  IF (isAllocated(obj%CurveElemNum)) ans = obj%CurveElemNum
+  tsize = SIZE(obj%curveElemNum)
+  intptr => GetPointer(obj%curveElemNum, 1_I4B)
+
 CASE (2)
-  IF (isAllocated(obj%SurfaceElemNum)) ans = obj%SurfaceElemNum
+  tsize = SIZE(obj%surfaceElemNum)
+  intptr => GetPointer(obj%surfaceElemNum, 1_I4B)
+
 CASE (3)
-  IF (isAllocated(obj%VolumeElemNum)) ans = obj%VolumeElemNum
+  tsize = SIZE(obj%volumeElemNum)
+  intptr => GetPointer(obj%volumeElemNum, 1_I4B)
+
 END SELECT
 
-IF (.NOT. ALLOCATED(ans)) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'No element found in the mesh of dimension = '//tostring(dim))
-  CALL Reallocate(ans, 0)
-END IF
+DO ii = 1, tsize
+  ans(ii) = intptr(ii)
+END DO
+
+intptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-END PROCEDURE meshSelect_GetElemNum1
+END PROCEDURE obj_GetElemNum1
 
 !----------------------------------------------------------------------------
 !                                                                 GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum2
-CHARACTER(*), PARAMETER :: myname = "meshSelect_GetElemNum2()"
-CLASS(Mesh_), POINTER :: meshptr
-INTEGER(I4B) :: ii
+MODULE PROCEDURE obj_GetElemNum2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myname = "obj_GetElemNum2()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+INTEGER(I4B) :: ii, mysize, jj
+INTEGER(I4B), POINTER :: intptr(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 ! isSelectionByElemNum
-IF (obj%isSelectionByElemNum) THEN
-  ans = obj%GetElemNum(dim=dim)
-END IF
+CALL obj%GetElemNum(dim=dim, ans=ans, tsize=tsize)
 
 ! isSelectionByMeshID
-IF (obj%isSelectionByMeshID) THEN
-  meshptr => NULL()
+IF (obj%ms(1)) THEN
+
+  meshptr => dom%GetMeshPointer(dim=dim)
+
   SELECT CASE (dim)
+
   CASE (0)
-    DO ii = 1, SIZE(obj%pointMeshID)
-      meshptr => domain%GetMeshPointer(dim=dim,  &
-        & entityNum=obj%pointMeshID%val(ii))
-      CALL Append(ans, meshptr%GetElemNum())
-    END DO
+    mysize = SIZE(obj%pointMeshID)
+    intptr => GetPointer(obj%pointMeshID, 1_I4B)
 
   CASE (1)
-    DO ii = 1, SIZE(obj%curveMeshID)
-      meshptr => domain%GetMeshPointer(dim=dim, &
-        & entityNum=obj%curveMeshID%val(ii))
-      CALL Append(ans, meshptr%GetElemNum())
-    END DO
+    mysize = SIZE(obj%curveMeshID)
+    intptr => GetPointer(obj%curveMeshID, 1_I4B)
+
   CASE (2)
-    DO ii = 1, SIZE(obj%surfaceMeshID)
-      meshptr => domain%GetMeshPointer(dim=dim, &
-        & entityNum=obj%surfaceMeshID%val(ii))
-      CALL Append(ans, meshptr%GetElemNum())
-    END DO
+    mysize = SIZE(obj%surfaceMeshID)
+    intptr => GetPointer(obj%surfaceMeshID, 1_I4B)
+
   CASE (3)
-    DO ii = 1, SIZE(obj%volumeMeshID)
-      meshptr => domain%GetMeshPointer(dim=dim, &
-        & entityNum=obj%volumeMeshID%val(ii))
-      CALL Append(ans, meshptr%GetElemNum())
-    END DO
+    mysize = SIZE(obj%volumeMeshID)
+    intptr => GetPointer(obj%volumeMeshID, 1_I4B)
+
   END SELECT
 END IF
 
-IF (.NOT. ALLOCATED(ans)) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'No element found in the mesh of dimension = '//tostring(dim))
-  ALLOCATE (ans(0))
-END IF
+DO ii = 1, mysize
+  CALL meshptr%GetElemNum_(meshid=intptr(ii), ans=ans(tsize + 1:), tsize=jj, &
+                           islocal=.FALSE.)
+  tsize = tsize + jj
+END DO
+intptr => NULL()
+
 ! TODO enhance GetElemNum in [[MeshSelection_]] so that it works
 ! when isSelectionByNodeNum and isSelectionByBox is true.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-END PROCEDURE meshSelect_GetElemNum2
-
-!----------------------------------------------------------------------------
-!                                                                GetElemNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE meshSelect_GetElemNum3
-INTEGER(I4B) :: ii
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum3()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-DO ii = 0, 3
-  CALL Append(ans, obj%GetElemNum(dim=ii))
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE meshSelect_GetElemNum3
+END PROCEDURE obj_GetElemNum2
 
 !----------------------------------------------------------------------------
 !                                                                GetElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_GetElemNum4
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetElemNum4()"
-INTEGER(I4B) :: ii
-INTEGER(I4B), ALLOCATABLE :: intvec(:)
+MODULE PROCEDURE obj_GetElemNum3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum3()"
+#endif
+
+INTEGER(I4B) :: ii, mysize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
+
+tsize = 0
 
 DO ii = 0, 3
-  intvec = obj%GetElemNum(dim=ii, domain=domain)
-  CALL Append(ans, intvec)
+  CALL obj%GetElemNum(ans=ans(tsize + 1:), dim=ii, tsize=mysize)
+  tsize = tsize + mysize
 END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE meshSelect_GetElemNum4
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemNum3
+
+!----------------------------------------------------------------------------
+!                                                                GetElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNum4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum4()"
+#endif
+
+INTEGER(I4B) :: ii, mysize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+DO ii = 0, 3
+  CALL obj%GetElemNum(ans=ans(tsize + 1:), dim=ii, tsize=mysize, dom=dom)
+  tsize = tsize + mysize
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemNum4
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE GetElemNumMethods

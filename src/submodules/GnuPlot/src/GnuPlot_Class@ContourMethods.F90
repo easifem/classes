@@ -41,76 +41,73 @@ ELSE
   xyz_data = .FALSE.
 END IF
 
-! set default line style for 3D plot, can be overwritten
 obj%txtdatastyle = 'lines'
-! create the script file for writting gnuplot commands and data
-CALL obj%create_outputfile()
-! Write titles and other annotations
+CALL obj%Initiate()
 CALL obj%processcmd()
 
 ! Write xy data into file
-WRITE (obj%file_unit, '(a)') '#data x y z'
+CALL obj%pltfile%WRITE('#data x y z')
 ! write the $xyz datablocks
-WRITE (obj%file_unit, '(a)') datablock//' << EOD'
+CALL obj%pltfile%WRITE(datablock//' << EOD')
 IF (xyz_data) THEN
   DO jj = 1, ncx
     DO ii = 1, nrx
-      WRITE (obj%file_unit, fmt=*) x(ii, jj), y(ii, jj), z(ii, jj)
+      CALL obj%pltfile%WRITE([x(ii, jj), y(ii, jj), z(ii, jj)], &
+                             orient="ROW")
     END DO
-    WRITE (obj%file_unit, '(a)') !put an empty line
+    CALL obj%pltfile%WriteBlank()
   END DO
-  WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
-ELSE !only Z has been sent (i.e. single matrix data)
+  CALL obj%pltfile%WRITE('EOD')
+ELSE
   DO jj = 1, ncx
     DO ii = 1, nrx
-      WRITE (obj%file_unit, fmt=*) ii, jj, x(ii, jj)
+      CALL obj%pltfile%WRITE([REAL(ii, dfp), REAL(jj, dfp), x(ii, jj)], &
+                             orient="ROW")
     END DO
-    WRITE (obj%file_unit, '(a)') !put an empty line
+    CALL obj%pltfile%WriteBlank()
   END DO
-  WRITE (obj%file_unit, '(a)') 'EOD' !end of datablock
+  CALL obj%pltfile%WRITE('EOD')
 END IF
 
-! create the contour lines
-WRITE (obj%file_unit, '(a)') ! empty line
-WRITE (obj%file_unit, '(a)') '# create the contour'
-WRITE (obj%file_unit, '(a)') 'set contour base'
+CALL obj%pltfile%WriteBlank()
+CALL obj%pltfile%WRITE('# create the contour')
+CALL obj%pltfile%WRITE('set contour base')
 
 IF (obj%hasCBRange) THEN
-  WRITE (obj%file_unit, '(a)') 'set cbrange ['//tostring(obj%cbrange(1))// &
-    ':'//tostring(obj%cbrange(2))//']'
+  CALL obj%pltfile%WRITE('set cbrange ['//tostring(obj%cbrange(1))// &
+                         ':'//tostring(obj%cbrange(2))//']')
 END IF
 
 IF (ALLOCATED(obj%cbTicks_stmt)) THEN
-  WRITE (obj%file_unit, '(a)') obj%cbTicks_stmt
+  CALL obj%pltfile%WRITE(obj%cbTicks_stmt)
   IF (fill) THEN
-    WRITE (obj%file_unit, '(a)') 'set contourfill cbtics'
+    CALL obj%pltfile%WRITE('set contourfill cbtics')
   END IF
 END IF
 
 IF (ALLOCATED(obj%cntrLevels_stmt)) THEN
-  WRITE (obj%file_unit, '(a)') obj%cntrLevels_stmt
+  CALL obj%pltfile%WRITE(obj%cntrLevels_stmt)
 ELSE
-  WRITE (obj%file_unit, '(a)') 'set cntrparam levels 14'
+  CALL obj%pltfile%WRITE('set cntrparam levels 14')
 END IF
 
-WRITE (obj%file_unit, '(a)') 'unset surface'
-WRITE (obj%file_unit, '(a)') 'set view map'
+CALL obj%pltfile%WRITE('unset surface')
+CALL obj%pltfile%WRITE('set view map')
 
-!write the color palette into gnuplot script file
-IF (PRESENT(palette)) THEN
-  WRITE (obj%file_unit, '(a)') obj%getColorPalettes(palette)
+IF (PRESENT(paletteName)) THEN
+  CALL obj%pltfile%WRITE(color_palettes(paletteName))
 
   IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
-    WRITE (obj%file_unit, '(a)') obj%pm3dOpts_stmt
+    CALL obj%pltfile%WRITE(obj%pm3dOpts_stmt)
   ELSE
-    WRITE (obj%file_unit, '(a)') 'set pm3d'
+    CALL obj%pltfile%WRITE('set pm3d')
   END IF
 END IF
 
-WRITE (obj%file_unit, '(a)') ! empty line
+CALL obj%pltfile%WriteBlank()
 
 IF (PRESENT(lspec)) THEN
-  IF (obj%checkTitle(lspec)) THEN
+  IF (hasTitle(lspec)) THEN
     pltstring = 'splot '//datablock//' '//TRIM(lspec)
   ELSE
     pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)
@@ -119,14 +116,9 @@ ELSE
   pltstring = 'splot '//datablock//' notitle '
 END IF
 
-WRITE (obj%file_unit, '(a)') TRIM(pltstring)
+CALL obj%pltfile%WRITE(TRIM(pltstring))
 
-! if there is no animation finalize
-IF (.NOT. (obj%hasanimation)) THEN
-  CALL obj%finalize_plot()
-ELSE
-  WRITE (obj%file_unit, '(a, F5.2)') 'pause ', obj%pause_seconds
-END IF
+CALL obj%DEALLOCATE()
 
 END PROCEDURE obj_Contour1
 
@@ -150,8 +142,8 @@ DO jj = 1, ysize
   y_arr(:, jj) = y(jj)
 END DO
 
-CALL obj%contour(x_arr, y=y_arr, z=z, lspec=lspec, palette=palette, &
-                 fill=fill)
+CALL obj%contour(x_arr, y=y_arr, z=z, lspec=lspec, &
+                 paletteName=paletteName, fill=fill)
 
 DEALLOCATE (x_arr, y_arr)
 
@@ -160,5 +152,158 @@ END PROCEDURE obj_Contour2
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Contour3
+INTEGER(I4B) :: ncx, nrx, ii, jj
+LOGICAL(LGT) :: xyz_data
+CHARACTER(80) :: pltstring
+CHARACTER(*), PARAMETER :: datablock = '$xyz'
+
+ncx = SIZE(x1, dim=2)
+nrx = SIZE(x1, dim=1)
+IF (PRESENT(y1) .AND. PRESENT(z1)) THEN
+  xyz_data = .TRUE.
+ELSEIF (PRESENT(y1)) THEN
+  PRINT *, "GnuPlot_ error: Z matrix was not sent to 3D plot routine"
+  RETURN
+ELSE
+  xyz_data = .FALSE.
+END IF
+
+obj%txtdatastyle = 'lines'
+CALL obj%Initiate()
+CALL obj%processcmd()
+
+! Write xy data into file
+CALL obj%pltfile%WRITE('#data x y z')
+! write the $xyz datablocks
+CALL obj%pltfile%WRITE(datablock//' << EOD')
+IF (xyz_data) THEN
+  DO jj = 1, ncx
+    DO ii = 1, nrx
+      CALL obj%pltfile%WRITE([x1(ii, jj), y1(ii, jj), z1(ii, jj)], &
+                             orient="ROW")
+    END DO
+    CALL obj%pltfile%WriteBlank()
+  END DO
+  CALL obj%pltfile%WRITE('EOD')
+ELSE
+  DO jj = 1, ncx
+    DO ii = 1, nrx
+      CALL obj%pltfile%WRITE([REAL(ii, dfp), REAL(jj, dfp), x1(ii, jj)], &
+                             orient="ROW")
+    END DO
+    CALL obj%pltfile%WriteBlank()
+  END DO
+  CALL obj%pltfile%WRITE('EOD')
+END IF
+
+CALL obj%pltfile%WriteBlank()
+
+ncx = SIZE(x2, dim=2)
+nrx = SIZE(x2, dim=1)
+IF (PRESENT(y2) .AND. PRESENT(z2)) THEN
+  xyz_data = .TRUE.
+ELSEIF (PRESENT(y2)) THEN
+  PRINT *, "GnuPlot_ error: Z matrix was not sent to 3D plot routine"
+  RETURN
+ELSE
+  xyz_data = .FALSE.
+END IF
+
+! Write xy data into file
+CALL obj%pltfile%WRITE('#data x y z')
+! write the $xyz datablocks
+CALL obj%pltfile%WRITE(datablock//"2"//' << EOD')
+IF (xyz_data) THEN
+  DO jj = 1, ncx
+    DO ii = 1, nrx
+      CALL obj%pltfile%WRITE([x2(ii, jj), y2(ii, jj), z2(ii, jj)], &
+                             orient="ROW")
+    END DO
+    CALL obj%pltfile%WriteBlank()
+  END DO
+  CALL obj%pltfile%WRITE('EOD')
+ELSE
+  DO jj = 1, ncx
+    DO ii = 1, nrx
+      CALL obj%pltfile%WRITE([REAL(ii, dfp), REAL(jj, dfp), x2(ii, jj)], &
+                             orient="ROW")
+    END DO
+    CALL obj%pltfile%WriteBlank()
+  END DO
+  CALL obj%pltfile%WRITE('EOD')
+END IF
+
+CALL obj%pltfile%WriteBlank()
+CALL obj%pltfile%WRITE('# create the contour')
+CALL obj%pltfile%WRITE('set contour base')
+
+IF (obj%hasCBRange) THEN
+  CALL obj%pltfile%WRITE('set cbrange ['//tostring(obj%cbrange(1))// &
+                         ':'//tostring(obj%cbrange(2))//']')
+END IF
+
+IF (ALLOCATED(obj%cbTicks_stmt)) THEN
+  CALL obj%pltfile%WRITE(obj%cbTicks_stmt)
+  IF (fill) THEN
+    CALL obj%pltfile%WRITE('set contourfill cbtics')
+  END IF
+END IF
+
+IF (ALLOCATED(obj%cntrLevels_stmt)) THEN
+  CALL obj%pltfile%WRITE(obj%cntrLevels_stmt)
+ELSE
+  CALL obj%pltfile%WRITE('set cntrparam levels 14')
+END IF
+
+CALL obj%pltfile%WRITE('unset surface')
+CALL obj%pltfile%WRITE('set view map')
+
+IF (PRESENT(paletteName)) THEN
+  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+
+  IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
+    CALL obj%pltfile%WRITE(obj%pm3dOpts_stmt)
+  ELSE
+    CALL obj%pltfile%WRITE('set pm3d')
+  END IF
+END IF
+
+CALL obj%pltfile%WriteBlank()
+
+pltstring = ''
+IF (PRESENT(lspec1)) THEN
+  IF (hasTitle(lspec1)) THEN
+    pltstring = 'splot '//datablock//' '//TRIM(lspec1)//", \"
+  ELSE
+    pltstring = 'splot '//datablock//' notitle '//TRIM(lspec1)//", \"
+  END IF
+ELSE
+  pltstring = 'splot '//datablock//' notitle, \'
+END IF
+CALL obj%pltfile%WRITE(TRIM(pltstring))
+
+pltstring = ""
+IF (PRESENT(lspec2)) THEN
+  IF (hasTitle(lspec2)) THEN
+    pltstring = '   '//datablock//'2 '//TRIM(lspec2)
+  ELSE
+    pltstring = '  '//datablock//'2  notitle '//TRIM(lspec2)
+  END IF
+ELSE
+  pltstring = '   '//datablock//'2 notitle '
+END IF
+
+CALL obj%pltfile%WRITE(TRIM(pltstring))
+
+CALL obj%DEALLOCATE()
+
+END PROCEDURE obj_Contour3
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE ContourMethods
 

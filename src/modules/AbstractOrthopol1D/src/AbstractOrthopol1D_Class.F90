@@ -30,8 +30,7 @@ PRIVATE
 ! date: 3 Aug 2022
 ! summary:         Abstract orthogonal polynomial
 
-TYPE, ABSTRACT, EXTENDS(AbstractBasis1D_) :: &
-  & AbstractOrthopol1D_
+TYPE, ABSTRACT, EXTENDS(AbstractBasis1D_) :: AbstractOrthopol1D_
   PRIVATE
   INTEGER(I4B) :: n = 0
     !! order of orthogonal polynomial

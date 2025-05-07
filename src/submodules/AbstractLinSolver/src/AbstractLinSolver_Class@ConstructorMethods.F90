@@ -16,8 +16,8 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE FPL_Method, ONLY: FPL_CheckEssentialParam => CheckEssentialParam
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,20 +25,21 @@ CONTAINS
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_Deallocate
-obj%engine = ''
-obj%isInitiated = .FALSE.
+MODULE PROCEDURE obj_Deallocate
+obj%isInit = .FALSE.
+obj%engine = default_engine
+obj%solverName = default_solverName
 obj%ierr = 0
+obj%preconditionOption = default_preconditionOption
 obj%iter = 0
-obj%solverName = 0
-obj%preconditionOption = 0
-obj%convergenceIn = 0
-obj%convergenceType = 0
-obj%maxIter = 0
-obj%relativeToRHS = .FALSE.
-obj%KrylovSubspaceSize = 15
-obj%atol = 1.0E-8
-obj%rtol = 1.0E-8
+obj%maxIter = default_maxIter
+obj%atol = default_atol
+obj%rtol = default_rtol
+obj%tol = 0.0
+obj%convergenceIn = default_convergenceIn
+obj%convergenceType = default_convergenceType
+obj%relativeToRHS = default_relativeToRHS
+obj%KrylovSubspaceSize = default_KrylovSubspaceSize
 obj%globalNumColumn = 0
 obj%globalNumRow = 0
 obj%localNumColumn = 0
@@ -46,8 +47,25 @@ obj%localNumRow = 0
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1
-IF (ALLOCATED(obj%RES)) DEALLOCATE (obj%RES)
-NULLIFY (obj%Amat)
-END PROCEDURE als_Deallocate
+IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
+NULLIFY (obj%amat)
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                       AbstractLinSolverCheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myname = "ls_checkEssentialParam"
+CHARACTER(:), ALLOCATABLE :: keys, prefix
+
+prefix = obj%GetPrefix()
+keys = "solverName/preconditionOption/convergenceIn/convergenceType/maxIter/" // &
+       "relativeToRHS/KrylovSubspaceSize/rtol/atol"
+CALL FPL_CheckEssentialParam(obj=param, keys=keys, &
+                             prefix=prefix, myName=myname, modName=modName)
+prefix = ""
+keys = ""
+END PROCEDURE obj_CheckEssentialParam
 
 END SUBMODULE ConstructorMethods

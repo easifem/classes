@@ -21,6 +21,9 @@ USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: AbstractPlot_
+PUBLIC :: AbstractPlotPointer_
+
 CHARACTER(*), PARAMETER :: modName = "AbstractPlot_Class"
 INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_PLPLOT = 1
 INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_GNUPLOT = 2
@@ -51,8 +54,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => plot_Display
 END TYPE AbstractPlot_
 
-PUBLIC :: AbstractPlot_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -60,8 +61,6 @@ PUBLIC :: AbstractPlot_
 TYPE :: AbstractPlotPointer_
   CLASS(AbstractPlot_), POINTER :: ptr => NULL()
 END TYPE AbstractPlotPointer_
-
-PUBLIC :: AbstractPlotPointer_
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods

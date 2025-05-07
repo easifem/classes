@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(STScalarFieldLis_Class) ConstructorMethods
-USE BaseMethod
+USE STScalarField_Class, ONLY: STScalarFieldInitiate1, &
+                               STScalarFieldDeallocate
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,7 +30,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%initiate(param, dom)
+CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -34,7 +39,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%initiate(param, dom)
+CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -50,11 +55,9 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr
 
-CALL STScalarFieldInitiate1(obj=obj, param=param, dom=dom)
+CALL STScalarFieldInitiate1(obj=obj, param=param, fedof=fedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -64,7 +67,6 @@ CALL CHKERR(ierr)
 
 CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -72,20 +74,13 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-#include "lisf.h"
 INTEGER(I4B) :: ierr
+
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+
 CALL STScalarFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                                 Size
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Size
-ans = obj%local_n
-END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !

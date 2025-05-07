@@ -25,7 +25,7 @@ CONTAINS
 MODULE PROCEDURE obj_applyDirichletBC1
 CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ END PROCEDURE obj_applyDirichletBC1
 MODULE PROCEDURE obj_applyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------

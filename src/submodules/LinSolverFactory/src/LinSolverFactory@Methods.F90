@@ -19,7 +19,11 @@
 ! date: 26 Aug 2021
 ! summary: This modules is a factory for linear solvers
 
-SUBMODULE (LinSolverFactory) Methods
+SUBMODULE(LinSolverFactory) Methods
+USE ExceptionHandler_Class, ONLY: e
+
+USE LinSolver_Class, ONLY: LinSolver_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -28,29 +32,38 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearSolverFactory
-  CHARACTER( LEN = * ), PARAMETER :: myName = "LinearSolverFactory"
-  SELECT CASE( trim( engine ) )
-  CASE( "NATIVE_SERIAL" )
-    ALLOCATE( LinSolver_:: ans )
-  CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NATIVE_OMP engine is not available currently!! We are working on it.')
-  CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NATIVE_MPI engine is not available currently!! We are working on it.')
-  CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'PETSC engine is not available currently!! We are working on it.')
-  CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'LIS_SERIAL engine is not available currently!! We are working on it.')
-  CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'LIS_OMP engine is not available currently!! We are working on it.')
-  CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'LIS_MPI engine is not available currently!! We are working on it.')
-  END SELECT
+CHARACTER(LEN=*), PARAMETER :: myName = "LinearSolverFactory()"
+
+SELECT CASE (engine)
+
+CASE ("NATIVE_SERIAL")
+  ALLOCATE (LinSolver_ :: ans)
+
+CASE ("NATIVE_OMP")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+       'NATIVE_OMP engine is not available currently!! We are working on it.')
+
+CASE ("NATIVE_MPI")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+       'NATIVE_MPI engine is not available currently!! We are working on it.')
+
+CASE ("PETSC")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+            'PETSC engine is not available currently!! We are working on it.')
+
+CASE ("LIS_SERIAL")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+       'LIS_SERIAL engine is not available currently!! We are working on it.')
+
+CASE ("LIS_OMP")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+          'LIS_OMP engine is not available currently!! We are working on it.')
+
+CASE ("LIS_MPI")
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+          'LIS_MPI engine is not available currently!! We are working on it.')
+
+END SELECT
 END PROCEDURE LinearSolverFactory
 
 END SUBMODULE Methods

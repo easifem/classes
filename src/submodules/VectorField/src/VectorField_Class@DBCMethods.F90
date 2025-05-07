@@ -16,8 +16,12 @@
 !
 
 SUBMODULE(VectorField_Class) DBCMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,40 +33,43 @@ CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: aint, spaceCompo
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
+INTEGER(I4B) :: aint, spaceCompo, nrow, ncol
 
 istimes = PRESENT(times)
 
 aint = 0
+
 #ifdef DEBUG_VER
 IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
   IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
 #endif
 
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
+ncol = 1
+ALLOCATE (nodalvalue(nrow, ncol))
+ALLOCATE (nodenum(nrow))
+
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+             ncol=ncol, fedof=obj%fedof)
+
 spaceCompo = dbc%GetDOFNo()
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-  & spaceCompo=spaceCompo)
+CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+             spaceCompo=spaceCompo, islocal=.TRUE.)
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_applyDirichletBC1
@@ -73,14 +80,17 @@ END PROCEDURE obj_applyDirichletBC1
 
 MODULE PROCEDURE obj_applyDirichletBC2
 CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, tsize, aint, spaceCompo
+INTEGER(I4B) :: idof, tsize, aint, spaceCompo, nrow, ncol
 LOGICAL(LGT) :: istimes, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 istimes = PRESENT(times)
@@ -90,8 +100,8 @@ IF (istimes) THEN
   problem = aint .NE. 1
   IF (problem) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
-      & tostring(aint)//' which is not equal to 1 ')
+                      '[INERNAL ERROR] :: SIZE( times ) is '// &
+                      ToString(aint)//' which is not equal to 1 ')
     RETURN
   END IF
 END IF
@@ -99,14 +109,23 @@ END IF
 
 tsize = SIZE(dbc)
 
+ncol = 1
 DO idof = 1, tsize
+  nrow = dbc(idof)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
+                  expandFactor=expandFactor)
+END DO
+
+DO idof = 1, tsize
+  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
+                         times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+
   spaceCompo = dbc(idof)%ptr%GetDOFNo()
 
-  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
-    & times=times)
-
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
-    & spaceCompo=spaceCompo)
+  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+               spaceCompo=spaceCompo, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -114,7 +133,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_applyDirichletBC2
 

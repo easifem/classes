@@ -20,7 +20,14 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetRowMethods
-USE BaseMethod
+USE CSRMatrix_Method, ONLY: GetRow
+
+USE DOF_Method, ONLY: GetIDOF
+
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -29,51 +36,40 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow1
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow1()"
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "obj_GetRow1"
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(VALUE)) THEN
-  IF (obj%isRectangle) THEN
-    CALL GetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
-  ELSE
-    CALL GetRow( &
-    & obj=obj%mat, &
-    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-    & idof=idof, &
-    & VALUE=VALUE, &
-    & scale=scale, &
-    & addContribution=addContribution)
-  END IF
+
+  CALL GetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=VALUE, &
+              scale=scale, addContribution=addContribution)
+  RETURN
+
 END IF
 
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & idof=idof, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & idof=idof, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
-END IF
-NULLIFY (realvec)
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
+
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec, &
+            scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
+
 END PROCEDURE obj_GetRow1
 
 !----------------------------------------------------------------------------
@@ -81,13 +77,13 @@ END PROCEDURE obj_GetRow1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow2
-CALL obj%GetRow( &
-  & globalNode=globalNode, &
-  & idof=(obj%mat%csr%idof.DOFStartIndex.ivar) + idof - 1, &
-  & VALUE=VALUE, &
-  & nodefieldVal=nodefieldVal, &
-  & scale=scale, &
-  & addContribution=addContribution)
+INTEGER(I4B) :: ii
+
+ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, idof=idof)
+
+CALL obj%GetRow(globalNode=globalNode, islocal=islocal, &
+                idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
+                scale=scale, addContribution=addContribution)
 END PROCEDURE obj_GetRow2
 
 !----------------------------------------------------------------------------
@@ -95,18 +91,14 @@ END PROCEDURE obj_GetRow2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow3
+INTEGER(I4B) :: ii
 
-CALL obj%GetRow( &
-  & globalNode=globalNode, &
-  & idof=GetIDOF( &
-          & obj=obj%mat%csr%idof, &
-          & ivar=ivar, &
-          & spacecompo=spacecompo, &
-          & timecompo=timecompo), &
-  & VALUE=VALUE, &
-  & nodefieldVal=nodefieldVal, &
-  & scale=scale, &
-  & addContribution=addContribution)
+ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, spaceCompo=spaceCompo, &
+             timeCompo=timeCompo)
+
+CALL obj%GetRow(globalNode=globalNode, islocal=islocal, &
+                idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
+                scale=scale, addContribution=addContribution)
 
 END PROCEDURE obj_GetRow3
 
@@ -115,60 +107,41 @@ END PROCEDURE obj_GetRow3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow4
-CHARACTER(*), PARAMETER :: myName = "obj_GetRow4"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow4()"
+
 REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(VALUE)) THEN
-  IF (obj%isRectangle) THEN
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
+
+  CALL GetRow(obj=obj%mat, nodenum=globalNode, &
+              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+              VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
 
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
-END IF
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
-NULLIFY (realvec)
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+            spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+            scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
 
 END PROCEDURE obj_GetRow4
 
@@ -177,60 +150,41 @@ END PROCEDURE obj_GetRow4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow5
-CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow5()"
+
 REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(VALUE)) THEN
-  IF (obj%isRectangle) THEN
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
+
+  CALL GetRow(obj=obj%mat, nodenum=globalNode, &
+              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+              VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
 
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
-END IF
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
-NULLIFY (realvec)
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+            spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+            scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
 
 END PROCEDURE obj_GetRow5
 
@@ -239,60 +193,41 @@ END PROCEDURE obj_GetRow5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow6
-CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow6()"
+
 REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(VALUE)) THEN
-  IF (obj%isRectangle) THEN
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
+
+  CALL GetRow(obj=obj%mat, nodenum=globalNode, &
+              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+              VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
 
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
-END IF
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
-NULLIFY (realvec)
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+            spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+            scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
 
 END PROCEDURE obj_GetRow6
 
@@ -301,65 +236,48 @@ END PROCEDURE obj_GetRow6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow7
-CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow7()"
+
 REAL(DFP), POINTER :: realvec(:)
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#include "./localNodeError.F90"
 
 IF (PRESENT(VALUE)) THEN
-  IF (obj%isRectangle) THEN
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=VALUE, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
+
+  CALL GetRow(obj=obj%mat, nodenum=globalNode, &
+              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+              VALUE=VALUE, scale=scale, addContribution=addContribution)
+  RETURN
 END IF
 
-IF (PRESENT(nodeFieldVal)) THEN
-  IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  ELSE
-    realvec => nodeFieldVal%GetPointer()
-    CALL GetRow( &
-      & obj=obj%mat, &
-      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
-      & ivar=ivar, &
-      & spacecompo=spacecompo, &
-      & timecompo=timecompo, &
-      & VALUE=realvec, &
-      & scale=scale, &
-      & addContribution=addContribution)
-  END IF
-END IF
+realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
-NULLIFY (realvec)
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+
+ii = SIZE(realvec)
+
+CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1, tsize=tsize)
+
+CALL GetRow(obj=obj%mat, nodenum=globalNode, ivar=ivar, &
+            spaceCompo=spaceCompo, timeCompo=timeCompo, VALUE=realvec, &
+            scale=scale, addContribution=addContribution)
+
+CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
+                              stride=1)
+
+realvec => NULL()
+RETURN
 
 END PROCEDURE obj_GetRow7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetRowMethods

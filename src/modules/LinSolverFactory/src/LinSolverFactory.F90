@@ -20,13 +20,15 @@
 ! summary: This modules is a factory for linear solver
 
 MODULE LinSolverFactory
-USE AbstractLinSolver_Class
-USE LinSolver_Class
-USE ExceptionHandler_Class, ONLY: e
+USE AbstractLinSolver_Class, ONLY: AbstractLinSolver_
+! USE LinSolver_Class
 IMPLICIT NONE
+
+PRIVATE
+
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "LinSolverFactory"
 
-PRIVATE :: e
+PUBLIC :: LinearSolverFactory
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverFactory
@@ -42,7 +44,5 @@ INTERFACE
     CLASS(AbstractLinSolver_), POINTER :: ans
   END FUNCTION LinearSolverFactory
 END INTERFACE
-
-PUBLIC :: LinearSolverFactory
 
 END MODULE LinSolverFactory

@@ -28,7 +28,7 @@ CONTAINS
 MODULE PROCEDURE msh_Import
 CHARACTER(*), PARAMETER :: myName = "msh_Import"
 CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[WIP ERROR] :: This routine is under condtruction')
+                  '[WIP ERROR] :: This routine is under condtruction')
 END PROCEDURE msh_Import
 
 !----------------------------------------------------------------------------
@@ -41,17 +41,17 @@ INTEGER(I4B) :: ii, tsize, tNodes, count_
 REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
 INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
 TYPE(String) :: dSetname
-!> main
+
 dSetname = TRIM(group)
-!>check
+
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file is not opened')
+                    'HDF5 file is not opened')
 END IF
-!>check
+
 IF (.NOT. hdf5%isWrite()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file does not have write permission')
+                    'HDF5 file does not have write permission')
 END IF
 
 tNodes = obj%nodes%getNumNodes()
@@ -62,31 +62,39 @@ local_nptrs = 0
 
 CALL hdf5%WRITE(dSetname=dSetname%chars()//"/NSD", vals=obj%nsd)
 CALL ExportMeshFormat(obj, hdf5, dSetname)
+
 IF (obj%physicalNames%isInitiated) &
-  & CALL ExportMeshPhysicalNames(obj, hdf5, dSetname)
+  CALL ExportMeshPhysicalNames(obj, hdf5, dSetname)
+
 CALL ExportMeshNodeInfo(obj, hdf5, dSetname)
+
 CALL ExportMeshElementInfo(obj, hdf5, dSetname)
+
 IF (ALLOCATED(obj%pointEntities)) THEN
   tsize = SIZE(obj%pointEntities)
 ELSE
   tsize = 0
 END IF
 CALL hdf5%WRITE(dSetname=dSetname%chars()// &
-  & "/numPointEntities", vals=tsize)
+                "/numPointEntities", vals=tsize)
+
 DO ii = 1, tsize
   CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, &
-    & dSetname=dSetname%chars()//"/pointEntities_"// &
-    & TRIM(str(ii, .TRUE.)), nsd=obj%nsd)
+                        dSetname=dSetname%chars()//"/pointEntities_"// &
+                        tostring(ii), nsd=obj%nsd)
+
   CALL getNodeCoord(obj=obj%pointEntities(ii), nodeCoord=nodeCoord, &
-    & local_nptrs=local_nptrs, count_=count_)
+                    local_nptrs=local_nptrs, count_=count_)
 END DO
+
 IF (ALLOCATED(obj%curveEntities)) THEN
   tsize = SIZE(obj%curveEntities)
 ELSE
   tsize = 0
 END IF
+
 CALL hdf5%WRITE(dSetname=dSetname%chars()// &
-  & "/numCurveEntities", vals=tsize)
+                "/numCurveEntities", vals=tsize)
 DO ii = 1, tsize
   CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, &
     & dSetname=dSetname%chars()//"/curveEntities_"// &
@@ -304,18 +312,20 @@ INTEGER(I4B) :: unitNo, tp, tc, ts, tv, error0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] msh_Read()')
+                        '[START]')
 #endif
 
 IF (.NOT. obj%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'MSH File is not open, please open it first.')
+                    'MSH File is not open, please open it first.')
+  RETURN
 END IF
 
 ! check
 IF (.NOT. obj%isRead()) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'MSH File does not have read permission.')
+                    'MSH File does not have read permission.')
+  RETURN
 END IF
 !
 unitNo = obj%getunitNo()
@@ -324,7 +334,8 @@ CALL obj%FORMAT%READ(mshFile=obj, error=error0)
 
 IF (error0 .NE. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Failed in Reading mesh format')
+                    '[INTERNAL ERROR] :: Failed in Reading mesh format')
+  RETURN
 END IF
 
 ! reading physical group information
@@ -333,10 +344,10 @@ CALL obj%PhysicalNames%READ(mshFile=obj, error=error0)
 #ifdef DEBUG_VER
 IF (obj%PhysicalNames%isInitiated) THEN
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'READING: physicalNames [OK!]')
+                          'READING: physicalNames [OK!]')
 ELSE
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'READING: physicalNames [NOT FOUND!]')
+                          'READING: physicalNames [NOT FOUND!]')
 END IF
 #endif
 
@@ -344,22 +355,22 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'LOCATING: $Entities')
+                        'LOCATING: $Entities')
 #endif
 
 CALL TypemshEntity%GotoTag(mshFile=obj, error=error0)
 
 IF (error0 .NE. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'LOCATING: $Entities [NOT FOUND!]')
+                    'LOCATING: $Entities [NOT FOUND!]')
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'LOCATING: $Entities [OK!]')
+                        'LOCATING: $Entities [OK!]')
 
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'READING: $Entities')
+                        'READING: $Entities')
 #endif
 
 READ (unitNo, *) tp, tc, ts, tv
@@ -370,19 +381,22 @@ IF (tv .NE. 0) obj%nsd = 3
 IF (tp .NE. 0) THEN
   CALL obj%ReadPointEntities(te=tp)
 END IF
+
 IF (tc .NE. 0) THEN
   CALL obj%ReadCurveEntities(te=tc)
 END IF
+
 IF (ts .NE. 0) THEN
   CALL obj%ReadSurfaceEntities(te=ts)
 END IF
+
 IF (tv .NE. 0) THEN
   CALL obj%ReadVolumeEntities(te=tv)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'READING: $Entities [OK!]')
+                        'READING: $Entities [OK!]')
 #endif
 
 !> Nodes
@@ -396,7 +410,7 @@ IF (PRESENT(error)) error = error0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] msh_Read()')
+                        '[END]')
 #endif
 END PROCEDURE msh_Read
 
@@ -405,21 +419,21 @@ END PROCEDURE msh_Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_ReadPointEntities
-CHARACTER(*), PARAMETER :: myName = "msh_ReadPointEntities"
+CHARACTER(*), PARAMETER :: myName = "msh_ReadPointEntities()"
 INTEGER(I4B) :: i, j, k, tpt, error, dim
 INTEGER(I4B), ALLOCATABLE :: PhysicalTag0(:)
 !> main program
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ReadPointEntities()')
+                        '[START]')
 #endif
 
 dim = 0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - ' &
-  & //'Total Point Entities: '//TRIM(str(te, .TRUE.)))
+                        //'Total Point Entities: '//TRIM(str(te, .TRUE.)))
 #endif
 
 IF (ALLOCATED(obj%PointEntities)) DEALLOCATE (obj%PointEntities)
@@ -427,7 +441,7 @@ IF (te .NE. 0) ALLOCATE (obj%PointEntities(te))
 
 DO i = 1, te
   CALL obj%PointEntities(i)%READ(mshFile=obj, dim=dim, &
-    & readTag=.FALSE., error=error)
+                                 readTag=.FALSE., error=error)
   ! get total physical tag
   tpt = obj%PointEntities(i)%getTotalPhysicalTags()
   IF (tpt .NE. 0) THEN
@@ -444,7 +458,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ReadpointEntities')
+                        '[END]')
 #endif
 
 END PROCEDURE msh_ReadPointEntities
@@ -705,17 +719,17 @@ INTEGER(I4B), ALLOCATABLE :: ElemNumber(:), nptrs(:, :), PhyTag(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]  ReadElements()')
+                        '[START]')
 #endif
 
 unitNo = obj%getunitNo()
 
 CALL obj%Elements%READ(mshFile=obj, mshFormat=obj%FORMAT, &
-  & error=error)
+                       error=error)
 
 IF (error .NE. 0) &
-  & CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'Error has occured in reading the header of elements.')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'Error has occured in reading the header of elements.')
 ! start reading each entity block
 DO i = 1, obj%Elements%getnumEntityBlocks()
   ! read entity dimension and entity tag (uid)
@@ -724,6 +738,10 @@ DO i = 1, obj%Elements%getnumEntityBlocks()
   tNodes = TotalNodesInElement(elemType)
   CALL Reallocate(ElemNumber, numElementsInBlock)
   CALL Reallocate(nptrs, [tNodes, numElementsInBlock])
+  IF (tNodes .EQ. 0 .OR. numElementsInBlock .EQ. 0) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      'Error in reading elements, found tnodes = 0 or numElementsInBlock = 0')
+  END IF
   ! now we read ElemNumber and nptrs
   DO k = 1, numElementsInBlock
     READ (unitNo, *) ElemNumber(k), (nptrs(l, k), l=1, tNodes)

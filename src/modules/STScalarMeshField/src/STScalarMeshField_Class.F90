@@ -16,18 +16,20 @@
 !
 
 MODULE STScalarMeshField_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE FPL, ONLY: ParameterList_
-USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class
-USE AbstractMeshField_Class
-USE UserFunction_Class
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE UserFunction_Class, ONLY: UserFunction_
+USE AbstractMeshField_Class, ONLY: AbstractScalarMeshField_
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STScalarMeshField"
+
 PUBLIC :: STScalarMeshFieldDeallocate
 PUBLIC :: STScalarMeshField_
 PUBLIC :: SetSTScalarMeshFieldParam
@@ -45,7 +47,7 @@ TYPE, EXTENDS(AbstractScalarMeshField_) :: STScalarMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
 END TYPE STScalarMeshField_
 
@@ -67,7 +69,7 @@ END TYPE STScalarMeshFieldPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetSTScalarMeshFieldParam(param, name, &
-    & fieldType, varType, engine, defineOn, nns, nnt)
+                               fieldType, varType, engine, defineOn, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -94,7 +96,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(STScalarMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
     !! mesh
     CLASS(UserFunction_), INTENT(INOUT) :: func
     !! Abstract material

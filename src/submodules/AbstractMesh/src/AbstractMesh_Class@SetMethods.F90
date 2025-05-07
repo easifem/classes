@@ -15,10 +15,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
-USE globalData, ONLY: INT8
-USE BoundingBox_Method
-USE ReallocateUtility
-USE CSRMatrix_Method
+
+USE GlobalData, ONLY: INT8
+
+USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
+                              OPERATOR(.Xmin.), &
+                              OPERATOR(.Ymin.), &
+                              OPERATOR(.Zmin.), &
+                              OPERATOR(.Xmax.), &
+                              OPERATOR(.Ymax.), &
+                              OPERATOR(.Zmax.)
+
+USE ReallocateUtility, ONLY: Reallocate
+
+USE CSRMatrix_Method, ONLY: SetSparsity
+
+USE FacetData_Class, ONLY: FacetData_SetParam
+
+USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, &
+                          ElemData_Set
+
 IMPLICIT NONE
 CONTAINS
 
@@ -51,7 +67,7 @@ MODULE PROCEDURE obj_SetBoundingBox2
 TYPE(BoundingBox_) :: box
 Box = obj%GetBoundingBox(nodes=nodes, local_nptrs=local_nptrs)
 CALL obj%SetBoundingBox(box=box)
-CALL DEALLOCATE (box)
+CALL DeallocateBox(box)
 END PROCEDURE obj_SetBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -59,25 +75,20 @@ END PROCEDURE obj_SetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
 INTEGER(I4B) :: tsize
-#endif
 LOGICAL(LGT) :: problem
-
-INTEGER(I4B) :: i, j, k, tNodes, tsize
+INTEGER(I4B) :: i, j, k, tNodes, ii
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
-
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
@@ -85,11 +96,9 @@ tsize = obj%GetTotalElements()
 problem = tsize .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+                      '[INTERNAL ERROR] :: Empty mesh found, returning')
   RETURN
 END IF
-
-#endif
 
 ! check
 problem = .NOT. obj%isNodeToNodesInitiated
@@ -109,7 +118,11 @@ DO i = 1, tNodes
   IF (k .EQ. 0) CYCLE
 
   CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
-    & ans=n2n, tsize=tsize, islocal=.TRUE.)
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
+
+  DO ii = 1, tsize
+    n2n(ii) = localNodeNumber(n2n(ii))
+  END DO
 
   CALL SetSparsity(obj=mat, row=k, col=n2n(1:tsize))
 
@@ -117,7 +130,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_SetSparsity1
 
@@ -126,12 +139,8 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
-INTEGER(I4B) :: tsize
-#endif
 LOGICAL(LGT) :: problem
-
 INTEGER(I4B) :: i, j, tNodes, tsize
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
@@ -139,8 +148,6 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
-
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -156,7 +163,8 @@ IF (problem) THEN
   RETURN
 END IF
 
-#endif
+problem = .NOT. obj%isNodeToNodesInitiated
+IF (problem) CALL obj%InitiateNodeToNodes()
 
 problem = .NOT. obj%isNodeToNodesInitiated
 IF (problem) CALL obj%InitiateNodeToNodes()
@@ -193,31 +201,27 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
-
-#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+          "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
   RETURN
 END IF
 
 problem = SIZE(nodeToNode) .NE. obj%maxNptrs
 IF (problem) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
+                    "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
   RETURN
 END IF
-
-#endif
 
 ! check
 IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
@@ -259,8 +263,72 @@ END PROCEDURE obj_SetSparsity3
 
 MODULE PROCEDURE obj_SetSparsity4
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity4()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: isok
+
+INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
+                temp(PARAM_MAX_NODE_TO_NODE), ll, jj, kk, row
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+IF (.NOT. colMesh%isInitiated) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+  RETURN
+END IF
+
+isok = SIZE(nodeToNode) .GE. obj%GetMaxNodeNumber()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs "//  &
+    & "[easifemClasses ISSUE#63]")
+  RETURN
+END IF
+
+isok = obj%isNodeToNodesInitiated
+IF (.NOT. isok) CALL obj%InitiateNodeToNodes()
+
+DO ii = 1, obj%tNodes
+
+  CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
+                         !! n2n(1) will contains the global node for ii
+  row = rowGlobalToLocalNodeNum(n2n(1))
+
+  ll = 0
+  DO jj = 1, tsize
+    kk = nodeToNode(n2n(jj))
+    isok = colMesh%IsNodePresent(globalNode=kk, islocal=.FALSE.)
+
+    IF (isok) THEN
+      ll = ll + 1
+      temp(ll) = kk
+    END IF
+
+  END DO
+
+  DO jj = 1, ll
+    temp(jj) = colGlobalToLocalNodeNum(temp(jj))
+  END DO
+
+  IF (ll .EQ. 0) CYCLE
+  CALL SetSparsity(obj=Mat, row=row, col=temp(1:ll), ivar=ivar, jvar=jvar)
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_SetSparsity4
 
 !----------------------------------------------------------------------------
@@ -270,7 +338,7 @@ END PROCEDURE obj_SetSparsity4
 MODULE PROCEDURE obj_SetTotalMaterial1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
-CALL ElemData_SetTotalMaterial(obj%elementData(iel), n=n)
+CALL ElemData_SetTotalMaterial(obj%elementData(iel)%ptr, n=n)
 END PROCEDURE obj_SetTotalMaterial1
 
 !----------------------------------------------------------------------------
@@ -281,10 +349,10 @@ MODULE PROCEDURE obj_SetTotalMaterial2
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
-DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+DO ii = 1, obj%tElements
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemData_SetTotalMaterial(obj%elementData(ii), n=n)
+  CALL ElemData_SetTotalMaterial(obj%elementData(ii)%ptr, n=n)
 END DO
 END PROCEDURE obj_SetTotalMaterial2
 
@@ -298,16 +366,16 @@ LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
-DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+DO ii = 1, obj%tElements
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
 
-  ! if obj%elementData(ii)%meshID is equal to entityNum then
+  ! if obj%elementData(ii)%ptr%meshID is equal to entityNum then
   ! set %material(medium) = material
-  isok = obj%elementData(ii)%meshID .EQ. entityNum
+  isok = obj%elementData(ii)%ptr%meshID .EQ. entityNum
   IF (isok) THEN
-    CALL ElemDataSet(obj%elementData(ii), material=material, &
-                     medium=medium)
+    CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
+                      medium=medium)
   END IF
 
 END DO
@@ -324,16 +392,16 @@ LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
 
-DO CONCURRENT(ii=1:obj%tElements)
-  isok = obj%elementData(ii)%isActive
+DO ii = 1, obj%tElements
+  isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemDataSet(obj%elementData(ii), material=material, &
-                   medium=medium)
+  CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
+                    medium=medium)
 END DO
 END PROCEDURE obj_SetMaterial2
 
 !----------------------------------------------------------------------------
-!                                                                setMaterial
+!                                                                SetMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial3
@@ -342,13 +410,13 @@ INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalElement=globalElement,  &
   & islocal=islocal)
 
-CALL ElemDataSet(obj%elementData(iel), material=material, &
-                 medium=medium)
+CALL ElemData_Set(obj%elementData(iel)%ptr, material=material, &
+                  medium=medium)
 
 END PROCEDURE obj_SetMaterial3
 
 !----------------------------------------------------------------------------
-!                                                        setFacetElementType
+!                                                        SetFacetElementType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
@@ -356,11 +424,11 @@ INTEGER(I4B) :: localElem
 localElem = obj%GetLocalElemNumber(globalElement=globalElement,  &
   & islocal=islocal)
 obj%facetElementType(iface, localElem) = facetElementType
-obj%elementData(localElem)%elementType = facetElementType
+obj%elementData(localElem)%ptr%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------
-!                                                           setQuality
+!                                                              SetQuality
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetQuality
@@ -368,6 +436,148 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetQuality()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_SetQuality
+
+!----------------------------------------------------------------------------
+!                                                                 SetQuality
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_SetQuality
+! CHARACTER(*), PARAMETER :: myName = "obj_SetQuality()"
+! CALL e%RaiseError(modName//'::'//myName//' - '// &
+!   & '[WIP ERROR] :: This routine is under development')
+! END PROCEDURE obj_SetQuality
+
+! MODULE PROCEDURE obj_setQuality
+! CHARACTER(*), PARAMETER :: myName = "obj_setQuality()"
+! INTEGER(I4B) :: a, b, c, tsize, telements, iel, ii, nsd
+! INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
+! REAL(DFP), ALLOCATABLE :: xij(:, :)
+
+! a = SIZE(measures)
+! b = SIZE(max_measures)
+! c = SIZE(min_measures)
+
+! IF (a .NE. b &
+!   & .OR. a .NE. c) THEN
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!     & 'size of measures, max_measures, min_measures are not same.')
+! END IF
+
+! tsize = a
+! telements = obj%getTotalElements()
+
+! IF (ALLOCATED(obj%quality)) THEN
+!   tsize = SIZE(obj%quality, 1)
+!   IF (tsize .NE. a) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!       & 'Mesh_::obj%quality is allocated row size is not same as '// &
+!     & CHAR_LF//" the size of measures")
+!   END IF
+! ELSE
+!   CALL Reallocate(obj%quality, tsize, telements)
+! END IF
+
+! a = .NNE.obj%refelem
+
+! CALL Reallocate(indx, a, nptrs, a)
+
+! nsd = obj%getNSD()
+! CALL Reallocate(xij, nsd, a)
+
+! b = 0
+
+! DO iel = obj%GetMinElemNumber() , obj%GetMaxElemNumber()
+!   IF (.NOT. obj%isElementPresent(iel)) CYCLE
+!   b = b + 1
+!   nptrs = obj%getConnectivity(globalElement=iel)
+!   indx = local_nptrs(nptrs)
+!   xij = nodeCoord(1:nsd, indx)
+
+!   DO ii = 1, tsize
+!     obj%quality(ii, b) = ElementQuality(refelem=obj%refelem, &
+!     & xij=xij, measure=measures(ii))
+!   END DO
+
+! END DO
+
+! max_measures = MAXVAL(obj%quality, dim=2)
+! min_measures = MINVAL(obj%quality, dim=2)
+
+! IF (ALLOCATED(indx)) DEALLOCATE (indx)
+! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+! IF (ALLOCATED(xij)) DEALLOCATE (xij)
+
+! END PROCEDURE obj_setQuality
+
+!----------------------------------------------------------------------------
+!                                                                 SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetParam
+IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
+
+IF (PRESENT(isNodeToElementsInitiated)) obj%isNodeToElementsInitiated =  &
+  & isNodeToElementsInitiated
+
+IF (PRESENT(isNodeToNodesInitiated)) obj%isNodeToNodesInitiated =  &
+  & isNodeToNodesInitiated
+
+IF (PRESENT(isExtraNodeToNodesInitiated)) obj%isExtraNodeToNodesInitiated =  &
+  & isExtraNodeToNodesInitiated
+
+IF (PRESENT(isElementToElementsInitiated)) obj%isElementToElementsInitiated =  &
+  & isElementToElementsInitiated
+
+IF (PRESENT(isBoundaryDataInitiated)) obj%isBoundaryDataInitiated = &
+  & isBoundaryDataInitiated
+
+IF (PRESENT(isFacetDataInitiated)) obj%isFacetDataInitiated =  &
+  & isFacetDataInitiated
+
+IF (PRESENT(uid)) obj%uid = uid
+
+IF (PRESENT(tElements_topology_wise))  &
+  & obj%tElements_topology_wise = tElements_topology_wise
+
+IF (PRESENT(tElemTopologies)) obj%tElemTopologies = tElemTopologies
+
+IF (PRESENT(elemTopologies)) obj%elemTopologies = elemTopologies
+
+IF (PRESENT(nsd)) obj%nsd = nsd
+
+IF (PRESENT(maxNptrs)) obj%maxNptrs = maxNptrs
+
+IF (PRESENT(minNptrs)) obj%minNptrs = minNptrs
+
+IF (PRESENT(maxElemNum)) obj%maxElemNum = maxElemNum
+
+IF (PRESENT(minElemNum)) obj%minElemNum = minElemNum
+
+IF (PRESENT(tNodes)) obj%tNodes = tNodes
+
+IF (PRESENT(tElements)) obj%tElements = tElements
+
+IF (PRESENT(minX)) obj%minX = minX
+
+IF (PRESENT(minY)) obj%minY = minY
+
+IF (PRESENT(minZ)) obj%minZ = minZ
+
+IF (PRESENT(maxX)) obj%maxX = maxX
+
+IF (PRESENT(maxY)) obj%maxY = maxY
+
+IF (PRESENT(maxZ)) obj%maxZ = maxZ
+END PROCEDURE obj_SetParam
+
+!----------------------------------------------------------------------------
+!                                                   SetBoundaryFacetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFacetParam
+CALL FacetData_SetParam(obj=obj%facetData(facetElement), &
+                        elementType=elementType)
+END PROCEDURE obj_SetFacetParam
 
 !----------------------------------------------------------------------------
 !

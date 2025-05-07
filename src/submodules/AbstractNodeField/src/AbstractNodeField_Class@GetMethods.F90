@@ -15,8 +15,38 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) GetMethods
-USE BaseMethod
-USE HDF5File_Method
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
+USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer, &
+                             RealVector_Get => Get, &
+                             GetValue_
+
+USE BaseType, ONLY: IntVector_
+
+USE IntVector_Method, ONLY: IntVector_Get => Get, &
+                            IntVector_DEALLOCATE => DEALLOCATE, &
+                            ASSIGNMENT(=)
+
+USE Display_Method, ONLY: ToString
+
+USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
+
+USE DOF_Method, ONLY: GetNodeLoc
+
+USE InputUtility, ONLY: Input
+
+USE ArangeUtility, ONLY: Arange
+
+USE AppendUtility, ONLY: Append
+
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+#ifdef USE_LIS
+#include "lisf.h"
+#endif
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +57,7 @@ CONTAINS
 MODULE PROCEDURE obj_GetFEVariable
 CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
- & '[WIP ERROR] :: This routine should be implemented by child class.')
+          '[WIP ERROR] :: This routine should be implemented by child class.')
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
@@ -35,30 +65,43 @@ END PROCEDURE obj_GetFEVariable
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPhysicalNames
+INTEGER(I4B) :: tnames
+INTEGER(I4B) :: aint
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalNames()"
-INTEGER(I4B) :: tnames, aint
-LOGICAL(LGT) :: isOK
+LOGICAL(LGT) :: problem
+#endif
 
-IF (ALLOCATED(obj%dof_names_char)) THEN
-  tnames = SIZE(obj%dof_names_char)
-  aint = SIZE(ans)
-  isOK = tnames .EQ. aint
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: The size of names ('//tostring(aint)//  &
-      & ') is not same as total physical variables = '//tostring(tnames))
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%dof_names_char)
+IF (problem) THEN
 
-  DO aint = 1, tnames
-    ans(aint) (:) = obj%dof_names_char(aint) (1:1)
-  END DO
-ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'//  &
-    & ' not allocated.')
+          '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'// &
+                    ' not allocated.')
   RETURN
 END IF
+#endif
+
+tnames = SIZE(obj%dof_names_char)
+
+#ifdef DEBUG_VER
+aint = SIZE(ans)
+problem = tnames .NE. aint
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: The size of names (' &
+                    //ToString(aint)// &
+                    ') is not same as total physical variables = ' &
+                    //ToString(tnames))
+  RETURN
+END IF
+#endif
+
+DO aint = 1, tnames
+  ans(aint) = obj%dof_names_char(aint)
+END DO
 
 END PROCEDURE obj_GetPhysicalNames
 
@@ -67,28 +110,40 @@ END PROCEDURE obj_GetPhysicalNames
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalPhysicalVars
+INTEGER(I4B) :: aint
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
-INTEGER(I4B) :: tnames, aint
-LOGICAL(LGT) :: isOK
+INTEGER(I4B) :: tnames
+LOGICAL(LGT) :: problem
+#endif
 
 ans = 0
-IF (ALLOCATED(obj%dof_names_char)) THEN
-  tnames = SIZE(obj%dof_names_char)
-  aint = obj%dof_tPhysicalVars
-  isOK = tnames .EQ. aint
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: The size of names ('//tostring(tnames)//  &
-      & ') is not same as total physical variables = '//tostring(aint))
-    RETURN
-  END IF
-  ans = aint
-ELSE
+
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%dof_names_char)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'//  &
-    & ' not allocated.')
+          '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'// &
+                    ' not allocated.')
   RETURN
 END IF
+#endif
+
+aint = obj%dof_tPhysicalVars
+
+#ifdef DEBUG_VER
+tnames = SIZE(obj%dof_names_char)
+problem = tnames .NE. aint
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+               '[INTERNAL ERROR] :: The size of names ('//ToString(tnames)// &
+               ') is not same as total physical variables = '//ToString(aint))
+  RETURN
+END IF
+#endif
+
+ans = aint
 
 END PROCEDURE obj_GetTotalPhysicalVars
 
@@ -97,28 +152,40 @@ END PROCEDURE obj_GetTotalPhysicalVars
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSpaceCompo
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
-INTEGER(I4B) :: tnames, aint
-LOGICAL(LGT) :: isOK
+INTEGER(I4B) :: aint
 
-ans = 0
-IF (ALLOCATED(obj%dof_spaceCompo)) THEN
-  tnames = SIZE(obj%dof_spaceCompo)
-  aint = tPhysicalVars
-  isOK = tnames .EQ. aint
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: The size of spaceCompo ('//tostring(tnames)//  &
-      & ') is not same as total physical variables = '//tostring(aint))
-    RETURN
-  END IF
-  ans(1:aint) = obj%dof_spaceCompo(1:aint)
-ELSE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
+INTEGER(I4B) :: tnames
+LOGICAL(LGT) :: problem
+#endif
+
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%dof_spaceCompo)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%spaceCompo not'//  &
-    & ' not allocated.')
+              '[INTERNAL ERROR] :: AbstractNodeField_::obj%spaceCompo not'// &
+                    ' not allocated.')
   RETURN
 END IF
+#endif
+
+aint = tPhysicalVars
+
+#ifdef DEBUG_VER
+tnames = SIZE(obj%dof_spaceCompo)
+
+problem = tnames .NE. aint
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: The size of spaceCompo ('//ToString(tnames)// &
+               ') is not same as total physical variables = '//ToString(aint))
+  RETURN
+END IF
+#endif
+
+ans(1:aint) = obj%dof_spaceCompo(1:aint)
 END PROCEDURE obj_GetSpaceCompo
 
 !----------------------------------------------------------------------------
@@ -126,28 +193,41 @@ END PROCEDURE obj_GetSpaceCompo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTimeCompo
-CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
-INTEGER(I4B) :: tnames, aint
-LOGICAL(LGT) :: isOK
+INTEGER(I4B) :: aint
 
-ans = 0
-IF (ALLOCATED(obj%dof_timeCompo)) THEN
-  tnames = SIZE(obj%dof_timeCompo)
-  aint = tPhysicalVars
-  isOK = tnames .EQ. aint
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: The size of timeCompo ('//tostring(tnames)//  &
-      & ') is not same as total physical variables = '//tostring(aint))
-    RETURN
-  END IF
-  ans(1:aint) = obj%dof_timeCompo(1:aint)
-ELSE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
+INTEGER(I4B) :: tnames
+LOGICAL(LGT) :: problem
+#endif
+
+#ifdef DEBUG_VER
+problem = .NOT. ALLOCATED(obj%dof_timeCompo)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%timeCompo not'//  &
-    & ' not allocated.')
+       '[INTERNAL ERROR] :: AbstractNodeField_::obj%timeCompo not allocated.')
   RETURN
 END IF
+#endif
+
+aint = tPhysicalVars
+
+#ifdef DEBUG_VER
+tnames = SIZE(obj%dof_timeCompo)
+problem = tnames .NE. aint
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: The size of timeCompo (' &
+                    //ToString(tnames)// &
+                    ') is not same as total physical variables = ' &
+                    //ToString(aint))
+  RETURN
+END IF
+#endif
+
+ans(1:aint) = obj%dof_timeCompo(1:aint)
+
 END PROCEDURE obj_GetTimeCompo
 
 !----------------------------------------------------------------------------
@@ -155,7 +235,7 @@ END PROCEDURE obj_GetTimeCompo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPointer
-ans => GetPointer(obj%realVec)
+ans => RealVector_GetPointer(obj%realVec)
 END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
@@ -163,34 +243,141 @@ END PROCEDURE obj_GetPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_size
-CHARACTER(*), PARAMETER :: myName = "obj_size"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
-ans = obj%tSize
-END PROCEDURE obj_size
+CHARACTER(*), PARAMETER :: myName = "obj_size()"
 
-!----------------------------------------------------------------------------
-!                                                                     Norm2
-!----------------------------------------------------------------------------
+ans = obj%tSize
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+END PROCEDURE obj_size
 
 !----------------------------------------------------------------------------
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSingle
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=1, &
-    & dataType=1.0_DFP)
-ELSE
-  VALUE = Get( &
-    & obj=obj%realVec, &
-    & nodenum=indx, &
-    & dataType=1.0_DFP)
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=1.0_DFP)
+  RETURN
 END IF
+
+#ifdef USE_LIS
+
+CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+RETURN
+
+#endif
+
 END PROCEDURE obj_GetSingle
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple1
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+! NATIVE_SERIAL
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, nodenum=indx, VALUE=VALUE, tsize=tsize)
+  RETURN
+END IF
+! end of NATIVE_SERIAL
+
+! USE_LIS
+#ifdef USE_LIS
+tsize = SIZE(indx)
+
+CALL lis_vector_get_values_from_index(obj%lis_ptr, tsize, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+RETURN
+
+#endif
+!end USE_LIS
+
+END PROCEDURE obj_GetMultiple1
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple2
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize)
+  RETURN
+END IF
+
+! USE_LIS
+
+#ifdef USE_LIS
+tsize = (iend - istart) / stride + 1
+CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+RETURN
+
+#endif
+! end of USE_LIS
+
+END PROCEDURE obj_GetMultiple2
+
+!----------------------------------------------------------------------------
+!                                                                 GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple3
+#ifdef USE_LIS
+INTEGER(I4B) :: ierr
+#endif
+
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize, istart_value=istart_value, &
+                 iend_value=iend_value, stride_value=stride_value)
+  RETURN
+END IF
+
+! USE_LIS
+#ifdef USE_LIS
+
+tsize = (iend - istart) / stride + 1
+
+CALL lis_vector_get_values_from_range2(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, istart_value, stride_value, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+RETURN
+
+#endif
+! end of USE_LIS
+
+END PROCEDURE obj_GetMultiple3
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeLoc
@@ -201,28 +388,29 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc1()"
 INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
 INTEGER(I4B) :: ivar0, tsize, itime, ttime
 TYPE(IntVector_), ALLOCATABLE :: int_vec_list(:)
+CLASS(AbstractMesh_), POINTER :: mesh
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetNodeLoc1()')
+                        '[START] ')
 #endif
 
 IF (PRESENT(spaceCompo)) THEN
   tsize = SIZE(spaceCompo)
-  CALL Reallocate(spaceCompo0, tsize)
-  spaceCompo0 = spaceCompo
+  ALLOCATE (spaceCompo0(tsize))
+  spaceCompo0(1:tsize) = spaceCompo(1:tsize)
 ELSE
-  CALL Reallocate(spaceCompo0, 1)
-  spaceCompo0 = 1
+  ALLOCATE (spaceCompo0(1))
+  spaceCompo0(1) = 1
 END IF
 
 IF (PRESENT(timeCompo)) THEN
   tsize = SIZE(timeCompo)
-  CALL Reallocate(timeCompo0, tsize)
-  timeCompo0 = timeCompo
+  ALLOCATE (timeCompo0(tsize))
+  timeCompo0(1:tsize) = timeCompo(1:tsize)
 ELSE
-  CALL Reallocate(timeCompo0, 1)
-  timeCompo0 = 1
+  ALLOCATE (timeCompo0(1))
+  timeCompo0(1) = 1
 END IF
 ttime = SIZE(timeCompo0)
 
@@ -233,39 +421,47 @@ ELSE
 END IF
 
 ALLOCATE (int_vec_list(ttime))
-CALL Reallocate(localNode, SIZE(globalNode))
+tsize = SIZE(globalNode)
+ALLOCATE (localNode(tsize))
 
-IF (ASSOCIATED(obj%domain)) THEN
+IF (ASSOCIATED(obj%fedof)) THEN
 
-  localNode = obj%domain%GetLocalNodeNumber(globalNode=globalNode)
+  mesh => obj%fedof%GetMeshPointer()
+  localNode = mesh%GetLocalNodeNumber(globalNode=globalNode)
 
-ELSEIF (ALLOCATED(obj%domains)) THEN
-  tsize = SIZE(obj%domains)
+ELSEIF (ALLOCATED(obj%fedofs)) THEN
+
+  tsize = SIZE(obj%fedofs)
+
   IF (ivar0 .GT. tsize) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: ivar is greater than size of '//  &
-      & ' AbstractNodeField_::obj%domains.')
+                      '[INTERNAL ERROR] :: ivar is greater than size of '// &
+                      ' AbstractNodeField_::obj%fedofs.')
     RETURN
   END IF
-  localNode = obj%domains(ivar0)%ptr%GetLocalNodeNumber(globalNode)
+
+  mesh => obj%fedofs(ivar0)%ptr%GetMeshPointer()
+  localNode = mesh%GetLocalNodeNumber(globalNode)
 
 ELSE
+
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%domain '//  &
-    & ' obj%domains are not allocated.')
+                    '[INTERNAL ERROR] :: AbstractNodeField_::obj%fedof'// &
+                    ' obj%fedofs are not allocated.')
   RETURN
+
 END IF
 
 DO itime = 1, ttime
-  int_vec_list(itime) = GetNodeLoc(obj=obj%dof, nodenum=localNode,  &
-    & ivar=ivar0, spaceCompo=spaceCompo0, timeCompo=timeCompo0(itime))
+  int_vec_list(itime) = GetNodeLoc(obj=obj%dof, nodenum=localNode, &
+              ivar=ivar0, spaceCompo=spaceCompo0, timeCompo=timeCompo0(itime))
 END DO
 
-ans = Get(obj=int_vec_list, dataType=1_I4B)
+ans = IntVector_Get(obj=int_vec_list, dataType=1_I4B)
 
 IF (ALLOCATED(int_vec_list)) THEN
   DO itime = 1, ttime
-    CALL DEALLOCATE (int_vec_list(itime))
+    CALL IntVector_DEALLOCATE(int_vec_list(itime))
   END DO
   DEALLOCATE (int_vec_list)
 END IF
@@ -276,8 +472,9 @@ IF (ALLOCATED(localNode)) DEALLOCATE (localNode)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] GetNodeLoc1()')
+                        '[END]')
 #endif
+
 END PROCEDURE obj_GetNodeLoc1
 
 !----------------------------------------------------------------------------
@@ -288,29 +485,56 @@ MODULE PROCEDURE obj_GetNodeLoc2
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
 INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
 INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetNodeLoc2()')
+                        '[START] ')
 #endif
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
-CALL Reallocate(timeCompo, tPhysicalVars)
-timeCompo = obj%GetTimeCompo(tPhysicalVars)
-spaceCompo(1) = dbc%GetDOFNo()
-ivar0 = input(default=1_I4B, option=ivar)
 
-CALL dbc%Get(nodeNum=globalNode)
-ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar,  &
-  & spaceCompo=spaceCompo, timeCompo=arange(1_I4B, timeCompo(ivar0)))
+ALLOCATE (timeCompo(tPhysicalVars))
+
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
+
+spaceCompo(1) = dbc%GetDOFNo()
+
+ivar0 = Input(default=1_I4B, option=ivar)
+
+IF (ALLOCATED(obj%fedofs)) THEN
+  IF (ivar0 .GT. SIZE(obj%fedofs)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[INTERNAL ERROR] :: ivar is greater than size of '// &
+                      ' AbstractNodeField_::obj%fedofs.')
+    RETURN
+  END IF
+
+  tsize = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
+  ALLOCATE (globalNode(tsize))
+
+  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
+               fedof=obj%fedofs(ivar0)%ptr)
+ELSE
+  tsize = dbc%GetTotalNodeNum(obj%fedof)
+  ALLOCATE (globalNode(tsize))
+
+  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
+               fedof=obj%fedof)
+END IF
+
+ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar, &
+                     spaceCompo=spaceCompo, &
+                     timeCompo=Arange(1_I4B, timeCompo(ivar0)))
 
 IF (ALLOCATED(globalNode)) DEALLOCATE (globalNode)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] GetNodeLoc2()')
+                        '[END] ')
 #endif
+
 END PROCEDURE obj_GetNodeLoc2
 
 !----------------------------------------------------------------------------
@@ -324,7 +548,7 @@ INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetNodeLoc3()')
+                        '[START] ')
 #endif
 
 tsize = SIZE(dbc)
@@ -338,7 +562,7 @@ IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] GetNodeLoc3()')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_GetNodeLoc3

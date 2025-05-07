@@ -16,202 +16,279 @@
 !
 
 SUBMODULE(LinSolver_Class) GetMethods
-USE BaseMethod
+
+USE StringUtility, ONLY: UpperCase
+
+USE BaseType, ONLY: TypeSolverNameOpt
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE ls_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                 GetLinSolverCodeFromName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_GetLinSolverCodeFromName
-TYPE(String) :: astr
+MODULE PROCEDURE obj_GetLinSolverCodeFromName
+CHARACTER(:), ALLOCATABLE :: astr
+
 astr = UpperCase(name)
 
-SELECT CASE (astr%chars())
+SELECT CASE (astr)
 CASE ("CG") !1
-  ans = LIS_CG
+
+  ans = TypeSolverNameOpt%CG
+
 CASE ("BICG", "BCG") !2
-  ans = LIS_BICG
+
+  ans = TypeSolverNameOpt%BICG
+
 CASE ("CGS") !3
-  ans = LIS_CGS
+
+  ans = TypeSolverNameOpt%CGS
+
 CASE ("BICGSTAB", "BCGSTAB") !4
-  ans = LIS_BICGSTAB
+
+  ans = TypeSolverNameOpt%BICGSTAB
+
 CASE ("BICGSTABL", "BCGSTABL") !5
-  ans = LIS_BICGSTABL
+
+  ans = TypeSolverNameOpt%BICGSTABL
+
 CASE ("GPBICG") !6
-  ans = LIS_GPBICG
+
+  ans = TypeSolverNameOpt%GPBICG
+
 CASE ("TFQMR") !7
-  ans = LIS_TFQMR
+
+  ans = TypeSolverNameOpt%TFQMR
+
 CASE ("OMN", "FOM", "ORTHOMIN") !8
-  ans = LIS_OMN
+
+  ans = TypeSolverNameOpt%OMN
+
 CASE ("GMRES", "GMR") !9
-  ans = LIS_GMRES
+
+  ans = TypeSolverNameOpt%GMRES
+
 CASE ("JACOBI") !10
-  ans = LIS_JACOBI
+
+  ans = TypeSolverNameOpt%JACOBI
+
 CASE ("GS") !11
-  ans = LIS_GS
+
+  ans = TypeSolverNameOpt%GS
+
 CASE ("SOR") !12
-  ans = LIS_SOR
+
+  ans = TypeSolverNameOpt%SOR
+
 CASE ("BICGSAFE") !13
-  ans = LIS_BICGSAFE
+
+  ans = TypeSolverNameOpt%BICGSAFE
+
 CASE ("CR") !14
-  ans = LIS_CR
+
+  ans = TypeSolverNameOpt%CR
+
 CASE ("BICR") !15
-  ans = LIS_BICR
+
+  ans = TypeSolverNameOpt%BICR
+
 CASE ("CRS") !16
-  ans = LIS_CRS
+
+  ans = TypeSolverNameOpt%CRS
+
 CASE ("BICRSTAB") !17
-  ans = LIS_BICRSTAB
+
+  ans = TypeSolverNameOpt%BICRSTAB
+
 CASE ("GPBICR") !18
-  ans = LIS_GPBICR
+
+  ans = TypeSolverNameOpt%GPBICR
+
 CASE ("BICRSAFE") !19
-  ans = LIS_BICRSAFE
+
+  ans = TypeSolverNameOpt%BICRSAFE
+
 CASE ("FGMRES") !20
-  ans = LIS_FGMRES
+
+  ans = TypeSolverNameOpt%FGMRES
+
 CASE ("IDRS") !21
-  ans = LIS_IDRS
+
+  ans = TypeSolverNameOpt%IDRS
+
 CASE ("IDR1") !22
-  ans = LIS_IDR1
+
+  ans = TypeSolverNameOpt%IDR1
+
 CASE ("MINRES") !23
-  ans = LIS_MINRES
+
+  ans = TypeSolverNameOpt%MINRES
+
 CASE ("COCG") !24
-  ans = LIS_COCG
+
+  ans = TypeSolverNameOpt%COCG
+
 CASE ("COCR") !25
-  ans = LIS_COCR
+
+  ans = TypeSolverNameOpt%COCR
+
 CASE ("CGNR", "CGN") !26
-  ans = LIS_CGNR
+
+  ans = TypeSolverNameOpt%CGNR
+
 CASE ("DBICG", "DBCG") !27
-  ans = LIS_DBICG
+
+  ans = TypeSolverNameOpt%DBICG
+
 CASE ("DQGMRES") !28
-  ans = LIS_DQGMRES
+
+  ans = TypeSolverNameOpt%DQGMRES
+
 CASE ("SUPERLU") !29
-  ans = LIS_SUPERLU
+
+  ans = TypeSolverNameOpt%SUPERLU
+
 END SELECT
+
 astr = ""
-END PROCEDURE ls_GetLinSolverCodeFromName
+END PROCEDURE obj_GetLinSolverCodeFromName
 
 !----------------------------------------------------------------------------
 !                                                 GetLinSolverNameFromCode
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_GetLinSolverNameFromCode
+MODULE PROCEDURE obj_GetLinSolverNameFromCode
 SELECT CASE (name)
-CASE (LIS_SUPERLU)
+CASE (TypeSolverNameOpt%SUPERLU)
+
   ans = "SUPERLU" !1
-CASE (LIS_CG)
+
+CASE (TypeSolverNameOpt%CG)
+
   ans = "CG" !1
-CASE (LIS_BICG)
+
+CASE (TypeSolverNameOpt%BICG)
+
   ans = "BICG" !2
-CASE (LIS_CGS)
+
+CASE (TypeSolverNameOpt%CGS)
+
   ans = "CGS" !3
-CASE (LIS_BICGSTAB)
+
+CASE (TypeSolverNameOpt%BICGSTAB)
+
   ans = "BICGSTAB" !4
-CASE (LIS_BICGSTABL)
+
+CASE (TypeSolverNameOpt%BICGSTABL)
+
   ans = "BICGSTABL" !5
-CASE (LIS_GPBICG)
+
+CASE (TypeSolverNameOpt%GPBICG)
+
   ans = "GPBICG" !6
-CASE (LIS_TFQMR)
+
+CASE (TypeSolverNameOpt%TFQMR)
+
   ans = "TFQMR" !7
-CASE (LIS_OMN)
+
+CASE (TypeSolverNameOpt%OMN)
+
   ans = "ORTHOMIN" !8
-CASE (LIS_GMRES)
+
+CASE (TypeSolverNameOpt%GMRES)
+
   ans = "GMRES" !9
-CASE (LIS_JACOBI)
+
+CASE (TypeSolverNameOpt%JACOBI)
+
   ans = "JACOBI" !10
-CASE (LIS_GS)
+
+CASE (TypeSolverNameOpt%GS)
+
   ans = "GS" !11
-CASE (LIS_SOR)
+
+CASE (TypeSolverNameOpt%SOR)
+
   ans = "SOR" !12
-CASE (LIS_BICGSAFE)
+
+CASE (TypeSolverNameOpt%BICGSAFE)
+
   ans = "BICGSAFE" !13
-CASE (LIS_CR)
+
+CASE (TypeSolverNameOpt%CR)
+
   ans = "CR" !14
-CASE (LIS_BICR)
+
+CASE (TypeSolverNameOpt%BICR)
+
   ans = "BICR" !15
-CASE (LIS_CRS)
+
+CASE (TypeSolverNameOpt%CRS)
+
   ans = "CRS" !16
-CASE (LIS_BICRSTAB)
+
+CASE (TypeSolverNameOpt%BICRSTAB)
+
   ans = "BICRSTAB" !17
-CASE (LIS_GPBICR)
+
+CASE (TypeSolverNameOpt%GPBICR)
+
   ans = "GPBICR" !18
-CASE (LIS_BICRSAFE)
+
+CASE (TypeSolverNameOpt%BICRSAFE)
+
   ans = "BICRSAFE" !19
-CASE (LIS_FGMRES)
+
+CASE (TypeSolverNameOpt%FGMRES)
+
   ans = "FGMRES" !20
-CASE (LIS_IDRS)
+
+CASE (TypeSolverNameOpt%IDRS)
+
   ans = "IDRS" !21
-CASE (LIS_IDR1)
+
+CASE (TypeSolverNameOpt%IDR1)
+
   ans = "IDR1" !22
-CASE (LIS_MINRES)
+
+CASE (TypeSolverNameOpt%MINRES)
+
   ans = "MINRES" !23
-CASE (LIS_COCG)
+
+CASE (TypeSolverNameOpt%COCG)
+
   ans = "COCG" !24
-CASE (LIS_COCR)
+
+CASE (TypeSolverNameOpt%COCR)
+
   ans = "COCR" !25
-CASE (LIS_CGNR)
+
+CASE (TypeSolverNameOpt%CGNR)
+
   ans = "CGNR" !26
-CASE (LIS_DBICG)
+
+CASE (TypeSolverNameOpt%DBICG)
+
   ans = "DBICG" !27
-CASE (LIS_DQGMRES)
+
+CASE (TypeSolverNameOpt%DQGMRES)
+
   ans = "DQGMRES" !28
+
 END SELECT
-END PROCEDURE ls_GetLinSolverNameFromCode
 
-!----------------------------------------------------------------------------
-!                                                   GetLinSolverParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetLinSolverParam
-CALL GetAbstractLinSolverParam( &
-  & param=param, &
-  & prefix=myPrefix, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & maxIter=maxIter, &
-  & atol=atol, &
-  & rtol=rtol, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & scale=scale, &
-  & initx_zeros=initx_zeros, &
-  & bicgstab_ell=bicgstab_ell, &
-  & sor_omega=sor_omega, &
-  & p_name=p_name, &
-  & p_ilu_lfil=p_ilu_lfil, &
-  & p_ilu_mbloc=p_ilu_mbloc, &
-  & p_ilu_droptol=p_ilu_droptol, &
-  & p_ilu_permtol=p_ilu_permtol, &
-  & p_ilu_alpha=p_ilu_alpha, &
-  & p_ilu_fill=p_ilu_fill, &
-  & p_ssor_omega=p_ssor_omega, &
-  & p_hybrid_i=p_hybrid_i, &
-  & p_hybrid_maxiter=p_hybrid_maxiter, &
-  & p_hybrid_tol=p_hybrid_tol, &
-  & p_hybrid_omega=p_hybrid_omega, &
-  & p_hybrid_ell=p_hybrid_ell, &
-  & p_hybrid_restart=p_hybrid_restart, &
-  & p_is_alpha=p_is_alpha, &
-  & p_is_m=p_is_m, &
-  & p_sainv_drop=p_sainv_drop, &
-  & p_saamg_unsym=p_saamg_unsym, &
-  & p_saamg_theta=p_saamg_theta, &
-  & p_iluc_drop=p_iluc_drop, &
-  & p_iluc_rate=p_iluc_rate, &
-  & p_adds=p_adds, &
-  & p_adds_iter=p_adds_iter &
-  & )
-END PROCEDURE GetLinSolverParam
+END PROCEDURE obj_GetLinSolverNameFromCode
 
 !----------------------------------------------------------------------------
 !
