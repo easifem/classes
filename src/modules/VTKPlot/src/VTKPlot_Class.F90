@@ -16,15 +16,17 @@
 !
 
 MODULE VTKPlot_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: DFP, I4B
+USE BaseType, ONLY: iface_SpaceFunction
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
-USE AbstractPlot_Class
-USE VTKFile_Class
+USE AbstractPlot_Class, ONLY: AbstractPlot_
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: VTKPlot_
+PUBLIC :: VTKPlotPointer_
+
 CHARACTER(*), PARAMETER :: modName = "VTKPlot_Class"
 
 !----------------------------------------------------------------------------
@@ -57,26 +59,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3w3
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3w4
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3f
-  GENERIC, PUBLIC :: Plot => &
-    & vts_plot_x1y1, &
-    & vts_plot_x1y1f, &
-    & vts_plot_x1y1z1, &
-    & vts_plot_x1y1z1w1, &
-    & vts_plot_x3y3z3w2, &
-    & vts_plot_x2y2, &
-    & vts_plot_x2y2w2, &
-    & vts_plot_x2y2w2b, &
-    & vts_plot_x2y2w3, &
-    & vts_plot_x2y2f, &
-    & vts_plot_x3y3z3, &
-    & vts_plot_x3y3z3w3, &
-    & vts_plot_x3y3z3w4, &
-    & vts_plot_x3y3z3f
+  GENERIC, PUBLIC :: Plot => vts_plot_x1y1, vts_plot_x1y1f, &
+    vts_plot_x1y1z1, vts_plot_x1y1z1w1, vts_plot_x3y3z3w2, &
+    vts_plot_x2y2, vts_plot_x2y2w2, vts_plot_x2y2w2b, &
+    vts_plot_x2y2w3, vts_plot_x2y2f, vts_plot_x3y3z3, &
+    vts_plot_x3y3z3w3, vts_plot_x3y3z3w4, vts_plot_x3y3z3f
+
   PROCEDURE, PUBLIC, PASS(obj) :: vts_surface_x1y1f
   PROCEDURE, PUBLIC, PASS(obj) :: vts_surface_x2y2f
-  GENERIC, PUBLIC :: Surface => &
-    & vts_surface_x1y1f, &
-    & vts_surface_x2y2f
+  GENERIC, PUBLIC :: Surface => vts_surface_x1y1f, vts_surface_x2y2f
   !!
   !! @Scatter3D
   !!
@@ -84,14 +75,10 @@ CONTAINS
   PROCEDURE, PASS(obj) :: plot_scatter3D_2
   PROCEDURE, PASS(obj) :: plot_scatter3D_3
   PROCEDURE, PASS(obj) :: plot_scatter3D_4
-  GENERIC, PUBLIC :: Scatter3D => &
-    & plot_scatter3D_1, &
-    & plot_scatter3D_2, &
-    & plot_scatter3D_3, &
-    & plot_scatter3D_4
-END TYPE VTKPlot_
+  GENERIC, PUBLIC :: Scatter3D => plot_scatter3D_1, plot_scatter3D_2, &
+    plot_scatter3D_3, plot_scatter3D_4
 
-PUBLIC :: VTKPlot_
+END TYPE VTKPlot_
 
 !----------------------------------------------------------------------------
 !
@@ -100,8 +87,6 @@ PUBLIC :: VTKPlot_
 TYPE :: VTKPlotPointer_
   CLASS(VTKPlot_), POINTER :: ptr => NULL()
 END TYPE VTKPlotPointer_
-
-PUBLIC :: VTKPlotPointer_
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -477,193 +462,76 @@ INTERFACE
   END SUBROUTINE plot_scatter3D_4
 END INTERFACE
 
-CONTAINS
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x1y1f(obj, x, y, f, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
+    PROCEDURE(iface_SpaceFunction), POINTER :: f
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x1y1f
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Plot@StructuredGridMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE vts_plot_x1y1f(obj, x, y, f, filename)
-  USE BaseMethod, ONLY: MeshGrid
-  CLASS(VTKPlot_), INTENT(IN) :: obj
-  REAL(DFP), INTENT(IN) :: x(:)
-  REAL(DFP), INTENT(IN) :: y(:)
-  PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(*), INTENT(IN) :: filename
-  !!
-  REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
-  !!
-  CALL MeshGrid(x=xx, y=yy, z=zz, xgv=x, ygv=y, zgv=[0.0_DFP])
-  CALL obj%plot(x=xx, y=yy, z=zz, f=f, filename=filename)
-  DEALLOCATE (xx, yy, zz)
-  !!
-END SUBROUTINE vts_plot_x1y1f
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x2y2f(obj, x, y, f, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN) :: y(:, :)
+    PROCEDURE(iface_SpaceFunction), POINTER :: f
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x2y2f
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Plot@StructuredGridMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE vts_plot_x2y2f(obj, x, y, f, filename)
-  CLASS(VTKPlot_), INTENT(IN) :: obj
-  REAL(DFP), INTENT(IN) :: x(:, :)
-  REAL(DFP), INTENT(IN) :: y(:, :)
-  PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(*), INTENT(IN) :: filename
-  !!
-  !!
-  REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
-  !!
-  xx(:, :, 1) = x
-  yy(:, :, 1) = y
-  zz = 0.0_DFP
-  !!
-  CALL obj%plot(x=xx, y=yy, z=zz, f=f, filename=filename)
-  !!
-END SUBROUTINE vts_plot_x2y2f
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x3y3z3f(obj, x, y, z, f, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :, :)
+    REAL(DFP), INTENT(IN) :: y(:, :, :)
+    REAL(DFP), INTENT(IN) :: z(:, :, :)
+    PROCEDURE(iface_SpaceFunction), POINTER :: f
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x3y3z3f
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Plot@StructuredGridMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE vts_plot_x3y3z3f(obj, x, y, z, f, filename)
-  CLASS(VTKPlot_), INTENT(IN) :: obj
-  REAL(DFP), INTENT(IN) :: x(:, :, :)
-  REAL(DFP), INTENT(IN) :: y(:, :, :)
-  REAL(DFP), INTENT(IN) :: z(:, :, :)
-  PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(*), INTENT(IN) :: filename
-  !!
-  !!
-  CHARACTER(*), PARAMETER :: myName = "vts_plot_x3y3z3f"
-  REAL(DFP) :: arg(3)
-  REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), SIZE(x, 3)) :: func
-  INTEGER(I4B) :: nx1, nx2, ny1, ny2, nz1, nz2, ii, jj, kk
-  TYPE(VTKFile_) :: aVTKfile
-  !!
-  !! check
-  !!
-  IF (.NOT. ASSOCIATED(f)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'function is not associated')
-  END IF
-  !!
-  !! check
-  !!
-  IF (ANY(SHAPE(x) .NE. SHAPE(y)) .OR. &
-    & ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
-    & ANY(SHAPE(z) .NE. SHAPE(x))) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Shape of x, y, and z should be the same.')
-  END IF
-  !!
-  nx1 = 0; nx2 = SIZE(x, 1) - 1
-  ny1 = 0; ny2 = SIZE(x, 2) - 1
-  nz1 = 0; nz2 = SIZE(x, 3) - 1
-  !!
-  CALL aVTKfile%InitiateVTKFile( &
-    & filename=filename, &
-    & mode="NEW", &
-    & DataFormat=VTK_BINARY, &
-    & DataStructureType=VTK_StructuredGrid, &
-    & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
-  CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
-  CALL aVTKfile%WritePoints(x=x, y=y, z=z)
-  !!
-  CALL aVTKfile%WriteDataArray( &
-    & location=String("node"), &
-    & action=String("open"))
-  !!
-  DO kk = 1, SIZE(x, 3)
-    DO jj = 1, SIZE(x, 2)
-      DO ii = 1, SIZE(x, 1)
-        arg(1) = x(ii, jj, kk)
-        arg(2) = y(ii, jj, kk)
-        arg(3) = z(ii, jj, kk)
-        func(ii, jj, kk) = f(arg)
-      END DO
-    END DO
-  END DO
-  !!
-  CALL aVTKfile%WriteDataArray( &
-    & name=String("f"), &
-    & x=func, &
-    & numberOfComponents=1)
-  !!
-  CALL aVTKfile%WriteDataArray( &
-    & location=String("node"), &
-    & action=String("close"))
-  !!
-  CALL aVTKfile%WritePiece()
-  CALL aVTKfile%DEALLOCATE()
-  !!
-END SUBROUTINE vts_plot_x3y3z3f
+INTERFACE
+  MODULE SUBROUTINE vts_surface_x1y1f(obj, x, y, f, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
+    PROCEDURE(iface_SpaceFunction), POINTER :: f
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_surface_x1y1f
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Plot@StructuredGridMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE vts_surface_x1y1f(obj, x, y, f, filename)
-  USE BaseMethod, ONLY: MeshGrid
-  CLASS(VTKPlot_), INTENT(IN) :: obj
-  REAL(DFP), INTENT(IN) :: x(:)
-  REAL(DFP), INTENT(IN) :: y(:)
-  PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(*), INTENT(IN) :: filename
-  !!
-  REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
-  REAL(DFP) :: arg(3)
-  INTEGER(I4B) :: ii, jj, kk
-  !!
-  CALL MeshGrid(x=xx, y=yy, z=zz, xgv=x, ygv=y, zgv=[0.0_DFP])
-  !!
-  DO kk = 1, SIZE(xx, 3)
-    DO jj = 1, SIZE(xx, 2)
-      DO ii = 1, SIZE(xx, 1)
-        arg(1) = xx(ii, jj, kk)
-        arg(2) = yy(ii, jj, kk)
-        arg(3) = zz(ii, jj, kk)
-        zz(ii, jj, kk) = f(arg)
-      END DO
-    END DO
-  END DO
-  !!
-  CALL obj%plot(x=xx, y=yy, z=zz, filename=filename)
-  DEALLOCATE (xx, yy, zz)
-  !!
-END SUBROUTINE vts_surface_x1y1f
-
-!----------------------------------------------------------------------------
-!                                                Plot@StructuredGridMethods
-!----------------------------------------------------------------------------
-
-SUBROUTINE vts_surface_x2y2f(obj, x, y, f, filename)
-  CLASS(VTKPlot_), INTENT(IN) :: obj
-  REAL(DFP), INTENT(IN) :: x(:, :)
-  REAL(DFP), INTENT(IN) :: y(:, :)
-  PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(*), INTENT(IN) :: filename
-  !!
-  !!
-  REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
-  REAL(DFP) :: arg(3)
-  INTEGER(I4B) :: ii, jj, kk
-  !!
-  xx(:, :, 1) = x
-  yy(:, :, 1) = y
-  DO kk = 1, SIZE(xx, 3)
-    DO jj = 1, SIZE(xx, 2)
-      DO ii = 1, SIZE(xx, 1)
-        arg(1) = xx(ii, jj, kk)
-        arg(2) = yy(ii, jj, kk)
-        arg(3) = zz(ii, jj, kk)
-        zz(ii, jj, kk) = f(arg)
-      END DO
-    END DO
-  END DO
-  !!
-  CALL obj%plot(x=xx, y=yy, z=zz, filename=filename)
-  !!
-END SUBROUTINE vts_surface_x2y2f
+INTERFACE
+  MODULE SUBROUTINE vts_surface_x2y2f(obj, x, y, f, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN) :: y(:, :)
+    PROCEDURE(iface_SpaceFunction), POINTER :: f
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_surface_x2y2f
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
