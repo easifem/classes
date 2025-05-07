@@ -98,6 +98,8 @@ tsize = SIZE(dbc)
 
 ncol = ttimecompo
 
+DO ibc = 1, tsize
+
   nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
                   expandFactor=expandFactor)
