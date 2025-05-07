@@ -237,6 +237,15 @@ MODULE PROCEDURE obj_Set9
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 #endif
 
+INTEGER(I4B) :: s(3), p(3), ierr, tsize
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(VALUE%isInitiated, myName, &
+                  "AbstractNodeField_::value not initiated")
+#endif
+
 s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
 
 SELECT TYPE (VALUE)
@@ -277,82 +286,6 @@ TYPE IS (VectorField_)
 TYPE is (BlockNodeField_)
 
   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=ivar_value, &
-                                             idof=idof_value))
-  realvec => VALUE%GetPointer()
-
-  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
-                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-                  VALUE=realvec, scale=scale, addContribution=addContribution)
-
-  realvec => NULL()
-
-#if USE_LIS
-
-TYPE IS (ScalarFieldLis_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=1)
-  tsize = obj%dof.tNodes.1
-
-  realvec => obj%GetPointer()
-  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
-                                        tsize, realvec, ierr)
-  realvec => NULL()
-
-TYPE IS (STScalarFieldLis_)
-
-  tsize = obj%dof.tNodes.1
-  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-                                             idof=idof_value))
-
-  realvec => obj%GetPointer()
-  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
-                                        tsize, realvec, ierr)
-  realvec => NULL()
-
-TYPE IS (VectorFieldLis_)
-
-  tsize = obj%dof.tNodes.1
-  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-                                             idof=idof_value))
-  realvec => obj%GetPointer()
-  CALL lis_vector_get_values_from_range(VALUE%lis_ptr, p(1), p(3), &
-                                        tsize, realvec, ierr)
-  realvec => NULL()
-
-#ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
-CALL AssertError1(VALUE%isInitiated, myName, &
-                  "AbstractNodeField_::value not initiated")
-#endif
-
-s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-
-  realvec => VALUE%GetPointer()
-
-  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
-                  VALUE=realvec, scale=scale, addContribution=addContribution)
-
-  realvec => NULL()
-
-TYPE IS (STScalarField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-                                             idof=idof_value))
-  realvec => VALUE%GetPointer()
-
-  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
-                      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-                  VALUE=realvec, scale=scale, addContribution=addContribution)
-
-  realvec => NULL()
-
-TYPE IS (VectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
                                              idof=idof_value))
   realvec => VALUE%GetPointer()
 
