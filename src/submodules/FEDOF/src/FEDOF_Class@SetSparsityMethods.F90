@@ -215,37 +215,55 @@ CALL AssertError1(isok, myName, 'NSD of fedofsare not identical')
 rowMesh => NULL()
 colMesh => NULL()
 
-DO ivar = 1, SIZE(fedofs)
-
-  IF (isdebug) CALL Display("row domain = "//tostring(ivar))
-
-  rowfedof => fedofs(ivar)%ptr
-  IF (.NOT. ASSOCIATED(rowfedof)) CYCLE
-
+SELECT CASE (mat%matrixProp(1:4))
+CASE ("RECT")
+  IF (isdebug) CALL Display("matrix is rectangular")
+  rowfedof => fedofs(1)%ptr
   rowMesh => rowfedof%GetMeshPointer()
-  IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
-  IF (rowMesh%isEmpty()) CYCLE
 
-  DO jvar = 1, SIZE(fedofs)
+  colfedof => fedofs(2)%ptr
+  colMesh => colfedof%GetMeshPointer()
 
-    IF (isdebug) CALL Display("col domain = "//tostring(jvar))
+  CALL domainConn%DEALLOCATE()
+  CALL domainConn%InitiateCellToCellData(mesh1=rowmesh, mesh2=colmesh)
+  cellToCell => domainConn%GetCellToCellPointer()
 
-    colfedof => fedofs(jvar)%ptr
-    IF (.NOT. ASSOCIATED(colfedof)) CYCLE
+  CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
+                            cellToCell=cellToCell, ivar=1, jvar=1)
 
-    colMesh => colfedof%GetMeshPointer()
-    IF (.NOT. ASSOCIATED(colMesh)) CYCLE
-    IF (colMesh%isEmpty()) CYCLE
+CASE default
+  DO ivar = 1, SIZE(fedofs)
 
-    CALL domainConn%DEALLOCATE()
-    CALL domainConn%InitiateCellToCellData(mesh1=rowmesh, mesh2=colmesh)
-    cellToCell => domainConn%GetCellToCellPointer()
+    IF (isdebug) CALL Display("row domain = "//tostring(ivar))
 
-    CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
-                              cellToCell=cellToCell, ivar=ivar, jvar=jvar)
+    rowfedof => fedofs(ivar)%ptr
+    IF (.NOT. ASSOCIATED(rowfedof)) CYCLE
 
+    rowMesh => rowfedof%GetMeshPointer()
+    IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
+    IF (rowMesh%isEmpty()) CYCLE
+
+    DO jvar = 1, SIZE(fedofs)
+
+      IF (isdebug) CALL Display("col domain = "//tostring(jvar))
+
+      colfedof => fedofs(jvar)%ptr
+      IF (.NOT. ASSOCIATED(colfedof)) CYCLE
+
+      colMesh => colfedof%GetMeshPointer()
+      IF (.NOT. ASSOCIATED(colMesh)) CYCLE
+      IF (colMesh%isEmpty()) CYCLE
+
+      CALL domainConn%DEALLOCATE()
+      CALL domainConn%InitiateCellToCellData(mesh1=rowmesh, mesh2=colmesh)
+      cellToCell => domainConn%GetCellToCellPointer()
+
+      CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
+                                cellToCell=cellToCell, ivar=ivar, jvar=jvar)
+
+    END DO
   END DO
-END DO
+END SELECT
 
 CALL CSRMatrix_SetSparsity(mat)
 

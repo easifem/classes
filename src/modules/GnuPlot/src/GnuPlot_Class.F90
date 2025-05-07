@@ -149,7 +149,8 @@ CONTAINS
   !! contour plot
   PROCEDURE, PUBLIC, PASS(obj) :: contour1 => obj_contour1
   PROCEDURE, PUBLIC, PASS(obj) :: contour2 => obj_contour2
-  GENERIC, PUBLIC :: contour => contour1, contour2
+  PROCEDURE, PUBLIC, PASS(obj) :: contour3 => obj_contour3
+  GENERIC, PUBLIC :: contour => contour1, contour2, contour3
 
   ! TODO: make a interface for these subroutines
   PROCEDURE, PASS(obj) :: preset_gnuplot_config
@@ -520,6 +521,27 @@ INTERFACE
     CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
     LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
   END SUBROUTINE obj_contour2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2025-04-11
+! summary:  Multiple Contours plot with gnuplot
+
+INTERFACE
+  MODULE SUBROUTINE obj_contour3(obj, x1, y1, z1, x2, y2, z2, &
+                                 lspec1, lspec2, paletteName, fill)
+    CLASS(GnuPlot_) :: obj
+    REAL(DFP), INTENT(in) :: x1(:, :), x2(:, :)
+    REAL(DFP), INTENT(in), OPTIONAL :: y1(:, :), y2(:, :)
+    REAL(DFP), INTENT(in), OPTIONAL :: z1(:, :), z2(:, :)
+    CHARACTER(*), INTENT(in), OPTIONAL :: lspec1, lspec2
+    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
+    LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
+  END SUBROUTINE obj_contour3
 END INTERFACE
 
 !----------------------------------------------------------------------------
