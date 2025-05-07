@@ -119,6 +119,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  FINAL :: obj_Finalize
 
   !! set methods
   PROCEDURE, PUBLIC, PASS(obj) :: cntrLevels => obj_setCntrLevels
@@ -219,6 +220,20 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Finalize@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:   2025-05-07
+! summary:  Finalize the Gnuplot object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Finalize(obj)
+    TYPE(GnuPlot_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Finalize
 END INTERFACE
 
 !----------------------------------------------------------------------------

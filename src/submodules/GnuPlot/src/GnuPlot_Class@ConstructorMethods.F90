@@ -76,6 +76,14 @@ CALL execute_command_line('gnuplot -persist '//obj%txtfilename)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
+!                                                                 Finalize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Finalize
+CALL obj%DEALLOCATE()
+END PROCEDURE obj_Finalize
+
+!----------------------------------------------------------------------------
 !                                                                 Display
 !----------------------------------------------------------------------------
 

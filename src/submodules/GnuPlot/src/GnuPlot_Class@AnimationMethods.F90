@@ -24,10 +24,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_animationStart
-CHARACTER(*), PARAMETER :: myName = "obj_animationStart"
+CHARACTER(*), PARAMETER :: myName = "obj_animationStart()"
 IF (obj%hasmultiplot) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ERROR] :: animation is not supported in multiplot mode')
+                    '[ERROR] :: animation is not supported in multiplot mode')
 END IF
 
 IF (PRESENT(pauseSeconds)) THEN
@@ -49,12 +49,10 @@ END PROCEDURE obj_animationStart
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_animationShow
-CHARACTER(*), PARAMETER :: myName = "obj_animationShow"
+CHARACTER(*), PARAMETER :: myName = "obj_animationShow()"
 obj%frame_number = 0
 obj%hasanimation = .FALSE.
-
-CALL finalize_plot(obj)
-
+CALL obj%DEALLOCATE()
 END PROCEDURE obj_animationShow
 
 END SUBMODULE AnimationMethods
