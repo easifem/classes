@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(VTKPlot_Class) ConstructorMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display
+USE AbstractPlot_Class, ONLY: PLOT_ENGINE_VTK
 IMPLICIT NONE
 CONTAINS
 
@@ -25,7 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Initiate
-  obj%plotEngine=PLOT_ENGINE_VTK
+obj%plotEngine = PLOT_ENGINE_VTK
 END PROCEDURE plot_Initiate
 
 !----------------------------------------------------------------------------
@@ -33,7 +34,7 @@ END PROCEDURE plot_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Deallocate
-  obj%plotEngine=PLOT_ENGINE_VTK
+obj%plotEngine = PLOT_ENGINE_VTK
 END PROCEDURE plot_Deallocate
 
 !----------------------------------------------------------------------------
@@ -41,7 +42,8 @@ END PROCEDURE plot_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Display
-  CALL Display( "# PLOT ENGINE : VTK", msg, unitno)
+CALL Display("# PLOT ENGINE : VTK", msg, unitno)
 END PROCEDURE plot_Display
 
 END SUBMODULE ConstructorMethods
+

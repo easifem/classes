@@ -17,6 +17,7 @@
 
 SUBMODULE(VTKPlot_Class) ScatterMethods
 USE BaseMethod
+USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 CONTAINS
 
