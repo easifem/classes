@@ -333,6 +333,7 @@ DO ibc = 1, tnbc
 
       CALL obj%fedofNBC%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
                                         ans=obj%cellcon, tsize=tsize, opt="A")
+
       con(1:tsize) = meshptr%GetGlobalNodeNumber(obj%cellcon(1:tsize))
 
       CALL obj%tmp1%Get(VALUE=forceVec, globalNode=con(1:tsize), &

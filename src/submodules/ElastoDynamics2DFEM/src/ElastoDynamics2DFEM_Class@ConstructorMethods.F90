@@ -172,7 +172,7 @@ CALL obj%fedof%GetQuadraturePoints1(quad=obj%quadForSpace, &
                                     quadratureType=obj%quadTypeForSpace, &
                                     order=2 * obj%maxSpaceOrder, &
                                     islocal=.TRUE.)
-obj%maxNIP = GetTotalQuadraturepoints(obj%quadForSpace, 1)
+obj%maxNIP = GetTotalQuadraturepoints(obj%quadForSpace)
 
 ! TODO: implement it
 ! IF (ALLOCATED(obj%nbc)) CALL InitiateFEDOF_NBC(obj)
