@@ -296,8 +296,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_multiplot(obj, rows, cols)
     CLASS(GnuPlot_) :: obj
-    INTEGER(I4B), INTENT(in) :: rows
-    INTEGER(I4B), INTENT(in) :: cols
+    INTEGER(I4B), INTENT(IN) :: rows
+    INTEGER(I4B), INTENT(IN) :: cols
   END SUBROUTINE obj_multiplot
 END INTERFACE
 
@@ -373,9 +373,9 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec, logScale)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: xmat(:, :)
-    REAL(DFP), INTENT(in) :: ymat(:, :)
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
+    REAL(DFP), INTENT(IN) :: xmat(:, :)
+    REAL(DFP), INTENT(IN) :: ymat(:, :)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
     !! default is no logscale
   END SUBROUTINE obj_plot3
@@ -400,12 +400,12 @@ INTERFACE
     INTERFACE
       FUNCTION func(x_)
         IMPORT DFP
-        REAL(DFP), INTENT(in) :: x_
+        REAL(DFP), INTENT(IN) :: x_
         REAL(DFP) :: func
       END FUNCTION func
     END INTERFACE
-    REAL(DFP), INTENT(in) :: xrange(2)
-    INTEGER, OPTIONAL, INTENT(in) :: np
+    REAL(DFP), INTENT(IN) :: xrange(2)
+    INTEGER, OPTIONAL, INTENT(IN) :: np
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
   END SUBROUTINE obj_plot4
 END INTERFACE
@@ -445,11 +445,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName, logScale)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: x(:)
-    REAL(DFP), OPTIONAL, INTENT(in) :: y(:)
-    REAL(DFP), OPTIONAL, INTENT(in) :: z(:)
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: y(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: z(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
     !! default is no logscale
   END SUBROUTINE obj_plot3d_vvv
@@ -471,11 +471,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName, logScale)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: x(:, :)
-    REAL(DFP), OPTIONAL, INTENT(in) :: y(:, :)
-    REAL(DFP), OPTIONAL, INTENT(in) :: z(:, :)
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: y(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: z(:, :)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
     CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
   !! default is no logscale
   END SUBROUTINE obj_surf1
@@ -493,12 +493,12 @@ INTERFACE
   MODULE SUBROUTINE obj_contour1(obj, x, y, z, lspec, &
                                  paletteName, fill)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: x(:, :)
-    REAL(DFP), INTENT(in), OPTIONAL :: y(:, :)
-    REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
-    LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL :: y(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL :: z(:, :)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: fill
   END SUBROUTINE obj_contour1
 END INTERFACE
 
@@ -514,12 +514,12 @@ INTERFACE
   MODULE SUBROUTINE obj_contour2(obj, x, y, z, lspec, &
                                  paletteName, fill)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: x(:)
-    REAL(DFP), INTENT(in) :: y(:)
-    REAL(DFP), INTENT(in), OPTIONAL :: z(:, :)
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
-    LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: z(:, :)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: fill
   END SUBROUTINE obj_contour2
 END INTERFACE
 
@@ -560,7 +560,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_filename(obj, chars)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
+    CHARACTER(*), INTENT(IN) :: chars
   END SUBROUTINE set_filename
 END INTERFACE
 
@@ -580,7 +580,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_options(obj, stropt)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: stropt
+    CHARACTER(*), INTENT(IN) :: stropt
   END SUBROUTINE set_options
 END INTERFACE
 
@@ -599,7 +599,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_xlim(obj, rng)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: rng(2)
+    REAL(DFP), INTENT(IN) :: rng(2)
   END SUBROUTINE set_xlim
 END INTERFACE
 
@@ -618,7 +618,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_ylim(obj, rng)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: rng(2)
+    REAL(DFP), INTENT(IN) :: rng(2)
   END SUBROUTINE set_ylim
 END INTERFACE
 
@@ -637,7 +637,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_zlim(obj, rng)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: rng(2)
+    REAL(DFP), INTENT(IN) :: rng(2)
   END SUBROUTINE set_zlim
 END INTERFACE
 
@@ -656,7 +656,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_axis(obj, rng)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: rng(:)
+    REAL(DFP), INTENT(IN) :: rng(:)
   END SUBROUTINE set_axis
 END INTERFACE
 
@@ -675,7 +675,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE set_secondary_axis(obj, rng)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(in) :: rng(:)
+    REAL(DFP), INTENT(IN) :: rng(:)
   END SUBROUTINE set_secondary_axis
 END INTERFACE
 
@@ -691,10 +691,10 @@ INTERFACE
   MODULE SUBROUTINE set_plottitle(obj, chars, textcolor, font_size, &
                                   font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_plottitle
 END INTERFACE
@@ -711,10 +711,10 @@ INTERFACE
   MODULE SUBROUTINE set_xlabel(obj, chars, textcolor, font_size, &
                                font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_xlabel
 END INTERFACE
@@ -731,10 +731,10 @@ INTERFACE
   MODULE SUBROUTINE set_x2label(obj, chars, textcolor, font_size, &
                                 font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_x2label
 END INTERFACE
@@ -751,10 +751,10 @@ INTERFACE
   MODULE SUBROUTINE set_ylabel(obj, chars, textcolor, font_size, &
                                font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_ylabel
 END INTERFACE
@@ -771,10 +771,10 @@ INTERFACE
   MODULE SUBROUTINE set_y2label(obj, chars, textcolor, font_size, &
                                 font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_y2label
 END INTERFACE
@@ -791,10 +791,10 @@ INTERFACE
   MODULE SUBROUTINE set_zlabel(obj, chars, textcolor, font_size, &
                                font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(*), INTENT(in), OPTIONAL :: textcolor
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
     INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_zlabel
 END INTERFACE
@@ -816,10 +816,10 @@ INTERFACE
   MODULE SUBROUTINE set_label(obj, lblname, lbltext, lblcolor, font_size, &
                               font_name, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(in) :: lblname
-    CHARACTER(*), INTENT(in) :: lbltext
-    CHARACTER(*), INTENT(in), OPTIONAL :: lblcolor
-    CHARACTER(*), INTENT(in), OPTIONAL :: font_name
+    CHARACTER(*), INTENT(IN) :: lblname
+    CHARACTER(*), INTENT(IN) :: lbltext
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lblcolor
+    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
     INTEGER, OPTIONAL :: font_size
     INTEGER, OPTIONAL :: rotate
   END SUBROUTINE set_label
@@ -835,7 +835,7 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE FUNCTION splitstr(chars) RESULT(spstr)
-    CHARACTER(*), INTENT(in) :: chars
+    CHARACTER(*), INTENT(IN) :: chars
     CHARACTER(:), ALLOCATABLE :: spstr
   END FUNCTION splitstr
 END INTERFACE
@@ -859,9 +859,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE splitstring2array(chars, strarray, delimiter)
-    CHARACTER(*), INTENT(in) :: chars
-    CHARACTER(80), ALLOCATABLE, INTENT(out) :: strarray(:)
-    CHARACTER(1), OPTIONAL, INTENT(in) :: delimiter
+    CHARACTER(*), INTENT(IN) :: chars
+    CHARACTER(80), ALLOCATABLE, INTENT(OUT) :: strarray(:)
+    CHARACTER(1), OPTIONAL, INTENT(IN) :: delimiter
   END SUBROUTINE splitstring2array
 END INTERFACE
 
@@ -880,11 +880,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE process_linespec(order, lsstring, lspec, axes_set)
-    INTEGER, INTENT(in) :: order
+    INTEGER, INTENT(IN) :: order
     !1 for the first data series
-    CHARACTER(*), INTENT(out) :: lsstring
-    CHARACTER(*), INTENT(in), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(in), OPTIONAL :: axes_set
+    CHARACTER(*), INTENT(OUT) :: lsstring
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: axes_set
   END SUBROUTINE process_linespec
 END INTERFACE
 
@@ -905,8 +905,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE process_axes_set(axes_set, axes)
-    CHARACTER(*), INTENT(in) :: axes_set
-    CHARACTER(4), INTENT(out) :: axes
+    CHARACTER(*), INTENT(IN) :: axes_set
+    CHARACTER(4), INTENT(OUT) :: axes
   END SUBROUTINE process_axes_set
 END INTERFACE
 
@@ -925,7 +925,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE processcmd(obj)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE processcmd
 END INTERFACE
 
@@ -942,9 +942,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_writeData_xy(obj, x, y)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
-    REAL(DFP), INTENT(in) :: x(:)
-    REAL(DFP), INTENT(in) :: y(:)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
   END SUBROUTINE obj_writeData_xy
 END INTERFACE
 
@@ -958,7 +958,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION hasTitle(chars)
-    CHARACTER(*), INTENT(in) :: chars
+    CHARACTER(*), INTENT(IN) :: chars
     LOGICAL :: hastitle
   END FUNCTION hasTitle
 END INTERFACE
@@ -1043,7 +1043,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION color_palettes(paletteName) RESULT(paletteScript)
-    CHARACTER(*), INTENT(in) :: paletteName
+    CHARACTER(*), INTENT(IN) :: paletteName
     CHARACTER(:), ALLOCATABLE :: paletteScript
   END FUNCTION color_palettes
 END INTERFACE
@@ -1064,8 +1064,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_addScript(obj, scripts)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
-    CHARACTER(*), INTENT(in) :: scripts
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: scripts
   END SUBROUTINE obj_addScript
 END INTERFACE
 
@@ -1083,7 +1083,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_runScript(obj)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_runScript
 END INTERFACE
 
@@ -1101,7 +1101,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_animationStart(obj, pauseSeconds)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: pauseSeconds
   END SUBROUTINE obj_animationStart
 END INTERFACE
@@ -1120,7 +1120,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_animationShow(obj)
-    CLASS(GnuPlot_), INTENT(inout) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_animationShow
 END INTERFACE
 
