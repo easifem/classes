@@ -21,9 +21,9 @@ project(${PROJECT_NAME})
 
 enable_language(Fortran C CXX)
 
-set(VERSION_MAJOR "24")
-set(VERSION_MINOR "10")
-set(VERSION_BugFix "3")
+set(VERSION_MAJOR "25")
+set(VERSION_MINOR "04")
+set(VERSION_BugFix "1")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
 
 set(CMAKE_PROJECT_DESCRIPTION
@@ -282,10 +282,6 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
   DESTINATION ${INSTALL_CMAKEDIR}
   COMPONENT "${PROJECT_NAME}-dev")
-
-# # Find external dependency of the project FIXME: # needed for python-baesd cli
-# # # will deprecate in future if(NOT CMAKE_PREFIX_PATH) list(APPEND
-# CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}" "$ENV{EASIFEM_BASE}") endif()
 
 # linking include(${PROJECT_SOURCE_DIR}/cmake/targetLinkLibs.cmake)
 find_package(easifemBase REQUIRED)
