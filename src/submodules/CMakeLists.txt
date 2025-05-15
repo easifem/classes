@@ -328,44 +328,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
-# KERNELS
-# ----------------------------------------------------------------------------
-
-# AbstractKernel
-# include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
-
-# ----------------------------------------------------------------------------
-# 1D Solvers
-# ----------------------------------------------------------------------------
-
-# AbstractSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DFEM/CMakeLists.txt)
-
-# AbstractSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DUVSTFEM/CMakeLists.txt)
-# AbstractSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DUVSTFEM/CMakeLists.txt)
-
-# AbstractSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DSTFEM/CMakeLists.txt)
-# ElastoDynamicsSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSTFEM/CMakeLists.txt)
-# ElastoPlasticDynamicsSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSTFEM/CMakeLists.txt)
-# ElastoPlasticVSTFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DVSTFEM/CMakeLists.txt)
-
-# AbstractSDFEM
-include(${CMAKE_CURRENT_LIST_DIR}/Abstract1DSDFEM/CMakeLists.txt)
-# ElastoDynamicsSDFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoDynamics1DSDFEM/CMakeLists.txt)
-# ElastoPlasticDynamicsSDFEM
-include(${CMAKE_CURRENT_LIST_DIR}/ElastoPlasticDynamics1DSDFEM/CMakeLists.txt)
-
-# HelmholtzFEM
-include(${CMAKE_CURRENT_LIST_DIR}/Helmholtz1DFEM/CMakeLists.txt)
-
-# ----------------------------------------------------------------------------
 # 2D solvers
 # ----------------------------------------------------------------------------
 

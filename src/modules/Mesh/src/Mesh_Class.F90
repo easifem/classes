@@ -93,6 +93,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     obj_DisplayFacetElements
 
+  !GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isFacetElement => obj_isFacetElement
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
+    obj_GetTotalFacetElements
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer => obj_GetRefElemPointer
   !! Returns pointer to the reference element
 
@@ -101,13 +109,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get parameter of mesh
-
-  !GET:
-  ! @GetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: isFacetElement => obj_isFacetElement
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
-    obj_GetTotalFacetElements
 
 END TYPE Mesh_
 

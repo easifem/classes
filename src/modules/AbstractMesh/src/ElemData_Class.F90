@@ -204,7 +204,7 @@ TYPE :: Elemdata_
   !! element
   !! All element numbers are global element number
   INTEGER(I4B), ALLOCATABLE :: boundaryData(:)
-  !! If `iel` is boundary element, then boudnaryData contains
+  !! If `iel` is boundary element, then boundaryData contains
   !! the local facet number of iel which concides with the
   !! mesh boundary.
   !! If an element contains the boundary node then it is considered
@@ -599,11 +599,35 @@ END SUBROUTINE Elemdata_GetGlobalFaceCon
 !                                                   Elemdata_GetConnectivity
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  Returns the connectvity of the element
+!
+!# Introduction
+! 
+! This subroutine returns the connectivity of the element. 
+! - tsize is the size of data written in con
+! - con is the connectivity array, it should be allocated
+! - opt is the type of connectivity, following options are allowed
+!  - "V" or "v" : vertex connectivity
+!  - "E" or "e" : edge connectivity
+!  - "F" or "f" : face connectivity
+!  - "C" or "c" : cell connectivity
+!  - "A" or "a" : all connectivity
+
 SUBROUTINE Elemdata_GetConnectivity(obj, con, tsize, opt)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(INOUT) :: con(:)
+  !! connectivity array, it should be allocated
   INTEGER(I4B), INTENT(OUT) :: tsize
+  !! size of data written in con
   CHARACTER(*), INTENT(IN), OPTIONAL :: opt
+  !! - opt is the type of connectivity, following options are allowed
+  !!  - "V" or "v" : vertex connectivity
+  !!  - "E" or "e" : edge connectivity
+  !!  - "F" or "f" : face connectivity
+  !!  - "C" or "c" : cell connectivity
+  !!  - "A" or "a" : all connectivity
 
   !! internal variable
   CHARACTER(1) :: opt0
@@ -666,17 +690,29 @@ END SUBROUTINE Elemdata_GetConnectivity
 !                                               Elemdata_GetConnectivity2
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Returns the connectvity of the element
+
 SUBROUTINE Elemdata_GetConnectivity2(obj, cellCon, faceCon, edgeCon, nodeCon, &
                                      tCellCon, tFaceCon, tEdgeCon, tNodeCon)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
+  !! cell connectivity
   INTEGER(I4B), INTENT(INOUT) :: faceCon(:)
+  !! face connectivity
   INTEGER(I4B), INTENT(INOUT) :: edgeCon(:)
+  !! edge connectivity
   INTEGER(I4B), INTENT(INOUT) :: nodeCon(:)
+  !! node connectivity
   INTEGER(I4B), INTENT(OUT) :: tCellCon
+  !! total data written in cellCon
   INTEGER(I4B), INTENT(OUT) :: tFaceCon
+  !! total data written in faceCon
   INTEGER(I4B), INTENT(OUT) :: tEdgeCon
+  !! total data written in edgeCon
   INTEGER(I4B), INTENT(OUT) :: tNodeCon
+  !! total data written in nodeCon
 
   !! internal variable
   INTEGER(I4B) :: ii
@@ -724,12 +760,15 @@ END FUNCTION Elemdata_GetTotalEntities
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the global vertex number
+! summary: Get the global vertex number of a local vertex number
 
 FUNCTION Elemdata_GetVertex(obj, ii) RESULT(ans)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(in) :: ii
+  !! local vertex number
   INTEGER(I4B) :: ans
+  !! global vertex number
+  
   ans = obj%globalNodes(ii)
 END FUNCTION Elemdata_GetVertex
 
@@ -739,12 +778,14 @@ END FUNCTION Elemdata_GetVertex
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the global edge
+! summary: Get the global edge number of a local edge number
 
 FUNCTION Elemdata_GetEdge(obj, ii) RESULT(ans)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(in) :: ii
+  !! local edge number
   INTEGER(I4B) :: ans
+  !! global edge number
   ans = obj%globalEdges(ii)
 END FUNCTION Elemdata_GetEdge
 
@@ -754,12 +795,14 @@ END FUNCTION Elemdata_GetEdge
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the global face
+! summary: Get the global face number of a local face number
 
 FUNCTION Elemdata_GetFace(obj, ii) RESULT(ans)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(in) :: ii
+  !! local face number
   INTEGER(I4B) :: ans
+  !! global face number
   ans = obj%globalFaces(ii)
 END FUNCTION Elemdata_GetFace
 
@@ -769,12 +812,14 @@ END FUNCTION Elemdata_GetFace
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the global element number
+! summary: Get the global element number (cell number) of a local element number
 
 FUNCTION Elemdata_GetCell(obj, islocal) RESULT(ans)
   TYPE(Elemdata_), INTENT(in) :: obj
   LOGICAL(LGT), INTENT(in) :: islocal
+  !! If true then local cell number is returned
   INTEGER(I4B) :: ans
+  !! global or local element number (cell number)
 
   IF (islocal) THEN
     ans = obj%localElemNum
@@ -793,7 +838,7 @@ END FUNCTION Elemdata_GetCell
 !
 !# Introduction
 !
-! All dofs are internal to the edge
+! All dofs are internal to the edge, that is, vertex dof are not included
 
 FUNCTION Elemdata_GetTotalEdgeDOF(obj, ii, order, baseContinuity, &
                                   baseInterpolation) RESULT(ans)
@@ -818,11 +863,12 @@ END FUNCTION Elemdata_GetTotalEdgeDOF
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the total number of edge dof on the edge of an element
+! summary: Get the total number of face dof on the face of an element
 !
 !# Introduction
 !
-! All dofs are internal to face
+! All dofs are internal to face, that is edge and vertex dof are not 
+! included
 
 FUNCTION Elemdata_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
                                   baseInterpolation) RESULT(ans)
@@ -862,11 +908,13 @@ END FUNCTION Elemdata_GetTotalFaceDOF
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! summary: Get the total number of edge dof on the edge of an element
+! summary: Get the total number of cell dof inside the cell of an element
 !
 !# Introduction
 !
-! All dofs are internal to cell
+! Get the total number of cell dof inside the cell of an element.
+! All dofs are internal to cell.
+! It does not include vertex, edge and face dof.
 
 FUNCTION Elemdata_GetTotalCellDOF(obj, order, baseContinuity, &
                                   baseInterpolation) RESULT(ans)
@@ -891,6 +939,10 @@ END FUNCTION Elemdata_GetTotalCellDOF
 !                                              Elemdata_GetElementToElements
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the global element number of neighbor elements.
+
 SUBROUTINE Elemdata_GetElementToElements1(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -912,16 +964,39 @@ END SUBROUTINE Elemdata_GetElementToElements1
 !                                              Elemdata_GetElementToElements
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the element to element connectivity
+!
+!# Introduction
+!
+! This subroutine returns the element to element connectivity.
+! It also returns the local facet number information which are in 
+! contact with each other.
+
 SUBROUTINE Elemdata_GetElementToElements2(obj, ans, nrow, ncol, &
                                           includeBoundaryElement)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
   !! Element to element, it should be allocated by user before calling
+  !! each row denotes the information of a neighbor element.
+  !! Therefore nrow is the total number of neighboring elements
+  !! number of columns is 3. 
+  !! The first column is global element of the neighbor element
+  !! The second column is local face number of parent element (this element)
+  !! The third column is local face number of neighbor element
   INTEGER(I4B), INTENT(OUT) :: nrow
   !! Number of rows written to ans
   INTEGER(I4B), INTENT(OUT) :: ncol
   !! Number of columns written to ans
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: includeBoundaryElement
+  !! If includeBoundaryElement is present and true, 
+  !! then the boundary element data is included in ans
+  !! In this case the current element is considered as the boundary element
+  !! ans(nrow, 1) contains the global element number of the current element
+  !! ans(nrow, 2) contains the boundary data (local face number which coincides with
+  !! the mesh boundary)
+  !! ans(nrow, 3) is set to 0
 
   INTEGER(I4B) :: ii, jj
 
@@ -994,6 +1069,10 @@ END SUBROUTINE Elemdata_GetEdgeConnectivity
 !                                                                  isActive
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns true if the element is active
+
 PURE FUNCTION Elemdata_isActive(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   LOGICAL(LGT) :: ans
@@ -1003,6 +1082,10 @@ END FUNCTION Elemdata_isActive
 !----------------------------------------------------------------------------
 !                                                              globalElemNum
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns the global element number
 
 PURE FUNCTION Elemdata_globalElemNum(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1014,6 +1097,10 @@ END FUNCTION Elemdata_globalElemNum
 !                                                              localElemNum
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns the local element number
+
 PURE FUNCTION Elemdata_localElemNum(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1023,6 +1110,10 @@ END FUNCTION Elemdata_localElemNum
 !----------------------------------------------------------------------------
 !                                                              elementType
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary: This function returns element type
 
 PURE FUNCTION Elemdata_elementType(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1034,6 +1125,10 @@ END FUNCTION Elemdata_elementType
 !                                                                      name
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns the name of the element
+
 PURE FUNCTION Elemdata_name(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1043,6 +1138,10 @@ END FUNCTION Elemdata_name
 !----------------------------------------------------------------------------
 !                                                                 topoName
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10 
+! summary:  This function returns the topology name of the element
 
 PURE FUNCTION Elemdata_topoName(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1054,6 +1153,10 @@ END FUNCTION Elemdata_topoName
 !                                                                  topoIndx
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns the topology index of the element
+
 PURE FUNCTION Elemdata_topoIndx(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1063,6 +1166,10 @@ END FUNCTION Elemdata_topoIndx
 !----------------------------------------------------------------------------
 !                                                                    meshid
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Returns the mesh id of the element
 
 PURE FUNCTION Elemdata_meshid(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1074,6 +1181,10 @@ END FUNCTION Elemdata_meshid
 !                                                           GetTotalMaterial
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get total number of materials assigned to the element
+
 PURE FUNCTION Elemdata_GetTotalMaterial(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1083,6 +1194,10 @@ END FUNCTION Elemdata_GetTotalMaterial
 !----------------------------------------------------------------------------
 !                                                       GetTotalGlobalNodes
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get total number of global nodes in the element
 
 PURE FUNCTION Elemdata_GetTotalGlobalNodes(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1094,6 +1209,10 @@ END FUNCTION Elemdata_GetTotalGlobalNodes
 !                                                       GetTotalGlobalEdges
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the total number of global edges in the element
+
 PURE FUNCTION Elemdata_GetTotalGlobalEdges(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1103,6 +1222,10 @@ END FUNCTION Elemdata_GetTotalGlobalEdges
 !----------------------------------------------------------------------------
 !                                                       GetTotalEdgeOrient
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the size of edgeOrient vector
 
 PURE FUNCTION Elemdata_GetTotalEdgeOrient(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1114,6 +1237,10 @@ END FUNCTION Elemdata_GetTotalEdgeOrient
 !                                                       GetTotalGlobalFaces
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:   2025-05-10
+! summary:  Get the size of globalFaces vector
+
 PURE FUNCTION Elemdata_GetTotalGlobalFaces(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1123,6 +1250,10 @@ END FUNCTION Elemdata_GetTotalGlobalFaces
 !----------------------------------------------------------------------------
 !                                                       GetTotalFaceOrient
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  Get the size of faceOrient vector
 
 PURE FUNCTION Elemdata_GetTotalFaceOrient(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1134,6 +1265,10 @@ END FUNCTION Elemdata_GetTotalFaceOrient
 !                                                     GetTotalGlobalElements
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10 
+! summary:  Get the size of globalElements vector
+
 PURE FUNCTION Elemdata_GetTotalGlobalElements(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1144,6 +1279,10 @@ END FUNCTION Elemdata_GetTotalGlobalElements
 !                                                     GetTotalBoundaryData
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary: Get the size of boundaryData vector
+
 PURE FUNCTION Elemdata_GetTotalBoundaryData(obj) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B) :: ans
@@ -1153,6 +1292,10 @@ END FUNCTION Elemdata_GetTotalBoundaryData
 !----------------------------------------------------------------------------
 !                                                               GetMaterial
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  Get list of materials assigned to the element
 
 PURE SUBROUTINE Elemdata_GetMaterial(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
@@ -1173,6 +1316,10 @@ END SUBROUTINE Elemdata_GetMaterial
 !                                                            GetGlobalNodes
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the list of global nodes in the element
+
 PURE SUBROUTINE Elemdata_GetGlobalNodes(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1191,6 +1338,10 @@ END SUBROUTINE Elemdata_GetGlobalNodes
 !----------------------------------------------------------------------------
 !                                                            GetGlobalEdges
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the list of global edges in the element
 
 PURE SUBROUTINE Elemdata_GetGlobalEdges(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
@@ -1211,6 +1362,10 @@ END SUBROUTINE Elemdata_GetGlobalEdges
 !                                                            GetGlobalFaces
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the list of global faces in the element
+
 PURE SUBROUTINE Elemdata_GetGlobalFaces(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1230,10 +1385,16 @@ END SUBROUTINE Elemdata_GetGlobalFaces
 !                                                       GetGlobalFaceNumber
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  Get the global face number from a local face number
+
 PURE FUNCTION Elemdata_GetGlobalFaceNumber(obj, localFaceNumber) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  !! local face number
   INTEGER(I4B) :: ans
+  !! global face number
   ans = obj%globalFaces(localFaceNumber)
 END FUNCTION Elemdata_GetGlobalFaceNumber
 
@@ -1241,16 +1402,26 @@ END FUNCTION Elemdata_GetGlobalFaceNumber
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the global edge number from a local edge number
+
 PURE FUNCTION Elemdata_GetGlobalEdgeNumber(obj, localEdgeNumber) RESULT(ans)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+  !! local edge number
   INTEGER(I4B) :: ans
+  !! global edge number
   ans = obj%globalEdges(localEdgeNumber)
 END FUNCTION Elemdata_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
 !                                                          GetGlobalElements
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This subroutine returns the list globalElements in the element.
 
 PURE SUBROUTINE Elemdata_GetGlobalElements(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
@@ -1271,9 +1442,14 @@ END SUBROUTINE Elemdata_GetGlobalElements
 !                                                          GetBoundaryData
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This subroutine returns the list of boundary data in the element.
+
 PURE SUBROUTINE Elemdata_GetBoundaryData(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
   INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  !! boundary data, see the boundaryData in the type definition
   INTEGER(I4B), INTENT(OUT) :: tsize
 
   INTEGER(I4B) :: ii
@@ -1290,6 +1466,10 @@ END SUBROUTINE Elemdata_GetBoundaryData
 !                                                     GetGlobalNodesPointer
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This function returns the pointer to the globalNodes
+
 FUNCTION Elemdata_GetGlobalNodesPointer(obj) RESULT(ans)
   TYPE(Elemdata_), TARGET, INTENT(IN) :: obj
   INTEGER(I4B), POINTER :: ans(:)
@@ -1299,6 +1479,10 @@ END FUNCTION Elemdata_GetGlobalNodesPointer
 !----------------------------------------------------------------------------
 !                                                            GetEdgeOrient
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  This subroutine returns the edgeOrient in the element
 
 PURE SUBROUTINE Elemdata_GetEdgeOrient(obj, ans, tsize)
   TYPE(Elemdata_), INTENT(in) :: obj
@@ -1318,6 +1502,10 @@ END SUBROUTINE Elemdata_GetEdgeOrient
 !----------------------------------------------------------------------------
 !                                                            GetFaceOrient
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  This subroutine returns the faceOrient in the element
 
 PURE SUBROUTINE Elemdata_GetFaceOrient(obj, ans, nrow, ncol)
   TYPE(Elemdata_), INTENT(in) :: obj
@@ -1340,6 +1528,10 @@ END SUBROUTINE Elemdata_GetFaceOrient
 !----------------------------------------------------------------------------
 !                                                             GetOrientation
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Get the orientation related vectors from the element
 
 PURE SUBROUTINE Elemdata_GetOrientation(obj, cellOrient, faceOrient, &
                             edgeOrient, tCellOrient, tFaceOrient, tEdgeOrient)
@@ -1372,18 +1564,22 @@ END SUBROUTINE Elemdata_GetOrientation
 !                                                                  FindFace
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-10
+! summary:  Returns the local face number of the elem from faceCon
+
 SUBROUTINE Elemdata_FindFace(obj, faceCon, isFace, &
                              localFaceNumber, onlyBoundaryElement)
   TYPE(Elemdata_), INTENT(IN) :: obj
-    !! abstract mesh
+  !! abstract mesh
   INTEGER(I4B), INTENT(IN) :: faceCon(:)
-    !! vertex connectivity of face
+  !! vertex connectivity of face
   LOGICAL(LGT), INTENT(OUT) :: isFace
-    !! if faceCon is a face of globalElement then it is true, else false
+  !! if faceCon is a face of globalElement then it is true, else false
   INTEGER(I4B), INTENT(OUT) :: localFaceNumber
-    !! local face number if found, else 0
+  !! local face number if found, else 0
   LOGICAL(LGT), INTENT(IN) :: onlyBoundaryElement
-    !! if true then we will search if the element is boundary element
+  !! if true then we will search if the element is boundary element
 
   LOGICAL(LGT) :: isok
   INTEGER(I4B), PARAMETER :: faceopt = 1
