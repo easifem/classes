@@ -31,21 +31,18 @@ LOGICAL(LGT) :: isSkipRows
 TYPE(String) :: aline
 TYPE(String), ALLOCATABLE :: tokens(:)
 CHARACTER(LEN=maxStrLen) :: iomsg
-  !!
-  !! check
-  !!
+
+!! check
 IF (.NOT. obj%isOpen() .OR. obj%isEOF()) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Either CSVfile is not opened or end of file!')
   RETURN
 END IF
-  !!
-  !! get number of records
-  !!
-trecords = obj%getTotalRecords()
-  !!
-  !! get
-  !!
+
+!! get number of records
+trecords = obj%getTotalRecords(ignoreComment=.TRUE.)
+
+!! get
 IF (ALLOCATED(obj%skipRows)) THEN
   skippedRows = SIZE(obj%skipRows)
   isSkipRows = .TRUE.
@@ -53,68 +50,67 @@ ELSE
   skippedRows = 0
   isSkipRows = .FALSE.
 END IF
-  !!
+
 nrows = trecords - skippedRows - obj%headerIndx
 obj%nrows = nrows
-  !!
+
+trecords = obj%getTotalRecords()
+
 irow = 0; ioerr = 0
-  !!
+
 DO ii = 1, trecords
-    !!
-  CALL obj%readLine( &
-    & val=aline, &
-    & iostat=ioerr, &
-    & iomsg=iomsg)
-    !!
+
+  CALL obj%readLine(val=aline, &
+                    iostat=ioerr, &
+                    iomsg=iomsg)
+  ! skip comment line
+  IF (.NOT. obj%isValidRecord(aline=aline, &
+                              ignoreComment=.TRUE., &
+                              commentSymbol=obj%comment)) CYCLE
+
   IF (ioerr .GT. 0) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Error occured while reading line = '//tostring(ii)// &
-      & " message = "//TRIM(iomsg))
+                      'Error occured while reading line = '// &
+                      tostring(ii)//" message = "//TRIM(iomsg))
     RETURN
   END IF
-    !!
+
   IF (isSkipRows) THEN
     IF (ANY(ii .EQ. obj%skipRows)) CYCLE
   END IF
-    !!
+
   CALL aline%split(tokens=tokens, sep=obj%separator)
-    !!
+
   IF (.NOT. ALLOCATED(tokens)) CYCLE
-    !!
-    !!
-    !!
+
   IF (.NOT. ALLOCATED(obj%DATA)) THEN
     ncols = SIZE(tokens)
     obj%ncols = ncols
     ALLOCATE (obj%DATA(nrows, ncols))
     IF (obj%headerIndx .NE. 0) ALLOCATE (obj%header(ncols))
   END IF
-    !!
-    !!
-    !!
+
   IF (ii .EQ. obj%headerIndx) THEN
-      !!
+
     DO jj = 1, obj%ncols
       obj%header(jj) = tokens(jj)
     END DO
-      !!
+
   ELSE
-      !!
+
     irow = irow + 1
-      !!
+
     DO jj = 1, obj%ncols
       obj%DATA(irow, jj) = tokens(jj)
     END DO
-      !!
+
   END IF
-    !!
+
 END DO
-  !!
-  !!
-  !!
+
 IF (PRESENT(iostat)) iostat = ioerr
 IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
-  !!
+
 END PROCEDURE obj_CSVFileRead
 
 !----------------------------------------------------------------------------
