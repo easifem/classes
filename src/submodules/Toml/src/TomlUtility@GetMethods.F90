@@ -123,6 +123,7 @@ END PROCEDURE GetValue_int8_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int8_r1_static
+INTEGER(INT8) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_int8_r1_static
 
@@ -141,6 +142,7 @@ END PROCEDURE GetValue_int16_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int16_r1_static
+INTEGER(INT16) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_int16_r1_static
 
@@ -159,6 +161,7 @@ END PROCEDURE GetValue_int32_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int32_r1_static
+INTEGER(INT32) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_int32_r1_static
 
@@ -177,6 +180,7 @@ END PROCEDURE GetValue_int64_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int64_r1_static
+INTEGER(INT64) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_int64_r1_static
 
@@ -195,6 +199,7 @@ END PROCEDURE GetValue_real32_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_real32_r1_static
+REAL(REAL32) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_real32_r1_static
 
@@ -213,6 +218,7 @@ END PROCEDURE GetValue_real64_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_real64_r1_static
+REAL(REAL64) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_real64_r1_static
 

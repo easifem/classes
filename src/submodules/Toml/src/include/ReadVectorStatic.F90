@@ -14,68 +14,170 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-      CHARACTER(*), PARAMETER :: myName = "toml_get"
-      TYPE(toml_array), POINTER :: array
-      INTEGER(I4B) :: stat0, iostat, ii
-      TYPE(String) :: filename
-      TYPE(TxtFile_) :: atxtfile
-      CHARACTER(512) :: iomsg
-      LOGICAL(LGT) :: isFound0, bool1, isok
+CHARACTER(*), PARAMETER :: myName = "toml_get"
+TYPE(toml_array), POINTER :: array
+INTEGER(I4B) :: stat0, iostat, ii, ind1, ind2, ncol, nrow
+TYPE(String) :: filename, ext
+TYPE(TxtFile_) :: atxtfile
+TYPE(CSVFile_) :: acsvfile
+CHARACTER(512) :: iomsg
+LOGICAL(LGT) :: isFound0, bool1, isok
 
-      isFound0 = .FALSE.
+isFound0 = .FALSE.
+tsize = 0
+
+!----------------------------------------------------------------------------
+! READ from TOML array
+! try to read from the toml array
+! the data is given in toml file itself as toml array
+!----------------------------------------------------------------------------
+
+array => NULL()
+CALL toml_get(table, key, array, &
+              origin=origin, stat=stat0, requested=.FALSE.)
+
+isok = ASSOCIATED(array)
+
+IF (isok) THEN
+  tsize = toml_len(array)
+  isFound0 = .TRUE.
+  DO ii = 1, tsize
+    CALL toml_get(array, ii, VALUE(ii))
+  END DO
+
+  IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isFound)) isFound = isFound0
+  NULLIFY (array)
+  RETURN
+END IF
+
+!----------------------------------------------------------------------------
+! READ a scalar value from toml
+! In this case length of the vector is 1, this value is given in toml file
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, key, temp, origin=origin, stat=stat0)
+
+IF (stat0 .EQ. toml_stat%success) THEN
+  tsize = 1
+  VALUE(1) = temp
+  isFound0 = .TRUE.
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  RETURN
+END IF
+
+isFound0 = .FALSE.
+IF (PRESENT(isFound)) isFound = isFound0
+IF (PRESENT(stat)) stat = stat0
+
+!----------------------------------------------------------------------------
+! READ from a txt file or csv file
+! try to read from the file
+! the data is given in a txt file
+! the filename is given in the toml file
+! the line beginning with # is ignored
+! no header csv file is expected
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
+
+IF (stat0 .EQ. toml_stat%success) THEN
+
+  ext = filename%extension()
+
+  SELECT CASE (ext%chars())
+
+  CASE (".csv")
+    CALL acsvfile%Initiate(filename=filename%Chars(), &
+                           action="READ", status="OLD", &
+                           delimiter=",", comment="#")
+    CALL acsvfile%OPEN()
+    CALL acsvfile%READ()
+    ncol = acsvfile%Getncols()
+    nrow = acsvfile%getnrows()
+    SELECT CASE (ncol)
+    CASE (1)
+      ! a column values is imported as VALUE
+      DO ii = 1, nrow
+        CALL acsvfile%Get(icol=1, irow=ii, val=VALUE(ii))
+      END DO
+      tsize = nrow
+
+    CASE (2)
+      ! first column is treated as index of VALUE
+      ! second column is treated as value at that index
+
       tsize = 0
+      DO ii = 1, nrow
+        CALL acsvfile%Get(icol=1, irow=ii, val=ind1) ! index
+        CALL acsvfile%Get(icol=2, irow=ii, val=temp) ! value
+        VALUE(ind1) = temp
+        IF (ind1 .GT. tsize) tsize = ind1
+      END DO
 
-      ! try to read from the array
-      array => NULL()
-      CALL toml_get(table, key, array, &
-                    origin=origin, stat=stat0, requested=.FALSE.)
+    CASE (3)
+      ! first and second columns must be integers
+      ! which determine the start and end index of VALUE
+      ! third column is value for this range
 
-      isok = ASSOCIATED(array)
+      tsize = 0
+      DO ii = 1, nrow
+        CALL acsvfile%Get(icol=1, irow=ii, val=ind1) ! start
+        CALL acsvfile%Get(icol=2, irow=ii, val=ind2) ! end
+        CALL acsvfile%Get(icol=3, irow=ii, val=temp) ! value
+        VALUE(ind1:ind2) = temp
+        IF (ind2 .GT. tsize) tsize = ind2
+      END DO
 
-      IF (isok) THEN
-        tsize = toml_len(array)
-        ! CALL Reallocate(VALUE, tsize)
-        isFound0 = .TRUE.
-        DO ii = 1, tsize
-          CALL toml_get(array, ii, VALUE(ii))
-        END DO
+    CASE default
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                       '[INTERNAL ERROR] :: Number of columns in csv file'// &
+                        'should be 1, 2 or 3')
+    END SELECT
 
-        IF (PRESENT(stat)) stat = stat0
+    isFound0 = .TRUE.
+    CALL acsvfile%DEALLOCATE()
+    IF (PRESENT(isFound)) isFound = isFound0
+    IF (PRESENT(stat)) stat = stat0
+    filename = ""
+    RETURN
+
+  CASE default
+
+    CALL atxtfile%Initiate(filename=filename%Chars(), &
+                           action="READ", status="OLD", &
+                           comment="#")
+    CALL atxtfile%OPEN()
+
+    nrow = atxtfile%GetTotalRecords(ignoreComment=.TRUE.)
+    DO ii = 1, nrow
+      CALL atxtfile%READ(val=VALUE(ii), iostat=iostat, iomsg=iomsg, &
+                         ignoreComment=.TRUE.)
+
+      bool1 = iostat .GT. 0 .AND. (.NOT. atxtfile%isEOF())
+      IF (bool1) THEN
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
+               '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
+                          CHAR_LF//TRIM(iomsg))
         IF (PRESENT(isFound)) isFound = isFound0
-        NULLIFY (array)
+        IF (PRESENT(stat)) stat = stat0
+        filename = ""
         RETURN
       END IF
+    END DO
 
-      ! try to read from the file
-      CALL GetValue(table=table, key=key, VALUE=filename, &
-                    default_value="", origin=origin, stat=stat0, isfound=isok)
+    tsize = nrow
 
-      IF (isok) THEN
-        CALL atxtfile%Initiate(filename=filename%Chars(), &
-                               action="READ", status="OLD")
-        CALL atxtfile%OPEN()
+    isFound0 = .TRUE.
+    CALL atxtfile%DEALLOCATE()
 
-        tsize = atxtfile%GetTotalRecords()
+    IF (PRESENT(isFound)) isFound = isFound0
+    IF (PRESENT(stat)) stat = stat0
+    filename = ""
+    RETURN
 
-        DO ii = 1, tsize
-          CALL atxtfile%READ(val=VALUE(ii), iostat=iostat, iomsg=iomsg)
+  END SELECT
 
-          bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
-          IF (bool1) THEN
-            CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-                              CHAR_LF//TRIM(iomsg))
-            IF (PRESENT(isFound)) isFound = isFound0
-            IF (PRESENT(stat)) stat = stat0
-            filename = ""
-            RETURN
-          END IF
-        END DO
+END IF
 
-        isFound0 = .TRUE.
-        CALL atxtfile%DEALLOCATE()
-      END IF
-
-      IF (PRESENT(isFound)) isFound = isFound0
-      IF (PRESENT(stat)) stat = stat0
-      filename = ""
