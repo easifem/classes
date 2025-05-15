@@ -24,31 +24,31 @@ CONTAINS
 !                                                              addSurrogate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_setCSVFileProperties
-  obj%isQuotedStrings=INPUT( option=isQuotedStrings, default=.TRUE. )
-  obj%isQuotedData=INPUT( option=isQuotedData, default=.FALSE. )
-  obj%TrueChar=INPUT( option=TrueChar, default="T" )
-  obj%FalseChar=INPUT( option=FalseChar, default="F" )
-  obj%chunk_size=INPUT( option=chunk_size, default=MAX_CHUNK_SIZE )
-  IF( PRESENT( echostat ) ) CALL obj%setEchoStat( echostat )
-  IF( PRESENT( echounit ) ) CALL obj%setEchoUnit( echounit )
-END PROCEDURE txt_setCSVFileProperties
+MODULE PROCEDURE obj_setCSVFileProperties
+obj%isQuotedStrings = INPUT(option=isQuotedStrings, default=.TRUE.)
+obj%isQuotedData = INPUT(option=isQuotedData, default=.FALSE.)
+obj%TrueChar = INPUT(option=TrueChar, default="T")
+obj%FalseChar = INPUT(option=FalseChar, default="F")
+obj%chunk_size = INPUT(option=chunk_size, default=MAX_CHUNK_SIZE)
+IF (PRESENT(echostat)) CALL obj%setEchoStat(echostat)
+IF (PRESENT(echounit)) CALL obj%setEchoUnit(echounit)
+END PROCEDURE obj_setCSVFileProperties
 
 !----------------------------------------------------------------------------
 !                                                             setHeaderIndx
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_setHeaderIndx
-  obj%headerIndx=indx
-END PROCEDURE txt_setHeaderIndx
+MODULE PROCEDURE obj_setHeaderIndx
+obj%headerIndx = indx
+END PROCEDURE obj_setHeaderIndx
 
 !----------------------------------------------------------------------------
 !                                                               setSkipRows
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_setSkipRows
-  obj%skipRows = indx
-  CALL RemoveDuplicates( obj%skipRows )
-END PROCEDURE txt_setSkipRows
+MODULE PROCEDURE obj_setSkipRows
+obj%skipRows = indx
+CALL RemoveDuplicates(obj%skipRows)
+END PROCEDURE obj_setSkipRows
 
 END SUBMODULE SetMethods

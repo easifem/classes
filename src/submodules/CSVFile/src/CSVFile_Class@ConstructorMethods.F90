@@ -24,7 +24,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_initiate
+MODULE PROCEDURE obj_initiate
 CALL TxtFileInitiate( &
   obj=obj, &
   filename=filename, &
@@ -39,13 +39,13 @@ CALL TxtFileInitiate( &
   comment=comment, &
   separator=INPUT(option=separator, default=comma), &
   delimiter=delimiter)
-END PROCEDURE txt_initiate
+END PROCEDURE obj_initiate
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL TxtFileDeallocate(obj, delete)
 obj%nrows = 0
 obj%ncols = 0
@@ -59,15 +59,15 @@ obj%headerIndx = 0
 IF (ALLOCATED(obj%header)) DEALLOCATE (obj%header)
 IF (ALLOCATED(obj%DATA)) DEALLOCATE (obj%DATA)
 IF (ALLOCATED(obj%skipRows)) DEALLOCATE (obj%skipRows)
-END PROCEDURE txt_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE txt_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !
