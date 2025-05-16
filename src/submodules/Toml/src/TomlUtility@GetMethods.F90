@@ -227,48 +227,114 @@ END PROCEDURE GetValue_real64_r1_static
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int8_r2
+INTEGER(INT8) :: temp
+INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_int8_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int8_r2_static
+INTEGER(INT8) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int8_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int16_r2
+INTEGER(INT16) :: temp
+INTEGER(INT16), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_int16_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int16_r2_static
+INTEGER(INT16) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int16_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int32_r2
+INTEGER(INT32) :: temp
+INTEGER(INT32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_int32_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int32_r2_static
+INTEGER(INT32) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int32_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_int64_r2
+INTEGER(INT64) :: temp
+INTEGER(INT64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_int64_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int64_r2_static
+INTEGER(INT64) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_real32_r2
+REAL(REAL32) :: temp
+REAL(REAL32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_real32_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_real32_r2_static
+REAL(REAL32) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_real32_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_real64_r2
+REAL(REAL64) :: temp
+REAL(REAL64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
 END PROCEDURE GetValue_real64_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_real64_r2_static
+REAL(REAL64) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_real64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get

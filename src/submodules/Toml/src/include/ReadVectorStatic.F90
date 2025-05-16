@@ -141,6 +141,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
     IF (PRESENT(isFound)) isFound = isFound0
     IF (PRESENT(stat)) stat = stat0
     filename = ""
+    ext = ""
     RETURN
 
   CASE default
@@ -175,6 +176,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
     IF (PRESENT(isFound)) isFound = isFound0
     IF (PRESENT(stat)) stat = stat0
     filename = ""
+    ext = ""
     RETURN
 
   END SELECT

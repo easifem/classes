@@ -369,12 +369,29 @@ INTERFACE GetValue
                                      isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT8), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_int8_r2
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_int8_r2_static(table, key, VALUE, origin, stat, &
+                                            isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT8), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_int8_r2_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
@@ -397,6 +414,23 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_int16_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT16), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_int16_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
 !                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
@@ -409,12 +443,29 @@ INTERFACE GetValue
                                       isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT32), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_int32_r2
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_int32_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT32), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_int32_r2_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
@@ -429,12 +480,29 @@ INTERFACE GetValue
                                       isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT64), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_int64_r2
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_int64_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT64), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_int64_r2_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
@@ -449,12 +517,29 @@ INTERFACE GetValue
                                        isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL32), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_real32_r2
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_real32_r2_static(table, key, VALUE, origin, &
+                                              stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL32), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_real32_r2_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
@@ -469,12 +554,29 @@ INTERFACE GetValue
                                        isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL64), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_real64_r2
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_real64_r2_static(table, key, VALUE, origin, &
+                                              stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL64), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_real64_r2_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                        GetValue@IOMethods
