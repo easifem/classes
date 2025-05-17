@@ -32,6 +32,8 @@ USE tomlf, ONLY: toml_error, &
                  toml_array, &
                  toml_stat
 
+USE CSVFile_Class, ONLY: CSVFile_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -39,7 +41,7 @@ CONTAINS
 !                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_string
+MODULE PROCEDURE GetValue_string
 CHARACTER(:), ALLOCATABLE :: temp_char
 LOGICAL(LGT) :: isok
 
@@ -56,212 +58,290 @@ IF (isok) THEN
 END IF
 
 IF (PRESENT(isFound)) isFound = .FALSE.
-END PROCEDURE toml_get_string
+END PROCEDURE GetValue_string
 
 !----------------------------------------------------------------------------
 !                                                                      Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int8
+MODULE PROCEDURE GetValue_int8
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int8
+END PROCEDURE GetValue_int8
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int16
+MODULE PROCEDURE GetValue_int16
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int16
+END PROCEDURE GetValue_int16
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int32
+MODULE PROCEDURE GetValue_int32
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int32
+END PROCEDURE GetValue_int32
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int64
+MODULE PROCEDURE GetValue_int64
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_int64
+END PROCEDURE GetValue_int64
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real32
+MODULE PROCEDURE GetValue_real32
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_real32
+END PROCEDURE GetValue_real32
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real64
+MODULE PROCEDURE GetValue_real64
 #include "./include/ReadScalar.F90"
-END PROCEDURE toml_get_real64
+END PROCEDURE GetValue_real64
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int8_r1
+MODULE PROCEDURE GetValue_int8_r1
 INTEGER(INT8) :: temp
+INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_int8_r1
+END PROCEDURE GetValue_int8_r1
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int8_r1_static
+MODULE PROCEDURE GetValue_int8_r1_static
+INTEGER(INT8) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int8_r1_static
+END PROCEDURE GetValue_int8_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                      Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int16_r1
+MODULE PROCEDURE GetValue_int16_r1
 INTEGER(INT16) :: temp
+INTEGER(INT16), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_int16_r1
+END PROCEDURE GetValue_int16_r1
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int16_r1_static
+MODULE PROCEDURE GetValue_int16_r1_static
+INTEGER(INT16) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int16_r1_static
+END PROCEDURE GetValue_int16_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int32_r1
+MODULE PROCEDURE GetValue_int32_r1
 INTEGER(INT32) :: temp
+INTEGER(INT32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_int32_r1
+END PROCEDURE GetValue_int32_r1
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int32_r1_static
+MODULE PROCEDURE GetValue_int32_r1_static
+INTEGER(INT32) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int32_r1_static
+END PROCEDURE GetValue_int32_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int64_r1
+MODULE PROCEDURE GetValue_int64_r1
 INTEGER(INT64) :: temp
+INTEGER(INT64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_int64_r1
+END PROCEDURE GetValue_int64_r1
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int64_r1_static
+MODULE PROCEDURE GetValue_int64_r1_static
+INTEGER(INT64) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_int64_r1_static
+END PROCEDURE GetValue_int64_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real32_r1
+MODULE PROCEDURE GetValue_real32_r1
 REAL(REAL32) :: temp
+REAL(REAL32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_real32_r1
+END PROCEDURE GetValue_real32_r1
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real32_r1_static
+MODULE PROCEDURE GetValue_real32_r1_static
+REAL(REAL32) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_real32_r1_static
+END PROCEDURE GetValue_real32_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real64_r1
+MODULE PROCEDURE GetValue_real64_r1
 REAL(REAL64) :: temp
+REAL(REAL64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadVector.F90"
-END PROCEDURE toml_get_real64_r1
+END PROCEDURE GetValue_real64_r1
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real64_r1_static
+MODULE PROCEDURE GetValue_real64_r1_static
+REAL(REAL64) :: temp
 #include "./include/ReadVectorStatic.F90"
-END PROCEDURE toml_get_real64_r1_static
+END PROCEDURE GetValue_real64_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int8_r2
+MODULE PROCEDURE GetValue_int8_r2
+INTEGER(INT8) :: temp
+INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_int8_r2
+END PROCEDURE GetValue_int8_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int8_r2_static
+INTEGER(INT8) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int8_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int16_r2
+MODULE PROCEDURE GetValue_int16_r2
+INTEGER(INT16) :: temp
+INTEGER(INT16), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_int16_r2
+END PROCEDURE GetValue_int16_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int16_r2_static
+INTEGER(INT16) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int16_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int32_r2
+MODULE PROCEDURE GetValue_int32_r2
+INTEGER(INT32) :: temp
+INTEGER(INT32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_int32_r2
+END PROCEDURE GetValue_int32_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int32_r2_static
+INTEGER(INT32) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int32_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_int64_r2
+MODULE PROCEDURE GetValue_int64_r2
+INTEGER(INT64) :: temp
+INTEGER(INT64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_int64_r2
+END PROCEDURE GetValue_int64_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_int64_r2_static
+INTEGER(INT64) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_int64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real32_r2
+MODULE PROCEDURE GetValue_real32_r2
+REAL(REAL32) :: temp
+REAL(REAL32), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_real32_r2
+END PROCEDURE GetValue_real32_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_real32_r2_static
+REAL(REAL32) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_real32_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_real64_r2
+MODULE PROCEDURE GetValue_real64_r2
+REAL(REAL64) :: temp
+REAL(REAL64), ALLOCATABLE :: tempvalvec(:)
 #include "./include/ReadMatrix.F90"
-END PROCEDURE toml_get_real64_r2
+END PROCEDURE GetValue_real64_r2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_real64_r2_static
+REAL(REAL64) :: temp
+#include "./include/ReadMatrixStatic.F90"
+END PROCEDURE GetValue_real64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_from_file
-CHARACTER(*), PARAMETER :: myName = "toml_get_from_file()"
+MODULE PROCEDURE GetValue_from_file
+CHARACTER(*), PARAMETER :: myName = "GetValue_from_file()"
 LOGICAL(LGT) :: isNotOpen, isNotRead
 LOGICAL(LGT), PARAMETER :: color = .TRUE.
 INTEGER(I4B), PARAMETER :: detail = 1
@@ -298,14 +378,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE toml_get_from_file
+END PROCEDURE GetValue_from_file
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_from_filename
-CHARACTER(*), PARAMETER :: myName = "toml_get_from_filename()"
+MODULE PROCEDURE GetValue_from_filename
+CHARACTER(*), PARAMETER :: myName = "GetValue_from_filename()"
 LOGICAL(LGT), PARAMETER :: color = .TRUE.
 INTEGER(I4B), PARAMETER :: detail = 1
 TYPE(toml_error), ALLOCATABLE :: error
@@ -336,23 +416,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE toml_get_from_filename
+END PROCEDURE GetValue_from_filename
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_get_from_file_master
-CHARACTER(*), PARAMETER :: myName = "toml_get_from_file_master"
+MODULE PROCEDURE GetValue_from_file_master
+CHARACTER(*), PARAMETER :: myName = "GetValue_from_file_master"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
 IF (PRESENT(afile)) THEN
-  CALL toml_get_from_file(table=table, afile=afile)
+  CALL GetValue_from_file(table=table, afile=afile)
 ELSEIF (PRESENT(filename)) THEN
-  CALL toml_get_from_filename(table=table, filename=filename)
+  CALL GetValue_from_filename(table=table, filename=filename)
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[ARG ERROR] :: either filename or afile should be present!')
@@ -363,13 +443,13 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE toml_get_from_file_master
+END PROCEDURE GetValue_from_file_master
 
 !----------------------------------------------------------------------------
 !                                                            TomlArrayLength
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE toml_array_length
+MODULE PROCEDURE ArrayLength
 TYPE(toml_array), POINTER :: array
 
 ! try to read from the array
@@ -384,6 +464,6 @@ END IF
 
 array => NULL()
 
-END PROCEDURE toml_array_length
+END PROCEDURE ArrayLength
 
 END SUBMODULE GetMethods

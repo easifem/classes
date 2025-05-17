@@ -16,14 +16,14 @@
 
 CHARACTER(*), PARAMETER :: myName = "toml_get"
 TYPE(toml_array), POINTER :: array, row_array
-INTEGER(I4B) :: ncol, nrow, stat0, iostat, ii, temp_ncol, temp_nrow, jj
+INTEGER(I4B) :: stat0, iostat, ii, temp_ncol, temp_nrow, jj, &
+                row_ind1, row_ind2, column_ind1, column_ind2, tsize
 TYPE(String) :: filename, ext, astr
+TYPE(String), ALLOCATABLE :: tokens(:)
 TYPE(CSVFile_) :: acsvfile
 TYPE(TxtFile_) :: atxtfile
 CHARACTER(512) :: iomsg
 LOGICAL(LGT) :: isFound0, bool1, isok
-INTEGER(I4B), ALLOCATABLE :: tempintvec1(:), tempintvec2(:), &
-                             tempintvec3(:), tempintvec4(:)
 
 isFound0 = .FALSE.
 
@@ -55,7 +55,6 @@ IF (isok) THEN
     temp_ncol = toml_len(row_array)
     IF (ii .EQ. 1) THEN
       ncol = temp_ncol
-      CALL Reallocate(VALUE, nrow, ncol)
       isFound0 = .TRUE.
     ELSE
       IF (temp_ncol .NE. ncol) THEN
@@ -83,7 +82,7 @@ END IF
 CALL toml_get(table, key, temp, origin=origin, stat=stat0)
 
 IF (stat0 .EQ. toml_stat%success) THEN
-  CALL Reallocate(VALUE, 1, 1)
+  nrow = 1; ncol = 1
   VALUE(1, 1) = temp
   isFound0 = .TRUE.
   IF (PRESENT(isFound)) isFound = isFound0
@@ -122,10 +121,12 @@ IF (stat0 .EQ. toml_stat%success) THEN
     CALL acsvfile%Get(icol=1, irow=1, val=astr)
     IF (.NOT. astr%is_integer()) THEN
       ! each column in csv is imported as a column of VALUE
-      CALL Reallocate(VALUE, temp_nrow, temp_ncol)
-      DO ii = 1, temp_ncol
-        CALL acsvfile%Get(ii, val=tempvalvec)
-        VALUE(:, ii) = tempvalvec
+      nrow = temp_nrow
+      ncol = temp_ncol
+      DO jj = 1, ncol
+        DO ii = 1, nrow
+          CALL acsvfile%Get(irow=ii, icol=jj, val=VALUE(ii, jj))
+        END DO
       END DO
 
       isFound0 = .TRUE.
@@ -134,6 +135,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
       IF (PRESENT(stat)) stat = stat0
       filename = ""
       ext = ""
+      astr = ""
       RETURN
     END IF
 
@@ -142,18 +144,17 @@ IF (stat0 .EQ. toml_stat%success) THEN
       ! first column is treated as row index of VALUE
       ! second column is treated as column index of VALUE
       ! third column is treated as value at this location
-      CALL acsvfile%get(1, val=tempintvec1) ! row index
-      CALL acsvfile%get(2, val=tempintvec2) ! column index
-      CALL acsvfile%get(3, val=tempvalvec) ! value
 
-      nrow = MAXVAL(tempintvec1)
-      ncol = MAXVAL(tempintvec2)
-      CALL Reallocate(VALUE, nrow, ncol)
-      DO ii = 1, SIZE(tempintvec1)
-        VALUE(tempintvec1(ii), tempintvec2(ii)) = tempvalvec(ii)
+      nrow = 0
+      ncol = 0
+      DO ii = 1, temp_nrow
+        CALL acsvfile%get(icol=1, irow=ii, val=row_ind1) ! row index
+        CALL acsvfile%get(icol=2, irow=ii, val=column_ind1) ! column index
+        CALL acsvfile%get(icol=3, irow=ii, val=VALUE(row_ind1, column_ind1)) ! value
+
+        IF (row_ind1 .GT. nrow) nrow = row_ind1
+        IF (column_ind1 .GT. ncol) ncol = column_ind1
       END DO
-
-      DEALLOCATE (tempintvec1, tempintvec2, tempvalvec)
 
     CASE (5)
       ! first to fourth column must be integers
@@ -162,23 +163,21 @@ IF (stat0 .EQ. toml_stat%success) THEN
       ! third and fourth integers are treated
       ! as start and end index of column in VALUE
       ! fifth is value for VALUE(start:end, start:end)
-      CALL acsvfile%get(1, val=tempintvec1) ! start
-      CALL acsvfile%get(2, val=tempintvec2) ! end
-      CALL acsvfile%get(3, val=tempintvec3) ! start
-      CALL acsvfile%get(4, val=tempintvec4) ! end
-      CALL acsvfile%get(5, val=tempvalvec) ! value
 
-      nrow = MAXVAL(tempintvec2)
-      ncol = MAXVAL(tempintvec4)
-      CALL reallocate(VALUE, nrow, ncol)
+      nrow = 0
+      ncol = 0
 
-      DO ii = 1, SIZE(tempintvec1)
-        VALUE(tempintvec1(ii):tempintvec2(ii), &
-              tempintvec3(ii):tempintvec4(ii)) = tempvalvec(ii)
+      DO ii = 1, temp_nrow
+        CALL acsvfile%get(icol=1, irow=ii, val=row_ind1) ! start
+        CALL acsvfile%get(icol=2, irow=ii, val=row_ind2) ! end
+        CALL acsvfile%get(icol=3, irow=ii, val=column_ind1) ! start
+        CALL acsvfile%get(icol=4, irow=ii, val=column_ind2) ! end
+        CALL acsvfile%get(icol=5, irow=ii, val=temp) ! value
+        VALUE(row_ind1:row_ind2, column_ind1:column_ind2) = temp
+
+        IF (row_ind2 .GT. nrow) nrow = row_ind2
+        IF (column_ind2 .GT. ncol) ncol = column_ind2
       END DO
-
-      DEALLOCATE (tempintvec1, tempintvec2, tempintvec3, tempintvec4, &
-                  tempvalvec)
 
     CASE default
       CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -192,29 +191,63 @@ IF (stat0 .EQ. toml_stat%success) THEN
     IF (PRESENT(stat)) stat = stat0
     filename = ""
     ext = ""
+    astr = ""
     RETURN
 
   CASE default
+    ! read from normal text file
+    ! values in the file directly assigned to VALUE
     CALL atxtfile%Initiate(filename=filename%Chars(), &
                            action="READ", status="OLD", &
                            comment="#")
     CALL atxtfile%OPEN()
-    CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg, &
-                       ignoreComment=.TRUE.)
-    bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
-    IF (bool1) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
+
+    temp_nrow = atxtfile%GetTotalRecords()
+    nrow = 0
+
+    DO ii = 1, temp_nrow
+      nrow = nrow + 1
+      CALL atxtfile%READ(val=astr, iostat=iostat, iomsg=iomsg)
+      IF (.NOT. atxtfile%isValidRecord(aline=astr, &
+                                       ignoreComment=.TRUE., &
+                                       commentSymbol="#")) THEN
+        nrow = nrow - 1
+        CYCLE
+      END IF
+
+      bool1 = iostat .GT. 0 .AND. (.NOT. atxtfile%isEOF())
+      IF (bool1) THEN
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
                '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-                        CHAR_LF//TRIM(iomsg))
-      IF (PRESENT(isFound)) isFound = isFound0
-      RETURN
-    END IF
+                          CHAR_LF//TRIM(iomsg))
+        IF (PRESENT(isFound)) isFound = isFound0
+        RETURN
+      END IF
+
+      CALL astr%split(tokens=tokens, sep=atxtfile%separator)
+
+      temp_ncol = SIZE(tokens)
+      IF (nrow .EQ. 1) ncol = temp_ncol
+      IF (temp_ncol .NE. ncol) THEN
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[INTERNAL ERROR] :: Staggered matrix is not allowed')
+      END IF
+
+      DO jj = 1, ncol
+        VALUE(nrow, jj) = tokens(jj)%to_number(temp)
+      END DO
+
+    END DO
     isFound0 = .TRUE.
     CALL atxtfile%DEALLOCATE()
 
     IF (PRESENT(stat)) stat = stat0
     IF (PRESENT(isFound)) isFound = isFound0
+    DEALLOCATE (tokens)
     filename = ""
     ext = ""
+    astr = ""
+
   END SELECT
+
 END IF

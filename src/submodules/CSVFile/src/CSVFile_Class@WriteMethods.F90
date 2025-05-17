@@ -24,253 +24,253 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Line
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO" )
-END PROCEDURE txt_write_Line
+MODULE PROCEDURE obj_write_Line
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO")
+END PROCEDURE obj_write_Line
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Lines
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO" )
-END PROCEDURE txt_write_Lines
+MODULE PROCEDURE obj_write_Lines
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO")
+END PROCEDURE obj_write_Lines
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Char
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO" )
-END PROCEDURE txt_write_Char
+MODULE PROCEDURE obj_write_Char
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO")
+END PROCEDURE obj_write_Char
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Int8
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Int8
+MODULE PROCEDURE obj_write_Int8
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Int16
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Int16
+MODULE PROCEDURE obj_write_Int16
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Int32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Int32
+MODULE PROCEDURE obj_write_Int32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Int64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Int64
+MODULE PROCEDURE obj_write_Int64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Real32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Real32
+MODULE PROCEDURE obj_write_Real32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_Real64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_Real64
+MODULE PROCEDURE obj_write_Real64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_Real64
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Int8
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Int8
+MODULE PROCEDURE obj_write_vec_Int8
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Int16
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Int16
+MODULE PROCEDURE obj_write_vec_Int16
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Int32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Int32
+MODULE PROCEDURE obj_write_vec_Int32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Int64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Int64
+MODULE PROCEDURE obj_write_vec_Int64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_IntVector
-  IF( isInitiated( val ) ) THEN
-    CALL obj%write( &
-      & val = val%val, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & orient="ROW" )
-  END IF
-END PROCEDURE txt_write_IntVector
+MODULE PROCEDURE obj_write_IntVector
+IF (isInitiated(val)) THEN
+  CALL obj%WRITE( &
+    & val=val%val, &
+    & iostat=iostat, &
+    & iomsg=iomsg, &
+    & orient="ROW")
+END IF
+END PROCEDURE obj_write_IntVector
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_IntVector
-  INTEGER( I4B ) :: ii
-  DO ii = 1, SIZE( val )
+MODULE PROCEDURE obj_write_vec_IntVector
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(val)
     !!
-    CALL obj%write( &
-      & val = val(ii)%val, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & orient="ROW" )
+  CALL obj%WRITE( &
+    & val=val(ii)%val, &
+    & iostat=iostat, &
+    & iomsg=iomsg, &
+    & orient="ROW")
     !!
-    CALL obj%nextRow()
+  CALL obj%nextRow()
     !!
-  END DO
-END PROCEDURE txt_write_vec_IntVector
+END DO
+END PROCEDURE obj_write_vec_IntVector
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Real32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Real32
+MODULE PROCEDURE obj_write_vec_Real32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_Real64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_vec_Real64
+MODULE PROCEDURE obj_write_vec_Real64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_vec_Real64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_RealVector
-  IF( isInitiated( val ) ) THEN
-    CALL obj%write( &
-      & val = val%val, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & orient="ROW" )
-  END IF
-END PROCEDURE txt_write_RealVector
+MODULE PROCEDURE obj_write_RealVector
+IF (isInitiated(val)) THEN
+  CALL obj%WRITE( &
+    & val=val%val, &
+    & iostat=iostat, &
+    & iomsg=iomsg, &
+    & orient="ROW")
+END IF
+END PROCEDURE obj_write_RealVector
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_vec_RealVector
-  INTEGER( I4B ) :: ii
-  DO ii = 1, SIZE( val )
-    CALL obj%write( &
-      & val = val(ii)%val, &
-      & iostat=iostat, &
-      & iomsg=iomsg, &
-      & orient="ROW" )
-    CALL obj%nextRow()
-  END DO
-END PROCEDURE txt_write_vec_RealVector
+MODULE PROCEDURE obj_write_vec_RealVector
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(val)
+  CALL obj%WRITE( &
+    & val=val(ii)%val, &
+    & iostat=iostat, &
+    & iomsg=iomsg, &
+    & orient="ROW")
+  CALL obj%nextRow()
+END DO
+END PROCEDURE obj_write_vec_RealVector
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Int8
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Int8
+MODULE PROCEDURE obj_write_mat_Int8
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Int16
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Int16
+MODULE PROCEDURE obj_write_mat_Int16
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Int32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Int32
+MODULE PROCEDURE obj_write_mat_Int32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Int64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Int64
+MODULE PROCEDURE obj_write_mat_Int64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Real32
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Real32
+MODULE PROCEDURE obj_write_mat_Real32
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_write_mat_Real64
-  CALL TxtFileWrite( obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
-    & advance="NO", orient="ROW" )
-END PROCEDURE txt_write_mat_Real64
+MODULE PROCEDURE obj_write_mat_Real64
+CALL TxtFileWrite(obj=obj, val=val, iostat=iostat, iomsg=iomsg, &
+  & advance="NO", orient="ROW")
+END PROCEDURE obj_write_mat_Real64
 
 !----------------------------------------------------------------------------
 !
