@@ -84,9 +84,9 @@ CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
 
 IF (stat0 .EQ. toml_stat%success) THEN
 
-  ext = filename%extension()
+  ext = filename%Extension()
 
-  SELECT CASE (ext%chars())
+  SELECT CASE (ext%Chars())
 
   CASE (".csv")
     CALL acsvfile%Initiate(filename=filename%Chars(), &
@@ -95,7 +95,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
     CALL acsvfile%OPEN()
     CALL acsvfile%READ()
     ncol = acsvfile%Getncols()
-    nrow = acsvfile%getnrows()
+    nrow = acsvfile%Getnrows()
     SELECT CASE (ncol)
     CASE (1)
       ! a column values is imported as VALUE

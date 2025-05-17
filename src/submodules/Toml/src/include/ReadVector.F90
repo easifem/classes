@@ -84,9 +84,9 @@ CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
 
 IF (stat0 .EQ. toml_stat%success) THEN
 
-  ext = filename%extension()
+  ext = filename%Extension()
 
-  SELECT CASE (ext%chars())
+  SELECT CASE (ext%Chars())
 
   CASE (".csv")
     CALL acsvfile%Initiate(filename=filename%Chars(), &
@@ -104,8 +104,8 @@ IF (stat0 .EQ. toml_stat%success) THEN
     CASE (2)
       ! first column is treated as index of VALUE
       ! second column is treated as value at that index
-      CALL acsvfile%get(1, val=tempintvec1) ! index
-      CALL acsvfile%get(2, val=tempvalvec) ! value
+      CALL acsvfile%Get(1, val=tempintvec1) ! index
+      CALL acsvfile%Get(2, val=tempvalvec) ! value
 
       tsize = MAXVAL(tempintvec1)
       CALL Reallocate(VALUE, tsize)
@@ -117,12 +117,12 @@ IF (stat0 .EQ. toml_stat%success) THEN
       ! first and second columns must be integers
       ! which determine the start and end index of VALUE
       ! third column is value for this range
-      CALL acsvfile%get(1, val=tempintvec1) ! start
-      CALL acsvfile%get(2, val=tempintvec2) ! end
-      CALL acsvfile%get(3, val=tempvalvec) ! value
+      CALL acsvfile%Get(1, val=tempintvec1) ! start
+      CALL acsvfile%Get(2, val=tempintvec2) ! end
+      CALL acsvfile%Get(3, val=tempvalvec) ! value
 
       tsize = MAXVAL(tempintvec2)
-      CALL reallocate(VALUE, tsize)
+      CALL Reallocate(VALUE, tsize)
 
       DO ii = 1, SIZE(tempintvec1)
         VALUE(tempintvec1(ii):tempintvec2(ii)) = tempvalvec(ii)
