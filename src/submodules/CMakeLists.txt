@@ -326,11 +326,3 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 
 # PLPlot
 include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
-
-# ----------------------------------------------------------------------------
-# 2D solvers
-# ----------------------------------------------------------------------------
-
-# Scalar Wave Solver
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarWave2DFEM/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarWave2DSTFEM/CMakeLists.txt)

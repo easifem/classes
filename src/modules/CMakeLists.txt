@@ -408,11 +408,3 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
 # semi-discrete algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
-
-# ----------------------------------------------------------------------------
-# 2D solver
-# ----------------------------------------------------------------------------
-
-# Scalar Wave Solver
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarWave2DFEM/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarWave2DSTFEM/CMakeLists.txt)
