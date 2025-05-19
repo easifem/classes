@@ -17,8 +17,8 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ColorbarMethods
-USE BaseMethod
-USE EasyPlplot
+USE EasyPlplot, ONLY: Colorbar, Colorbar2
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,11 +27,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Colorbar
-  CALL Colorbar( &
-    & z=z, &
-    & N=N, &
-    & leftLabel=leftLabel, &
-    & rightLabel=rightLabel )
+CALL Colorbar(z=z, N=N, leftLabel=leftLabel, rightLabel=rightLabel)
 END PROCEDURE plot_Colorbar
 
 !----------------------------------------------------------------------------
@@ -39,15 +35,11 @@ END PROCEDURE plot_Colorbar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Colorbar2
-  CALL Colorbar2( &
-    & z=z, &
-    & N=N, &
-    & leftLabel=leftLabel, &
-    & rightLabel=rightLabel )
+CALL Colorbar2(z=z, N=N, leftLabel=leftLabel, rightLabel=rightLabel)
 END PROCEDURE plot_Colorbar2
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE ColorbarMethods

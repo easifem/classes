@@ -17,8 +17,9 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) PlotMethods
-USE BaseMethod
-USE EasyPlplot
+
+USE EasyPlplot, ONLY: Show, Figure, Subplot
+
 IMPLICIT NONE
 CONTAINS
 

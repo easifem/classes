@@ -17,9 +17,19 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) LinePlotMethods
-USE BaseMethod
-USE EasyPlplot
+
+USE PlPlot
+
+USE EasyPlplot, Only: Plot3, Errorbar, Plot
+
+USE InputUtility, Only: INPUT
+
+USE Display_Method, only: ToString
+
+use StringUtility, only: GetExtension
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -27,7 +37,6 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE line_plot_x1y1
-#ifdef USE_PLPLOT
 REAL(DFP) :: xmin0, xmax0, ymin0, ymax0, lineWidth0
 TYPE(String) :: device, xlabel0, ylabel0, title0, pointType0
   !!
@@ -88,7 +97,6 @@ CALL obj%SetLabels( &
   !!
 CALL PLEND
 ! CALL obj%Show()
-#endif
 END PROCEDURE line_plot_x1y1
 
 !----------------------------------------------------------------------------
@@ -96,7 +104,6 @@ END PROCEDURE line_plot_x1y1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE line_plot_x1y2
-#ifdef USE_PLPLOT
 REAL(DFP) :: xmin0, xmax0, ymin0, ymax0, lineWidth0
 REAL(DFP) :: legend_width, legend_height
 TYPE(String) :: extn, driver, xlabel0, ylabel0, title0, pointType0
@@ -152,9 +159,9 @@ ELSE
     legend_text(ii) = "data_"//tostring(ii)
   END DO
 END IF
-  !!
-extn = getExtension(filename)
-  !!
+  
+extn = GetExtension(filename)
+ 
 SELECT CASE (extn%chars())
 CASE ("pdf")
   driver = "pdf"
@@ -236,7 +243,6 @@ CALL PLLEGEND( &
   & symbols)
 CALL PLCOL0(0)
 CALL PLEND
-#endif
 END PROCEDURE line_plot_x1y2
 
 !----------------------------------------------------------------------------
@@ -244,15 +250,9 @@ END PROCEDURE line_plot_x1y2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Plot2D
-CALL Plot( &
-  & x=x, &
-  & y=y, &
-  & lineColor=lineColor, &
-  & lineStyle=lineType, &
-  & lineWidth=lineWidth, &
-  & markColor=pointColor, &
-  & markStyle=pointType, &
-  & markSize=pointSize)
+CALL Plot(x=x, y=y, lineColor=lineColor, lineStyle=lineType, &
+          lineWidth=lineWidth, markColor=pointColor, markStyle=pointType, &
+          markSize=pointSize)
 END PROCEDURE plot_Plot2D
 
 !----------------------------------------------------------------------------
@@ -260,14 +260,8 @@ END PROCEDURE plot_Plot2D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Errorbar
-CALL errorbar(&
-  & x=x, &
-  & y=y, &
-  & xerr=xerr, &
-  & yerr=yerr, &
-  & lineColor=lineColor, &
-  & lineStyle=lineType, &
-  & lineWidth=lineWidth)
+CALL Errorbar(x=x, y=y, xerr=xerr, yerr=yerr, lineColor=lineColor, &
+              lineStyle=lineType, lineWidth=lineWidth)
 END PROCEDURE plot_Errorbar
 
 !----------------------------------------------------------------------------
@@ -275,16 +269,9 @@ END PROCEDURE plot_Errorbar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Plot3D
-CALL Plot3( &
-  & x=x, &
-  & y=y, &
-  & z=z, &
-  & lineColor=lineColor, &
-  & lineStyle=lineType, &
-  & lineWidth=lineWidth, &
-  & markColor=pointColor, &
-  & markStyle=pointType, &
-  & markSize=pointSize)
+CALL Plot3(x=x, y=y, z=z, lineColor=lineColor, lineStyle=lineType, &
+           lineWidth=lineWidth, markColor=pointColor, markStyle=pointType, &
+           markSize=pointSize)
 END PROCEDURE plot_Plot3D
 
 END SUBMODULE LinePlotMethods
