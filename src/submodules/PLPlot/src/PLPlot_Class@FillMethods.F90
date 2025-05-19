@@ -17,8 +17,9 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) FillMethods
-USE BaseMethod
-USE EasyPlplot
+
+USE EasyPlplot, ONLY: FillBetween, FillBetweenx
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,13 +28,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_FillBetween
-  CALL FillBetween( &
-    & x=x, &
-    & y1=y1, &
-    & y0=y0, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineWidth=lineWidth )
+CALL FillBetween(x=x, y1=y1, y0=y0, fillColor=fillColor, &
+                 fillPattern=fillPattern, lineWidth=lineWidth)
 END PROCEDURE plot_FillBetween
 
 !----------------------------------------------------------------------------
@@ -41,13 +37,8 @@ END PROCEDURE plot_FillBetween
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_FillBetweenx
-  CALL FillBetweenx( &
-    & y=y, &
-    & x1=x1, &
-    & x0=x0, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineWidth=lineWidth )
+CALL FillBetweenx(y=y, x1=x1, x0=x0, fillColor=fillColor, &
+                  fillPattern=fillPattern, lineWidth=lineWidth)
 END PROCEDURE plot_FillBetweenx
 
 END SUBMODULE FillMethods

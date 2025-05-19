@@ -17,7 +17,10 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ConstructorMethods
-USE BaseMethod
+USE AbstractPlot_Class, ONLY: PLOT_ENGINE_PLPLOT
+USE Display_Method, ONLY: Display
+USE StringUtility, ONLY: GetExtension, LowerCase
+
 IMPLICIT NONE
 CONTAINS
 
@@ -50,11 +53,13 @@ END PROCEDURE plot_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetDeviceName
-TYPE(String) :: extn
-extn = getExtension(filename)
+CHARACTER(:), ALLOCATABLE :: extn
+
+extn = TRIM(LowerCase(GetExtension(filename)))
+
 #ifdef Darwin_SYSTEM
 
-SELECT CASE (TRIM(LowerCase(extn%chars())))
+SELECT CASE (extn)
 CASE ("pdf"); ans = "pdfcairo"
 CASE ("png"); ans = "pngcairo"
 CASE ("ps"); ans = "ps"
@@ -62,9 +67,10 @@ CASE ("eps"); ans = "epscairo"
 CASE ("svg"); ans = "svg"
 CASE ("jpeg", "jpg"); ans = "pngcairo"
 END SELECT
-#else 
 
-SELECT CASE (TRIM(LowerCase(extn%chars())))
+#else
+
+SELECT CASE (extn)
 CASE ("pdf"); ans = "pdf"
 CASE ("png"); ans = "pngqt"
 CASE ("ps"); ans = "ps"
@@ -72,7 +78,11 @@ CASE ("eps"); ans = "epscairo"
 CASE ("svg"); ans = "svg"
 CASE ("jpeg", "jpg"); ans = "jpgqt"
 END SELECT
+
 #endif
+
+extn = ""
+
 END PROCEDURE GetDeviceName
 
 END SUBMODULE ConstructorMethods

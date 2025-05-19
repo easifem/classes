@@ -17,8 +17,9 @@
 
 #ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) SurfaceMethods
-USE BaseMethod
-USE EasyPlplot
+
+USE EasyPlplot, ONLY: Surface, Wireframe
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,12 +28,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Surface
-  CALL Surface( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & N=N, &
-    & lineStyle=lineType )
+CALL Surface(x=x, y=y, z=z, N=N, lineStyle=lineType)
 END PROCEDURE plot_Surface
 
 !----------------------------------------------------------------------------
@@ -40,11 +36,7 @@ END PROCEDURE plot_Surface
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Wireframe
-  CALL Wireframe( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & lineColor=lineColor )
+CALL Wireframe(x=x, y=y, z=z, lineColor=lineColor)
 END PROCEDURE plot_Wireframe
 
 END SUBMODULE SurfaceMethods
