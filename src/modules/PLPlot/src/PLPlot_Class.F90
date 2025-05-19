@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 MODULE PLPlot_Class
 USE GlobalData
 USE BaseType
@@ -23,9 +24,12 @@ USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
 USE EasyPlplot, ONLY: binData
+
 IMPLICIT NONE
+
 PRIVATE
 PUBLIC :: binData
+
 CHARACTER(*), PARAMETER :: modName = "PLPlot_Class"
 CHARACTER(*), PARAMETER, PUBLIC :: PS_PLUS = "+"
 CHARACTER(*), PARAMETER, PUBLIC :: PS_CROSS = "x"
@@ -1016,3 +1020,4 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 END MODULE PLPlot_Class
+#endif

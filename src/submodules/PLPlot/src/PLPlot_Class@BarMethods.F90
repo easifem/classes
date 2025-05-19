@@ -13,8 +13,8 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) BarMethods
 USE BaseMethod
 USE EasyPlplot
@@ -69,4 +69,9 @@ MODULE PROCEDURE plot_Hist
     & lineWidth=lineWidth )
 END PROCEDURE plot_Hist
 
+!----------------------------------------------------------------------------
+!                                                                 
+!----------------------------------------------------------------------------
+
 END SUBMODULE BarMethods
+#endif

@@ -15,9 +15,6 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-if(USE_PLPLOT)
-  set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-  target_sources(${PROJECT_NAME} PRIVATE ${src_path}/EasyPlplot_Utilities.F90
-                                         ${src_path}/EasyPlplot.F90)
-endif()
-
+set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/EasyPlplot_Utilities.F90
+                                       ${src_path}/EasyPlplot.F90)

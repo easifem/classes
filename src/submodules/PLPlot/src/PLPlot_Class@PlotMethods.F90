@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) PlotMethods
 USE BaseMethod
 USE EasyPlplot
@@ -46,4 +47,4 @@ CALL Subplot(ny=ncol, nx=nrow, i=i, aspect=aspect, is3D=is3D)
 END PROCEDURE plot_Subplot
 
 END SUBMODULE PlotMethods
-
+#endif

@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) SurfaceMethods
 USE BaseMethod
 USE EasyPlplot
@@ -47,3 +48,4 @@ MODULE PROCEDURE plot_Wireframe
 END PROCEDURE plot_Wireframe
 
 END SUBMODULE SurfaceMethods
+#endif

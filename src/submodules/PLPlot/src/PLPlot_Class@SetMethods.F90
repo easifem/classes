@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) SetMethods
 USE BaseMethod
 USE EasyPlplot
@@ -159,3 +160,4 @@ MODULE PROCEDURE plot_Set
 END PROCEDURE plot_Set
 
 END SUBMODULE SetMethods
+#endif
