@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ColorbarMethods
 USE BaseMethod
 USE EasyPlplot
@@ -45,4 +46,9 @@ MODULE PROCEDURE plot_Colorbar2
     & rightLabel=rightLabel )
 END PROCEDURE plot_Colorbar2
 
+!----------------------------------------------------------------------------
+!                                                                 
+!----------------------------------------------------------------------------
+
 END SUBMODULE ColorbarMethods
+#endif

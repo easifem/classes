@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ScatterMethods
 USE BaseMethod
 USE EasyPlplot
@@ -37,3 +38,4 @@ MODULE PROCEDURE plot_Scatter
 END PROCEDURE plot_Scatter
 
 END SUBMODULE ScatterMethods
+#endif

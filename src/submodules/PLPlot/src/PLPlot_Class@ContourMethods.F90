@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ContourMethods
 USE BaseMethod
 USE EasyPlplot
@@ -49,3 +50,4 @@ MODULE PROCEDURE plot_Contourf
 END PROCEDURE plot_Contourf
 
 END SUBMODULE ContourMethods
+#endif

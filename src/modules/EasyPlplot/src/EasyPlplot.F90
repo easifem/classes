@@ -23,8 +23,10 @@
 !
 ! This module is slightly modified from its original version.
 ! https://github.com/zoziha/easy_plplot
-!
+
+#ifdef USE_PLPLOT
 MODULE EasyPlplot
+
 USE GlobalData, ONLY: wp => DFP, I4B, LGT
 USE plplot
 USE EasyPlplot_Utilities
@@ -32,12 +34,7 @@ USE EasyPlplot_Utilities
 IMPLICIT NONE
 PRIVATE
 
-#ifdef USE_PLPLOT
 INTEGER(I4B), PARAMETER :: pp = plflt
-#else
-INTEGER(I4B), PARAMETER :: pp = wp
-#endif
-
 CHARACTER(*), PARAMETER :: default_dev = 'qtwidget'
 !! Default output device
 
@@ -1937,3 +1934,4 @@ END SUBROUTINE setColormap
 !----------------------------------------------------------------------------
 
 END MODULE EasyPlplot
+#endif

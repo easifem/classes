@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) QuiverMethods
 USE BaseMethod
 USE EasyPlplot
@@ -40,3 +41,4 @@ MODULE PROCEDURE plot_Quiver
 END PROCEDURE plot_Quiver
 
 END SUBMODULE QuiverMethods
+#endif

@@ -15,20 +15,17 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-if(USE_PLPLOT)
-  set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-  target_sources(
-    ${PROJECT_NAME}
-    PRIVATE ${src_path}/PLPlot_Class@ConstructorMethods.F90
-            ${src_path}/PLPlot_Class@PlotMethods.F90
-            ${src_path}/PLPlot_Class@LinePlotMethods.F90
-            ${src_path}/PLPlot_Class@ScatterMethods.F90
-            ${src_path}/PLPlot_Class@ContourMethods.F90
-            ${src_path}/PLPlot_Class@ColorbarMethods.F90
-            ${src_path}/PLPlot_Class@BarMethods.F90
-            ${src_path}/PLPlot_Class@FillMethods.F90
-            ${src_path}/PLPlot_Class@QuiverMethods.F90
-            ${src_path}/PLPlot_Class@SurfaceMethods.F90
-            ${src_path}/PLPlot_Class@SetMethods.F90)
-endif()
-
+set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/PLPlot_Class@ConstructorMethods.F90
+          ${src_path}/PLPlot_Class@PlotMethods.F90
+          ${src_path}/PLPlot_Class@LinePlotMethods.F90
+          ${src_path}/PLPlot_Class@ScatterMethods.F90
+          ${src_path}/PLPlot_Class@ContourMethods.F90
+          ${src_path}/PLPlot_Class@ColorbarMethods.F90
+          ${src_path}/PLPlot_Class@BarMethods.F90
+          ${src_path}/PLPlot_Class@FillMethods.F90
+          ${src_path}/PLPlot_Class@QuiverMethods.F90
+          ${src_path}/PLPlot_Class@SurfaceMethods.F90
+          ${src_path}/PLPlot_Class@SetMethods.F90)

@@ -14,8 +14,5 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 
-if(USE_PLPLOT)
-  set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-  target_sources(${PROJECT_NAME} PRIVATE ${src_path}/PLPlot_Class.F90)
-endif()
-
+set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/PLPlot_Class.F90)

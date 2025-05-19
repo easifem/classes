@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
@@ -75,3 +76,4 @@ END SELECT
 END PROCEDURE GetDeviceName
 
 END SUBMODULE ConstructorMethods
+#endif

@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) LinePlotMethods
 USE BaseMethod
 USE EasyPlplot
@@ -287,3 +288,4 @@ CALL Plot3( &
 END PROCEDURE plot_Plot3D
 
 END SUBMODULE LinePlotMethods
+#endif
