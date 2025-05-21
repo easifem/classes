@@ -64,6 +64,14 @@ END PROCEDURE GetValue_string
 !                                                                      Get
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE GetValue_bool
+#include "./include/ReadScalar.F90"
+END PROCEDURE GetValue_bool
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE GetValue_int8
 #include "./include/ReadScalar.F90"
 END PROCEDURE GetValue_int8
