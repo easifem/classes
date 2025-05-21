@@ -38,6 +38,27 @@ PUBLIC :: GetValue_
 PUBLIC :: TomlArrayLength
 
 !----------------------------------------------------------------------------
+!                                                            GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-21
+! summary:  Get the value of scalar boolean
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_bool(table, key, VALUE, default_value, &
+                                  origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL( LGT ), INTENT(INOUT) :: VALUE
+    LOGICAL( LGT ), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_bool
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
