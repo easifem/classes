@@ -149,10 +149,10 @@ IF (PRESENT(lspec)) THEN
     DO ii = 1, ns
       pltstring(ii) = lst(ii)
     END DO
-  ELSE ! ns > number_of curves
-    CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-      & '[WARNING]:: wrong number of linespec,'// &
-      'semicolon ";" acts as delimiter')
+  ELSE
+    DO ii = 1, number_of_curves
+      pltstring(ii) = lst(ii)
+    END DO
   END IF
 END IF
 
@@ -255,9 +255,9 @@ IF (PRESENT(lspec)) THEN
       pltstring(ii) = lst(ii)
     END DO
   ELSE ! ns > number_of curves
-    CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-      & '[WARNING]:: wrong number of linespec,'// &
-      'semicolon ";" acts as delimiter')
+    DO ii = 1, number_of_curves
+      pltstring(ii) = lst(ii)
+    END DO
   END IF
 END IF
 
