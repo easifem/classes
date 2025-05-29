@@ -120,6 +120,16 @@ END PROCEDURE GetValue_real64
 !                                                                        Get
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE GetValue_bool_r1
+LOGICAL(LGT) :: temp
+LOGICAL(LGT), ALLOCATABLE :: tempvalvec(:)
+#include "./include/ReadVector.F90"
+END PROCEDURE GetValue_bool_r1
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE GetValue_int8_r1
 INTEGER(INT8) :: temp
 INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
