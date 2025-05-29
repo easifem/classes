@@ -13,11 +13,11 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-
-INTEGER(I4B) :: totalRecords, ii, ioerr, jj, totalTokens, kk
+!
+INTEGER(I4B) :: totalRecords, ioerr, jj
 TYPE(String) :: aline
+LOGICAL( LGT ) :: isok, abool
 TYPE(String), ALLOCATABLE :: tokens(:)
-LOGICAL(LGT) :: isok, abool
 
 totalRecords = obj%GetTotalRecords(ignoreComment=ignoreComment, &
                          ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
@@ -27,31 +27,25 @@ CALL Reallocate(val, totalRecords)
 ioerr = 0
 jj = 0
 
-abool = obj%isOpen() .AND. .NOT. obj%isEOF()
+abool =  obj%IsOpen() .AND. .NOT. obj%IsEOF()
 
 IF (abool) THEN
 
   DO
 
-    CALL obj%readLine(val=aline, iostat=ioerr, iomsg=iomsg)
+    CALL obj%ReadLine(val=aline, iostat=ioerr, iomsg=iomsg)
 
-    IF (obj%isEOF()) EXIT
+    IF (obj%IsEOF()) EXIT
 
-    isok = obj%isValidRecord(aline=aline, ignoreComment=ignoreComment, &
-                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+    isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
+      ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
 
     IF (isok) THEN
-
-      CALL aline%split(tokens=tokens, sep=separator)
-
-      totalTokens = SIZE(tokens)
-
-      DO kk = 1, totalTokens
-        val(jj + kk) = tokens(kk)%to_number(val_kind)
-      END DO
-
-      jj = jj + totalTokens
-
+    
+      CALL aline%Split(tokens=tokens, sep=separator)
+      jj = jj + 1
+      val(jj) = tokens%to_number(val_kind)
+ 
     END IF
 
   END DO
@@ -62,9 +56,10 @@ END IF
 
 IF (ioerr .LT. IOSTAT_EOR) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    ' - Error reading a scalar from the file (IOSTAT='// &
-                    tostring(iostat)//')!')
+     'Error reading a scalar from the file (IOSTAT='// &
+     tostring(iostat)//')!')
 END IF
 
 IF (PRESENT(iostat)) iostat = ioerr
 IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
+
