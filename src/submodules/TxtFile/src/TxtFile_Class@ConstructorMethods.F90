@@ -26,8 +26,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_initiate
-CHARACTER(*), PARAMETER :: myName = 'txt_initiate'
+MODULE PROCEDURE txt_Initiate
+CHARACTER(*), PARAMETER :: myName = 'txt_Initiate'
 
 IF (PRESENT(access)) CALL e%RaiseDebug(modName//'::'//myName// &
         ' - Optional input "ACCESS" is being ignored. Value is "SEQUENTIAL".')
@@ -50,7 +50,7 @@ CALL FortranFileInitiate(obj=obj, unit=unit, filename=filename, &
                          action=action, comment=comment, &
                          separator=separator, delimiter=delimiter)
 
-END PROCEDURE txt_initiate
+END PROCEDURE txt_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
