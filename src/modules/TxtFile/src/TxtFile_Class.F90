@@ -91,6 +91,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ReadInt64 => txt_read_Int64
   PROCEDURE, PASS(obj) :: ReadReal32 => txt_read_Real32
   PROCEDURE, PASS(obj) :: ReadReal64 => txt_read_Real64
+  PROCEDURE, PASS(obj) :: ReadBoolean => txt_read_boolean
   !! vectors
   PROCEDURE, PASS(obj) :: ReadVecInt8 => txt_read_vec_Int8
   PROCEDURE, PASS(obj) :: ReadVecInt16 => txt_read_vec_Int16
@@ -102,6 +103,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ReadVecReal64 => txt_read_vec_Real64
   PROCEDURE, PASS(obj) :: ReadRealVector => txt_read_RealVector
   PROCEDURE, PASS(obj) :: ReadVecRealVector => txt_read_vec_RealVector
+  PROCEDURE, PASS(obj) :: ReadVecBoolean => txt_read_vec_boolean
   !! matrix
   PROCEDURE, PASS(obj) :: ReadMatReal32 => txt_read_Mat_Real32
   PROCEDURE, PASS(obj) :: ReadMatReal64 => txt_read_Mat_Real64
@@ -110,16 +112,13 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ReadMatInt32 => txt_read_Mat_Int32
   PROCEDURE, PASS(obj) :: ReadMatInt64 => txt_read_Mat_Int64
   !! generic
-  GENERIC, PUBLIC :: READ => &
-    & ReadLine, ReadLines, ReadChar, &
-    & ReadInt8, ReadInt16, ReadInt32, ReadInt64, &
-    & ReadReal32, ReadReal64, &
-    & ReadVecInt8, ReadVecInt16, ReadVecInt32, ReadVecInt64, &
-    & ReadIntVector, ReadVecIntVector, &
-    & ReadVecReal32, ReadVecReal64, &
-    & ReadRealVector, ReadVecRealVector, &
-    & ReadMatInt8, ReadMatInt16, ReadMatInt32, ReadMatInt64, &
-    & ReadMatReal32, ReadMatReal64
+  GENERIC, PUBLIC :: READ => ReadLine, ReadLines, ReadChar, ReadBoolean, &
+    ReadInt8, ReadInt16, ReadInt32, ReadInt64, ReadReal32, ReadReal64, &
+    ReadVecInt8, ReadVecInt16, ReadVecInt32, ReadVecInt64, &
+    ReadIntVector, ReadVecIntVector, ReadVecBoolean, &
+    ReadVecReal32, ReadVecReal64, ReadRealVector, ReadVecRealVector, &
+    ReadMatInt8, ReadMatInt16, ReadMatInt32, ReadMatInt64, &
+    ReadMatReal32, ReadMatReal64
 
   ! IO:
   ! @WriteMethods
@@ -323,7 +322,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION txt_getTotalRecords(obj, ignoreComment, ignoreBlank, &
-    & commentSymbol) RESULT(Ans)
+                                      commentSymbol) RESULT(Ans)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
@@ -418,7 +417,29 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 20 July 2022
+! date: 2025-05-29
+! summary: Read a scalar boolean value
+
+INTERFACE
+  MODULE SUBROUTINE txt_read_boolean(obj, val, iostat, iomsg, &
+                         ignoreComment, ignoreBlank, commentSymbol, separator)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(INOUT) :: val
+    INTEGER(I4B), INTENT(OUT) :: iostat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
+    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
+  END SUBROUTINE txt_read_boolean
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
 ! summary: Read a scalar integer
 
 INTERFACE
@@ -433,7 +454,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Int8
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read a scalar integer
+
+INTERFACE
   MODULE SUBROUTINE txt_read_Int16(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -445,7 +476,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Int16
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read a scalar integer
+
+INTERFACE
   MODULE SUBROUTINE txt_read_Int32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -457,7 +498,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Int32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read a scalar integer
+
+INTERFACE
   MODULE SUBROUTINE txt_read_Int64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -469,7 +520,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Int64
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read a scalar real number
+
+INTERFACE
   MODULE SUBROUTINE txt_read_Real32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -481,7 +542,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Real32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read a scalar real number
+
+INTERFACE
   MODULE SUBROUTINE txt_read_Real64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -493,7 +564,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_Real64
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read an instance of IntVector
+
+INTERFACE
   MODULE SUBROUTINE txt_read_IntVector(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -505,7 +586,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_IntVector
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-07-19
+! summary: Read an instance of RealVector
+
+INTERFACE
   MODULE SUBROUTINE txt_read_RealVector(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -524,11 +615,32 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
+! date: 2025-05-29
+! summary: Read a vector of booleans
+
+INTERFACE
+  MODULE SUBROUTINE txt_read_vec_boolean(obj, val, iostat, iomsg, &
+                         ignoreComment, ignoreBlank, commentSymbol, separator)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: val(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
+    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
+  END SUBROUTINE txt_read_vec_boolean
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
 ! date: 20 July 2022
 ! summary: Read an integer vector
 
 INTERFACE
-
   MODULE SUBROUTINE txt_read_vec_Int8(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -540,7 +652,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Int8
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of integers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_Int16(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -552,7 +674,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Int16
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read an integer vector
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_Int32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -564,7 +696,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Int32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of integers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_Int64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -576,7 +718,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Int64
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of real numbers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_Real32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -588,7 +740,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Real32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of real numbers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_Real64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -600,7 +762,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_Real64
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read an integer vector
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_IntVector(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -612,7 +784,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_IntVector
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a vector of realVectors
+
+INTERFACE
   MODULE SUBROUTINE txt_read_vec_RealVector(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -624,7 +806,6 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_vec_RealVector
-
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -633,7 +814,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 July 2022
-! summary: Read an integer matrix
+! summary: Read a matrix of integers
 
 INTERFACE
   MODULE SUBROUTINE txt_read_mat_Int8(obj, val, iostat, iomsg, &
@@ -647,7 +828,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_mat_Int8
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a matrix of integers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_mat_Int16(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -659,7 +850,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_mat_Int16
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a matrix of integers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_mat_Int32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -671,7 +872,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_mat_Int32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a matrix of integers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_mat_Int64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -683,7 +894,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_mat_Int64
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a matrix of real numbers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_mat_Real32(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
@@ -695,7 +916,17 @@ INTERFACE
     CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
   END SUBROUTINE txt_read_mat_Real32
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                           read@ReadMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2022
+! summary: Read a matrix of real numbers
+
+INTERFACE
   MODULE SUBROUTINE txt_read_mat_Real64(obj, val, iostat, iomsg, &
                          ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj

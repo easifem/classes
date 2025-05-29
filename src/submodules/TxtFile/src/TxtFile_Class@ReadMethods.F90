@@ -162,6 +162,16 @@ END PROCEDURE txt_read_Char
 !                                                                 Read
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE txt_read_boolean
+CHARACTER(*), PARAMETER :: myName = "txt_read_Int8"
+LOGICAL( LGT ) :: val_kind
+#include "./Read_BooleanScalar.F90"
+END PROCEDURE txt_read_boolean
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE txt_read_Int8
 CHARACTER(*), PARAMETER :: myName = "txt_read_Int8"
 INTEGER(INT8) :: val_kind
@@ -217,6 +227,16 @@ CHARACTER(*), PARAMETER :: myName = "txt_read_Real64"
 REAL(REAL64) :: val_kind
 #include "./Read_RealScalar.F90"
 END PROCEDURE txt_read_Real64
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_read_vec_boolean
+CHARACTER(*), PARAMETER :: myName = "txt_read_vec_boolean"
+LOGICAL( LGT ) :: val_kind
+#include "./Read_Vector_Boolean.F90"
+END PROCEDURE txt_read_vec_boolean
 
 !----------------------------------------------------------------------------
 !                                                                 Read
