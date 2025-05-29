@@ -25,17 +25,17 @@ CONTAINS
 !                                                               getEchoStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getEchoStat
+MODULE PROCEDURE txt_GetEchoStat
 ans = obj%echostat
-END PROCEDURE txt_getEchoStat
+END PROCEDURE txt_GetEchoStat
 
 !----------------------------------------------------------------------------
 !                                                               getEchoUnit
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getEchoUnit
+MODULE PROCEDURE txt_GetEchoUnit
 ans = obj%echounit
-END PROCEDURE txt_getEchoUnit
+END PROCEDURE txt_GetEchoUnit
 
 !----------------------------------------------------------------------------
 !                                                            GetTotalRecords
