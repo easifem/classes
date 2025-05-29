@@ -3504,7 +3504,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-15
-! summary: Get total entities
+! summary: Get total entities of a globalElement
+!
+! # Introduction
+!
+! ans(1) =  total number of nodes in element
+! ans(2) =  total number of edges in element
+! ans(3) =  total number of faces in element
+! ans(4) = 1
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalEntities1(obj, globalElement, islocal) &
@@ -3522,7 +3529,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-15
-! summary: Get total entities
+! summary: Get total entities of the mesh
+!
+!# Introduction
+!
+! ans(1) = total number of nodes
+! ans(2) = total number of edges
+! ans(3) = total number of faces
+! ans(4) = total number of cell elements
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalEntities2(obj) &
