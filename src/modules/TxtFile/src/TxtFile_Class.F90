@@ -77,6 +77,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetEchoUnit => txt_GetEchoUnit
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalRecords => txt_GetTotalRecords
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalData => txt_GetTotalData
+  !! This method returns the total number of data in the file
+  !! It counts the total number of records and data in each record
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDataBounds => txt_GetTotalDataBounds
+  !! This method returns the total number of records and
+  !! maximum number of data in each record
+  !! This information can be used for initiating matrices
 
   ! IO:
   ! @ReadMethods
@@ -124,7 +130,7 @@ CONTAINS
   ! IO:
   ! @WriteMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ConvertMarkdownToSource => &
-    & txt_ConvertMarkDownToSource
+    txt_ConvertMarkDownToSource
   PROCEDURE, PUBLIC, PASS(obj) :: WriteBlank => txt_Write_Blank
   PROCEDURE, PUBLIC, PASS(obj) :: nextRow => txt_Write_Blank
   PROCEDURE, PUBLIC, PASS(obj) :: WriteLine => txt_Write_Line
@@ -250,7 +256,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION txt_IsValidRecord(obj, aline, ignoreComment, ignoreBlank, &
-    & commentSymbol) RESULT(Ans)
+                                    commentSymbol) RESULT(Ans)
     CLASS(TxtFile_), INTENT(IN) :: obj
     TYPE(String), INTENT(IN) :: aline
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
@@ -338,7 +344,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2025-05-29
-! summary: Returns the total number of records in a file
+! summary: Returns the total number data in a file (box x and y direction)
 !
 !# Introduction
 !
@@ -350,7 +356,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION txt_GetTotalData(obj, ignoreComment, ignoreBlank, &
-                                      commentSymbol, separator) RESULT(Ans)
+                                   commentSymbol, separator) RESULT(Ans)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
@@ -358,6 +364,34 @@ INTERFACE
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
     INTEGER(I4B) :: ans
   END FUNCTION txt_GetTotalData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalDataBounds@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2025-05-29
+! summary: Returns the total number of records and max data in a record
+!
+!# Introduction
+!
+! This function returns the total number of records and max data in a record
+! If `ignoreComment=.TRUE.`, then the comments are ignored
+! If `ignoreComment` is true, then `commentSymbol` should be given
+! If `separator` is given, then the data is separated by the separator
+! Default value of `separator` is a space
+
+INTERFACE
+  MODULE FUNCTION txt_GetTotalDataBounds(obj, ignoreComment, ignoreBlank, &
+                                   commentSymbol, separator) RESULT(ans)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
+    CHARACTER(1), OPTIONAL, INTENT(IN) :: commentSymbol
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION txt_GetTotalDataBounds
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -385,7 +419,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Line(obj, val, iostat, iomsg, &
-  & ignoreComment, ignoreBlank, commentSymbol, separator)
+                         ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(OUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -407,7 +441,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Lines(obj, val, iostat, iomsg, &
-  & ignoreComment, ignoreBlank, commentSymbol, separator)
+                         ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -429,7 +463,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Char(obj, val, iostat, iomsg, &
-  & ignoreComment, ignoreBlank, commentSymbol, separator)
+                         ignoreComment, ignoreBlank, commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(OUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -979,11 +1013,11 @@ END INTERFACE
 ! summary: Reads a markdown file and converts it into the source file
 
 INTERFACE
-  MODULE SUBROUTINE txt_convertMarkdownToSource(obj, outfile, lang)
+  MODULE SUBROUTINE txt_ConvertMarkdownToSource(obj, outfile, lang)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(TxtFile_), INTENT(INOUT) :: outfile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: lang
-  END SUBROUTINE txt_convertMarkdownToSource
+  END SUBROUTINE txt_ConvertMarkdownToSource
 END INTERFACE
 
 !----------------------------------------------------------------------------

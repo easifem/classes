@@ -14,38 +14,43 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-INTEGER(I4B) :: nn, ii, ioerr, unitno, jj
+INTEGER(I4B) :: totalData, ii, ioerr, jj, totalTokens, kk
 TYPE(String) :: aline
+LOGICAL(LGT) :: isok, abool
 TYPE(String), ALLOCATABLE :: tokens(:)
-LOGICAL( LGT ) :: isok
 
-nn = obj%GetTotalRecords(ignoreComment=ignoreComment, &
-   ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+totalData = obj%GetTotalData(ignoreComment=ignoreComment, &
+    ignoreBlank=ignoreBlank, commentSymbol=commentSymbol, separator=separator)
 
-ALLOCATE (vals(nn))
+CALL Reallocate(val, totalData)
 
 ioerr = 0
 jj = 0
 
-IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
-  unitno = obj%getUnitNo()
+abool = obj%IsOpen() .AND. .NOT. obj%IsEOF()
+
+IF (abool) THEN
 
   DO
 
-    CALL obj%readLine(val=aline, iostat=ioerr, iomsg=iomsg)
+    CALL obj%ReadLine(val=aline, iostat=ioerr, iomsg=iomsg)
 
-    IF (obj%isEOF()) EXIT
+    IF (obj%IsEOF()) EXIT
 
-    isok = obj%isValidRecord(aline=aline, ignoreComment=ignoreComment, &
-       ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+    isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
+                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
 
     IF (isok) THEN
 
-      CALL aline%split(tokens=tokens, sep=separator)
+      CALL aline%Split(tokens=tokens, sep=separator)
 
-      jj = jj + 1
+      totalTokens = SIZE(tokens)
 
-      vals(jj) = tokens%to_number(val_kind)
+      DO kk = 1, totalTokens
+        val(jj + kk) = tokens(kk)%To_number(val_kind)
+      END DO
+
+      jj = jj + totalTokens
 
     END IF
 
@@ -56,14 +61,10 @@ IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
 END IF
 
 IF (ioerr .LT. IOSTAT_EOR) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
                     ' - Error reading a scalar from the file (IOSTAT='// &
                     tostring(iostat)//')!')
 END IF
 
-val = GET(obj=vals, DataType=val_kind)
-
 IF (PRESENT(iostat)) iostat = ioerr
-
 IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
-IF (ALLOCATED(vals)) DEALLOCATE (vals)

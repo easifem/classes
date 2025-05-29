@@ -13,45 +13,41 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
-INTEGER( I4B ) :: ioerr
+
+INTEGER(I4B) :: ioerr
 TYPE(String) :: aline
-! TYPE(String), ALLOCATABLE :: vals( : )
-!!
-!!
-ioerr=0
-!!
-IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
-  !!
+LOGICAL(LGT) :: abool, isok
+
+ioerr = 0
+
+abool = obj%IsOpen() .AND. .NOT. obj%IsEOF()
+
+IF (abool) THEN
+
   DO
-    !!
-    CALL obj%readLine(val=aline, iostat=ioerr, iomsg=iomsg )
-    !!
-    IF ( obj%isEOF() ) EXIT
-    !!
-    IF( obj%isValidRecord( aline=aline, &
-      & ignoreComment=ignoreComment, &
-      & ignoreBlank=ignoreBlank, &
-      & commentSymbol=commentSymbol ) ) THEN
-      !!
-      val = aline%to_number( val_kind )
+
+    CALL obj%ReadLine(val=aline, iostat=ioerr, iomsg=iomsg)
+
+    IF (obj%IsEOF()) EXIT
+
+    isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
+                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+
+    IF (isok) THEN
+      val = aline%To_number(val_kind)
       EXIT
-      !!
     END IF
-    !!
+    
   END DO
-  !!
+  
   aline = ""
-  !!
+ 
 END IF
-!!
+
 IF (ioerr .LT. IOSTAT_EOR) THEN
-  !!
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' - Error reading a scalar from the file (IOSTAT='// &
-    & tostring(iostat)//')!')
-  !!
+     'Error reading a scalar from the file (IOSTAT='// &
+     tostring(iostat)//')!')
 END IF
-!!
+
 iostat = ioerr
-!!

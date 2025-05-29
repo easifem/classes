@@ -120,6 +120,53 @@ IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
 END PROCEDURE txt_GetTotalData
 
 !----------------------------------------------------------------------------
+!                                                         GetTotalDataBounds
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_GetTotalDataBounds
+TYPE(String) :: aline
+INTEGER(I4B) :: iostat, totalTokens
+LOGICAL(LGT) :: isok, notok
+TYPE(String), ALLOCATABLE :: tokens(:)
+
+notok = .NOT. obj%IsInitiated() .OR. .NOT. obj%IsOpen() .OR. &
+        .NOT. obj%IsRead()
+
+ans = 0
+
+IF (notok) RETURN
+
+CALL obj%REWIND()
+
+DO
+
+  CALL obj%ReadLine(val=aline, iostat=iostat)
+
+  IF (obj%IsEOF()) EXIT
+
+  isok = obj%IsValidRecord(aline=aline, &
+                           ignoreBlank=ignoreBlank, &
+                           ignoreComment=ignoreComment, &
+                           commentSymbol=commentSymbol)
+
+  IF (isok) THEN
+    CALL aline%Split(tokens=tokens, sep=separator)
+    totalTokens = SIZE(tokens)
+    ans(2) = MAX(ans(2), totalTokens)
+    ans(1) = ans(1) + 1
+  END IF
+
+  aline = ""
+
+END DO
+
+CALL obj%REWIND()
+
+IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
+
+END PROCEDURE txt_GetTotalDataBounds
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

@@ -17,7 +17,12 @@
 
 SUBMODULE(TxtFile_Class) ReadMethods
 USE ISO_FORTRAN_ENV, ONLY: IOSTAT_EOR, IOSTAT_END
+! USE Display_Method, ONLY: tostring
+! USE ReallocateUtility, ONLY: Reallocate
+! USE RealVector_Method, ONLY: ASSIGNMENT(=), Get
+
 USE BaseMethod
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,30 +30,30 @@ CONTAINS
 !                                                                 readLine
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Line
-CHARACTER(*), PARAMETER :: myName = 'txt_read_Line'
+MODULE PROCEDURE txt_Read_Line
+CHARACTER(*), PARAMETER :: myName = 'txt_Read_Line()'
 CHARACTER(maxStrLen) :: buffer
 INTEGER(I4B) :: buffer_size, eioerr, ioerr
+LOGICAL(LGT) :: abool
 
 ioerr = 0
 val = ""
 
-IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
+abool = obj%IsOpen() .AND. .NOT. obj%IsEOF()
+
+IF (abool) THEN
 
   DO WHILE (ioerr .NE. IOSTAT_EOR .AND. ioerr .NE. IOSTAT_END)
 
     ! Repeatedly read chunks of current input
     ! file line into buffer
-    READ ( &
-      & UNIT=obj%getUnitNo(), &
-      & FMT='(a)', &
-      & SIZE=buffer_size, &
-      & ADVANCE='NO', &
-      & IOSTAT=ioerr) buffer
+
+    READ (UNIT=obj%GetUnitNo(), FMT='(a)', SIZE=buffer_size, &
+          ADVANCE='NO', IOSTAT=ioerr) buffer
 
     IF (ioerr .EQ. IOSTAT_END) THEN
       ! end of file
-      CALL obj%setEOFstat(.TRUE.)
+      CALL obj%SetEOFstat(.TRUE.)
       ! Done reading line. Append last buffer to line.
 
     ELSEIF (ioerr .EQ. IOSTAT_EOR) THEN
@@ -56,13 +61,12 @@ IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
 
       IF (obj%echostat) THEN
 
-        WRITE (UNIT=obj%echounit, FMT='(a)', IOSTAT=eioerr) &
-          & TRIM(val%chars())
+        WRITE (UNIT=obj%echounit, FMT='(a)', IOSTAT=eioerr) val%chars()
 
         IF (eioerr .NE. 0) THEN
-          CALL e%raiseError(modName//'::'//myName//" - "// &
-            &' - Error echoing line to UNIT='//tostring(obj%echounit)//&
-            & ' (IOSTAT='//tostring(eioerr)//')!')
+          CALL e%RaiseError(modName//'::'//myName//" - "// &
+                     'Error echoing line to UNIT='//tostring(obj%echounit)// &
+                            ' (IOSTAT='//tostring(eioerr)//')!')
         END IF
 
       END IF
@@ -72,347 +76,330 @@ IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
     ELSEIF (ioerr .LT. IOSTAT_EOR) THEN
 
       ! Error reading line from input file
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-        & ' - Error reading one line from input file (IOSTAT='// &
-        & tostring(ioerr)//')!')
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      ' - Error reading one line from input file (IOSTAT='// &
+                        tostring(ioerr)//')!')
 
     ELSE
 
       ! Still reading current line. Append buffer to line
-
       val = val//buffer
 
     END IF
+
   END DO
 END IF
+
 IF (PRESENT(iostat)) iostat = ioerr
 IF (PRESENT(iomsg)) iomsg = tostring(ioerr)
-END PROCEDURE txt_read_Line
+END PROCEDURE txt_Read_Line
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Lines
-CHARACTER(*), PARAMETER :: myName = "txt_read_Lines"
-INTEGER(I4B) :: nn, ioerr, unitno, jj
+MODULE PROCEDURE txt_Read_Lines
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Lines()"
+INTEGER(I4B) :: nn, ioerr, jj
 TYPE(String) :: aline
-!
-nn = obj%getTotalRecords(ignoreComment=ignoreComment, &
-  & ignoreBlank=ignoreBlank, &
-  & commentSymbol=commentSymbol)
-!
+LOGICAL(LGT) :: isok, abool
+
+nn = obj%GetTotalRecords(ignoreComment=ignoreComment, &
+                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+
 IF (ALLOCATED(val)) DEALLOCATE (val)
 ALLOCATE (val(nn))
-!
+
 ioerr = 0
 jj = 0
-!
-IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
-  unitno = obj%getUnitNo()
-  !
+
+abool = obj%IsOpen() .AND. .NOT. obj%IsEOF()
+
+IF (abool) THEN
+
   DO
-    !
-    CALL obj%readLine(val=aline, iostat=ioerr, iomsg=iomsg)
-    !
-    IF (obj%isEOF()) EXIT
-    !
-    IF (obj%isValidRecord(aline=aline, &
-      & ignoreComment=ignoreComment, &
-      & ignoreBlank=ignoreBlank, &
-      & commentSymbol=commentSymbol)) THEN
-      !
+
+    CALL obj%ReadLine(val=aline, iostat=ioerr, iomsg=iomsg)
+
+    IF (obj%IsEOF()) EXIT
+
+    isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
+                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+
+    IF (isok) THEN
       jj = jj + 1
-      !
       val(jj) = aline
-      !
     END IF
-    !
+
   END DO
-  !
+
   aline = ""
-  !
+
 END IF
-!
+
 IF (ioerr .LT. IOSTAT_EOR) THEN
-  !
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' - Error reading a scalar from the file (IOSTAT='// &
-    & tostring(iostat)//')!')
-  !
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    'Error reading a scalar from the file (IOSTAT='// &
+                    tostring(iostat)//')!')
 END IF
-!
+
 IF (PRESENT(iostat)) iostat = ioerr
-!
-END PROCEDURE txt_read_Lines
+
+END PROCEDURE txt_Read_Lines
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Char
+MODULE PROCEDURE txt_Read_Char
 TYPE(String) :: aline
-CALL obj%readLine(val=aline, iostat=iostat, iomsg=iomsg)
+CALL obj%ReadLine(val=aline, iostat=iostat, iomsg=iomsg)
 val = aline%chars()
 aline = ""
-END PROCEDURE txt_read_Char
+END PROCEDURE txt_Read_Char
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_boolean
-CHARACTER(*), PARAMETER :: myName = "txt_read_Int8"
-LOGICAL( LGT ) :: val_kind
-#include "./Read_BooleanScalar.F90"
-END PROCEDURE txt_read_boolean
+MODULE PROCEDURE txt_Read_boolean
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Int8"
+LOGICAL(LGT) :: val_kind
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_boolean
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Int8
-CHARACTER(*), PARAMETER :: myName = "txt_read_Int8"
+MODULE PROCEDURE txt_Read_Int8
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Int8"
 INTEGER(INT8) :: val_kind
-#include "./Read_IntScalar.F90"
-END PROCEDURE txt_read_Int8
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Int16
-CHARACTER(*), PARAMETER :: myName = "txt_read_Int16"
+MODULE PROCEDURE txt_Read_Int16
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Int16"
 INTEGER(INT16) :: val_kind
-#include "./Read_IntScalar.F90"
-END PROCEDURE txt_read_Int16
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Int32
-CHARACTER(*), PARAMETER :: myName = "txt_read_Int32"
+MODULE PROCEDURE txt_Read_Int32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Int32"
 INTEGER(INT32) :: val_kind
-#include "./Read_IntScalar.F90"
-END PROCEDURE txt_read_Int32
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Int64
-CHARACTER(*), PARAMETER :: myName = "txt_read_Int64"
+MODULE PROCEDURE txt_Read_Int64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Int64"
 INTEGER(INT64) :: val_kind
-#include "./Read_IntScalar.F90"
-END PROCEDURE txt_read_Int64
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Real32
-CHARACTER(*), PARAMETER :: myName = "txt_read_Real32"
+MODULE PROCEDURE txt_Read_Real32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Real32"
 REAL(REAL32) :: val_kind
-#include "./Read_RealScalar.F90"
-END PROCEDURE txt_read_Real32
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_Real64
-CHARACTER(*), PARAMETER :: myName = "txt_read_Real64"
+MODULE PROCEDURE txt_Read_Real64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_Real64"
 REAL(REAL64) :: val_kind
-#include "./Read_RealScalar.F90"
-END PROCEDURE txt_read_Real64
+#include "./include/Read_Scalar.F90"
+END PROCEDURE txt_Read_Real64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_boolean
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_boolean"
-LOGICAL( LGT ) :: val_kind
-#include "./Read_Vector_Boolean.F90"
-END PROCEDURE txt_read_vec_boolean
+MODULE PROCEDURE txt_Read_vec_boolean
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_boolean"
+LOGICAL(LGT) :: val_kind
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_boolean
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_Int8
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int8"
+MODULE PROCEDURE txt_Read_vec_Int8
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Int8"
 INTEGER(INT8) :: val_kind
 TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Int8
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_Int16
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int16"
+MODULE PROCEDURE txt_Read_vec_Int16
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Int16"
 INTEGER(INT16) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Int16
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_Int32
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int32"
+MODULE PROCEDURE txt_Read_vec_Int32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Int32"
 INTEGER(INT32) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Int32
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_Int64
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Int64"
+MODULE PROCEDURE txt_Read_vec_Int64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Int64"
 INTEGER(INT64) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Int64
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_IntVector
-CHARACTER(*), PARAMETER :: myName = "txt_read_IntVector"
-INTEGER(I4B) :: val_kind0
-TYPE(IntVector_) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_IntVector_RealVector.F90"
-END PROCEDURE txt_read_IntVector
+MODULE PROCEDURE txt_Read_vec_Real32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Real32"
+REAL(REAL32) :: val_kind
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_IntVector
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_IntVector"
+MODULE PROCEDURE txt_Read_vec_Real64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_Real64"
+REAL(REAL64) :: val_kind
+#include "./include/Read_Vector.F90"
+END PROCEDURE txt_Read_vec_Real64
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_Read_IntVector
+CHARACTER(*), PARAMETER :: myName = "txt_Read_IntVector"
 INTEGER(I4B) :: val_kind
-#include "./Read_Vector_IntVector_RealVector.F90"
-END PROCEDURE txt_read_vec_IntVector
+INTEGER(I4B), POINTER :: vals(:)
+#include "./include/Read_IntRealVector.F90"
+END PROCEDURE txt_Read_IntVector
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_vec_Real32
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Real32"
-REAL(REAL32) :: val_kind
-TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Real32
-
-!----------------------------------------------------------------------------
-!                                                                 Read
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE txt_read_vec_Real64
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_Real64"
-REAL(REAL64) :: val_kind
-TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Vector.F90"
-END PROCEDURE txt_read_vec_Real64
-
-!----------------------------------------------------------------------------
-!                                                                 Read
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE txt_read_RealVector
-CHARACTER(*), PARAMETER :: myName = "txt_read_RealVector"
-REAL(DFP) :: val_kind0
-TYPE(RealVector_) :: val_kind
-TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_IntVector_RealVector.F90"
-END PROCEDURE txt_read_RealVector
-
-!----------------------------------------------------------------------------
-!                                                                 Read
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE txt_read_vec_RealVector
-CHARACTER(*), PARAMETER :: myName = "txt_read_vec_RealVector"
+MODULE PROCEDURE txt_Read_RealVector
+CHARACTER(*), PARAMETER :: myName = "txt_Read_RealVector"
 REAL(DFP) :: val_kind
-#include "./Read_Vector_IntVector_RealVector.F90"
-END PROCEDURE txt_read_vec_RealVector
+REAL(DFP), POINTER :: vals(:)
+#include "./include/Read_IntRealVector.F90"
+END PROCEDURE txt_Read_RealVector
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Int8
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int8"
+MODULE PROCEDURE txt_Read_vec_IntVector
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_IntVector"
+INTEGER(I4B) :: val_kind
+#include "./include/Read_Vector_IntRealVector.F90"
+END PROCEDURE txt_Read_vec_IntVector
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_Read_vec_RealVector
+CHARACTER(*), PARAMETER :: myName = "txt_Read_vec_RealVector"
+REAL(DFP) :: val_kind
+#include "./include/Read_Vector_IntRealVector.F90"
+END PROCEDURE txt_Read_vec_RealVector
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_Read_mat_Int8
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Int8"
 INTEGER(INT8) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Int8
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Int8
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Int16
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int16"
+MODULE PROCEDURE txt_Read_mat_Int16
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Int16"
 INTEGER(INT16) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Int16
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Int16
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Int32
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int32"
+MODULE PROCEDURE txt_Read_mat_Int32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Int32"
 INTEGER(INT32) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Int32
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Int32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Int64
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Int64"
+MODULE PROCEDURE txt_Read_mat_Int64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Int64"
 INTEGER(INT64) :: val_kind
-TYPE(IntVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Int64
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Int64
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Real32
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Real32"
+MODULE PROCEDURE txt_Read_mat_Real32
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Real32"
 REAL(REAL32) :: val_kind
-TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Real32
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Real32
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_read_mat_Real64
-CHARACTER(*), PARAMETER :: myName = "txt_read_mat_Real64"
+MODULE PROCEDURE txt_Read_mat_Real64
+CHARACTER(*), PARAMETER :: myName = "txt_Read_mat_Real64"
 REAL(REAL64) :: val_kind
-TYPE(RealVector_), ALLOCATABLE :: vals(:)
-#include "./Read_Matrix.F90"
-END PROCEDURE txt_read_mat_Real64
+#include "./include/Read_Matrix.F90"
+END PROCEDURE txt_Read_mat_Real64
 
 !----------------------------------------------------------------------------
 !
