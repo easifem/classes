@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(TxtFile_Class) GetMethods
+
 IMPLICIT NONE
 
 CONTAINS
