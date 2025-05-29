@@ -217,6 +217,26 @@ END INTERFACE GetValue
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
+! date:  2025-05-29
+! summary:  GetValue Integer Vectors
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_bool_r1(table, key, VALUE, origin, stat, &
+                                     isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL( LGT ), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_bool_r1
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
