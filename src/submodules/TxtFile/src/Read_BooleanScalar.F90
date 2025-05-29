@@ -13,57 +13,38 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-
-INTEGER(I4B) :: nn, ii, ioerr, unitno, jj
+!
+INTEGER(I4B) :: ioerr
 TYPE(String) :: aline
-TYPE(String), ALLOCATABLE :: tokens(:)
-LOGICAL( LGT ) :: isok
-
-nn = obj%GetTotalRecords(ignoreComment=ignoreComment, &
-   ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
-
-ALLOCATE (vals(nn))
+! TYPE(String), ALLOCATABLE :: vals( : )
+LOGICAL(LGT) :: isok, abool
 
 ioerr = 0
-jj = 0
 
-IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
-  unitno = obj%getUnitNo()
+abool = obj%isOpen() .AND. .NOT. obj%isEOF()
+
+IF (abool) THEN
 
   DO
-
     CALL obj%readLine(val=aline, iostat=ioerr, iomsg=iomsg)
 
     IF (obj%isEOF()) EXIT
 
     isok = obj%isValidRecord(aline=aline, ignoreComment=ignoreComment, &
-       ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
 
     IF (isok) THEN
-
-      CALL aline%split(tokens=tokens, sep=separator)
-
-      jj = jj + 1
-
-      vals(jj) = tokens%to_number(val_kind)
-
+      val = aline%to_number(val_kind)
+      EXIT
     END IF
 
   END DO
-
   aline = ""
-
 END IF
 
 IF (ioerr .LT. IOSTAT_EOR) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-                    ' - Error reading a scalar from the file (IOSTAT='// &
-                    tostring(iostat)//')!')
+     'Error reading a scalar from the file (IOSTAT='// tostring(iostat)//')')
 END IF
 
-val = GET(obj=vals, DataType=val_kind)
-
-IF (PRESENT(iostat)) iostat = ioerr
-
-IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
-IF (ALLOCATED(vals)) DEALLOCATE (vals)
+iostat = ioerr
