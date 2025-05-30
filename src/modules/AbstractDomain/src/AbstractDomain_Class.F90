@@ -132,14 +132,14 @@ CONTAINS
   !! TODO Add an export method to [[obj_]] class
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1,  &
-  & ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
   !! Initiates an instance of domain by importing meshfile name from
   !! Toml file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! TODO Add a display method to [[obj_]] class
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo =>  &
-    & obj_DisplayDomainInfo
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo => &
+    obj_DisplayDomainInfo
 
   ! GET:
   ! @GetMethods
