@@ -130,6 +130,15 @@ END PROCEDURE GetValue_bool_r1
 !                                                                        Get
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE GetValue_bool_r1_static
+LOGICAL(LGT) :: temp
+#include "./include/ReadVectorStatic.F90"
+END PROCEDURE GetValue_bool_r1_static
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE GetValue_int8_r1
 INTEGER(INT8) :: temp
 INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
