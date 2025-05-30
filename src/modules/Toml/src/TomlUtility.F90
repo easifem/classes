@@ -50,8 +50,8 @@ INTERFACE GetValue
                                   origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    LOGICAL( LGT ), INTENT(INOUT) :: VALUE
-    LOGICAL( LGT ), INTENT(IN) :: default_value
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE
+    LOGICAL(LGT), INTENT(IN) :: default_value
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
@@ -225,12 +225,33 @@ INTERFACE GetValue
                                      isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    LOGICAL( LGT ), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_bool_r1
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of bool without allocation
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_bool_r1_static(table, key, VALUE, tsize, &
+                                            origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_bool_r1_static
+END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
