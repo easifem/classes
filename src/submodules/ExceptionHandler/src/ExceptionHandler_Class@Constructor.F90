@@ -82,37 +82,58 @@ prefix = ""
 !Set the appropriate prefix and printing options
 SELECT CASE (eCode)
 CASE (EXCEPTION_INFORMATION)
-  prefix = CHAR_LF// &
-      & '[💚 INFORMATION ✅]'//CHAR_LF//&
-      & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
-      & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
-      & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  ! prefix = CHAR_LF// &
+  !     & '[💚 INFORMATION ✅]'//CHAR_LF//&
+  !     & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
+  !     & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
+  !     & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  prefix = ' [INFORMATION] '//'  [Module] '//modname//' [Method] '//myname// &
+           '  [Message] '//msg
   IF (isLogActive) isQuiet = .TRUE.
+
 CASE (EXCEPTION_WARNING)
-  prefix = CHAR_LF// &
-      & '[⚠ WARNING ❗]'//CHAR_LF//&
-      & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
-      & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
-      & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+  ! prefix = CHAR_LF// &
+  !     & '[⚠ WARNING ❗]'//CHAR_LF//&
+  !     & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
+  !     & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
+  !     & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  prefix = ' [WARNING] '//'  [Module] '//modname//' [Method] '//myname// &
+           '  [Message] '//msg
+
 CASE (EXCEPTION_ERROR)
-  prefix = CHAR_LF// &
-      & '[❎ ERROR ⛔]'//CHAR_LF//&
-      & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
-      & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
-      & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+  ! prefix = CHAR_LF// &
+  !     & '[❎ ERROR ⛔]'//CHAR_LF//&
+  !     & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
+  !     & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
+  !     & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  prefix = ' [ERROR] '//'  [Module] '//modname//' [Method] '//myname// &
+           '  [Message] '//msg
+
 CASE (EXCEPTION_FATAL_ERROR)
-  prefix = CHAR_LF// &
-      & '[🔥☠ FATAL_ERROR ❌]'//CHAR_LF//&
-      & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
-      & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
-      & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+  ! prefix = CHAR_LF// &
+  !     & '[🔥☠ FATAL_ERROR ❌]'//CHAR_LF//&
+  !     & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
+  !     & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
+  !     & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  prefix = ' [FATAL-ERROR] '//'  [Module] '//modname//' [Method] '//myname// &
+           '  [Message] '//msg
+
   isQuiet = .FALSE.
+
 CASE (EXCEPTION_DEBUG)
-  prefix = CHAR_LF// &
-      & '[❓ DEBUG 🐛]'//CHAR_LF//&
-      & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
-      & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
-      & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+  ! prefix = CHAR_LF// &
+  !     & '[❓ DEBUG 🐛]'//CHAR_LF//&
+  !     & '  [🚀 Module ] '//TRIM(ADJUSTL(modname))//CHAR_LF//&
+  !     & '  [🎇 Method ] '//TRIM(ADJUSTL(myname))//CHAR_LF//&
+  !     & '  [🔊 Message] '//TRIM(ADJUSTL(msg))//CHAR_LF
+
+  prefix = ' [DEBUG] '//'  [Module] '//modname//' [Method] '//myname// &
+           '  [Message] '//msg
 END SELECT
 
 !Write to the default standard error output
@@ -129,22 +150,22 @@ IF (isLogActive) THEN
   IF (ioerr1 /= 0 .OR. ioerr2 /= 0) THEN
     IF (isQuiet) THEN
       msg = '[❎ ERROR ⛔]'//CHAR_LF//"Problem writing to logfile"//CHAR_LF// &
-        & "Original message follows: "//CHAR_LF
+            "Original message follows: "//CHAR_LF
       prefix = msg//CHAR_LF//prefix//CHAR_LF
       WRITE (stderr, "(a)") prefix%chars()
       FLUSH (stderr)
     ELSE
       !Message was already printed.
       WRITE (stderr, '(6x,a)') 'Problem writing above message '// &
-        & 'to log file.'
+        'to log file.'
     END IF
   END IF
 END IF
 
 !Set the message to be included as one line back to exception object
 prefixLen = LEN_TRIM(prefix) + 3
-WRITE (mesg, '(a)') TRIM(prefix)//' - '//&
-     & TRIM(mesg(1:EXCEPTION_MAX_MESG_LENGTH - prefixLen))
+WRITE (mesg, '(a)') TRIM(prefix)//' - '// &
+  TRIM(mesg(1:EXCEPTION_MAX_MESG_LENGTH - prefixLen))
 END PROCEDURE exceptionMessage
 
 !----------------------------------------------------------------------------
