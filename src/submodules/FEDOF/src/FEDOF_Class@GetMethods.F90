@@ -208,11 +208,27 @@ END PROCEDURE obj_GetTotalDOF2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity()'
+#endif
+
 INTEGER(I4B) :: tdof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tdof = obj%GetTotalDOF(globalElement=globalElement, isLocal=isLocal)
 ALLOCATE (ans(tdof))
 CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
                           globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -220,9 +236,18 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
+#endif
+
 INTEGER(I4B) :: ent(4)
 INTEGER(I4B) :: ii, jj, kk, a, b
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ent = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
 
@@ -240,6 +265,11 @@ END DO
 
 IF (obj%isLagrange) THEN
   tsize = jj - 1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -266,6 +296,11 @@ DO ii = a, b
 END DO
 
 tsize = jj - 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_GetConnectivity_
 
@@ -298,10 +333,7 @@ END PROCEDURE obj_GetBaseInterpolation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellOrder
-INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
-                faceCon(ReferenceElementInfo%maxEdges), &
-                edgeCon(ReferenceElementInfo%maxEdges), &
-                nodeCon(obj%maxTotalConnectivity)
+INTEGER(I4B) :: jj
 
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
@@ -554,10 +586,37 @@ END PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetGlobalElemShapeData()'
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+isok = ii .GT. 0
+CALL AssertError1(isok, myname, &
+             'Element topology index is zero or negative ii = '//tostring(ii))
+
+isok = ASSOCIATED(obj%fe(ii)%ptr)
+CALL AssertError1(isok, myname, &
+                  'obj%fe(ii)%ptr is not associated')
+#endif
+
 CALL obj%fe(ii)%ptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
                                            geoElemsd=geoElemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
