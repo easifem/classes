@@ -2243,11 +2243,20 @@ ans(4) = obj%tElements
 END PROCEDURE obj_GetTotalEntities2
 
 !----------------------------------------------------------------------------
-!                                                           GetNodeCoord
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord2()"
+#endif
+
 INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ncol = obj%GetTotalNodes()
 
@@ -2259,15 +2268,29 @@ END DO
 !$OMP END PARALLEL DO
 
 nrow = tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetNodeCoord2
 
 !----------------------------------------------------------------------------
-!                                                           GetNodeCoord
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord3()"
+#endif
+
 INTEGER(I4B), POINTER :: globalNode(:)
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 iel = obj%GetLocalElemNumber(globalelement=globalelement, islocal=islocal)
 globalNode => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
@@ -2276,14 +2299,28 @@ CALL obj%GetNodeCoord(nodeCoord=nodeCoord, globalNode=globalNode, &
                       islocal=.FALSE., nrow=nrow, ncol=ncol)
 
 globalNode => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetNodeCoord3
 
 !----------------------------------------------------------------------------
-!                                                           GetNodeCoord
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord4()"
+#endif
+
 INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 nrow = 0
 ncol = SIZE(globalNode)
@@ -2294,17 +2331,38 @@ DO ii = 1, SIZE(globalNode)
                              ans=nodeCoord(:, ii), tsize=nrow)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeCoord4
 
 !----------------------------------------------------------------------------
-!                                                           GetNodeCoord
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord5()"
+#endif
+
 INTEGER(I4B) :: jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 jj = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
 CALL NodeData_GetNodeCoord(obj=obj%nodeData(jj)%ptr, &
                            ans=nodeCoord, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeCoord5
 
 !----------------------------------------------------------------------------
