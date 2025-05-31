@@ -46,6 +46,9 @@ CALL Display(obj%maxEdgeOrder, "maxEdgeOrder: ", unitno=unitno)
 
 isok = ASSOCIATED(obj%mesh)
 CALL Display(isok, "mesh ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%mesh%DisplayMeshInfo("Mesh information: ", unitno=unitno)
+END IF
 
 isok = ALLOCATED(obj%cellOrder)
 CALL Display(isok, "cellOrder ALLOCATED: ", unitno=unitno)
