@@ -17,7 +17,7 @@
 SUBMODULE(AbstractFE_Class) GetMethods
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 HierarchicalElemShapeData, &
-                                Set
+                                Elemsd_Set => Set
 
 IMPLICIT NONE
 CONTAINS
@@ -161,12 +161,25 @@ END PROCEDURE obj_GetHierarchicalLocalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (PRESENT(geoelemsd)) THEN
-  CALL Set(obj=elemsd, val=xij, N=geoelemsd%N, dNdXi=geoelemsd%dNdXi)
-  RETURN
+  CALL Elemsd_Set(obj=elemsd, val=xij, N=geoelemsd%N, dNdXi=geoelemsd%dNdXi)
+ELSE
+  CALL Elemsd_Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
 END IF
 
-CALL Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
