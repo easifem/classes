@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(TomlUtility) GetMethods
+SUBMODULE(TomlUtility) Methods
 USE ReallocateUtility, ONLY: Reallocate
 
 USE Display_Method, ONLY: ToString, Display
@@ -453,7 +453,7 @@ MODULE PROCEDURE GetValue_from_file_master
 CHARACTER(*), PARAMETER :: myName = "GetValue_from_file_master"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 IF (PRESENT(afile)) THEN
@@ -462,13 +462,13 @@ ELSEIF (PRESENT(filename)) THEN
   CALL GetValue_from_filename(table=table, filename=filename)
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
+                    'either filename or afile should be present!')
   RETURN
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 END PROCEDURE GetValue_from_file_master
 
@@ -493,4 +493,4 @@ array => NULL()
 
 END PROCEDURE ArrayLength
 
-END SUBMODULE GetMethods
+END SUBMODULE Methods

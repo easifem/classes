@@ -746,7 +746,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -761,12 +761,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetValue@IOMethods
+!                                                         GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate toml table from toml file
+! summary:  Initiate toml table from toml file (This is private method)
 
 INTERFACE
   MODULE SUBROUTINE GetValue_from_filename(table, filename)
@@ -776,7 +776,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -792,7 +792,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
