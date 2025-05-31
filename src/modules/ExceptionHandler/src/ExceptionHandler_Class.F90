@@ -56,9 +56,10 @@ INTEGER(I4B), PARAMETER, PUBLIC :: EXCEPTION_SIZE = 5
 INTEGER(I4B), PARAMETER, PUBLIC :: EXCEPTION_MAX_MESG_LENGTH = 512
   !! The maximum size of an exception message
 LOGICAL(LGT), PARAMETER, PUBLIC :: DEFAULT_QUIET_SETTINGS(4) = &
-  & [.FALSE., .FALSE., .FALSE., .FALSE.]
+                                   [.FALSE., .FALSE., .FALSE., .FALSE.]
 LOGICAL(LGT), PARAMETER, PUBLIC :: DEFAULT_VERBOSE_SETTINGS(4) = &
-  & [.TRUE., .TRUE., .TRUE., .TRUE.]
+                                   [.TRUE., .TRUE., .TRUE., .TRUE.]
+
 PUBLIC :: copyFromSurrogate
 PUBLIC :: exceptionMessage
 
