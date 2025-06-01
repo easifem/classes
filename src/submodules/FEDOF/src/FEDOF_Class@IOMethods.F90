@@ -18,7 +18,20 @@
 !
 
 SUBMODULE(FEDOF_Class) IOMethods
+USE GlobalData, ONLY: stdout, CHAR_LF
+
 USE Display_Method, ONLY: Display, ToString
+
+USE TomlUtility, ONLY: GetValue, GetValue_
+
+USE tomlf, ONLY: toml_get => get_value, &
+                 toml_serialize
+
+USE String_Class, ONLY: String
+
+USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
+                                    BaseType_ToInteger
+
 IMPLICIT NONE
 CONTAINS
 
@@ -83,5 +96,166 @@ DO ii = 1, SIZE(obj%fe)
 END DO
 
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                           DisplayCellOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayCellOrder
+LOGICAL(LGT) :: isok
+isok = ALLOCATED(obj%cellOrder)
+CALL Display(isok, "cellOrder ALLOCATED: ", unitno=unitno)
+IF (isok) CALL Display(SIZE(obj%cellOrder), "cellOrder size: ", &
+                       unitno=unitno)
+CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno, full=full)
+END PROCEDURE obj_DisplayCellOrder
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+TYPE(String) :: baseContinuity, baseInterpolation, astr, baseTypeStr(3)
+INTEGER(I4B) :: ipType, origin, stat, tBaseType, ii, baseType(3), &
+                tAlpha, tBeta, tLambda
+REAL(DFP) :: alpha(3), beta(3), lambda(3)
+LOGICAL(LGT) :: isFound, abool, islocal
+INTEGER(I4B), ALLOCATABLE :: order(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, key="baseContinuity", VALUE=baseContinuity, &
+  default_value=obj%baseContinuity, origin=origin, stat=stat, isFound=isFound)
+
+! baseInterpolation
+CALL GetValue(table=table, key="baseInterpolation", VALUE=baseInterpolation, &
+  default_value=obj%baseInterpolation, origin=origin, stat=stat, isFound=isFound)
+
+! ipType
+CALL GetValue(table=table, key="ipType", VALUE=astr, &
+      default_value=DEFAULT_IPTYPE, origin=origin, stat=stat, isFound=isFound)
+ipType = BaseInterpolation_ToInteger(astr%chars())
+
+! baseType
+CALL GetValue_(table=table, key="baseType", VALUE=baseTypeStr, &
+               tsize=tBaseType, origin=origin, stat=stat, isFound=isFound)
+DO ii = 1, tBaseType
+  baseType(ii) = BaseType_ToInteger(baseTypeStr(ii)%chars())
+END DO
+
+! if baseType is not found, then set it to default which is DEFAULT_BASETYPE
+abool = tBaseType .EQ. 0 .OR. (.NOT. isFound)
+IF (abool) THEN
+  tBaseType = SIZE(baseType)
+  DO ii = 1, tBaseType
+    baseType(ii) = BaseType_ToInteger(DEFAULT_BASETYPE)
+  END DO
+END IF
+
+! alpha
+CALL GetValue_(table=table, key="alpha", VALUE=alpha, &
+               tsize=tAlpha, origin=origin, stat=stat, isFound=isFound)
+abool = tAlpha .EQ. 0 .OR. (.NOT. isFound)
+IF (abool) THEN
+  tAlpha = SIZE(alpha)
+  alpha = DEFAULT_ALPHA
+END IF
+
+! beta
+CALL GetValue_(table=table, key="beta", VALUE=beta, &
+               tsize=tBeta, origin=origin, stat=stat, isFound=isFound)
+abool = tBeta .EQ. 0 .OR. (.NOT. isFound)
+IF (abool) THEN
+  tBeta = SIZE(beta)
+  beta = DEFAULT_BETA
+END IF
+
+! lambda
+CALL GetValue_(table=table, key="lambda", VALUE=lambda, &
+               tsize=tLambda, origin=origin, stat=stat, isFound=isFound)
+abool = tLambda .EQ. 0 .OR. (.NOT. isFound)
+IF (abool) THEN
+  tLambda = SIZE(lambda)
+  lambda = DEFAULT_LAMBDA
+END IF
+
+! islocal
+CALL GetValue(table=table, key="islocal", VALUE=islocal, &
+             default_value=.FALSE., origin=origin, stat=stat, isFound=isFound)
+
+! order
+CALL GetValue(table=table, key="order", VALUE=order, &
+              origin=origin, stat=stat, isFound=isFound)
+IF (.NOT. isFound) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'order not found in toml file.')
+  RETURN
+END IF
+
+! Index in order vector is based on global numbering of cells
+! we need to convert it to local numbering
+
+CALL obj%Initiate(mesh=mesh, order=order, baseContinuity=baseContinuity%chars(), &
+     baseInterpolation=baseInterpolation%chars(), ipType=ipType, basisType=baseType, &
+                  alpha=alpha, beta=beta, lambda=lambda, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+isok = ASSOCIATED(node)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+END IF
+
+CALL obj%ImportFromToml(table=node, mesh=mesh)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+               unitNo=stdout)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

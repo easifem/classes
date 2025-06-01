@@ -91,7 +91,7 @@ CALL obj%DEALLOCATE()
 
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 
-IF (obj%baseInterpolation == "LAGR") THEN
+IF (obj%baseInterpolation .EQ. "LAGR") THEN
   obj%isLagrange = .TRUE.
 ELSE
   obj%isLagrange = .FALSE.
@@ -108,12 +108,12 @@ SELECT CASE (casename)
 CASE ("H1LAGR")
   CALL SetOrderH1Lagrange(obj=obj)
 
-CASE ("H1HIER")
+CASE ("H1HIER", "H1HEIR")
   CALL SetOrderH1Hierarchical1(obj=obj, order=order)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: No case found for baseContinuity and baseInterpolation')
+                    'No case found for baseContinuity and baseInterpolation')
   RETURN
 END SELECT
 

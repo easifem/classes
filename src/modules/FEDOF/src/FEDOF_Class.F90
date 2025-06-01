@@ -27,6 +27,9 @@ USE BaseType, ONLY: CSRMatrix_, &
                     ElemshapeData_
 USE AbstractFE_Class, ONLY: AbstractFE_, AbstractFEPointer_
 
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table
+
 IMPLICIT NONE
 PRIVATE
 
@@ -37,6 +40,11 @@ PUBLIC :: SetFEDOFParam
 
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
 CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
+CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
+CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
+REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
+REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
+REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
 
 !----------------------------------------------------------------------------
 !                                                                   FEDOF_
@@ -167,6 +175,15 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of FEDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayCellOrder => &
+    obj_DisplayCellOrder
+  !! Display cell order
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import from toml
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import from toml
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+  !! Import from toml file
 
   !GET:
   !@GetMethods
@@ -388,12 +405,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
-                    baseInterpolation, ipType, basisType, alpha, lambda, beta)
+           baseInterpolation, ipType, basisType, alpha, lambda, beta, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
     !! Inhomogeneous value of order
     !! This is order of each cell element
+    !! see the note on islocal
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
     !! cell mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -419,6 +437,14 @@ INTERFACE
     !! lambda parameter for Ultraspherical parameter
     !! used when baseInterpolation is Lagrange
     !! used when basistype is Ultraspherical
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! islocal denotes whether the order(:) is based on
+    !! local element or global element number.
+    !! local element means in order(ii) ii is the local
+    !! element number, global element means in order(ii) ii is the
+    !! global element number. Note that getting local element
+    !! number is difficult for user, so it is better to use
+    !! global element number.
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -860,6 +886,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-19
+! summary: Display cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayCellOrder(obj, msg, unitno, full)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: full
+    !! if full is present and true then all data will be displayed.
+  END SUBROUTINE obj_DisplayCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     SetCellOrder@SetMethods
 !----------------------------------------------------------------------------
 
@@ -868,10 +912,18 @@ END INTERFACE
 ! summary: Set the cell order
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetCellOrder(obj, order)
+  MODULE SUBROUTINE obj_SetCellOrder(obj, order, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:)
     !! this is cell order
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! islocal denotes whether the order(:) is based on
+    !! local element or global element number.
+    !! local element means in order(ii) ii is the local
+    !! element number, global element means in order(ii) ii is the
+    !! global element number. Note that getting local element
+    !! number is difficult for user, so it is better to use
+    !! global element number.
   END SUBROUTINE obj_SetCellOrder
 END INTERFACE
 
@@ -1240,6 +1292,42 @@ INTERFACE
     !! if true then the global element is a local element
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE FEDOFImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, mesh)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE FEDOFImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE FEDOFImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml, mesh)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    CLASS(AbstractMesh_), OPTIONAL, INTENT(IN) :: mesh
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE FEDOFImportFromToml
 
 !----------------------------------------------------------------------------
 !
