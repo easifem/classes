@@ -1940,7 +1940,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_isElementPresent(obj, globalElement, islocal) &
-    & RESULT(ans)
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
