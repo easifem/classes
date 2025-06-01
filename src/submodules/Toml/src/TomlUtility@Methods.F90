@@ -34,6 +34,8 @@ USE tomlf, ONLY: toml_error, &
 
 USE CSVFile_Class, ONLY: CSVFile_
 
+USE String_Class, ONLY: StringReallocate => Reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -134,6 +136,173 @@ MODULE PROCEDURE GetValue_bool_r1_static
 LOGICAL(LGT) :: temp
 #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_bool_r1_static
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_string_r1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "GetValue_string_r1()"
+#endif
+
+TYPE(toml_array), POINTER :: array
+INTEGER(I4B) :: tsize, stat0, ii
+LOGICAL(LGT) :: isFound0, isok
+CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isFound0 = .FALSE.
+
+!----------------------------------------------------------------------------
+! READ from TOML array
+! try to read from the toml array
+! the data is given in toml file itself as toml array
+!----------------------------------------------------------------------------
+
+array => NULL()
+CALL toml_get(table, key, array, origin=origin, stat=stat0, &
+              requested=.FALSE.)
+
+isok = ASSOCIATED(array)
+
+IF (isok) THEN
+  tsize = toml_len(array)
+  CALL StringReallocate(VALUE, tsize)
+  isFound0 = .TRUE.
+
+  DO ii = 1, tsize
+    CALL toml_get(array, ii, astr)
+    VALUE(ii) = astr
+  END DO
+
+  astr = ""
+
+  IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isFound)) isFound = isFound0
+  NULLIFY (array)
+  RETURN
+END IF
+
+!----------------------------------------------------------------------------
+! READ a scalar value from toml
+! In this case length of the vector is 1, this value is given in toml file
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, key, astr, origin=origin, stat=stat0)
+
+IF (stat0 .EQ. toml_stat%success) THEN
+  CALL StringReallocate(VALUE, 1)
+  VALUE(1) = astr
+  astr = ""
+  isFound0 = .TRUE.
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  RETURN
+END IF
+
+isFound0 = .FALSE.
+IF (PRESENT(isFound)) isFound = isFound0
+IF (PRESENT(stat)) stat = stat0
+
+!----------------------------------------------------------------------------
+! TODO: READ from a txt file or csv file
+!----------------------------------------------------------------------------
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE GetValue_string_r1
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_string_r1_static
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "GetValue_string_r1_static()"
+#endif
+
+TYPE(toml_array), POINTER :: array
+INTEGER(I4B) :: stat0, ii
+LOGICAL(LGT) :: isFound0, isok
+CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isFound0 = .FALSE.
+tsize = 0
+
+!----------------------------------------------------------------------------
+! READ from TOML array
+! try to read from the toml array
+! the data is given in toml file itself as toml array
+!----------------------------------------------------------------------------
+
+array => NULL()
+CALL toml_get(table, key, array, origin=origin, stat=stat0, &
+              requested=.FALSE.)
+
+isok = ASSOCIATED(array)
+
+IF (isok) THEN
+  tsize = toml_len(array)
+  isFound0 = .TRUE.
+
+  DO ii = 1, tsize
+    CALL toml_get(array, ii, astr)
+    VALUE(ii) = astr
+  END DO
+
+  astr = ""
+
+  IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isFound)) isFound = isFound0
+  NULLIFY (array)
+  RETURN
+END IF
+
+!----------------------------------------------------------------------------
+! READ a scalar value from toml
+! In this case length of the vector is 1, this value is given in toml file
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, key, astr, origin=origin, stat=stat0)
+
+IF (stat0 .EQ. toml_stat%success) THEN
+  ! CALL StringReallocate(VALUE, 1)
+  tsize = 1
+  VALUE(1) = astr
+  astr = ""
+  isFound0 = .TRUE.
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  RETURN
+END IF
+
+isFound0 = .FALSE.
+IF (PRESENT(isFound)) isFound = isFound0
+IF (PRESENT(stat)) stat = stat0
+
+!----------------------------------------------------------------------------
+! TODO: READ from a txt file or csv file
+!----------------------------------------------------------------------------
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE GetValue_string_r1_static
 
 !----------------------------------------------------------------------------
 !                                                                        Get
