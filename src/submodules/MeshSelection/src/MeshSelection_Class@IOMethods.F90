@@ -32,18 +32,8 @@ USE IntVector_Method, ONLY: intvector_Display => Display, &
 
 USE TomlUtility, ONLY: GetValue
 
-USE tomlf, ONLY:  &
-  & toml_error,  &
-  & toml_load,  &
-  & toml_parser_config,  &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_context,  &
-  & toml_terminal,  &
-  & toml_load,  &
-  & toml_array,  &
-  & toml_stat
+USE tomlf, ONLY: toml_serialize, &
+                 toml_get => get_value
 
 IMPLICIT NONE
 CONTAINS
