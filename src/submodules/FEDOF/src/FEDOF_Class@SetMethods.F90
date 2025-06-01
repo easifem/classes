@@ -32,6 +32,10 @@ USE AbstractMesh_Class, ONLY: PARAM_MAX_NODE_TO_ELEM
 
 USE ReallocateUtility, ONLY: Reallocate
 
+USE Display_Method, ONLY: ToString
+
+USE GlobalData, ONLY: CHAR_LF
+
 IMPLICIT NONE
 CONTAINS
 
@@ -40,27 +44,49 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCellOrder
-INTEGER(I4B) :: tsize, ii
+INTEGER(I4B) :: tsize, ii, jj
 LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
+INTEGER(INT8) :: int8_order
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 tsize = SIZE(order)
 
-isok = tsize .EQ. obj%tCells
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[ERROR] :: Size of order array is not equal to number of cells')
-  RETURN
-END IF
+CALL Reallocate(obj%cellOrder, obj%tCells)
 
-CALL Reallocate(obj%cellOrder, tsize)
-DO CONCURRENT(ii=1:tsize)
-  obj%cellOrder(ii) = INT(order(ii), kind=INT8)
-END DO
+IF (tsize .EQ. 1) THEN
+
+  int8_order = INT(order(1), kind=INT8)
+  obj%cellOrder = int8_order
+
+ELSE
+
+  DO ii = 1, tsize
+    isok = obj%mesh%IsElementPresent(globalElement=ii, islocal=islocal)
+
+    IF (isok) THEN
+      jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
+      int8_order = INT(order(ii), kind=INT8)
+      ! IF (jj .NE. 0) 
+      obj%cellOrder(jj) = int8_order
+    END IF
+
+  END DO
+
+END IF
 
 obj%maxCellOrder = MAXVAL(obj%cellOrder)
 obj%maxFaceOrder = obj%maxCellOrder
 obj%maxEdgeOrder = obj%maxFaceOrder
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_SetCellOrder
 
