@@ -39,19 +39,11 @@ IF (.NOT. obj%isInitiated) THEN
   CALL Display("Element is Empty", unitno=unitno)
 END IF
 
+CALL Display(obj%firstCall, msg="firstCall: ", unitno=unitno)
+CALL Display(obj%isInitiated, msg="isInitiated: ", unitno=unitno)
+CALL Display(obj%tdof, msg="tdof: ", unitno=unitno)
 CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)
-CALL Display(obj%feType, msg="feType: ", unitno=unitno)
-CALL Display(obj%elemType, msg="elemType: ", unitno=unitno)
-CALL Display(obj%ipType, msg="ipType: ", unitno=unitno)
-CALL Display(obj%basisType, msg="basisType: ", unitno=unitno)
-CALL Display(obj%alpha, msg="alpha: ", unitno=unitno)
-CALL Display(obj%beta, msg="beta: ", unitno=unitno)
-CALL Display(obj%lambda, msg="lambda: ", unitno=unitno)
-CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)
-CALL Display(obj%transformType, msg="transformType: ", unitno=unitno)
-CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
-CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
-CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
+CALL Display(obj%xidim, msg="xidim: ", unitno=unitno)
 
 IF (obj%isIsotropicOrder) THEN
   CALL Display("isIsotropicOrder: TRUE", unitno=unitno)
@@ -66,32 +58,40 @@ END IF
 IF (obj%isEdgeOrder) THEN
   CALL Display("isEdgeOrder: TRUE", unitno=unitno)
   IF (obj%tEdgeOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%edgeOrder(:obj%tEdgeOrder), &
-      & msg="edgeOrder: ", &
-      & unitno=unitno)
+    CALL Display(obj%edgeOrder(:obj%tEdgeOrder), &
+                 msg="edgeOrder: ", unitno=unitno)
   END IF
 END IF
 
 IF (obj%isFaceOrder) THEN
   CALL Display("isFaceOrder: TRUE", unitno=unitno)
   IF (obj%tFaceOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%faceOrder(1:3, 1:obj%tFaceOrder), &
-      & msg="faceOrder: ", &
-      & unitno=unitno)
+    CALL Display(obj%faceOrder(1:3, 1:obj%tFaceOrder), &
+                 msg="faceOrder: ", unitno=unitno)
   END IF
 END IF
 
 IF (obj%isCellOrder) THEN
   CALL Display("isCellOrder: TRUE", unitno=unitno)
   IF (obj%tCellOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%cellOrder(:obj%tCellOrder), &
-      & msg="cellOrder: ", &
-      & unitno=unitno)
+    CALL Display(obj%cellOrder(:obj%tCellOrder), &
+                 msg="cellOrder: ", unitno=unitno)
   END IF
 END IF
+
+CALL Display(obj%feType, msg="feType: ", unitno=unitno)
+CALL Display(obj%topoType, msg="topoType: ", unitno=unitno)
+CALL Display(obj%elemType, msg="elemType: ", unitno=unitno)
+CALL Display(obj%ipType, msg="ipType: ", unitno=unitno)
+CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)
+CALL Display(obj%transformType, msg="transformType: ", unitno=unitno)
+CALL Display(obj%basisType, msg="basisType: ", unitno=unitno)
+CALL Display(obj%alpha, msg="alpha: ", unitno=unitno)
+CALL Display(obj%beta, msg="beta: ", unitno=unitno)
+CALL Display(obj%lambda, msg="lambda: ", unitno=unitno)
+CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
+CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
+CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 

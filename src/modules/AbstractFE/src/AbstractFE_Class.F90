@@ -123,7 +123,7 @@ TYPE, ABSTRACT :: AbstractFE_
   INTEGER(I4B) :: topoType = 0
   !! Topology type
   INTEGER(I4B) :: elemType = 0
-  !! Topology type of reference elemtn
+  !! Topology type of reference element
   !! Line, Triangle, Quadrangle, Tetrahedron, Hexahedron,
   !! Prism, Pyramid
   INTEGER(I4B) :: ipType = 0
