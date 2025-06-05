@@ -496,6 +496,11 @@ END PROCEDURE obj_Initiate4
 !                                                     FEDOF_Initiate_Help
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-01
+! summary: This subroutine is called during the intialization of the FEDOF 
+! object.
+
 SUBROUTINE FEDOF_Initiate_Before(obj)
   CLASS(FEDOF_), INTENT(INOUT) :: obj
 
@@ -509,6 +514,8 @@ SUBROUTINE FEDOF_Initiate_Before(obj)
   ent = obj%mesh%GetTotalEntities()
   obj%tNodes = ent(1)
 
+  ! In the case of Lagrange elements we set 
+  ! tEdges = 0, tFaces = 0, and tCells = 0
   IF (isLagrange) THEN
     obj%tEdges = 0
     obj%tFaces = 0
