@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020~  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -298,29 +299,29 @@ CONTAINS
   ! @ElementDataMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-    & obj_InitiateElementToElements
+    obj_InitiateElementToElements
   !! Initiate element to elements mapping
 
   ! Set:
   ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-    & obj_InitiateBoundaryData
+    obj_InitiateBoundaryData
   !! Initiate the boundary data
 
   ! Set:
   ! @EdgeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
-    & obj_InitiateEdgeConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity => &
+    obj_InitiateEdgeConnectivity
 
   ! Set:
   ! @FaceDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
-    & obj_InitiateFaceConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity => &
+    obj_InitiateFaceConnectivity
 
   ! Set:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-    & obj_InitiateFacetElements
+    obj_InitiateFacetElements
   !! Initiate boundary data
 
   !  GET:
