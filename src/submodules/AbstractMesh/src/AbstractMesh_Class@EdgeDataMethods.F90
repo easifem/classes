@@ -26,7 +26,9 @@ USE EdgeData_Class
 USE EdgeDataBinaryTree_Class
 USE SortUtility
 USE GlobalData, ONLY: INT8
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -35,10 +37,10 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
-INTEGER(I4B) :: tElements, iel, elemType, tEdges,  &
-  & localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
-  & edge(2), sorted_edge(2), &
-  & tNodes, tsize1, tsize2, iedge
+INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
+                localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
+                edge(2), sorted_edge(2), &
+                tNodes, tsize1, tsize2, iedge
 LOGICAL(LGT) :: problem
 TYPE(EdgeDataBinaryTree_) :: edgeTree
 TYPE(EdgeData_) :: edgeValue
@@ -46,7 +48,7 @@ TYPE(EdgeData_), POINTER :: edgePtr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 problem = obj%isEdgeConnectivityInitiated
@@ -56,7 +58,7 @@ problem = .NOT. ALLOCATED(obj%elementData)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+           '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
   RETURN
 END IF
 
@@ -113,7 +115,7 @@ NULLIFY (edgePtr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateEdgeConnectivity
