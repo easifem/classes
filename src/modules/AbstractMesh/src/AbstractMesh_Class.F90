@@ -418,6 +418,19 @@ CONTAINS
     GetTotalNodes3
   !! get total nodes
 
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  !! Returns the total number of nodes
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  !! Returns total nodes of meshid
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes3 => obj_GetTotalVertexNodes3
+  !! Returns total nodes from a list of element number
+  GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
+    GetTotalVertexNodes2, GetTotalVertexNodes3
+  !! get total vetex nodes
+  !! vetex nodes means the nodes in linear mesh. When
+  !! mesh is higher order, then TotalVertexNodes wiill
+  !! be less than TotalNodes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaces => obj_GetTotalFaces
   !! Returns the total number of faces in the mesh (obj%tFaces)
 
@@ -2060,6 +2073,57 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                       GetTotalVertexNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary: Returns total number of vertex nodes in the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes1(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total nodes of a given meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes2(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in a collection of elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes3(obj, globalElement, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             GetTotalNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
@@ -2080,7 +2144,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
-! summary:  Get total nodes of meshid
+! summary:  Get total nodes of in a given meshid
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodes2(obj, meshid) RESULT(ans)
@@ -2096,7 +2160,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
-! summary:  Get total nodes in a collection of abstract mesh
+! summary:  Get total nodes in a collection of elements
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodes3(obj, globalElement, islocal) RESULT(ans)
