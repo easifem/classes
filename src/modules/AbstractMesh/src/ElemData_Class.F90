@@ -28,7 +28,7 @@ USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
                                    PARAM_REFELEM_MAX_EDGES, &
                                    ElementTopology, &
                                    GetElementIndex, &
-                                   ElementOrder
+                                   ElementOrder, ReferenceElementInfo
 
 USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
 
@@ -88,6 +88,7 @@ PUBLIC :: Elemdata_topoIndx
 PUBLIC :: Elemdata_meshID
 PUBLIC :: Elemdata_GetTotalMaterial
 PUBLIC :: Elemdata_GetTotalGlobalNodes
+PUBLIC :: Elemdata_GetTotalGlobalVertexNodes
 PUBLIC :: Elemdata_GetTotalEdgeOrient
 PUBLIC :: Elemdata_GetTotalGlobalFaces
 PUBLIC :: Elemdata_GetTotalFaceOrient
@@ -604,8 +605,8 @@ END SUBROUTINE Elemdata_GetGlobalFaceCon
 ! summary:  Returns the connectvity of the element
 !
 !# Introduction
-! 
-! This subroutine returns the connectivity of the element. 
+!
+! This subroutine returns the connectivity of the element.
 ! - tsize is the size of data written in con
 ! - con is the connectivity array, it should be allocated
 ! - opt is the type of connectivity, following options are allowed
@@ -768,7 +769,7 @@ FUNCTION Elemdata_GetVertex(obj, ii) RESULT(ans)
   !! local vertex number
   INTEGER(I4B) :: ans
   !! global vertex number
-  
+
   ans = obj%globalNodes(ii)
 END FUNCTION Elemdata_GetVertex
 
@@ -867,7 +868,7 @@ END FUNCTION Elemdata_GetTotalEdgeDOF
 !
 !# Introduction
 !
-! All dofs are internal to face, that is edge and vertex dof are not 
+! All dofs are internal to face, that is edge and vertex dof are not
 ! included
 
 FUNCTION Elemdata_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
@@ -971,7 +972,7 @@ END SUBROUTINE Elemdata_GetElementToElements1
 !# Introduction
 !
 ! This subroutine returns the element to element connectivity.
-! It also returns the local facet number information which are in 
+! It also returns the local facet number information which are in
 ! contact with each other.
 
 SUBROUTINE Elemdata_GetElementToElements2(obj, ans, nrow, ncol, &
@@ -981,7 +982,7 @@ SUBROUTINE Elemdata_GetElementToElements2(obj, ans, nrow, ncol, &
   !! Element to element, it should be allocated by user before calling
   !! each row denotes the information of a neighbor element.
   !! Therefore nrow is the total number of neighboring elements
-  !! number of columns is 3. 
+  !! number of columns is 3.
   !! The first column is global element of the neighbor element
   !! The second column is local face number of parent element (this element)
   !! The third column is local face number of neighbor element
@@ -990,7 +991,7 @@ SUBROUTINE Elemdata_GetElementToElements2(obj, ans, nrow, ncol, &
   INTEGER(I4B), INTENT(OUT) :: ncol
   !! Number of columns written to ans
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: includeBoundaryElement
-  !! If includeBoundaryElement is present and true, 
+  !! If includeBoundaryElement is present and true,
   !! then the boundary element data is included in ans
   !! In this case the current element is considered as the boundary element
   !! ans(nrow, 1) contains the global element number of the current element
@@ -1140,7 +1141,7 @@ END FUNCTION Elemdata_name
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-05-10 
+! date: 2025-05-10
 ! summary:  This function returns the topology name of the element
 
 PURE FUNCTION Elemdata_topoName(obj) RESULT(ans)
@@ -1206,6 +1207,20 @@ PURE FUNCTION Elemdata_GetTotalGlobalNodes(obj) RESULT(ans)
 END FUNCTION Elemdata_GetTotalGlobalNodes
 
 !----------------------------------------------------------------------------
+!                                                   GetTotalGlobalVertexNodes
+!----------------------------------------------------------------------------
+
+PURE FUNCTION Elemdata_GetTotalGlobalVertexNodes(obj) RESULT(ans)
+  TYPE(Elemdata_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+
+  INTEGER(I4B) :: indx
+
+  indx = GetElementIndex(obj%topoName)
+  ans = ReferenceElementInfo%tPoints(indx)
+END FUNCTION Elemdata_GetTotalGlobalVertexNodes
+
+!----------------------------------------------------------------------------
 !                                                       GetTotalGlobalEdges
 !----------------------------------------------------------------------------
 
@@ -1266,7 +1281,7 @@ END FUNCTION Elemdata_GetTotalFaceOrient
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-05-10 
+! date: 2025-05-10
 ! summary:  Get the size of globalElements vector
 
 PURE FUNCTION Elemdata_GetTotalGlobalElements(obj) RESULT(ans)

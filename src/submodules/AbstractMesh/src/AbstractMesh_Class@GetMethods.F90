@@ -60,6 +60,7 @@ USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           Elemdata_localElemNum, &
                           Elemdata_globalElemNum, &
                           Elemdata_GetTotalGlobalNodes, &
+                          Elemdata_GetTotalGlobalVertexNodes, &
                           Elemdata_IsBoundaryElement, &
                           Elemdata_FindFace, &
                           Elemdata_FindEdge, &
@@ -821,10 +822,19 @@ END PROCEDURE obj_GetTotalNodes1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes2()"
+#endif
+
 INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
 LOGICAL(LGT) :: isok
 LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
 INTEGER(I4B), POINTER :: intptr(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 fake_tsize = obj%GetTotalElements()
 ans = 0
@@ -861,6 +871,11 @@ END DO
 DEALLOCATE (foundNodes)
 intptr => NULL()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetTotalNodes2
 
 !----------------------------------------------------------------------------
@@ -868,10 +883,19 @@ END PROCEDURE obj_GetTotalNodes2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes3()"
+#endif
+
 INTEGER(I4B) :: ii, jj, kk, ll, ierr, tsize, iel
 TYPE(HashTable_) :: tbl
 INTEGER(I4B), POINTER :: intptr(:)
 LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ans = 0
 tsize = SIZE(globalElement)
@@ -903,7 +927,185 @@ END DO
 
 intptr => NULL()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetTotalNodes3
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
+#endif
+
+INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
+LOGICAL(LGT) :: isok
+LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
+INTEGER(I4B), POINTER :: intptr(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+fake_tsize = obj%GetTotalElements()
+ans = 0
+
+ii = obj%GetMaxNodeNumber()
+ALLOCATE (foundNodes(ii))
+foundNodes = .FALSE.
+
+DO ii = 1, fake_tsize
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
+  jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(ii)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    isok = foundNodes(ll)
+    IF (isok) CYCLE
+
+    foundNodes(ll) = .TRUE.
+    ans = ans + 1
+
+  END DO
+
+END DO
+
+DEALLOCATE (foundNodes)
+intptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalVertexNodes1
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes2()"
+#endif
+
+INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
+LOGICAL(LGT) :: isok
+LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
+INTEGER(I4B), POINTER :: intptr(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+fake_tsize = obj%GetTotalElements()
+ans = 0
+
+ii = obj%GetMaxNodeNumber()
+ALLOCATE (foundNodes(ii))
+foundNodes = .FALSE.
+
+DO ii = 1, fake_tsize
+  isok = obj%IsElementActive(globalElement=ii, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  found_meshid = Elemdata_meshid(obj%elementData(ii)%ptr)
+
+  isok = found_meshid .EQ. meshid
+  IF (.NOT. isok) CYCLE
+
+  intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
+  jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(ii)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    isok = foundNodes(ll)
+    IF (isok) CYCLE
+
+    foundNodes(ll) = .TRUE.
+    ans = ans + 1
+
+  END DO
+
+END DO
+
+DEALLOCATE (foundNodes)
+intptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalVertexNodes2
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes3()"
+#endif
+
+INTEGER(I4B) :: ii, jj, kk, ll, ierr, tsize, iel
+TYPE(HashTable_) :: tbl
+INTEGER(I4B), POINTER :: intptr(:)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = 0
+tsize = SIZE(globalElement)
+
+DO ii = 1, tsize
+  iel = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
+
+  isok = obj%IsElementActive(globalElement=iel, islocal=.TRUE.)
+  IF (.NOT. isok) CYCLE
+
+  intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
+  jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(iel)%ptr)
+
+  DO kk = 1, jj
+    ll = intptr(kk)
+
+    !! check if the key is present
+    CALL tbl%check_key(key=Hashkey(ll), stat=ierr)
+    isok = ierr .EQ. 0_I4B
+    IF (isok) CYCLE
+
+    !! if not present then set the key
+    CALL tbl%Set(key=Hashkey(ll), VALUE=.TRUE.)
+    ans = ans + 1
+
+  END DO
+
+END DO
+
+intptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalVertexNodes3
 
 !----------------------------------------------------------------------------
 !                                                             GetTotalFaces
