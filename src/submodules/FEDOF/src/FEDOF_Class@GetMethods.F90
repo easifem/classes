@@ -21,6 +21,7 @@ SUBMODULE(FEDOF_Class) GetMethods
 USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
 USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalEntities, &
+                          ElemData_GetTotalGlobalVertexNodes, &
                           ElemData_GetEdge, &
                           ElemData_GetFace, &
                           ElemData_GetCell
@@ -184,9 +185,7 @@ elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
 
 ent = ElemData_GetTotalEntities(elemdata)
 
-ans = ent(1)
-
-IF (obj%isLagrange) RETURN
+ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
 
 DO ii = 1, ent(2)
   jj = ElemData_GetEdge(elemdata, ii)

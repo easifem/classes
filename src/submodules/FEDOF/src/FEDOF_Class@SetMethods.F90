@@ -44,9 +44,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
+#endif
+
 INTEGER(I4B) :: tsize, ii, jj
 LOGICAL(LGT) :: isok
-CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
 INTEGER(INT8) :: int8_order
 
 #ifdef DEBUG_VER
@@ -71,7 +74,7 @@ ELSE
     IF (isok) THEN
       jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
       int8_order = INT(order(ii), kind=INT8)
-      ! IF (jj .NE. 0) 
+      ! IF (jj .NE. 0)
       obj%cellOrder(jj) = int8_order
     END IF
 
@@ -95,10 +98,19 @@ END PROCEDURE obj_SetCellOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFaceOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFaceOrder()"
+#endif
+
 INTEGER(I4B) :: nrow, ncol, ii, iel, jj, kk, e2e(PARAM_REFELEM_MAX_FACES, 3)
 LOGICAL(LGT) :: isok
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT), ALLOCATABLE :: foundFaces(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! main
 CALL Reallocate(foundFaces, obj%tFaces)
@@ -129,6 +141,11 @@ DO iel = 1, obj%tCells
 
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetFaceOrder
 
 !----------------------------------------------------------------------------
@@ -136,6 +153,10 @@ END PROCEDURE obj_SetFaceOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetEdgeOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetEdgeOrder()"
+#endif
+
 INTEGER(I4B) :: tsize, ii, iel, ent(4), jj, &
                 kk, edgeCon(2), n2e1(PARAM_MAX_NODE_TO_ELEM), &
                 n2e2(PARAM_REFELEM_MAX_FACES), n2e(PARAM_MAX_NODE_TO_ELEM), &
@@ -143,6 +164,11 @@ INTEGER(I4B) :: tsize, ii, iel, ent(4), jj, &
 LOGICAL(LGT) :: isok
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! main
 CALL Reallocate(foundEdges, obj%tEdges)
@@ -191,5 +217,15 @@ END DO
 IF (ALLOCATED(foundEdges)) DEALLOCATE (foundEdges)
 elemdata => NULL()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetEdgeOrder
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE SetMethods
