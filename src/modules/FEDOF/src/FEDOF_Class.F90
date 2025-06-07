@@ -139,10 +139,9 @@ TYPE :: FEDOF_
   !! Pointer to domain
 
 CONTAINS
-
-  !SET:
+  PRIVATE
+  !CONSTRUCTOR:
   !@ConstructorMethods
-
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate FEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -154,25 +153,37 @@ CONTAINS
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4
   !! Generic method for initiating FEDOF
+  PROCEDURE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
+  !! This method is called in the Intiate methods
+  !! This is a private method. It is used for allocating the size of
+  !! cellOrder, faceOrder, edgeOrder, edgeIA, faceIA, cellIA
+  PROCEDURE, PASS(obj) :: SetOrdersFromCellOrder => &
+    obj_SetOrdersFromCellOrder
+  !! This method is private method
+  !! This method is used to set the faceOrder, edgeOrder from
+  !! cellOrder. This method is called internally from
+  !! Initiate methods. This put data in faceIA, edgeIA, cellIA
 
   PROCEDURE, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
-
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
-
-  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
-  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
-  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data
 
+  !SET:
+  !@SetMethods
+  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  !! Set the cell order, this is a private method
+  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  !! Set the face order, this is a private method
+  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+  !! Set the edge order, this is a private method
+
   !IO:
   !@IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of FEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayCellOrder => &
@@ -357,8 +368,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! In case of H1 Lagrange fedof,
-! order is determined from the cell order of each mesh
+! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
@@ -523,12 +533,45 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                           AllocateSizes@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-06
+! summary:  Allocate the sizes of cellOrder, faceOrder, edgeOrder, edgeIA,
+! faceIA, cellIA
+
+INTERFACE
+  MODULE SUBROUTINE obj_AllocateSizes(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AllocateSizes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SetOrdersFromCellOrder@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-06
+! summary:  Set the faceOrder, edgeOrder from cellOrder
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrdersFromCellOrder(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetOrdersFromCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   Copy@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-23
-! summary: Copy
+! summary: This method Copy obj2 in obj
+!
+!# Introduction
+! This method is used to copy the contents of obj2 in obj.
+! This method is same as the assignment operator (=).
 
 INTERFACE
   MODULE SUBROUTINE obj_Copy(obj, obj2)
