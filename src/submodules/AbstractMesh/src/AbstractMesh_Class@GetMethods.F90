@@ -1108,6 +1108,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalVertexNodes3
 
 !----------------------------------------------------------------------------
+!                                                        GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes4()"
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+ans = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(iel)%ptr)
+
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTotalVertexNodes4
+
+!----------------------------------------------------------------------------
 !                                                             GetTotalFaces
 !----------------------------------------------------------------------------
 
@@ -1231,7 +1258,7 @@ LOGICAL(LGT) :: problem
 INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
-problem = .NOT. obj%isElementPresent(globalElement, islocal=islocal)
+problem = .NOT. obj%IsElementPresent(globalElement, islocal=islocal)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
               '[INTERNAL ERROR] :: problem in getting localElement number'// &

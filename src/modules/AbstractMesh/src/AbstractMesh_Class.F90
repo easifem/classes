@@ -2009,7 +2009,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        isDomainBoundaryElement@GetMethods
+!                                         isDomainBoundaryElement@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2034,7 +2034,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        isDomainFacetElement@GetMethods
+!                                            isDomainFacetElement@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2058,7 +2058,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetTotalInternalNodes@GetMethodss
+!                                           GetTotalInternalNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2073,7 +2073,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       GetTotalVertexNodes@MeshDataMethods
+!                                         GetTotalVertexNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2088,7 +2088,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetTotalVertexNodes@GetMethods
+!                                              GetTotalVertexNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -2104,7 +2104,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetTotalVertexNodes@GetMethods
+!                                             GetTotalVertexNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -2121,6 +2121,26 @@ INTERFACE
     !! if true then global element is local element
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalVertexNodes3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in an element
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes4(obj, globalElement, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes4
 END INTERFACE
 
 !----------------------------------------------------------------------------
