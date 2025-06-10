@@ -36,7 +36,7 @@ INTEGER(I4B) :: ii
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 IF (PRESENT(nsd)) nsd = obj%nsd
 IF (PRESENT(order)) order = obj%order
@@ -165,15 +165,29 @@ MODULE PROCEDURE obj_GetGlobalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
 
+INTEGER(I4B) :: nns, nips, nsd, xidim
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 IF (PRESENT(geoelemsd)) THEN
-  CALL Elemsd_Set(obj=elemsd, val=xij, N=geoelemsd%N, dNdXi=geoelemsd%dNdXi)
+  nns = geoelemsd%nns
+  nips = geoelemsd%nips
+  nsd = geoelemsd%nsd
+  xidim = geoelemsd%xidim
+  CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                  N=geoelemsd%N(1:nns, 1:nips), &
+                  dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 ELSE
-  CALL Elemsd_Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
+  nns = elemsd%nns
+  nips = elemsd%nips
+  nsd = elemsd%nsd
+  xidim = elemsd%xidim
+  CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                  N=elemsd%N(1:nns, 1:nips), &
+                  dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 END IF
 
 #ifdef DEBUG_VER
