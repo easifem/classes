@@ -131,9 +131,24 @@ END PROCEDURE obj_GetElemTopology2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemTopologyIndx
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemTopologyIndx()"
+#endif
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
 ans = Elemdata_topoIndx(obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetElemTopologyIndx
 
 !----------------------------------------------------------------------------
@@ -1126,7 +1141,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(iel)%ptr)
 
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -1237,12 +1251,27 @@ END PROCEDURE obj_GetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
+#endif
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%GetConnectivity_(globalElement=globalElement, &
                           ans=temp, tsize=tsize, opt=opt, islocal=islocal)
 ALLOCATE (ans(tsize))
 ans(1:tsize) = temp(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -1256,6 +1285,11 @@ LOGICAL(LGT) :: problem
 #endif
 
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 problem = .NOT. obj%IsElementPresent(globalElement, islocal=islocal)
@@ -1272,6 +1306,11 @@ iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 CALL Elemdata_GetConnectivity(obj=obj%elementData(iel)%ptr, con=ans, &
                               tsize=tsize, opt=opt)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetConnectivity1_
 
 !----------------------------------------------------------------------------
@@ -1285,6 +1324,11 @@ LOGICAL(LGT) :: problem
 #endif
 
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 problem = .NOT. obj%isElementPresent(globalElement=globalElement, islocal=islocal)
@@ -1303,6 +1347,11 @@ CALL Elemdata_GetConnectivity2(obj=obj%elementData(iel)%ptr, &
          cellCon=cellCon, faceCon=faceCon, edgeCon=edgeCon, nodeCon=nodeCon, &
                     tCellCon=tCellCon, tFaceCon=tFaceCon, tEdgeCon=tEdgeCon, &
                                tNodeCon=tNodeCon)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_GetConnectivity2_
 
@@ -1471,10 +1520,10 @@ MODULE PROCEDURE obj_GetglobalElemNumber2
 CHARACTER(*), PARAMETER :: myName = "obj_GetglobalNodeNumber2()"
 LOGICAL(LGT) :: problem
 
-problem = (localElement .EQ. 0) .OR. (LocalElement .GT. obj%tElements)
+problem = (localElement .EQ. 0) .OR. (localElement .GT. obj%tElements)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: localElement is out of bound.')
+                    '[INTERNAL ERROR] :: localElement is out of bound.')
 END IF
 #endif
 
@@ -1486,10 +1535,27 @@ END PROCEDURE obj_GetglobalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemNumber1
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(globalElement)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber1()"
+#endif
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(globalElement)
+
+DO ii = 1, tsize
   ans(ii) = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetLocalElemNumber1
 
 !----------------------------------------------------------------------------
@@ -1498,16 +1564,27 @@ END PROCEDURE obj_GetLocalElemNumber1
 
 MODULE PROCEDURE obj_GetLocalElemNumber2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetglobalElemNumber2()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber2()"
 LOGICAL(LGT) :: problem
 #endif
 
 LOGICAL(LGT) :: islocal0
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 islocal0 = Input(default=.FALSE., option=islocal)
 
 IF (islocal0) THEN
   ans = globalElement
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -1528,6 +1605,11 @@ END IF
 
 ans = obj%local_elemNumber(globalElement)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetLocalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -1535,17 +1617,23 @@ END PROCEDURE obj_GetLocalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-INTEGER(I4B) :: ii, tsize
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
 LOGICAL(LGT) :: problem
+#endif
+INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 problem = .NOT. obj%isNodePresent(globalNode, islocal=islocal)
 IF (problem) THEN
   ALLOCATE (ans(0))
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: globalNode is not present')
+                    '[INTERNAL ERROR] :: globalNode is not present')
 END IF
 #endif
 
@@ -1558,6 +1646,11 @@ tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
 ALLOCATE (ans(tsize))
 CALL NodeData_GetGlobalElements(obj=obj%nodeData(ii)%ptr, ans=ans, tsize=tsize)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -1565,8 +1658,17 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2()"
+#endif
+
 INTEGER(I4B) :: ii, jj, n, lnode(SIZE(globalNode)), &
                 nn(SIZE(globalNode) + 1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -1588,6 +1690,12 @@ DO ii = 1, n
 END DO
 
 CALL RemoveDuplicates(ans)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetNodeToElements2
 
 !----------------------------------------------------------------------------

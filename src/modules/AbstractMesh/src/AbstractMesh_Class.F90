@@ -419,13 +419,15 @@ CONTAINS
   !! get total nodes
 
   PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
-  !! Returns the total number of nodes
+  !! Returns the total number of vertex nodes
   PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
-  !! Returns total nodes of meshid
+  !! Returns total vertex of meshid
   PROCEDURE, PASS(obj) :: GetTotalVertexNodes3 => obj_GetTotalVertexNodes3
-  !! Returns total nodes from a list of element number
+  !! Returns total vertex from a list of element number
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes4 => obj_GetTotalVertexNodes4
+  !! Return total vertex nodes of an element
   GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
-    GetTotalVertexNodes2, GetTotalVertexNodes3
+    GetTotalVertexNodes2, GetTotalVertexNodes3, GetTotalVertexNodes4
   !! get total vetex nodes
   !! vetex nodes means the nodes in linear mesh. When
   !! mesh is higher order, then TotalVertexNodes wiill
@@ -2557,8 +2559,8 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -2575,8 +2577,8 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
