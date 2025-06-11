@@ -71,8 +71,6 @@ CONTAINS
   ! CONSTRUCTOR:
   !@ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  !! Initiate an instance of domain
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data stored inside an instance of domain
   FINAL :: obj_Final
@@ -87,8 +85,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo =>  &
-    & obj_DisplayDomainInfo
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo => &
+    obj_DisplayDomainInfo
 
   ! GET:
   ! @GetMethods
@@ -99,27 +97,27 @@ CONTAINS
   ! @MeshDataMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-    & obj_InitiateNodeToElements
+    obj_InitiateNodeToElements
   !! Initiate node to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-    & obj_InitiateNodeToNodes
+    obj_InitiateNodeToNodes
   !! Initiate node to node data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-      & obj_InitiateElementToElements
+    obj_InitiateElementToElements
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-      & obj_InitiateBoundaryData
+    obj_InitiateBoundaryData
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-      & obj_InitiateFacetElements
+    obj_InitiateFacetElements
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-      & obj_InitiateExtraNodeToNodes
+    obj_InitiateExtraNodeToNodes
   !! Initiate extra node to nodes information for edge based methods
 
 END TYPE FEDomain_
@@ -131,25 +129,6 @@ END TYPE FEDomain_
 TYPE :: FEDomainPointer_
   CLASS(FEDomain_), POINTER :: ptr => NULL()
 END TYPE FEDomainPointer_
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-03-28
-! summary: Initiate the instance of [[AbstractDomain_]] object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, hdf5, group)
-    CLASS(FEDomain_), INTENT(INOUT) :: obj
-    !! AbstractDomainData object
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    !! HDF5 file
-    CHARACTER(*), INTENT(IN) :: group
-    !! Group name (directory name)
-  END SUBROUTINE obj_Initiate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
