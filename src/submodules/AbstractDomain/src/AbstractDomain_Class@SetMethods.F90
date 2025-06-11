@@ -510,7 +510,39 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetQuality
 
 !----------------------------------------------------------------------------
+!                                                           SetTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetTotalElements
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetTotalElements()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LT. SIZE(obj%tElements)
+CALL AssertError1(isok, myName, &
+                  "indx is out of bound, it should be between 0,1,2,3")
+#endif
+
+obj%tElements(indx) = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetTotalElements
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

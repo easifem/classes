@@ -32,15 +32,22 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+INTEGER(I4B) :: nsd
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
 
 CALL obj%IMPORT(hdf5=hdf5, group=group)
 
-SELECT CASE (obj%nsd)
+nsd = obj%GetNSD()
+
+SELECT CASE (nsd)
 CASE (0)
   obj%mesh => obj%meshPoint
 CASE (1)
@@ -53,7 +60,7 @@ END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Initiate
