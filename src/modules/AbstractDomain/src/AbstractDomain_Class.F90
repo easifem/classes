@@ -58,11 +58,11 @@ CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 !{!pages/docs-api/AbstractDomain/AbstractDomain_.md!}
 
 TYPE, ABSTRACT :: AbstractDomain_
-  ! PRIVATE
+  PRIVATE
   LOGICAL(LGT) :: showTime = .FALSE.
   !! set to true if you want to show time taken by various routines.
   LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! flag
+  !! flag to check if the ddomain is initiated or not
   TYPE(String) :: engine
     !! Engine used for generating the meshes
   INTEGER(I4B) :: majorVersion = 0
@@ -237,7 +237,7 @@ CONTAINS
   !! Generic method which returns the nodal coordinates
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
-    & obj_GetNodeCoordPointer
+    obj_GetNodeCoordPointer
   !! This routine returns the pointer to nodal coordinate
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
@@ -251,7 +251,7 @@ CONTAINS
   !! returns node number, this is subroutine
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
-    & obj_GetInternalNptrs
+    obj_GetInternalNptrs
   !! returns internal node number
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
@@ -270,7 +270,7 @@ CONTAINS
   !! Get Order
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
-    & obj_GetTotalMeshFacetData
+    obj_GetTotalMeshFacetData
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! Get total number of materials
@@ -278,8 +278,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
   !! returns the element type of each mesh
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType =>  &
-    & obj_GetUniqueElemType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType => &
+    obj_GetUniqueElemType
   !! Returns the unique element type in each mesh
   !! The size of returned integer vector can be different from
   !! the total number of meshes present in domain.
@@ -323,6 +323,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
 
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
+  !! This method sets the value of tElements(indx) to value
+
   ! SET:
   ! @MeshDataMethods
 
@@ -330,42 +333,42 @@ CONTAINS
   !! initiate the kdtree structure
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
-    & obj_InitiateNodeToElements
+    obj_InitiateNodeToElements
   !! Initiate node to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-    & obj_InitiateNodeToNodes
+    obj_InitiateNodeToNodes
   !! Initiate node to node data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-      & obj_InitiateElementToElements
+    obj_InitiateElementToElements
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-      & obj_InitiateBoundaryData
+    obj_InitiateBoundaryData
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-      & obj_InitiateFacetElements
+    obj_InitiateFacetElements
   !! Initiate element to element data
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
-      & obj_InitiateExtraNodeToNodes
+    obj_InitiateExtraNodeToNodes
   !! Initiate extra node to nodes information for edge based methods
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
-    & obj_SetFacetElementType
+    obj_SetFacetElementType
   !! Set facet element of meshes
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
-    & obj_SetDomainFacetElement
+    obj_SetDomainFacetElement
   !! Set facet element of meshes
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
   !! valid for old style domain only
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-    & obj_SetMeshFacetElement
+    obj_SetMeshFacetElement
 
 END TYPE AbstractDomain_
 
@@ -480,8 +483,8 @@ END INTERFACE
 ! after initiation of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
-    & printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -1743,7 +1746,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    & min_measures, dim, entityNum)
+                                   min_measures, dim, entityNum)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: measures(:)
     REAL(DFP), INTENT(OUT) :: max_measures(:)
@@ -1751,6 +1754,28 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
   END SUBROUTINE obj_SetQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetTotalElements@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-11
+! summary:  Set an entry in obj%tElements
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalElements(obj, indx, VALUE)
+    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! indx is the index of tElements, it should be 0, 1, 2, or 3
+    !! 0 for point
+    !! 1 for curve
+    !! 2 for surface
+    !! 3 for volume
+    INTEGER(I4B), INTENT(IN) :: VALUE
+    !! value is the total number of elements in given dimension
+  END SUBROUTINE obj_SetTotalElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
