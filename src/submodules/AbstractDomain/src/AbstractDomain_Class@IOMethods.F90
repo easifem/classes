@@ -77,6 +77,7 @@ CALL Display(obj%isInitiated, "AbstractDomain_::obj Initiated: ", &
 IF (.NOT. obj%isInitiated) RETURN
 
 CALL EqualLine(unitno=unitno)
+CALL Display(obj%isInitiated, "isInitiated: ", unitno=unitno)
 CALL Display("engine: "//obj%engine, unitno=unitno)
 CALL Display("version: "//tostring(obj%version), unitno=unitno)
 CALL Display("nsd: "//tostring(obj%nsd), unitno=unitno)
@@ -301,8 +302,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+#ifdef DEBUG_VER
+CALL Display(myName//" reading filename...")
+#endif
+
 CALL toml_get(table, "filename", meshfilename, default_meshfilename, &
               origin=origin, stat=stat)
+
+#ifdef DEBUG_VER
+CALL Display(myName//" filename: "//meshfilename)
+#endif
 
 ext = getExtension(meshfilename)
 problem = .NOT. ext .EQ. "h5"
@@ -313,8 +322,16 @@ IF (problem) THEN
                     'Extension should be "h5"')
 END IF
 
-CALL toml_get(table, "group", group, default_group, &
-              origin=origin, stat=stat)
+
+#ifdef DEBUG_VER
+CALL Display(myName//" reading group...")
+#endif
+
+CALL toml_get(table, "group", group, default_group, origin=origin, stat=stat)
+
+#ifdef DEBUG_VER
+CALL Display(myName//" group: " // group)
+#endif
 
 CALL meshfile%Initiate(meshfilename, mode="READ")
 CALL meshfile%OPEN()
