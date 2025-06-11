@@ -94,7 +94,7 @@ END PROCEDURE obj_DisplayDomainInfo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "AbstractDomain_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 INTEGER(I4B) :: nsd, aintval
 
 #ifdef DEBUG_VER
@@ -156,6 +156,18 @@ obj%meshPoint => FEMesh_Pointer()
 CALL obj%meshPoint%Initiate(hdf5=hdf5, group=group, dim=0_I4B)
 aintval = obj%meshPoint%GetTotalElements()
 CALL obj%SetTotalElements(indx=0, VALUE=aintval)
+
+! Setting mesh pointer based on nsd
+SELECT CASE (nsd)
+CASE (0)
+  obj%mesh => obj%meshPoint
+CASE (1)
+  obj%mesh => obj%meshCurve
+CASE (2)
+  obj%mesh => obj%meshSurface
+CASE (3)
+  obj%mesh => obj%meshVolume
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
