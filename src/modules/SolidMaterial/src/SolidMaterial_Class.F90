@@ -37,7 +37,7 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterial_Class
 USE AbstractSolidMechanicsModel_Class
 USE MeshSelection_Class
-USE Domain_Class, ONLY: Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 
@@ -446,7 +446,7 @@ INTERFACE SolidMaterialImportFromToml
     !! Toml table to returned
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(MeshSelection_), INTENT(INOUT) :: solidMaterialToMesh(:)
-    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml4
 END INTERFACE SolidMaterialImportFromToml
 
