@@ -21,7 +21,6 @@ USE AbstractRefElement_Class
 USE AbstractFE_Class
 USE FiniteElement_Class
 USE FPL, ONLY: ParameterList_
-USE Domain_Class, ONLY: Domain_, DomainPointer_
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
