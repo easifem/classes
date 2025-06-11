@@ -22,8 +22,6 @@ SUBMODULE(BlockMatrixField_Class) ConstructorMethods
 
 USE Display_Method, ONLY: ToString
 
-USE Domain_Class, ONLY: DomainSetSparsity
-
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 
 USE AbstractField_Class, ONLY: SetAbstractFieldParam
