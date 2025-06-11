@@ -2563,9 +2563,23 @@ END PROCEDURE obj_GetFacetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities1()"
+#endif
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 ans = Elemdata_GetTotalEntities(obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEntities1
 
 !----------------------------------------------------------------------------
