@@ -25,7 +25,6 @@ USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
-USE Domain_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "TensorField_Class"
