@@ -130,8 +130,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Initiates an instance of domain by importing data from meshfile
   !! TODO Add an export method to [[obj_]] class
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
   !! Initiates an instance of domain by importing meshfile name from
@@ -167,8 +169,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
   !! Get the list of elements connnected to many specified nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
-    & GetNodeToElements1, &
-    & GetNodeToElements2
+    GetNodeToElements1, GetNodeToElements2
   !! Generic method to get node to element data
 
   PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
