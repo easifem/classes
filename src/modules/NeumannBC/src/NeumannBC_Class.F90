@@ -20,7 +20,6 @@ USE GlobalData
 USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
-USE Domain_Class, ONLY: Domain_
 USE FEDomain_Class, ONLY: FEDomain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
