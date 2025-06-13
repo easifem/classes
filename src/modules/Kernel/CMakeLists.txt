@@ -18,8 +18,10 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/ErrorOpt_Class.F90 ${src_path}/BasisOpt_Class.F90
-          ${src_path}/CoordOpt_Class.F90 ${src_path}/TimeOpt_Class.F90
+  PRIVATE ${src_path}/ErrorOpt_Class.F90
+          ${src_path}/BasisOpt_Class.F90
+          ${src_path}/CoordOpt_Class.F90
+          ${src_path}/TimeOpt_Class.F90
           ${src_path}/OneDimDomain_Class.F90
-
-)
+          ${src_path}/EngineOpt_Class.F90
+          ${src_path}/FieldOpt_Class.F90)
