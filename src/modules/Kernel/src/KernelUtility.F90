@@ -15,18 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE KernelUtility
-USE KernelAssembleMassMatrix_Method
-USE KernelAssembleDampingMatrix_Method
-USE KernelAssembleStiffnessMatrix_Method
-USE KernelAssembleDiffusionMatrix_Method
-USE KernelAssembleElastoDynaMatrix_Method
-USE KernelAssembleSTElastoDynaMatrix_Method
-USE KernelAssembleSTAcousticMatrix_Method
-USE KernelAssembleBodySource_Method
-USE KernelAssembleSurfaceSource_Method
-USE KernelAssemblePointSource_Method
-USE KernelTensorProperty_Method
-USE KernelScalarProperty_Method
-USE KernelMatrixField_Method
-USE KernelElasticityProperties_Method
+! USE KernelAssembleMassMatrix_Method
+! USE KernelAssembleDampingMatrix_Method
+! USE KernelAssembleStiffnessMatrix_Method
+! USE KernelAssembleDiffusionMatrix_Method
+! USE KernelAssembleElastoDynaMatrix_Method
+! USE KernelAssembleSTElastoDynaMatrix_Method
+! USE KernelAssembleSTAcousticMatrix_Method
+! USE KernelAssembleBodySource_Method
+! USE KernelAssembleSurfaceSource_Method
+! USE KernelAssemblePointSource_Method
+! USE KernelTensorProperty_Method
+! USE KernelScalarProperty_Method
+! USE KernelMatrixField_Method
+! USE KernelElasticityProperties_Method
 END MODULE KernelUtility
