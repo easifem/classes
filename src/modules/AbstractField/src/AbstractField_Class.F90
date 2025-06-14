@@ -41,17 +41,29 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TxtFile_Class, ONLY: TxtFile_
+USE FieldOpt_Class, ONLY: TypeField_ => FieldOpt_, &
+                          TypeField => TypeFieldOpt, &
+                          FIELD_TYPE_NORMAL, &
+                          FIELD_TYPE_CONSTANT, &
+                          FIELD_TYPE_SPACE, &
+                          FIELD_TYPE_TIME, &
+                          FIELD_TYPE_SPACETIME, &
+                          FIELD_TYPE_CONSTANT_SPACE, &
+                          FIELD_TYPE_CONSTANT_TIME
+
+USE EngineOpt_Class, ONLY: EngineName_ => EngineOpt_, &
+  TypeEngineName => TypeEngineOpt
+
+USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 PRIVATE
 
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = Constant
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACE = Space
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_TIME = Time
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACETIME = SpaceTime
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = Time
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = Space
+PUBLIC :: FIELD_TYPE_NORMAL, FIELD_TYPE_CONSTANT, &
+          FIELD_TYPE_SPACE, FIELD_TYPE_TIME, FIELD_TYPE_SPACETIME, &
+          FIELD_TYPE_CONSTANT_SPACE, FIELD_TYPE_CONSTANT_TIME
+
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractField"
 
@@ -68,36 +80,6 @@ PUBLIC :: AbstractFieldInitiate2
 PUBLIC :: FIELD_TYPE_NAME
 PUBLIC :: TypeField
 PUBLIC :: TypeEngineName
-
-!----------------------------------------------------------------------------
-!                                                                TypeField
-!----------------------------------------------------------------------------
-
-TYPE :: TypeField_
-  INTEGER(I4B) :: normal = FIELD_TYPE_NORMAL
-  INTEGER(I4B) :: constant = FIELD_TYPE_CONSTANT
-  INTEGER(I4B) :: space = FIELD_TYPE_SPACE
-  INTEGER(I4B) :: time = FIELD_TYPE_TIME
-  INTEGER(I4B) :: spaceTime = FIELD_TYPE_SPACETIME
-END TYPE TypeField_
-
-TYPE(TypeField_), PARAMETER :: TypeField = TypeField_()
-
-!----------------------------------------------------------------------------
-!                                                                TypeField
-!----------------------------------------------------------------------------
-
-TYPE :: EngineName_
-  CHARACTER(13) :: native_serial = "NATIVE_SERIAL"
-  CHARACTER(10) :: native_omp = "NATIVE_OMP"
-  CHARACTER(10) :: native_mpi = "NATIVE_MPI"
-  CHARACTER(7) :: lis_omp = "LIS_OMP"
-  CHARACTER(7) :: lis_mpi = "LIS_MPI"
-  CHARACTER(9) :: petsc_omp = "PETSC_OMP"
-  CHARACTER(9) :: petsc_mpi = "PETSC_MPI"
-END TYPE EngineName_
-
-TYPE(EngineName_), PARAMETER :: TypeEngineName = EngineName_()
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -173,9 +155,17 @@ CONTAINS
   !! Import data from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import data from toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import data from toml file
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+  !! Generic method to import data from toml file
 
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  !! Write data in vtk file
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
+  !! Write data in hdf5 file
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
 
   ! GET:
@@ -430,6 +420,54 @@ INTERFACE AbstractFieldExport
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE AbstractFieldExport
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data from toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data from toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, &
+                                        afile, filename, printToml)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! name of the key
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! txt file where toml config is stored
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! you can pass the filename, then we will make
+    !! the file, open it and read the toml config and
+    !! close the file.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! if it is true then we will print the toml config
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     WriteData@IOMethods
