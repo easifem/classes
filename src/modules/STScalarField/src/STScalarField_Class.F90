@@ -31,6 +31,7 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_
+USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 PRIVATE
@@ -99,6 +100,9 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content of STScalarField_
+
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import data from toml file
 
   ! SET:
   ! @SetMethods
@@ -439,6 +443,26 @@ INTERFACE STScalarFieldExport
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE STScalarFieldExport
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data from toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
