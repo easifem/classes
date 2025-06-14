@@ -438,6 +438,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 SELECT TYPE (obj2)
 CLASS IS (MatrixField_)
 
@@ -475,6 +480,12 @@ CLASS DEFAULT
    '[INTERNAL ERROR] :: obj2 should an instance of MatrixField_ or its child')
   RETURN
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -482,7 +493,16 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixFieldPreconditionCopy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldPreconditionCopy()"
+#endif
+
 INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isInitiated = obj2%isInitiated
 obj%PmatName = obj2%PmatName
@@ -530,6 +550,11 @@ CALL Reallocate(obj%LEVS, tsize)
 DO ii = 1, tsize
   obj%LEVS(ii) = obj2%LEVS(ii)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE MatrixFieldPreconditionCopy
 
