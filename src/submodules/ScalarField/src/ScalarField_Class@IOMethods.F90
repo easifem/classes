@@ -18,6 +18,9 @@
 SUBMODULE(ScalarField_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE Display_Method, ONLY: ToString
+USE TomlUtility, ONLY: GetValue
+USE FPL, ONLY: FPL_INIT, FPL_FINALIZE
+
 IMPLICIT NONE
 CONTAINS
 
@@ -104,6 +107,85 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ExportToVTK
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+TYPE(ParameterList_) :: param
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String) :: name, engine, fedofName, fieldTypeChar
+INTEGER(I4B) :: fieldType, origin, stat
+LOGICAL(LGT) :: isfound
+CHARACTER(*), PARAMETER :: default_engine = "NATIVE_SERIAL"
+CHARACTER(*), PARAMETER :: default_fieldTypeChar = "Normal"
+CHARACTER(*), PARAMETER :: default_name = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+key = "name"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=name, &
+              default_value=default_name, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+
+key = "engine"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=engine, &
+              default_value=default_engine, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+
+key = "fieldType"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
+              default_value=default_fieldTypeChar, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+! BUG:
+! Convert fieldTypeChar to fieldType
+
+CALL FPL_Init
+CALL param%Initiate()
+
+CALL SetScalarFieldParam(param=param, name=name%chars(), &
+                         engine=obj%engine%chars(), fieldType=fieldType)
+
+! CALL obj%Initiate(param=param, fedof=fedof)
+
+CALL param%DEALLOCATE()
+CALL FPL_Finalize
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !
