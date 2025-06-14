@@ -99,7 +99,7 @@ CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", &
              VALUE=engine)
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
-             VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
+             VALUE=input(option=fieldType, default=TypeField%normal))
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
              VALUE=input(option=comm, default=0_I4B))
@@ -318,7 +318,7 @@ INTEGER(I4B) :: ii
 obj%name = ""
 obj%engine = ""
 obj%isInitiated = .FALSE.
-obj%fieldType = FIELD_TYPE_NORMAL
+obj%fieldType = TypeField%normal
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1

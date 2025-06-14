@@ -45,7 +45,7 @@ END IF
 
 CALL Display(obj%name%chars(), msg="name : ", unitNo=unitNo)
 
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+IF (obj%fieldType .EQ. TypeField%normal) THEN
   CALL Display("fieldType : CONSTANT", unitNo=unitNo)
 ELSE
   CALL Display("fieldType : NORMAL", unitNo=unitNo)

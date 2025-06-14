@@ -42,15 +42,7 @@ USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TxtFile_Class, ONLY: TxtFile_
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt, &
-                          FIELD_TYPE_NORMAL, &
-                          FIELD_TYPE_CONSTANT, &
-                          FIELD_TYPE_SPACE, &
-                          FIELD_TYPE_TIME, &
-                          FIELD_TYPE_SPACETIME, &
-                          FIELD_TYPE_CONSTANT_SPACE, &
-                          FIELD_TYPE_CONSTANT_TIME
-
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 
 USE tomlf, ONLY: toml_table
@@ -82,7 +74,7 @@ PUBLIC :: AbstractFieldInitiate2
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInitiated = .FALSE.
   !! It is true if the object is initiated
-  INTEGER(I4B) :: fieldType = FIELD_TYPE_NORMAL
+  INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE(String) :: name
   !! name of the field
