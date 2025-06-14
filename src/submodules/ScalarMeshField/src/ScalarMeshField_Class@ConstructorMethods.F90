@@ -17,7 +17,9 @@
 SUBMODULE(ScalarMeshField_Class) ConstructorMethods
 USE GlobalData, ONLY: Constant, SpaceTime, Scalar, Nodal
 
-USE AbstractField_Class, ONLY: TypeField
+USE AbstractField_Class
+
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
 

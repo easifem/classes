@@ -20,7 +20,7 @@ USE InputUtility, ONLY: Input
 
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_

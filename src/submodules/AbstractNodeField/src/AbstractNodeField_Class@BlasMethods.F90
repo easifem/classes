@@ -18,7 +18,8 @@ SUBMODULE(AbstractNodeField_Class) BlasMethods
 USE RealVector_Method, ONLY: Axpy, Copy, Norm1, Norm2, Normi, &
                              Dot_Product, PMUL, Reciprocal, &
                              SCAL
-USE AbstractField_Class, ONLY: TypeEngineName
+USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
+
 IMPLICIT NONE
 
 #ifdef USE_LIS

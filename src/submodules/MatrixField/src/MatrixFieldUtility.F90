@@ -20,9 +20,9 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE MatrixField_Class, ONLY: MatrixField_
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class, ONLY: AbstractField_, &
-                               TypeField, &
-                               FIELD_TYPE_NUMBER
+USE AbstractField_Class, ONLY: AbstractField_
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+
 USE String_Class, ONLY: String
 
 USE BaseType, ONLY: DOF_, CSRMatrix_
@@ -218,7 +218,7 @@ SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, fieldType, name, &
   dsetname = TRIM(group)//"/fieldType"
   IF (hdf5%pathExists(dsetname%chars())) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    fieldType = FIELD_TYPE_NUMBER(strval%chars())
+    fieldType = TypeField%ToNumber(strval%chars())
   ELSE
     fieldType = TypeField%constant
   END IF

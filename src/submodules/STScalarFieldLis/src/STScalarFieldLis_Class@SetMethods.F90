@@ -28,7 +28,7 @@ USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 
 USE Display_Method, ONLY: ToString
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE InputUtility, ONLY: Input
 

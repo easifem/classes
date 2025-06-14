@@ -78,8 +78,6 @@ PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
 PUBLIC :: AbstractFieldInitiate2
 PUBLIC :: FIELD_TYPE_NAME
-PUBLIC :: TypeField
-PUBLIC :: TypeEngineName
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
