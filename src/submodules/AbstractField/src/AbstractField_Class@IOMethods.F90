@@ -15,7 +15,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) IOMethods
+USE GlobalData, ONLY: stdout, CHAR_LF
+
+USE TomlUtility, ONLY: GetValue
+
 USE Display_Method, ONLY: Display, ToString
+USE tomlf, ONLY: toml_get => get_value, &
+                 toml_serialize
+
 IMPLICIT NONE
 CONTAINS
 
@@ -344,5 +351,69 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Import
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  'This routine should be implemented by child class')
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+! internal variables
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+isok = ALLOCATED(table)
+CALL AssertError1(isok, myName, "table is not allocated from GetValue")
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  "cannot find "//tomlName//" table in config.")
+
+CALL obj%ImportFromToml(table=node, fedof=fedof)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
+               CHAR_LF, unitno=stdout)
+END IF
+#endif
+
+node => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                                    Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods
