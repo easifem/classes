@@ -42,8 +42,7 @@ USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TxtFile_Class, ONLY: TxtFile_
-USE FieldOpt_Class, ONLY: TypeField_ => FieldOpt_, &
-                          TypeField => TypeFieldOpt, &
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt, &
                           FIELD_TYPE_NORMAL, &
                           FIELD_TYPE_CONSTANT, &
                           FIELD_TYPE_SPACE, &
@@ -52,17 +51,12 @@ USE FieldOpt_Class, ONLY: TypeField_ => FieldOpt_, &
                           FIELD_TYPE_CONSTANT_SPACE, &
                           FIELD_TYPE_CONSTANT_TIME
 
-USE EngineOpt_Class, ONLY: EngineName_ => EngineOpt_, &
-                           TypeEngineName => TypeEngineOpt
+USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 
 USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 PRIVATE
-
-PUBLIC :: FIELD_TYPE_NORMAL, FIELD_TYPE_CONSTANT, &
-          FIELD_TYPE_SPACE, FIELD_TYPE_TIME, FIELD_TYPE_SPACETIME, &
-          FIELD_TYPE_CONSTANT_SPACE, FIELD_TYPE_CONSTANT_TIME
 
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractField"

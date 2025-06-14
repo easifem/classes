@@ -31,8 +31,6 @@ USE IntVector_Method, ONLY: IntVector_Get => Get, &
 
 USE Display_Method, ONLY: ToString
 
-USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
-
 USE DOF_Method, ONLY: GetNodeLoc
 
 USE InputUtility, ONLY: Input

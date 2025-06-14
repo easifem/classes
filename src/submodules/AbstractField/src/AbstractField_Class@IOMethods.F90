@@ -137,7 +137,7 @@ END IF
 ! fieldType
 dname = TRIM(group)//"/fieldType"
 CALL hdf5%WRITE(dsetname=dname%chars(), &
-                vals=STRING(FIELD_TYPE_NAME(obj%fieldType)))
+                vals=STRING(TypeField%ToString(obj%fieldType)))
 
 ! name
 dname = TRIM(group)//"/name"
@@ -222,9 +222,9 @@ END IF
 dsetname = TRIM(group)//"/fieldType"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-  obj%fieldType = FIELD_TYPE_NUMBER(strval%chars())
+  obj%fieldType = TypeField%ToNumber(strval%chars())
 ELSE
-  obj%fieldType = FIELD_TYPE_NORMAL
+  obj%fieldType = TypeField%normal
 END IF
 
 ! name

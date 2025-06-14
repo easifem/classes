@@ -16,9 +16,6 @@
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
 USE InputUtility, ONLY: Input
-
-USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
-
 USE RealVector_Method, ONLY: Set, Add
 
 #ifdef USE_LIS
