@@ -53,7 +53,7 @@ USE FieldOpt_Class, ONLY: TypeField_ => FieldOpt_, &
                           FIELD_TYPE_CONSTANT_TIME
 
 USE EngineOpt_Class, ONLY: EngineName_ => EngineOpt_, &
-  TypeEngineName => TypeEngineOpt
+                           TypeEngineName => TypeEngineOpt
 
 USE tomlf, ONLY: toml_table
 
@@ -72,12 +72,10 @@ PUBLIC :: AbstractFieldDisplay
 PUBLIC :: AbstractFieldImport
 PUBLIC :: AbstractFieldExport
 PUBLIC :: AbstractFieldDeallocate
-PUBLIC :: FIELD_TYPE_NUMBER
 PUBLIC :: SetAbstractFieldParam
 PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
 PUBLIC :: AbstractFieldInitiate2
-PUBLIC :: FIELD_TYPE_NAME
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -358,28 +356,6 @@ INTERFACE AbstractFieldDeallocate
     CLASS(AbstractField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractFieldDeallocate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION FIELD_TYPE_NUMBER(name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION FIELD_TYPE_NUMBER
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION FIELD_TYPE_NAME(id) RESULT(Ans)
-    INTEGER(I4B), INTENT(IN) :: id
-    CHARACTER(20) :: ans
-  END FUNCTION FIELD_TYPE_NAME
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods

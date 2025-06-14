@@ -344,39 +344,4 @@ END IF
 
 END PROCEDURE obj_Deallocate
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE FIELD_TYPE_NUMBER
-SELECT CASE (TRIM(name))
-CASE ("NORMAL")
-  ans = FIELD_TYPE_NORMAL
-CASE ("CONSTANT")
-  ans = FIELD_TYPE_CONSTANT
-CASE ("CONSTANT_SPACE")
-  ans = FIELD_TYPE_CONSTANT_SPACE
-CASE ("CONSTANT_TIME")
-  ans = FIELD_TYPE_CONSTANT_TIME
-END SELECT
-END PROCEDURE FIELD_TYPE_NUMBER
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE FIELD_TYPE_NAME
-!
-SELECT CASE (id)
-CASE (FIELD_TYPE_NORMAL)
-  ans = "NORMAL"
-CASE (FIELD_TYPE_CONSTANT)
-  ans = "CONSTANT"
-CASE (FIELD_TYPE_CONSTANT_SPACE)
-  ans = "CONSTANT_SPACE"
-CASE (FIELD_TYPE_CONSTANT_TIME)
-  ans = "CONSTANT_TIME"
-END SELECT
-END PROCEDURE FIELD_TYPE_NAME
-
 END SUBMODULE ConstructorMethods
