@@ -27,6 +27,8 @@ IMPLICIT NONE
 
 PRIVATE
 
+CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class"
+
 PUBLIC :: BasisOpt_, TypeBasisOpt
 
 !----------------------------------------------------------------------------
@@ -69,9 +71,5 @@ END TYPE BasisOpt_
 !----------------------------------------------------------------------------
 
 TYPE(BasisOpt_), PARAMETER :: TypeBasisOpt = BasisOpt_()
-
-!----------------------------------------------------------------------------
-!                                                                   Methods
-!----------------------------------------------------------------------------
 
 END MODULE BasisOpt_Class
