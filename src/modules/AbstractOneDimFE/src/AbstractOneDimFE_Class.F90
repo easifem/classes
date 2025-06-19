@@ -594,11 +594,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points
-
-! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
-! alpha, beta, lambda, xij)
+! date: 2025-06-19
+! summary: Get the quadrature points for the finite element
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
@@ -606,14 +603,14 @@ INTERFACE
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
     !! Type of quadrature points
     !! GaussLegendre ! GaussLegendreLobatto
     !! GaussLegendreRadau, GaussLegendreRadauLeft
     !! GaussLegendreRadauRight ! GaussChebyshev
     !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
     !! GaussChebyshevRadauRight
-    INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Order of integrand
     !! either the order or the nips should be present
     !! Both nips and order should not be present
@@ -626,9 +623,8 @@ INTERFACE
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
-
 !----------------------------------------------------------------------------
-!                                                     
+!
 !----------------------------------------------------------------------------
 
 END MODULE AbstractOneDimFE_Class

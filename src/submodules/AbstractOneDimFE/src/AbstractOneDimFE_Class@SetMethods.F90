@@ -34,18 +34,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%SetParam( &
-  order=order, &
-  fetype=fetype, &
-  ipType=ipType, &
-  basisType=basisType, &
-  alpha=alpha, &
-  beta=beta, &
-  lambda=lambda, &
-  refElemDomain=refElemDomain, &
-  baseContinuity=baseContinuity, &
-  baseInterpolation=baseInterpolation, &
-  firstCall=firstCall)
+CALL obj%opt%SetParam(order=order, &
+                      fetype=fetype, &
+                      ipType=ipType, &
+                      basisType=basisType, &
+                      alpha=alpha, &
+                      beta=beta, &
+                      lambda=lambda, &
+                      refElemDomain=refElemDomain, &
+                      baseContinuity=baseContinuity, &
+                      baseInterpolation=baseInterpolation, &
+                      firstCall=firstCall, &
+                      quadratureType=quadratureType, &
+                      quadratureOrder=quadratureOrder, &
+                      quadratureNips=quadratureNips, &
+                      quadratureAlpha=quadratureAlpha, &
+                      quadratureBeta=quadratureBeta, &
+                      quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

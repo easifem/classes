@@ -15,16 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractOneDimFE_Class) IOMethods
-USE GlobalData, ONLY: CHAR_LF
-
 USE Display_Method, ONLY: Display, ToString
-
-USE ReferenceElement_Method, ONLY: ElementName
-
-USE MdEncode_Method, ONLY: MdEncode, &
-                           React_StartTabs, &
-                           React_StartTabItem, &
-                           React_EndTabItem
 
 IMPLICIT NONE
 
@@ -36,6 +27,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+INTEGER(I4B) :: s(2)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -43,10 +36,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-
 CALL Display(obj%isInitiated, msg="isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInitiated) RETURN
+
 CALL obj%opt%Display(unitno=unitno, msg="OneDimBasisOpt from opt:")
+
+isok = ALLOCATED(obj%xij)
+CALL Display(isok, msg="xij is Allocated: ", unitno=unitno)
+IF (isok) THEN
+  s = SIZE(obj%xij)
+  CALL Display(s, msg="xij size: ", unitno=unitno)
+END IF
+
+isok = ALLOCATED(obj%coeff)
+CALL Display(isok, msg="coeff is Allocated: ", unitno=unitno)
+IF (isok) THEN
+  s = SIZE(obj%coeff)
+  CALL Display(isok, msg="coeff size: ", unitno=unitno)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

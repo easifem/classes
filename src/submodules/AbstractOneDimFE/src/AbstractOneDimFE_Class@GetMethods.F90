@@ -176,15 +176,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-! CALL QuadraturePointInitiate(obj=quad, &
-!                              elemType=elemNameOpt%line, &
-!                              domainName=obj%opt%refelemDomain, &
-!                              order=order, &
-!                              quadratureType=quadratureType, &
-!                              alpha=alpha, &
-!                              beta=beta, &
-!                              lambda=lambda, &
-!                              xij=obj%refelemCoord(1:obj%xidim, :))
+CALL obj%opt%GetQuadraturePoints(quad=quad, &
+                                 order=order, &
+                                 quadratureType=quadratureType, &
+                                 alpha=alpha, &
+                                 beta=beta, &
+                                 lambda=lambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
