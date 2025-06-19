@@ -129,6 +129,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
+# AbstractOneDimFE
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
+
 # ScalarFE
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
 
