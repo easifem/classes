@@ -44,6 +44,7 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TxtFile_Class, ONLY: TxtFile_
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 USE tomlf, ONLY: toml_table
 
@@ -62,6 +63,8 @@ PUBLIC :: SetAbstractFieldParam
 PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
 PUBLIC :: AbstractFieldInitiate2
+PUBLIC :: SetAbstractFieldParamFromToml
+PUBLIC :: AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -143,7 +146,6 @@ CONTAINS
   !! Import data from toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Generic method to import data from toml file
-
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
   !! Write data in vtk file
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
@@ -158,56 +160,65 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     obj_GetTotalPhysicalVars
   !! Returns the total number of physical variables
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Returns the names of physical variables
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Return space component
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Return time component
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Return storage format
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
     obj_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
   !! Returns the total number of edge degree of freedoms
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
   !! Returns the total number of face degree of freedoms
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
     obj_isConstant
   !! It returns true if the field is constant field
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix of the field, it is necessary for Setting essential param
-  !! INFO: This routine should be implemented by child classes
+  !!  This routine should be implemented by child classes
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
+    obj_GetFEDOFPointer1
+  !! Get the FEDOF pointer, a single pointer is returned
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer2 => &
+    obj_GetFEDOFPointer2
+  !! Get the fedof pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
+    GetFEDOFPointer2
 
   ! SET:
   ! @SetMethods
@@ -390,13 +401,17 @@ END INTERFACE AbstractFieldExport
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, mesh)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    !! Abstract mesh object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -409,7 +424,7 @@ END INTERFACE
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, &
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, mesh, &
                                         afile, filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -418,6 +433,10 @@ INTERFACE
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    !! Abstract mesh object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     !! txt file where toml config is stored
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
@@ -427,6 +446,60 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     !! if it is true then we will print the toml config
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    SetAbstractFieldParamFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Make param from toml file
+
+INTERFACE
+  MODULE SUBROUTINE SetAbstractFieldParamFromToml(param, table, prefix, &
+                                                  comm, local_n, global_n)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    !! Parameter list to be set
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table from which parameters are read
+    CHARACTER(*), INTENT(IN) :: prefix
+    !! prefix
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+  END SUBROUTINE SetAbstractFieldParamFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    AbstractFieldReadFEDOFfromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read fedof from toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadFEDOFfromToml(table, fedof, mesh)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    !! Abstract mesh object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+  END SUBROUTINE AbstractFieldReadFEDOFfromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -713,6 +786,54 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+!
+! # Introduction
+!
+! This method returns the fedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return fedof
+! - if indx is given then it will check if the fedofs is allocated
+! -  if fedofs is allocated then it will return the pointer fedof(indx)
+! - if fedofs is not allocated then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+  !! indx is the index of physical variable
+  !! for which FEDOF pointer is requested
+    CLASS(FEDOF_), POINTER :: ans
+  !! ans is the FEDOF pointer, it is a single pointer
+  !! to FEDOF object.
+  END FUNCTION obj_GetFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+  !! This is just a dummy argument to have a unique interface
+    TYPE(FEDOFPointer_), ALLOCATABLE :: ans(:)
+  !! List of FEDOF pointers
+  END FUNCTION obj_GetFEDOFPointer2
 END INTERFACE
 
 END MODULE AbstractField_Class
