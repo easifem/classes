@@ -101,10 +101,15 @@ CONTAINS
   !! Get the total number of nodes in the object
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemLength => obj_GetElemLength
   !! Get an entry from the  element length array
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemNumber => obj_GetLocalElemNumber
+  !! Get the local element number from the global element number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalNodeNumber => obj_GetLocalNodeNumber
+  !! Get the local node number from the global node number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexNodes => obj_GetTotalVertexNodes
+  !! Get the total number of vertex in object
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of the object
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => obj_DisplayMeshInfo
@@ -515,6 +520,36 @@ FUNCTION obj_GetLocalElemNumber(obj, globalElement, islocal) RESULT(ans)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
 END FUNCTION obj_GetLocalElemNumber
+
+!----------------------------------------------------------------------------
+!                                                         GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetLocalNodeNumber(obj, globalNode, islocal) RESULT(ans)
+  CLASS(OneDimDomain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalNode
+  !! global element number
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  !! if islocal = .true. then global element number is local
+  INTEGER(I4B) :: ans
+  !! local element number
+
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber()"
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+END FUNCTION obj_GetLocalNodeNumber
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalVertexDOF
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetTotalVertexNodes(obj) RESULT(ans)
+  CLASS(OneDimDomain_), INTENT(in) :: obj
+  INTEGER(I4B) :: ans
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes()"
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+END FUNCTION obj_GetTotalVertexNodes
 
 !----------------------------------------------------------------------------
 !                                                                     Error

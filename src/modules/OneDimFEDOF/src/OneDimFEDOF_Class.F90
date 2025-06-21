@@ -692,9 +692,9 @@ END INTERFACE
 ! summary:  Get cell degree of freedom
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize, islocal)
+  MODULE SUBROUTINE obj_GetCellDOF(obj, globalElement, ans, tsize, islocal)
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalCell
+    INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -710,9 +710,9 @@ END INTERFACE
 ! summary: Get total cell degree of freedom
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalCellDOF(obj, globalCell, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, globalElement, islocal) RESULT(ans)
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalCell
+    INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalCellDOF
@@ -780,12 +780,7 @@ MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global or local element number
     CHARACTER(*), INTENT(IN) :: opt
-    !! opt for Vertex, Edge, Face, Cell, and All
-    !! opt = Vertex
-    !! opt = Edge
-    !! opt = Face
-    !! opt = Cell
-    !! opt = All
+    !! opt = Vertex, Cell, All
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if islocal true then globalElement is local element number
     INTEGER(I4B) :: ans

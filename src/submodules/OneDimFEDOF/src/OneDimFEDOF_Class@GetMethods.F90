@@ -61,7 +61,7 @@ END PROCEDURE obj_GetVertexDOF
 
 MODULE PROCEDURE obj_GetCellDOF
 INTEGER(I4B) :: ii, jj
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 tsize = 0
 DO ii = obj%cellIA(jj), obj%cellIA(jj + 1) - 1
   tsize = tsize + 1
@@ -75,12 +75,12 @@ END PROCEDURE obj_GetCellDOF
 
 MODULE PROCEDURE obj_GetTotalCellDOF
 INTEGER(I4B) :: jj
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
 END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
-!                                                     GetTotalVertexDOF
+!                                                           GetTotalVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalVertexDOF
@@ -88,7 +88,7 @@ ans = obj%mesh%GetTotalVertexNodes()
 END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
-!                                                           GetTotalDOF
+!                                                                GetTotalDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF1
@@ -96,7 +96,7 @@ ans = obj%tdof
 END PROCEDURE obj_GetTotalDOF1
 
 !----------------------------------------------------------------------------
-!                                                           GetTotalDOF
+!                                                                GetTotalDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF2
@@ -131,18 +131,12 @@ MODULE PROCEDURE obj_GetTotalDOF3
 CHARACTER(*), PARAMETER :: myName = 'obj_GetTotalDOF3()'
 #endif
 
-TYPE(ElemData_), POINTER :: elemdata
-INTEGER(I4B) :: ii, jj, ent(4)
-CHARACTER(1) :: opt0
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-opt0 = opt(1:1)
-
-SELECT CASE (opt0)
+SELECT CASE (opt(1:1))
 CASE ('v', 'V')
   ans = 2
 CASE ('c', 'C')
