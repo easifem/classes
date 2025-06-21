@@ -44,6 +44,9 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
+
 CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
@@ -117,7 +120,7 @@ END PROCEDURE obj_DisplayCellOrder
 MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(String) :: baseContinuity, baseInterpolation, astr, baseTypeStr(3)
-INTEGER(I4B) :: ipType, origin, stat, tBaseType, ii, baseType(3), &
+INTEGER(I4B) :: ipType, origin, stat, tBaseType, ii, baseType0(3), &
                 tAlpha, tBeta, tLambda
 REAL(DFP) :: alpha(3), beta(3), lambda(3)
 LOGICAL(LGT) :: isFound, abool, islocal
@@ -128,33 +131,63 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading baseContinuity...')
+#endif
+
 CALL GetValue(table=table, key="baseContinuity", VALUE=baseContinuity, &
   default_value=obj%baseContinuity, origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading baseInterpolation...')
+#endif
 
 ! baseInterpolation
 CALL GetValue(table=table, key="baseInterpolation", VALUE=baseInterpolation, &
   default_value=obj%baseInterpolation, origin=origin, stat=stat, isFound=isFound)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading ipType...')
+#endif
 ! ipType
 CALL GetValue(table=table, key="ipType", VALUE=astr, &
       default_value=DEFAULT_IPTYPE, origin=origin, stat=stat, isFound=isFound)
 ipType = BaseInterpolation_ToInteger(astr%chars())
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading baseType...')
+#endif
+
 ! baseType
 CALL GetValue_(table=table, key="baseType", VALUE=baseTypeStr, &
                tsize=tBaseType, origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Total baseType found is '//ToString(tBaseType))
+#endif
+
 DO ii = 1, tBaseType
-  baseType(ii) = BaseType_ToInteger(baseTypeStr(ii)%chars())
+  baseType0(ii) = BaseType_ToInteger(baseTypeStr(ii)%chars())
 END DO
 
 ! if baseType is not found, then set it to default which is DEFAULT_BASETYPE
 abool = tBaseType .EQ. 0 .OR. (.NOT. isFound)
 IF (abool) THEN
-  tBaseType = SIZE(baseType)
+  tBaseType = SIZE(baseType0)
   DO ii = 1, tBaseType
-    baseType(ii) = BaseType_ToInteger(DEFAULT_BASETYPE)
+    baseType0(ii) = BaseType_ToInteger(DEFAULT_BASETYPE)
   END DO
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading alpha...')
+#endif
 
 ! alpha
 CALL GetValue_(table=table, key="alpha", VALUE=alpha, &
@@ -165,6 +198,11 @@ IF (abool) THEN
   alpha = DEFAULT_ALPHA
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading beta...')
+#endif
+
 ! beta
 CALL GetValue_(table=table, key="beta", VALUE=beta, &
                tsize=tBeta, origin=origin, stat=stat, isFound=isFound)
@@ -173,6 +211,11 @@ IF (abool) THEN
   tBeta = SIZE(beta)
   beta = DEFAULT_BETA
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading lambda...')
+#endif
 
 ! lambda
 CALL GetValue_(table=table, key="lambda", VALUE=lambda, &
@@ -183,9 +226,19 @@ IF (abool) THEN
   lambda = DEFAULT_LAMBDA
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading islocal...')
+#endif
+
 ! islocal
 CALL GetValue(table=table, key="islocal", VALUE=islocal, &
              default_value=.FALSE., origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading order...')
+#endif
 
 ! order
 CALL GetValue(table=table, key="order", VALUE=order, &
@@ -200,7 +253,7 @@ END IF
 ! we need to convert it to local numbering
 
 CALL obj%Initiate(mesh=mesh, order=order, baseContinuity=baseContinuity%chars(), &
-     baseInterpolation=baseInterpolation%chars(), ipType=ipType, basisType=baseType, &
+     baseInterpolation=baseInterpolation%chars(), ipType=ipType, basisType=baseType0, &
                   alpha=alpha, beta=beta, lambda=lambda, islocal=islocal)
 
 #ifdef DEBUG_VER

@@ -113,6 +113,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
+obj%isInit = .TRUE.
+
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 
 obj%isLagrange = .FALSE.
@@ -601,6 +603,7 @@ MODULE PROCEDURE obj_Deallocate
 LOGICAL(LGT) :: abool
 INTEGER(I4B) :: ii
 
+obj%isInit = .FALSE.
 obj%isLagrange = .FALSE.
 obj%tdof = 0
 obj%tNodes = 0
@@ -670,6 +673,14 @@ END DO
 obj%mesh => obj2%mesh
 
 END PROCEDURE obj_Copy
+
+!----------------------------------------------------------------------------
+!                                                               IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !
