@@ -220,7 +220,7 @@ DO ii = 1, 2
 END DO
 
 ! cell
-CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
+CALL obj%GetCellDOF(globalElement=temp(ii), ans=ans(jj:), tsize=kk, &
                     islocal=.FALSE.)
 jj = jj + kk
 

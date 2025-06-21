@@ -105,8 +105,9 @@ CONTAINS
   !! Get the local element number from the global element number
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalNodeNumber => obj_GetLocalNodeNumber
   !! Get the local node number from the global node number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexNodes => obj_GetTotalVertexNodes
+PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexNodes => obj_GetTotalVertexNodes
   !! Get the total number of vertex in object
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
 
   ! IO:
   ! @IOMethods
@@ -550,6 +551,29 @@ FUNCTION obj_GetTotalVertexNodes(obj) RESULT(ans)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
 END FUNCTION obj_GetTotalVertexNodes
+
+!----------------------------------------------------------------------------
+!                                                           GetConnectivity_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-21
+! summary:  Get connectivity of the element without any allocation
+
+SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, opt, islocal)
+  CLASS(OneDimDomain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalElement
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+END SUBROUTINE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
 !                                                                     Error
