@@ -32,6 +32,7 @@ USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_
 USE tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
 PRIVATE
@@ -453,7 +454,7 @@ END INTERFACE STScalarFieldExport
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, mesh)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     !! toml table
@@ -461,6 +462,10 @@ INTERFACE
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    !! Abstract mesh object
+    !! It is needded when fedof is not initiated
+    !! It is needed when we call ImportFromToml method on fedof
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
