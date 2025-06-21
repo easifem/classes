@@ -18,12 +18,12 @@
 
 MODULE OneDimQuadratureOpt_Class
 
-USE GlobalData, ONLY: I4B, DFP
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: Display, ToString
 USE FPL, ONLY: ParameterList_
-USE FPL_Method, ONLY: Set
+USE FPL_Method, ONLY: Set, GetValue
 
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar
 
@@ -48,6 +48,7 @@ CHARACTER(*), PARAMETER :: modName = "OneDimQuadratureOpt_Class"
 ! summary: Quadrature options in 1D
 
 TYPE :: OneDimQuadratureOpt_
+  PRIVATE
   INTEGER(I4B) :: quadratureType = ipopt%GaussLegendre
   !! quadrature type
 
@@ -69,6 +70,12 @@ TYPE :: OneDimQuadratureOpt_
   CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
   !! quadrature type
 
+  LOGICAL(LGT) :: isOrder = .FALSE.
+  !! is order specified?
+
+  LOGICAL(LGT) :: isNips = .FALSE.
+  !! is number of integration points specified?
+
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy the options from another object
@@ -78,6 +85,14 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set the parameters
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Get the parameters
+
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Intiate the object with parameterList
+
+  GENERIC, PUBLIC :: Initiate => Initiate1
 
 END TYPE OneDimQuadratureOpt_
 
@@ -190,6 +205,7 @@ SUBROUTINE SetOneDimQuadratureOptParam(param, prefix, quadratureType, &
 #endif
   INTEGER(I4B) :: aint, bint(1)
   REAL(DFP) :: areal
+  LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -203,35 +219,41 @@ SUBROUTINE SetOneDimQuadratureOptParam(param, prefix, quadratureType, &
            datatype=aint, VALUE=aint)
 
   ! setting order
+  abool = PRESENT(order)
+  CALL Set(obj=param, prefix=prefix, key="isOrder", &
+           datatype=abool, VALUE=abool)
   aint = Input(default=TypeOneDimQuadratureOpt%order, &
                option=order)
-  CALL Set(obj=param, prefix=prefix, key="quadratureOrder", &
+  CALL Set(obj=param, prefix=prefix, key="order", &
            datatype=aint, VALUE=aint)
 
   ! setting nips
+  abool = PRESENT(order)
+  CALL Set(obj=param, prefix=prefix, key="isNips", &
+           datatype=abool, VALUE=abool)
+
   bint = Input(default=TypeOneDimQuadratureOpt%nips, &
                option=nips)
-  CALL Set(obj=param, prefix=prefix, key="quadratureNips", &
+  CALL Set(obj=param, prefix=prefix, key="nips", &
            datatype=bint(1), VALUE=bint(1))
 
   ! setting alpha
   areal = Input(default=TypeOneDimQuadratureOpt%alpha, &
-               option=alpha)
-  CALL Set(obj=param, prefix=prefix, key="quadratureAlpha", &
-           datatype=areal, value=areal)
+                option=alpha)
+  CALL Set(obj=param, prefix=prefix, key="alpha", &
+           datatype=areal, VALUE=areal)
 
   ! setting beta
   areal = Input(default=TypeOneDimQuadratureOpt%beta, &
-               option=beta)
-  CALL Set(obj=param, prefix=prefix, key="quadratureBeta", &
-           datatype=areal, value=areal)
+                option=beta)
+  CALL Set(obj=param, prefix=prefix, key="beta", &
+           datatype=areal, VALUE=areal)
 
   ! setting lambda
   areal = Input(default=TypeOneDimQuadratureOpt%lambda, &
-               option=lambda)
-  CALL Set(obj=param, prefix=prefix, key="quadratureLambda", &
-           datatype=areal, value=areal)
-
+                option=lambda)
+  CALL Set(obj=param, prefix=prefix, key="lambda", &
+           datatype=areal, VALUE=areal)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -247,7 +269,6 @@ END SUBROUTINE SetOneDimQuadratureOptParam
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-07-05
 ! summary: Sets the parameters for 1D quadrature options
-!
 
 SUBROUTINE obj_SetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
   CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
@@ -275,10 +296,16 @@ SUBROUTINE obj_SetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
   END IF
 
   ! Set order if present
-  IF (PRESENT(order)) obj%order = order
+  IF (PRESENT(order)) THEN
+    obj%order = order
+    obj%isOrder = .TRUE.
+  END IF
 
   ! Set number of integration points if present
-  IF (PRESENT(nips)) obj%nips = nips
+  IF (PRESENT(nips)) THEN
+    obj%nips = nips
+    obj%isNips = .TRUE.
+  END IF
 
   ! Set alpha parameter for Jacobi polynomials if present
   IF (PRESENT(alpha)) obj%alpha = alpha
@@ -295,6 +322,96 @@ SUBROUTINE obj_SetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
 #endif
 
 END SUBROUTINE obj_SetParam
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Initiate1(obj, param, prefix)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(ParameterList_), INTENT(IN) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
+                VALUE=obj%quadratureType)
+
+  CALL GetValue(obj=param, prefix=prefix, key="order", &
+                VALUE=obj%order)
+
+  CALL GetValue(obj=param, prefix=prefix, key="nips", &
+                VALUE=obj%nips(1))
+
+  CALL GetValue(obj=param, prefix=prefix, key="alpha", &
+                VALUE=obj%alpha)
+
+  CALL GetValue(obj=param, prefix=prefix, key="beta", &
+                VALUE=obj%beta)
+
+  CALL GetValue(obj=param, prefix=prefix, key="lambda", &
+                VALUE=obj%lambda)
+
+  CALL GetValue(obj=param, prefix=prefix, key="isNips", &
+                VALUE=obj%isNips)
+
+  CALL GetValue(obj=param, prefix=prefix, key="isOrder", &
+                VALUE=obj%isOrder)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                              GetParam
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary: Get the parameters of the 1D quadrature
+
+SUBROUTINE obj_GetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
+  CLASS(OneDimQuadratureOpt_), INTENT(in) :: obj
+  INTEGER(i4b), INTENT(out), OPTIONAL :: quadratureType
+  INTEGER(i4b), INTENT(out), OPTIONAL :: order
+  INTEGER(i4b), INTENT(out), OPTIONAL :: nips(1)
+  REAL(DFP), INTENT(out), OPTIONAL :: alpha
+  REAL(DFP), INTENT(out), OPTIONAL :: beta
+  REAL(DFP), INTENT(out), OPTIONAL :: lambda
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  IF (PRESENT(quadratureType)) quadratureType = obj%quadratureType
+  IF (PRESENT(order)) order = obj%order
+  IF (PRESENT(nips)) nips(1) = obj%nips(1)
+  IF (PRESENT(alpha)) alpha = obj%alpha
+  IF (PRESENT(beta)) beta = obj%beta
+  IF (PRESENT(lambda)) lambda = obj%lambda
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE obj_GetParam
 
 !----------------------------------------------------------------------------
 !
