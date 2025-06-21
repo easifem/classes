@@ -17,24 +17,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(HierarchicalFE_Class) Methods
+SUBMODULE(HierarchicalOneDimFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         HierarchicalFEPointer
+!                                                HierarchicalOneDimFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_HierarchicalFEPointer
+MODULE PROCEDURE obj_HierarchicalOneDimFEPointer
 ALLOCATE (ans)
-CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
-                  nsd=nsd, baseContinuity=baseContinuity, &
-                  baseInterpolation="Hierarchical", cellOrder=cellOrder, &
-            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-                  faceOrient=faceOrient, edgeOrient=edgeOrient)
-END PROCEDURE obj_HierarchicalFEPointer
+CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
+                  baseContinuity=baseContinuity, &
+                  baseInterpolation="Hierarchical", &
+                  order=order)
+END PROCEDURE obj_HierarchicalOneDimFEPointer
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix

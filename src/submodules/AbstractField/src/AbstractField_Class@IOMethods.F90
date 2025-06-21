@@ -392,7 +392,7 @@ isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 
-CALL obj%ImportFromToml(table=node, fedof=fedof)
+CALL obj%ImportFromToml(table=node, fedof=fedof, mesh=mesh)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -409,6 +409,226 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                           GetFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEDOFPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer()"
+#endif
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: indxPresent, fedofsAllocated
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+indxPresent = PRESENT(indx)
+fedofsAllocated = ALLOCATED(obj%fedofs)
+
+IF (indxPresent .AND. fedofsAllocated) THEN
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%fedofs)
+  isok = indx .LE. tsize
+
+  CALL AssertError1(isok, myName, &
+                    "indx should be less than or equal to size of fedofs")
+#endif
+
+  ans => obj%fedofs(indx)%ptr
+
+ELSE
+
+  ans => obj%fedof
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer1
+
+!----------------------------------------------------------------------------
+!                                                          GetFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEDOFPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%fedofs)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+ELSE
+  tsize = 0
+END IF
+
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%fedofs(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                               SetAbstractFieldParamFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetAbstractFieldParamFromToml
+CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParamFromToml()"
+
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String) :: name, engine, fieldTypeChar
+INTEGER(I4B) :: fieldType, origin, stat
+LOGICAL(LGT) :: isfound
+CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
+CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+key = "name"
+!============
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=name, &
+              default_value=prefix, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+
+key = "engine"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=engine, &
+              default_value=default_engine, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+
+key = "fieldType"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
+              default_value=default_fieldTypeChar, origin=origin, &
+              stat=stat, isFound=isfound)
+CALL AssertError1(isfound, myName, &
+                  key//" not found in the toml file")
+fieldType = TypeField%ToNumber(fieldTypeChar%chars())
+
+CALL SetAbstractFieldParam(param=param, name=name%chars(), &
+                           engine=engine%chars(), fieldType=fieldType, &
+                           prefix=prefix, comm=comm, local_n=local_n, &
+                           global_n=global_n)
+
+name = ""; engine = ""; fieldTypeChar = ""; key = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE SetAbstractFieldParamFromToml
+
+!----------------------------------------------------------------------------
+!                                             AbstractFieldReadFEDOFFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadFEDOFFromToml
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadFEDOFFromToml()"
+CHARACTER(*), PARAMETER :: default_fedofname = "fedof"
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String) :: fedofName
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isfedof, isok, isFound
+TYPE(toml_table), POINTER :: node
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isfedof = fedof%IsInitiated()
+
+IF (isfedof) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+! If fedof is note initiated then we will call
+! fedof%ImportFromToml. The following code is for that.
+
+! First lets check if mesh if given or not
+isok = PRESENT(mesh)
+CALL AssertError1(isok, myName, &
+                  "Mesh is not given to initiate fedof")
+
+! Getting fedofName which is a subtable name in
+! toml file that contains data for fedof
+key = "fedofName"
+CALL GetValue(table=table, key=key, VALUE=fedofName, &
+              default_value=default_fedofName, origin=origin, &
+              stat=stat, isFound=isFound)
+
+! Get the node from toml table [subtable]
+CALL toml_get(table, fedofName%chars(), node, &
+              origin=origin, requested=.FALSE., stat=stat)
+
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  fedofName//" node not found")
+
+! Now we can init fedof from toml
+CALL fedof%ImportFromToml(table=node, mesh=mesh)
+
+node => NULL(); key = ""; fedofName = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

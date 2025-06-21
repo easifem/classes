@@ -21,6 +21,10 @@ USE Display_Method, ONLY: Display
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldImport, &
                                    AbstractNodeFieldExport
+USE AbstractField_Class, ONLY: SetAbstractFieldParamFromToml, &
+                               AbstractFieldReadFEDOFFromToml
+
+USE FPL, ONLY: FPL_Init, FPL_Finalize
 IMPLICIT NONE
 CONTAINS
 
@@ -124,13 +128,24 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+TYPE(ParameterList_) :: param
+INTEGER(I4B) :: comm, local_n, global_n
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+CALL FPL_Init
+CALL param%Initiate()
+
+CALL SetAbstractFieldParamFromToml(param=param, table=table, &
+               prefix=myprefix, comm=comm, local_n=local_n, global_n=global_n)
+CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
+CALL obj%Initiate(param=param, fedof=fedof)
+
+CALL param%DEALLOCATE()
+CALL FPL_Finalize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
