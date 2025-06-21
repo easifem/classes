@@ -182,6 +182,10 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
+    obj_GetCaseName
+  !! Get the case name
+
 END TYPE OneDimBasisOpt_
 
 !----------------------------------------------------------------------------
@@ -1031,6 +1035,16 @@ SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
                                lambda=lambda0)
 
 END SUBROUTINE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                             GetCaseName
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetCaseName(obj) RESULT(ans)
+  CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+  CHARACTER(:), ALLOCATABLE :: ans
+  ans = obj%baseContinuity//obj%baseInterpolation
+END FUNCTION obj_GetCaseName
 
 !----------------------------------------------------------------------------
 !

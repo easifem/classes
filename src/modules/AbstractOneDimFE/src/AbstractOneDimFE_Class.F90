@@ -75,7 +75,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   !@ConstructorMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate method from the parameter list
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -96,7 +95,6 @@ CONTAINS
 
   !IO:
   !@IOMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of a finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
@@ -109,7 +107,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
 
@@ -119,7 +116,6 @@ CONTAINS
 
   !GET:
   ! @GetMethods
-
   PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
   !! Get prefix
 
@@ -134,9 +130,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
+    obj_GetCaseName
+  !! Get case name for the finite element
+
   ! GET:
   ! @QuadratureMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
@@ -621,6 +620,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetCaseName
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-21
+! summary: Get case name for the finite element
+
+INTERFACE
+  MODULE FUNCTION obj_GetCaseName(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(in) :: obj
+    CHARACTER(len=:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetCaseName
 END INTERFACE
 
 !----------------------------------------------------------------------------

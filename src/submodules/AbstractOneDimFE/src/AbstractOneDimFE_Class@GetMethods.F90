@@ -191,6 +191,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                               GetCaseName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCaseName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName="obj_GetCaseName()" 
+#endif
+ans = obj%opt%GetCaseName()
+END PROCEDURE obj_GetCaseName
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
