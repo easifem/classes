@@ -26,7 +26,8 @@ USE Display_Method, ONLY: ToString, Display
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     polyopt => TypePolynomialOpt, &
                     QuadraturePoint_, &
-                    TypeFEVariableOpt
+                    TypeFEVariableOpt, &
+                    elemNameOpt => TypeElemNameOpt
 
 USE ParameterList, ONLY: ParameterList_
 USE FPL_Method, ONLY: GetValue, CheckEssentialParam, Set
@@ -42,7 +43,8 @@ USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
                                     BaseInterpolation_ToChar
 
 USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
-                                  QuadraturePointDisplay => Display
+                                  QuadraturePointDisplay => Display, &
+                                  QuadraturePointInitiate => Initiate
 
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_, &
                                      TypeOneDimQuadratureOpt, &
@@ -51,6 +53,8 @@ USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_, &
 IMPLICIT NONE
 
 PRIVATE
+
+#define quadOptPrefix "quadratureOpt"
 
 CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
 CHARACTER(*), PARAMETER :: essentialParams = &
@@ -70,6 +74,7 @@ PUBLIC :: SetOneDimBasisOptParam
 ! in one dimension
 
 TYPE :: OneDimBasisOpt_
+  PRIVATE
   LOGICAL(LGT) :: firstCall = .TRUE.
   !! flag to check if the shape functions are constructed from scratch or not
 
@@ -174,6 +179,9 @@ CONTAINS
     obj_GetBaseInterpolation
   !! Get baseInterpolation
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
+
 END TYPE OneDimBasisOpt_
 
 !----------------------------------------------------------------------------
@@ -235,12 +243,12 @@ SUBROUTINE SetOneDimBasisOptParam(param, prefix, order, baseContinuity, &
   CHARACTER(*), PARAMETER :: myName = "SetFEParam_BasisType_Line()"
   INTEGER(I4B), PARAMETER :: default_feType = TypeFEVariableOpt%scalar
   INTEGER(I4B), PARAMETER :: default_ipType = ipopt%equidistance
-
   CHARACTER(:), ALLOCATABLE :: baseContinuity0, baseInterpolation0
   INTEGER(I4B) :: aint
   REAL(DFP) :: areal
   TYPE(String) :: refelemDomainName
   LOGICAL(LGT) :: isok, abool
+  TYPE(ParameterList_), POINTER :: sublist
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -322,7 +330,17 @@ SUBROUTINE SetOneDimBasisOptParam(param, prefix, order, baseContinuity, &
   baseInterpolation0 = ""
   refelemDomainName = ""
 
-  CALL SetOneDimQuadratureOptParam(param=param, &
+  ! We need to make a sublist for quadOpt
+  ! otherwise the keys will collide, quadOptPrefix is a macro
+  ! defined at the top of this file
+  sublist => NULL()
+  sublist => param%NewSubList(key=quadOptPrefix)
+
+  isok = ASSOCIATED(sublist)
+  CALL AssertError1(isok, myName, &
+                    'cannot get sublist by using prefix='//quadOptPrefix)
+
+  CALL SetOneDimQuadratureOptParam(param=sublist, &
                                    prefix=prefix, &
                                    quadratureType=quadratureType, &
                                    order=quadratureOrder, &
@@ -330,6 +348,8 @@ SUBROUTINE SetOneDimBasisOptParam(param, prefix, order, baseContinuity, &
                                    alpha=quadratureAlpha, &
                                    beta=quadratureBeta, &
                                    lambda=quadratureLambda)
+
+  sublist => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -357,6 +377,9 @@ SUBROUTINE obj_Initiate1(obj, param, prefix)
 #endif
 
   TYPE(String) :: astr
+  TYPE(ParameterList_), POINTER :: sublist
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -406,9 +429,19 @@ SUBROUTINE obj_Initiate1(obj, param, prefix)
 
   obj%refelemCoord(1:1, 1:2) = RefCoord_Line(obj%refelemDomain)
 
-  ! read quadrature type
+  ! now we will initiate quadOpt
+  ! it is kept in a sublist, see the SetOneDimQuadratureOptParam
+  ! method
 
-  ! make quadratureType_char from quadratureType
+  sublist => NULL()
+  ierr = param%GetSubList(key=quadOptPrefix, sublist=sublist)
+
+  isok = ASSOCIATED(sublist)
+  CALL AssertError1(isok, myName, &
+                    "cannot get sublist by using prefix="//quadOptPrefix)
+  CALL obj%quadOpt%Initiate(param=sublist, prefix=prefix)
+
+  sublist => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -754,7 +787,8 @@ SUBROUTINE obj_SetParam(obj, order, fetype, ipType, basisType, alpha, &
                             order=quadratureOrder, &
                             nips=quadratureNips, &
                             alpha=quadratureAlpha, &
-                            beta=quadratureBeta)
+                            beta=quadratureBeta, &
+                            lambda=quadratureLambda)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -801,7 +835,9 @@ END SUBROUTINE obj_SetOrder
 
 SUBROUTINE obj_GetParam(obj, order, tdof, fetype, ipType, basisType, &
                         alpha, beta, lambda, refElemDomain, baseContinuity, &
-                        baseInterpolation, firstCall)
+                        baseInterpolation, firstCall, &
+                        quadratureType, quadratureOrder, quadratureNips, &
+                        quadratureAlpha, quadratureBeta, quadratureLambda)
   CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
   !! Abstract one dimenstional finite element
   INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
@@ -828,6 +864,18 @@ SUBROUTINE obj_GetParam(obj, order, tdof, fetype, ipType, basisType, &
   !! Domain of reference element
   LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: firstCall
   !!
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureType
+  !! Quadrature type
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureOrder
+  !! Quadrature order
+  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips(1)
+  !! Number of integration points
+  REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureAlpha
+  !! Quadrature alpha parameter
+  REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureBeta
+  !! Quadrature beta parameter
+  REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureLambda
+  !! Quadrature lambda parameter
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
@@ -850,6 +898,13 @@ SUBROUTINE obj_GetParam(obj, order, tdof, fetype, ipType, basisType, &
   IF (PRESENT(beta)) beta = obj%beta
   IF (PRESENT(lambda)) lambda = obj%lambda
   IF (PRESENT(firstCall)) firstCall = obj%firstCall
+
+  CALL obj%quadOpt%GetParam(quadratureType=quadratureType, &
+                            order=quadratureOrder, &
+                            nips=quadratureNips, &
+                            alpha=quadratureAlpha, &
+                            beta=quadratureBeta, &
+                            lambda=quadratureLambda)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -921,6 +976,61 @@ FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
 #endif
 
 END FUNCTION obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
+!                                                       GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary:  Get the quadratuere points
+
+SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
+                                   order, alpha, beta, lambda)
+  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+  TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    !! Type of quadrature points
+    !! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight ! GaussChebyshev
+    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussChebyshevRadauRight
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of integrand
+    !! either the order or the nips should be present
+    !! Both nips and order should not be present
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameter
+
+  INTEGER(I4B) :: order0, quadratureType0
+  REAL(DFP) :: alpha0, beta0, lambda0
+
+  ! Let us update the quadrature points quadOpt
+  CALL obj%quadOpt%SetParam(quadratureType=quadratureType, &
+                           order=order, alpha=alpha, beta=beta, lambda=lambda)
+
+  ! Let us get the quadrature points
+  CALL obj%quadOpt%GetParam(quadratureType=quadratureType0, &
+                       order=order0, alpha=alpha0, beta=beta0, lambda=lambda0)
+
+  ! Internal variables
+  CALL QuadraturePointInitiate(obj=quad, &
+                               elemType=elemNameOpt%line, &
+                               domainName=obj%refelemDomain, &
+                               order=order0, &
+                               quadratureType=quadratureType0, &
+                               alpha=alpha0, &
+                               beta=beta0, &
+                               lambda=lambda0)
+
+END SUBROUTINE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !
