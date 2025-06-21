@@ -17,23 +17,15 @@
 
 MODULE OneDimDomain_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, CHAR_LF
-
 USE Display_Method, ONLY: ToString, Display
-
 USE ExceptionHandler_Class, ONLY: e
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE TxtFile_Class, ONLY: TxtFile_
-
 USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
-
 PRIVATE
-
 PUBLIC :: OneDimDomain_
-
 CHARACTER(*), PARAMETER :: modName = "OneDimDomain_Class"
 INTEGER(I4B), PARAMETER :: MAX_ORDER = 51
 !! maximum order of lagrange polynomial in an element of mesh
@@ -44,7 +36,7 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER = 51
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-13
-! summary:  This class contains the one dimensional domain
+! summary: This class contains the one dimensional domain
 
 TYPE :: OneDimDomain_
   PRIVATE
@@ -70,20 +62,18 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import parameters from a TOML file
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import parameters from a TOML file with a different structure
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
-!! Generic method for importing from toml files
+  !! Generic method for importing from toml files
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set the parameters of the object
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomain => obj_SetDomain
@@ -103,8 +93,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
-  ! !! Get the parameters of the object
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomain => obj_GetDomain
   !! Get the domain of the object
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
@@ -119,6 +107,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of the object
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => obj_DisplayMeshInfo
+  !! Display mesh info
 END TYPE OneDimDomain_
 
 CONTAINS
@@ -396,6 +386,23 @@ SUBROUTINE obj_Display(obj, msg, unitno)
 END SUBROUTINE obj_Display
 
 !----------------------------------------------------------------------------
+!                                                            DisplayMeshInfo
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_DisplayMeshInfo(obj, msg, unitno)
+  CLASS(OneDimDomain_), INTENT(in) :: obj
+  CHARACTER(*), OPTIONAL, INTENT(in) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayMeshInfo()"
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+
+END SUBROUTINE obj_DisplayMeshInfo
+
+!----------------------------------------------------------------------------
 !                                                     ImportFromToml@Methods
 !----------------------------------------------------------------------------
 
@@ -472,6 +479,42 @@ SUBROUTINE obj_Deallocate(obj)
   IF (ALLOCATED(obj%elemLength)) DEALLOCATE (obj%elemLength)
   obj%xij = 0.0_DFP
 END SUBROUTINE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                           IsElementPresent
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_IsElementPresent(obj, globalElement, isPresent)
+  CLASS(OneDimDomain_), INTENT(in) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalElement
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPresent
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_IsElementPresent()"
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+
+END SUBROUTINE obj_IsElementPresent
+
+!----------------------------------------------------------------------------
+!                                                         GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetLocalElemNumber(obj, globalElement, islocal) RESULT(ans)
+  CLASS(OneDimDomain_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalElement
+  !! global element number
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  !! if islocal = .true. then global element number is local
+  INTEGER(I4B) :: ans
+  !! local element number
+
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber()"
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+END FUNCTION obj_GetLocalElemNumber
 
 !----------------------------------------------------------------------------
 !                                                                     Error
