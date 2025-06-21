@@ -184,14 +184,14 @@ LOGICAL(LGT) :: errCheck0
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 errCheck0 = .FALSE.
-
 IF (errCheck) errCheck0 = errCheck
-
-IF (errCheck0) THEN
-  CALL checkerror
-END IF
-
+IF (errCheck0) CALL checkerror
 #endif
 
 obj%tdof = HierarchicalDOF(elemType=obj%elemType, cellOrder=cellOrder, &
@@ -238,6 +238,11 @@ IF (PRESENT(edgeOrder)) THEN
   END IF
 
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 #ifdef DEBUG_VER
 
