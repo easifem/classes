@@ -189,6 +189,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
+# OneDimFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEDOF/CMakeLists.txt)
+
 # FEDOF
 include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 
