@@ -134,6 +134,9 @@ CONTAINS
     obj_GetCaseName
   !! Get case name for the finite element
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+
   ! GET:
   ! @QuadratureMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints => &
@@ -633,8 +636,23 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetCaseName(obj) RESULT(ans)
     CLASS(AbstractOneDimFE_), INTENT(in) :: obj
-    CHARACTER(len=:), ALLOCATABLE :: ans
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
   END FUNCTION obj_GetCaseName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-21
+! summary:  Get base interpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(in) :: obj
+    CHARACTER(4) :: ans
+  END FUNCTION obj_GetBaseInterpolation
 END INTERFACE
 
 !----------------------------------------------------------------------------

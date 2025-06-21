@@ -195,11 +195,16 @@ END PROCEDURE obj_GetQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCaseName
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName="obj_GetCaseName()" 
-#endif
 ans = obj%opt%GetCaseName()
 END PROCEDURE obj_GetCaseName
+
+!----------------------------------------------------------------------------
+!                                                       GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseInterpolation
+ans = obj%opt%GetBaseInterpolation()
+END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
 !
