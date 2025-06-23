@@ -19,15 +19,6 @@
 
 SUBMODULE(OneDimFEDOF_Class) GetMethods
 USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
-USE ElemData_Class, ONLY: ElemData_, &
-                          ElemData_GetTotalEntities, &
-                          ElemData_GetTotalGlobalVertexNodes, &
-                          ElemData_GetEdge, &
-                          ElemData_GetFace, &
-                          ElemData_GetCell
-
-USE ReferenceElement_Method, ONLY: ReferenceElementInfo
-
 USE Display_Method, ONLY: ToString
 
 #ifdef DEBUG_VER
@@ -56,6 +47,14 @@ ans(1) = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
 END PROCEDURE obj_GetVertexDOF
 
 !----------------------------------------------------------------------------
+!                                                           GetTotalVertexDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexDOF
+ans = obj%mesh%GetTotalVertexNodes()
+END PROCEDURE obj_GetTotalVertexDOF
+
+!----------------------------------------------------------------------------
 !                                                                 GetCellDOF
 !----------------------------------------------------------------------------
 
@@ -78,14 +77,6 @@ INTEGER(I4B) :: jj
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
 END PROCEDURE obj_GetTotalCellDOF
-
-!----------------------------------------------------------------------------
-!                                                           GetTotalVertexDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalVertexDOF
-ans = obj%mesh%GetTotalVertexNodes()
-END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
 !                                                                GetTotalDOF
@@ -192,7 +183,6 @@ MODULE PROCEDURE obj_GetConnectivity_
 CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 #endif
 
-INTEGER(I4B) :: ent(4)
 INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
 LOGICAL(LGT), PARAMETER :: yes = .TRUE.
@@ -271,41 +261,6 @@ tcellOrder = 1
 END PROCEDURE obj_GetCellOrder
 
 !----------------------------------------------------------------------------
-!                                                                  GetOrders
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetOrders
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetOrders()'
-#endif
-
-INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
-                faceCon(ReferenceElementInfo%maxEdges), &
-                edgeCon(ReferenceElementInfo%maxEdges), &
-                nodeCon(PARAM_MAX_CONNECTIVITY_SIZE)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
-
-CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=.TRUE., &
-   cellCon=cellCon, nodeCon=nodeCon, tCellCon=tCellOrder, tNodeCon=tNodeOrder)
-
-DO ii = 1, tCellOrder
-  cellOrder(ii) = obj%cellOrder(jj)
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetOrders
-
-!----------------------------------------------------------------------------
 !                                                   GetMaxTotalConnectivity
 !----------------------------------------------------------------------------
 
@@ -344,7 +299,6 @@ MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints1()'
 #endif
-INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -352,7 +306,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%fe%GetQuadraturePoints(quad=quad, order=order, &
-         quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+         nips=nips, quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -366,16 +320,29 @@ END PROCEDURE obj_GetQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(6) :: casename
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeData()'
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, jj
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%mesh)
+CALL AssertError1(isok, myName, 'obj%mesh is not associated')
+
+isok = ASSOCIATED(obj%fe)
+CALL AssertError1(isok, myName, 'obj%fe is not associated')
+#endif
+
 ii = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
-CALL obj%fe%SetOrder(order=obj%cellOrder(ii), errCheck=.TRUE.)
+jj = INT(obj%cellOrder(ii), kind=I4B)
+CALL obj%fe%SetOrder(order=jj)
 CALL obj%fe%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 #ifdef DEBUG_VER
@@ -394,8 +361,6 @@ MODULE PROCEDURE obj_GetGlobalElemShapeData
 CHARACTER(*), PARAMETER :: myName = 'obj_GetGlobalElemShapeData()'
 LOGICAL(LGT) :: isok
 #endif
-
-INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

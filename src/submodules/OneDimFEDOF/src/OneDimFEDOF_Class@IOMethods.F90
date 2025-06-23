@@ -18,14 +18,11 @@
 !
 
 SUBMODULE(OneDimFEDOF_Class) IOMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
+! USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
-USE TomlUtility, ONLY: GetValue, GetValue_
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-USE String_Class, ONLY: String
-USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
-                                    BaseType_ToInteger
+! USE TomlUtility, ONLY: GetValue, GetValue_
+! USE tomlf, ONLY: toml_get => get_value, &
+!                  toml_serialize
 
 IMPLICIT NONE
 CONTAINS

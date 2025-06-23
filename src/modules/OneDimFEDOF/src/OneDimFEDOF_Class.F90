@@ -36,8 +36,9 @@ PRIVATE
 
 PUBLIC :: OneDimFEDOF_
 PUBLIC :: OneDimFEDOFPointer_
-PUBLIC :: OneDimFEDOFSetSparsity
 PUBLIC :: SetOneDimFEDOFParam
+
+! PUBLIC :: OneDimFEDOFSetSparsity
 
 CHARACTER(*), PARAMETER :: modName = "OneDimFEDOF_Class"
 CHARACTER(*), PARAMETER :: myprefix = "OneDimFEDOF"
@@ -46,11 +47,11 @@ CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
-CHARACTER(*), PARAMETER :: essentialParam = "baseContinuity/baseInterpolation/orderFile/&
-&ipType/basisType/alpha/beta/lambda/"
+CHARACTER(*), PARAMETER :: essentialParam = &
+  "baseContinuity/baseInterpolation/orderFile/ipType/basisType/alpha/beta/lambda/"
 
 !----------------------------------------------------------------------------
-!                                                                   OneDimFEDOF_
+!                                                              OneDimFEDOF_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -97,6 +98,8 @@ CONTAINS
 
   !CONSTRUCTOR:
   !@ConstructorMethods
+  PROCEDURE, PASS(obj) :: CheckEssentialParam => obj_CheckEssentialParam
+  !! Check essential parameters
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate OneDimFEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -108,19 +111,6 @@ CONTAINS
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4
   !! Generic method for initiating OneDimFEDOF
-  PROCEDURE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
-  !! This method is called in the Intiate methods
-  !! This is a private method. It is used for allocating the size of
-  !! cellOrder, faceOrder, edgeOrder, edgeIA, faceIA, cellIA
-  PROCEDURE, PASS(obj) :: SetOrdersFromCellOrder => &
-    obj_SetOrdersFromCellOrder
-  !! This method is private method
-  !! This method is used to set the faceOrder, edgeOrder from
-  !! cellOrder. This method is called internally from
-  !! Initiate methods. This put data in faceIA, edgeIA, cellIA
-  PROCEDURE, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameters
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -128,15 +118,6 @@ CONTAINS
   !! Deallocate the data
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns true of the OneDimFEDOF is initiated
-
-  !SET:
-  !@SetMethods
-  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
-  !! Set the cell order, this is a private method
-  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
-  !! Set the face order, this is a private method
-  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
-  !! Set the edge order, this is a private method
 
   !IO:
   !@IOMethods
@@ -152,22 +133,35 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import from toml file
 
+  !SET:
+  !@SetMethods
+  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  !! Set the cell order, this is a private method
+
+  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
+  !! This is for non block matrix
+
+  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
+  !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
+  !! This is for non block matrix
+
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+
   !GET:
   !@GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the case name of OneDimFEDOF, it returns baseContinuity+baseInterpolation
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
+  !! Retuns the total number of vertex dof
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Get total cell degrees of freedom
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
-  !! Retuns the total number of vertex dof
 
   PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Retuns the total degrees of freedom in OneDimFEDOF
@@ -178,11 +172,12 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Generic mehthod for getting the total dof
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
+  !! Get the connectivity of an element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix for setting the data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
-  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get the mesh pointer
@@ -193,10 +188,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
-  !! Get cell,face, and edge orders
-  !! Also get orientation of face and edge
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
@@ -210,19 +201,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-
-  !SET:
-  !@SetSparsityMethods
-
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
-  !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
-  !! This is for non block matrix
-
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
-  !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
-  !! This is for non block matrix
-
-  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
 
 END TYPE OneDimFEDOF_
 
@@ -250,7 +228,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           SetOneDimFEDOFParam@ConstructorMethods
+!                                     SetOneDimFEDOFParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -258,8 +236,8 @@ END INTERFACE
 ! summary: Set the essential parameters for constructing the OneDimFEDOF
 
 INTERFACE
-  MODULE SUBROUTINE SetOneDimFEDOFParam(param, baseContinuity, baseInterpolation, &
-                            orderFile, ipType, basisType, alpha, beta, lambda)
+  MODULE SUBROUTINE SetOneDimFEDOFParam(param, baseContinuity, &
+         baseInterpolation, orderFile, ipType, basisType, alpha, beta, lambda)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity or conformity of basis defined on reference
@@ -510,35 +488,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           AllocateSizes@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-06
-! summary:  Allocate the sizes of cellOrder, faceOrder, edgeOrder, edgeIA,
-! faceIA, cellIA
-
-INTERFACE
-  MODULE SUBROUTINE obj_AllocateSizes(obj)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_AllocateSizes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SetOrdersFromCellOrder@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-06
-! summary:  Set the faceOrder, edgeOrder from cellOrder
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetOrdersFromCellOrder(obj)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetOrdersFromCellOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   Copy@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -584,6 +533,160 @@ INTERFACE
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-19
+! summary: Display the content of FE DOF
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-19
+! summary: Display cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayCellOrder(obj, msg, unitno, full)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: full
+    !! if full is present and true then all data will be displayed.
+  END SUBROUTINE obj_DisplayCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, mesh)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml, mesh)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    CLASS(OneDimDomain_), OPTIONAL, INTENT(IN) :: mesh
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetCellOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-22
+! summary: Set the cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCellOrder(obj, order, islocal)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! this is cell order
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! islocal denotes whether the order(:) is based on
+    !! local element or global element number.
+    !! local element means in order(ii) ii is the local
+    !! element number, global element means in order(ii) ii is the
+    !! global element number. Note that getting local element
+    !! number is difficult for user, so it is better to use
+    !! global element number.
+  END SUBROUTINE obj_SetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-06-09
+! summary: Set sparsity in CSRMatrix_ from AbstractDomain_
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetSparsity@SetMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity2(obj, col_OneDimFEDOF, cellToCell, mat, &
+                                     ivar, jvar)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    !! Abstract mesh class
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: col_OneDimFEDOF
+    !! Abstract mesh class
+    INTEGER(I4B), INTENT(IN) :: cellToCell(:)
+    !! cell To Cell connectivity between mesh of obj and col_OneDimFEDOF
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! [[CSRMatrix_]] object
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable in row
+    INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable in column
+  END SUBROUTINE obj_SetSparsity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity3(OneDimFEDOFs, mat)
+    CLASS(OneDimFEDOFPointer_), INTENT(INOUT) :: OneDimFEDOFs(:)
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+  END SUBROUTINE obj_SetSparsity3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -804,93 +907,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-19
-! summary: Display the content of FE DOF
-
-INTERFACE
-  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-19
-! summary: Display cell order
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayCellOrder(obj, msg, unitno, full)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: full
-    !! if full is present and true then all data will be displayed.
-  END SUBROUTINE obj_DisplayCellOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetCellOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-22
-! summary: Set the cell order
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetCellOrder(obj, order, islocal)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: order(:)
-    !! this is cell order
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! islocal denotes whether the order(:) is based on
-    !! local element or global element number.
-    !! local element means in order(ii) ii is the local
-    !! element number, global element means in order(ii) ii is the
-    !! global element number. Note that getting local element
-    !! number is difficult for user, so it is better to use
-    !! global element number.
-  END SUBROUTINE obj_SetCellOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetFaceOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-22
-! summary: Set the face order
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetFaceOrder(obj)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! this is cell order
-  END SUBROUTINE obj_SetFaceOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetEdgeOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-22
-! summary: Set the Edge order
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetEdgeOrder(obj)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetEdgeOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                 GetMeshPointer@GetMethods
 !----------------------------------------------------------------------------
 
@@ -946,30 +962,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetOrders@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:
-! summary:  Get cellOrder, faceOrder, edgeOrder
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetOrders(obj, cellOrder, tCellOrder, globalElement, &
-                                  islocal)
-    CLASS(OneDimFEDOF_), INTENT(IN) :: obj
-    !! OneDimFEDOF object
-    INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
-    !! cell order
-    INTEGER(I4B), INTENT(OUT) :: tCellOrder
-    !! size of data written in cellOrder
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global or local element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then globalElement is local element
-  END SUBROUTINE obj_GetOrders
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                         GetMaxTotalConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
@@ -983,67 +975,6 @@ INTERFACE
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalConnectivity
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             SetSparsity@SetSparsityMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-06-09
-! summary: Set sparsity in CSRMatrix_ from AbstractDomain_
-
-INTERFACE OneDimFEDOFSetSparsity
-
-  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity1
-END INTERFACE OneDimFEDOFSetSparsity
-
-!----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
-!
-!# Introduction
-!
-! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity2(obj, col_OneDimFEDOF, cellToCell, mat, &
-                                     ivar, jvar)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! Abstract mesh class
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: col_OneDimFEDOF
-    !! Abstract mesh class
-    INTEGER(I4B), INTENT(IN) :: cellToCell(:)
-    !! cell To Cell connectivity between mesh of obj and col_OneDimFEDOF
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in row
-    INTEGER(I4B), INTENT(IN) :: jvar
-    !! physical variable in column
-  END SUBROUTINE obj_SetSparsity2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetSparsity@SetSparsityMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 Oct 2021
-! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
-
-INTERFACE OneDimFEDOFSetSparsity
-  MODULE SUBROUTINE obj_SetSparsity3(OneDimFEDOFs, mat)
-    CLASS(OneDimFEDOFPointer_), INTENT(INOUT) :: OneDimFEDOFs(:)
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity3
-END INTERFACE OneDimFEDOFSetSparsity
 
 !----------------------------------------------------------------------------
 !                                                        GetQuadraturePoints
@@ -1126,42 +1057,6 @@ INTERFACE
     !! if true then the global element is a local element
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE OneDimFEDOFImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, mesh)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE obj_ImportFromToml1
-END INTERFACE OneDimFEDOFImportFromToml
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
-
-INTERFACE OneDimFEDOFImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, mesh)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    CLASS(OneDimDomain_), OPTIONAL, INTENT(IN) :: mesh
-  END SUBROUTINE obj_ImportFromToml2
-END INTERFACE OneDimFEDOFImportFromToml
 
 !----------------------------------------------------------------------------
 !
