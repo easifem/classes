@@ -69,54 +69,57 @@ END PROCEDURE obj_GetParam
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-CHARACTER(4) :: baseInterpolation
-INTEGER(I4B), PARAMETER :: one = 1
+CALL e%RaiseError(modName //'::'//myName// ' - '// &
+   '[WIP ERROR] :: This routine is under development' )
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-baseInterpolation = obj%opt%GetBaseInterpolation()
-
-SELECT CASE (baseInterpolation)
-CASE ("LAGR")
-  CALL LagrangeElemShapeData(obj=elemsd, &
-                             quad=quad, &
-                             nsd=one, &
-                             xidim=one, &
-                             elemType=elemNameOpt%line, &
-                             refelemCoord=obj%opt%refelemCoord, &
-                             domainName=obj%opt%refelemDomain, &
-                             order=obj%opt%order, &
-                             ipType=obj%opt%ipType, &
-                             basisType=obj%opt%basisType, &
-                             coeff=obj%coeff, &
-                             firstCall=obj%opt%firstCall, &
-                             alpha=obj%opt%alpha, &
-                             beta=obj%opt%beta, &
-                             lambda=obj%opt%lambda)
-
-CASE ("HIER", "HEIR")
-! CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-!       xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-!                       domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
-!                            faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
-!                        cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
-!                                edgeOrient=obj%edgeOrient)
-
-CASE ("ORTH")
-
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-  RETURN
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+! CHARACTER(4) :: baseInterpolation
+! INTEGER(I4B), PARAMETER :: one = 1
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! baseInterpolation = obj%opt%GetBaseInterpolation()
+!
+! SELECT CASE (baseInterpolation)
+! CASE ("LAGR")
+!   CALL LagrangeElemShapeData(obj=elemsd, &
+!                              quad=quad, &
+!                              nsd=one, &
+!                              xidim=one, &
+!                              elemType=elemNameOpt%line, &
+!                              refelemCoord=obj%opt%refelemCoord, &
+!                              domainName=obj%opt%refelemDomain, &
+!                              order=obj%opt%order, &
+!                              ipType=obj%opt%ipType, &
+!                              basisType=obj%opt%basisType, &
+!                              coeff=obj%coeff, &
+!                              firstCall=obj%opt%firstCall, &
+!                              alpha=obj%opt%alpha, &
+!                              beta=obj%opt%beta, &
+!                              lambda=obj%opt%lambda)
+!
+! CASE ("HIER", "HEIR")
+! ! CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+! !       xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
+! !                       domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
+! !                            faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
+! !                        cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
+! !                                edgeOrient=obj%edgeOrient)
+!
+! CASE ("ORTH")
+!
+! CASE DEFAULT
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                     '[INTERNAL ERROR] :: No case found for baseInterpolation')
+!   RETURN
+! END SELECT
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
 
 END PROCEDURE obj_GetLocalElemShapeData
 

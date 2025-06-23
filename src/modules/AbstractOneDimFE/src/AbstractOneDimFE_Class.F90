@@ -139,7 +139,7 @@ CONTAINS
 
   ! GET:
   ! @QuadratureMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
 END TYPE AbstractOneDimFE_
@@ -601,7 +601,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-                                            order, alpha, beta, lambda)
+                                            order, nips, alpha, beta, lambda)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
@@ -616,6 +616,8 @@ INTERFACE
     !! Order of integrand
     !! either the order or the nips should be present
     !! Both nips and order should not be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(1)
+    !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta

@@ -35,7 +35,7 @@ CHARACTER(*), PARAMETER :: modName = "HierarchicalOneDimFE_Class"
 CHARACTER(*), PARAMETER :: myprefix = "HierarchicalOneDimFE"
 
 !----------------------------------------------------------------------------
-!                                                             HierarchicalOneDimFE_
+!                                                      HierarchicalOneDimFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -49,7 +49,7 @@ CONTAINS
 END TYPE HierarchicalOneDimFE_
 
 !----------------------------------------------------------------------------
-!                                                      HierarchicalOneDimFEPointer_
+!                                               HierarchicalOneDimFEPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: HierarchicalOneDimFEPointer_
@@ -57,7 +57,7 @@ TYPE :: HierarchicalOneDimFEPointer_
 END TYPE HierarchicalOneDimFEPointer_
 
 !----------------------------------------------------------------------------
-!                                                     HierarchicalOneDimFE@Methods
+!                                               HierarchicalOneDimFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -65,14 +65,28 @@ END TYPE HierarchicalOneDimFEPointer_
 ! summary: Constructor method
 
 INTERFACE HierarchicalOneDimFEPointer
-  MODULE FUNCTION obj_HierarchicalOneDimFEPointer(baseContinuity, order) &
+  MODULE FUNCTION obj_HierarchicalOneDimFEPointer1() RESULT(ans)
+    TYPE(HierarchicalOneDimFE_), POINTER :: ans
+  END FUNCTION obj_HierarchicalOneDimFEPointer1
+END INTERFACE HierarchicalOneDimFEPointer
+
+!----------------------------------------------------------------------------
+!                                               HierarchicalOneDimFE@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary: Constructor method
+
+INTERFACE HierarchicalOneDimFEPointer
+  MODULE FUNCTION obj_HierarchicalOneDimFEPointer2(baseContinuity, order) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: order
     !! Number of spatial dimension
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! base continuity of the element
     TYPE(HierarchicalOneDimFE_), POINTER :: ans
-  END FUNCTION obj_HierarchicalOneDimFEPointer
+  END FUNCTION obj_HierarchicalOneDimFEPointer2
 END INTERFACE HierarchicalOneDimFEPointer
 
 !----------------------------------------------------------------------------
