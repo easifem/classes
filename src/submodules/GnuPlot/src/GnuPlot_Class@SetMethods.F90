@@ -62,6 +62,23 @@ obj%hasfilename = .TRUE.
 END PROCEDURE set_filename
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE set_commandline
+
+IF (LEN(chars) .EQ. 0) THEN
+  obj%commandline = ""
+  obj%execute = .FALSE.
+  RETURN
+END IF
+
+obj%commandline = TRIM(chars)
+obj%execute = .TRUE.
+
+END PROCEDURE set_commandline
+
+!----------------------------------------------------------------------------
 !                                                                set_options
 !----------------------------------------------------------------------------
 
@@ -296,6 +313,9 @@ obj%tpx2label%hasLabel = .FALSE.
 obj%tpylabel%hasLabel = .FALSE.
 obj%tpy2label%hasLabel = .FALSE.
 obj%tpzlabel%hasLabel = .FALSE.
+
+obj%commandline = defaultCommandLine
+obj%execute = .TRUE.
 
 END PROCEDURE reset_to_defaults
 

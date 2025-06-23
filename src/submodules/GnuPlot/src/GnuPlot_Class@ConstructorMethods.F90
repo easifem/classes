@@ -44,6 +44,9 @@ IF (obj%hasmultiplot) CALL writeMultiPlotConfig(obj%pltfile, &
 
 obj%hasfileopen = .TRUE.
 
+IF (obj%execute .AND. LEN(obj%commandline) .EQ. 0) &
+  obj%commandline = defaultCommandLine
+
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -71,7 +74,8 @@ IF (obj%pltfile%IsOpen()) THEN
   obj%hasanimation = .FALSE.
 END IF
 
-CALL execute_command_line('gnuplot -persist '//obj%txtfilename)
+IF (obj%execute) &
+  CALL execute_command_line(obj%commandline//" "//obj%txtfilename)
 
 END PROCEDURE obj_Deallocate
 
@@ -80,7 +84,8 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Finalize
-CALL obj%DEALLOCATE()
+! WARN: This causes a repeatation of gnuplot execution
+! CALL obj%DEALLOCATE()
 END PROCEDURE obj_Finalize
 
 !----------------------------------------------------------------------------
