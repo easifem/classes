@@ -23,11 +23,11 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 USE TomlUtility
 USE tomlf, ONLY: toml_table, &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_array,  &
-  & toml_stat
+                 toml_serialize, &
+                 toml_get => get_value, &
+                 toml_len => len, &
+                 toml_array, &
+                 toml_stat
 IMPLICIT NONE
 
 PRIVATE

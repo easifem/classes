@@ -40,6 +40,8 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER = 51
 
 TYPE :: OneDimDomain_
   PRIVATE
+  LOGICAL(LGT) :: isInit = .FALSE.
+  !! is the object initialized
   LOGICAL(LGT) :: isElemLengthUniform = .FALSE.
   !! is the element length uniform in the domain
   REAL(DFP) :: domain(2) = 0.0_DFP
@@ -62,6 +64,15 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate the object with totalElements
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate the object with elemLength
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate the object with totalElements and elemLength
+  GENERIC, PUBLIC :: Initiate => Initiate1, &
+    Initiate2, Initiate3
+
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import parameters from a TOML file
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -108,6 +119,8 @@ CONTAINS
 PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexNodes => obj_GetTotalVertexNodes
   !! Get the total number of vertex in object
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
+  !! Get connectivity of the element without any allocation
+  PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
 
   ! IO:
   ! @IOMethods
@@ -381,14 +394,38 @@ SUBROUTINE obj_Display(obj, msg, unitno)
   CHARACTER(*), OPTIONAL, INTENT(IN) :: msg
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: aint
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   CALL Display(msg, unitno=unitno)
   CALL Display(obj%domain, "domain: ", unitno=unitno)
   CALL Display(obj%totalNodes, "totalNodes: ", unitno=unitno)
   CALL Display(obj%isElemLengthUniform, "isElemLengthUniform: ", &
                unitno=unitno)
   CALL Display(obj%totalElements, "totalElements: ", unitno=unitno)
-  CALL Display(obj%elemLength, "elemLength: ", unitno=unitno)
 
+  isok = ALLOCATED(obj%elemLength)
+  IF (isok) THEN
+    CALL Display(isok, "elemLength is allocated: ", unitno=unitno)
+    aint = SIZE(obj%elemLength)
+    CALL Display(aint, "elemLength size: ", unitno=unitno)
+    CALL Display(obj%elemLength, "elemLength: ", unitno=unitno)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE obj_Display
 
 !----------------------------------------------------------------------------
@@ -401,10 +438,36 @@ SUBROUTINE obj_DisplayMeshInfo(obj, msg, unitno)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
 
   ! Internal variables
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_DisplayMeshInfo()"
+#endif
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: aint
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL Display(msg, unitno=unitno)
+  CALL Display(obj%domain, "domain: ", unitno=unitno)
+  CALL Display(obj%totalNodes, "totalNodes: ", unitno=unitno)
+  CALL Display(obj%isElemLengthUniform, "isElemLengthUniform: ", &
+               unitno=unitno)
+  CALL Display(obj%totalElements, "totalElements: ", unitno=unitno)
+
+  isok = ALLOCATED(obj%elemLength)
+  IF (isok) THEN
+    CALL Display(isok, "elemLength is allocated: ", unitno=unitno)
+    aint = SIZE(obj%elemLength)
+    CALL Display(aint, "elemLength size: ", unitno=unitno)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE obj_DisplayMeshInfo
 
@@ -490,18 +553,31 @@ END SUBROUTINE obj_Deallocate
 !                                                           IsElementPresent
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_IsElementPresent(obj, globalElement, isPresent)
-  CLASS(OneDimDomain_), INTENT(in) :: obj
+FUNCTION obj_IsElementPresent(obj, globalElement, islocal) RESULT(ans)
+  CLASS(OneDimDomain_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(IN) :: globalElement
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPresent
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  LOGICAL(LGT) :: ans
 
   ! Internal variables
+
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_IsElementPresent()"
+#endif
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-END SUBROUTINE obj_IsElementPresent
+  ans = globalElement .LE. obj%totalElements
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END FUNCTION obj_IsElementPresent
 
 !----------------------------------------------------------------------------
 !                                                         GetLocalElemNumber
@@ -516,10 +592,22 @@ FUNCTION obj_GetLocalElemNumber(obj, globalElement, islocal) RESULT(ans)
   INTEGER(I4B) :: ans
   !! local element number
 
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber()"
+#endif
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ans = globalElement
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
 END FUNCTION obj_GetLocalElemNumber
 
 !----------------------------------------------------------------------------
@@ -548,8 +636,7 @@ FUNCTION obj_GetTotalVertexNodes(obj) RESULT(ans)
   CLASS(OneDimDomain_), INTENT(in) :: obj
   INTEGER(I4B) :: ans
   CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes()"
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
+  ans = obj%totalNodes
 END FUNCTION obj_GetTotalVertexNodes
 
 !----------------------------------------------------------------------------
@@ -574,6 +661,103 @@ SUBROUTINE obj_GetConnectivity_(obj, globalElement, ans, tsize, opt, islocal)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
 END SUBROUTINE obj_GetConnectivity_
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary:  This method is used to initiate the object
+
+SUBROUTINE obj_Initiate1(obj, domain, totalElements)
+  CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: domain(2)
+  INTEGER(I4B), INTENT(IN) :: totalElements
+  !! Total number of elements in the domain
+
+  CALL obj%DEALLOCATE()
+  obj%isInit = .TRUE.
+  obj%domain(1:2) = domain(1:2)
+  obj%totalElements = totalElements
+  obj%totalNodes = totalElements + 1
+  obj%isElemLengthUniform = .TRUE.
+  CALL Reallocate(obj%elemLength, 1)
+  obj%elemLength(1) = (domain(2) - domain(1)) / REAL(totalElements, kind=DFP)
+  obj%xij = 0.0_DFP
+
+END SUBROUTINE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary:  This method is used to initiate the object
+
+SUBROUTINE obj_Initiate2(obj, domain, elemLength)
+  CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: domain(2)
+  REAL(DFP), INTENT(IN) :: elemLength
+  !! Total number of elements in the domain
+
+  CALL obj%DEALLOCATE()
+  obj%isInit = .TRUE.
+  obj%domain(1:2) = domain(1:2)
+  obj%isElemLengthUniform = .TRUE.
+  CALL Reallocate(obj%elemLength, 1)
+  obj%elemLength(1) = elemLength
+  obj%totalElements = INT((domain(2) - domain(1)) / elemLength, kind=I4B)
+  obj%totalNodes = obj%totalElements + 1
+  obj%xij = 0.0_DFP
+END SUBROUTINE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary:  This method is used to initiate the object
+
+SUBROUTINE obj_Initiate3(obj, domain, totalElements, elemLength)
+  CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: domain(2)
+  !! domain of the object
+  INTEGER(I4B), INTENT(IN) :: totalElements
+  !! Total number of elements in the domain
+  INTEGER(I4B), INTENT(IN) :: elemLength(:)
+  !! Total number of elements in the domain
+  !! Only 1 to totalElements length are used
+
+  ! Internal variables
+  INTEGER(I4B) :: ii, tsize
+
+  CALL obj%DEALLOCATE()
+  obj%isInit = .TRUE.
+  obj%domain(1:2) = domain(1:2)
+  obj%totalElements = totalElements
+  obj%totalNodes = obj%totalElements + 1
+  obj%xij = 0.0_DFP
+
+  tsize = SIZE(elemLength)
+
+  IF (tsize .EQ. 1) THEN
+    CALL Reallocate(obj%elemLength, 1)
+    obj%isElemLengthUniform = .TRUE.
+    obj%elemLength(1) = elemLength(1)
+    RETURN
+  END IF
+
+  CALL Reallocate(obj%elemLength, totalElements)
+  obj%isElemLengthUniform = .FALSE.
+
+  DO ii = 1, totalElements
+    obj%elemLength(ii) = elemLength(ii)
+  END DO
+
+END SUBROUTINE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                     Error
