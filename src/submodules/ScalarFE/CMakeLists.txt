@@ -24,4 +24,5 @@ target_sources(
           ${src_path}/LagrangeOneDimFE_Class@Methods.F90
           ${src_path}/HierarchicalFE_Class@Methods.F90
           ${src_path}/HierarchicalOneDimFE_Class@Methods.F90
+          ${src_path}/OrthogonalOneDimFE_Class@Methods.F90
 )

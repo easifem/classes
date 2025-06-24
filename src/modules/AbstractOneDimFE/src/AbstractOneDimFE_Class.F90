@@ -27,6 +27,10 @@ USE ExceptionHandler_Class, ONLY: e
 
 USE OneDimBasisOpt_Class, ONLY: OneDimBasisOpt_
 
+USE TxtFile_Class, ONLY: TxtFile_
+
+USE tomlf, ONLY: toml_table
+
 IMPLICIT NONE
 PRIVATE
 
@@ -93,6 +97,10 @@ CONTAINS
   !! This method checks the essential parameters in the parameter list
   !! It is called while initiating the object from the parameter list
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
+  !! Deallocate the data stored in an instance
+
   !IO:
   !@IOMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -101,9 +109,13 @@ CONTAINS
   !! Display the contents
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
   !! Display the contents
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
-    obj_Deallocate
-  !! Deallocate the data stored in an instance
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Initiate from reading toml table
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+  !! Initiate from reading toml file
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
   ! SET:
   ! @SetMethods
@@ -136,6 +148,8 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
 
   ! GET:
   ! @QuadratureMethods
@@ -655,6 +669,55 @@ INTERFACE
     CLASS(AbstractOneDimFE_), INTENT(in) :: obj
     CHARACTER(4) :: ans
   END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-24
+! summary:  Get the order of the finite element
+
+INTERFACE
+  MODULE FUNCTION obj_GetOrder(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------

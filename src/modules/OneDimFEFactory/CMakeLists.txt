@@ -16,13 +16,4 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/ScalarFE_Class.F90
-          ${src_path}/ScalarOneDimFE_Class.F90
-          ${src_path}/LagrangeFE_Class.F90
-          ${src_path}/LagrangeOneDimFE_Class.F90
-          ${src_path}/HierarchicalFE_Class.F90
-          ${src_path}/HierarchicalOneDimFE_Class.F90
-          ${src_path}/OrthogonalOneDimFE_Class.F90
-)
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/OneDimFEFactory_Method.F90)

@@ -69,8 +69,8 @@ END PROCEDURE obj_GetParam
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-   '[WIP ERROR] :: This routine is under development' )
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
 
 ! CHARACTER(4) :: baseInterpolation
 ! INTEGER(I4B), PARAMETER :: one = 1
@@ -208,6 +208,14 @@ END PROCEDURE obj_GetCaseName
 MODULE PROCEDURE obj_GetBaseInterpolation
 ans = obj%opt%GetBaseInterpolation()
 END PROCEDURE obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
+!                                                                  GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder
+ans = obj%opt%GetOrder()
+END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
 !
