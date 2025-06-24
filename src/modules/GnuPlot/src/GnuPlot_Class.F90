@@ -32,6 +32,7 @@ CHARACTER(*), PARAMETER :: defaultFmtGnuplot = '(a)'
 CHARACTER(*), PARAMETER :: commentLineGnuplot = &
                            '# -------------------------------------------'
 CHARACTER(*), PARAMETER :: defaultPlotScale = "linear"
+CHARACTER(*), PARAMETER :: defaultCommandLine = "gnuplot --persist"
 REAL(dfp), PARAMETER :: defaultPause = 2.0_DFP
 
 !----------------------------------------------------------------------------
@@ -60,6 +61,8 @@ END TYPE Label_
 
 TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
   TYPE(TxtFile_) :: pltfile
+  LOGICAL(LGT) :: execute = .TRUE.
+  CHARACTER(:), ALLOCATABLE :: commandline
   TYPE(Label_) :: tpplottitle
   TYPE(Label_) :: tpxlabel
   TYPE(Label_) :: tpx2label
@@ -172,6 +175,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ylim => set_ylim
   PROCEDURE, PUBLIC, PASS(obj) :: zlim => set_zlim
   PROCEDURE, PUBLIC, PASS(obj) :: filename => set_filename
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => set_commandline
   PROCEDURE, PUBLIC, PASS(obj) :: reset => reset_to_defaults
   PROCEDURE, PUBLIC, PASS(obj) :: preset => use_preset_configuration
   PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
@@ -577,6 +581,22 @@ INTERFACE
     CLASS(GnuPlot_) :: obj
     CHARACTER(*), INTENT(IN) :: chars
   END SUBROUTINE set_filename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        setCommand
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-06-23
+! summary:  set command which is executed at the end
+!          if the length of chars is 0, then no command is executed
+
+INTERFACE
+  MODULE SUBROUTINE set_commandline(obj, chars)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: chars
+  END SUBROUTINE set_commandline
 END INTERFACE
 
 !----------------------------------------------------------------------------
