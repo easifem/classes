@@ -19,6 +19,7 @@ MODULE TimeOpt_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: Uppercase
+USE Display_Method, ONLY: Display
 
 IMPLICIT NONE
 
@@ -73,6 +74,8 @@ TYPE :: TimeOpt_
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => obj_ToNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the object information
 
 END TYPE TimeOpt_
 
@@ -113,5 +116,30 @@ FUNCTION obj_ToNumber(obj, name) RESULT(ans)
   END SELECT
   astr = ""
 END FUNCTION obj_ToNumber
+
+!----------------------------------------------------------------------------
+!                                                                    Display
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Display(obj, msg, unitno)
+  CLASS(TimeOpt_), INTENT(in) :: obj
+  CHARACTER(*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+
+  CALL Display(msg, unitno)
+  CALL Display(obj%static, 'Static: ', unitno=unitno)
+  CALL Display(obj%steady, 'Steady: ', unitno=unitno)
+  CALL Display(obj%pseudostatic, 'Pseudostatic: ', unitno=unitno)
+  CALL Display(obj%transient, 'Transient: ', unitno=unitno)
+  CALL Display(obj%dynamic, 'Dynamic: ', unitno=unitno)
+  CALL Display(obj%default, 'Default: ', unitno=unitno)
+  CALL Display(obj%default_char, 'Default Character: ', unitno=unitno)
+  CALL Display(obj%totalTimeStep, 'Total Time Steps: ', unitno=unitno)
+  CALL Display(obj%currentTime, 'Current Time: ', unitno=unitno)
+  CALL Display(obj%dt, 'Time Step: ', unitno=unitno)
+  CALL Display(obj%startTime, 'Start Time: ', unitno=unitno)
+  CALL Display(obj%endTime, 'End Time: ', unitno=unitno)
+
+END SUBROUTINE obj_Display
 
 END MODULE TimeOpt_Class

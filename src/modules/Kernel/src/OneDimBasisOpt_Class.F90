@@ -186,6 +186,9 @@ CONTAINS
     obj_GetCaseName
   !! Get the case name
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  !! Get the order
+
 END TYPE OneDimBasisOpt_
 
 !----------------------------------------------------------------------------
@@ -1045,6 +1048,16 @@ FUNCTION obj_GetCaseName(obj) RESULT(ans)
   CHARACTER(:), ALLOCATABLE :: ans
   ans = obj%baseContinuity//obj%baseInterpolation
 END FUNCTION obj_GetCaseName
+
+!----------------------------------------------------------------------------
+!                                                                  GetOrder
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetOrder(obj) RESULT(ans)
+  CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+  INTEGER(I4B) :: ans
+  ans = obj%order
+END FUNCTION obj_GetOrder
 
 !----------------------------------------------------------------------------
 !

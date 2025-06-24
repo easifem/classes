@@ -247,13 +247,13 @@ INTERFACE
     !! file containing the order of each element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
     !! basis type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
     !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! ultraspherical parameter
   END SUBROUTINE SetOneDimFEDOFParam
 END INTERFACE

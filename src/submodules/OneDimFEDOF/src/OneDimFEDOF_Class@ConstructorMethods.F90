@@ -328,6 +328,7 @@ IF (ALLOCATED(obj%cellIA)) DEALLOCATE (obj%cellIA)
 IF (ASSOCIATED(obj%fe)) THEN
   CALL obj%fe%DEALLOCATE()
 END IF
+obj%fe => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
