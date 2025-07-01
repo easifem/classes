@@ -47,8 +47,7 @@ PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
 PUBLIC :: SetSTScalarFieldParam
 PUBLIC :: STScalarFieldCheckEssentialParam
-PUBLIC :: STScalarFieldInitiate1
-PUBLIC :: STScalarFieldInitiate2
+PUBLIC :: STScalarFieldInitiate
 PUBLIC :: STScalarFieldDeallocate
 PUBLIC :: STScalarField
 PUBLIC :: STScalarField_Pointer
@@ -281,14 +280,14 @@ END INTERFACE STScalarFieldCheckEssentialParam
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE STScalarFieldInitiate1
+INTERFACE STScalarFieldInitiate
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE STScalarFieldInitiate1
+END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -298,7 +297,7 @@ END INTERFACE STScalarFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE STScalarFieldInitiate2
+INTERFACE STScalarFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
@@ -308,7 +307,7 @@ INTERFACE STScalarFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE STScalarFieldInitiate2
+END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Deallocate@ConstructorMethods

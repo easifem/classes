@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(STScalarFieldLis_Class) ConstructorMethods
-USE STScalarField_Class, ONLY: STScalarFieldInitiate1, &
+USE STScalarField_Class, ONLY: STScalarFieldInitiate, &
                                STScalarFieldDeallocate
 
 IMPLICIT NONE
@@ -57,7 +57,8 @@ END PROCEDURE obj_Final
 MODULE PROCEDURE obj_Initiate1
 INTEGER(I4B) :: ierr
 
-CALL STScalarFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL STScalarFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                            timefedof=timefedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
