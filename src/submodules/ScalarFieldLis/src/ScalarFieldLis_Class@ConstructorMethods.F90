@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) ConstructorMethods
-USE ScalarField_Class, ONLY: ScalarFieldInitiate1
+USE ScalarField_Class, ONLY: ScalarFieldInitiate
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 
 IMPLICIT NONE
@@ -57,7 +57,7 @@ END PROCEDURE obj_Constructor_1
 MODULE PROCEDURE obj_Initiate1
 INTEGER(I4B) :: ierr
 
-CALL ScalarFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL ScalarFieldInitiate(obj=obj, param=param, fedof=fedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

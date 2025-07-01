@@ -34,8 +34,7 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE, &
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
 
 USE AbstractField_Class, ONLY: SetAbstractFieldParam, &
-                               AbstractFieldInitiate, &
-                               AbstractFieldInitiate2
+                               AbstractFieldInitiate
 
 USE BaseType, ONLY: DOF_
 
@@ -452,7 +451,7 @@ CLASS IS (MatrixField_)
 
   CALL AssertError1(isok, myName, "obj2 is not initiated")
 
-  CALL AbstractFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+  CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
   obj%mat = obj2%mat
