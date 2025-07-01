@@ -115,9 +115,10 @@ END TYPE STScalarFieldLisPointer_
 ! summary:  function returns an instance of [[STScalarFieldLis_]]
 
 INTERFACE STScalarFieldLis
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(STScalarFieldLis_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE STScalarFieldLis
@@ -131,9 +132,10 @@ END INTERFACE STScalarFieldLis
 ! summary: This function returns an instance of [[STScalarFieldLis_]]
 
 INTERFACE STScalarFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     CLASS(STScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarFieldLis_Pointer
@@ -170,7 +172,7 @@ INTERFACE
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    class(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 

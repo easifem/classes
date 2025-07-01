@@ -30,7 +30,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -86,4 +86,5 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END SUBMODULE ConstructorMethods
