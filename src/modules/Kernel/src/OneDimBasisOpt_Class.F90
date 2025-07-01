@@ -16,8 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE OneDimBasisOpt_Class
-
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: I4B, DFP, LGT, stdout, CHAR_LF
 
 USE String_Class, ONLY: String
 
@@ -40,7 +39,9 @@ USE LineInterpolationUtility, ONLY: RefElemDomain_Line
 USE ReferenceLine_Method, ONLY: RefCoord_Line
 
 USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    BaseInterpolation_ToChar
+                                    BaseInterpolation_ToChar, &
+                                    BaseType_ToInteger, &
+                                    BaseInterpolation_ToInteger
 
 USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
                                   QuadraturePointDisplay => Display, &
@@ -49,6 +50,15 @@ USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_, &
                                      TypeOneDimQuadratureOpt, &
                                      SetOneDimQuadratureOptParam
+
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table, &
+                 toml_get => get_value, &
+                 toml_serialize
+
+USE TomlUtility, ONLY: GetValue
+
+USE FEVariable_Method, ONLY: FEVariable_ToInteger
 
 IMPLICIT NONE
 
@@ -133,6 +143,9 @@ TYPE :: OneDimBasisOpt_
   CHARACTER(128) :: ipType_char = "EQUIDISTANCE"
   !! interpolation type in string format
 
+  CHARACTER(128) :: feType_char = "SCALAR"
+  !! finite element type in string format
+
   TYPE(OneDimQuadratureOpt_) :: quadOpt
   !! Quadrature options
 
@@ -188,6 +201,14 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   !! Get the order
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Import from toml table
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+  !! Improt from toml table
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
 END TYPE OneDimBasisOpt_
 
@@ -1058,6 +1079,216 @@ FUNCTION obj_GetOrder(obj) RESULT(ans)
   INTEGER(I4B) :: ans
   ans = obj%order
 END FUNCTION obj_GetOrder
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary: Import OneDimBasisOpt_ from toml table
+!
+!# Introduction
+! The toml table should have following contents:
+!
+!```toml
+! [BasisOpt]
+!
+!```
+
+SUBROUTINE obj_ImportFromToml1(obj, table)
+  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+  INTEGER(I4B) :: origin, stat, order, ipType, basisType, feType
+  LOGICAL(LGT) :: isFound
+  TYPE(String) :: astr, baseContinuity, baseInterpolation, &
+                  ipType_char, basisType_char, feType_char
+  REAL(DFP) :: alpha, beta, lambda
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading baseInterpolation...')
+#endif
+
+  CALL GetValue(table=table, key="baseInterpolation", &
+                VALUE=baseInterpolation, &
+                default_value=TypeOneDimBasisOpt%baseInterpolation, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading baseContinuity...')
+#endif
+
+  CALL GetValue(table=table, key="baseContinuity", &
+                VALUE=baseContinuity, &
+                default_value=TypeOneDimBasisOpt%baseContinuity, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading ipType...')
+#endif
+
+  CALL GetValue(table=table, key="ipType", &
+                VALUE=ipType_char, &
+                default_value=TypeOneDimBasisOpt%ipType_char, &
+                origin=origin, stat=stat, isFound=isFound)
+  ipType = BaseInterpolation_ToInteger(ipType_char%chars())
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading basisType...')
+#endif
+
+  CALL GetValue(table=table, key="basisType", &
+                VALUE=basisType_char, &
+                default_value=TypeOneDimBasisOpt%basisType_char, &
+                origin=origin, stat=stat, isFound=isFound)
+  basisType = BaseType_ToInteger(basisType_char%chars())
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading alpha...')
+#endif
+
+  CALL GetValue(table=table, key="alpha", &
+                VALUE=alpha, &
+                default_value=TypeOneDimBasisOpt%alpha, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading beta...')
+#endif
+
+  CALL GetValue(table=table, key="beta", &
+                VALUE=beta, &
+                default_value=TypeOneDimBasisOpt%beta, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading lambda...')
+#endif
+
+  CALL GetValue(table=table, key="lambda", &
+                VALUE=lambda, &
+                default_value=TypeOneDimBasisOpt%lambda, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading order...')
+#endif
+
+  CALL GetValue(table=table, key="order", &
+                VALUE=order, &
+                default_value=TypeOneDimBasisOpt%order, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading feType...')
+#endif
+
+  CALL GetValue(table=table, key="feType", &
+                VALUE=feType_char, &
+                default_value=TypeOneDimBasisOpt%feType_char, &
+                origin=origin, stat=stat, isFound=isFound)
+  feType = FEVariable_ToInteger(feType_char%chars())
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Initiating obj without quadOpt...')
+#endif
+
+  CALL obj%Initiate(baseContinuity=baseContinuity%chars(), &
+                    baseInterpolation=baseInterpolation%chars(), &
+                    ipType=ipType, &
+                    basisType=basisType, &
+                    alpha=alpha, &
+                    beta=beta, &
+                    lambda=lambda, &
+                    order=order, &
+                    fetype=fetype)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading quadOpt...')
+#endif
+
+  CALL obj%quadOpt%ImportFromToml(table=table)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Import TimeOpt from toml file
+
+SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                               filename, printToml)
+  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: tomlName
+  TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+  TYPE(toml_table), ALLOCATABLE :: table
+  TYPE(toml_table), POINTER :: node
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+  CALL GetValue(table=table, afile=afile, filename=filename)
+
+  node => NULL()
+  CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+                stat=stat)
+
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+
+  CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+  IF (PRESENT(printToml)) THEN
+    CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+                 unitNo=stdout)
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END]')
+#endif
+
+END SUBROUTINE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !

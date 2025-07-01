@@ -17,17 +17,23 @@
 !
 
 MODULE OneDimQuadratureOpt_Class
-
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: I4B, DFP, LGT, stdout, CHAR_LF
+USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: Display, ToString
 USE FPL, ONLY: ParameterList_
 USE FPL_Method, ONLY: Set, GetValue
-
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
+                                  QuadraturePoint_ToInteger
 
 USE InputUtility, ONLY: Input
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table, &
+                 toml_get => get_value, &
+                 toml_serialize
+
+USE TomlUtility, ONLY: GetValue, GetValue_
 
 IMPLICIT NONE
 
@@ -92,7 +98,21 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Intiate the object with parameterList
 
-  GENERIC, PUBLIC :: Initiate => Initiate1
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Intiate by using parameters directly
+
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  !! Generic method for initiating the object
+
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import from toml table
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import from toml file
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
+
+  PROCEDURE, PUBLIC :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the object
 
 END TYPE OneDimQuadratureOpt_
 
@@ -133,7 +153,9 @@ SUBROUTINE obj_Copy(obj, obj2)
   obj%beta = obj2%beta
   obj%lambda = obj2%lambda
   obj%order = obj2%order
+  obj%isOrder = obj2%isOrder
   obj%nips = obj2%nips
+  obj%isNips = obj2%isNips
   obj%quadratureType_char = obj2%quadratureType_char
 
 #ifdef DEBUG_VER
@@ -374,6 +396,60 @@ SUBROUTINE obj_Initiate1(obj, param, prefix)
 END SUBROUTINE obj_Initiate1
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Initiate by parameters
+
+SUBROUTINE obj_Initiate2(obj, quadratureType, order, nips, alpha, &
+                         beta, lambda, isOrder, isNips)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
+  INTEGER(I4B), INTENT(IN), OPTIONAL :: order
+  INTEGER(I4B), INTENT(IN), OPTIONAL :: nips(1)
+  REAL(DFP), INTENT(IN), OPTIONAL :: alpha
+  REAL(DFP), INTENT(IN), OPTIONAL :: beta
+  REAL(DFP), INTENT(IN), OPTIONAL :: lambda
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrder
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNips
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+  CALL obj%SetParam(quadratureType=quadratureType, &
+                    order=order, nips=nips, alpha=alpha, &
+                    beta=beta, lambda=lambda)
+
+  ! Set the quadrature type character
+  obj%quadratureType_char = QuadraturePoint_ToChar(obj%quadratureType, &
+                                                   isUpper=.TRUE.)
+
+  ! Set isOrder and isNips flags
+  obj%isOrder = (PRESENT(order))
+  obj%isNips = (PRESENT(nips))
+
+  IF (PRESENT(isOrder)) obj%isOrder = isOrder
+  IF (PRESENT(isNips)) obj%isNips = isNips
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE obj_Initiate2
+
+!----------------------------------------------------------------------------
 !                                                              GetParam
 !----------------------------------------------------------------------------
 
@@ -414,7 +490,183 @@ SUBROUTINE obj_GetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
 END SUBROUTINE obj_GetParam
 
 !----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary: Import data from toml table
+!
+!# Introduction
+! The toml table should have following contents:
+!
+!```toml
+!```
+
+SUBROUTINE obj_ImportFromToml1(obj, table)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+  INTEGER(I4B) :: origin, stat, order, nips(1), tsize, quadratureType
+  LOGICAL(LGT) :: isFound, isOrder, isNips
+  TYPE(String) :: quadratureType_char
+  REAL(DFP) :: alpha, beta, lambda
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading quadratureType...')
+#endif
+
+  CALL GetValue(table=table, key="quadratureType", &
+                VALUE=quadratureType_char, &
+                default_value=TypeOneDimQuadratureOpt%quadratureType_char, &
+                origin=origin, stat=stat, isFound=isFound)
+  quadratureType = QuadraturePoint_ToInteger(quadratureType_char%chars())
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading order...')
+#endif
+
+  CALL GetValue(table=table, key="order", &
+                VALUE=order, &
+                default_value=TypeOneDimQuadratureOpt%order, &
+                origin=origin, stat=stat, isFound=isOrder)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading nips...')
+#endif
+
+  CALL GetValue_(table=table, key="nips", &
+                 VALUE=nips, tsize=tsize, &
+                 origin=origin, stat=stat, isFound=isNips)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading alpha...')
+#endif
+
+  CALL GetValue(table=table, key="alpha", &
+                VALUE=alpha, &
+                default_value=TypeOneDimQuadratureOpt%alpha, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading beta...')
+#endif
+
+  CALL GetValue(table=table, key="beta", &
+                VALUE=beta, &
+                default_value=TypeOneDimQuadratureOpt%beta, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading lambda...')
+#endif
+
+  CALL GetValue(table=table, key="lambda", &
+                VALUE=lambda, &
+                default_value=TypeOneDimQuadratureOpt%lambda, &
+                origin=origin, stat=stat, isFound=isFound)
+
+  ! Here we call initiate methods with above parameters
+
+  CALL obj%Initiate(quadratureType=quadratureType, &
+                    order=order, nips=nips, alpha=alpha, &
+                    beta=beta, lambda=lambda, isOrder=isOrder, &
+                    isNips=isNips)
+
+  ! clean up
+  quadratureType_char = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Import TimeOpt from toml file
+
+SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, printToml)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: tomlName
+  TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+  TYPE(toml_table), ALLOCATABLE :: table
+  TYPE(toml_table), POINTER :: node
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+  CALL GetValue(table=table, afile=afile, filename=filename)
+
+  node => NULL()
+  CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+                stat=stat)
+
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+
+  CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+  IF (PRESENT(printToml)) THEN
+    CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+                 unitNo=stdout)
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END]')
+#endif
+
+END SUBROUTINE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                               Deallocate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Deallocate the object
+
+SUBROUTINE obj_Deallocate(obj)
+  CLASS(OneDimQuadratureOpt_), INTENT(inout) :: obj
+  CALL obj%Copy(TypeOneDimQuadratureOpt)
+END SUBROUTINE obj_Deallocate
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../../submodules/include/errors.F90"
 
 END MODULE OneDimQuadratureOpt_Class
