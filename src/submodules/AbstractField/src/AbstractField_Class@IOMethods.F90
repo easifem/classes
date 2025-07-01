@@ -31,17 +31,13 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
 
 CALL Display(msg, unitNo=unitNo)
 
-IF (obj%isInitiated) THEN
-  CALL Display("isInitiated : TRUE", unitNo=unitNo)
-ELSE
-  CALL Display("isInitiated : FALSE, Nothing to Display!", unitNo=unitNo)
-  RETURN
-END IF
+CALL Display(obj%isInitiated, msg="isInitiated: ", unitNo=unitNo)
+IF (.NOT. obj%isInitiated) RETURN
 
 CALL Display(obj%name%chars(), msg="name : ", unitNo=unitNo)
 
@@ -64,21 +60,38 @@ CALL Display(obj%lis_ptr, msg='lis_ptr: ', unitNo=unitNo)
 isok = ASSOCIATED(obj%fedof)
 CALL Display(isok, "fedof ASSOCIATED: ", unitNo=unitNo)
 
-IF (ALLOCATED(obj%fedofs)) THEN
-  CALL Display("fedofs : ALLOCATED [" &
-               //TOSTRING(SIZE(obj%fedofs)) &
-               //"]", unitNo=unitNo)
-  DO ii = 1, SIZE(obj%fedofs)
+isok = ASSOCIATED(obj%timefedof)
+CALL Display(isok, "timefedof ASSOCIATED: ", unitNo=unitNo)
 
-    isok = ASSOCIATED(obj%fedofs(ii)%ptr)
-    CALL Display(isok, "fedofs("//TOSTRING(ii) &
-                 //")%ptr ASSOCIATED: ", unitNo=unitNo)
-
-  END DO
-
-ELSE
-  CALL Display("fedofs : NOT ALLOCATED", unitNo=unitNo)
+isok = ALLOCATED(obj%fedofs)
+CALL Display(isok, "fedofs ALLOCATED: ", unitNo=unitNo)
+tsize = 0
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+  CALL Display("fedofs : ALLOCATED ["//ToString(tsize)//"]", unitNo=unitNo)
 END IF
+
+! tsize is zero if not allocated, so it is safe to use
+DO ii = 1, tsize
+  isok = ASSOCIATED(obj%fedofs(ii)%ptr)
+  CALL Display(isok, "fedofs("//ToString(ii)//")%ptr ASSOCIATED: ", &
+               unitNo=unitNo)
+END DO
+
+isok = ALLOCATED(obj%timefedofs)
+CALL Display(isok, "timefedofs ALLOCATED: ", unitNo=unitNo)
+tsize = 0
+IF (isok) THEN
+  tsize = SIZE(obj%timefedofs)
+ CALL Display("timefedofs : ALLOCATED ["//ToString(tsize)//"]", unitNo=unitNo)
+END IF
+
+! tsize is zero if not allocated, so it is safe to use
+DO ii = 1, tsize
+  isok = ASSOCIATED(obj%timefedofs(ii)%ptr)
+  CALL Display(isok, "timefedofs("//ToString(ii)//")%ptr ASSOCIATED: ", &
+               unitNo=unitNo)
+END DO
 
 END PROCEDURE obj_Display
 
@@ -392,7 +405,8 @@ isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 
-CALL obj%ImportFromToml(table=node, fedof=fedof, mesh=mesh)
+CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
+                        mesh=mesh, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -409,93 +423,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ImportFromToml2
-
-!----------------------------------------------------------------------------
-!                                                           GetFEDOFPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFEDOFPointer1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer()"
-#endif
-
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize
-#endif
-
-LOGICAL(LGT) :: indxPresent, fedofsAllocated
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-indxPresent = PRESENT(indx)
-fedofsAllocated = ALLOCATED(obj%fedofs)
-
-IF (indxPresent .AND. fedofsAllocated) THEN
-
-#ifdef DEBUG_VER
-  tsize = SIZE(obj%fedofs)
-  isok = indx .LE. tsize
-
-  CALL AssertError1(isok, myName, &
-                    "indx should be less than or equal to size of fedofs")
-#endif
-
-  ans => obj%fedofs(indx)%ptr
-
-ELSE
-
-  ans => obj%fedof
-
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetFEDOFPointer1
-
-!----------------------------------------------------------------------------
-!                                                          GetFEDOFPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFEDOFPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer2()"
-#endif
-
-INTEGER(I4B) :: tsize, ii
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = ALLOCATED(obj%fedofs)
-
-IF (isok) THEN
-  tsize = SIZE(obj%fedofs)
-ELSE
-  tsize = 0
-END IF
-
-ALLOCATE (ans(tsize))
-
-DO ii = 1, tsize
-  ans(ii)%ptr => obj%fedofs(ii)%ptr
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetFEDOFPointer2
 
 !----------------------------------------------------------------------------
 !                                               SetAbstractFieldParamFromToml
@@ -529,6 +456,7 @@ CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
 
 key = "engine"
+!============
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//" ...")
@@ -540,6 +468,7 @@ CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
 
 key = "fieldType"
+!============
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//" ...")
@@ -589,13 +518,15 @@ IF (isfedof) THEN
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 
   RETURN
 END IF
 
-! If fedof is note initiated then we will call
+! If fedof is NOT initiated then we will call
 ! fedof%ImportFromToml. The following code is for that.
 
 ! First lets check if mesh if given or not
@@ -629,6 +560,93 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE AbstractFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                         AbstractFieldReadTimeFEDOFFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadTimeFEDOFFromToml()"
+CHARACTER(*), PARAMETER :: DEFAULT_FEDOFNAME = "timefedof"
+CHARACTER(*), PARAMETER :: DEFAULT_FEDOFNAME_KEY = "timefedofName"
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String) :: fedofName
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isfedof, isok, isFound
+TYPE(toml_table), POINTER :: node
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(timefedof)
+IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'timefedof is not present, nothing to do')
+
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+
+END IF
+
+isfedof = timefedof%IsInitiated()
+
+IF (isfedof) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+! If timefedof is NOT initiated then we will call
+! timefedof%ImportFromToml. The following code is for that.
+
+! First lets check if timeOpt is given or not
+#ifdef DEBUG_VER
+isok = PRESENT(timeOpt)
+CALL AssertError1(isok, myName, &
+                  "timeOpt is not given to initiate timefedof")
+#endif
+
+! Getting fedofName which is a subtable name in
+! toml file that contains data for fedof
+key = DEFAULT_FEDOFNAME_KEY
+CALL GetValue(table=table, key=key, VALUE=fedofName, &
+              default_value=DEFAULT_FEDOFNAME, origin=origin, &
+              stat=stat, isFound=isFound)
+
+! Get the node from toml table [subtable]
+CALL toml_get(table, fedofName%chars(), node, &
+              origin=origin, requested=.FALSE., stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  fedofName//" node not found")
+#endif
+
+! Now we can init fedof from toml
+CALL timefedof%ImportFromToml(table=node, timeOpt=timeOpt)
+
+node => NULL(); key = ""; fedofName = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

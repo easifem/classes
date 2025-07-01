@@ -41,6 +41,8 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE TimeOpt_Class, ONLY: TimeOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
@@ -62,9 +64,9 @@ PUBLIC :: AbstractFieldDeallocate
 PUBLIC :: SetAbstractFieldParam
 PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
-PUBLIC :: AbstractFieldInitiate2
 PUBLIC :: SetAbstractFieldParamFromToml
 PUBLIC :: AbstractFieldReadFEDOFFromToml
+PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -83,12 +85,7 @@ TYPE, ABSTRACT :: AbstractField_
   !! name of the field
   TYPE(String) :: engine
   !! Engine of the field, for example
-  !! NATIVE_SERIAL
-  !! NATIVE_OMP,
-  !! NATIVE_MPI,
-  !! PETSC,
-  !! LIS_OMP,
-  !! LIS_MPI
+  !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
   INTEGER(I4B) :: comm = 0_I4B
   !! communication group (MPI)
   INTEGER(I4B) :: myRank = 0_I4B
@@ -107,9 +104,13 @@ TYPE, ABSTRACT :: AbstractField_
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
   CLASS(FEDOF_), POINTER :: fedof => NULL()
-  !! pointer to FEDOF
+  !! pointer to fedof
   TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
-  !! pointer to FEDOF
+  !! pointer to fedof
+  CLASS(TimeFEDOF_), POINTER :: timefedof => NULL()
+  !! pointer to time fedof
+  TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
+  !! pointer to time fedofs
 
 CONTAINS
   PRIVATE
@@ -220,6 +221,15 @@ CONTAINS
   GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
     GetFEDOFPointer2
 
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer1 => &
+    obj_GetTimeFEDOFPointer1
+  !! Get the timefedof pointer, a single pointer is returned
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer2 => &
+    obj_GetTimeFEDOFPointer2
+  !! Get the TimeFEDOF pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
+    GetTimeFEDOFPointer2
+
   ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam => obj_SetParam
@@ -302,10 +312,13 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
   END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractFieldInitiate
 
@@ -317,16 +330,16 @@ END INTERFACE AbstractFieldInitiate
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
-INTERFACE AbstractFieldInitiate2
+INTERFACE AbstractFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+                                  usePointer)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE AbstractFieldInitiate2
+END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -337,10 +350,13 @@ END INTERFACE AbstractFieldInitiate2
 ! summary: Initiate by reading options from [[ParameterList_]]
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    !! Vector of TimeFEDOFPointers
+    !! All timefedofs should be initiated
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractFieldInitiate
 
@@ -371,12 +387,15 @@ END INTERFACE AbstractFieldDisplay
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE AbstractFieldImport
 
@@ -401,17 +420,30 @@ END INTERFACE AbstractFieldExport
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, mesh)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, mesh, &
+                                        timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    !! if  it is present then following operations are performed
+    !! - If timefedof is not initiated then it will be initiated by
+    !! calling timefedof%ImportFromToml(node) method, where node
+    !! is the table field called "time". In this case we need to
+    !! provide timeOpt. (Read more at TimeFEDOF_Class.F90)
+    !! - If timefedof is already initiated then it will be used. In
+    !! this case we do not need use timeOpt
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Abstract mesh object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not initiated
+    !! Read more at TimeOpt_Class.F90
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -424,8 +456,8 @@ END INTERFACE
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, mesh, &
-                                        afile, filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, timefedof, &
+                                    mesh, timeOpt, afile, filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -433,10 +465,15 @@ INTERFACE
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Abstract mesh object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not intiated
+    !! Read more at obj_ImportFromToml1
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     !! txt file where toml config is stored
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
@@ -487,6 +524,8 @@ END INTERFACE
 !
 !# Introduction
 !   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+! calling fedof%ImportFromToml(node) method.
 
 INTERFACE
   MODULE SUBROUTINE AbstractFieldReadFEDOFfromToml(table, fedof, mesh)
@@ -500,6 +539,33 @@ INTERFACE
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
   END SUBROUTINE AbstractFieldReadFEDOFfromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               AbstractFieldReadTimeFEDOFfromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read timefedof from toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! - If timefedof is not present then this method does nothing
+! - If timefedof is present and it is initiated then it will do nothing
+! - If timefedof is present and it is not initiated then it will be initiated
+! by calling timefedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFfromToml(table, timefedof, &
+                                                       timeOpt)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(INOUT) :: timefedof
+    !! Timefedof, read the docs above
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt is need when timefedof is being initiated
+    !! Read more at TimeOpt_Class.F90
+  END SUBROUTINE AbstractFieldReadTimeFEDOFfromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -835,5 +901,55 @@ INTERFACE
   !! List of FEDOF pointers
   END FUNCTION obj_GetFEDOFPointer2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTimeFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get pointer to timefedof
+!
+! # Introduction
+!
+! This method returns the timefedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return timefedof
+! - if indx is given then it will check if the timefedofs is allocated
+! - if timefedofs is allocated
+!   then it will return the pointer timefedof(indx)
+! - if timefedofs is not allocated 
+!   then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+    CLASS(TimeFEDOF_), POINTER :: ans
+  END FUNCTION obj_GetTimeFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get timefedof pointers
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+    !! This is just a dummy argument to have a unique interface
+    TYPE(TimeFEDOFPointer_), ALLOCATABLE :: ans(:)
+    !! List of FEDOF pointers
+  END FUNCTION obj_GetTimeFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 
+!----------------------------------------------------------------------------
 
 END MODULE AbstractField_Class

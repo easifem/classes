@@ -39,7 +39,6 @@ astr = "/name/engine/fieldType/comm/local_n/global_n"
 CALL astr%Split(essentialParam, sep="/")
 CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=prefix, &
                          myName=myName, modName=modName)
-! INFO: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
 astr = ""
 isok = ALLOCATED(essentialParam)
@@ -59,7 +58,7 @@ MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
-LOGICAL(LGT) :: isSublist
+LOGICAL(LGT) :: isSublist, isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -69,28 +68,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 sublist => NULL()
 
 ! Create a new sublist
-isSublist = param%isSubList(prefix)
+isSublist = param%IsSubList(prefix)
 
 IF (isSublist) THEN
-
   ierr = param%GetSubList(key=prefix, sublist=sublist)
-  IF (ierr .NE. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-    RETURN
-  END IF
+  isok = ierr .EQ. 0_I4B
+  CALL AssertError1(isok, myName, &
+                    'Error occured in getting sublist(1)')
+END IF
 
-ELSE
-
+IF (.NOT. isSublist) THEN
   sublist => param%NewSubList(key=prefix)
-
 END IF
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(2)')
 
 CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
              VALUE=name)
@@ -150,6 +143,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 CHARACTER(:), ALLOCATABLE :: prefix
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -161,11 +155,9 @@ prefix = obj%GetPrefix()
 ! main
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(1)')
 
 ! NOTE: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
@@ -174,14 +166,14 @@ END IF
 ! here.
 ! CALL obj%DEALLOCATE()
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(2)')
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+
 obj%fedof => fedof
+obj%timefedof => timefedof
 
 sublist => NULL()
 
@@ -343,5 +335,11 @@ IF (ALLOCATED(obj%fedofs)) THEN
 END IF
 
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                             Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods
