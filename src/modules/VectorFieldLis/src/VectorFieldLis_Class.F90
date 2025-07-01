@@ -30,6 +30,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -170,10 +171,11 @@ END INTERFACE
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -226,12 +228,15 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

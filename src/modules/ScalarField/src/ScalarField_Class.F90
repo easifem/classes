@@ -32,6 +32,8 @@ USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE Tomlf, ONLY: toml_table
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -43,7 +45,7 @@ PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: SetScalarFieldParam
 PUBLIC :: ScalarFieldCheckEssentialParam
-PUBLIC :: ScalarFieldInitiate1
+PUBLIC :: ScalarFieldInitiate
 PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
@@ -240,13 +242,14 @@ END INTERFACE ScalarFieldCheckEssentialParam
 ! scalar field. There are essential and optional information.
 ! Essential information are described below.
 
-INTERFACE ScalarFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+INTERFACE ScalarFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE ScalarFieldInitiate1
+END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -341,12 +344,15 @@ END INTERFACE ScalarField_Pointer
 ! summary: This routine Imports the content
 
 INTERFACE ScalarFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+      timefedofs)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
 
@@ -359,7 +365,8 @@ END INTERFACE ScalarFieldImport
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, mesh)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, &
+                                        mesh, timeOpt)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     !! toml table
@@ -367,10 +374,22 @@ INTERFACE
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    !! if  it is present then following operations are performed
+    !! - If timefedof is not initiated then it will be initiated by
+    !! calling timefedof%ImportFromToml(node) method, where node
+    !! is the table field called "time". In this case we need to
+    !! provide timeOpt. (Read more at TimeFEDOF_Class.F90)
+    !! - If timefedof is already initiated then it will be used. In
+    !! this case we do not need use timeOpt
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Abstract mesh object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not initiated
+    !! Read more at TimeOpt_Class.F90
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
