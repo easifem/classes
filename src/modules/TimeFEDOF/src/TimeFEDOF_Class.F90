@@ -103,7 +103,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the case name of TimeFEDOF, it returns baseContinuity+baseInterpolation
 
-  PROCEDURE, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Retuns the total degrees of freedom in TimeFEDOF
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
@@ -163,7 +163,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetTimeFEDOFParam(param, baseContinuity, &
-           baseInterpolation, order, feType, ipType, basisType, alpha, beta, lambda, &
+   baseInterpolation, order, feType, ipType, basisType, alpha, beta, lambda, &
            quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
                                       quadratureBeta, quadratureLambda)
     TYPE(ParameterList_), INTENT(INOUT) :: param
@@ -173,7 +173,7 @@ INTERFACE
     !! Type of basis functions used for interpolation on reference
     INTEGER(I4B), INTENT(IN) :: order
     !! order of time fintie element
-    INTEGER( I4B ), OPTIONAL, INTENT(IN) :: feType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
     !! Finite element type
     !! Read more at OneDimBasisOpt_Class
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType

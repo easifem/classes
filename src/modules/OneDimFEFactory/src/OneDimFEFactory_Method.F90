@@ -18,6 +18,7 @@
 
 MODULE OneDimFEFactory_Method
 USE GlobalData, ONLY: I4B, DFP, LGT
+USE String_Class, ONLY: String
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE LagrangeOneDimFE_Class, ONLY: LagrangeOneDimFE_
 USE HierarchicalOneDimFE_Class, ONLY: HierarchicalOneDimFE_
@@ -25,8 +26,9 @@ USE OrthogonalOneDimFE_Class, ONLY: OrthogonalOneDimFE_
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE StringUtility, ONLY: UpperCase
-
+USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
 USE tomlf, ONLY: toml_table
+USE TomlUtility, ONLY: GetValue
 
 IMPLICIT NONE
 
@@ -41,6 +43,54 @@ INTERFACE OneDimFEFactory
 END INTERFACE OneDimFEFactory
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                           OneDimFEFactory
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Internal routine for creating pointer form baseContinuity
+! and baseInterpolation
+
+FUNCTION InternalOneDimFEFactory(baseContinuity, baseInterpolation) &
+  RESULT(ans)
+  CHARACTER(*), INTENT(IN) :: baseContinuity
+  CHARACTER(*), INTENT(IN) :: baseInterpolation
+  CLASS(AbstractOneDimFE_), POINTER :: ans
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "InternalOneDimFEFactory()"
+  CHARACTER(LEN=4) :: baseInterpolation0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  baseInterpolation0 = UpperCase(baseInterpolation(1:4))
+
+  ans => NULL()
+
+  SELECT CASE (baseInterpolation0)
+  CASE ("LAGR")
+    ALLOCATE (LagrangeOneDimFE_ :: ans)
+  CASE ("HIER", "HEIR")
+    ALLOCATE (HierarchicalOneDimFE_ :: ans)
+  CASE ("ORTHO")
+    ALLOCATE (OrthogonalOneDimFE_ :: ans)
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
+    RETURN
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END FUNCTION InternalOneDimFEFactory
 
 !----------------------------------------------------------------------------
 !                                                          OneDimFEFactory
@@ -125,27 +175,14 @@ FUNCTION OneDimFEFactory2(baseContinuity, baseInterpolation, ipType, &
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "OneDimFEFactory1()"
-  CHARACTER(LEN=4) :: baseInterpolation0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  baseInterpolation0 = UpperCase(baseInterpolation(1:4))
-
-  SELECT CASE (baseInterpolation0)
-  CASE ("LAGR")
-    ALLOCATE (LagrangeOneDimFE_ :: ans)
-  CASE ("HIER", "HEIR")
-    ALLOCATE (HierarchicalOneDimFE_ :: ans)
-  CASE ("ORTHO")
-    ALLOCATE (OrthogonalOneDimFE_ :: ans)
-  CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-    RETURN
-  END SELECT
+  ans => InternalOneDimFEFactory(baseContinuity=baseContinuity, &
+                                 baseInterpolation=baseInterpolation)
 
   CALL ans%Initiate(baseContinuity=baseContinuity, &
                     baseInterpolation=baseInterpolation, &
@@ -178,8 +215,39 @@ FUNCTION OneDimFEFactory3(table) RESULT(ans)
   CHARACTER(*), PARAMETER :: myName = "OneDimFEFactory3()"
 #endif
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
+  TYPE(String) :: baseInterpolation, baseContinuity
+  CHARACTER(4) :: baseInterpolation0, baseContinuity0
+  LOGICAL(LGT) :: isFound
+  INTEGER(I4B) :: stat, origin
+
+! Read baseInterpolation and baseContinuity from table
+
+  baseInterpolation0 = TypeOneDimBasisOpt%GetBaseInterpolation()
+  baseContinuity0 = TypeOneDimBasisOpt%GetBaseContinuity()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading baseInterpolation...')
+#endif
+
+  CALL GetValue(table=table, key="baseInterpolation", &
+                VALUE=baseInterpolation, &
+                default_value=baseInterpolation0, &
+                origin=origin, stat=stat, isFound=isFound)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading baseContinuity...')
+#endif
+
+  CALL GetValue(table=table, key="baseContinuity", &
+                VALUE=baseContinuity, &
+                default_value=baseContinuity0, &
+                origin=origin, stat=stat, isFound=isFound)
+
+  ans => InternalOneDimFEFactory(baseContinuity=baseContinuity%chars(), &
+                                 baseInterpolation=baseInterpolation%chars())
+
+  CALL ans%ImportFromToml(table=table)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
