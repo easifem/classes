@@ -33,6 +33,8 @@ USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_
 USE tomlf, ONLY: toml_table
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -280,10 +282,11 @@ END INTERFACE STScalarFieldCheckEssentialParam
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE STScalarFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE STScalarFieldInitiate1
 
@@ -372,9 +375,10 @@ END INTERFACE
 ! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE STScalarField
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(STScalarField_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE STScalarField
@@ -388,9 +392,10 @@ END INTERFACE STScalarField
 ! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE STScalarField_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     CLASS(STScalarField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarField_Pointer
@@ -420,12 +425,15 @@ END INTERFACE STScalarFieldDisplay
 ! summary: This routine Imports the content
 
 INTERFACE STScalarFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE STScalarFieldImport
 
@@ -454,7 +462,8 @@ END INTERFACE STScalarFieldExport
 ! summary:  Import data from toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, mesh)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, &
+                                        mesh, timeOpt)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     !! toml table
@@ -462,10 +471,22 @@ INTERFACE
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    !! if  it is present then following operations are performed
+    !! - If timefedof is not initiated then it will be initiated by
+    !! calling timefedof%ImportFromToml(node) method, where node
+    !! is the table field called "time". In this case we need to
+    !! provide timeOpt. (Read more at TimeFEDOF_Class.F90)
+    !! - If timefedof is already initiated then it will be used. In
+    !! this case we do not need use timeOpt
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Abstract mesh object
-    !! It is needded when fedof is not initiated
-    !! It is needed when we call ImportFromToml method on fedof
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not initiated
+    !! Read more at TimeOpt_Class.F90
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 

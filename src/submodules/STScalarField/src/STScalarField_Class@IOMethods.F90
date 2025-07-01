@@ -17,12 +17,13 @@
 
 SUBMODULE(STScalarField_Class) IOMethods
 USE String_Class, ONLY: String
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldImport, &
                                    AbstractNodeFieldExport
 USE AbstractField_Class, ONLY: SetAbstractFieldParamFromToml, &
-                               AbstractFieldReadFEDOFFromToml
+                               AbstractFieldReadFEDOFFromToml, &
+                               AbstractFieldReadTimeFEDOFFromToml
 
 USE FPL, ONLY: FPL_Init, FPL_Finalize
 IMPLICIT NONE
@@ -53,7 +54,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
-                             fedofs=fedofs)
+                    fedofs=fedofs, timefedof=timefedof, timefedofs=timefedofs)
 
 ! timeCompo
 dsetname = TRIM(group)//"/timeCompo"
@@ -129,7 +130,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 TYPE(ParameterList_) :: param
-INTEGER(I4B) :: comm, local_n, global_n
+LOGICAL(LGT) :: isok
+! INTEGER(I4B) :: comm, local_n, global_n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -139,10 +141,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL FPL_Init
 CALL param%Initiate()
 
-CALL SetAbstractFieldParamFromToml(param=param, table=table, &
-               prefix=myprefix, comm=comm, local_n=local_n, global_n=global_n)
+CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=myprefix)
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
-CALL obj%Initiate(param=param, fedof=fedof)
+
+! timefedof should be present
+isok = PRESENT(timefedof)
+CALL AssertError1(isok, myName, &
+                  "timefedof should be present in the argument list")
+CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
+                                        timeOpt=timeOpt)
+
+CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 
 CALL param%DEALLOCATE()
 CALL FPL_Finalize
@@ -157,5 +166,7 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods
