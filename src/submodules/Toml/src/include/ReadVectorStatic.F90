@@ -26,6 +26,8 @@ LOGICAL(LGT) :: isFound0, bool1, isok
 isFound0 = .FALSE.
 tsize = 0
 
+IF (PRESENT(isScalar)) isScalar = .FALSE.
+
 !----------------------------------------------------------------------------
 ! READ from TOML array
 ! try to read from the toml array
@@ -64,6 +66,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
   isFound0 = .TRUE.
   IF (PRESENT(isFound)) isFound = isFound0
   IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isScalar)) isScalar = .TRUE.
   RETURN
 END IF
 
