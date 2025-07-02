@@ -117,14 +117,10 @@ CONTAINS
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
-
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
-
   PROCEDURE, NOPASS :: WriteData_vtk2 => &
     obj_WriteData_vtk2
-
   GENERIC, PUBLIC :: WriteData => WriteData_vtk2
   !! Export data in VTKformat
 

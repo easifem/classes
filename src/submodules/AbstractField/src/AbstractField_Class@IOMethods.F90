@@ -16,10 +16,11 @@
 
 SUBMODULE(AbstractField_Class) IOMethods
 USE GlobalData, ONLY: stdout, CHAR_LF
-
 USE TomlUtility, ONLY: GetValue
-
 USE Display_Method, ONLY: Display, ToString
+USE FPL, ONLY: FPL_INIT, FPL_FINALIZE
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
 
@@ -370,9 +371,38 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'This routine should be implemented by child class')
+#endif
+
+TYPE(ParameterList_) :: param
+CHARACTER(:), ALLOCATABLE :: prefix
+! INTEGER(I4B) :: comm, local_n, global_n
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL FPL_Init
+CALL param%Initiate()
+
+prefix = obj%GetPrefix()
+CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
+CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
+CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
+                                        timeOpt=timeOpt)
+CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
+
+CALL param%DEALLOCATE()
+CALL FPL_Finalize
+
+prefix = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
