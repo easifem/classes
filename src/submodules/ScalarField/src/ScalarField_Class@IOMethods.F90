@@ -127,7 +127,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 TYPE(ParameterList_) :: param
-INTEGER(I4B) :: comm, local_n, global_n
+! INTEGER(I4B) :: comm, local_n, global_n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -137,8 +137,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL FPL_Init
 CALL param%Initiate()
 
-CALL SetAbstractFieldParamFromToml(param=param, table=table, &
-               prefix=myprefix, comm=comm, local_n=local_n, global_n=global_n)
+CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=myprefix)
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
 CALL obj%Initiate(param=param, fedof=fedof)
 
