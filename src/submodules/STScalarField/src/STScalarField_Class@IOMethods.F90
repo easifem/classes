@@ -21,11 +21,6 @@ USE Display_Method, ONLY: Display, ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldImport, &
                                    AbstractNodeFieldExport
-USE AbstractField_Class, ONLY: SetAbstractFieldParamFromToml, &
-                               AbstractFieldReadFEDOFFromToml, &
-                               AbstractFieldReadTimeFEDOFFromToml
-
-USE FPL, ONLY: FPL_Init, FPL_Finalize
 IMPLICIT NONE
 CONTAINS
 
@@ -119,49 +114,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Export
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: comm, local_n, global_n
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL FPL_Init
-CALL param%Initiate()
-
-CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=myprefix)
-CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
-
-! timefedof should be present
-isok = PRESENT(timefedof)
-CALL AssertError1(isok, myName, &
-                  "timefedof should be present in the argument list")
-CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
-                                        timeOpt=timeOpt)
-
-CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-
-CALL param%DEALLOCATE()
-CALL FPL_Finalize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !

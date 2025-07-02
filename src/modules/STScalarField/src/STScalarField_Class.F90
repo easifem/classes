@@ -103,9 +103,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content of STScalarField_
 
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  !! Import data from toml file
-
   ! SET:
   ! @SetMethods
 
@@ -451,43 +448,6 @@ INTERFACE STScalarFieldExport
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE STScalarFieldExport
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-13
-! summary:  Import data from toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, &
-                                        mesh, timeOpt)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! toml table
-    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
-    !! if fedof is not initiated then it will be initiated by
-    !! calling fedof%ImportFromToml(node) method.
-    !! where node is the table field called "space".
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
-    !! timefedof is needed for space-time fields
-    !! if  it is present then following operations are performed
-    !! - If timefedof is not initiated then it will be initiated by
-    !! calling timefedof%ImportFromToml(node) method, where node
-    !! is the table field called "time". In this case we need to
-    !! provide timeOpt. (Read more at TimeFEDOF_Class.F90)
-    !! - If timefedof is already initiated then it will be used. In
-    !! this case we do not need use timeOpt
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
-    !! Abstract mesh object
-    !! It is needed when fedof is not initiated.
-    !! When we call ImportFromToml method of fedof
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt_ is needed when timefedof is not initiated
-    !! Read more at TimeOpt_Class.F90
-  END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
