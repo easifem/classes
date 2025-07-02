@@ -58,7 +58,7 @@ MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
-LOGICAL(LGT) :: isSublist, isok
+LOGICAL(LGT) :: isSublist, isok, isSpace, isTime, acase
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -102,6 +102,46 @@ CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
              VALUE=input(option=global_n, default=0_I4B))
+
+isSpace = PRESENT(isSpaceCompo) .AND. PRESENT(spaceCompo)
+CALL FPL_Set(obj=sublist, datatype=isSpace, prefix=prefix, key="isSpaceCompo", &
+             VALUE=isSpace)
+
+isTime = PRESENT(isTimeCompo) .AND. PRESENT(timeCompo)
+CALL FPL_Set(obj=sublist, datatype=isTime, prefix=prefix, key="isTimeCompo", &
+             VALUE=isTime)
+
+! check isSpaceCompoScalar
+isok = isSpace .AND. PRESENT(isSpaceCompoScalar)
+acase = .FALSE.
+IF (isok) acase = isSpaceCompoScalar
+CALL FPL_Set(obj=sublist, datatype=acase, prefix=prefix, &
+             key="isSpaceCompoScalar", VALUE=acase)
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=spaceCompo(1), prefix=prefix, &
+               key="spaceCompo", VALUE=spaceCompo(1))
+END IF
+acase = (.NOT. acase) .AND. isSpace
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=spaceCompo, prefix=prefix, &
+               key="spaceCompo", VALUE=spaceCompo)
+END IF
+
+! check isTimeCompoScalar
+isok = isTime .AND. PRESENT(isTimeCompoScalar)
+acase = .FALSE.
+IF (isok) acase = isTimeCompoScalar
+CALL FPL_Set(obj=sublist, datatype=acase, prefix=prefix, &
+             key="isTimeCompoScalar", VALUE=acase)
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=timeCompo(1), prefix=prefix, &
+               key="timeCompo", VALUE=timeCompo(1))
+END IF
+acase = (.NOT. acase) .AND. isTime
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=timeCompo, prefix=prefix, &
+               key="timeCompo", VALUE=timeCompo)
+END IF
 
 sublist => NULL()
 
@@ -173,7 +213,8 @@ CALL AssertError1(isok, myName, &
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
 
 obj%fedof => fedof
-obj%timefedof => timefedof
+
+IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 sublist => NULL()
 

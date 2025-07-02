@@ -262,7 +262,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, &
-                                          fieldType, comm, local_n, global_n)
+                                         fieldType, comm, local_n, global_n, &
+                               spaceCompo, isSpaceCompo, isSpaceCompoScalar, &
+                                    timeCompo, isTimeCompo, isTimeCompoScalar)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -284,6 +286,20 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
+    INTEGER( I4B ), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo 
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar 
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER( I4B ), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo 
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar 
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
   END SUBROUTINE SetAbstractFieldParam
 END INTERFACE
 
@@ -918,7 +934,7 @@ END INTERFACE
 ! - if indx is given then it will check if the timefedofs is allocated
 ! - if timefedofs is allocated
 !   then it will return the pointer timefedof(indx)
-! - if timefedofs is not allocated 
+! - if timefedofs is not allocated
 !   then it will return the pointer to fedof
 ! - User should check if the pointer is associated or not.
 
@@ -949,7 +965,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END MODULE AbstractField_Class
