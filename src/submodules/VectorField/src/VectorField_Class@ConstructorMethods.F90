@@ -21,7 +21,6 @@ USE FPL_Method, ONLY: Set, GetValue
 USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldInitiate2, &
                                    AbstractNodeFieldDeallocate
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
                                SetAbstractFieldParam
@@ -167,7 +166,7 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: ii, tsize
 
-CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (VectorField_)

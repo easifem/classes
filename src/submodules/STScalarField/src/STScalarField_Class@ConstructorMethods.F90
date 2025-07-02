@@ -20,7 +20,6 @@ USE FPL_Method, ONLY: GetValue, Set
 USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldInitiate2, &
                                    AbstractNodeFieldDeallocate
 
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
@@ -151,10 +150,14 @@ tdof = tNodes(1) * obj%timeCompo
 names(1) (:) = astr%slice(1, 1)
 timeCompo(1) = obj%timeCompo
 
-CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=tPhysicalVars, &
-                  dof_storageFMT=mystorageformat, dof_spaceCompo=spaceCompo, &
-                               dof_timeCompo=timeCompo, dof_tNodes=tNodes, &
-                               dof_names_char=names, tSize=tdof)
+CALL AbstractNodeFieldSetParam(obj=obj, &
+                               dof_tPhysicalVars=tPhysicalVars, &
+                               dof_storageFMT=mystorageformat, &
+                               dof_spaceCompo=spaceCompo, &
+                               dof_timeCompo=timeCompo, &
+                               dof_tNodes=tNodes, &
+                               dof_names_char=names, &
+                               tSize=tdof)
 
 CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
                                timefedof=timefedof)
@@ -178,7 +181,7 @@ END PROCEDURE obj_Initiate1
 
 MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: tsize, ii
-CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 SELECT TYPE (obj2); CLASS IS (STScalarField_)
   obj%timeCompo = obj2%timeCompo

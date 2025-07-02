@@ -108,9 +108,10 @@ END TYPE STVectorFieldLisPointer_
 ! summary: This function returns an instance of [[STVectorFieldLis_]]
 
 INTERFACE STVectorFieldLis
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(STVectorFieldLis_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE STVectorFieldLis
@@ -124,9 +125,10 @@ END INTERFACE STVectorFieldLis
 ! summary:         This function returns an instance of [[STVectorFieldLis_]]
 
 INTERFACE STVectorFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     CLASS(STVectorFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STVectorFieldLis_Pointer

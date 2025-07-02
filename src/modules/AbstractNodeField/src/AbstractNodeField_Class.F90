@@ -36,7 +36,6 @@ PUBLIC :: AbstractNodeFieldPointer_
 PUBLIC :: AbstractNodeFieldImport
 PUBLIC :: AbstractNodeFieldExport
 PUBLIC :: AbstractNodeFieldGetPointer
-PUBLIC :: AbstractNodeFieldInitiate2
 PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
@@ -296,7 +295,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! Currently, copyStructure and usePointer is not used
 
-INTERFACE AbstractNodeFieldInitiate2
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -306,7 +305,7 @@ INTERFACE AbstractNodeFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE AbstractNodeFieldInitiate2
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods

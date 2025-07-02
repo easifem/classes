@@ -23,7 +23,6 @@ USE String_Class, ONLY: String
 
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldInitiate2, &
                                    AbstractNodeFieldDeallocate
 
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
