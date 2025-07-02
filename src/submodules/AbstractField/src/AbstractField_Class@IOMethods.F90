@@ -430,13 +430,15 @@ END PROCEDURE obj_ImportFromToml2
 
 MODULE PROCEDURE SetAbstractFieldParamFromToml
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParamFromToml()"
+CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
+CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
 
 CHARACTER(:), ALLOCATABLE :: key
 TYPE(String) :: name, engine, fieldTypeChar
 INTEGER(I4B) :: fieldType, origin, stat
-LOGICAL(LGT) :: isfound
-CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
-CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
+INTEGER(I4B), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
+LOGICAL(LGT) :: isfound, isSpaceCompo, isTimeCompo, isSpaceCompoScalar, &
+                isTimeCompoScalar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -456,7 +458,7 @@ CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
 
 key = "engine"
-!============
+!=============
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//" ...")
@@ -468,7 +470,7 @@ CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
 
 key = "fieldType"
-!============
+!================
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//" ...")
@@ -480,10 +482,37 @@ CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
 fieldType = TypeField%ToNumber(fieldTypeChar%chars())
 
+key = "spaceCompo"
+!================
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=spaceCompo, &
+              origin=origin, stat=stat, isFound=isSpaceCompo, &
+              isScalar=isSpaceCompoScalar)
+
+key = "timeCompo"
+!================
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//" ...")
+#endif
+CALL GetValue(table=table, key=key, VALUE=timeCompo, &
+    origin=origin, stat=stat, isFound=isTimeCompo, isScalar=isTimeCompoScalar)
+
 CALL SetAbstractFieldParam(param=param, name=name%chars(), &
-                           engine=engine%chars(), fieldType=fieldType, &
-                           prefix=prefix, comm=comm, local_n=local_n, &
-                           global_n=global_n)
+                           engine=engine%chars(), &
+                           fieldType=fieldType, &
+                           prefix=prefix, &
+                           comm=comm, local_n=local_n, global_n=global_n, &
+                           spaceCompo=spaceCompo, &
+                           isSpaceCompo=isSpaceCompo, &
+                           isSpaceCompoScalar=isSpaceCompoScalar, &
+                           timecompo=timecompo, &
+                           isTimeCompo=isTimeCompo, &
+                           isTimeCompoScalar=isTimeCompoScalar &
+                           )
 
 name = ""; engine = ""; fieldTypeChar = ""; key = ""
 
