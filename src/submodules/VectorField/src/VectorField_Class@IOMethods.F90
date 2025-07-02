@@ -17,11 +17,10 @@
 
 SUBMODULE(VectorField_Class) IOMethods
 USE String_Class, ONLY: String
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldImport, &
                                    AbstractNodeFieldExport
-
 IMPLICIT NONE
 
 CONTAINS
@@ -41,8 +40,7 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-TYPE(String) :: strval, dsetname, name, engine
-INTEGER(I4B) :: fieldType, spaceCompo
+TYPE(String) :: dsetname
 TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: bools(3), isok
 
@@ -57,10 +55,8 @@ CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
 isok = hdf5%pathExists(dsetname%chars())
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: The dataset spaceCompo should be present')
-END IF
+CALL AssertError1(isok, myName, &
+                  'The dataset spaceCompo should be present')
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
@@ -175,5 +171,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ExportToVTK
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

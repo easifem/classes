@@ -30,6 +30,9 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
+USE tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
@@ -82,9 +85,13 @@ CONTAINS
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of VectorField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data to HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export data to VTK file
 
   ! SET:
   ! @SetMethods
