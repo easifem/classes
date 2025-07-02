@@ -16,14 +16,11 @@
 !
 
 SUBMODULE(ScalarField_Class) IOMethods
-USE AbstractField_Class, ONLY: SetAbstractFieldParamFromToml, &
-                               AbstractFieldReadFEDOFFromToml
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE Display_Method, ONLY: ToString
 USE TomlUtility, ONLY: GetValue
 USE FPL, ONLY: FPL_INIT, FPL_FINALIZE
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE tomlf, ONLY: toml_get => get_value
 
 #ifdef DEBUG_VER
 USE tomlf, ONLY: toml_serialize
@@ -116,40 +113,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ExportToVTK
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-TYPE(ParameterList_) :: param
-! INTEGER(I4B) :: comm, local_n, global_n
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL FPL_Init
-CALL param%Initiate()
-
-CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=myprefix)
-CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
-CALL obj%Initiate(param=param, fedof=fedof)
-
-CALL param%DEALLOCATE()
-CALL FPL_Finalize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !
