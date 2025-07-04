@@ -264,7 +264,8 @@ INTERFACE
   MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, &
                                          fieldType, comm, local_n, global_n, &
                                spaceCompo, isSpaceCompo, isSpaceCompoScalar, &
-                                    timeCompo, isTimeCompo, isTimeCompoScalar)
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                      tPhysicalVarNames, physicalVarNames, isPhysicalVarNames)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -286,20 +287,30 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER( I4B ), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
     !! space components
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
-    !! if true we will try to access spaceCompo 
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar 
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER( I4B ), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
     !! Time components
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
-    !! if true we will try to access TimeCompo 
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar 
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames 
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
   END SUBROUTINE SetAbstractFieldParam
 END INTERFACE
 

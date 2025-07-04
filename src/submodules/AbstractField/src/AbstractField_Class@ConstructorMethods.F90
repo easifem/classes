@@ -56,7 +56,7 @@ END PROCEDURE AbstractFieldCheckEssentialParam
 
 MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, aint, ii
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
 LOGICAL(LGT) :: isSublist, isok, isSpace, isTime, acase
 
@@ -141,6 +141,24 @@ acase = (.NOT. acase) .AND. isTime
 IF (acase) THEN
   CALL FPL_Set(obj=sublist, datatype=timeCompo, prefix=prefix, &
                key="timeCompo", VALUE=timeCompo)
+END IF
+
+! physical variable names are handled here
+aint = Input(option=tPhysicalVarNames, default=0_I4B)
+CALL FPL_Set(obj=sublist, &
+             datatype=aint, &
+             prefix=prefix, &
+             key="tPhysicalVarNames", &
+             VALUE=aint)
+
+isok = PRESENT(physicalVarNames) .AND. PRESENT(isPhysicalVarNames)
+acase = .FALSE.; IF (isok) acase = isPhysicalVarNames
+
+IF (acase) THEN
+  DO ii = 1, aint
+    CALL FPL_Set(obj=sublist, datatype="char", prefix=prefix, &
+             key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
+  END DO
 END IF
 
 sublist => NULL()

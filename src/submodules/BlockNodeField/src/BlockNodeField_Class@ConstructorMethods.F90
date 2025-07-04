@@ -42,56 +42,54 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetBlockNodeFieldParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetBlockNodeFieldParam()"
-INTEGER(I4B) :: ierr, ii, intvec(3)
-LOGICAL(LGT) :: isnotok
-TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: intvec(3)
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ierr, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(physicalVarNames)
+
+#ifdef DEBUG_VER
 
 intvec(1) = SIZE(physicalVarNames)
 intvec(2) = SIZE(spaceCompo)
 intvec(3) = SIZE(timeCompo)
 
-isnotok = ANY(intvec .NE. SIZE(physicalVarNames))
+isok = ALL(intvec .EQ. tsize)
+CALL AssertError1(isok, myName, &
+          'size of physicalVarNames, spaceCompo, & timeCompo should be same.')
 
-IF (isnotok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: Size of physicalVarNames, spaceCompo, '// &
-                    'and timeCompo should be same.')
-  RETURN
-END IF
+#endif
 
-CALL SetAbstractFieldParam(param=param, prefix=myprefix, name=name, &
-             engine=engine, fieldType=fieldType, comm=comm, local_n=local_n, &
-                           global_n=global_n)
+CALL SetAbstractFieldParam(param=param, &
+                           prefix=myprefix, &
+                           name=name, &
+                           engine=engine, &
+                           fieldType=fieldType, &
+                           comm=comm, &
+                           local_n=local_n, &
+                           global_n=global_n, &
+                           spaceCompo=spaceCompo, &
+                           isSpaceCompo=.TRUE., &
+                           timeCompo=timeCompo, &
+                           isTimeCompo=.TRUE., &
+                           physicalVarNames=physicalVarNames, &
+                           tPhysicalVarNames=tsize, &
+                           isPhysicalVarNames=.TRUE.)
 
-sublist => NULL()
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in Getting sublist(1)')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in Getting sublist(2)')
-END IF
-
-CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, &
-         key="tPhysicalVarNames", VALUE=intvec(1))
-
-DO ii = 1, SIZE(physicalVarNames)
-  CALL Set(obj=sublist, datatype="char", prefix=myprefix, &
-           key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
-END DO
-
-CALL Set(obj=sublist, datatype=[1_I4B], prefix=myprefix, key="spaceCompo", &
-         VALUE=spaceCompo)
-
-CALL Set(obj=sublist, datatype=[1_I4B], prefix=myprefix, key="timeCompo", &
-         VALUE=timeCompo)
-
-sublist => NULL()
 END PROCEDURE SetBlockNodeFieldParam
 
 !----------------------------------------------------------------------------
@@ -101,38 +99,41 @@ END PROCEDURE SetBlockNodeFieldParam
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 INTEGER(I4B) :: ii, n
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 
-IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    myprefix//'/spaceCompo should be present in param')
-  RETURN
-END IF
-
-IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    myprefix//'/timeCompo should be present in param')
-  RETURN
-END IF
+isok = param%IsPresent(key=myprefix//"/spaceCompo")
+CALL AssertError1(isok, myName, &
+                  myprefix//'/spaceCompo should be present in param')
 
 n = 0
-IF (.NOT. param%IsPresent(key=myprefix//"/tPhysicalVarNames")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    myprefix//'/tPhysicalVarNames should be present in param')
-  RETURN
-ELSE
-  ii = param%Get(key=myprefix//'/tPhysicalVarNames', VALUE=n)
-END IF
+isok = param%IsPresent(key=myprefix//"/tPhysicalVarNames")
+CALL AssertError1(isok, myName, &
+                  myprefix//'/tPhysicalVarNames should be present in param')
+ii = param%Get(key=myprefix//'/tPhysicalVarNames', VALUE=n)
 
 DO ii = 1, n
-  IF (.NOT. param%IsPresent(key=myprefix//"/physicalVarName" &
-                            //ToString(ii))) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      myprefix//'/physicalVarName'//ToString(ii) &
-                      //' should be present in param')
-  END IF
+  isok = param%IsPresent(key=myprefix//"/physicalVarName" &
+                         //ToString(ii))
+  CALL AssertError1(isok, myName, &
+                    myprefix//'/physicalVarName'//ToString(ii) &
+                    //' should be present in param')
 END DO
+
+! we are not checking for timeCompo
+! because this information can also come from timefedof
+! we check it in initiate method
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_CheckEssentialParam
 
@@ -143,8 +144,10 @@ END PROCEDURE obj_CheckEssentialParam
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
 TYPE(ParameterList_), POINTER :: sublist
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -155,17 +158,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 sublist => NULL()
 
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
-
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(1)')
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(2)')
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="tPhysicalVarNames", &
               VALUE=tPhysicalVarNames)
@@ -175,12 +173,22 @@ DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => fedof
 END DO
 
-CALL obj%Initiate(param=param, fedof=fedofs)
+ALLOCATE (timefedofs(tPhysicalVarNames))
+isok = PRESENT(timefedof)
+IF (isok) THEN
+  DO ii = 1, tPhysicalVarNames
+    timefedofs(ii)%ptr => timefedof
+  END DO
+END IF
+
+CALL obj%Initiate(param=param, fedof=fedofs, timefedof=timefedofs)
 
 DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => NULL()
+  timefedofs(ii)%ptr => NULL()
 END DO
 DEALLOCATE (fedofs)
+DEALLOCATE (timefedofs)
 
 sublist => NULL()
 
@@ -332,7 +340,7 @@ END IF
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
