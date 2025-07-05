@@ -70,6 +70,9 @@ CALL Display(obj%isNodeToElementsInitiated, "isNodeToElementsInitiated: ", &
 CALL Display(obj%isNodeToNodesInitiated, "isNodeToNodesInitiated: ", &
              unitno=unitno)
 
+CALL Display(obj%isExtraNodeToNodesInitiated, "isExtraNodeToNodesInitiated: ", &
+             unitno=unitno)
+
 CALL Display(obj%isElementToElementsInitiated, &
              "isElementToElementsInitiated: ", unitno=unitno)
 
@@ -115,7 +118,10 @@ DO ii = 1, obj%tElemTopologies
                ElementName(obj%elemTopologies(ii)), unitno=unitno)
 END DO
 
+CALL Display(obj%maxNNE, "maxNNE: ", unitno=unitno)
+
 CALL Display(obj%nsd, "nsd: ", unitno=unitno)
+
 CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 
 CALL Display(obj%maxNptrs, "maxNptrs: ", unitno=unitno)
@@ -162,17 +168,36 @@ CALL Display(abool, "local_elemNumber ALLOCATED: ", unitno=unitno)
 abool = ALLOCATED(obj%local_nptrs)
 CALL Display(abool, "local_nptrs ALLOCATED: ", unitno=unitno)
 
+abool = ALLOCATED(obj%quality)
+CALL Display(abool, "quality ALLOCATED: ", unitno=unitno)
+IF (abool) THEN
+  CALL Display(SHAPE(obj%quality), "quality shape: ", unitno=unitno)
+END IF
+
 abool = ALLOCATED(obj%facetElementType)
 CALL Display(abool, "facetElementType ALLOCATED: ", unitno=unitno)
+IF (abool) THEN
+  CALL Display(SHAPE(obj%facetElementType), "facetElementType shape: ", &
+               unitno=unitno)
+END IF
 
 abool = ALLOCATED(obj%nodeData)
 CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
+IF (abool) THEN
+  CALL Display(SIZE(obj%nodeData), "nodeData Size: ", unitno=unitno)
+END IF
 
 abool = ALLOCATED(obj%elementData)
 CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
+IF (abool) THEN
+  CALL Display(SIZE(obj%elementData), "elementData Size: ", unitno=unitno)
+END IF
 
 abool = ALLOCATED(obj%facetData)
 CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
+IF (abool) THEN
+  CALL Display(SIZE(obj%facetData), "facetData Size: ", unitno=unitno)
+END IF
 
 abool = ASSOCIATED(obj%kdtree)
 CALL Display(abool, "kdtree Associated: ", unitno=unitno)
@@ -239,7 +264,11 @@ LOGICAL(LGT) :: abool
 CALL Display(msg, unitno=unitno)
 
 abool = ALLOCATED(obj%facetData)
-IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
+IF (abool) THEN
+  n = SIZE(obj%facetData)
+ELSE
+  n = 0
+END IF
 
 CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
@@ -317,7 +346,7 @@ END PROCEDURE obj_DisplayBoundaryFacetData
 MODULE PROCEDURE obj_DisplayFacetElements
 CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetElements()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+                  '[DEPRECATED] :: This routine is under development')
 END PROCEDURE obj_DisplayFacetElements
 
 !----------------------------------------------------------------------------

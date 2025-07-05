@@ -77,13 +77,13 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
 TYPE, ABSTRACT :: AbstractMesh_
   PRIVATE
+  LOGICAL(LGT) :: isInitiated = .FALSE.
+  !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: showTime = .FALSE.
   !! If true, then we show the time taken by various mesh operations
   !! This is for checking the performance of a subclass
   LOGICAL(LGT) :: readFromFile = .TRUE.
   !! True if the mesh is read from a file
-  LOGICAL(LGT) :: isInitiated = .FALSE.
-  !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: isNodeToElementsInitiated = .FALSE.
   !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
@@ -234,49 +234,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
   !! Deallocate the kdtree
 
-  ! IO:
-  ! @IOMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Read mesh from hdf5 file
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export mesh to an hdf5 file
-
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Export mesh to a VTKfile
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
-  !! Display the mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
-    obj_DisplayNodeData
-  !! Display node data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
-    obj_DisplayElementData
-  !! Display element data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
-    obj_DisplayFacetData
-  !! Display  facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
-    obj_DisplayInternalFacetData
-  !! Display internal facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
-    obj_DisplayBoundaryFacetData
-  !! Display mesh facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
-    obj_DisplayFacetElements
-  !! Display facet element shape data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
-    obj_DisplayMeshInfo
-  !! Display mesh statistics
-
   ! Set:
   ! @NodeDataMethods
 
@@ -305,26 +262,26 @@ CONTAINS
   ! Set:
   ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-    obj_InitiateBoundaryData
+     obj_InitiateBoundaryData
   !! Initiate the boundary data
 
   ! Set:
   ! @EdgeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity => &
-    obj_InitiateEdgeConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
+     obj_InitiateEdgeConnectivity
 
   ! Set:
   ! @FaceDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity => &
-    obj_InitiateFaceConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
+     obj_InitiateFaceConnectivity
 
   ! Set:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-    obj_InitiateFacetElements
+     obj_InitiateFacetElements
   !! Initiate boundary data
 
-  !  GET:
+  ! GET:
   ! @GetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
@@ -803,6 +760,49 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetParam => obj_SetFacetParam
   !! Set the parametersof facet element
 
+  ! IO:
+  ! @IOMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Read mesh from hdf5 file
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export mesh to an hdf5 file
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export mesh to a VTKfile
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
+  !! Display the mesh
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
+    obj_DisplayNodeData
+  !! Display node data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
+    obj_DisplayElementData
+  !! Display element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
+    obj_DisplayFacetData
+  !! Display  facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
+    obj_DisplayInternalFacetData
+  !! Display internal facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
+    obj_DisplayBoundaryFacetData
+  !! Display mesh facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
+    obj_DisplayFacetElements
+  !! Display facet element shape data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
+    obj_DisplayMeshInfo
+  !! Display mesh statistics
+
 END TYPE AbstractMesh_
 
 !----------------------------------------------------------------------------
@@ -912,34 +912,58 @@ END INTERFACE
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: This routine reads the mesh from a meshFile which is an hdf5
-! file
+!> author: Vikas Sharma, Ph. D.
+!> date: 2024-03-18
+!> summary: Imports mesh data from an HDF5 file
 !
-!# Introduction
+!# Description
 !
-! This routine reads the following
+! This method reads mesh data from an HDF5 file and initializes the AbstractMesh_ 
+! object. It serves as a wrapper around the `Initiate` method, providing the 
+! same functionality with a more intuitive name for importing mesh data.
 !
-! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX,
-! meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ,
-! meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,
-! meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber,
-! meshData%connectivity, meshData%boundingEntity
+! The method reads the following data:
+! - Mesh ID (uid)
+! - Spatial dimensions (xidim, nsd)
+! - Element types and topology
+! - Bounding box information (minX, minY, minZ, maxX, maxY, maxZ)
+! - Node coordinates (x, y, z)
+! - Element counts (tElements, tNodes)
+! - Connectivity information
+! - Boundary entities
 !
-! This routine Initiate the local_nptrs data in mesh.
-! This routine also Sets the number of nodes in the mesh (tNodes)
-! This routine allocate obj%nodeData
-! This routine Set localNodeNum and globalNode data inside the
-! nodeData
+! The routine also initializes:
+! - Local node numbering (local_nptrs)
+! - Node data arrays
+! - Global-to-local node mapping
 !
+!# Arguments
 !
-! If group is present then the mesh from that group is read
+! - `obj`: The AbstractMesh_ object to be initialized
+! - `hdf5`: HDF5File_ object containing mesh data
+! - `group` (optional): Location in the HDF5 file where mesh data is stored
+! - `dim` (optional): Dimension of the mesh to read
+! - `entities` (optional): Entity numbers to be included in the mesh
 !
-! If dim is present then all entities of that dimension is read
+!# Usage
 !
-! If (dim, entities) are present then we construct groups
-! based on dim and entities and make a mesh
+!```fortran
+! type(HDF5File_) :: h5file
+! type(Mesh_) :: mesh
+! 
+! call h5file%open("mesh.h5", "r")
+! call mesh%Import(h5file, group="/mesh")
+! call h5file%close()
+!```
+!
+!# Notes
+!
+! - If `group` is provided, mesh data from that group is read
+! - If `dim` is provided, all entities of that dimension are read
+! - If both `dim` and `entities` are provided, the method constructs groups
+!   based on the dimension and entities to create the mesh
+! - After reading the data, the mesh is marked as initiated (`isInitiated = .TRUE.`)
+! - This method is equivalent to calling the `Initiate` method
 
 INTERFACE AbstractMeshImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, dim, entities)
