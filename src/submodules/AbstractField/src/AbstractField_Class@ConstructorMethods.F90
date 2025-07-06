@@ -157,7 +157,7 @@ acase = .FALSE.; IF (isok) acase = isPhysicalVarNames
 IF (acase) THEN
   DO ii = 1, aint
     CALL FPL_Set(obj=sublist, datatype="char", prefix=prefix, &
-             key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
+              key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
   END DO
 END IF
 
@@ -392,6 +392,8 @@ IF (ALLOCATED(obj%fedofs)) THEN
   DEALLOCATE (obj%fedofs)
 
 END IF
+
+obj%exact => NULL()
 
 END PROCEDURE obj_Deallocate
 

@@ -43,8 +43,7 @@ INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 PUBLIC :: BlockNodeFieldPointer_
 PUBLIC :: BlockNodeField_
 PUBLIC :: SetBlockNodeFieldParam
-PUBLIC :: BlockNodeFieldInitiate1
-PUBLIC :: BlockNodeFieldInitiate3
+PUBLIC :: BlockNodeFieldInitiate
 PUBLIC :: BlockNodeFieldDeallocate
 PUBLIC :: BlockNodeFieldExport
 
@@ -66,11 +65,11 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethod
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     obj_checkEssentialParam
   !! Check essential parameter
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by using parameter list
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
@@ -305,14 +304,14 @@ END INTERFACE
 ! routine.
 !@endnote
 
-INTERFACE BlockNodeFieldInitiate1
+INTERFACE BlockNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE BlockNodeFieldInitiate1
+END INTERFACE BlockNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethods
@@ -334,14 +333,14 @@ END INTERFACE BlockNodeFieldInitiate1
 ! present in the block node field.
 ! - `dom` contains the pointer to [[Domain_]] class.
 
-INTERFACE BlockNodeFieldInitiate3
+INTERFACE BlockNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
-END INTERFACE BlockNodeFieldInitiate3
+END INTERFACE BlockNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethods
