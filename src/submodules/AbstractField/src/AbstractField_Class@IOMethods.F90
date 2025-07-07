@@ -23,6 +23,7 @@ USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
+USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
 CONTAINS
@@ -99,6 +100,11 @@ CALL Display(isok, "Userfunction exact is associated: ", unitNo=unitNo)
 IF (isok) THEN
   CALL obj%exact%Display(msg="exact: ", unitNo=unitNo)
 END IF
+
+CALL Display(obj%saveErrorNorm, "saveErrorNorm: ", unitNo=unitNo)
+CALL Display(obj%errorType, "errorType: ", unitNo=unitNo)
+CALL Display(obj%plotWithResult, "plotWithResult: ", unitNo=unitNo)
+CALL Display(obj%plotErrorNorm, "plotErrorNorm: ", unitNo=unitNo)
 
 END PROCEDURE obj_Display
 
@@ -403,6 +409,8 @@ CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
 
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 
+CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
+
 CALL param%DEALLOCATE()
 CALL FPL_Finalize
 
@@ -496,6 +504,8 @@ IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
 
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 
+CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
+
 CALL param%DEALLOCATE()
 CALL FPL_Finalize
 
@@ -588,6 +598,8 @@ IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
                                          timefedof=timefedof, timeOpt=timeOpt)
 
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
+
+CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
 CALL param%DEALLOCATE()
 CALL FPL_Finalize
@@ -775,7 +787,10 @@ END PROCEDURE SetAbstractFieldParamFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadFEDOFFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadFEDOFFromToml1()"
+#endif
+
 CHARACTER(*), PARAMETER :: default_fedofname = "fedof"
 CHARACTER(:), ALLOCATABLE :: key
 TYPE(String) :: fedofName
@@ -805,10 +820,12 @@ END IF
 ! If fedof is NOT initiated then we will call
 ! fedof%ImportFromToml. The following code is for that.
 
+#ifdef DEBUG_VER
 ! First lets check if mesh if given or not
 isok = PRESENT(mesh)
 CALL AssertError1(isok, myName, &
                   "Mesh is not given to initiate fedof")
+#endif
 
 ! Getting fedofName which is a subtable name in
 ! toml file that contains data for fedof
@@ -821,9 +838,11 @@ CALL GetValue(table=table, key=key, VALUE=fedofName, &
 CALL toml_get(table, fedofName%chars(), node, &
               origin=origin, requested=.FALSE., stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   fedofName//" node not found")
+#endif
 
 ! Now we can init fedof from toml
 CALL fedof%ImportFromToml(table=node, mesh=mesh)
@@ -1034,7 +1053,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractFieldReadFEDOFFromToml3
 
 !----------------------------------------------------------------------------
-!                                         AbstractFieldReadTimeFEDOFFromToml
+!                                         AbstractFieldReadTimeFEDOFFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
@@ -1129,6 +1148,68 @@ CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadTimeFEDOFFromToml2()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 END PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
+
+!----------------------------------------------------------------------------
+!                                      AbstractFieldReadUserFunctionFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadUserFunctionFromToml
+! internal variables
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadUserFunctionFromToml()"
+
+TYPE(toml_table), POINTER :: node => NULL()
+INTEGER(I4B) :: stat, origin
+TYPE(String) :: astr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%exact => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading exact...')
+#endif
+
+astr = "exact"
+CALL toml_get(table, astr%chars(), node, origin=origin, &
+              requested=.FALSE., stat=stat)
+isok = ASSOCIATED(node)
+IF (.NOT. isok) RETURN
+
+ALLOCATE (obj%exact)
+CALL obj%exact%ImportFromToml(table=node)
+
+! errorNorm
+CALL GetValue(table=node, key="errorNorm", VALUE=obj%saveErrorNorm, &
+              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+
+! normType
+CALL GetValue(table=node, key="normType", VALUE=astr, &
+              default_value="L2SP", stat=stat, &
+              origin=origin, isfound=isok)
+
+obj%errorType = UpperCase(astr%slice(1, 4))
+
+! plotWithResult
+CALL GetValue(table=node, key="plotWithResult", VALUE=obj%plotWithResult, &
+              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+
+! plotErrorNorm
+CALL GetValue(table=node, key="plotErrorNorm", VALUE=obj%plotErrorNorm, &
+              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+
+node => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadUserFunctionFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

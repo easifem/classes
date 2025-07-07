@@ -116,6 +116,13 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(UserFunction_), POINTER :: exact => NULL()
   !! reference function for displacement
   !! Reference displacement denotes the exact solution
+  LOGICAL(LGT) :: saveErrorNorm
+  !! save error norm
+  CHARACTER(4) :: errorType
+  !! errorType
+  LOGICAL(LGT) :: plotWithResult
+  !! do you want to plot exact solution with result
+  LOGICAL(LGT) :: plotErrorNorm
 
 CONTAINS
   PRIVATE
@@ -687,7 +694,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                    AbstractFieldReadFEDOFFromToml@IOMethods
+!                                      AbstractFieldReadUserFunctionFromToml
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Abstract field read user function from toml
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadUserFunctionFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadUserFunctionFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   AbstractFieldReadFEDOFFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
