@@ -149,13 +149,15 @@ TYPE :: OneDimBasisOpt_
   TYPE(OneDimQuadratureOpt_) :: quadOpt
   !! Quadrature options
 
+  TYPE(QuadraturePoint_) :: quad
+  !! quadrature points
+
 CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate OneDimBasisOpt object from parameters
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => &
-    obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by arguments
 
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
@@ -1021,11 +1023,11 @@ SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
     !! Quadrature points
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
     !! Type of quadrature points
-    !! GaussLegendre ! GaussLegendreLobatto
+    !! GaussLegendre, GaussLegendreLobatto
     !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight ! GaussChebyshev
-    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
+    !! GaussLegendreRadauRight, GaussChebyshev
+    !! GaussChebyshevLobatto, GaussChebyshevRadau, 
+    !! GaussChebyshevRadauLeft, GaussChebyshevRadauRight
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Order of integrand
     !! either the order or the nips should be present
