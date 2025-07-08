@@ -58,6 +58,8 @@ TYPE :: FEDOF_
   PRIVATE
   LOGICAL(LGT) :: isLagrange = .FALSE.
   !! It is true when baseInterpolation is Lagrange
+  LOGICAL(LGT) :: isinit = .FALSE.
+  !! It is set to true when FEDOF is initiated
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -140,6 +142,7 @@ TYPE :: FEDOF_
 
 CONTAINS
   PRIVATE
+
   !CONSTRUCTOR:
   !@ConstructorMethods
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
@@ -163,7 +166,6 @@ CONTAINS
   !! This method is used to set the faceOrder, edgeOrder from
   !! cellOrder. This method is called internally from
   !! Initiate methods. This put data in faceIA, edgeIA, cellIA
-
   PROCEDURE, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
@@ -172,6 +174,17 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns true of the fedof is initiated
+
+  !SET:
+  !@SetMethods
+  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  !! Set the cell order, this is a private method
+  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  !! Set the face order, this is a private method
+  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+  !! Set the edge order, this is a private method
 
   !SET:
   !@SetMethods
@@ -200,7 +213,7 @@ CONTAINS
   !@GetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
-  !! Get the case name of fedof
+  !! Get the case name of fedof, it returns baseContinuity+baseInterpolation
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
@@ -233,6 +246,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
+  !! Get total cell degrees of freedom
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
   !! Retuns the total number of vertex dof
@@ -241,7 +256,9 @@ CONTAINS
   !! Retuns the total degrees of freedom in FEDOF
   PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
   !! Retuns the total dof of an element
-  GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2
+  PROCEDURE, PASS(obj) :: GetTotalDOF3 => obj_GetTotalDOF3
+  !! Retuns the total dof of an element with opt filter
+  GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Generic mehthod for getting the total dof
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
@@ -595,6 +612,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              IsInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary:  Returns true if the FEDOF is initiated
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     GetCaseName@GetMethods
 !----------------------------------------------------------------------------
 
@@ -671,13 +703,23 @@ END INTERFACE
 !                                                   GetVertexDOF@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-07
+! summary:  Get vertex degree of freedom
+
 INTERFACE
   MODULE SUBROUTINE obj_GetVertexDOF(obj, globalNode, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
+    !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: globalNode
+    !! global node number
+    !! this number should be obtained from the connectivity methods
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! vertex degree of freedom
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalNode is local node number
   END SUBROUTINE obj_GetVertexDOF
 END INTERFACE
 
@@ -685,27 +727,23 @@ END INTERFACE
 !                                                      GetEdgeDOF@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-08
+! summary: Get the dof on a global edge number
+
 INTERFACE
   MODULE SUBROUTINE obj_GetEdgeDOF1(obj, globalEdge, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
+    !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: globalEdge
+    !! global edge number
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! edge degree of freedom
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! if true then globalEdge is local edge number
   END SUBROUTINE obj_GetEdgeDOF1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetTotalEdgeDOF@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalEdgeDOF1(obj, globalEdge, islocal) RESULT(ans)
-    CLASS(FEDOF_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalEdge
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalEdgeDOF1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -731,6 +769,19 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true then globalElement is local element
   END SUBROUTINE obj_GetEdgeDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEdgeDOF1(obj, globalEdge, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalEdge
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalEdgeDOF1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -762,10 +813,15 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFaceDOF1(obj, globalFace, ans, tsize, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
+    !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: globalFace
+    !! global face number
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! face degree of freedom
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of data written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    !! If true then globalFace is local face number
   END SUBROUTINE obj_GetFaceDOF1
 END INTERFACE
 
@@ -793,6 +849,41 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true then globalElement is local element
   END SUBROUTINE obj_GetFaceDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetCellDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-08
+! summary:  Get cell degree of freedom
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalCell
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+  END SUBROUTINE obj_GetCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetCellDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-08
+! summary: Get total cell degree of freedom
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, globalCell, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalCell
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -834,20 +925,6 @@ INTERFACE
     INTEGER(I4B) :: ans
     !! Total number of degree of freedom on face
   END FUNCTION obj_GetTotalFaceDOF2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      GetCellDOF@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetCellDOF(obj, globalCell, ans, tsize, islocal)
-    CLASS(FEDOF_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalCell
-    INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-  END SUBROUTINE obj_GetCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -895,6 +972,33 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalDOF2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-21
+! summary: Returns total number of dof in the FEDOF with opt filter
+
+INTERFACE
+MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    CHARACTER(*), INTENT(IN) :: opt
+    !! opt for Vertex, Edge, Face, Cell, and All
+    !! opt = Vertex
+    !! opt = Edge
+    !! opt = Face
+    !! opt = Cell
+    !! opt = All
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if islocal true then globalElement is local element number
+    INTEGER(I4B) :: ans
+    !! Total number of dof in the FEDOF with opt filter
+  END FUNCTION obj_GetTotalDOF3
 END INTERFACE
 
 !----------------------------------------------------------------------------

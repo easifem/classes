@@ -16,18 +16,14 @@
 !
 
 SUBMODULE(STVectorField_Class) ConstructorMethods
+USE Display_Method, ONLY: ToString
 USE FPL_Method, ONLY: Set, GetValue
-
 USE String_Class, ONLY: String
-
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldInitiate2, &
                                    AbstractNodeFieldDeallocate
-
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
                                SetAbstractFieldParam
-
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
@@ -41,33 +37,30 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTVectorFieldParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetSTVectorFieldParam()"
-INTEGER(I4B) :: ierr
-TYPE(ParameterList_), POINTER :: sublist
+#endif
 
+INTEGER(I4B) :: spaceCompo0(1), timeCompo0(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+spaceCompo0(1) = spaceCompo
+timeCompo0(1) = timeCompo
 CALL SetAbstractFieldParam(param=param, prefix=myprefix, name=name, &
              engine=engine, fieldType=fieldType, comm=comm, local_n=local_n, &
-                           global_n=global_n)
+                           global_n=global_n, spaceCompo=spaceCompo0, &
+                           isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., &
+                           timeCompo=timeCompo0, isTimeCompo=.TRUE., &
+                           isTimeCompoScalar=.TRUE.)
 
-sublist => NULL()
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-END IF
-
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-END IF
-
-CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, key="spaceCompo", &
-         VALUE=spaceCompo)
-
-CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, key="timeCompo", &
-         VALUE=timeCompo)
-
-sublist => NULL()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE SetSTVectorFieldParam
 
@@ -77,18 +70,28 @@ END PROCEDURE SetSTVectorFieldParam
 
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 
-IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: spaceCompo should be present in param.')
-END IF
+isok = param%IsPresent(key=myprefix//"/spaceCompo")
+CALL AssertError1(isok, myName, &
+                  'spaceCompo should be present in param.')
 
-IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  '[INTERNAL ERROR] :: timeCompo should be present in param.')
-END IF
+! We are not checking the timeCompo
+! We check it in initiate, because timeCompo can come from
+! timefedof in initiate method
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -97,10 +100,13 @@ END PROCEDURE obj_CheckEssentialParam
 
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+INTEGER(I4B), PARAMETER :: dof_tPhysicalVars = 1
 CHARACTER(1) :: names(1)
 TYPE(String) :: astr
-INTEGER(I4B) :: tdof, ierr, tNodes
+INTEGER(I4B) :: tdof, ierr, tNodes, dof_spaceCompo(1), dof_timeCompo(1), &
+                dof_tNodes(1)
 TYPE(ParameterList_), POINTER :: sublist
+LOGICAL(LGT) :: isok, istimefedof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -111,17 +117,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 sublist => NULL()
 
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(1)')
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(2)')
 
 CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
@@ -129,19 +131,38 @@ CALL obj%DEALLOCATE()
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
 CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", &
               VALUE=obj%spaceCompo)
-CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", &
-              VALUE=obj%timeCompo)
+
+istimefedof = PRESENT(timefedof)
+IF (istimefedof) THEN
+  obj%timeCompo = timefedof%GetTotalDOF()
+ELSE
+  isok = sublist%IsPresent(key=myprefix//"/timeCompo")
+  CALL AssertError1(isok, myName, &
+                    "timeCompo is not present in the parameter list &
+                    &define timeCompo in STVectorFieldSetParam method ")
+  CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", &
+                VALUE=obj%timeCompo)
+END IF
 
 tNodes = fedof%GetTotalDOF()
 tdof = tNodes * obj%spaceCompo * obj%timeCompo
 names(1) (:) = astr%slice(1, 1)
 
-CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
-            dof_storageFMT=mystorageformat, dof_spaceCompo=[obj%spaceCompo], &
-                         dof_timeCompo=[obj%timeCompo], dof_tNodes=[tNodes], &
-                               dof_names_char=names, tSize=tdof)
+dof_spaceCompo(1) = obj%spaceCompo
+dof_timeCompo(1) = obj%timeCompo
+dof_tNodes(1) = tNodes
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL AbstractNodeFieldSetParam(obj=obj, &
+                               dof_tPhysicalVars=dof_tPhysicalVars, &
+                               dof_storageFMT=mystorageformat, &
+                               dof_spaceCompo=dof_spaceCompo, &
+                               dof_timeCompo=dof_timeCompo, &
+                               dof_tNodes=dof_tNodes, &
+                               dof_names_char=names, &
+                               tSize=tdof)
+
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                               timefedof=timefedof)
 
 CALL Reallocate(obj%idofs, obj%spaceCompo * obj%timeCompo)
 obj%idofs = Arange(1_I4B, obj%spaceCompo * obj%timeCompo)
@@ -169,7 +190,7 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: ii, tsize
 
-CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (STVectorField_)
@@ -222,7 +243,7 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -231,7 +252,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -276,7 +297,9 @@ END IF
 END PROCEDURE obj_STVectorFieldSafeAllocate1
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

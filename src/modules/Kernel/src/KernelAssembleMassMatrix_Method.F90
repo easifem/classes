@@ -21,7 +21,7 @@ USE Field
 USE BaseMethod
 USE BaseType
 USE FieldFactory
-USE Domain_Class
+USE FEDomain_Class
 USE Mesh_Class
 USE FiniteElement_Class
 USE ExceptionHandler_Class, ONLY: e

@@ -18,7 +18,7 @@
 SUBMODULE(STScalarField_Class) GetMethods
 USE Display_Method, ONLY: ToString
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE RealVector_Method, ONLY: GetValue_
 

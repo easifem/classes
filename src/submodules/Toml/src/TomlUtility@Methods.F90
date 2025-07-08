@@ -157,6 +157,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isFound0 = .FALSE.
+IF (PRESENT(isScalar)) isScalar = .FALSE.
 
 !----------------------------------------------------------------------------
 ! READ from TOML array
@@ -171,6 +172,12 @@ CALL toml_get(table, key, array, origin=origin, stat=stat0, &
 isok = ASSOCIATED(array)
 
 IF (isok) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Found toml array for key: '//key)
+#endif
+
   tsize = toml_len(array)
   CALL StringReallocate(VALUE, tsize)
   isFound0 = .TRUE.
@@ -185,6 +192,11 @@ IF (isok) THEN
   IF (PRESENT(stat)) stat = stat0
   IF (PRESENT(isFound)) isFound = isFound0
   NULLIFY (array)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -196,12 +208,23 @@ END IF
 CALL toml_get(table, key, astr, origin=origin, stat=stat0)
 
 IF (stat0 .EQ. toml_stat%success) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Found scalar value for key: '//key)
+#endif
+
   CALL StringReallocate(VALUE, 1)
   VALUE(1) = astr
   astr = ""
   isFound0 = .TRUE.
   IF (PRESENT(isFound)) isFound = isFound0
   IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isScalar)) isScalar = .TRUE.
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -241,6 +264,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isFound0 = .FALSE.
 tsize = 0
+IF (PRESENT(isScalar)) isScalar = .FALSE.
 
 !----------------------------------------------------------------------------
 ! READ from TOML array
@@ -286,6 +310,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
   isFound0 = .TRUE.
   IF (PRESENT(isFound)) isFound = isFound0
   IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isScalar)) isScalar = .TRUE.
   RETURN
 END IF
 

@@ -57,8 +57,8 @@ USE MeshPointerVector_Class
 
 USE AbstractDomain_Class
 USE FEDomain_Class
-USE Domain_Class
-USE DomainUtility
+! USE Domain_Class
+! USE DomainUtility
 USE DomainConnectivity_Class
 USE FEDomainConnectivity_Class
 USE MeshSelection_Class

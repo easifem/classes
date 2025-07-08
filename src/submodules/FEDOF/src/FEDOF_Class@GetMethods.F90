@@ -158,8 +158,19 @@ END DO
 END PROCEDURE obj_GetCellDOF
 
 !----------------------------------------------------------------------------
+!                                                            GetTotalCellDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalCellDOF
+INTEGER(I4B) :: jj
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
+ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
+END PROCEDURE obj_GetTotalCellDOF
+
+!----------------------------------------------------------------------------
 !                                                     GetTotalVertexDOF
 !----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetTotalVertexDOF
 ans = obj%tNodes
 END PROCEDURE obj_GetTotalVertexDOF
@@ -177,8 +188,17 @@ END PROCEDURE obj_GetTotalDOF1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetTotalDOF2()'
+#endif
+
 TYPE(ElemData_), POINTER :: elemdata
 INTEGER(I4B) :: ii, jj, ent(4)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
                                         islocal=islocal)
@@ -200,7 +220,91 @@ END DO
 jj = ElemData_GetCell(elemdata, islocal=.TRUE.)
 ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
 
+elemdata => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetTotalDOF2
+
+!----------------------------------------------------------------------------
+!                                                                GetTotalDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDOF3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetTotalDOF3()'
+#endif
+
+TYPE(ElemData_), POINTER :: elemdata
+INTEGER(I4B) :: ii, jj, ent(4)
+CHARACTER(1) :: opt0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = 0
+
+opt0 = opt(1:1)
+
+elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
+                                        islocal=islocal)
+
+ent = ElemData_GetTotalEntities(elemdata)
+
+SELECT CASE (opt0)
+CASE ('v', 'V')
+  CALL onlyVertex
+CASE ('e', 'E')
+  CALL onlyEdge
+CASE ('f', 'F')
+  CALL onlyFace
+CASE ('c', 'C')
+  CALL onlyCell
+
+CASE DEFAULT
+  CALL onlyVertex
+  CALL onlyEdge
+  CALL onlyFace
+  CALL onlyCell
+END SELECT
+
+elemdata => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+CONTAINS
+SUBROUTINE onlyVertex
+  ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
+END SUBROUTINE onlyVertex
+
+SUBROUTINE onlyEdge
+  DO ii = 1, ent(2)
+    jj = ElemData_GetEdge(elemdata, ii)
+    ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
+  END DO
+END SUBROUTINE onlyEdge
+
+SUBROUTINE onlyFace
+  DO ii = 1, ent(3)
+    jj = ElemData_GetFace(elemdata, ii)
+    ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
+  END DO
+END SUBROUTINE onlyFace
+
+SUBROUTINE onlyCell
+  jj = ElemData_GetCell(elemdata, islocal=.TRUE.)
+  ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+END SUBROUTINE onlyCell
+
+END PROCEDURE obj_GetTotalDOF3
 
 !----------------------------------------------------------------------------
 !                                                         GetConnectivity
@@ -240,37 +344,34 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 #endif
 
 INTEGER(I4B) :: ent(4)
-INTEGER(I4B) :: ii, jj, kk, a, b
+INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ent = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
+localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                           islocal=islocal)
 
-CALL obj%mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
+ent = obj%mesh%GetTotalEntities(globalElement=localElement, islocal=yes)
+
+CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
                                opt=opt, tsize=jj, ans=temp)
 
 ! points
+tvertices = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
+                                         islocal=yes)
+
 a = 1; b = ent(1)
 jj = 1
-DO ii = a, b
+DO ii = a, tvertices
   CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
                         islocal=.FALSE.)
   jj = jj + kk
 END DO
-
-IF (obj%isLagrange) THEN
-  tsize = jj - 1
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
 
 ! edges
 a = b + 1; b = b + ent(2)
@@ -346,10 +447,19 @@ END PROCEDURE obj_GetCellOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrders
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetOrders()'
+#endif
+
 INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
                 faceCon(ReferenceElementInfo%maxEdges), &
                 edgeCon(ReferenceElementInfo%maxEdges), &
-                nodeCon(obj%maxTotalConnectivity)
+                nodeCon(PARAM_MAX_CONNECTIVITY_SIZE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
@@ -358,7 +468,9 @@ CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=.TRUE., &
               tCellCon=tCellOrder, tFaceCon=tFaceOrder, tEdgeCon=tEdgeOrder, &
                                tNodeCon=tNodeOrder)
 
-cellOrder(1) = obj%cellOrder(jj)
+DO ii = 1, tCellOrder
+  cellOrder(ii) = obj%cellOrder(jj)
+END DO
 
 DO jj = 1, tFaceOrder
   ii = faceCon(jj)
@@ -374,6 +486,11 @@ END DO
 CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
     edgeOrient=edgeOrient, tCellOrient=tCellOrient, tFaceOrient=tFaceOrient, &
          tEdgeOrient=tEdgeOrient, globalElement=globalElement, islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_GetOrders
 
@@ -485,7 +602,7 @@ SELECT CASE (casename)
 CASE ('H1LAGR')
   CALL obj%GetLocalElemShapeDataH1Lagrange(globalElement=globalElement, &
                                     elemsd=elemsd, quad=quad, islocal=islocal)
-CASE ('H1HIER')
+CASE ('H1HIER', 'H1HEIR')
   CALL obj%GetLocalElemShapeDataH1Hierarchical(globalElement=globalElement, &
                                     elemsd=elemsd, quad=quad, islocal=islocal)
 CASE DEFAULT
@@ -545,7 +662,7 @@ MODULE PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
 CHARACTER(*), PARAMETER :: myName='obj_GetLocalElemShapeDataH1Hierarchical()'
 #endif
 
-INTEGER(I4B) :: ii, cellOrder(1), &
+INTEGER(I4B) :: ii, cellOrder(3), &
                 faceOrder(3, ReferenceElementInfo%maxEdges), &
                 edgeOrder(ReferenceElementInfo%maxEdges), &
                 faceOrient(3, ReferenceElementInfo%maxEdges), &
@@ -562,10 +679,14 @@ ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
 CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
               cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
         cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
-                 tcellorder=indx(1), tfaceorder=indx(2), tedgeorder=indx(3), &
-                   tcellorient=indx(4), tfaceorient=indx(5:6), &
-                   tedgeorient=indx(7))
+                 tcellOrder=indx(1), tfaceOrder=indx(2), tedgeOrder=indx(3), &
+                   tcellOrient=indx(4), tfaceOrient=indx(5:6), &
+                   tedgeOrient=indx(7))
 
+! The above modification is necessary for quad and hexa elements
+! Here we are setting uniform cell order in all directions
+! for such elements
+IF (indx(1) .EQ. 1) cellOrder(2:3) = cellOrder(1)
 CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
             faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
               faceOrient=faceOrient, edgeOrient=edgeOrient, errCheck=.TRUE., &

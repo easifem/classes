@@ -19,7 +19,7 @@ SUBMODULE(ScalarField_Class) SetMethods
 USE GlobalData, ONLY: Constant, Space, Scalar
 USE InputUtility, ONLY: Input
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 

@@ -22,7 +22,7 @@ USE SafeSizeUtility, ONLY: SafeSize
 
 USE Display_Method, ONLY: ToString
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class , ONLY: TypeField => TypeFieldOpt
 
 USE ScalarField_Class, ONLY: ScalarField_
 

@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(VectorFieldLis_Class) ConstructorMethods
-USE VectorField_Class, ONLY: VectorFieldInitiate1, &
+USE VectorField_Class, ONLY: VectorFieldInitiate, &
                              VectorFieldDeallocate
 
 IMPLICIT NONE
@@ -39,7 +39,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ END PROCEDURE obj_Constructor_1
 MODULE PROCEDURE obj_Initiate1
 INTEGER(I4B) :: ierr
 
-CALL VectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL VectorFieldInitiate(obj=obj, param=param, fedof=fedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

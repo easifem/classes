@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(STVectorFieldLis_Class) ConstructorMethods
-USE STVectorField_Class, ONLY: STVectorFieldInitiate1, &
+USE STVectorField_Class, ONLY: STVectorFieldInitiate, &
                                STVectorFieldDeallocate
 
 IMPLICIT NONE
@@ -30,7 +30,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ END PROCEDURE obj_Constructor1
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
+CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -50,7 +50,8 @@ MODULE PROCEDURE obj_Initiate1
 ! CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr
 
-CALL STVectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL STVectorFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                            timefedof=timefedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

@@ -20,8 +20,6 @@ USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
 
 USE Display_Method, ONLY: Display
 
-USE AbstractField_Class, ONLY: FIELD_TYPE_NAME
-
 USE SafeSizeUtility, ONLY: SafeSize
 
 IMPLICIT NONE
@@ -42,7 +40,8 @@ IF (.NOT. obj%isInit) RETURN
 CALL Display('name: '//obj%name%chars(), unitno=unitno)
 CALL Display('prefix: '//obj%GetPrefix(), unitno=unitno)
 
-CALL Display('fieldType: '//FIELD_TYPE_NAME(obj%fieldType), unitno=unitno)
+CALL Display('fieldType: '//TypeField%ToString(obj%fieldType), &
+             unitno=unitno)
 
 CALL Display('engine: '//obj%engine%chars(), unitno=unitno)
 
@@ -126,7 +125,7 @@ IF (.NOT. hdf5%isWrite()) THEN
 END IF
 
 dsetname = TRIM(group)//"/fieldType"
-strval = FIELD_TYPE_NAME(obj%fieldType)
+strval = TypeField%ToString(obj%fieldType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 dsetname = TRIM(group)//"/name"

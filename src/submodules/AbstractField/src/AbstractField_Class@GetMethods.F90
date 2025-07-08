@@ -15,6 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) GetMethods
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -210,5 +212,185 @@ ans = ""
 CALL e%RaiseError(modName//'::'//myName//' - '// &
 '[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                           GetFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEDOFPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: indxPresent, fedofsAllocated
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+indxPresent = PRESENT(indx)
+fedofsAllocated = ALLOCATED(obj%fedofs)
+
+IF (indxPresent .AND. fedofsAllocated) THEN
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%fedofs)
+  isok = indx .LE. tsize
+
+  CALL AssertError1(isok, myName, &
+                    "indx should be less than or equal to size of fedofs")
+#endif
+
+  ans => obj%fedofs(indx)%ptr
+
+ELSE
+
+  ans => obj%fedof
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer1
+
+!----------------------------------------------------------------------------
+!                                                          GetFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEDOFPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%fedofs)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+ELSE
+  tsize = 0
+END IF
+
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%fedofs(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                                        GetTimeFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeFEDOFPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeFEDOFPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: indxPresent, fedofsAllocated
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+indxPresent = PRESENT(indx)
+fedofsAllocated = ALLOCATED(obj%timefedofs)
+
+IF (indxPresent .AND. fedofsAllocated) THEN
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%timefedofs)
+  isok = indx .LE. tsize
+
+  CALL AssertError1(isok, myName, &
+                    "indx should be less than or equal to size of timefedofs")
+#endif
+
+  ans => obj%timefedofs(indx)%ptr
+
+ELSE
+
+  ans => obj%timefedof
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTimeFEDOFPointer1
+
+!----------------------------------------------------------------------------
+!                                                        GetTimeFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeFEDOFPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeFEDOFPointer2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%timefedofs)
+
+IF (isok) THEN
+  tsize = SIZE(obj%timefedofs)
+ELSE
+  tsize = 0
+END IF
+
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%timefedofs(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTimeFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                                             Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

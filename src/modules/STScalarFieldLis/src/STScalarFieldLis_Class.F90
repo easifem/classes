@@ -27,11 +27,9 @@ USE STScalarField_Class, ONLY: STScalarField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
-
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-
 USE BaseType, ONLY: FEVariable_
 
 IMPLICIT NONE
@@ -117,9 +115,10 @@ END TYPE STScalarFieldLisPointer_
 ! summary:  function returns an instance of [[STScalarFieldLis_]]
 
 INTERFACE STScalarFieldLis
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(STScalarFieldLis_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE STScalarFieldLis
@@ -133,9 +132,10 @@ END INTERFACE STScalarFieldLis
 ! summary: This function returns an instance of [[STScalarFieldLis_]]
 
 INTERFACE STScalarFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     CLASS(STScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarFieldLis_Pointer
@@ -168,10 +168,11 @@ END INTERFACE
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -215,12 +216,15 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

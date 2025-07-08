@@ -16,18 +16,14 @@
 !
 
 SUBMODULE(VectorField_Class) ConstructorMethods
+USE Display_Method, ONLY: ToString
 USE FPL_Method, ONLY: Set, GetValue
-
 USE String_Class, ONLY: String
-
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldInitiate2, &
                                    AbstractNodeFieldDeallocate
-
 USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
                                SetAbstractFieldParam
-
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
@@ -42,7 +38,13 @@ CONTAINS
 MODULE PROCEDURE SetVectorFieldParam
 CHARACTER(*), PARAMETER :: myName = "SetVectorFieldParam()"
 INTEGER(I4B) :: ierr
+LOGICAL(LGT) :: isok
 TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL SetAbstractFieldParam(param=param, prefix=myprefix, &
                            name=name, engine=engine, fieldType=fieldType, &
@@ -50,22 +52,23 @@ CALL SetAbstractFieldParam(param=param, prefix=myprefix, &
 
 sublist => NULL()
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(1)')
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(2)')
 
 CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, &
          key="spaceCompo", VALUE=spaceCompo)
 
 sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE SetVectorFieldParam
 
@@ -75,13 +78,24 @@ END PROCEDURE SetVectorFieldParam
 
 MODULE PROCEDURE obj_checkEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 
-IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: spaceCompo should be present in param.')
-END IF
+isok = param%IsPresent(key=myprefix//"/spaceCompo")
+CALL AssertError1(isok, myName, &
+                  'spaceCompo should be present in param.')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -94,6 +108,7 @@ CHARACTER(1) :: names(1)
 TYPE(String) :: astr
 INTEGER(I4B) :: tdof, ierr, tNodes(1)
 TYPE(ParameterList_), POINTER :: sublist
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -104,17 +119,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 sublist => NULL()
 
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
+isok = ierr .EQ. 0
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(1)')
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'some error occured in getting sublist(2)')
 
 CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
@@ -132,7 +143,8 @@ CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
                                dof_timeCompo=[1_I4B], dof_tNodes=tNodes, &
                                dof_names_char=names, tSize=tdof)
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                               timefedof=timefedof)
 
 CALL Reallocate(obj%idofs, obj%spaceCompo)
 obj%idofs = Arange(1_I4B, obj%spaceCompo)
@@ -154,7 +166,7 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: ii, tsize
 
-CALL AbstractNodeFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (VectorField_)
@@ -245,7 +257,9 @@ END IF
 END PROCEDURE obj_VectorFieldSafeAllocate1
 
 !----------------------------------------------------------------------------
-!
+!                                                             include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

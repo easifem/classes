@@ -39,7 +39,6 @@ astr = "/name/engine/fieldType/comm/local_n/global_n"
 CALL astr%Split(essentialParam, sep="/")
 CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=prefix, &
                          myName=myName, modName=modName)
-! INFO: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
 astr = ""
 isok = ALLOCATED(essentialParam)
@@ -57,9 +56,9 @@ END PROCEDURE AbstractFieldCheckEssentialParam
 
 MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, aint, ii
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
-LOGICAL(LGT) :: isSublist
+LOGICAL(LGT) :: isSublist, isok, isSpace, isTime, acase
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -69,28 +68,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 sublist => NULL()
 
 ! Create a new sublist
-isSublist = param%isSubList(prefix)
+isSublist = param%IsSubList(prefix)
 
 IF (isSublist) THEN
-
   ierr = param%GetSubList(key=prefix, sublist=sublist)
-  IF (ierr .NE. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-    RETURN
-  END IF
+  isok = ierr .EQ. 0_I4B
+  CALL AssertError1(isok, myName, &
+                    'Error occured in getting sublist(1)')
+END IF
 
-ELSE
-
+IF (.NOT. isSublist) THEN
   sublist => param%NewSubList(key=prefix)
-
 END IF
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(2)')
 
 CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
              VALUE=name)
@@ -99,7 +92,7 @@ CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", &
              VALUE=engine)
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
-             VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
+             VALUE=input(option=fieldType, default=TypeField%normal))
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
              VALUE=input(option=comm, default=0_I4B))
@@ -109,6 +102,64 @@ CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
 
 CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
              VALUE=input(option=global_n, default=0_I4B))
+
+isSpace = PRESENT(isSpaceCompo) .AND. PRESENT(spaceCompo)
+CALL FPL_Set(obj=sublist, datatype=isSpace, prefix=prefix, key="isSpaceCompo", &
+             VALUE=isSpace)
+
+isTime = PRESENT(isTimeCompo) .AND. PRESENT(timeCompo)
+CALL FPL_Set(obj=sublist, datatype=isTime, prefix=prefix, key="isTimeCompo", &
+             VALUE=isTime)
+
+! check isSpaceCompoScalar
+isok = isSpace .AND. PRESENT(isSpaceCompoScalar)
+acase = .FALSE.
+IF (isok) acase = isSpaceCompoScalar
+CALL FPL_Set(obj=sublist, datatype=acase, prefix=prefix, &
+             key="isSpaceCompoScalar", VALUE=acase)
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=spaceCompo(1), prefix=prefix, &
+               key="spaceCompo", VALUE=spaceCompo(1))
+END IF
+acase = (.NOT. acase) .AND. isSpace
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=spaceCompo, prefix=prefix, &
+               key="spaceCompo", VALUE=spaceCompo)
+END IF
+
+! check isTimeCompoScalar
+isok = isTime .AND. PRESENT(isTimeCompoScalar)
+acase = .FALSE.
+IF (isok) acase = isTimeCompoScalar
+CALL FPL_Set(obj=sublist, datatype=acase, prefix=prefix, &
+             key="isTimeCompoScalar", VALUE=acase)
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=timeCompo(1), prefix=prefix, &
+               key="timeCompo", VALUE=timeCompo(1))
+END IF
+acase = (.NOT. acase) .AND. isTime
+IF (acase) THEN
+  CALL FPL_Set(obj=sublist, datatype=timeCompo, prefix=prefix, &
+               key="timeCompo", VALUE=timeCompo)
+END IF
+
+! physical variable names are handled here
+aint = Input(option=tPhysicalVarNames, default=0_I4B)
+CALL FPL_Set(obj=sublist, &
+             datatype=aint, &
+             prefix=prefix, &
+             key="tPhysicalVarNames", &
+             VALUE=aint)
+
+isok = PRESENT(physicalVarNames) .AND. PRESENT(isPhysicalVarNames)
+acase = .FALSE.; IF (isok) acase = isPhysicalVarNames
+
+IF (acase) THEN
+  DO ii = 1, aint
+    CALL FPL_Set(obj=sublist, datatype="char", prefix=prefix, &
+              key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
+  END DO
+END IF
 
 sublist => NULL()
 
@@ -150,6 +201,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 CHARACTER(:), ALLOCATABLE :: prefix
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -161,11 +213,9 @@ prefix = obj%GetPrefix()
 ! main
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(1)')
 
 ! NOTE: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
@@ -174,14 +224,15 @@ END IF
 ! here.
 ! CALL obj%DEALLOCATE()
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+isok = ASSOCIATED(sublist)
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(2)')
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+
 obj%fedof => fedof
+
+IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 sublist => NULL()
 
@@ -318,7 +369,7 @@ INTEGER(I4B) :: ii
 obj%name = ""
 obj%engine = ""
 obj%isInitiated = .FALSE.
-obj%fieldType = FIELD_TYPE_NORMAL
+obj%fieldType = TypeField%normal
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1
@@ -342,41 +393,14 @@ IF (ALLOCATED(obj%fedofs)) THEN
 
 END IF
 
+obj%exact => NULL()
+
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE FIELD_TYPE_NUMBER
-SELECT CASE (TRIM(name))
-CASE ("NORMAL")
-  ans = FIELD_TYPE_NORMAL
-CASE ("CONSTANT")
-  ans = FIELD_TYPE_CONSTANT
-CASE ("CONSTANT_SPACE")
-  ans = FIELD_TYPE_CONSTANT_SPACE
-CASE ("CONSTANT_TIME")
-  ans = FIELD_TYPE_CONSTANT_TIME
-END SELECT
-END PROCEDURE FIELD_TYPE_NUMBER
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE FIELD_TYPE_NAME
-!
-SELECT CASE (id)
-CASE (FIELD_TYPE_NORMAL)
-  ans = "NORMAL"
-CASE (FIELD_TYPE_CONSTANT)
-  ans = "CONSTANT"
-CASE (FIELD_TYPE_CONSTANT_SPACE)
-  ans = "CONSTANT_SPACE"
-CASE (FIELD_TYPE_CONSTANT_TIME)
-  ans = "CONSTANT_TIME"
-END SELECT
-END PROCEDURE FIELD_TYPE_NAME
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

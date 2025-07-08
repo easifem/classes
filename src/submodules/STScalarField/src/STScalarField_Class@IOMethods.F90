@@ -17,7 +17,7 @@
 
 SUBMODULE(STScalarField_Class) IOMethods
 USE String_Class, ONLY: String
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
                                    AbstractNodeFieldImport, &
                                    AbstractNodeFieldExport
@@ -49,7 +49,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
-                             fedofs=fedofs)
+                    fedofs=fedofs, timefedof=timefedof, timefedofs=timefedofs)
 
 ! timeCompo
 dsetname = TRIM(group)//"/timeCompo"
@@ -118,5 +118,7 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

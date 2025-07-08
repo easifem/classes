@@ -129,6 +129,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
+# AbstractOneDimFE
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
+
 # ScalarFE
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
 
@@ -185,6 +188,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
+
+# TimeFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/TimeFEDOF/CMakeLists.txt)
+
+# OneDimFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEDOF/CMakeLists.txt)
 
 # FEDOF
 include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeFieldLis_Class) ConstructorMethods
-USE BlockNodeField_Class, ONLY: BlockNodeFieldInitiate3, &
+USE BlockNodeField_Class, ONLY: BlockNodeFieldInitiate, &
                                 BlockNodeFieldDeallocate
 
 IMPLICIT NONE
@@ -35,7 +35,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 
 INTEGER(I4B) :: ierr
 
-CALL BlockNodeFieldInitiate3(obj=obj, param=param, fedof=fedof)
+CALL BlockNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                             timefedof=timefedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

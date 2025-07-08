@@ -31,6 +31,10 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_
+USE tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -43,8 +47,7 @@ PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
 PUBLIC :: SetSTScalarFieldParam
 PUBLIC :: STScalarFieldCheckEssentialParam
-PUBLIC :: STScalarFieldInitiate1
-PUBLIC :: STScalarFieldInitiate2
+PUBLIC :: STScalarFieldInitiate
 PUBLIC :: STScalarFieldDeallocate
 PUBLIC :: STScalarField
 PUBLIC :: STScalarField_Pointer
@@ -274,13 +277,14 @@ END INTERFACE STScalarFieldCheckEssentialParam
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE STScalarFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+INTERFACE STScalarFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE STScalarFieldInitiate1
+END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -290,7 +294,7 @@ END INTERFACE STScalarFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE STScalarFieldInitiate2
+INTERFACE STScalarFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
@@ -300,7 +304,7 @@ INTERFACE STScalarFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE STScalarFieldInitiate2
+END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Deallocate@ConstructorMethods
@@ -367,9 +371,10 @@ END INTERFACE
 ! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE STScalarField
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(STScalarField_) :: ans
   END FUNCTION obj_Constructor1
 END INTERFACE STScalarField
@@ -383,9 +388,10 @@ END INTERFACE STScalarField
 ! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE STScalarField_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, fedof, timefedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     CLASS(STScalarField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarField_Pointer
@@ -415,12 +421,15 @@ END INTERFACE STScalarFieldDisplay
 ! summary: This routine Imports the content
 
 INTERFACE STScalarFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE STScalarFieldImport
 

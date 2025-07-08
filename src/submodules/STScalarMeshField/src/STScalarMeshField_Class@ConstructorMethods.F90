@@ -18,7 +18,7 @@ SUBMODULE(STScalarMeshField_Class) ConstructorMethods
 
 USE GlobalData, ONLY: Constant, Time, Scalar, Nodal
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
 
@@ -84,8 +84,8 @@ IF (argType .EQ. Constant) THEN
 END IF
 
 isok = PRESENT(nnt)
-CALL AssertError1(isok, myName, &
-   'NNT should be present when varType in userFunction is Time or SpaceTime.')
+CALL AssertError1(isok, myName,&
+  'NNT should be present when varType in userFunction is Time or SpaceTime.')
 
 CALL param%Initiate()
 
@@ -95,7 +95,6 @@ CALL SetSTScalarMeshFieldParam(param=param, name=name, &
 
 CALL obj%Initiate(param=param, mesh=mesh)
 
-CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -18,7 +18,7 @@ SUBMODULE(STVectorMeshField_Class) ConstructorMethods
 
 USE GlobalData, ONLY: Constant, SpaceTime, Vector, Nodal
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
 

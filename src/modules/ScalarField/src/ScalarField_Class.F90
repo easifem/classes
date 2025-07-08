@@ -30,6 +30,10 @@ USE VTKFile_Class, ONLY: VTKFile_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE Tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -41,7 +45,7 @@ PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: SetScalarFieldParam
 PUBLIC :: ScalarFieldCheckEssentialParam
-PUBLIC :: ScalarFieldInitiate1
+PUBLIC :: ScalarFieldInitiate
 PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
@@ -161,6 +165,7 @@ CONTAINS
   ! @IOMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from HDF5 file
 
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
@@ -234,13 +239,14 @@ END INTERFACE ScalarFieldCheckEssentialParam
 ! scalar field. There are essential and optional information.
 ! Essential information are described below.
 
-INTERFACE ScalarFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+INTERFACE ScalarFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE ScalarFieldInitiate1
+END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -335,12 +341,15 @@ END INTERFACE ScalarField_Pointer
 ! summary: This routine Imports the content
 
 INTERFACE ScalarFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+      timefedofs)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
 

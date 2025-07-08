@@ -30,6 +30,10 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
+USE tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 
@@ -43,8 +47,7 @@ INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 PUBLIC :: VectorField_
 PUBLIC :: VectorFieldPointer_
 PUBLIC :: SetVectorFieldParam
-PUBLIC :: VectorFieldInitiate1
-PUBLIC :: VectorFieldInitiate2
+PUBLIC :: VectorFieldInitiate
 PUBLIC :: VectorFieldDeallocate
 PUBLIC :: VectorField
 PUBLIC :: VectorField_Pointer
@@ -81,9 +84,13 @@ CONTAINS
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of VectorField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data to HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export data to VTK file
 
   ! SET:
   ! @SetMethods
@@ -266,13 +273,14 @@ END INTERFACE VectorFieldCheckEssentialParam
 ! - `spaceCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE VectorFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+INTERFACE VectorFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE VectorFieldInitiate1
+END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -282,7 +290,7 @@ END INTERFACE VectorFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE VectorFieldInitiate2
+INTERFACE VectorFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
@@ -292,7 +300,7 @@ INTERFACE VectorFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE VectorFieldInitiate2
+END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                 Deallocate@Constructor
@@ -407,12 +415,15 @@ END INTERFACE VectorFieldDisplay
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

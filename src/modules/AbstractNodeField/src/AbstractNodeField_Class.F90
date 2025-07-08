@@ -24,6 +24,8 @@ USE AbstractBC_Class, ONLY: AbstractBC_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -34,7 +36,6 @@ PUBLIC :: AbstractNodeFieldPointer_
 PUBLIC :: AbstractNodeFieldImport
 PUBLIC :: AbstractNodeFieldExport
 PUBLIC :: AbstractNodeFieldGetPointer
-PUBLIC :: AbstractNodeFieldInitiate2
 PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
@@ -115,14 +116,10 @@ CONTAINS
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
-
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
-
   PROCEDURE, NOPASS :: WriteData_vtk2 => &
     obj_WriteData_vtk2
-
   GENERIC, PUBLIC :: WriteData => WriteData_vtk2
   !! Export data in VTKformat
 
@@ -269,10 +266,11 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given fdof
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -297,7 +295,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! Currently, copyStructure and usePointer is not used
 
-INTERFACE AbstractNodeFieldInitiate2
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -307,7 +305,7 @@ INTERFACE AbstractNodeFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE AbstractNodeFieldInitiate2
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -318,10 +316,13 @@ END INTERFACE AbstractNodeFieldInitiate2
 ! summary: Initiates AbstractNodeField_ from parameters and fedof
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    !! vectpr fedof pointers
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    !! Vector of TimeFEDOFPointers
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -364,12 +365,15 @@ END INTERFACE AbstractNodeFieldDisplay
 ! summary:  Import data into HDF5File_
 
 INTERFACE AbstractNodeFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE AbstractNodeFieldImport
 

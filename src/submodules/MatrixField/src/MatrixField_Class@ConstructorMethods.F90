@@ -34,8 +34,7 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE, &
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
 
 USE AbstractField_Class, ONLY: SetAbstractFieldParam, &
-                               AbstractFieldInitiate, &
-                               AbstractFieldInitiate2
+                               AbstractFieldInitiate
 
 USE BaseType, ONLY: DOF_
 
@@ -438,6 +437,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 SELECT TYPE (obj2)
 CLASS IS (MatrixField_)
 
@@ -447,7 +451,7 @@ CLASS IS (MatrixField_)
 
   CALL AssertError1(isok, myName, "obj2 is not initiated")
 
-  CALL AbstractFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+  CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
   obj%mat = obj2%mat
@@ -475,6 +479,12 @@ CLASS DEFAULT
    '[INTERNAL ERROR] :: obj2 should an instance of MatrixField_ or its child')
   RETURN
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -482,7 +492,16 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixFieldPreconditionCopy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldPreconditionCopy()"
+#endif
+
 INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isInitiated = obj2%isInitiated
 obj%PmatName = obj2%PmatName
@@ -530,6 +549,11 @@ CALL Reallocate(obj%LEVS, tsize)
 DO ii = 1, tsize
   obj%LEVS(ii) = obj2%LEVS(ii)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE MatrixFieldPreconditionCopy
 

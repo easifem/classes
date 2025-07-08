@@ -45,7 +45,7 @@ USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.), &
                       GetIDOF
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ReallocateUtility, ONLY: Reallocate
 

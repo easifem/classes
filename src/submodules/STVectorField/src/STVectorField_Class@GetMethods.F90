@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(STVectorField_Class) GetMethods
-USE AbstractField_Class, ONLY: TypeField
+use FieldOpt_Class, only: TypeField => TypeFieldOpt
+
 
 USE ScalarField_Class, ONLY: ScalarField_
 ! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_

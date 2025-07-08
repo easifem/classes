@@ -29,6 +29,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 
@@ -42,8 +43,7 @@ INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 PUBLIC :: BlockNodeFieldPointer_
 PUBLIC :: BlockNodeField_
 PUBLIC :: SetBlockNodeFieldParam
-PUBLIC :: BlockNodeFieldInitiate1
-PUBLIC :: BlockNodeFieldInitiate3
+PUBLIC :: BlockNodeFieldInitiate
 PUBLIC :: BlockNodeFieldDeallocate
 PUBLIC :: BlockNodeFieldExport
 
@@ -65,11 +65,11 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethod
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     obj_checkEssentialParam
   !! Check essential parameter
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by using parameter list
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
@@ -304,13 +304,14 @@ END INTERFACE
 ! routine.
 !@endnote
 
-INTERFACE BlockNodeFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
+INTERFACE BlockNodeFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE BlockNodeFieldInitiate1
+END INTERFACE BlockNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethods
@@ -332,13 +333,14 @@ END INTERFACE BlockNodeFieldInitiate1
 ! present in the block node field.
 ! - `dom` contains the pointer to [[Domain_]] class.
 
-INTERFACE BlockNodeFieldInitiate3
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
+INTERFACE BlockNodeFieldInitiate
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
-END INTERFACE BlockNodeFieldInitiate3
+END INTERFACE BlockNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethods
@@ -369,12 +371,15 @@ END INTERFACE BlockNodeFieldDeallocate
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
