@@ -201,6 +201,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 # RefElement
 include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
+# QuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/QuadratureOpt/CMakeLists.txt)
+
+# BasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/BasisOpt/CMakeLists.txt)
+
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
