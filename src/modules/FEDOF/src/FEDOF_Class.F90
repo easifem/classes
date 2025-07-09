@@ -186,15 +186,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
   !! Set the edge order, this is a private method
 
-  !SET:
-  !@SetMethods
-  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
-  !! Set the cell order, this is a private method
-  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
-  !! Set the face order, this is a private method
-  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
-  !! Set the edge order, this is a private method
-
   !IO:
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
