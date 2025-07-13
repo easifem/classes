@@ -45,6 +45,8 @@ CHARACTER(*), PARAMETER :: modName = "QuadratureOpt_Class"
 
 TYPE :: QuadratureOpt_
   PRIVATE
+  LOGICAL( LGT ) :: isInit = .FALSE.
+  !! Is the object initialized?
   LOGICAL(LGT) :: isHomogeneous = .FALSE.
   !! Does all direction have same quadrature type
   !! In this case all entries of an array have same value
@@ -320,22 +322,6 @@ INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-
-    ! Internal variables
-    CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-
-    CHARACTER(:), ALLOCATABLE :: key
-    INTEGER(I4B) :: origin, stat, order(3), nips(3), tsize, &
-                    quadratureType(3), ii
-    REAL(DFP) :: alpha(3), beta(3), lambda(3)
-    INTEGER(I4B), ALLOCATABLE :: aintvec(:)
-    REAL(DFP), ALLOCATABLE :: arealvec(:)
-    TYPE(String), ALLOCATABLE :: quadratureType_char(:)
-    LOGICAL(LGT) :: isQuadratureTypeScalar, isok, isFound, isOrder, isNips, &
-                    isHomogeneous, isOrderScalar, isNipsScalar, &
-                    isAlpha, isAlphaScalar, isBeta, isBetaScalar, &
-                    isLambda, isLambdaScalar
-
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 

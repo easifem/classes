@@ -29,7 +29,7 @@ USE tomlf, ONLY: toml_get => get_value, &
 
 USE String_Class, ONLY: String
 
-USE BaseInterpolation_Method, ONLY: BaseInterpolation_ToInteger, &
+USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToInteger, &
                                     BaseType_ToInteger
 
 IMPLICIT NONE
@@ -155,7 +155,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! ipType
 CALL GetValue(table=table, key="ipType", VALUE=astr, &
       default_value=DEFAULT_IPTYPE, origin=origin, stat=stat, isFound=isFound)
-ipType = BaseInterpolation_ToInteger(astr%chars())
+ipType = InterpolationPoint_ToInteger(astr%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

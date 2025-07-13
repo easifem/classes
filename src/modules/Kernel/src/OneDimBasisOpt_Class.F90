@@ -39,9 +39,9 @@ USE LineInterpolationUtility, ONLY: RefElemDomain_Line
 USE ReferenceLine_Method, ONLY: RefCoord_Line
 
 USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    BaseInterpolation_ToChar, &
                                     BaseType_ToInteger, &
-                                    BaseInterpolation_ToInteger
+                                    InterpolationPoint_ToChar, &
+                                    InterpolationPoint_ToInteger
 
 USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
                                   QuadraturePointDisplay => Display, &
@@ -434,7 +434,7 @@ SUBROUTINE obj_Initiate1(obj, param, prefix)
                 VALUE=obj%basisType)
 
   obj%basisType_char = BaseType_ToChar(obj%basisType, isUpper=.TRUE.)
-  obj%ipType_char = BaseInterpolation_ToChar(obj%ipType, isUpper=.TRUE.)
+  obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isUpper=.TRUE.)
 
   CALL GetValue(obj=param, prefix=prefix, key="alpha", &
                 VALUE=obj%alpha)
@@ -1144,7 +1144,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
                 VALUE=ipType_char, &
                 default_value=TypeOneDimBasisOpt%ipType_char, &
                 origin=origin, stat=stat, isFound=isFound)
-  ipType = BaseInterpolation_ToInteger(ipType_char%chars())
+  ipType = InterpolationPoint_ToInteger(ipType_char%chars())
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

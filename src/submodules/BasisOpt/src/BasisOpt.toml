@@ -1,0 +1,6 @@
+[BasisOpt]
+basisContinuity = "H1"
+basisInterpolation = "Lagrange"
+ipType = "Equidistance"
+basisType = "Monomial"
+# basisType = ["Monomial", "Chebyshev", "Legendre"]

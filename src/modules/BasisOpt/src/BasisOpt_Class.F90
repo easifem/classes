@@ -23,6 +23,8 @@ USE String_Class, ONLY: String
 
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     polyopt => TypePolynomialOpt, &
+                    fevaropt => TypeFEVariableOpt, &
+                    elemnameopt => TypeElemNameOpt, &
                     QuadraturePoint_, &
                     ElemShapeData_
 
@@ -34,11 +36,26 @@ USE FPL, ONLY: ParameterList_
 
 USE ExceptionHandler_Class, ONLY: e
 
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table
+
 IMPLICIT NONE
 
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class"
+CHARACTER(*), PARAMETER :: myprefix = "BasisOpt"
+CHARACTER(*), PARAMETER :: BasisOptEssentialParams = &
+  "/nsd/elemType/baseContinuity/baseInterpolation/feType/ipType/dofType/&
+  &transformType/basisType/alpha/beta/lambda/refElemDomain/&
+  &isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder/&
+  &isCellOrder/tEdgeOrder/tFaceOrder/tCellOrder/edgeOrder/faceOrder/&
+  &cellOrder/order/anisoOrder/basisType/alpha/beta/lambda/"
+
+INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
+INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
+INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
+INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
 
 PUBLIC :: BasisOpt_, TypeBasisOpt
 
@@ -63,9 +80,12 @@ TYPE :: BasisOpt_
   !! flag to check if the order is isotropic or not
   !! see order
 
-  LOGICAL(LGT) :: isAnisoOrder = .FALSE.
+  LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
   !! flag to check if the order is anisotropic or not
   !! see anisoOrder
+
+  LOGICAL(LGT) :: isIpType = .FALSE.
+  !! True if we set the edge order
 
   LOGICAL(LGT) :: isEdgeOrder = .FALSE.
   !! True if we set the edge order
@@ -76,6 +96,15 @@ TYPE :: BasisOpt_
   LOGICAL(LGT) :: isCellOrder = .FALSE.
   !! True if we set the cell order
 
+  LOGICAL(LGT) :: isCellOrient = .FALSE.
+  !! True if we set the cell orientation
+
+  LOGICAL(LGT) :: isFaceOrient = .FALSE.
+  !! True if we set the face orientation
+
+  LOGICAL(LGT) :: isEdgeOrient = .FALSE.
+  !! True if we set the edge orientation
+
   INTEGER(I4B) :: tdof = 0
   !! total number of degrees of freedom
 
@@ -84,6 +113,40 @@ TYPE :: BasisOpt_
 
   INTEGER(I4B) :: xidim = 0
   !! codimension of the element
+
+  INTEGER(I4B) :: topoName = 0
+  !! Topology type of element, also see topoType_char
+  !! point, line, triangle, quadrangle, tetrahedron, hexahedron,
+  !! prism, pyramid
+
+  INTEGER(I4B) :: elemType = 0
+  !! Topology type of reference element
+  !! line, triangle, quadrangle, tetrahedron, hexahedron,
+  !! prism, pyramid
+
+  INTEGER(I4B) :: elemIndx = 0
+  !! Element index of topoName
+
+  INTEGER(I4B) :: feType = fevaropt%Scalar
+  !! Type of finite element, Scalar, Vector, Matrix
+  !! Also see fetype_char
+
+  INTEGER(I4B) :: tEdgeOrder = 0
+  !! The actual size of edgeOrder
+  INTEGER(I4B) :: tFaceOrder = 0
+  !! The actual size of faceOrder
+  INTEGER(I4B) :: tCellOrder = 0
+  !! The actual size of cellOrder
+
+  INTEGER(I4B) :: transformType = 0
+  !! Currently it is not used
+  !! Type of Tranformation usef for polynomial space
+  !! - FE_TRANSFORM_IDENTITY
+
+  INTEGER(I4B) :: ipType = ipopt%Equidistance
+  !! Type of lattice point for interpol (i.e., interpolation point type)
+  !! It is used when ipType is LagrageInterpolation
+  !! See also ipType_char
 
   INTEGER(I4B) :: order = 0
   !! isotropic order of the basis function
@@ -95,41 +158,16 @@ TYPE :: BasisOpt_
   !! Order on each edge of the element
   INTEGER(I4B) :: edgeOrient(eleminfo%maxEdges) = 0
   !! Orientation on each edge of the element
-  INTEGER(I4B) :: tEdgeOrder = 0
-  !! The actual size of edgeOrder
 
   INTEGER(I4B) :: faceOrder(3, eleminfo%maxFaces) = 0
   !! Order of approximation on each face of the element
   INTEGER(I4B) :: faceOrient(3, eleminfo%maxFaces) = 0
   !! orientation on each face
-  INTEGER(I4B) :: tFaceOrder = 0
-  !! The actual size of faceOrder
 
   INTEGER(I4B) :: cellOrder(3) = 0
   !! Order of approximation inside the element
   INTEGER(I4B) :: cellOrient(3) = 0
   !! Orientation of each cell
-  INTEGER(I4B) :: tCellOrder = 0
-  !! The actual size of cellOrder
-
-  INTEGER(I4B) :: fetype = 0
-  !! Type of finite element, Scalar, Vector, Matrix
-  !! Also see fetype_char
-
-  INTEGER(I4B) :: topoType = 0
-  !! Topology type of element, also see topoType_char
-  !! point, line, triangle, quadrangle, tetrahedron, hexahedron,
-  !! prism, pyramid
-
-  INTEGER(I4B) :: elemType = 0
-  !! Topology type of reference element
-  !! line, triangle, quadrangle, tetrahedron, hexahedron,
-  !! prism, pyramid
-
-  INTEGER(I4B) :: ipType = 0
-  !! Type of lattice point for interpol (i.e., interpolation point type)
-  !! It is used when ipType is LagrageInterpolation
-  !! See also ipType_char
 
   INTEGER(I4B) :: dofType(4) = 0
   !! Currently it is not used
@@ -140,12 +178,7 @@ TYPE :: BasisOpt_
   !! These shape functions can take following values:
   !! - FE_DOF_POINT_EVAL
 
-  INTEGER(I4B) :: transformType = 0
-  !! Currently it is not used
-  !! Type of Tranformation usef for polynomial space
-  !! - FE_TRANSFORM_IDENTITY
-
-  INTEGER(I4B) :: basisType(3) = 0
+  INTEGER(I4B) :: basisType(3) = polyopt%Monomial
   !! Integer code for basis type in x, y, and z direction
   !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
   !! Ultraspherical
@@ -182,17 +215,15 @@ TYPE :: BasisOpt_
   REAL(DFP) :: refelemCoord(3, 8) = 0.0_DFP
   !! coordinate of reference element
 
-  CHARACTER(4) :: topoType_char(3) = "    "
-  !! basis type in string format
-
   CHARACTER(128) :: basisType_char(3) = "MONOMIAL"
   !! basis type in string format
 
-  CHARACTER(128) :: ipType_char(3) = "EQUIDISTANCE"
+  CHARACTER(128) :: ipType_char = "EQUIDISTANCE"
   !! interpolation type in string format
 
-  CHARACTER(128) :: feType_char(3) = "SCALAR"
+  CHARACTER(6) :: feType_char = "SCALAR"
   !! finite element type in string format
+  !! scalar, vector, matrix
 
   TYPE(QuadratureOpt_) :: quadOpt
   !! Quadrature options
@@ -202,11 +233,95 @@ TYPE :: BasisOpt_
 
 CONTAINS
 
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
-    !! Initiate basis options from parameters
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
-    !! Initiate basis options from arguments
+  ! CONSTRUCTOR:
+  !@ConstructorMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
+  !! Deallocate the data stored in an instance
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate method from the parameter list
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate method from the parameters
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  !! Initiate by copy
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
+  !! Initiate by copy
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
+  !! Checking essential parameters in parameter list
+
+  !IO:
+  !@IOMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of a finite element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
+  !! Display the contents
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
+    obj_ReactEncode
+  !! Display the contents
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Import from toml
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import from toml
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+  !! Import from toml file
+
+  ! SET:
+  ! @SetMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  !! Sets the parameters of finite element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order and reallocate appropriate data in
+  !! already initiated AbstractFE_
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ResetAnisotropicOrder => &
+    obj_ResetAnisotropicOrder
+  !! Reset anisotropic order to factory settings
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ResetIsotropicOrder => &
+    obj_ResetIsotropicOrder
+  !! Reset isotropic order ot factory settings
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetLagrangeOrder => &
+    obj_SetLagrangeOrder
+  !! Set the order of Lagrange finite elements, this is a private method
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetHierarchicalOrder => &
+    obj_SetHierarchicalOrder
+  !! Set the order of Hierarchical finite elements, private method
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
+
+  !GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get prefix
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data for Discontinuous Galerkin
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get global element shape data
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyName => &
+    obj_GetTopologyName
+  !! returns the topoType
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Sets the parameters of finite element
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints1 => &
+    obj_GetQuadraturePoints1
+  !! Get the quadrature points
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints2 => &
+    obj_GetQuadraturePoints2
+  !! Get the quadrature points
+
+  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
+    GetQuadraturePoints2
+  !! Generic method for geting the quadrature points
 
 END TYPE BasisOpt_
 
@@ -230,10 +345,6 @@ TYPE :: BasisOptPointer_
 END TYPE BasisOptPointer_
 
 !----------------------------------------------------------------------------
-CONTAINS
-!----------------------------------------------------------------------------
-
-!----------------------------------------------------------------------------
 !                                    CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -241,10 +352,26 @@ CONTAINS
 ! date: 2025-07-09
 ! summary:  Check essential param in parameter list
 
-MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-END SUBROUTINE obj_CheckEssentialParam
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  CheckErrorHierarchical@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Sanity check for Hierarchical finite element
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckErrorHierarchical(obj)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_CheckErrorHierarchical
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                     SetAbstractFEParam@ConstructorMethods
@@ -254,27 +381,28 @@ END SUBROUTINE obj_CheckEssentialParam
 ! date:  2023-08-11
 ! summary:  Sets the parameters for initiating abstract finite element
 
-SUBROUTINE SetBasisOptParam(param, prefix, nsd, elemType, &
+INTERFACE
+  MODULE SUBROUTINE SetBasisOptParam(param, prefix, nsd, elemType, &
           baseContinuity, baseInterpolation, ipType, basisType, alpha, beta, &
          lambda, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
-                            dofType, transformType)
-  TYPE(ParameterList_), INTENT(INOUT) :: param
+                                     dofType, transformType)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
     !! ParameterList
-  CHARACTER(*), INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: prefix
     !! Prefix
-  INTEGER(I4B), INTENT(IN) :: nsd
+    INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
-  INTEGER(I4B), INTENT(IN) :: elemType
+    INTEGER(I4B), INTENT(IN) :: elemType
     !! Type of finite element
     !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
     !! Hexahedron
-  CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseContinuity
     !! Continuity or Conformity of basis function.
     !! This parameter is used to determine the nodal coordinates of
     !! reference element, when xij is not present.
     !! If xij is present then this parameter is ignored
     !! H1* (default), HDiv, HCurl, DG
-  CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! Basis function family used for interpolation.
     !! This parameter is used to determine the nodal coordinates of
     !! reference element, when xij is not present.
@@ -284,38 +412,39 @@ SUBROUTINE SetBasisOptParam(param, prefix, nsd, elemType, &
     !! HierarchyInterpolation, HierarchyPolynomial
     !! OrthogonalInterpolation, OrthogonalPolynomial
     !! HermitInterpolation, HermitPolynomial
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
     !! baseInterpol is LagrangePolynomial
     !! Default ipType is Equidistance
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
     !! Basis type: Legendre, Lobatto, Ultraspherical,
     !! Jacobi, Monomial
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameters
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Isotropic Order of finite element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     !! Anisotropic order, order in x, y, and z directions
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! Order of approximation along edges
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! Order of approximation along face
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! Order of approximation along cell
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
     !! Finite element type
     !! Default is Scalar
     !! For HDiv and Hcurl it should be Vector
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
     !! Degree of freedom type, default is nodal
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type, from reference element to physical element
-END SUBROUTINE SetBasisOptParam
+  END SUBROUTINE SetBasisOptParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -325,25 +454,12 @@ END SUBROUTINE SetBasisOptParam
 ! date: 2025-07-09
 ! summary:  Initiate basis options from parameters
 
-SUBROUTINE obj_Initiate1(obj, param, prefix)
-  CLASS(BasisOpt_), INTENT(inout) :: obj
-  TYPE(ParameterList_), INTENT(in) :: param
-  CHARACTER(*), INTENT(in) :: prefix
-
-  ! internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "OneDimBasisOpt_Initiate()"
-#endif
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE obj_Initiate1
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, param)
+    CLASS(BasisOpt_), INTENT(inout) :: obj
+    TYPE(ParameterList_), INTENT(in) :: param
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -353,72 +469,54 @@ END SUBROUTINE obj_Initiate1
 ! date: 2025-07-09
 ! summary:  Initiate basis options from arguments
 
-SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
-           baseInterpolation, ipType, basisType, alpha, beta, lambda, order, &
-        anisoOrder, edgeOrder, faceOrder, cellOrder, edgeOrient, faceOrient, &
-                         cellOrient, fetype, dofType, transformType)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
+                  baseInterpolation, ipType, basisType, alpha, beta, lambda, &
+                                  feType, dofType, transformType)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
-  INTEGER(I4B), INTENT(IN) :: elemType
-    !! Type of finite element
+    INTEGER(I4B), INTENT(IN) :: elemType
+    !! type of finite element for geometry
     !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
     !! Hexahedron
-  INTEGER(I4B), INTENT(IN) :: nsd
+    INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
-  CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseContinuity
     !! Continuity or Conformity of basis function.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
     !! H1* (default), HDiv, HCurl, DG
-  CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! Basis function family used for interpolation.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
     !! LagrangeInterpolation, LagrangePolynomial
     !! SerendipityInterpolation, SerendipityPolynomial
     !! HierarchyInterpolation, HierarchyPolynomial
     !! OrthogonalInterpolation, OrthogonalPolynomial
     !! HermitInterpolation, HermitPolynomial
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
-    !! baseInterpol is LagrangePolynomial
+    !! baseInterpolation is Lagrange
     !! Default ipType is Equidistance
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type: Legendre, Lobatto, Ultraspherical,
-    !! Jacobi, Monomial
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! Basis type is used when baseInterpolation is
+    !! Lagrange polynomial, it can take the following values:
+    !! Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
+    !! Default is Monomial
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! Jacobi parameter, it is needed for lagrange interpolation
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameters
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Isotropic Order of finite element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! Anisotropic order, order in x, y, and z directions
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! Order of approximation along edges
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! Order of approximation along face
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! Order of approximation along cell
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! Cell orientation
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orientation
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! edge orientation
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Finite element type; Default is Scalar
     !! For HDiv and Hcurl it should be Vector
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
     !! Degree of freedom type, default is nodal
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! currently it is not used
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type, from reference element to physical element
-END SUBROUTINE obj_Initiate2
+    !! currently it is not used
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                       Copy
@@ -428,10 +526,12 @@ END SUBROUTINE obj_Initiate2
 ! date: 2025-07-09
 ! summary:  Copy basis options from one object to another
 
-SUBROUTINE obj_Copy(obj, obj2)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
-  CLASS(BasisOpt_), INTENT(IN) :: obj2
-END SUBROUTINE obj_Copy
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    CLASS(BasisOpt_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -441,17 +541,21 @@ END SUBROUTINE obj_Copy
 ! date: 2025-07-09
 ! summary:  Deallocate basis options
 
-SUBROUTINE obj_Deallocate(obj)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
-END SUBROUTINE obj_Deallocate
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-SUBROUTINE Deallocate_Ptr_Vector(obj)
-  TYPE(BasisOptPointer_), ALLOCATABLE :: obj(:)
-END SUBROUTINE Deallocate_Ptr_Vector
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
+    TYPE(BasisOptPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                                   Display
@@ -461,30 +565,36 @@ END SUBROUTINE Deallocate_Ptr_Vector
 ! date: 2025-07-09
 ! summary:  Display the contents of basis options
 
-SUBROUTINE obj_Display(obj, msg, unitno, notFull)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  CHARACTER(*), INTENT(IN) :: msg
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
-END SUBROUTINE obj_Display
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno, notFull)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
+  END SUBROUTINE obj_Display
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                   MdEncode
 !----------------------------------------------------------------------------
 
-FUNCTION obj_MdEncode(obj) RESULT(ans)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  TYPE(String) :: ans
-END FUNCTION obj_MdEncode
+INTERFACE
+  MODULE FUNCTION obj_MdEncode(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION obj_MdEncode
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                ReactEncode
 !----------------------------------------------------------------------------
 
-FUNCTION obj_ReactEncode(obj) RESULT(ans)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  TYPE(String) :: ans
-END FUNCTION obj_ReactEncode
+INTERFACE
+  MODULE FUNCTION obj_ReactEncode(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION obj_ReactEncode
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                    SetParam
@@ -494,286 +604,462 @@ END FUNCTION obj_ReactEncode
 ! date: 27 Aug 2022
 ! summary: Set the parameters
 
-SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
+INTERFACE
+  MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
            faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
         beta, lambda, dofType, transformType, refElemDomain, baseContinuity, &
        baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
                  isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(3)
     !! order in x, y, and z directions
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! order of approximation on the edges of element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(3)
     !! order of approximation in the cell of element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
     !! finite element type
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! Reference element type
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation point type
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
     !! Basis type in x, y, and z directions
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameter
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
     !! degree of freedom type
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
     !! String name of type of continuity used for basis functions
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
     !! Domain of reference element
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropicOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropicOrder
     !! True if isotropic order
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isAnisotropicOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isAnisotropicOrder
     !! True if anisoOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isEdgeOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isFaceOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isCellOrder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdgeOrder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFaceOrder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
-END SUBROUTINE obj_SetParam
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isEdgeOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isFaceOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isCellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdgeOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFaceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
+  END SUBROUTINE obj_SetParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   SetOrder
+!                                                         SetOrder@SetMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_SetOrder(obj, order, anisoorder, cellOrder, &
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder(obj, order, anisoOrder, cellOrder, &
                    faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
-                        tcell, tface, tedge, errCheck)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
+                                 tcell, tface, tedge, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! abstract finite element
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
-    !! aniso tropic order
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    !! aniso tropic order, necessary for Lagrange interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order, necessary for Hierarchical interpolation
     !! number of rows in faceOrder is 3
     !! number of columns in faceOrder is tfaceorder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order, necessary for Hierarchical interpolation
     !! size of edgeorder is tedgeorder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
     !! number of rows in faceoriient is 3
     !! number of columns in faceorient is tfaceorient
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! edge orient
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder,
+    !! necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
-END SUBROUTINE obj_SetOrder
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        Set
+!                                           ResetAnisotropicOrder@SetMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Reset anisotropic order to factory settings
+
+INTERFACE
+  MODULE SUBROUTINE obj_ResetAnisotropicOrder(obj)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+  !! Basis options
+  END SUBROUTINE obj_ResetAnisotropicOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           ResetIsotropicOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Reset isotropic order to factory settings
+
+INTERFACE
+  MODULE SUBROUTINE obj_ResetIsotropicOrder(obj)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+  !! Basis options
+  END SUBROUTINE obj_ResetIsotropicOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetLagrangeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLagrangeOrder(obj, order, anisoOrder, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetLagrangeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    SetHierarchicalOrder@HierarchicalMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order in hierarchical basis functions
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
+                    edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck, &
+                                             tcell, tface, tedge)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! eddge orient
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! Check the eror in debug mode
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
+  END SUBROUTINE obj_SetHierarchicalOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      SetTotalDOF@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Set the total degree of freedom from the order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTotalDOF(obj)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+  !! Basis options
+  END SUBROUTINE obj_SetTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetParam@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
            faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
                         beta, lambda, dofType, transformType, refElemDomain, &
                         baseContinuity, baseInterpolation, isIsotropicOrder, &
                   isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-                        tEdgeOrder, tFaceOrder, tCellOrder)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
+                                 tEdgeOrder, tFaceOrder, tCellOrder)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
     !! order of element (isotropic order)
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: anisoOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: anisoOrder(3)
     !! order in x, y, and z directions
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: edgeOrder(:)
     !! order of approximation on the edges of element
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: faceOrder(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(:)
     !! order of approximation in the cell of element
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
     !! finite element type
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
     !! Reference element type
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
     !! interpolation point type
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
     !! Basis type in x, y, and z directions
-  REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha(3)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(OUT) :: beta(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: beta(3)
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda(3)
     !! Ultraspherical parameter
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType(4)
     !! degree of freedom type
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
     !! transformation type
-  CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
     !! String name of type of continuity used for basis functions
-  CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
-  CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
     !! Domain of reference element
-  LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isIsotropicOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isIsotropicOrder
     !! True if isotropic order
-  LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isAnisotropicOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isAnisotropicOrder
     !! True if anisoOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isEdgeOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isFaceOrder
-  LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isCellOrder
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
-  INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
-END SUBROUTINE obj_GetParam
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isEdgeOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isFaceOrder
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isCellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
+  END SUBROUTINE obj_GetParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetLocalElemShapeData
+!                                            GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
-  TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-  TYPE(QuadraturePoint_), INTENT(IN) :: quad
-END SUBROUTINE obj_GetLocalElemShapeData
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalFacetElemShapeData
+!                                       GetLocalFacetElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-09
 ! summary:  Get local facet element shape data
 
-SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-                                          facetElemsd, quad)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
+                                                   facetElemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
       !! finite element
-  TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
       !! element shape data on cell
-  TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
       !! element shapedata on facet element
       !! The size of facetElemsd should be equal to total number of
       !! facets in element.
-  TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
       !! Quadrature points on each facet element
-END SUBROUTINE obj_GetLocalFacetElemShapeData
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetGlobalElemShapeData
+!                                          GetGlobalElemShapeData@GetMethhods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-09
 ! summary:  Get global element shape data
 
-SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Abstract finite element
-  TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
-  REAL(DFP), INTENT(IN) :: xij(:, :)
+    REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-  TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoelemsd
+    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoelemsd
     !! shape function data for geometry which contains local shape function
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-END SUBROUTINE obj_GetGlobalElemShapeData
+  END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetQuadraturePoints
+!                                              GetQuadraturePoints@GetMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
-                                    order, alpha, beta, lambda)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
-  TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
+                                             order, alpha, beta, lambda)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-  INTEGER(I4B), INTENT(IN) :: quadratureType
+    INTEGER(I4B), INTENT(IN) :: quadratureType
     !! Type of quadrature points
     !! GaussLegendre ! GaussLegendreLobatto
     !! GaussLegendreRadau, GaussLegendreRadauLeft
     !! GaussLegendreRadauRight ! GaussChebyshev
     !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
     !! GaussChebyshevRadauRight
-  INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B), INTENT(IN) :: order
     !! Order of integrand
     !! either the order or the nips should be present
     !! Both nips and order should not be present
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
     !! Jacobi parameter
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameter
-END SUBROUTINE obj_GetQuadraturePoints1
+  END SUBROUTINE obj_GetQuadraturePoints1
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetQuadraturePoints
+!                                              GetQuadraturePoints@GetMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_GetQuadraturePoints2(obj, quad, p, q, r, &
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, p, q, r, &
            quadratureType1, quadratureType2, quadratureType3, alpha1, beta1, &
                       lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3)
-  CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! abstract finite element
-  TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! quadrature point
-  INTEGER(I4B), INTENT(IN) :: p
+    INTEGER(I4B), INTENT(IN) :: p
     !! order of integrand in x
-  INTEGER(I4B), INTENT(IN) :: q
+    INTEGER(I4B), INTENT(IN) :: q
     !! order of integrand in y
-  INTEGER(I4B), INTENT(IN) :: r
+    INTEGER(I4B), INTENT(IN) :: r
     !! order of integrand in z direction
-  INTEGER(I4B), INTENT(IN) :: quadratureType1
+    INTEGER(I4B), INTENT(IN) :: quadratureType1
     !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
     !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
     !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
     !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
-  INTEGER(I4B), INTENT(IN) :: quadratureType2
+    INTEGER(I4B), INTENT(IN) :: quadratureType2
     !! Type of quadrature points
-  INTEGER(I4B), INTENT(IN) :: quadratureType3
+    INTEGER(I4B), INTENT(IN) :: quadratureType3
     !! Type of quadrature points
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
     !! Jacobi parameter and Ultraspherical parameters
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
     !! Jacobi parameter and Ultraspherical parameters
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
     !! Jacobi parameter and Ultraspherical parameters
-END SUBROUTINE obj_GetQuadraturePoints2
+  END SUBROUTINE obj_GetQuadraturePoints2
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             GetTopologyType
+!                                                  GetTopologyName@GetMethods
 !----------------------------------------------------------------------------
 
-FUNCTION obj_GetTopologyType(obj) RESULT(ans)
-  CLASS(BasisOpt_), INTENT(IN) :: obj
-  INTEGER(I4B) :: ans
-END FUNCTION obj_GetTopologyType
+INTERFACE
+  MODULE FUNCTION obj_GetTopologyName(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTopologyName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get the prefix of the object for parameter list
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Import data from toml table
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type of finite element, optional
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml, elemType)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE BasisOpt_Class
