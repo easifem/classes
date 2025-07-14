@@ -21,5 +21,4 @@ target_sources(
           ${src_path}/AbstractFE_Class@ConstructorMethods.F90
           ${src_path}/AbstractFE_Class@IOMethods.F90
           ${src_path}/AbstractFE_Class@GetMethods.F90
-          ${src_path}/AbstractFE_Class@SetMethods.F90
-          ${src_path}/AbstractFE_Class@QuadratureMethods.F90)
+          ${src_path}/AbstractFE_Class@SetMethods.F90)

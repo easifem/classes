@@ -31,8 +31,9 @@ MODULE PROCEDURE obj_HierarchicalFEPointer
 ALLOCATE (ans)
 CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
                   nsd=nsd, baseContinuity=baseContinuity, &
-                  baseInterpolation="Hierarchical", cellOrder=cellOrder, &
-            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+                  baseInterpolation="Hierarchical")
+CALL ans%SetOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
+                  edgeOrder=edgeOrder, cellOrient=cellOrient, &
                   faceOrient=faceOrient, edgeOrient=edgeOrient)
 END PROCEDURE obj_HierarchicalFEPointer
 

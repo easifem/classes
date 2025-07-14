@@ -397,11 +397,14 @@ END SUBROUTINE LambdaFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -414,10 +417,12 @@ node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node, elemType=elemType)
 
@@ -427,6 +432,8 @@ IF (PRESENT(printToml)) THEN
                unitNo=stdout)
 END IF
 #endif
+
+node => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

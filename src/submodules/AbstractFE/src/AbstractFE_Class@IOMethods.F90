@@ -15,17 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractFE_Class) IOMethods
-USE GlobalData, ONLY: char_lf
-
+USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
-
-USE ReferenceElement_Method, ONLY: ElementName
-
-USE MdEncode_Method, ONLY: MdEncode, &
-                           React_StartTabs, &
-                           React_StartTabItem, &
-                           React_EndTabItem
-
+USE TomlUtility, ONLY: GetValue, GetValue_
+USE tomlf, ONLY: toml_get => get_value, &
+                 toml_serialize
 IMPLICIT NONE
 
 CONTAINS
@@ -35,63 +29,38 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-IF (.NOT. obj%isInitiated) THEN
-  CALL Display("Element is Empty", unitno=unitno)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, msg="isInit: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
+CALL obj%opt%Display(msg="BasisOpt: ", unitno=unitno)
+
+isok = ALLOCATED(obj%coeff)
+CALL Display(isok, msg="obj%coeff allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%coeff), msg="obj%coeff shape: ", unitno=unitno)
 END IF
 
-CALL Display(obj%firstCall, msg="firstCall: ", unitno=unitno)
-CALL Display(obj%isInitiated, msg="isInitiated: ", unitno=unitno)
-CALL Display(obj%tdof, msg="tdof: ", unitno=unitno)
-CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)
-CALL Display(obj%xidim, msg="xidim: ", unitno=unitno)
-
-IF (obj%isIsotropicOrder) THEN
-  CALL Display("isIsotropicOrder: TRUE", unitno=unitno)
-  CALL Display(obj%order, msg="order: ", unitno=unitno)
+isok = ALLOCATED(obj%xij)
+CALL Display(isok, msg="obj%xij allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%xij), msg="obj%xij shape: ", unitno=unitno)
 END IF
 
-IF (obj%isAnisotropicOrder) THEN
-  CALL Display("isAnisotropicOrder: TRUE", unitno=unitno)
-  CALL Display(obj%anisoOrder, msg="anisoOrder: ", unitno=unitno)
-END IF
-
-IF (obj%isEdgeOrder) THEN
-  CALL Display("isEdgeOrder: TRUE", unitno=unitno)
-  IF (obj%tEdgeOrder .GT. 0_I4B) THEN
-    CALL Display(obj%edgeOrder(:obj%tEdgeOrder), &
-                 msg="edgeOrder: ", unitno=unitno)
-  END IF
-END IF
-
-IF (obj%isFaceOrder) THEN
-  CALL Display("isFaceOrder: TRUE", unitno=unitno)
-  IF (obj%tFaceOrder .GT. 0_I4B) THEN
-    CALL Display(obj%faceOrder(1:3, 1:obj%tFaceOrder), &
-                 msg="faceOrder: ", unitno=unitno)
-  END IF
-END IF
-
-IF (obj%isCellOrder) THEN
-  CALL Display("isCellOrder: TRUE", unitno=unitno)
-  IF (obj%tCellOrder .GT. 0_I4B) THEN
-    CALL Display(obj%cellOrder(:obj%tCellOrder), &
-                 msg="cellOrder: ", unitno=unitno)
-  END IF
-END IF
-
-CALL Display(obj%feType, msg="feType: ", unitno=unitno)
-CALL Display(obj%topoType, msg="topoType: ", unitno=unitno)
-CALL Display(obj%elemType, msg="elemType: ", unitno=unitno)
-CALL Display(obj%ipType, msg="ipType: ", unitno=unitno)
-CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)
-CALL Display(obj%transformType, msg="transformType: ", unitno=unitno)
-CALL Display(obj%basisType, msg="basisType: ", unitno=unitno)
-CALL Display(obj%alpha, msg="alpha: ", unitno=unitno)
-CALL Display(obj%beta, msg="beta: ", unitno=unitno)
-CALL Display(obj%lambda, msg="lambda: ", unitno=unitno)
-CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
-CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
-CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Display
 
@@ -100,49 +69,21 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MdEncode
-CHARACTER(*), PARAMETER :: myName = "obj_MdEncode"
-INTEGER(I4B), PARAMETER :: jj = 21
-TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_MdEncode()"
+#endif
 
-colTitle(1) = ""
-rowTitle(1) = "**nsd**"; astr(1) = ToString(obj%nsd)
-rowTitle(2) = "**feType**"; astr(2) = ToString(obj%feType)
-rowTitle(3) = "**elemType**"; astr(3) = ElementName(obj%elemType)
-rowTitle(4) = "**ipType**"; astr(4) = ToString(obj%ipType)
-rowTitle(5) = "**basisType**"; astr(5) = ToString(obj%basisType)
-rowTitle(6) = "**alpha**"; astr(6) = ToString(obj%alpha)
-rowTitle(7) = "**beta**"; astr(7) = ToString(obj%beta)
-rowTitle(8) = "**lambda**"; astr(8) = ToString(obj%lambda)
-rowTitle(9) = "**dofType**"; astr(9) = ToString(obj%dofType)
-rowTitle(10) = "**transformType**"; astr(10) = ToString(obj%transformType)
-rowTitle(11) = "**baseContinuity**"; astr(11) = obj%baseContinuity
-rowTitle(12) = "**baseInterpolion**"; astr(12) = obj%baseInterpolation
-rowTitle(13) = "**refElemDomain**"; astr(13) = obj%refElemDomain
-rowTitle(14) = "**isIsotropicOrder**"; astr(14) = ToString(obj%isIsotropicOrder)
-rowTitle(15) = "**isAnisotropicOrder**"; astr(15) = ToString(obj%isAnisotropicOrder)
-rowTitle(16) = "**isEdgeOrder**"; astr(16) = ToString(obj%isEdgeOrder)
-rowTitle(17) = "**isFaceOrder**"; astr(17) = ToString(obj%isFaceOrder)
-rowTitle(18) = "**isCellOrder**"; astr(18) = ToString(obj%isCellOrder)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (obj%isEdgeOrder) THEN
-  rowTitle(19) = "**edgeOrder**"; astr(19) = ToString(obj%edgeOrder)
-ELSE
-  rowTitle(19) = "**edgeOrder**"; astr(19) = " "
-END IF
+ans = obj%opt%MdEncode()
 
-! IF (obj%isFaceOrder) THEN
-!   rowTitle(20) = "**faceOrder**"; astr(20) = ToString(obj%faceOrder)
-! ELSE
-rowTitle(20) = "**faceOrder**"; astr(20) = " "
-! END IF
-
-IF (obj%iscellOrder) THEN
-  rowTitle(21) = "**cellOrder**"; astr(21) = ToString(obj%cellOrder)
-ELSE
-  rowTitle(21) = "**cellOrder**"; astr(21) = " "
-END IF
-
-ans = MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_MdEncode
 
@@ -151,93 +92,96 @@ END PROCEDURE obj_MdEncode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReactEncode
-CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode"
-INTEGER(I4B), PARAMETER :: jj = 21
-TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode()"
+#endif
 
-colTitle(1) = ""
-rowTitle(1) = "**nsd**"
-astr(1) = ToString(obj%nsd)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-rowTitle(2) = "**feType**"
-astr(2) = ToString(obj%feType)
+ans = obj%opt%ReactEncode()
 
-rowTitle(3) = "**elemType**"
-astr(3) = ElementName(obj%elemType)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
-rowTitle(4) = "**ipType**"
-astr(4) = ToString(obj%ipType)
-
-rowTitle(5) = "**basisType**"
-astr(5) = ToString(obj%basisType)
-
-rowTitle(6) = "**alpha**"
-astr(6) = ToString(obj%alpha)
-
-rowTitle(7) = "**beta**"
-astr(7) = ToString(obj%beta)
-
-rowTitle(8) = "**lambda**"
-astr(8) = ToString(obj%lambda)
-
-rowTitle(9) = "**dofType**"
-astr(9) = ToString(obj%dofType)
-
-rowTitle(10) = "**transformType**"
-astr(10) = ToString(obj%transformType)
-
-rowTitle(11) = "**baseContinuity**"
-astr(11) = obj%baseContinuity
-
-rowTitle(12) = "**baseInterpolation**"
-astr(12) = obj%baseInterpolation
-
-rowTitle(13) = "**refElemDomain**"
-astr(13) = obj%refElemDomain
-
-rowTitle(14) = "**isIsotropicOrder**"
-astr(14) = ToString(obj%isIsotropicOrder)
-
-rowTitle(15) = "**isAnisotropicOrder**"
-astr(15) = ToString(obj%isAnisotropicOrder)
-
-rowTitle(16) = "**isEdgeOrder**"
-astr(16) = ToString(obj%isEdgeOrder)
-
-rowTitle(17) = "**isFaceOrder**"
-astr(17) = ToString(obj%isFaceOrder)
-
-rowTitle(18) = "**isCellOrder**"
-astr(18) = ToString(obj%isCellOrder)
-
-IF (obj%isEdgeOrder) THEN
-  rowTitle(19) = "**edgeOrder**"
-  astr(19) = ToString(obj%edgeOrder)
-ELSE
-  rowTitle(19) = "**edgeOrder**"
-  astr(19) = " "
-END IF
-
-! IF (obj%isFaceOrder) THEN
-!   rowTitle(20) = "**faceOrder**"
-!   astr(20) = ToString(obj%faceOrder)
-! ELSE
-rowTitle(20) = "**faceOrder**"
-astr(20) = " "
-! END IF
-
-IF (obj%iscellOrder) THEN
-  rowTitle(21) = "**cellOrder**"
-  astr(21) = ToString(obj%cellOrder)
-ELSE
-  rowTitle(21) = "**cellOrder**"
-  astr(21) = " "
-END IF
-
-ans = React_StartTabs()//char_lf
-ans = ans//React_StartTabItem(VALUE="0", label="Finite Element")//char_lf// &
-      MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf// &
-      React_EndTabItem()//char_lf
 END PROCEDURE obj_ReactEncode
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .TRUE.
+CALL obj%opt%ImportFromToml(table=table, elemType=elemType)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                              ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+#endif
+
+CALL obj%ImportFromToml(table=node, elemType=elemType)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+               unitNo=stdout)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                             Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

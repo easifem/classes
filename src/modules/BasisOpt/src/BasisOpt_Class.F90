@@ -18,24 +18,17 @@
 MODULE BasisOpt_Class
 
 USE GlobalData, ONLY: I4B, DFP, LGT
-
 USE String_Class, ONLY: String
-
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     polyopt => TypePolynomialOpt, &
                     fevaropt => TypeFEVariableOpt, &
                     elemnameopt => TypeElemNameOpt, &
                     QuadraturePoint_, &
                     ElemShapeData_
-
 USE QuadratureOpt_Class, ONLY: QuadratureOpt_
-
 USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo
-
 USE FPL, ONLY: ParameterList_
-
 USE ExceptionHandler_Class, ONLY: e
-
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 
@@ -57,7 +50,9 @@ INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
 INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
 
-PUBLIC :: BasisOpt_, TypeBasisOpt
+PUBLIC :: BasisOpt_
+PUBLIC :: TypeBasisOpt
+PUBLIC :: SetBasisOptParam
 
 !----------------------------------------------------------------------------
 !                                                             BasisOpt_Class
@@ -298,16 +293,23 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get prefix
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
+  !! Get the total number of degrees of freedom
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
+  !! Get local element shape data for Discontinuous Galerkin
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyName => &
-    obj_GetTopologyName
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
+    obj_GetTopologyType
   !! returns the topoType
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
@@ -472,7 +474,9 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
                   baseInterpolation, ipType, basisType, alpha, beta, lambda, &
-                                  feType, dofType, transformType)
+               feType, dofType, transformType, order, anisoOrder, cellOrder, &
+                   faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
+                                  tcell, tface, tedge, errCheck)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -515,6 +519,37 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type, from reference element to physical element
     !! currently it is not used
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    !! aniso tropic order, necessary for Lagrange interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order, necessary for Hierarchical interpolation
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order, necessary for Hierarchical interpolation
+    !! size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder,
+    !! necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -575,7 +610,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   MdEncode
+!                                                         MdEncode@IOMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -586,7 +621,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                ReactEncode
+!                                                       ReactEncode@IOMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -597,7 +632,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                    SetParam
+!                                                         SetParam@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -606,10 +641,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-           faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
-        beta, lambda, dofType, transformType, refElemDomain, baseContinuity, &
-       baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
-                 isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder)
+                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
+             ipType, basisType, alpha, beta, lambda, dofType, transformType, &
+         refElemDomain, baseContinuity, baseInterpolation, isIsotropicOrder, &
+      isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, &
+                                 tFaceOrder, tCellOrder)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -627,6 +663,10 @@ INTERFACE
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
+    !! Topology of reference element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemIndx
+    !! Element index of topoType
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
@@ -810,8 +850,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-           faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
-                        beta, lambda, dofType, transformType, refElemDomain, &
+                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
+                                 ipType, basisType, alpha, beta, lambda, &
+                                 dofType, transformType, refElemDomain, &
                         baseContinuity, baseInterpolation, isIsotropicOrder, &
                   isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
                                  tEdgeOrder, tFaceOrder, tCellOrder)
@@ -832,6 +873,10 @@ INTERFACE
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoType
+    !! Get topology of element
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemIndx
+    !! Get the index of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
@@ -870,10 +915,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad, coeff)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
+    !! coefficient matrix needed for Lagrange interpolation
+    !! We supply this from AbstractFE_ class
+    !! If you are calling it outside AbstractFE_ then please
+    !! ignore this argument. Coeff helps us in
+    !! reducing the computation time for Lagrange polynomials
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -995,14 +1046,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  GetTopologyName@GetMethods
+!                                                  GetTopologyType@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-14
+! summary:  Returns the topology type
+
 INTERFACE
-  MODULE FUNCTION obj_GetTopologyName(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
     CLASS(BasisOpt_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTopologyName
+  END FUNCTION obj_GetTopologyType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1018,6 +1073,21 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-14
+! summary:  Get the total degree of freedom
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------

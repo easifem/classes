@@ -36,6 +36,10 @@ USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
                                    PARAM_REFELEM_MAX_EDGES, &
                                    PARAM_REFELEM_MAX_POINTS
 
+USE BasisOpt_Class, ONLY: BasisOpt_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+
 IMPLICIT NONE
 PRIVATE
 
@@ -50,17 +54,6 @@ PUBLIC :: AbstractFECheckEssentialParam
 PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
-CHARACTER(*), PARAMETER :: AbstractFEEssentialParams = &
-                   "/nsd/order/anisoOrder/tEdgeOrder/edgeOrder/tFaceOrder"// &
-                     "/faceOrder/cellOrder/fetype/elemType/ipType/dofType"// &
-           "/transformType/refElemDomain/baseContinuity/baseInterpolation"// &
-            "/isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder"// &
-                         "/isCellOrder/tCellOrder/basisType/alpha/beta/lambda"
-
-INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
-INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
 
 !----------------------------------------------------------------------------
 !                                                        AbstractRefElement_
@@ -74,107 +67,16 @@ INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
 
 TYPE, ABSTRACT :: AbstractFE_
   PRIVATE
-  LOGICAL(LGT) :: firstCall = .TRUE.
-  !!
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-  INTEGER(I4B) :: tdof = 0
-  !! number of nodes in space
-  !! this is total number of dof, that is, size of shape functions
-  INTEGER(I4B) :: nsd = 0
-  !! spatial dimension of fintie element
-  INTEGER(I4B) :: xidim = 0
-  !! xidimension of element
-  INTEGER(I4B) :: order = 0
-  !! Isotropic order of polynomial space
-  LOGICAL(LGT) :: isIsotropicOrder = .FALSE.
-  !! True if the order is same in all the direction
-  INTEGER(I4B) :: anisoOrder(3) = 0
-  !! Order in x, y, and z direction
-  LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
-  !! True if the order is different in different directions
-  INTEGER(I4B) :: edgeOrder(PARAM_REFELEM_MAX_EDGES) = 0
-  !! Order on each edge of the element
-  INTEGER(I4B) :: edgeOrient(PARAM_REFELEM_MAX_EDGES) = 0
-  !! Orientation on each edge of the element
-  INTEGER(I4B) :: tEdgeOrder = 0
-  !! The actual size of edgeOrder
-  LOGICAL(LGT) :: isEdgeOrder = .FALSE.
-  !! True if we set the edge order
-  INTEGER(I4B) :: faceOrder(3, PARAM_REFELEM_MAX_FACES) = 0
-  !! Order of approximation on each face of the element
-  INTEGER(I4B) :: faceOrient(3, PARAM_REFELEM_MAX_FACES) = 0
-  !! orientation on each face
-  INTEGER(I4B) :: tFaceOrder = 0
-  !! The actual size of faceOrder
-  LOGICAL(LGT) :: isFaceOrder = .FALSE.
-  !! True if we set the face order
-  INTEGER(I4B) :: cellOrder(3) = 0
-  !! Order of approximation inside the element
-  INTEGER(I4B) :: cellOrient(3) = 0
-  !! Orientation of each cell
-  INTEGER(I4B) :: tCellOrder = 0
-  !! The actual size of cellOrder
-  LOGICAL(LGT) :: isCellOrder = .FALSE.
-  !! True if we set the cell order
-  INTEGER(I4B) :: fetype = 0
-  !! Type of finite element
-  !! Scalar, Vector, Matrix
-  INTEGER(I4B) :: topoType = 0
-  !! Topology type
-  INTEGER(I4B) :: elemType = 0
-  !! Topology type of reference element
-  !! Line, Triangle, Quadrangle, Tetrahedron, Hexahedron,
-  !! Prism, Pyramid
-  INTEGER(I4B) :: ipType = 0
-  !! Type of lattice point (i.e., interpolation point type)
-  INTEGER(I4B) :: dofType(4) = 0
-  !! Currently it is not used
-  !! dofType(1): Type of dof for shape function defined on vertex
-  !! dofType(2): Type of dof for shape functions on edge
-  !! dofType(3): Type of dof for shape functions on face
-  !! dofType(4): Type of dof for shape functions in cell
-  !! These shape functions can take following values:
-  !! - FE_DOF_POINT_EVAL
-  INTEGER(I4B) :: transformType = 0
-  !! Currently it is not used
-  !! Type of Tranformation usef for polynomial space
-  !! - FE_TRANSFORM_IDENTITY
-  INTEGER(I4B) :: basisType(3) = 0
-  !! Integer code for basis type in x, y, and z direction
-  !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
-  !! Ultraspherical
-  REAL(DFP) :: alpha(3) = 0.0_DFP
-  !!Jacobi parameters
-  REAL(DFP) :: beta(3) = 0.0_DFP
-  !! Jacobi parameters
-  REAL(DFP) :: lambda(3) = 0.5_DFP
-  !! Ultraspherical parameters
-  CHARACTER(1) :: refelemDomain = "B"
-  !! String name for reference element domain.
-  !! It can take following values:
-  !! - UNIT "U"
-  !! - BIUNIT "B"
-  CHARACTER(2) :: baseContinuity = "H1"
-  !! continuity or conformity of basis defined on reference
-  !! element, following values are allowed
-  !! H1, HCurl, HDiv, DG
-  CHARACTER(4) :: baseInterpolation = "LAGR"
-  !! Type of basis functions used for interpolation on reference
-  !! element, Following values are allowed
-  !! LagrangeInterpolation
-  !! HierarchyInterpolation
-  !! OrthogonalInterpolation
-  !! HermitInterpolation
-  !! SerendipityInterpolation
-  REAL(DFP) :: refelemCoord(3, 8)
-  !! coordinate of reference element
   REAL(DFP), ALLOCATABLE :: coeff(:, :)
-  !! coefficient necessary for lagrange interpolation
+  !! coefficient necessary for lagrange Interpolation
   REAL(DFP), ALLOCATABLE :: xij(:, :)
-  !! interpolation points for lagrange polynomial
+  !! Interpolation points for lagrange polynomial
   !! coeff, and xij are needed internally for
   !! constructing the lagrange polynomial
+  TYPE(BasisOpt_) :: opt
+  !! basis options
 
 CONTAINS
 
@@ -211,6 +113,14 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Deallocate the data stored in an instance
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Import the data from toml file
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+  !! Import the data from toml table
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
 
   ! SET:
   ! @SetMethods
@@ -221,11 +131,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetLagrangeOrder => &
-    obj_SetLagrangeOrder
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetHierarchicalOrder => &
-    obj_SetHierarchicalOrder
 
   !GET:
   ! @GetMethods
@@ -236,14 +141,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLagrangeLocalElemShapeData => &
-    obj_GetLagrangeLocalElemShapeData
-  !! Get local shape data for lagrange element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetHierarchicalLocalElemShapeData => &
-    obj_GetHierarchicalLocalElemShapeData
-  !! Get local shape data for Hierarchical element
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
@@ -389,9 +286,10 @@ END INTERFACE AbstractFEInitiate
 
 INTERFACE AbstractFEInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
-           baseInterpolation, ipType, basisType, alpha, beta, lambda, order, &
-        anisoOrder, edgeOrder, faceOrder, cellOrder, edgeOrient, faceOrient, &
-                                  cellOrient, fetype, dofType, transformType)
+          baseInterpolation, ipType, basisType, alpha, beta, lambda, fetype, &
+                       dofType, transformType, order, anisoOrder, cellOrder, &
+                   faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
+                                  tcell, tface, tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -429,22 +327,6 @@ INTERFACE AbstractFEInitiate
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameters
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! Anisotropic order, order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! Order of approximation along edges
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! Order of approximation along face
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! Order of approximation along cell
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !!
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !!
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !!
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
     !! Finite element type
     !! Default is Scalar
@@ -453,6 +335,37 @@ INTERFACE AbstractFEInitiate
     !! Degree of freedom type, default is nodal
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type, from reference element to physical element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    !! aniso tropic order, necessary for Lagrange interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order, necessary for Hierarchical interpolation
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order, necessary for Hierarchical interpolation
+    !! size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder,
+    !! necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_Initiate2
 END INTERFACE AbstractFEInitiate
 
@@ -637,10 +550,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-           faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
-        beta, lambda, dofType, transformType, refElemDomain, baseContinuity, &
-       baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
-                 isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder)
+                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
+             ipType, basisType, alpha, beta, lambda, dofType, transformType, &
+         refElemDomain, baseContinuity, baseInterpolation, isIsotropicOrder, &
+      isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, &
+                                 tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -658,6 +572,10 @@ INTERFACE
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
+    !! Topology of reference element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemIndx
+    !! Element index of the reference element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
@@ -747,57 +665,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               SetLagrangeOrder@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLagrangeOrder(obj, order, anisoorder, errCheck)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
-  END SUBROUTINE obj_SetLagrangeOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-12
-! summary:  Set order of hierarchical polynomial
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
-                    edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck, &
-                                             tcell, tface, tedge)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! eddge orient
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Check the eror in debug mode
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder
-  END SUBROUTINE obj_SetHierarchicalOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                     GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
@@ -823,8 +690,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-           faceOrder, cellOrder, fetype, elemType, ipType, basisType, alpha, &
-                        beta, lambda, dofType, transformType, refElemDomain, &
+                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
+                                 ipType, basisType, alpha, beta, lambda, &
+                                 dofType, transformType, refElemDomain, &
                         baseContinuity, baseInterpolation, isIsotropicOrder, &
                   isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
                                  tEdgeOrder, tFaceOrder, tCellOrder)
@@ -845,6 +713,10 @@ INTERFACE
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoType
+    !! Get the topology type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemIndx
+    !! Get the index of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
@@ -892,34 +764,6 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLagrangeLocalElemShapeData(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLagrangeLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-11
-! summary:  Local element shape data for hierarchical poly
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetHierarchicalLocalElemShapeData(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetHierarchicalLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1059,36 +903,48 @@ END INTERFACE
 ! summary: Returns the topoType
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTopologyType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Import data from toml table
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetIntegerType(a, default_a, n, b)
-    INTEGER(I4B), INTENT(INOUT) :: a(:)
-    INTEGER(I4B), INTENT(IN) :: default_a(:)
-    INTEGER(I4B), INTENT(IN) :: n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: b(:)
-  END SUBROUTINE obj_SetIntegerType
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type of finite element, optional
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetRealType(a, default_a, n, b)
-    REAL(DFP), INTENT(INOUT) :: a(:)
-    REAL(DFP), INTENT(IN) :: default_a(:)
-    INTEGER(I4B), INTENT(IN) :: n
-    REAL(DFP), OPTIONAL, INTENT(IN) :: b(:)
-  END SUBROUTINE obj_SetRealType
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml, elemType)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 END MODULE AbstractFE_Class

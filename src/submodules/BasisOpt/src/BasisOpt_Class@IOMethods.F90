@@ -17,8 +17,15 @@
 !
 
 SUBMODULE(BasisOpt_Class) IOMethods
-USE Display_Method, ONLY: Display
+USE GlobalData, ONLY: CHAR_LF
+USE Display_Method, ONLY: Display, ToString
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
+USE ReferenceElement_Method, ONLY: ElementName
+
+USE MdEncode_Method, ONLY: MdEncode, &
+                           React_StartTabs, &
+                           React_StartTabItem, &
+                           React_EndTabItem
 IMPLICIT NONE
 CONTAINS
 
@@ -119,23 +126,64 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_MdEncode
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_MdEncode()"
+CHARACTER(*), PARAMETER :: myName = "obj_MdEncode"
 #endif
+
+INTEGER(I4B), PARAMETER :: jj = 21
+TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+colTitle(1) = ""
+rowTitle(1) = "**nsd**"; astr(1) = ToString(obj%nsd)
+rowTitle(2) = "**feType**"; astr(2) = ToString(obj%feType)
+rowTitle(3) = "**elemType**"; astr(3) = ElementName(obj%elemType)
+rowTitle(4) = "**ipType**"; astr(4) = ToString(obj%ipType)
+rowTitle(5) = "**basisType**"; astr(5) = ToString(obj%basisType)
+rowTitle(6) = "**alpha**"; astr(6) = ToString(obj%alpha)
+rowTitle(7) = "**beta**"; astr(7) = ToString(obj%beta)
+rowTitle(8) = "**lambda**"; astr(8) = ToString(obj%lambda)
+rowTitle(9) = "**dofType**"; astr(9) = ToString(obj%dofType)
+rowTitle(10) = "**transformType**"; astr(10) = ToString(obj%transformType)
+rowTitle(11) = "**baseContinuity**"; astr(11) = obj%baseContinuity
+rowTitle(12) = "**baseInterpolion**"; astr(12) = obj%baseInterpolation
+rowTitle(13) = "**refElemDomain**"; astr(13) = obj%refElemDomain
+rowTitle(14) = "**isIsotropicOrder**"; astr(14) = &
+ ToString(obj%isIsotropicOrder)
+rowTitle(15) = "**isAnisotropicOrder**"; astr(15) = &
+ ToString(obj%isAnisotropicOrder)
+rowTitle(16) = "**isEdgeOrder**"; astr(16) = ToString(obj%isEdgeOrder)
+rowTitle(17) = "**isFaceOrder**"; astr(17) = ToString(obj%isFaceOrder)
+rowTitle(18) = "**isCellOrder**"; astr(18) = ToString(obj%isCellOrder)
+
+IF (obj%isEdgeOrder) THEN
+  rowTitle(19) = "**edgeOrder**"; astr(19) = ToString(obj%edgeOrder)
+ELSE
+  rowTitle(19) = "**edgeOrder**"; astr(19) = " "
+END IF
+
+! IF (obj%isFaceOrder) THEN
+!   rowTitle(20) = "**faceOrder**"; astr(20) = ToString(obj%faceOrder)
+! ELSE
+rowTitle(20) = "**faceOrder**"; astr(20) = " "
+! END IF
+
+IF (obj%iscellOrder) THEN
+  rowTitle(21) = "**cellOrder**"; astr(21) = ToString(obj%cellOrder)
+ELSE
+  rowTitle(21) = "**cellOrder**"; astr(21) = " "
+END IF
+
+ans = MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_MdEncode
 
 !----------------------------------------------------------------------------
@@ -144,27 +192,112 @@ END PROCEDURE obj_MdEncode
 
 MODULE PROCEDURE obj_ReactEncode
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode"
 #endif
+
+INTEGER(I4B), PARAMETER :: jj = 21
+TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+colTitle(1) = ""
+rowTitle(1) = "**nsd**"
+astr(1) = ToString(obj%nsd)
+
+rowTitle(2) = "**feType**"
+astr(2) = ToString(obj%feType)
+
+rowTitle(3) = "**elemType**"
+astr(3) = ElementName(obj%elemType)
+
+rowTitle(4) = "**ipType**"
+astr(4) = ToString(obj%ipType)
+
+rowTitle(5) = "**basisType**"
+astr(5) = ToString(obj%basisType)
+
+rowTitle(6) = "**alpha**"
+astr(6) = ToString(obj%alpha)
+
+rowTitle(7) = "**beta**"
+astr(7) = ToString(obj%beta)
+
+rowTitle(8) = "**lambda**"
+astr(8) = ToString(obj%lambda)
+
+rowTitle(9) = "**dofType**"
+astr(9) = ToString(obj%dofType)
+
+rowTitle(10) = "**transformType**"
+astr(10) = ToString(obj%transformType)
+
+rowTitle(11) = "**baseContinuity**"
+astr(11) = obj%baseContinuity
+
+rowTitle(12) = "**baseInterpolation**"
+astr(12) = obj%baseInterpolation
+
+rowTitle(13) = "**refElemDomain**"
+astr(13) = obj%refElemDomain
+
+rowTitle(14) = "**isIsotropicOrder**"
+astr(14) = ToString(obj%isIsotropicOrder)
+
+rowTitle(15) = "**isAnisotropicOrder**"
+astr(15) = ToString(obj%isAnisotropicOrder)
+
+rowTitle(16) = "**isEdgeOrder**"
+astr(16) = ToString(obj%isEdgeOrder)
+
+rowTitle(17) = "**isFaceOrder**"
+astr(17) = ToString(obj%isFaceOrder)
+
+rowTitle(18) = "**isCellOrder**"
+astr(18) = ToString(obj%isCellOrder)
+
+IF (obj%isEdgeOrder) THEN
+  rowTitle(19) = "**edgeOrder**"
+  astr(19) = ToString(obj%edgeOrder)
+ELSE
+  rowTitle(19) = "**edgeOrder**"
+  astr(19) = " "
+END IF
+
+! IF (obj%isFaceOrder) THEN
+!   rowTitle(20) = "**faceOrder**"
+!   astr(20) = ToString(obj%faceOrder)
+! ELSE
+rowTitle(20) = "**faceOrder**"
+astr(20) = " "
+! END IF
+
+IF (obj%iscellOrder) THEN
+  rowTitle(21) = "**cellOrder**"
+  astr(21) = ToString(obj%cellOrder)
+ELSE
+  rowTitle(21) = "**cellOrder**"
+  astr(21) = " "
+END IF
+
+ans = React_StartTabs()//char_lf
+ans = ans//React_StartTabItem(VALUE="0", label="Finite Element")//char_lf// &
+      MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf// &
+      React_EndTabItem()//char_lf
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_ReactEncode
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

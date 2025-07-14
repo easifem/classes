@@ -77,6 +77,11 @@ CALL SetRealType(a=obj%lambda, b=lambda, n=obj%xidim)
 
 obj%elemIndx = GetElementIndex(obj%topoName)
 
+CALL obj%SetOrder(order=order, anisoOrder=anisoOrder, cellOrder=cellOrder, &
+            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+                 faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
+                 tface=tface, tedge=tedge, errCheck=errCheck)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

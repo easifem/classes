@@ -78,15 +78,44 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+IF (PRESENT(nsd)) obj%nsd = nsd
+IF (PRESENT(order)) obj%order = order
+IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
+IF (PRESENT(edgeOrder)) obj%edgeOrder(1:SIZE(edgeOrder)) = edgeOrder
+IF (PRESENT(faceOrder)) obj%faceOrder(1:3, 1:SIZE(faceOrder)) = faceOrder(1:3, :)
+IF (PRESENT(cellOrder)) obj%cellOrder(1:SIZE(cellOrder)) = cellOrder
+IF (PRESENT(feType)) obj%feType = feType
+IF (PRESENT(elemType)) obj%elemType = elemType
+IF (PRESENT(topoType)) obj%topoName= topoType
+IF (PRESENT(elemIndx)) obj%elemIndx= elemIndx
+IF (PRESENT(ipType)) obj%ipType = ipType
+IF (PRESENT(dofType)) obj%dofType = dofType
+IF (PRESENT(transformType)) obj%transformType = transformType
+
+IF (PRESENT(baseContinuity)) obj%baseContinuity = baseContinuity(1:2)
+IF (PRESENT(baseInterpolation)) obj%baseInterpolation = baseInterpolation(1:4)
+IF (PRESENT(refElemDomain)) obj%refElemDomain = refElemDomain(1:1)
+
+IF (PRESENT(isIsotropicOrder)) obj%isIsotropicOrder = isIsotropicOrder
+IF (PRESENT(isAnisotropicOrder)) obj%isAnisotropicOrder = isAnisotropicOrder
+IF (PRESENT(isEdgeOrder)) obj%isEdgeOrder = isEdgeOrder
+IF (PRESENT(isFaceOrder)) obj%isFaceOrder = isFaceOrder
+IF (PRESENT(isCellOrder)) obj%isCellOrder = isCellOrder
+
+IF (PRESENT(tEdgeOrder)) obj%tEdgeOrder = tEdgeOrder
+IF (PRESENT(tFaceOrder)) obj%tFaceOrder = tFaceOrder
+IF (PRESENT(tCellOrder)) obj%tCellOrder = tCellOrder
+
+IF (PRESENT(basisType)) obj%basisType = basisType
+IF (PRESENT(alpha)) obj%alpha = alpha
+IF (PRESENT(beta)) obj%beta = beta
+IF (PRESENT(lambda)) obj%lambda = lambda
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
