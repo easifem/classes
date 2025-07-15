@@ -1,6 +1,87 @@
-[BasisOpt]
+[basisOpt]
+feType = "Scalar"
+# Finite element type, can be "Scalar", "Vector", "Tensor", etc.
+
 basisContinuity = "H1"
+# conformity of basis functions, H1, HDIV, HCURL
+
 basisInterpolation = "Lagrange"
+# Interpolation functions
+# Lagrange, Hierarchical, Orthogonal
+
 ipType = "Equidistance"
+# Used when basisInterpolation is Lagrange,
+# It represents the interpolation points type
+# It can be Equidistance, GaussLegendre, GaussLegendreLobatto, etc.
+
 basisType = "Monomial"
+# Used when basisInterpolation is Lagrange,
+# It represents the type of basis functions used for constructing Lagrange 
+# polynomials for interpolations.
+# It can be a vector of size 3, in that case it represents the 
+# basis functions used in x, y, z directions.
 # basisType = ["Monomial", "Chebyshev", "Legendre"]
+
+alpha = 0.0
+# Used when basisInterpolation is Lagrange and basisType is Jacobi
+# It represents the Jacobi polynomial parameter alpha.
+# It can be a vector of size 3, in that case it represents the
+# Jacobi polynomial parameters used in x, y, z directions.
+
+beta = 0.0
+# Used when basisInterpolation is Lagrange and basisType is Jacobi
+# It represents the Jacobi polynomial parameter beta.
+# It can be a vector of size 3, in that case it represents the
+# Jacobi polynomial parameters used in x, y, z directions.
+
+lambda = 0.5
+# Used when basisInterpolation is Lagrange and basisType is Ultraspherical
+# It represents the Ultraspherical polynomial parameter lambda.
+# It can be a vector of size 3, in that case it represents the
+# Ultraspherical polynomial parameters used in x, y, z directions.
+
+# elemType = "Triangle"
+# elemType represents the type of reference element
+# It can be "Line", "Triangle", etc.
+# It is OPTIONAL, we can provide this parameter in FEDOF constructor
+
+quadOptName = "quadOpt"
+
+[basisOpt.quadOpt]
+isHomogeneous = true
+# Is all direction need same type of quadrature and accuracy
+
+quadratureType = "GaussLegendre"
+# quadratureType can be a vector of size 3
+# if it is a vector (max size 3), then it represents the type of quadrature
+# in x, y, and z directions
+
+order = 2 
+# order is optional, it can be a vector of size 3
+# when order is a vector, then it represents the order of accuracy in x, y, and z directions
+
+# nips = 3
+# number of integration points in each direction
+# it can be a vector of size 3, like order
+# either nips or order should be present, not both
+
+# nsd = 2
+# number of spatial dimensions, it is also optional
+# we can set it at FEDOF level while calling importFromToml method
+
+# topoType = "Line"
+# This is also optional, it is used to set the topology type
+# We can set it at FEDOF level while calling importFromToml method
+
+# alpha = 0.0
+# Jacobi parameter, it is used for Jacobi quadrature
+# It can be a vector of size 3, in this case it represents the Jacobi parameter in x, y, and z directions
+
+# beta = 0.0
+# Jacobi parameter, it is used for Jacobi quadrature
+# It can be a vector of size 3, in this case it represents the Jacobi parameter in x, y, and z directions
+
+# lambda = 0.5
+# Ultraspherical polynomial parameter, it is used for Ultraspherical quadrature
+# It can be a vector of size 3, in this case it represents the Ultraspherical parameter in x, y, and z directions
+

@@ -45,7 +45,7 @@ CHARACTER(*), PARAMETER :: modName = "QuadratureOpt_Class"
 
 TYPE :: QuadratureOpt_
   PRIVATE
-  LOGICAL( LGT ) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! Is the object initialized?
   LOGICAL(LGT) :: isHomogeneous = .FALSE.
   !! Does all direction have same quadrature type
@@ -57,7 +57,7 @@ TYPE :: QuadratureOpt_
   LOGICAL(LGT) :: isNips = .FALSE.
   !! is number of integration points specified?
 
-  INTEGER(I4B) :: topoName = 0_I4B
+  INTEGER(I4B) :: topoType = 0_I4B
   !! Element topology name
   !! Line, Triangle, Quadrangle, Tetrahedron, Hexahedron, Prism, Pyramid
 
@@ -167,7 +167,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE SetQuadratureOptParam1(param, prefix, quadratureType, &
                                            order, nips, alpha, beta, lambda, &
-                                           nsd, topoName)
+                                           nsd, topoType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN), OPTIONAL :: prefix
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
@@ -177,7 +177,7 @@ INTERFACE
     REAL(DFP), INTENT(IN), OPTIONAL :: beta
     REAL(DFP), INTENT(IN), OPTIONAL :: lambda
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
   END SUBROUTINE SetQuadratureOptParam1
 END INTERFACE
 
@@ -188,7 +188,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE SetQuadratureOptParam2(param, prefix, quadratureType, &
                                            order, nips, alpha, beta, lambda, &
-                                           nsd, topoName)
+                                           nsd, topoType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN), OPTIONAL :: prefix
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
@@ -198,7 +198,7 @@ INTERFACE
     REAL(DFP), INTENT(IN), OPTIONAL :: beta(3)
     REAL(DFP), INTENT(IN), OPTIONAL :: lambda(3)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
   END SUBROUTINE SetQuadratureOptParam2
 END INTERFACE
 
@@ -212,7 +212,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, isHomogeneous, quadratureType, order, &
-                    nips, alpha, beta, lambda, nsd, topoName, isOrder, isNips)
+                    nips, alpha, beta, lambda, nsd, topoType, isOrder, isNips)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isHomogeneous
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
@@ -225,7 +225,7 @@ INTERFACE
   !! Otherwise we access 1:nsd entries
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
   !! number of spatial dimensions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
   !! Topology name
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNips
@@ -256,7 +256,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, isHomogeneous, quadratureType, &
                   order, isOrder, isOrderScalar, nips, isNips, isNipsScalar, &
                   alpha, isAlpha, isAlphaScalar, beta, isBeta, isBetaScalar, &
-                              lambda, isLambda, isLambdaScalar, nsd, topoName)
+                              lambda, isLambda, isLambdaScalar, nsd, topoType)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isHomogeneous
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
@@ -276,7 +276,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isLambda
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isLambdaScalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -290,7 +290,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isHomogeneous, quadratureType, order, &
-                                 nips, alpha, beta, lambda, nsd, topoName)
+                                 nips, alpha, beta, lambda, nsd, topoType)
     CLASS(QuadratureOpt_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isHomogeneous
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureType(3)
@@ -300,7 +300,7 @@ INTERFACE
     REAL(DFP), INTENT(OUT), OPTIONAL :: beta(3)
     REAL(DFP), INTENT(OUT), OPTIONAL :: lambda(3)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoName
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoType
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -319,9 +319,11 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, topoType, nsd)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -335,12 +337,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
+                                        printToml, topoType, nsd)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 

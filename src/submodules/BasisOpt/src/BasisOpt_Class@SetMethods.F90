@@ -42,17 +42,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 SELECT CASE (obj%baseInterpolation)
 CASE ("LAGR")
   IF (obj%isIsotropicOrder) THEN
-    obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoName)
+    obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoType)
   END IF
 
   IF (obj%isAnisotropicOrder) THEN
     obj%tdof = LagrangeDOF(p=obj%anisoOrder(1), q=obj%anisoOrder(2), &
-                           r=obj%anisoOrder(3), elemType=obj%topoName)
+                           r=obj%anisoOrder(3), elemType=obj%topoType)
   END IF
 
 CASE ("HIER", "HEIR")
 
-  obj%tdof = HierarchicalDOF(elemType=obj%topoName, cellOrder=obj%cellOrder, &
+  obj%tdof = HierarchicalDOF(elemType=obj%topoType, cellOrder=obj%cellOrder, &
                              faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder)
 
 END SELECT
@@ -86,8 +86,8 @@ IF (PRESENT(faceOrder)) obj%faceOrder(1:3, 1:SIZE(faceOrder)) = faceOrder(1:3, :
 IF (PRESENT(cellOrder)) obj%cellOrder(1:SIZE(cellOrder)) = cellOrder
 IF (PRESENT(feType)) obj%feType = feType
 IF (PRESENT(elemType)) obj%elemType = elemType
-IF (PRESENT(topoType)) obj%topoName= topoType
-IF (PRESENT(elemIndx)) obj%elemIndx= elemIndx
+IF (PRESENT(topoType)) obj%topoType = topoType
+IF (PRESENT(elemIndx)) obj%elemIndx = elemIndx
 IF (PRESENT(ipType)) obj%ipType = ipType
 IF (PRESENT(dofType)) obj%dofType = dofType
 IF (PRESENT(transformType)) obj%transformType = transformType
@@ -110,6 +110,18 @@ IF (PRESENT(basisType)) obj%basisType = basisType
 IF (PRESENT(alpha)) obj%alpha = alpha
 IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
+
+CALL obj%quadOpt%SetParam(isHomogeneous=quadratureIsHomogeneous, &
+                          quadratureType=quadratureType, &
+                          order=quadratureOrder, &
+                          nips=quadratureNips, &
+                          alpha=quadratureAlpha, &
+                          beta=quadratureBeta, &
+                          lambda=quadratureLambda, &
+                          nsd=nsd, &
+                          topoType=topoType, &
+                          isOrder=quadratureIsOrder, &
+                          isNips=quadratureIsNips)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -196,8 +208,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isAnisotropicOrder= TypeBasisOpt%isAnisotropicOrder
-obj%anisoOrder= TypeBasisOpt%anisoOrder
+obj%isAnisotropicOrder = TypeBasisOpt%isAnisotropicOrder
+obj%anisoOrder = TypeBasisOpt%anisoOrder
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -65,7 +65,7 @@ END IF
 
 IF (PRESENT(feType)) feType = obj%feType
 IF (PRESENT(elemType)) elemType = obj%elemType
-IF (PRESENT(topoType)) topoType = obj%topoName
+IF (PRESENT(topoType)) topoType = obj%topoType
 IF (PRESENT(elemIndx)) elemIndx = obj%elemIndx
 IF (PRESENT(ipType)) ipType = obj%ipType
 
@@ -284,7 +284,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%topoName
+ans = obj%topoType
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

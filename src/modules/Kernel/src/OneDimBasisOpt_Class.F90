@@ -1026,7 +1026,7 @@ SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
     !! GaussLegendre, GaussLegendreLobatto
     !! GaussLegendreRadau, GaussLegendreRadauLeft
     !! GaussLegendreRadauRight, GaussChebyshev
-    !! GaussChebyshevLobatto, GaussChebyshevRadau, 
+    !! GaussChebyshevLobatto, GaussChebyshevRadau,
     !! GaussChebyshevRadauLeft, GaussChebyshevRadauRight
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Order of integrand
@@ -1106,7 +1106,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
   INTEGER(I4B) :: origin, stat, order, ipType, basisType, feType
   LOGICAL(LGT) :: isFound
-  TYPE(String) :: astr, baseContinuity, baseInterpolation, &
+  TYPE(String) :: baseContinuity, baseInterpolation, &
                   ipType_char, basisType_char, feType_char
   REAL(DFP) :: alpha, beta, lambda
 

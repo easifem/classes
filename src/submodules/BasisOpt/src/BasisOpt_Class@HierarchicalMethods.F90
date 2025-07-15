@@ -185,7 +185,7 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%tdof = HierarchicalDOF(elemType=obj%topoName, cellOrder=cellOrder, &
+obj%tdof = HierarchicalDOF(elemType=obj%topoType, cellOrder=cellOrder, &
                            faceOrder=faceOrder, edgeOrder=edgeOrder)
 
 obj%isCellOrder = PRESENT(cellOrder)

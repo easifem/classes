@@ -89,15 +89,11 @@ CONTAINS
   !! Initiate method from the parameter list
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate method from the parameters
-
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
-
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
 
@@ -127,7 +123,6 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
@@ -137,15 +132,12 @@ CONTAINS
 
   PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
   !! Get prefix
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
@@ -157,10 +149,8 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints1 => &
     obj_GetQuadraturePoints1
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints2 => &
     obj_GetQuadraturePoints2
-
   GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
     GetQuadraturePoints2
 END TYPE AbstractFE_
@@ -289,7 +279,13 @@ INTERFACE AbstractFEInitiate
           baseInterpolation, ipType, basisType, alpha, beta, lambda, fetype, &
                        dofType, transformType, order, anisoOrder, cellOrder, &
                    faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
-                                  tcell, tface, tedge, errCheck)
+                     tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
+                         quadratureType, quadratureOrder, quadratureIsOrder, &
+                  quadratureIsOrderScalar, quadratureNips, quadratureIsNips, &
+                 quadratureIsNipsScalar, quadratureAlpha, quadratureIsAlpha, &
+                  quadratureIsAlphaScalar, quadratureBeta, quadratureIsBeta, &
+               quadratureIsBetaScalar, quadratureLambda, quadratureIsLambda, &
+                                  quadratureIsLambdaScalar)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -366,6 +362,29 @@ INTERFACE AbstractFEInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureOrder(3)
+    !! quadrature accuracy in x, y, and z direction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrderScalar
+    !! Is order scalar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(3)
+    !! Number of interpolation points in x, y, and z directions
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNipsScalar
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(3)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlpha
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlphaScalar
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(3)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBeta
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBetaScalar
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(3)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambda
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambdaScalar
   END SUBROUTINE obj_Initiate2
 END INTERFACE AbstractFEInitiate
 

@@ -71,7 +71,7 @@ MODULE PROCEDURE SetBasisOptParam
 CHARACTER(*), PARAMETER :: myName = "SetBasisOptParam()"
 #endif
 
-INTEGER(I4B) :: topoName, myint, myintvec(3)
+INTEGER(I4B) :: topoType, myint, myintvec(3)
 CHARACTER(:), ALLOCATABLE :: baseContinuity0, baseInterpolation0, key
 TYPE(String) :: astr
 LOGICAL(LGT) :: isok
@@ -101,10 +101,10 @@ key = "elemType"
 CALL Set(obj=sublist, prefix=prefix, key=key, datatype=elemType, &
          VALUE=elemType)
 
-topoName = ElementTopology(elemType)
-key = "topoName"
-CALL Set(obj=sublist, prefix=prefix, key=key, datatype=topoName, &
-         VALUE=topoName)
+topoType = ElementTopology(elemType)
+key = "topoType"
+CALL Set(obj=sublist, prefix=prefix, key=key, datatype=topoType, &
+         VALUE=topoType)
 
 baseContinuity0 = UpperCase(baseContinuity)
 key = "baseContinuity"
@@ -176,7 +176,7 @@ IF (isok) THEN
   RETURN
 END IF
 
-CALL SetFEParam_OrderForHierarchy(param=sublist, topoName=topoName, &
+CALL SetFEParam_OrderForHierarchy(param=sublist, topoType=topoType, &
                                   edgeOrder=edgeOrder, faceOrder=faceOrder, &
                                   cellOrder=cellOrder, prefix=prefix)
 
@@ -392,9 +392,9 @@ SUBROUTINE SetDefaultFEParam(param, prefix)
   CALL Set(obj=param, prefix=prefix, key=key, &
            datatype=TypeBasisOpt%feType, VALUE=TypeBasisOpt%feType)
 
-  key = "topoName"
+  key = "topoType"
   CALL Set(obj=param, prefix=prefix, key=key, &
-           datatype=TypeBasisOpt%topoName, VALUE=TypeBasisOpt%topoName)
+           datatype=TypeBasisOpt%topoType, VALUE=TypeBasisOpt%topoType)
 
   key = "elemType"
   CALL Set(obj=param, prefix=prefix, key=key, &
@@ -467,10 +467,10 @@ END SUBROUTINE SetDefaultFEParam
 !                                               SetFEParam_OrderForHierarchy
 !----------------------------------------------------------------------------
 
-SUBROUTINE SetFEParam_OrderForHierarchy(param, topoName, edgeOrder, &
+SUBROUTINE SetFEParam_OrderForHierarchy(param, topoType, edgeOrder, &
                                         faceOrder, cellOrder, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
-  INTEGER(I4B), INTENT(IN) :: topoName
+  INTEGER(I4B), INTENT(IN) :: topoType
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
@@ -501,7 +501,7 @@ SUBROUTINE SetFEParam_OrderForHierarchy(param, topoName, edgeOrder, &
            VALUE=isEdgeOrder)
 
   IF (isEdgeOrder) THEN
-    tedges = GetTotalEdges(topoName)
+    tedges = GetTotalEdges(topoType)
     key = "tEdgeOrder"
     CALL Set(obj=param, prefix=prefix, key=key, datatype=tedges, &
              VALUE=tedges)
@@ -522,7 +522,7 @@ SUBROUTINE SetFEParam_OrderForHierarchy(param, topoName, edgeOrder, &
   CALL Set(obj=param, prefix=prefix, key=key, datatype=isFaceOrder, &
            VALUE=isFaceOrder)
   IF (isFaceOrder) THEN
-    tfaces = GetTotalFaces(topoName)
+    tfaces = GetTotalFaces(topoType)
     key = "tFaceOrder"
     CALL Set(obj=param, prefix=prefix, key=key, datatype=tfaces, &
              VALUE=tfaces)
@@ -676,8 +676,8 @@ CALL GetValue(obj=param, prefix=prefix, key=key, VALUE=obj%cellOrient)
 key = "feType"
 CALL GetValue(obj=param, prefix=prefix, key=key, VALUE=obj%feType)
 
-key = "topoName"
-CALL GetValue(obj=param, prefix=prefix, key=key, VALUE=obj%topoName)
+key = "topoType"
+CALL GetValue(obj=param, prefix=prefix, key=key, VALUE=obj%topoType)
 
 key = "elemType"
 CALL GetValue(obj=param, prefix=prefix, key=key, VALUE=obj%elemType)

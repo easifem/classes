@@ -53,7 +53,7 @@ obj%isIsotropicOrder = PRESENT(order)
 IF (obj%isIsotropicOrder) THEN
   CALL obj%ResetAnisotropicOrder()
   obj%order = order
-  obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoName)
+  obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoType)
 END IF
 
 obj%isAnisotropicOrder = PRESENT(anisoOrder)
@@ -63,7 +63,7 @@ IF (obj%isAnisotropicOrder) THEN
   obj%tdof = LagrangeDOF(p=obj%anisoOrder(1), &
                          q=obj%anisoOrder(2), &
                          r=obj%anisoOrder(3), &
-                         elemType=obj%topoName)
+                         elemType=obj%topoType)
 END IF
 
 

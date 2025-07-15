@@ -55,15 +55,15 @@ obj%elemType = elemType
 obj%nsd = nsd
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
-obj%topoName = ElementTopology(elemType)
+obj%topoType = ElementTopology(elemType)
 obj%fetype = fetype
-obj%xidim = XiDimension(obj%topoName)
-mystr = RefElemDomain(elemType=obj%topoName, &
+obj%xidim = XiDimension(obj%topoType)
+mystr = RefElemDomain(elemType=obj%topoType, &
                       baseContinuity=obj%baseContinuity, &
                       baseInterpol=obj%baseInterpolation)
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
-CALL RefCoord_(elemType=obj%topoName, ans=obj%refelemCoord, &
+CALL RefCoord_(elemType=obj%topoType, ans=obj%refelemCoord, &
                nrow=ii, ncol=jj, refelem=obj%refelemDomain)
 
 obj%isIpType = PRESENT(ipType)
@@ -75,12 +75,30 @@ CALL SetRealType(a=obj%alpha, b=alpha, n=obj%xidim)
 CALL SetRealType(a=obj%beta, b=beta, n=obj%xidim)
 CALL SetRealType(a=obj%lambda, b=lambda, n=obj%xidim)
 
-obj%elemIndx = GetElementIndex(obj%topoName)
+obj%elemIndx = GetElementIndex(obj%topoType)
 
 CALL obj%SetOrder(order=order, anisoOrder=anisoOrder, cellOrder=cellOrder, &
             faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-                 faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
-                 tface=tface, tedge=tedge, errCheck=errCheck)
+                  faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
+                  tface=tface, tedge=tedge, errCheck=errCheck)
+
+CALL obj%quadOpt%Initiate(isHomogeneous=quadratureIsHomogeneous, &
+                          quadratureType=quadratureType, &
+                          order=quadratureOrder, &
+                          isOrder=quadratureIsOrder, &
+                          isOrderScalar=quadratureIsOrderScalar, &
+                          nips=quadratureNips, &
+                          isNips=quadratureIsNips, &
+                          isNipsScalar=quadratureIsNipsScalar, &
+                          alpha=quadratureAlpha, &
+                          beta=quadratureBeta, &
+                          lambda=quadratureLambda, &
+                          isAlpha=quadratureIsAlpha, &
+                          isBeta=quadratureIsBeta, &
+                          isLambda=quadratureIsLambda, &
+                          isAlphaScalar=quadratureIsAlphaScalar, &
+                          isBetaScalar=quadratureIsBetaScalar, &
+                          isLambdaScalar=quadratureIsLambdaScalar)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -120,7 +138,7 @@ obj%tdof = obj2%tdof
 obj%nsd = obj2%nsd
 obj%xidim = obj2%xidim
 
-obj%topoName = obj2%topoName
+obj%topoType = obj2%topoType
 obj%elemType = obj2%elemType
 obj%elemIndx = obj2%elemIndx
 obj%feType = obj2%feType
