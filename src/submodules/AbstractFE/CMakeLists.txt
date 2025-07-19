@@ -15,10 +15,4 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/AbstractFE_Class@ParamConstructorMethods.F90
-          ${src_path}/AbstractFE_Class@ConstructorMethods.F90
-          ${src_path}/AbstractFE_Class@IOMethods.F90
-          ${src_path}/AbstractFE_Class@GetMethods.F90
-          ${src_path}/AbstractFE_Class@SetMethods.F90)
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/AbstractFE_Class@Methods.F90)

@@ -529,7 +529,7 @@ END PROCEDURE obj_GetMaxTotalConnectivity
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetQuadraturePoints1
+MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints1()'
 #endif
@@ -542,46 +542,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
 
-CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad, order=order, &
-         quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_GetQuadraturePoints1
-
-!----------------------------------------------------------------------------
-!                                                       GetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetQuadraturePoints2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints2()'
-#endif
-
-INTEGER(I4B) :: ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
-
-CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad, p=p, q=q, r=r, &
-           quadratureType1=quadratureType1, quadratureType2=quadratureType2, &
-                quadratureType3=quadratureType3, alpha1=alpha1, beta1=beta1, &
-               lambda1=lambda1, alpha2=alpha2, beta2=beta2, lambda2=lambda2, &
-                                  alpha3=alpha3, beta3=beta3, lambda3=lambda3)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetQuadraturePoints2
+END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !

@@ -28,7 +28,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_LagrangeFEPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_LagrangeFEPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ALLOCATE (ans)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_LagrangeFEPointer1
 
 !----------------------------------------------------------------------------
@@ -36,12 +50,26 @@ END PROCEDURE obj_LagrangeFEPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_LagrangeFEPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_LagrangeFEPointer2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ALLOCATE (ans)
 CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
-                  nsd=nsd, baseContinuity=baseContinuity, &
-           baseInterpolation="LAGRANGE", ipType=ipType, basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda)
+       nsd=nsd, baseContinuity=baseContinuity, baseInterpolation="LAGRANGE", &
+    ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, lambda=lambda)
+
 CALL ans%SetOrder(order=order, anisoOrder=anisoOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
@@ -49,7 +77,21 @@ END PROCEDURE obj_LagrangeFEPointer2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
@@ -57,7 +99,15 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -66,6 +116,10 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -73,7 +127,16 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
+
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -84,6 +147,11 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE Deallocate_Ptr_Vector
 

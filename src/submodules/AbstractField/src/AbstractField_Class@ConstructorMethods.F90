@@ -72,18 +72,24 @@ isSublist = param%IsSubList(prefix)
 
 IF (isSublist) THEN
   ierr = param%GetSubList(key=prefix, sublist=sublist)
+
+#ifdef DEBUG_VER
   isok = ierr .EQ. 0_I4B
   CALL AssertError1(isok, myName, &
                     'Error occured in getting sublist(1)')
+#endif
+
 END IF
 
 IF (.NOT. isSublist) THEN
   sublist => param%NewSubList(key=prefix)
 END IF
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(sublist)
 CALL AssertError1(isok, myName, &
                   'Error occured in getting sublist(2)')
+#endif
 
 CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
              VALUE=name)
@@ -104,8 +110,8 @@ CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
              VALUE=input(option=global_n, default=0_I4B))
 
 isSpace = PRESENT(isSpaceCompo) .AND. PRESENT(spaceCompo)
-CALL FPL_Set(obj=sublist, datatype=isSpace, prefix=prefix, key="isSpaceCompo", &
-             VALUE=isSpace)
+CALL FPL_Set(obj=sublist, datatype=isSpace, prefix=prefix, &
+             key="isSpaceCompo", VALUE=isSpace)
 
 isTime = PRESENT(isTimeCompo) .AND. PRESENT(timeCompo)
 CALL FPL_Set(obj=sublist, datatype=isTime, prefix=prefix, key="isTimeCompo", &
@@ -291,7 +297,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
 END PROCEDURE obj_Initiate2
@@ -301,56 +307,82 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+#endif
+
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr, ii, tsize
-LOGICAL(LGT) :: isOK
 CHARACTER(:), ALLOCATABLE :: prefix
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+! main
 prefix = obj%GetPrefix()
 
-! main
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
 
-! NOTE: We should not call deallocate in abstract classes.
+#ifdef DEBUG_VER
+isok = ierr .EQ. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(1)')
+#endif
+
+! note: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
 ! parameters before calling this method.
 ! All those parameters will be gone if we call deallocate
 ! here.
 ! CALL obj%DEALLOCATE()
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(sublist)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'Error occured in getting sublist(2)')
+#endif
 
 CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
 
 tsize = SIZE(fedof)
 ALLOCATE (obj%fedofs(tsize))
 DO ii = 1, tsize
-  isOK = ASSOCIATED(fedof(ii)%ptr)
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: fedof('//ToString(ii)//') is not ASSOCIATED.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(fedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'fedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
   obj%fedofs(ii)%ptr => fedof(ii)%ptr
 END DO
 
+! If timefedof is not preseent then exit
+isok = PRESENT(timefedof)
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  prefix = ""
+  sublist => NULL()
+  RETURN
+END IF
+
+tsize = SIZE(timefedof)
+ALLOCATE (obj%timefedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(timefedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'timefedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%timefedofs(ii)%ptr => timefedof(ii)%ptr
+END DO
+
+prefix = ""
 sublist => NULL()
 
 #ifdef DEBUG_VER
@@ -359,6 +391,120 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+! main
+
+! note: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+obj%isInitiated = .TRUE.
+obj%name = name
+obj%engine = engine
+obj%fieldType = Input(option=fieldType, default=TypeField%normal)
+obj%comm = Input(option=comm, default=0_I4B)
+obj%local_n = Input(option=local_n, default=0_I4B)
+obj%global_n = Input(option=global_n, default=0_I4B)
+
+obj%fedof => fedof
+IF (PRESENT(timefedof)) obj%timefedof => timefedof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+! main
+
+! note: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+obj%isInitiated = .TRUE.
+obj%name = name
+obj%engine = engine
+obj%fieldType = Input(option=fieldType, default=TypeField%normal)
+obj%comm = Input(option=comm, default=0_I4B)
+obj%local_n = Input(option=local_n, default=0_I4B)
+obj%global_n = Input(option=global_n, default=0_I4B)
+
+tsize = SIZE(fedof)
+ALLOCATE (obj%fedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(fedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'fedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%fedofs(ii)%ptr => fedof(ii)%ptr
+END DO
+
+! If timefedof is not preseent then exit
+isok = PRESENT(timefedof)
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+tsize = SIZE(timefedof)
+ALLOCATE (obj%timefedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(timefedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'timefedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%timefedofs(ii)%ptr => timefedof(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_Initiate5
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

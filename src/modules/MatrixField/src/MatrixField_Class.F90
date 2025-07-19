@@ -60,9 +60,7 @@ PUBLIC :: SetRectangleMatrixFieldParam
 PUBLIC :: DEALLOCATE
 PUBLIC :: MatrixFieldCheckEssentialParam
 PUBLIC :: RectangleMatrixFieldCheckEssentialParam
-PUBLIC :: MatrixFieldInitiate1
-PUBLIC :: MatrixFieldInitiate2
-PUBLIC :: MatrixFieldInitiate3
+PUBLIC :: MatrixFieldInitiate
 PUBLIC :: MatrixFieldDeallocate
 PUBLIC :: MatrixFieldDisplay
 PUBLIC :: MatrixFieldImport
@@ -645,14 +643,18 @@ END INTERFACE
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
-INTERFACE MatrixFieldInitiate1
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE MatrixFieldInitiate1
+END INTERFACE
+
+INTERFACE MatrixFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
+END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -689,7 +691,7 @@ END INTERFACE MatrixFieldInitiate1
 ! Add functionality for other options too.
 !@endtodo
 
-INTERFACE MatrixFieldInitiate2
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
@@ -699,7 +701,11 @@ INTERFACE MatrixFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE MatrixFieldInitiate2
+END INTERFACE
+
+INTERFACE MatrixFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@sConstructorMethods
@@ -709,14 +715,18 @@ END INTERFACE MatrixFieldInitiate2
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 
-INTERFACE MatrixFieldInitiate3
+INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
-END INTERFACE MatrixFieldInitiate3
+END INTERFACE
+
+INTERFACE MatrixFieldInitiate
+  MODULE PROCEDURE obj_Initiate3
+END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -726,20 +736,28 @@ END INTERFACE MatrixFieldInitiate3
 ! date: 16 July 2021
 ! summary: This routine deallocates the data stored inside the matrix
 
-INTERFACE MatrixFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE MatrixFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE MatrixFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE MatrixFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -810,8 +828,8 @@ END INTERFACE MatrixFieldImport
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportPmat(obj, hdf5, group, fedof, fedofs, timefedof,&
-      timefedofs)
+MODULE SUBROUTINE obj_ImportPmat(obj, hdf5, group, fedof, fedofs, timefedof, &
+                                   timefedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group

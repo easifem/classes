@@ -66,6 +66,9 @@ CALL BetaFromToml(obj, table)
 CALL LambdaFromToml(obj, table)
 IF (PRESENT(topoType)) obj%topoType = topoType
 IF (PRESENT(nsd)) obj%nsd = nsd
+IF (PRESENT(xidim)) obj%xidim = xidim
+IF (PRESENT(refelemDomain)) obj%refelemDomain = refelemDomain
+CALL obj%SetRefElemCoord(refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -516,7 +519,8 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, topoType=topoType, nsd=nsd)
+CALL obj%ImportFromToml(table=node, topoType=topoType, nsd=nsd, xidim=xidim, &
+                       refelemdomain=refelemDomain, refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN

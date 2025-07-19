@@ -73,7 +73,9 @@ CONTAINS
   !! Check the essential parameters
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Iniate an instance of ScalarField_
+  !! Initiate an instance of ScalarField_
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate an instance of ScalarField_ by passing arguments
 
   FINAL :: obj_Final
 
@@ -217,11 +219,15 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This routine Check the essential parameters in param.
 
-INTERFACE ScalarFieldCheckEssentialParam
+INTERFACE
   MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(ScalarField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE
+
+INTERFACE ScalarFieldCheckEssentialParam
+  MODULE PROCEDURE obj_CheckEssentialParam
 END INTERFACE ScalarFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -239,13 +245,115 @@ END INTERFACE ScalarFieldCheckEssentialParam
 ! scalar field. There are essential and optional information.
 ! Essential information are described below.
 
-INTERFACE ScalarFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE ScalarFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
+END INTERFACE ScalarFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Initiates by passing arguments
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, tNodes, isTNodes, &
+                                  isTNodesScalar, tSize, fedof, timefedof)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the scalar field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    !! Not required 
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    !! Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE ScalarFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
 END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -262,20 +370,28 @@ END INTERFACE
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE ScalarFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     TYPE(ScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE ScalarFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE ScalarFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(ScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE ScalarFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -291,13 +407,17 @@ END INTERFACE ScalarFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE ScalarFieldSafeAllocate
+INTERFACE
   MODULE SUBROUTINE obj_ScalarFieldSafeAllocate1(obj, newsize)
     TYPE(ScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable scalar field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_ScalarFieldSafeAllocate1
+END INTERFACE
+
+INTERFACE ScalarFieldSafeAllocate
+  MODULE PROCEDURE obj_ScalarFieldSafeAllocate1
 END INTERFACE ScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
@@ -340,9 +460,9 @@ END INTERFACE ScalarField_Pointer
 ! date: 16 July 2021
 ! summary: This routine Imports the content
 
-INTERFACE ScalarFieldImport
+INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-      timefedofs)
+                               timefedofs)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -351,6 +471,10 @@ INTERFACE ScalarFieldImport
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE ScalarFieldImport
+  MODULE PROCEDURE obj_Import
 END INTERFACE ScalarFieldImport
 
 !----------------------------------------------------------------------------
@@ -484,7 +608,6 @@ INTERFACE
     !! scale (if we are adding)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
-
   END SUBROUTINE obj_Set5
 END INTERFACE
 

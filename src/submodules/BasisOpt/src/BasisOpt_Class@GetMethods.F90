@@ -17,11 +17,11 @@
 !
 
 SUBMODULE(BasisOpt_Class) GetMethods
+USE Display_Method, ONLY: ToString
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 HierarchicalElemShapeData, &
                                 Elemsd_Set => Set
 
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 IMPLICIT NONE
 CONTAINS
 
@@ -95,6 +95,17 @@ IF (PRESENT(basisType)) basisType = obj%basisType
 IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
+
+CALL obj%quadOpt%GetParam( &
+  isHomogeneous=quadratureIsHomogeneous, &
+  quadratureType=quadratureType, &
+  order=quadratureOrder, &
+  nips=quadratureNips, &
+  alpha=quadratureAlpha, &
+  beta=quadratureBeta, &
+  lambda=quadratureLambda, &
+  isOrder=quadratureIsOrder, &
+  isNips=quadratureIsNips)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -206,7 +217,7 @@ END PROCEDURE obj_GetGlobalElemShapeData
 !                                                       GetQuadraturePoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetQuadraturePoints1
+MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints1()"
 #endif
@@ -216,59 +227,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL QuadraturePoint_Initiate(obj=quad, &
-                              elemType=obj%elemType, &
-                              domainName=obj%refelemDomain, &
-                              order=order, &
-                              quadratureType=quadratureType, &
-                              alpha=alpha, &
-                              beta=beta, &
-                              lambda=lambda, &
-                              xij=obj%refelemCoord(1:obj%xidim, :))
+CALL obj%quadOpt%GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetQuadraturePoints1
-
-!----------------------------------------------------------------------------
-!                                                         GetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetQuadraturePoints2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL QuadraturePoint_Initiate(obj=quad, &
-                              elemType=obj%elemType, &
-                              domainName=obj%refelemDomain, &
-                              p=p, q=q, r=r, &
-                              quadratureType1=quadratureType1, &
-                              quadratureType2=quadratureType2, &
-                              quadratureType3=quadratureType3, &
-                              alpha1=alpha1, &
-                              alpha2=alpha2, &
-                              alpha3=alpha3, &
-                              beta1=beta1, &
-                              beta2=beta2, &
-                              beta3=beta3, &
-                              lambda1=lambda1, &
-                              lambda2=lambda2, &
-                              lambda3=lambda3, &
-                              xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetQuadraturePoints2
+END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                           GetTopologyType
@@ -321,5 +286,57 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalDOF
+
+!----------------------------------------------------------------------------
+!                                                     GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseInterpolation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBaseInterpolation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%baseInterpolation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
+!                                                          GetBaseContinuity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseContinuity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBaseContinuity()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%baseContinuity
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetBaseContinuity
+
+!----------------------------------------------------------------------------
+!                                                           Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

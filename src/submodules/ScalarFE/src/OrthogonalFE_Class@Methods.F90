@@ -1,5 +1,7 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
+! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,21 +15,21 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
 
-SUBMODULE(AbstractFE_Class) ParamConstructorMethods
-USE BasisOpt_Class, ONLY: SetBasisOptParam
-USE Display_Method, ONLY: ToString
+SUBMODULE(OrthogonalFE_Class) Methods
+USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     CheckEssentialParam
+!                                                          OrthogonalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_CheckEssentialParam
+MODULE PROCEDURE obj_OrthogonalFEPointer1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+CHARACTER(*), PARAMETER :: myName = "obj_OrthogonalFEPointer1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -35,22 +37,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%CheckEssentialParam(param=param)
+ALLOCATE (ans)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_CheckEssentialParam
+END PROCEDURE obj_OrthogonalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                       SetAbstractFEParam
+!                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE SetAbstractFEParam
+MODULE PROCEDURE obj_GetPrefix
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetAbstractFEParam()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 #endif
 
 #ifdef DEBUG_VER
@@ -58,50 +59,77 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL SetBasisOptParam(param=param, prefix=prefix, nsd=nsd, &
-                      elemType=elemType, baseContinuity=baseContinuity, &
-                      baseInterpolation=baseInterpolation, ipType=ipType, &
-                 basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
-                    order=order, anisoOrder=anisoOrder, edgeOrder=edgeOrder, &
-                    faceOrder=faceOrder, cellOrder=cellOrder, fetype=fetype, &
-                      dofType=dofType, transformType=transformType)
+ans = myprefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE SetAbstractFEParam
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
+!                                                   FiniteElementDeallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
+MODULE PROCEDURE Deallocate_Vector
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
 #endif
+INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL obj%opt%Initiate(param=param)
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    CALL obj(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+'[START] ')
+#endif
+
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate1
+END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                             Error handling
+!
 !----------------------------------------------------------------------------
 
-#include "../../include/errors.F90"
-
-END SUBMODULE ParamConstructorMethods
+END SUBMODULE Methods

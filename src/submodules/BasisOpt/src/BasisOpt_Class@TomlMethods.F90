@@ -68,6 +68,8 @@ CALL LambdaFromToml(obj, table)
 CALL FeTypeFromToml(obj, table)
 CALL ElemTypeFromToml(obj, table)
 
+isok = PRESENT(nsd); IF (isok) obj%nsd = nsd
+
 isok = PRESENT(elemType)
 IF (isok) THEN
   obj%elemType = elemType
@@ -83,8 +85,9 @@ IF (isok) THEN
   obj%elemIndx = GetElementIndex(obj%topoType)
 END IF
 
-CALL QuadOptFromToml(obj, table, topoType=obj%topoType, &
-                     nsd=obj%xidim)
+CALL QuadOptFromToml(obj, table)
+
+astr = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -140,6 +143,8 @@ SUBROUTINE ElemTypeFromToml(obj, table)
                  nrow=ii, ncol=jj, refelem=obj%refelemDomain)
   obj%elemIndx = GetElementIndex(obj%topoType)
 
+  astr = ""
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -150,11 +155,9 @@ END SUBROUTINE ElemTypeFromToml
 !                                                        QuadOptNameFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE QuadOptFromToml(obj, table, topoType, nsd)
+SUBROUTINE QuadOptFromToml(obj, table)
   CLASS(BasisOpt_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
 
   ! internal variables
   INTEGER(I4B) :: origin, stat
@@ -198,7 +201,9 @@ SUBROUTINE QuadOptFromToml(obj, table, topoType, nsd)
   END IF
 #endif
 
-  CALL obj%quadOpt%ImportFromToml(table=node, topoType=topoType, nsd=nsd)
+  CALL obj%quadOpt%ImportFromToml(table=node, topoType=obj%topoType, &
+              nsd=obj%nsd, xidim=obj%xidim, refelemDomain=obj%refelemDomain, &
+                                  refelemCoord=obj%refelemCoord)
 
   node => NULL()
   astr = ""
@@ -237,6 +242,8 @@ SUBROUTINE BaseInterpolationFromToml(obj, table)
 
   obj%baseInterpolation = UpperCase(astr%slice(1, 4))
 
+  astr = ""
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -272,6 +279,8 @@ SUBROUTINE BaseContinuityFromToml(obj, table)
 
   obj%baseContinuity = UpperCase(astr%slice(1, 2))
 
+  astr = ""
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -306,6 +315,8 @@ SUBROUTINE IpTypeFromToml(obj, table)
   obj%ipType_char = astr%chars()
   obj%ipType = InterpolationPoint_ToInteger(astr%chars())
 
+  astr = ""
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -339,6 +350,8 @@ SUBROUTINE FeTypeFromToml(obj, table)
                 origin=origin, stat=stat, isFound=isFound)
   obj%feType_char = astr%chars()
   obj%feType = FEVariable_ToInteger(astr%chars())
+
+  astr = ""
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -391,6 +404,10 @@ SUBROUTINE BasisTypeFromToml(obj, table)
       obj%basisType(ii) = BaseType_ToInteger(astr(ii)%chars())
     END DO
   END IF
+
+  DO ii = 1, 3
+    astr(ii) = ""
+  END DO
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -577,7 +594,7 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, elemType=elemType)
+CALL obj%ImportFromToml(table=node, elemType=elemType, nsd=nsd)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN

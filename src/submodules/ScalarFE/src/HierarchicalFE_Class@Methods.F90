@@ -24,17 +24,33 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         HierarchicalFEPointer
+!                                                      HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_HierarchicalFEPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_HierarchicalFEPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ALLOCATE (ans)
+
 CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
                   nsd=nsd, baseContinuity=baseContinuity, &
                   baseInterpolation="Hierarchical")
+
 CALL ans%SetOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
                   edgeOrder=edgeOrder, cellOrient=cellOrient, &
                   faceOrient=faceOrient, edgeOrient=edgeOrient)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
@@ -42,7 +58,21 @@ END PROCEDURE obj_HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
@@ -50,7 +80,15 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -59,6 +97,10 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -66,7 +108,15 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -78,6 +128,10 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------

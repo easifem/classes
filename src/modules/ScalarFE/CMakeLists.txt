@@ -25,4 +25,5 @@ target_sources(
           ${src_path}/HierarchicalFE_Class.F90
           ${src_path}/HierarchicalOneDimFE_Class.F90
           ${src_path}/OrthogonalOneDimFE_Class.F90
+          ${src_path}/OrthogonalFE_Class.F90
 )

@@ -86,19 +86,16 @@ CALL obj%quadOpt%Initiate(isHomogeneous=quadratureIsHomogeneous, &
                           quadratureType=quadratureType, &
                           order=quadratureOrder, &
                           isOrder=quadratureIsOrder, &
-                          isOrderScalar=quadratureIsOrderScalar, &
                           nips=quadratureNips, &
                           isNips=quadratureIsNips, &
-                          isNipsScalar=quadratureIsNipsScalar, &
                           alpha=quadratureAlpha, &
                           beta=quadratureBeta, &
                           lambda=quadratureLambda, &
-                          isAlpha=quadratureIsAlpha, &
-                          isBeta=quadratureIsBeta, &
-                          isLambda=quadratureIsLambda, &
-                          isAlphaScalar=quadratureIsAlphaScalar, &
-                          isBetaScalar=quadratureIsBetaScalar, &
-                          isLambdaScalar=quadratureIsLambdaScalar)
+                          topoType=obj%topoType, &
+                          nsd=obj%nsd, &
+                          xidim=obj%xidim, &
+                          refelemDomain=obj%refelemDomain, &
+                          refelemCoord=obj%refelemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

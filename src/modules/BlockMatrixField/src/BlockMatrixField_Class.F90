@@ -51,8 +51,7 @@ INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 PUBLIC :: BlockMatrixField_
 PUBLIC :: SetBlockMatrixFieldParam
 PUBLIC :: SetBlockMatrixFieldPrecondParam
-PUBLIC :: BlockMatrixFieldInitiate1
-PUBLIC :: BlockMatrixFieldInitiate3
+PUBLIC :: BlockMatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -234,14 +233,18 @@ END INTERFACE
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
-INTERFACE BlockMatrixFieldInitiate1
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
-END INTERFACE BlockMatrixFieldInitiate1
+END INTERFACE
+
+INTERFACE BlockMatrixFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
+END INTERFACE BlockMatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -251,14 +254,18 @@ END INTERFACE BlockMatrixFieldInitiate1
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 
-INTERFACE BlockMatrixFieldInitiate3
+INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
-END INTERFACE BlockMatrixFieldInitiate3
+END INTERFACE
+
+INTERFACE BlockMatrixFieldInitiate
+  MODULE PROCEDURE obj_Initiate3
+END INTERFACE BlockMatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

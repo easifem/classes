@@ -15,14 +15,5 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/ErrorOpt_Class.F90
-          ${src_path}/OneDimBasisOpt_Class.F90
-          ${src_path}/OneDimQuadratureOpt_Class.F90
-          ${src_path}/CoordOpt_Class.F90
-          ${src_path}/TimeOpt_Class.F90
-          ${src_path}/OneDimDomain_Class.F90
-          ${src_path}/EngineOpt_Class.F90
-          ${src_path}/FieldOpt_Class.F90)
+# set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+# target_sources(${PROJECT_NAME} PRIVATE ${src_path}/CoordOpt_Class.F90)

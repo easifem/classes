@@ -17,10 +17,8 @@
 MODULE LagrangeFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE ScalarFE_Class, ONLY: ScalarFE_
-
 USE BaseType, ONLY: QuadraturePoint_, &
                     ElemShapedata_
-
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
@@ -84,9 +82,7 @@ END INTERFACE LagrangeFEPointer
 
 INTERFACE LagrangeFEPointer
   MODULE FUNCTION obj_LagrangeFEPointer2(elemType, nsd, baseContinuity, &
-                              ipType, basisType, alpha, beta, lambda, order, &
-                                         anisoOrder) RESULT(ans)
-
+        ipType, basisType, alpha, beta, lambda, order, anisoOrder) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: elemType
     !! Type of finite element
     !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,

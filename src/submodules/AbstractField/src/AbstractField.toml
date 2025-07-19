@@ -1,0 +1,19 @@
+[field]
+name = "fieldName"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+physicalVarNames = ["var1", "var2"]
+fedofName = "space"
+timefedofName = "time"
+
+[field.space]
+# fedof related data comes here
+
+[field.time]
+# timefedof related data comes here
+
+[field.exact]
+# exact solution related data comes here
+

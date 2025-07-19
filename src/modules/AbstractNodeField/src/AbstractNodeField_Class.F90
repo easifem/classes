@@ -104,6 +104,8 @@ CONTAINS
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate an instance of AbstrtactNodeField
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
@@ -265,13 +267,17 @@ END INTERFACE
 ! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given fdof
 
-INTERFACE AbstractNodeFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -295,7 +301,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! Currently, copyStructure and usePointer is not used
 
-INTERFACE AbstractNodeFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -305,6 +311,10 @@ INTERFACE AbstractNodeFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -315,7 +325,7 @@ END INTERFACE AbstractNodeFieldInitiate
 ! date: 25 Sept 2021
 ! summary: Initiates AbstractNodeField_ from parameters and fedof
 
-INTERFACE AbstractNodeFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
@@ -324,6 +334,170 @@ INTERFACE AbstractNodeFieldInitiate
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
   END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE PROCEDURE obj_Initiate3
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Initiates by passing arguments
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, tNodes, isTNodes, &
+                                  isTNodesScalar, tSize, fedof, timefedof)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+!
+!# Introduction
+!  This method is like obj_Initiate3, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate5(obj, name, engine, &
+                                  fieldType, comm, local_n, &
+                                  global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, &
+                                  isTimeCompoScalar, &
+                                  tPhysicalVarNames, &
+                                  physicalVarNames, &
+                                  isPhysicalVarNames, fedof, timefedof)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    !! Vector of TimeFEDOFPointers
+    !! All timefedofs should be initiated
+  END SUBROUTINE obj_Initiate5
+END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE PROCEDURE obj_Initiate5
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -334,10 +508,14 @@ END INTERFACE AbstractNodeFieldInitiate
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractNodeField_]]
 
-INTERFACE AbstractNodeFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractNodeFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -348,12 +526,16 @@ END INTERFACE AbstractNodeFieldDeallocate
 ! date:  2023-11-26
 ! summary:  Display the content of AbstractNodeField
 
-INTERFACE AbstractNodeFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE AbstractNodeFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -364,7 +546,7 @@ END INTERFACE AbstractNodeFieldDisplay
 ! date:  2023-11-24
 ! summary:  Import data into HDF5File_
 
-INTERFACE AbstractNodeFieldImport
+INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -375,6 +557,10 @@ INTERFACE AbstractNodeFieldImport
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE AbstractNodeFieldImport
+  MODULE PROCEDURE obj_Import
 END INTERFACE AbstractNodeFieldImport
 
 !----------------------------------------------------------------------------
@@ -385,12 +571,16 @@ END INTERFACE AbstractNodeFieldImport
 ! date:  2023-11-24
 ! summary:  Export data into HDF5File_
 
-INTERFACE AbstractNodeFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE AbstractNodeFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE AbstractNodeFieldExport
 
 !----------------------------------------------------------------------------
@@ -401,11 +591,15 @@ END INTERFACE AbstractNodeFieldExport
 ! date:  2023-11-24
 ! summary:  Export data in vtkfile
 
-INTERFACE AbstractNodeFieldWriteData
+INTERFACE
   MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk1
+END INTERFACE
+
+INTERFACE AbstractNodeFieldWriteData
+  MODULE PROCEDURE obj_WriteData_vtk1
 END INTERFACE AbstractNodeFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -416,11 +610,15 @@ END INTERFACE AbstractNodeFieldWriteData
 ! date:   2023-12-21
 ! summary:  Export data in vtkfile
 
-INTERFACE AbstractNodeFieldWriteData
+INTERFACE
   MODULE SUBROUTINE obj_WriteData_vtk2(obj, vtk)
     CLASS(AbstractNodeFieldPointer_), INTENT(INOUT) :: obj(:)
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk2
+END INTERFACE
+
+INTERFACE AbstractNodeFieldWriteData
+  MODULE PROCEDURE obj_WriteData_vtk2
 END INTERFACE AbstractNodeFieldWriteData
 
 INTERFACE NodeFieldsWriteData
@@ -457,11 +655,15 @@ END INTERFACE
 ! date: 20 Jul 2021
 ! summary: Returns the pointer to a fortran real vector stored inside realVec
 
-INTERFACE AbstractNodeFieldGetPointer
+INTERFACE
   MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
     CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION obj_GetPointer
+END INTERFACE
+
+INTERFACE AbstractNodeFieldGetPointer
+  MODULE PROCEDURE obj_GetPointer
 END INTERFACE AbstractNodeFieldGetPointer
 
 !----------------------------------------------------------------------------
@@ -472,10 +674,11 @@ END INTERFACE AbstractNodeFieldGetPointer
 ! date:  2023-10-25
 ! summary:  Set parameters of AbstractNodeField_
 
-INTERFACE AbstractNodeFieldSetParam
-  MODULE SUBROUTINE obj_SetParam(obj, dof_tPhysicalVars,  &
-      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
-      & dof_tNodes, dof_names_char, tSize)
+INTERFACE
+  MODULE SUBROUTINE obj_SetParam(obj, dof_tPhysicalVars, &
+                                 dof_storageFMT, dof_spaceCompo, &
+                                 dof_timeCompo, dof_tNodes, &
+                                 dof_names_char, tSize)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
     !! total number of physical variables
@@ -492,6 +695,10 @@ INTERFACE AbstractNodeFieldSetParam
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     !! Total size of the field
   END SUBROUTINE obj_SetParam
+END INTERFACE
+
+INTERFACE AbstractNodeFieldSetParam
+  MODULE PROCEDURE obj_SetParam
 END INTERFACE AbstractNodeFieldSetParam
 
 !----------------------------------------------------------------------------
@@ -502,7 +709,7 @@ END INTERFACE AbstractNodeFieldSetParam
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE AbstractNodeFieldSetSingle
+INTERFACE
   MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, &
     & addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -511,6 +718,10 @@ INTERFACE AbstractNodeFieldSetSingle
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_SetSingle
+END INTERFACE
+
+INTERFACE AbstractNodeFieldSetSingle
+  MODULE PROCEDURE obj_SetSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
 !----------------------------------------------------------------------------
@@ -698,8 +909,8 @@ END INTERFACE
 ! summary: Set values of field by user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
-    & spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
+                                      spaceCompo, timeCompo)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -718,12 +929,16 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE AbstractNodeFieldGetSingle
+INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE obj_GetSingle
+END INTERFACE
+
+INTERFACE AbstractNodeFieldGetSingle
+  MODULE PROCEDURE obj_GetSingle
 END INTERFACE AbstractNodeFieldGetSingle
 
 !----------------------------------------------------------------------------
@@ -734,7 +949,7 @@ END INTERFACE AbstractNodeFieldGetSingle
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE AbstractNodeFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     !! abstract node field
@@ -747,6 +962,10 @@ INTERFACE AbstractNodeFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! physical variable nubmer
   END SUBROUTINE obj_GetFeVariable
+END INTERFACE
+
+INTERFACE AbstractNodeFieldGetFEVariable
+  MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE AbstractNodeFieldGetFEVariable
 
 !----------------------------------------------------------------------------
@@ -838,8 +1057,8 @@ END INTERFACE
 ! summary:  This function returns the location of globalNode
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeLoc1(obj, globalNode, ivar, spaceCompo,  &
-    & timeCompo) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeLoc1(obj, globalNode, ivar, spaceCompo, &
+                                  timeCompo) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! Global node number

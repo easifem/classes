@@ -61,8 +61,8 @@ TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 
 CALL SetAbstractFieldParam(param=param, prefix=prefix, name=name, &
-             engine=engine, fieldType=fieldType, comm=comm, local_n=local_n, &
-                           global_n=global_n)
+                           engine=engine, fieldType=fieldType, comm=comm, &
+                           local_n=local_n, global_n=global_n)
 
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
@@ -369,11 +369,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 sublist => NULL()
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
+
+#ifdef DEBUG_VER
 isok = ierr .EQ. 0_I4B
 CALL AssertError1(isok, myName, "Some error occured in getting sublist(1)")
+#endif
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(sublist)
 CALL AssertError1(isok, myName, "sublist is not associated")
+#endif
 
 CALL obj%CheckEssentialParam(sublist)
 
@@ -412,7 +417,6 @@ obj%isPmatInitiated = .FALSE.
 obj%isRectangle = .FALSE.
 
 IF (obj%local_n .EQ. 0) obj%local_n = nrow
-
 IF (obj%global_n .EQ. 0) obj%global_n = nrow
 
 ! setting the sparsity
@@ -442,21 +446,38 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-SELECT TYPE (obj2)
-CLASS IS (MatrixField_)
+CALL obj%DEALLOCATE()
+isok = obj2%isInitiated
+CALL AssertError1(isok, myName, "obj2 is not initiated")
 
-  CALL obj%DEALLOCATE()
-
-  isok = obj2%isInitiated
-
-  CALL AssertError1(isok, myName, "obj2 is not initiated")
-
-  CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
+SELECT TYPE (obj2)
+CLASS IS (AbstractNodeField_)
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+  ! Initiate dof object
+  ! tNodes = fedof%GetTotalDOF()
+  ! storageFMT = mystorageformat
+  ! spaceCompo = obj2%GetSpaceCompo()
+  ! timeCompo = obj2%GetTimeCompo()
+  ! CALL DOF_Initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
+  !                   spaceCompo=spaceCompo, timeCompo=timeCompo, &
+  !                   storageFMT=storageFMT)
+
+  ! Get nrow and ncol from obj2
+  ! nrow = obj2%Size()
+  ! ncol = nrow
+  ! nrow should be same as tNodes(1) * spaceCompo(1) * timeCompo(1)
+  ! matrixProp="UNSYM"
+  ! Initiate CSRMatrix
+  ! CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
+  !                         jdof=dofobj, matrixProp=astr%chars())
+
+CLASS IS (MatrixField_)
   obj%mat = obj2%mat
   obj%submat = obj2%submat
-
   obj%isPmatInitiated = obj2%isPMatInitiated
   obj%isRectangle = obj2%isRectangle
 

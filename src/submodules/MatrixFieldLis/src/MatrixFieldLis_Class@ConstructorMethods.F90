@@ -20,9 +20,7 @@
 
 SUBMODULE(MatrixFieldLis_Class) ConstructorMethods
 
-USE MatrixField_Class, ONLY: MatrixFieldInitiate1, &
-                             MatrixFieldInitiate2, &
-                             MatrixFieldInitiate3, &
+USE MatrixField_Class, ONLY: MatrixFieldInitiate, &
                              MatrixFieldDeallocate
 
 USE CSRMatrix_Method, ONLY: GetNNZ
@@ -46,7 +44,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate1(obj=obj, param=param, fedof=fedof)
+CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -94,7 +92,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL MatrixFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                           copyStructure=copyStructure, usePointer=usePointer)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
@@ -141,7 +139,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate3(obj=obj, param=param, fedof=fedof)
+CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)

@@ -1,0 +1,634 @@
+! This program is a part of EASIFEM library
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+
+MODULE OneDimBasisOpt_Class
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
+                    polyopt => TypePolynomialOpt, &
+                    QuadraturePoint_
+USE FPL, ONLY: ParameterList_
+USE ExceptionHandler_Class, ONLY: e
+USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table
+
+IMPLICIT NONE
+
+PRIVATE
+
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
+CHARACTER(*), PARAMETER :: essentialParams = &
+     "/order/fetype/ipType/refElemDomain/baseContinuity/baseInterpolation"// &
+                           "/basisType/alpha/beta/lambda"
+
+PUBLIC :: OneDimBasisOpt_, TypeOneDimBasisOpt
+PUBLIC :: SetOneDimBasisOptParam
+
+!----------------------------------------------------------------------------
+!                                                             BasisOpt_Class
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-11
+! summary: This class contains data necessary for forming basis functions
+! in one dimension
+
+TYPE :: OneDimBasisOpt_
+  PRIVATE
+  LOGICAL(LGT) :: firstCall = .TRUE.
+  !! flag to check if the shape functions are constructed from scratch or not
+
+  INTEGER(I4B) :: tdof = 0
+  !! total number of degrees of freedom
+  !! this is equal to order + 1  in one dimension case
+
+  INTEGER(I4B) :: order = 0
+  !! order of the basis functions
+
+  INTEGER(I4B) :: fetype = 0
+  !! type of finite element
+  !!  Scalar, Vector, Matrix
+
+  INTEGER(I4B) :: ipType = ipopt%equidistance
+  !! interpolation type, it is used incase baseInterpolation is Lagrange
+
+  INTEGER(I4B) :: basisType = polyopt%monomial
+  !! basis type, it is used in case baseInterpolation is Lagrange
+  !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
+  !! Ultraspherical
+
+  REAL(DFP) :: alpha = 0.0_DFP
+  !! Jacobi polynomial parameter, x, y, z
+  REAL(DFP) :: beta = 0.0_DFP
+  !! Jacobi polynomial parametera, x, y, z
+  REAL(DFP) :: lambda = 0.5_DFP
+  !! Ultraspherical polynomial parameter, x, y, z
+
+  CHARACTER(1) :: refelemDomain = "B"
+  !! String name for reference element domain.
+  !! It can take following values:
+  !! - UNIT "U"
+  !! - BIUNIT "B"
+
+  CHARACTER(2) :: baseContinuity = "H1"
+  !! continuity or conformity of basis defined on reference
+  !! element, following values are allowed
+  !! H1, HCurl, HDiv, DG
+
+  CHARACTER(4) :: baseInterpolation = "LAGR"
+  !! Type of basis functions used for interpolation on reference
+  !! element, Following values are allowed
+  !! LagrangeInterpolation
+  !! HierarchyInterpolation
+  !! OrthogonalInterpolation
+  !! HermitInterpolation
+  !! SerendipityInterpolation
+
+  REAL(DFP) :: refelemCoord(1, 2) = RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
+  !! coordinate of reference element
+
+  CHARACTER(128) :: basisType_char = "MONOMIAL"
+  !! basis type in string format
+
+  CHARACTER(128) :: ipType_char = "EQUIDISTANCE"
+  !! interpolation type in string format
+
+  CHARACTER(128) :: feType_char = "SCALAR"
+  !! finite element type in string format
+
+  TYPE(OneDimQuadratureOpt_) :: quadOpt
+  !! Quadrature options
+
+  TYPE(QuadraturePoint_) :: quad
+  !! quadrature points
+
+CONTAINS
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate OneDimBasisOpt object from parameters
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate by arguments
+
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
+  !! This method checks the essential parameters in the parameter list
+  !! It is called while initiating the object from the parameter list
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
+  !! Deallocate the object
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  !! Copy
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the contents of the object
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  !! Set the parameters of the object
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order of the basis functions
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Get the parameters
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
+    obj_GetBaseContinuity
+  !! Get baseContinuity
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+  !! Get baseInterpolation
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
+    obj_GetCaseName
+  !! Get the case name
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  !! Get the order
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Import from toml table
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+  !! Improt from toml table
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+
+END TYPE OneDimBasisOpt_
+
+!----------------------------------------------------------------------------
+!                                                              TypeBasisOpt
+!----------------------------------------------------------------------------
+
+TYPE(OneDimBasisOpt_), PARAMETER :: TypeOneDimBasisOpt = OneDimBasisOpt_()
+
+!----------------------------------------------------------------------------
+!                                              SetOneDimBasisOptParam@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-16
+! summary:  Set the basis type in parameter list
+
+INTERFACE
+  MODULE SUBROUTINE SetOneDimBasisOptParam(param, prefix, order, &
+                                           baseContinuity, &
+                                           baseInterpolation, &
+                                           ipType, basisType, alpha, beta, &
+                                           lambda, feType, quadratureType, &
+                                           quadratureOrder, quadratureNips, &
+                                           quadratureAlpha, quadratureBeta, &
+                                           quadratureLambda)
+
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    !! prefix used for setting values in parameter list
+    INTEGER(I4B), INTENT(IN) :: order
+    !! order of the basis functionsa
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity of basis functions
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! interpolation of basis functions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! Interpolation type in case baseInterpolation is Lagrange
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
+    !! basis type in case baseInterpolation is Lagrange
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi polynomial parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi polynomial parametera
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical polynomial parameter
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Finite element type
+    !! Default is Scalar
+    !! For HDiv and Hcurl it should be Vector
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    !! Quadrature type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
+    !! Quadrature order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    !! Number of integration points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
+    !! Quadrature alpha parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
+    !! Quadrature beta parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
+    !! Quadrature lambda parameter
+  END SUBROUTINE SetOneDimBasisOptParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-16
+! summary: Initiate OneDimBasisOpt object from parameters
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, param, prefix)
+    CLASS(OneDimBasisOpt_), INTENT(inout) :: obj
+    TYPE(ParameterList_), INTENT(in) :: param
+    CHARACTER(*), INTENT(in) :: prefix
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary:  Initiate OneDimBasisOpt by arguments
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, baseContinuity, baseInterpolation, &
+                                  ipType, basisType, alpha, beta, lambda, &
+                                  order, fetype, quadratureType, &
+                                  quadratureOrder, quadratureNips, &
+                                  quadratureAlpha, quadratureBeta, &
+                                  quadratureLambda)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! Finite element object
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! Continuity or Conformity of basis function.
+    !! This parameter is used to determine the nodal coordinates of
+    !! reference element, when xij is not present.
+    !! If xij is present then this parameter is ignored
+    !! H1* (default), HDiv, HCurl, DG
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Basis function family used for interpolation.
+    !! This parameter is used to determine the nodal coordinates of
+    !! reference element, when xij is not present.
+    !! If xij is present then this parameter is ignored
+    !! LagrangeInterpolation, LagrangePolynomial
+    !! SerendipityInterpolation, SerendipityPolynomial
+    !! HierarchyInterpolation, HierarchyPolynomial
+    !! OrthogonalInterpolation, OrthogonalPolynomial
+    !! HermitInterpolation, HermitPolynomial
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! Interpolation point type, It is required when
+    !! baseInterpol is LagrangePolynomial
+    !! Default ipType is Equidistance
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
+    !! Basis type: Legendre, Lobatto, Ultraspherical,
+    !! Jacobi, Monomial
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameters
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Isotropic Order of finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    !! Finite element type
+    !! Default is Scalar
+    !! For HDiv and Hcurl it should be Vector
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+  !! Quadrature type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
+    !! Quadrature orders
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    !! Number of integration points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
+    !! Quadrature alpha parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
+    !! Quadrature beta parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
+    !! Quadrature lambda parameter
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       CheckEssentialParam
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-08-11
+! summary: This routine Check the essential parameters in param.
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(OneDimBasisOpt_), INTENT(inout) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Copy
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(OneDimBasisOpt_), INTENT(inout) :: obj
+    CLASS(OneDimBasisOpt_), INTENT(in) :: obj2
+  END SUBROUTINE obj_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Display
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary:  Display the contents of the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   SetParam
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary:  Set the parameters in the OneDimBasisOpt object
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetParam(obj, order, fetype, ipType, basisType, &
+                                 alpha, beta, lambda, refElemDomain, &
+                                 baseContinuity, baseInterpolation, &
+                                 firstCall, quadratureType, &
+                                 quadratureOrder, quadratureNips, &
+                                 quadratureAlpha, quadratureBeta, &
+                                 quadratureLambda)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order of element (isotropic order)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    !! finite element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation point type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
+    !! Basis type in x, y, and z directions
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameter
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
+    !! String name of type of continuity used for basis functions
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
+    !! String name of type of interpolation used for basis functions
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
+    !! Domain of reference element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: firstCall
+    !!
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    !! Quadrature type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
+    !! Quadrature order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    !! Number of integration points
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
+    !! Quadrature alpha parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
+    !! Quadrature beta parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
+    !! Quadrature lambda parameter
+  END SUBROUTINE obj_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              SetOrder
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary: Set the order of the basis functions
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder(obj, order)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  GetParam
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetParam(obj, order, tdof, fetype, ipType, &
+                                 basisType, alpha, beta, lambda, &
+                                 refElemDomain, baseContinuity, &
+                                 baseInterpolation, firstCall, &
+                                 quadratureType, quadratureOrder, &
+                                 quadratureNips, quadratureAlpha, &
+                                 quadratureBeta, quadratureLambda)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    !! Abstract one dimenstional finite element
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
+    !! order of element (isotropic order)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tdof
+    !! total degrees of freedom
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
+    !! finite element type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
+    !! interpolation point type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType
+    !! Basis type in x, y, and z directions
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda
+    !! Ultraspherical parameter
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
+    !! String name of type of continuity used for basis functions
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
+    !! String name of type of interpolation used for basis functions
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
+    !! Domain of reference element
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: firstCall
+    !!
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureType
+    !! Quadrature type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureOrder
+    !! Quadrature order
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips(1)
+    !! Number of integration points
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureAlpha
+    !! Quadrature alpha parameter
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureBeta
+    !! Quadrature beta parameter
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureLambda
+    !! Quadrature lambda parameter
+  END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetBaseContinuity
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-06-17
+! summary: Get baseContinuity value from the object
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    !! Object from which to get baseContinuity
+    CHARACTER(2) :: ans
+    !! The baseContinuity value
+  END FUNCTION obj_GetBaseContinuity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-06-17
+! summary: Get baseInterpolation value from the object
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    !! Object from which to get baseInterpolation
+    CHARACTER(4) :: ans
+    !! The baseInterpolation value
+  END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary:  Get the quadratuere points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
+                                            order, alpha, beta, lambda)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    !! Type of quadrature points
+    !! GaussLegendre, GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight, GaussChebyshev
+    !! GaussChebyshevLobatto, GaussChebyshevRadau,
+    !! GaussChebyshevRadauLeft, GaussChebyshevRadauRight
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of integrand
+    !! either the order or the nips should be present
+    !! Both nips and order should not be present
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Ultraspherical parameter
+  END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetCaseName
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetCaseName(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetCaseName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  GetOrder
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetOrder(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary: Import OneDimBasisOpt_ from toml table
+!
+!# Introduction
+! The toml table should have following contents:
+!
+!```toml
+! [BasisOpt]
+!
+!```
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Import TimeOpt from toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+END MODULE OneDimBasisOpt_Class

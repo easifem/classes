@@ -25,4 +25,4 @@ target_sources(
           ${src_path}/HierarchicalFE_Class@Methods.F90
           ${src_path}/HierarchicalOneDimFE_Class@Methods.F90
           ${src_path}/OrthogonalOneDimFE_Class@Methods.F90
-)
+          ${src_path}/OrthogonalFE_Class@Methods.F90)

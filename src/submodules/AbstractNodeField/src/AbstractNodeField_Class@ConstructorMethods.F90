@@ -103,11 +103,14 @@ END PROCEDURE AbstractNodeFieldCheckError
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
 CHARACTER(:), ALLOCATABLE :: prefix
 INTEGER(I4B) :: local_n, global_n
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
@@ -119,7 +122,7 @@ CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof, &
 
 CALL AbstractNodeFieldCheckError(obj)
 
-!INFO: So when a child calls this routine then dof_** are already set
+!info: So when a child calls this routine then dof_** are already set
 ! That is also the reason why we are not calling deallocate in the begining
 
 CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
@@ -147,10 +150,11 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-INTEGER(I4B) :: ii, tsize
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
@@ -184,9 +188,11 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-INTEGER(I4B) :: ivar, tvar, local_n, global_n
-LOGICAL(LGT) :: problem
+#endif
+
+INTEGER(I4B) :: local_n, global_n
 CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
@@ -198,11 +204,6 @@ prefix = obj%GetPrefix()
 
 CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof, &
                            timefedof=timefedof)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'Calling AbstractNodeFieldCheckError()')
-#endif
 
 CALL AbstractNodeFieldCheckError(obj)
 
@@ -228,10 +229,140 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
+                           storageFMT=storageFMT, &
+                           fieldType=fieldType, &
+                           comm=comm, &
+                           local_n=local_n, &
+                           global_n=global_n, &
+                           spaceCompo=spaceCompo, &
+                           isSpaceCompo=isSpaceCompo, &
+                           isSpaceCompoScalar=isSpaceCompoScalar, &
+                           timeCompo=timeCompo, &
+                           isTimeCompo=isTimeCompo, &
+                           isTimeCompoScalar=isTimeCompoScalar, &
+                           tPhysicalVarNames=tPhysicalVarNames, &
+                           physicalVarNames=physicalVarNames, &
+                           isPhysicalVarNames=isPhysicalVarNames, &
+                           tNodes=tNodes, &
+                           isTNodes=isTNodes, &
+                           isTNodesScalar=isTNodesScalar, &
+                           fedof=fedof, timefedof=timefedof)
+
+CALL AbstractNodeFieldSetParam(obj=obj, &
+                               dof_tPhysicalVars=tPhysicalVarNames, &
+                               dof_storageFMT=storageFMT, &
+                               dof_spaceCompo=spaceCompo, &
+                               dof_timeCompo=timeCompo, &
+                               dof_tNodes=tNodes, &
+                               dof_names_char=physicalVarNames, &
+                               tSize=tSize)
+
+!info: So when a child calls this routine then dof_** are already set
+! That is also the reason why we are not calling deallocate in the begining
+
+CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
+                  names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
+                  timeCompo=obj%dof_timeCompo, storageFMT=obj%dof_storageFMT)
+
+CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+obj%tSize = RealVector_SIZE(obj%realVec)
+
+CALL obj%GetParam(local_n=ii, global_n=jj)
+IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
+IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+#endif
+
+INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
+                           fieldType=fieldType, comm=comm, local_n=local_n, &
+                           global_n=global_n, spaceCompo=spaceCompo, &
+                           isSpaceCompo=isSpaceCompo, &
+                           isSpaceCompoScalar=isSpaceCompoScalar, &
+                           timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+                           isTimeCompoScalar=isTimeCompoScalar, &
+                           tPhysicalVarNames=tPhysicalVarNames, &
+                           physicalVarNames=physicalVarNames, &
+                           isPhysicalVarNames=isPhysicalVarNames, &
+                           fedof=fedof, timefedof=timefedof)
+
+CALL DOF_Initiate(obj=obj%dof, &
+                  tNodes=obj%dof_tNodes, &
+                  names=obj%dof_names_char, &
+                  spaceCompo=obj%dof_spaceCompo, &
+                  timeCompo=obj%dof_timeCompo, &
+                  storageFMT=obj%dof_storageFMT)
+
+CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+obj%tSize = RealVector_SIZE(obj%realVec)
+
+CALL obj%GetParam(local_n=ii, global_n=jj)
+
+IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
+IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_Initiate5
+
+!----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractFieldDeallocate(obj)
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = NODES_FMT
@@ -242,6 +373,11 @@ IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL RealVector_Deallocate(obj%realVec)
 CALL DOF_Deallocate(obj%dof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

@@ -140,7 +140,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate the field by arguments
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
+  !! Initiate the field by arguments
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
+    Initiate4, Initiate5
 
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
@@ -283,10 +288,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, &
-                                         fieldType, comm, local_n, global_n, &
-                               spaceCompo, isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                      tPhysicalVarNames, physicalVarNames, isPhysicalVarNames)
+                                          fieldType, comm, local_n, &
+                                          global_n, spaceCompo, &
+                                          isSpaceCompo, isSpaceCompoScalar, &
+                                          timeCompo, isTimeCompo, &
+                                          isTimeCompoScalar, &
+                                          tPhysicalVarNames, &
+                                          physicalVarNames, &
+                                          isPhysicalVarNames)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -359,7 +368,7 @@ END INTERFACE
 ! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given domain
 
-INTERFACE AbstractFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
@@ -368,6 +377,10 @@ INTERFACE AbstractFieldInitiate
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -378,7 +391,7 @@ END INTERFACE AbstractFieldInitiate
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
-INTERFACE AbstractFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
@@ -387,6 +400,10 @@ INTERFACE AbstractFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -397,7 +414,7 @@ END INTERFACE AbstractFieldInitiate
 ! date: 29 Sept 2021
 ! summary: Initiate by reading options From [[ParameterList_]]
 
-INTERFACE AbstractFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
@@ -406,35 +423,207 @@ INTERFACE AbstractFieldInitiate
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
   END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate3
+END INTERFACE AbstractFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, tNodes, isTNodes, &
+                                  isTNodesScalar, tSize, fedof, timefedof)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! Storage format of the field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
+END INTERFACE AbstractFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+!
+!# Introduction
+!  This method is like obj_Initiate3, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate5(obj, name, engine, &
+                                  fieldType, comm, local_n, &
+                                  global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, &
+                                  isTimeCompoScalar, &
+                                  tPhysicalVarNames, &
+                                  physicalVarNames, &
+                                  isPhysicalVarNames, fedof, timefedof)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    !! Vector of TimeFEDOFPointers
+    !! All timefedofs should be initiated
+  END SUBROUTINE obj_Initiate5
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate5
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE AbstractFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                         IMPORT@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldImport
+INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
@@ -445,18 +634,26 @@ INTERFACE AbstractFieldImport
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE AbstractFieldImport
+  MODULE PROCEDURE obj_Import
 END INTERFACE AbstractFieldImport
 
 !----------------------------------------------------------------------------
 !                                                          Export@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE AbstractFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE AbstractFieldExport
 
 !----------------------------------------------------------------------------

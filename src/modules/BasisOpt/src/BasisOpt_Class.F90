@@ -16,7 +16,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE BasisOpt_Class
-
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
@@ -314,16 +313,16 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints1 => &
-    obj_GetQuadraturePoints1
-  !! Get the quadrature points
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetQuadraturePoints2 => &
-    obj_GetQuadraturePoints2
-  !! Get the quadrature points
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
 
-  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
-    GetQuadraturePoints2
-  !! Generic method for geting the quadrature points
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+  !! Get the base interpolation
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
+    obj_GetBaseContinuity
+  !! Get the base continuity
 
 END TYPE BasisOpt_
 
@@ -473,16 +472,17 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
-                  baseInterpolation, ipType, basisType, alpha, beta, lambda, &
-               feType, dofType, transformType, order, anisoOrder, cellOrder, &
-                   faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
-                     tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
-                         quadratureType, quadratureOrder, quadratureIsOrder, &
-                  quadratureIsOrderScalar, quadratureNips, quadratureIsNips, &
-                 quadratureIsNipsScalar, quadratureAlpha, quadratureIsAlpha, &
-                  quadratureIsAlphaScalar, quadratureBeta, quadratureIsBeta, &
-               quadratureIsBetaScalar, quadratureLambda, quadratureIsLambda, &
-                                  quadratureIsLambdaScalar)
+                                  baseInterpolation, ipType, basisType, &
+                                  alpha, beta, lambda, feType, dofType, &
+                                  transformType, order, anisoOrder, &
+                                  cellOrder, faceOrder, edgeOrder, &
+                                  cellOrient, faceOrient, edgeOrient, &
+                                  tcell, tface, tedge, errCheck, &
+                                  quadratureIsHomogeneous, &
+                                  quadratureType, quadratureOrder, &
+                                  quadratureIsOrder, quadratureNips, &
+                                  quadratureIsNips, quadratureAlpha, &
+                                  quadratureBeta, quadratureLambda)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -519,7 +519,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
     !! Finite element type; Default is Scalar
     !! For HDiv and Hcurl it should be Vector
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
     !! Degree of freedom type, default is nodal
     !! currently it is not used
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
@@ -558,27 +558,19 @@ INTERFACE
     !! for dev: this option checks the errors in debug mode
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
     !! is quadratur homogeneous in all dimensions
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)
     !! Quadrature type in x, y, and z directions
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureOrder(3)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureOrder(:)
     !! quadrature accuracy in x, y, and z direction
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
     !! Is quadrature order considered
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrderScalar
-    !! Is order scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(3)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(:)
     !! Number of interpolation points in x, y, and z directions
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNipsScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlpha
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlphaScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBeta
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBetaScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambda
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambdaScalar
+    !! Should we consider quadratureNips
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -669,30 +661,43 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
-             ipType, basisType, alpha, beta, lambda, dofType, transformType, &
-         refElemDomain, baseContinuity, baseInterpolation, isIsotropicOrder, &
-      isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, &
-                            tFaceOrder, tCellOrder, quadratureIsHomogeneous, &
-                         quadratureType, quadratureOrder, quadratureIsOrder, &
-                  quadratureIsOrderScalar, quadratureNips, quadratureIsNips, &
-                 quadratureIsNipsScalar, quadratureAlpha, quadratureIsAlpha, &
-                  quadratureIsAlphaScalar, quadratureBeta, quadratureIsBeta, &
-               quadratureIsBetaScalar, quadratureLambda, quadratureIsLambda, &
-                                 quadratureIsLambdaScalar)
+  MODULE SUBROUTINE obj_SetParam(obj, nsd, xidim, order, anisoOrder, &
+                                 edgeOrder, faceOrder, cellOrder, fetype,&
+                                 elemType, topoType, elemIndx, ipType,&
+                                 basisType, alpha, beta, lambda, dofType, &
+                                 transformType, refElemDomain, refelemCoord, &
+                                 baseContinuity, baseInterpolation, &
+                                 isIsotropicOrder, isAnisotropicOrder, &
+                                 isEdgeOrder, isFaceOrder, isCellOrder, &
+                                 tEdgeOrder, tFaceOrder, tCellOrder, &
+                                 quadratureIsHomogeneous, quadratureType, &
+                                 quadratureType1, quadratureType2, &
+                                 quadratureType3, quadratureOrder, &
+                                 quadratureOrder1, quadratureOrder2, &
+                                 quadratureOrder3, quadratureIsOrder, &
+                                 quadratureNips, quadratureNips1, &
+                                 quadratureNips2, quadratureNips3, &
+                                 quadratureIsNips, quadratureAlpha, &
+                                 quadratureAlpha1, quadratureAlpha2, &
+                                 quadratureAlpha3, quadratureBeta, &
+                                 quadratureBeta1, quadratureBeta2, &
+                                 quadratureBeta3, quadratureLambda, &
+                                 quadratureLambda1, quadratureLambda2, &
+                                 quadratureLambda3)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidim
+    !! Xidimension of the element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     !! order in x, y, and z directions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! order of approximation on the edges of element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! order of approximation in the cell of element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
     !! finite element type
@@ -712,7 +717,7 @@ INTERFACE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameter
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
     !! degree of freedom type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type
@@ -722,6 +727,8 @@ INTERFACE
     !! String name of type of interpolation used for basis functions
     CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
     !! Domain of reference element
+    REAL(DFP), INTENT(IN), OPTIONAL :: refelemCoord(:, :)
+    !! Reference element coordinates
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropicOrder
     !! True if isotropic order
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isAnisotropicOrder
@@ -734,27 +741,50 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
     !! is quadratur homogeneous in all dimensions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     !! Quadrature type in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder1
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder2
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder3
     !! quadrature accuracy in x, y, and z direction
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
     !! Is quadrature order considered
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrderScalar
-    !! Is order scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(3)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips1
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips2
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips3
     !! Number of interpolation points in x, y, and z directions
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNipsScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlpha
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsAlphaScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBeta
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsBetaScalar
-    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(3)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambda
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsLambdaScalar
+    !! Should we consider nips
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(:)
+    !! Jacobi parameters for quadrature
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha1
+    !! Jacobi parameters for quadrature
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha2
+    !! Jacobi parameters for quadrature
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha3
+    !! Jacobi parameters for quadrature
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta1
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta2
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta3
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda1
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda2
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda3
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -764,8 +794,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder(obj, order, anisoOrder, cellOrder, &
-                   faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, &
-                                 tcell, tface, tedge, errCheck)
+                                 faceOrder, edgeOrder, cellOrient, &
+                                 faceOrient, edgeOrient, tcell, &
+                                 tface, tedge, errCheck)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
@@ -908,12 +939,19 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-                 faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, &
-                                 ipType, basisType, alpha, beta, lambda, &
+                                 faceOrder, cellOrder, fetype, elemType, &
+                                 topoType, elemIndx, ipType, &
+                                 basisType, alpha, beta, lambda, &
                                  dofType, transformType, refElemDomain, &
-                        baseContinuity, baseInterpolation, isIsotropicOrder, &
-                  isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-                                 tEdgeOrder, tFaceOrder, tCellOrder)
+                                 baseContinuity, baseInterpolation, &
+                                 isIsotropicOrder, isAnisotropicOrder, &
+                                 isEdgeOrder, isFaceOrder, isCellOrder, &
+                                 tEdgeOrder, tFaceOrder, tCellOrder, &
+                                 quadratureIsHomogeneous, quadratureType, &
+                                 quadratureOrder, quadratureNips, &
+                                 quadratureIsOrder, quadratureIsNips, &
+                                 quadratureAlpha, quadratureBeta, &
+                                 quadratureLambda)
     CLASS(BasisOpt_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -937,15 +975,15 @@ INTERFACE
     !! Get the index of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
     !! interpolation point type
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(:)
     !! Basis type in x, y, and z directions
-    REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha(:)
     !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(OUT) :: beta(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: beta(:)
     !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda(3)
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda(:)
     !! Ultraspherical parameter
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType(:)
     !! degree of freedom type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
     !! transformation type
@@ -960,11 +998,35 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isAnisotropicOrder
     !! True if anisoOrder
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isEdgeOrder
+    !! is edge order set
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isFaceOrder
+    !! is face order set
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isCellOrder
+    !! is cell order set
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
+    !! total edge order
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
+    !! total face order
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
+    !! total cell order
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsHomogeneous
+    !! see QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureType(:)
+    !! see QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureOrder(:)
+    !! See QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureNips(:)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureAlpha(:)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureBeta(:)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureLambda(:)
+    !! See QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsOrder
+    !! See QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
+    !! See QuadratureOpt_
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -1041,66 +1103,20 @@ END INTERFACE
 !                                              GetQuadraturePoints@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary:  Get the quadrature points for the basis functions
+!
+!# Introduction
+!   You get the quadrature poitns based on the current state of the object
+! You can change the state of the object by calling SetParam method
+
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType, &
-                                             order, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! GaussLegendre ! GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight ! GaussChebyshev
-    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Order of integrand
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
-  END SUBROUTINE obj_GetQuadraturePoints1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetQuadraturePoints@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, p, q, r, &
-           quadratureType1, quadratureType2, quadratureType3, alpha1, beta1, &
-                      lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! abstract finite element
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! quadrature point
-    INTEGER(I4B), INTENT(IN) :: p
-    !! order of integrand in x
-    INTEGER(I4B), INTENT(IN) :: q
-    !! order of integrand in y
-    INTEGER(I4B), INTENT(IN) :: r
-    !! order of integrand in z direction
-    INTEGER(I4B), INTENT(IN) :: quadratureType1
-    !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
-    !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
-    !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
-    !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
-    INTEGER(I4B), INTENT(IN) :: quadratureType2
-    !! Type of quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType3
-    !! Type of quadrature points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
-    !! Jacobi parameter and Ultraspherical parameters
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
-    !! Jacobi parameter and Ultraspherical parameters
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
-    !! Jacobi parameter and Ultraspherical parameters
-  END SUBROUTINE obj_GetQuadraturePoints2
+  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1157,11 +1173,13 @@ END INTERFACE
 ! summary:  Import data from toml table
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType, nsd)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! element type of finite element, optional
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    !! Number of spatial dimension, optional
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -1174,8 +1192,8 @@ END INTERFACE
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, elemType)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml, elemType, nsd)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -1183,7 +1201,35 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    !! Number of spatial dimension
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetBaseInterpolation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-16
+! summary:  Get the baseInterpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    CHARACTER(4) :: ans
+  END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetBaseContinuity@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    CHARACTER(2) :: ans
+  END FUNCTION obj_GetBaseContinuity
 END INTERFACE
 
 !----------------------------------------------------------------------------

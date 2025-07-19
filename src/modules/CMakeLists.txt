@@ -201,11 +201,35 @@ include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 # RefElement
 include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
-# QuadratureOpt
-include(${CMAKE_CURRENT_LIST_DIR}/QuadratureOpt/CMakeLists.txt)
+# CoordOpt
+include(${CMAKE_CURRENT_LIST_DIR}/CoordOpt/CMakeLists.txt)
+
+# EngineOpt
+include(${CMAKE_CURRENT_LIST_DIR}/EngineOpt/CMakeLists.txt)
+
+# FieldOpt
+include(${CMAKE_CURRENT_LIST_DIR}/FieldOpt/CMakeLists.txt)
+
+# OneDimBasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimBasisOpt/CMakeLists.txt)
+
+# OneDimDomain
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimDomain/CMakeLists.txt)
+
+# OneDimQuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimQuadratureOpt/CMakeLists.txt)
+
+# TimeOpt
+include(${CMAKE_CURRENT_LIST_DIR}/TimeOpt/CMakeLists.txt)
+
+# ErrorOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ErrorOpt/CMakeLists.txt)
 
 # BasisOpt
 include(${CMAKE_CURRENT_LIST_DIR}/BasisOpt/CMakeLists.txt)
+
+# QuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/QuadratureOpt/CMakeLists.txt)
 
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
@@ -224,6 +248,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
 
 # OneDimFEFactory
 include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEFactory/CMakeLists.txt)
+
+# FEFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FEFactory/CMakeLists.txt)
 
 # # FiniteElement
 # include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)

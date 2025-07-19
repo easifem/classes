@@ -19,11 +19,8 @@
 
 SUBMODULE(FEDOF_Class) ConstructorMethods
 USE InputUtility, ONLY: Input
-
 USE Display_Method, ONLY: ToString
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetEdge, &
@@ -34,20 +31,15 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalCellDOF
 
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
-
 USE StringUtility, ONLY: UpperCase
-
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
-
 USE LagrangeFE_Class, ONLY: LagrangeFEPointer
-
 USE HierarchicalFE_Class, ONLY: HierarchicalFEPointer
-
 USE BaseType, ONLY: TypeInterpolationOpt, &
                     TypePolynomialOpt
-
 USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo, &
                                    GetElementIndex
+USE FEFactory_Method, ONLY: FEFactory
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -63,13 +55,18 @@ CONTAINS
 
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CHARACTER(*), PARAMETER :: &
-  keys = "baseContinuity/baseInterpolation/orderFile/&
-&ipType/basisType/alpha/beta/lambda/"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL CheckEssentialParam(obj=param, keys=keys, prefix=myprefix, &
-                         myName=myName, modName=modName)
-!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+CALL CheckEssentialParam(obj=param, keys=fedofEssentialParam, &
+                         prefix=myprefix, myName=myName, modName=modName)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -88,9 +85,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 order0 = order
 
 CALL obj%Initiate(order=order0, mesh=mesh, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, ipType=ipType, &
-                  basisType=basisType, alpha=alpha, &
-                  beta=beta, lambda=lambda)
+                  baseInterpolation=baseInterpolation, feType=feType, &
+                  ipType=ipType, basisType=basisType, alpha=alpha, &
+                  beta=beta, lambda=lambda, &
+                  dofType=dofType, &
+                  transformType=transformType, &
+                  quadratureIsHomogeneous=quadratureIsHomogeneous, &
+                  quadratureType=quadratureType, &
+                  quadratureOrder=quadratureOrder, &
+                  quadratureIsOrder=quadratureIsOrder, &
+                  quadratureNips=quadratureNips, &
+                  quadratureIsNips=quadratureIsNips, &
+                  quadratureAlpha=quadratureAlpha, &
+                  quadratureBeta=quadratureBeta, &
+                  quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -106,6 +114,10 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, elemType, nsd, jj
+INTEGER(I4B) :: totalTopo, topoList(8)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -114,38 +126,57 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
-
-obj%isLagrange = .FALSE.
 IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
 
-obj%mesh => mesh
+#ifdef DEBUG_VER
+IF (obj%isLagrange) THEN
+  isok = PRESENT(ipType)
+  CALL AssertError1(isok, myName, "ipType should be present")
+END IF
+#endif
+
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
 
-CALL obj%AllocateSizes()
+obj%mesh => mesh
 
+CALL obj%AllocateSizes()
 CALL obj%SetCellOrder(order=order, islocal=islocal)
 CALL obj%SetFaceOrder()
 CALL obj%SetEdgeOrder()
-
 CALL obj%SetOrdersFromCellOrder()
 
-SELECT CASE (obj%baseInterpolation)
+topoList = obj%mesh%GetElemTopology()
+totalTopo = obj%mesh%GetTotalTopology()
+nsd = obj%mesh%GetNSD()
 
-CASE ("LAGR")
-  CALL handle_lagrange_fe(obj=obj, iptype=ipType, basistype=basisType, &
-                          alpha=alpha, beta=beta, lambda=lambda)
+DO ii = 1, totalTopo
+  elemType = topoList(ii)
+  jj = GetElementIndex(elemType)
 
-CASE ("HIER", "HEIR")
-  CALL handle_hierarchical_fe(obj=obj)
+  obj%fe(jj)%ptr => FEFactory(baseContinuity=obj%baseContinuity, &
+                              baseInterpolation=obj%baseInterpolation)
 
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-  RETURN
+  CALL obj%fe(jj)%ptr%Initiate( &
+    elemType=elemType, nsd=nsd, &
+    baseContinuity=obj%baseContinuity, &
+    baseInterpolation=obj%baseInterpolation, &
+    ipType=ipType, basisType=basisType, &
+    alpha=alpha, beta=beta, lambda=lambda, &
+    feType=feType, &
+    dofType=dofType, &
+    transformType=transformType, &
+    quadratureIsHomogeneous=quadratureIsHomogeneous, &
+    quadratureType=quadratureType, &
+    quadratureOrder=quadratureOrder, &
+    quadratureIsOrder=quadratureIsOrder, &
+    quadratureNips=quadratureNips, &
+    quadratureIsNips=quadratureIsNips, &
+    quadratureAlpha=quadratureAlpha, &
+    quadratureBeta=quadratureBeta, &
+    quadratureLambda=quadratureLambda)
 
-END SELECT
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -155,103 +186,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE handle_lagrange_fe(obj, iptype, basistype, alpha, beta, lambda)
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "handle_lagrange_fe()"
-#endif
-
-  CLASS(FEDOF_), INTENT(INOUT) :: obj
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: iptype
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basistype(3)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(3)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(3)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(3)
-
-  ! Internal variables
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: ii, elemType, nsd, jj
-  INTEGER(I4B) :: totalTopo, topoList(8)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  isok = PRESENT(iptype)
-  CALL AssertError1(isok, myname, "ipType should be present")
-
-  topoList = obj%mesh%GetElemTopology()
-  totalTopo = obj%mesh%GetTotalTopology()
-  nsd = obj%mesh%GetNSD()
-
-  DO ii = 1, totalTopo
-    elemType = topoList(ii)
-    jj = GetElementIndex(elemType)
-
-    obj%fe(jj)%ptr => LagrangeFEPointer(elemType=elemType, nsd=nsd, &
-                           baseContinuity=obj%baseContinuity, ipType=ipType, &
-                   basisType=basisType, alpha=alpha, beta=beta, lambda=lambda)
-
-  END DO
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE handle_lagrange_fe
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE handle_hierarchical_fe(obj)
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "handle_hierarchical_fe()"
-#endif
-
-  CLASS(FEDOF_), INTENT(INOUT) :: obj
-
-  ! internal variables
-  INTEGER(I4B) :: ii, elemType, nsd, jj, totalTopo, topoList(8)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  topoList = obj%mesh%GetElemTopology()
-  totalTopo = obj%mesh%GetTotalTopology()
-  nsd = obj%mesh%GetNSD()
-
-  DO ii = 1, totalTopo
-    elemType = topoList(ii)
-    jj = GetElementIndex(elemType)
-    obj%fe(jj)%ptr => HierarchicalFEPointer(elemType=elemType, nsd=nsd, &
-                                            baseContinuity=obj%baseContinuity)
-  END DO
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE handle_hierarchical_fe
-
-!----------------------------------------------------------------------------
 !                                                             SetFEDOFParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetFEDOFParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "SetFEDOFParam()"
+#endif
+
 INTEGER(I4B) :: AINT(3)
 INTEGER(I4B), PARAMETER :: ipType0 = TypeInterpolationOpt%Equidistance
 INTEGER(I4B), PARAMETER :: basisType0(3) = TypePolynomialOpt%Monomial
 REAL(DFP) :: areal(3)
 REAL(DFP), PARAMETER :: three_zero(3) = [0.0, 0.0, 0.0]
 REAL(DFP), PARAMETER :: three_half(3) = [0.5, 0.5, 0.5]
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Set(obj=param, prefix=myprefix, key="baseContinuity", &
          VALUE=baseContinuity, dataType=baseContinuity)
@@ -281,6 +234,11 @@ CALL set(obj=param, prefix=myprefix, key="beta", &
 CALL make_a_real(a=lambda, a0=three_half)
 CALL set(obj=param, prefix=myprefix, key="lambda", &
          VALUE=areal, datatype=areal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 CONTAINS
 SUBROUTINE make_a_int(a, a0)
@@ -383,8 +341,19 @@ END DO
 
 CALL obj%Initiate(mesh=mesh, baseContinuity=baseContinuity, &
                   baseInterpolation=baseInterpolation, order=order0, &
-                  ipType=ipType, basisType=basisType, alpha=alpha, &
-                  beta=beta, lambda=lambda, islocal=.TRUE.)
+                  ipType=ipType, feType=feType, basisType=basisType, &
+                  alpha=alpha, beta=beta, lambda=lambda, islocal=.TRUE., &
+                  dofType=dofType, &
+                  transformType=transformType, &
+                  quadratureIsHomogeneous=quadratureIsHomogeneous, &
+                  quadratureType=quadratureType, &
+                  quadratureOrder=quadratureOrder, &
+                  quadratureIsOrder=quadratureIsOrder, &
+                  quadratureNips=quadratureNips, &
+                  quadratureIsNips=quadratureIsNips, &
+                  quadratureAlpha=quadratureAlpha, &
+                  quadratureBeta=quadratureBeta, &
+                  quadratureLambda=quadratureLambda)
 
 DEALLOCATE (order0)
 
@@ -412,10 +381,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-!INFO: It returns total number of nodes, edges, faces, and cells in the mesh
+!info: It returns total number of nodes, edges, faces, and cells in the mesh
 ent = obj%mesh%GetTotalEntities()
 
-! INFO: obj%tNodes is set to the total number of vertex nodes
+!info: obj%tNodes is set to the total number of vertex nodes
 ! Read more about the totalNodes and totalVertexNodes in the
 ! AbstractMesh_Class. In future, tNodes will be termed as tVertexNodes
 ! for consistency.

@@ -15,7 +15,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE FEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
@@ -45,6 +44,9 @@ CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
+CHARACTER(*), PARAMETER :: fedofEssentialParam = &
+  "baseContinuity/baseInterpolation/orderFile/ipType/basisType/alpha/&
+  &beta/lambda/"
 
 !----------------------------------------------------------------------------
 !                                                                   FEDOF_
@@ -276,14 +278,9 @@ CONTAINS
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
 
-  PROCEDURE, PASS(obj) :: GetQuadraturePoints1 => obj_GetQuadraturePoints1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order
-
-  PROCEDURE, PASS(obj) :: GetQuadraturePoints2 => obj_GetQuadraturePoints2
-  !! Get quadrature points for anisotropic ordder
-
-  GENERIC, PUBLIC :: GetQuadraturePoints => GetQuadraturePoints1, &
-    GetQuadraturePoints2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
@@ -380,7 +377,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
-                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
+                                  baseInterpolation, feType, ipType, &
+                                  basisType, alpha, beta, lambda, dofType, &
+                                  transformType, quadratureIsHomogeneous, &
+                                  quadratureType, quadratureOrder, &
+                                  quadratureIsOrder, quadratureNips, &
+                                  quadratureIsNips, quadratureAlpha, &
+                                  quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -390,6 +393,8 @@ INTERFACE
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! basis function used for interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Finite element type, scalar, vector, tensor
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation type
     !! used when baseInterpolation is Lagrange
@@ -409,6 +414,32 @@ INTERFACE
     !! lambda parameter for Ultraspherical parameter
     !! used when baseInterpolation is Lagrange
     !! used when basistype is Ultraspherical
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
+    !! Degree of freedom type, default is nodal
+    !! Size should be 4
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    !! Size should be 3, Read more at QuadratureOpt_
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    !! Size should be 3, Read more at QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    !! Size should be 3, Read more at QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Should we consider quadratureNips
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
+    !! Size should be 3, Read more at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    !! Size should be 3, Read more at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    !! Size should be 3, Read more at QuadratureOpt_
   END SUBROUTINE obj_Initiate1
 
 END INTERFACE
@@ -423,7 +454,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
-           baseInterpolation, ipType, basisType, alpha, lambda, beta, islocal)
+                                  baseInterpolation, feType, ipType, &
+                                  basisType, alpha, lambda, beta, islocal, &
+                                  dofType, transformType, &
+                                  quadratureIsHomogeneous, &
+                                  quadratureType, quadratureOrder, &
+                                  quadratureIsOrder, quadratureNips, &
+                                  quadratureIsNips, quadratureAlpha, &
+                                  quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
@@ -436,6 +474,8 @@ INTERFACE
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! basis function used for interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Fintie element type, scalar, vector, tensor
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation type
     !! used when baseInterpolation is Lagrange
@@ -463,6 +503,28 @@ INTERFACE
     !! global element number. Note that getting local element
     !! number is difficult for user, so it is better to use
     !! global element number.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
+    !! Degree of freedom type, default is nodal
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Infor at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
+    !! Info at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    !! Info at QuadratureOpt_
+    REAL( DFP ), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    !! Info at QuadratureOpt_
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -505,7 +567,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate4(obj, order, mesh, baseContinuity, &
-                    baseInterpolation, ipType, basisType, alpha, beta, lambda)
+                                  baseInterpolation, feType, ipType, &
+                                  basisType, alpha, beta, lambda, &
+                                  dofType, transformType, &
+                                  quadratureIsHomogeneous, &
+                                  quadratureType, quadratureOrder, &
+                                  quadratureIsOrder, quadratureNips, &
+                                  quadratureIsNips, quadratureAlpha, &
+                                  quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! the number of columns in order is equal to total number of elements
@@ -518,6 +587,8 @@ INTERFACE
     !! continuity of basis function
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! interpolation of basis
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! finite element type, scalar, vector, tensor
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation type
     !! used when baseInterpolation is Lagrange
@@ -537,6 +608,28 @@ INTERFACE
     !! lambda parameter for Ultraspherical parameter
     !! used when baseInterpolation is Lagrange
     !! used when basistype is Ultraspherical
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
+    !! Degree of freedom type, default is nodal
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Infor at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
+    !! Info at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    !! Info at QuadratureOpt_
+    REAL( DFP ), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    !! Info at QuadratureOpt_
   END SUBROUTINE obj_Initiate4
 END INTERFACE
 
@@ -1280,74 +1373,16 @@ END INTERFACE FEDOFSetSparsity
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, globalElement, &
-                          quadratureType, order, alpha, beta, lambda, islocal)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, globalElement, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! fedof object
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! quadrature points
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number
-    INTEGER(I4B), INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! GaussLegendre ! GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight ! GaussChebyshev
-    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Order of integrand
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
-  END SUBROUTINE obj_GetQuadraturePoints1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints2(obj, quad, globalElement, &
-         p, q, r, quadratureType1, quadratureType2, quadratureType3, alpha1, &
-      beta1, lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! abstract finite element
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! quadrature point
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    INTEGER(I4B), INTENT(IN) :: p
-    !! order of integrand in x
-    INTEGER(I4B), INTENT(IN) :: q
-    !! order of integrand in y
-    INTEGER(I4B), INTENT(IN) :: r
-    !! order of integrand in z direction
-    INTEGER(I4B), INTENT(IN) :: quadratureType1
-    !! Type of quadrature points ! GaussLegendre ! GaussLegendreLobatto
-    !! GaussLegendreRadau ! GaussLegendreRadauLeft ! GaussLegendreRadauRight
-    !! GaussChebyshev ! GaussChebyshevLobatto ! GaussChebyshevRadau
-    !! GaussChebyshevRadauLeft ! GaussChebyshevRadauRight
-    INTEGER(I4B), INTENT(IN) :: quadratureType2
-    !! Type of quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType3
-    !! Type of quadrature points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha1, beta1, lambda1
-    !! Jacobi parameter and Ultraspherical parameters
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha2, beta2, lambda2
-    !! Jacobi parameter and Ultraspherical parameters
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha3, beta3, lambda3
-    !! Jacobi parameter and Ultraspherical parameters
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then the global element is local element
-  END SUBROUTINE obj_GetQuadraturePoints2
+  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

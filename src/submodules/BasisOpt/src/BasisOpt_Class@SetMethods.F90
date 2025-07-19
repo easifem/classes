@@ -79,6 +79,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 IF (PRESENT(nsd)) obj%nsd = nsd
+IF (PRESENT(xidim)) obj%xidim= xidim
+IF (PRESENT(refelemCoord)) obj%refelemCoord=refelemCoord
 IF (PRESENT(order)) obj%order = order
 IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
 IF (PRESENT(edgeOrder)) obj%edgeOrder(1:SIZE(edgeOrder)) = edgeOrder
@@ -113,15 +115,36 @@ IF (PRESENT(lambda)) obj%lambda = lambda
 
 CALL obj%quadOpt%SetParam(isHomogeneous=quadratureIsHomogeneous, &
                           quadratureType=quadratureType, &
+                          quadratureType1=quadratureType1, &
+                          quadratureType2=quadratureType2, &
+                          quadratureType3=quadratureType3, &
                           order=quadratureOrder, &
+                          order1=quadratureOrder1, &
+                          order2=quadratureOrder2, &
+                          order3=quadratureOrder3, &
                           nips=quadratureNips, &
+                          nips1=quadratureNips1, &
+                          nips2=quadratureNips2, &
+                          nips3=quadratureNips3, &
                           alpha=quadratureAlpha, &
+                          alpha1=quadratureAlpha1, &
+                          alpha2=quadratureAlpha2, &
+                          alpha3=quadratureAlpha3, &
                           beta=quadratureBeta, &
+                          beta1=quadratureBeta1, &
+                          beta2=quadratureBeta2, &
+                          beta3=quadratureBeta3, &
                           lambda=quadratureLambda, &
+                          lambda1=quadratureLambda1, &
+                          lambda2=quadratureLambda2, &
+                          lambda3=quadratureLambda3, &
                           nsd=nsd, &
                           topoType=topoType, &
                           isOrder=quadratureIsOrder, &
-                          isNips=quadratureIsNips)
+                          isNips=quadratureIsNips, &
+                          xidim=xidim, &
+                          refelemDomain=refelemDomain,&
+                          refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
