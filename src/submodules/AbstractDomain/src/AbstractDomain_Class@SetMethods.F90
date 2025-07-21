@@ -49,7 +49,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (.NOT. obj%isInitiated) THEN
+IF (.NOT. obj%isInit) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
                 "[INTERNAL ERROR] :: Domain is not initiated, first initiate")
   RETURN
@@ -98,7 +98,7 @@ DO ivar = 1, SIZE(domains)
     RETURN
   END IF
 
-  problem = .NOT. domains(ivar)%ptr%isInitiated
+  problem = .NOT. domains(ivar)%ptr%isInit
   IF (problem) THEN
     CALL e%RaiseError(modName//"::"//myName//" - "// &
         '[INTERNAL ERROR] :: domains('//Tostring(ivar)//')%ptr NOT INITIATED')

@@ -61,7 +61,7 @@ TYPE, ABSTRACT :: AbstractDomain_
   PRIVATE
   LOGICAL(LGT) :: showTime = .FALSE.
   !! set to true if you want to show time taken by various routines.
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! flag to check if the ddomain is initiated or not
   TYPE(String) :: engine
     !! Engine used for generating the meshes
@@ -146,6 +146,9 @@ CONTAINS
   ! GET:
   ! @GetMethods
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
+    obj_IsInitiated
+  !! Returns obj%isInit
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
   !! Returns pointer to the mesh in the domain
 
@@ -284,9 +287,6 @@ CONTAINS
   !! Returns the unique element type in each mesh
   !! The size of returned integer vector can be different from
   !! the total number of meshes present in domain.
-
-  PROCEDURE, PUBLIC, PASS(obj) :: IsInit => obj_IsInit
-  !! Returns obj%initiated
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Returns obj%maxNptrs
@@ -525,6 +525,22 @@ INTERFACE AbstractDomainDisplayDomainInfo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayDomainInfo
 END INTERFACE AbstractDomainDisplayDomainInfo
+
+!----------------------------------------------------------------------------
+!                                                    IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-21
+! summary:  Returns true if the domain is initiated
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+  !! AbstractDomain_ object
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                  GetMeshPointer@GetMethods
@@ -1521,21 +1537,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetUniqueElemType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       IsInit@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-04-15
-! summary:  Returns obj%isInit
-
-INTERFACE
-  MODULE FUNCTION obj_IsInit(obj) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION obj_IsInit
 END INTERFACE
 
 !----------------------------------------------------------------------------

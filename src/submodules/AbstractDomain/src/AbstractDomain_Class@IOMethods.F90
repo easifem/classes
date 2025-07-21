@@ -33,8 +33,8 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: abool
 
-CALL Display(obj%isInitiated, "AbstractDomain_::obj Initiated: ", unitno=unitno)
-IF (.NOT. obj%isInitiated) RETURN
+CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
 
 CALL Display("engine: "//obj%engine, unitno=unitno)
 CALL Display("majorVersion: "//tostring(obj%majorVersion), unitno=unitno)
@@ -72,12 +72,12 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayDomainInfo
-CALL Display(obj%isInitiated, "AbstractDomain_::obj Initiated: ", &
+CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", &
              unitno=unitno)
-IF (.NOT. obj%isInitiated) RETURN
+IF (.NOT. obj%isInit) RETURN
 
 CALL EqualLine(unitno=unitno)
-CALL Display(obj%isInitiated, "isInitiated: ", unitno=unitno)
+CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
 CALL Display("engine: "//obj%engine, unitno=unitno)
 CALL Display("version: "//tostring(obj%version), unitno=unitno)
 CALL Display("nsd: "//tostring(obj%nsd), unitno=unitno)
@@ -156,7 +156,7 @@ SUBROUTINE AbstractDomainImportCheckErr(obj, hdf5, myName)
   ! internal variable
   LOGICAL(LGT) :: problem
 
-  problem = obj%isInitiated
+  problem = obj%isInit
 
   IF (problem) THEN
     CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -189,7 +189,7 @@ SUBROUTINE AbstractDomainImportMetaData(obj, hdf5, group, myName)
   CHARACTER(*), INTENT(IN) :: group
   CHARACTER(*), INTENT(IN) :: myName
 
-  obj%isInitiated = .TRUE.
+  obj%isInit = .TRUE.
 
   ! read engine
   CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &

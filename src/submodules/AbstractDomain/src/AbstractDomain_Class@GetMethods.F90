@@ -31,6 +31,28 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
 !                                                             GetMeshPointer
 !----------------------------------------------------------------------------
 
@@ -736,7 +758,7 @@ END PROCEDURE obj_GetUniqueElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(engine)) engine = obj%engine%chars()
 IF (PRESENT(majorVersion)) majorVersion = obj%majorVersion
 IF (PRESENT(minorVersion)) minorVersion = obj%minorVersion
@@ -787,14 +809,6 @@ END PROCEDURE obj_GetMinNodeNumber
 MODULE PROCEDURE obj_GetMaxNodeNumber
 ans = obj%maxNptrs
 END PROCEDURE obj_GetMaxNodeNumber
-
-!----------------------------------------------------------------------------
-!                                                           GetDimEntityNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_IsInit
-ans = obj%isInitiated
-END PROCEDURE obj_IsInit
 
 !----------------------------------------------------------------------------
 !
