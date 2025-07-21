@@ -241,12 +241,21 @@ END PROCEDURE obj_GetPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_size
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_size()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ans = obj%tSize
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_size
 
 !----------------------------------------------------------------------------

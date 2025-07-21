@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ImportTomlMethods
+USE GlobalData, ONLY: CHAR_LF, stdout
 USE tomlf, ONLY: toml_error, &
                  toml_load, &
                  toml_parser_config, &
@@ -27,11 +28,8 @@ USE tomlf, ONLY: toml_error, &
                  toml_load, &
                  toml_array, &
                  toml_stat
-
-USE GlobalData, ONLY: CHAR_LF, stdout
-
+USE TomlUtility, ONLY: GetValue, GetValue_
 USE Display_Method, ONLY: Display
-
 USE StringUtility, ONLY: LowerCase
 
 IMPLICIT NONE
@@ -260,50 +258,52 @@ LOGICAL(LGT) :: relativeToRHS, initx_zeros, p_saamg_unsym, p_adds
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ImportParamFromToml()')
+                        '[START] ')
 #endif
 
-CALL toml_get(table, "engine", engine%raw, &
-              default_engine, origin=origin, stat=stat)
+CALL GetValue(table=table, key="engine", VALUE=engine, &
+              default_value=default_engine, origin=origin, stat=stat)
 
-CALL toml_get(table, "solverName", solverName%raw, &
-              default_solverName_char, origin=origin, stat=stat)
+CALL GetValue(table=table, key="solverName", VALUE=solverName, &
+              default_value=default_solverName_char, origin=origin, stat=stat)
 
-CALL toml_get(table, "convergenceIn", convergenceIn%raw, &
-              default_convergenceIn_char, origin=origin, stat=stat)
+CALL GetValue(table=table, key="convergenceIn", VALUE=convergenceIn, &
+           default_value=default_convergenceIn_char, origin=origin, stat=stat)
 
-CALL toml_get(table, "convergenceType", convergenceType%raw, &
-              default_convergenceType_char, origin=origin, stat=stat)
+CALL GetValue(table=table, key="convergenceType", VALUE=convergenceType, &
+         default_value=default_convergenceType_char, origin=origin, stat=stat)
 
-CALL toml_get(table, "scale", scale%raw, &
-              default_scale_char, origin=origin, stat=stat)
+CALL GetValue(table=table, key="scale", VALUE=scale, &
+              default_value=default_scale_char, origin=origin, stat=stat)
 
-CALL toml_get(table, "maxIter", maxIter, &
-              default_maxIter, origin=origin, stat=stat)
+CALL GetValue(table=table, key="maxIter", VALUE=maxIter, &
+              default_value=default_maxIter, origin=origin, stat=stat)
 
-CALL toml_get(table, "krylovSubspaceSize", krylovSubspaceSize, &
-              default_krylovSubspaceSize, origin=origin, stat=stat)
+CALL GetValue(table=table, key="krylovSubspaceSize", &
+              VALUE=krylovSubspaceSize, &
+              default_value=default_krylovSubspaceSize, &
+              origin=origin, stat=stat)
 
-CALL toml_get(table, "bicgstab_ell", bicgstab_ell, &
-              default_bicgstab_ell, origin=origin, stat=stat)
+CALL GetValue(table=table, key="bicgstab_ell", VALUE=bicgstab_ell, &
+              default_value=default_bicgstab_ell, origin=origin, stat=stat)
 
-CALL toml_get(table, "atol", atol, &
-              default_atol, origin=origin, stat=stat)
+CALL GetValue(table=table, key="atol", VALUE=atol, &
+              default_value=default_atol, origin=origin, stat=stat)
 
-CALL toml_get(table, "rtol", rtol, &
-              default_rtol, origin=origin, stat=stat)
+CALL GetValue(table=table, key="rtol", VALUE=rtol, &
+              default_value=default_rtol, origin=origin, stat=stat)
 
-CALL toml_get(table, "relativeToRHS", relativeToRHS, &
-              default_relativeToRHS, origin=origin, stat=stat)
+CALL GetValue(table=table, key="relativeToRHS", VALUE=relativeToRHS, &
+              default_value=default_relativeToRHS, origin=origin, stat=stat)
 
-CALL toml_get(table, "initx_zeros", initx_zeros, &
-              default_initx_zeros, origin=origin, stat=stat)
+CALL GetValue(table=table, key="initx_zeros", VALUE=initx_zeros, &
+              default_value=default_initx_zeros, origin=origin, stat=stat)
 
-CALL toml_get(table, "initx_zeros", initx_zeros, &
-              default_initx_zeros, origin=origin, stat=stat)
+CALL GetValue(table=table, key="initx_zeros", VALUE=initx_zeros, &
+              default_value=default_initx_zeros, origin=origin, stat=stat)
 
-CALL toml_get(table, "sor_omega", sor_omega, &
-              default_sor_omega, origin=origin, stat=stat)
+CALL GetValue(table=table, key="sor_omega", VALUE=sor_omega, &
+              default_value=default_sor_omega, origin=origin, stat=stat)
 
 node => NULL()
 
@@ -338,49 +338,48 @@ ELSE
 END IF
 
 prefix = obj%GetPrefix()
-CALL SetAbstractLinSolverParam( &
-  param=param, &
-  prefix=prefix, &
-  engine=engine%chars(), &
-  solverName=obj%solverName_ToInteger(solverName%chars()), &
-  preconditionOption= &
-  obj%preconditionOption_ToInteger(preconditionOption%chars()), &
-  maxIter=maxIter, &
-  atol=atol, &
-  rtol=rtol, &
-  convergenceIn= &
-  obj%convergenceIn_ToInteger(convergenceIn%chars()), &
-  convergenceType= &
-  obj%convergenceType_ToInteger(convergenceType%chars()), &
-  relativeToRHS=relativeToRHS, &
-  krylovSubspaceSize=krylovSubspaceSize, &
-  scale=obj%scale_ToInteger(scale%chars()), &
-  initx_zeros=initx_zeros, &
-  bicgstab_ell=bicgstab_ell, &
-  sor_omega=sor_omega, &
-  p_name=obj%preconditionName_ToInteger(p_name%chars()), &
-  p_ilu_lfil=p_ilu_lfil, &
-  p_ilu_mbloc=p_ilu_mbloc, &
-  p_ilu_droptol=p_ilu_droptol, &
-  p_ilu_permtol=p_ilu_permtol, &
-  p_ilu_alpha=p_ilu_alpha, &
-  p_ilu_fill=p_ilu_fill, &
-  p_ssor_omega=p_ssor_omega, &
-  p_hybrid_i=obj%solverName_ToInteger(p_hybrid_i%chars()), &
-  p_hybrid_maxiter=p_hybrid_maxiter, &
-  p_hybrid_tol=p_hybrid_tol, &
-  p_hybrid_omega=p_hybrid_omega, &
-  p_hybrid_ell=p_hybrid_ell, &
-  p_hybrid_restart=p_hybrid_restart, &
-  p_is_alpha=p_is_alpha, &
-  p_is_m=p_is_m, &
-  p_sainv_drop=p_sainv_drop, &
-  p_saamg_unsym=p_saamg_unsym, &
-  p_saamg_theta=p_saamg_theta, &
-  p_iluc_drop=p_iluc_drop, &
-  p_iluc_rate=p_iluc_rate, &
-  p_adds=p_adds, &
-  p_adds_iter=p_adds_iter)
+CALL SetAbstractLinSolverParam(param=param, &
+                               prefix=prefix, &
+                               engine=engine%chars(), &
+                    solverName=obj%solverName_ToInteger(solverName%chars()), &
+                               preconditionOption= &
+               obj%preconditionOption_ToInteger(preconditionOption%chars()), &
+                               maxIter=maxIter, &
+                               atol=atol, &
+                               rtol=rtol, &
+                               convergenceIn= &
+                         obj%convergenceIn_ToInteger(convergenceIn%chars()), &
+                               convergenceType= &
+                     obj%convergenceType_ToInteger(convergenceType%chars()), &
+                               relativeToRHS=relativeToRHS, &
+                               krylovSubspaceSize=krylovSubspaceSize, &
+                               scale=obj%scale_ToInteger(scale%chars()), &
+                               initx_zeros=initx_zeros, &
+                               bicgstab_ell=bicgstab_ell, &
+                               sor_omega=sor_omega, &
+                      p_name=obj%preconditionName_ToInteger(p_name%chars()), &
+                               p_ilu_lfil=p_ilu_lfil, &
+                               p_ilu_mbloc=p_ilu_mbloc, &
+                               p_ilu_droptol=p_ilu_droptol, &
+                               p_ilu_permtol=p_ilu_permtol, &
+                               p_ilu_alpha=p_ilu_alpha, &
+                               p_ilu_fill=p_ilu_fill, &
+                               p_ssor_omega=p_ssor_omega, &
+                    p_hybrid_i=obj%solverName_ToInteger(p_hybrid_i%chars()), &
+                               p_hybrid_maxiter=p_hybrid_maxiter, &
+                               p_hybrid_tol=p_hybrid_tol, &
+                               p_hybrid_omega=p_hybrid_omega, &
+                               p_hybrid_ell=p_hybrid_ell, &
+                               p_hybrid_restart=p_hybrid_restart, &
+                               p_is_alpha=p_is_alpha, &
+                               p_is_m=p_is_m, &
+                               p_sainv_drop=p_sainv_drop, &
+                               p_saamg_unsym=p_saamg_unsym, &
+                               p_saamg_theta=p_saamg_theta, &
+                               p_iluc_drop=p_iluc_drop, &
+                               p_iluc_rate=p_iluc_rate, &
+                               p_adds=p_adds, &
+                               p_adds_iter=p_adds_iter)
 
 child => NULL()
 IF (ASSOCIATED(node)) THEN
@@ -416,7 +415,7 @@ DEALLOCATE (prefix)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ImportParamFromToml()')
+                        '[END]')
 #endif
 END PROCEDURE obj_ImportParamFromToml
 

@@ -20,5 +20,6 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/AbstractField_Class@ConstructorMethods.F90
           ${src_path}/AbstractField_Class@IOMethods.F90
+          ${src_path}/AbstractField_Class@TomlMethods.F90
           ${src_path}/AbstractField_Class@GetMethods.F90
           ${src_path}/AbstractField_Class@SetMethods.F90)

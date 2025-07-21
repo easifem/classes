@@ -103,6 +103,28 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPhysicalNames
 
 !----------------------------------------------------------------------------
+!                                                                     GetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%name%chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetName
+
+!----------------------------------------------------------------------------
 !                                                           GetSpaceCompo
 !----------------------------------------------------------------------------
 
@@ -140,10 +162,42 @@ END PROCEDURE obj_GetStorageFMT
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  ' child classes')
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ASSOCIATED(obj%fedof)
+IF (isok) THEN
+  DO ii = 1, tPhysicalVars
+    ans(ii) = obj%fedof%GetTotalDOF()
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  DO ii = 1, tPhysicalVars
+    ans(ii) = obj%fedofs(ii)%ptr%GetTotalDOF()
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalDOF
 
 !----------------------------------------------------------------------------
@@ -386,6 +440,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetTimeFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                                              GetEngineName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEngineName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEngineName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%engine%chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetEngineName
 
 !----------------------------------------------------------------------------
 !                                                             Include error

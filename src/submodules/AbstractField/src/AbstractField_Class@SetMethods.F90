@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) SetMethods
+USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: CHAR_LF
 IMPLICIT NONE
 CONTAINS
@@ -24,11 +25,17 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
-!USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-!USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
-
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
-INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, tfedof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
 IF (PRESENT(fieldType)) obj%fieldType = fieldType
@@ -42,24 +49,31 @@ IF (PRESENT(local_n)) obj%local_n = local_n
 IF (PRESENT(is)) obj%is = is
 IF (PRESENT(ie)) obj%ie = ie
 IF (PRESENT(lis_ptr)) obj%lis_ptr = lis_ptr
-
 IF (PRESENT(fedof)) obj%fedof => fedof
 
 IF (PRESENT(fedofs)) THEN
-  IF (.NOT. ALLOCATED(obj%fedofs)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[CONFIG ERROR] :: AbstractField_::Obj%fedofs is not allocated ')
-  END IF
 
-  IF (SIZE(obj%fedofs) .NE. SIZE(fedofs)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[CONFIG ERROR] :: AbstractField_::Obj%fedofs '// &
-                      CHAR_LF//'size is not same as size of fedofs')
-  END IF
+#ifdef DEBUG_VER
+  isok = ALLOCATED(obj%fedofs)
+  CALL AssertError1(isok, myName, &
+                    'AbstractField_::Obj%fedofs is not allocated ')
+#endif
 
-  DO ii = 1, SIZE(fedofs)
+#ifdef DEBUG_VER
+  tfedof = SIZE(obj%fedofs)
+  ii = SIZE(fedofs)
+
+  isok = tfedof .EQ. ii
+  CALL AssertError1(isok, myName, &
+                    'AbstractField_::Obj%fedofs '// &
+                    CHAR_LF//'size is not same as size of fedofs')
+#endif
+
+  tfedof = SIZE(fedofs)
+  DO ii = 1, tfedof
     obj%fedofs(ii)%ptr => fedofs(ii)%ptr
   END DO
+
 END IF
 
 !
@@ -71,6 +85,39 @@ END IF
 !CLASS IS (AbstractMatrixField_)
 !  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
 !END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetParam
+
+!----------------------------------------------------------------------------
+!                                                                     SetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%name = TRIM(name)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetName
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

@@ -437,9 +437,17 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+TYPE(DOF_) :: dofobj
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ii, tsize
+INTEGER(I4B) :: ii, tsize, tNodes(1), timeCompo(1), spaceCompo(1), &
+                storageFMT, nrow, ncol
+CHARACTER(*), PARAMETER :: matrixProp = "UNSYM"
+TYPE(String) :: astr
+CHARACTER(1) :: names_char(1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -447,33 +455,48 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
 isok = obj2%isInitiated
 CALL AssertError1(isok, myName, "obj2 is not initiated")
+#endif
 
 CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
 SELECT TYPE (obj2)
 CLASS IS (AbstractNodeField_)
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
   ! Initiate dof object
-  ! tNodes = fedof%GetTotalDOF()
-  ! storageFMT = mystorageformat
-  ! spaceCompo = obj2%GetSpaceCompo()
-  ! timeCompo = obj2%GetTimeCompo()
-  ! CALL DOF_Initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
-  !                   spaceCompo=spaceCompo, timeCompo=timeCompo, &
-  !                   storageFMT=storageFMT)
+  tNodes = obj2%GetTotalDOF(tPhysicalVars=1)
+  spaceCompo = obj2%GetSpaceCompo(tPhysicalVars=1)
+  timeCompo = obj2%GetTimeCompo(tPhysicalVars=1)
+  astr = obj2%GetName()
+  storageFMT = mystorageformat
+  names_char(1) (1:1) = astr%Slice(1, 1)
+  CALL DOF_Initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
+                    spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                    storageFMT=storageFMT)
 
   ! Get nrow and ncol from obj2
-  ! nrow = obj2%Size()
-  ! ncol = nrow
-  ! nrow should be same as tNodes(1) * spaceCompo(1) * timeCompo(1)
-  ! matrixProp="UNSYM"
+  nrow = obj2%SIZE()
+  ncol = nrow
+
+#ifdef DEBUG_VER
+  isok = nrow .EQ. (tNodes(1) * spaceCompo(1) * timeCompo(1))
+  CALL AssertError1(isok, myName, &
+            "nrow should be same as tNodes(1) * spaceCompo(1) * timeCompo(1)")
+#endif
+
   ! Initiate CSRMatrix
-  ! CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
-  !                         jdof=dofobj, matrixProp=astr%chars())
+  CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
+                          jdof=dofobj, matrixProp=astr%chars())
+
+  IF (obj%local_n .EQ. 0) obj%local_n = nrow
+  IF (obj%global_n .EQ. 0) obj%global_n = nrow
+
+  CALL obj%fedof%SetSparsity(mat=obj%mat)
+
+  CALL DOF_Deallocate(dofobj)
 
 CLASS IS (MatrixField_)
   obj%mat = obj2%mat

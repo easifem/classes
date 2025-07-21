@@ -191,6 +191,9 @@ CONTAINS
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
+  !! Returns the name
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Returns the names of physical variables
   !!  This routine should be implemented by child classes
@@ -256,9 +259,14 @@ CONTAINS
   GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
     GetTimeFEDOFPointer2
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetEngineName => &
+    obj_GetEngineName
+  !! Get the engine name
+
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam => obj_SetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
 
 END TYPE AbstractField_
 
@@ -1077,8 +1085,10 @@ END INTERFACE AbstractFieldWriteData
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, isInitiated, fieldType, name, &
-         engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
-                          tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
+                                 engine, comm, myRank, numProcs, global_n, &
+                                 local_n, is, ie, lis_ptr, &
+                                 tSize, realVec, dof, isPMatInitiated, &
+                                 fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
@@ -1102,6 +1112,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                          SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-20
+! summary: Set the name of the field
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1111,8 +1136,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, fieldType, name, &
-         engine, comm, myRank, numProcs, global_n, local_n, is, ie, lis_ptr, &
-                          tSize, realVec, dof, isPMatInitiated, fedof, fedofs)
+                                 engine, comm, myRank, numProcs, global_n, &
+                                 local_n, is, ie, lis_ptr, tSize, realVec, &
+                                 dof, isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
@@ -1163,6 +1189,21 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
   END SUBROUTINE obj_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns the name of the field
+
+INTERFACE
+  MODULE FUNCTION obj_GetName(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1418,6 +1459,21 @@ INTERFACE
     TYPE(TimeFEDOFPointer_), ALLOCATABLE :: ans(:)
     !! List of FEDOF pointers
   END FUNCTION obj_GetTimeFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetEngineName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Get the engine name of the field
+
+INTERFACE
+  MODULE FUNCTION obj_GetEngineName(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetEngineName
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -1,0 +1,12 @@
+[linsolver]
+solverName = "BICG"
+engine = "NATIVE_SERIAL"
+# convergenceIn = "RESIDUAL"
+# convergenceType = "RELATIVE"
+maxIter = -1
+relativeToRHS = false
+atol = 1.0e-10
+rtol = 1.0e-10
+
+[linSolver.precondition]
+option = "NO"

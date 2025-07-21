@@ -31,14 +31,14 @@ CONTAINS
 
 MODULE PROCEDURE obj_SetParam
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+CHARACTER(*), PARAMETER :: myName="obj_SetParam()"
 #endif
 
 INTEGER(I4B) :: ii, tsize1
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+'[START] ')
 #endif
 
 IF (PRESENT(dof_tPhysicalVars)) obj%dof_tPhysicalVars = dof_tPhysicalVars
@@ -59,8 +59,8 @@ IF (PRESENT(dof_names_char)) THEN
 END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+'[END] ')
 #endif
 
 END PROCEDURE obj_SetParam
