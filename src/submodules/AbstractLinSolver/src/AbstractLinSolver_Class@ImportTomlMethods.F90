@@ -21,7 +21,7 @@ USE Display_Method, ONLY: Display, ToString
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
 USE TomlUtility, ONLY: GetValue, GetValue_
-USE StringUtility, ONLY: LowerCase
+USE StringUtility, ONLY: LowerCase, UpperCase
 
 IMPLICIT NONE
 
@@ -40,24 +40,43 @@ SUBROUTINE ilu_import_from_toml(param, prefix, table)
   INTEGER(I4B) :: p_ilu_lfil, p_ilu_mbloc, p_ilu_fill
   REAL(DFP) :: p_ilu_droptol, p_ilu_permtol, p_ilu_alpha
 
-  CALL toml_get(table, "lfil", p_ilu_lfil, default_ilu_lfil,  &
-              & origin=origin, stat=stat)
-  CALL toml_get(table, "mbloc", p_ilu_mbloc, default_ilu_mbloc,  &
-              & origin=origin, stat=stat)
-  CALL toml_get(table, "fill", p_ilu_fill, default_ilu_fill,  &
-              & origin=origin, stat=stat)
-  CALL toml_get(table, "droptol", p_ilu_droptol, default_ilu_droptol,  &
-              & origin=origin, stat=stat)
-  CALL toml_get(table, "permtol", p_ilu_permtol, default_ilu_permtol, &
-              & origin=origin, stat=stat)
-  CALL toml_get(table, "alpha", p_ilu_alpha, default_ilu_alpha,  &
-              & origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ilu_import_from_toml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="lfil", VALUE=p_ilu_lfil, &
+                default_value=default_ilu_lfil, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="mbloc", VALUE=p_ilu_mbloc, &
+                default_value=default_ilu_mbloc, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="fill", VALUE=p_ilu_fill, &
+                default_value=default_ilu_fill, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="droptol", VALUE=p_ilu_droptol, &
+                default_value=default_ilu_droptol, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="permtol", VALUE=p_ilu_permtol, &
+                default_value=default_ilu_permtol, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="alpha", VALUE=p_ilu_alpha, &
+                default_value=default_ilu_alpha, origin=origin, stat=stat)
 
   CALL SetPrecondIluParam(param=param, prefix=prefix, &
                           p_ilu_lfil=p_ilu_lfil, p_ilu_mbloc=p_ilu_mbloc, &
-                   p_ilu_droptol=p_ilu_droptol, p_ilu_permtol=p_ilu_permtol, &
+                          p_ilu_droptol=p_ilu_droptol, &
+                          p_ilu_permtol=p_ilu_permtol, &
                           p_ilu_alpha=p_ilu_alpha, p_ilu_fill=p_ilu_fill)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ilu_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -71,31 +90,51 @@ SUBROUTINE hybrid_import_from_toml(obj, param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "hybrid_import_from_toml()"
+#endif
+
   TYPE(String) :: p_hybrid_i
-  INTEGER(I4B) :: p_hybrid_maxiter, p_hybrid_ell, p_hybrid_restart
+  INTEGER(I4B) :: p_hybrid_maxiter, p_hybrid_ell, p_hybrid_restart, tempint
   REAL(DFP) :: p_hybrid_tol, p_hybrid_omega
 
-  CALL toml_get(table, "name", p_hybrid_i%raw, default_hybrid_i_char, &
-                origin=origin, stat=stat)
-  CALL toml_get(table, "maxIter", p_hybrid_maxiter, &
-                default_hybrid_maxiter, origin=origin, stat=stat)
-  CALL toml_get(table, "ell", p_hybrid_ell, &
-                default_hybrid_ell, origin=origin, stat=stat)
-  CALL toml_get(table, "restart", &
-                p_hybrid_restart, &
-                default_hybrid_restart, origin=origin, stat=stat)
-  CALL toml_get(table, "tol", p_hybrid_tol, &
-                default_hybrid_tol, origin=origin, stat=stat)
-  CALL toml_get(table, "omega", &
-                p_hybrid_omega, &
-                default_hybrid_omega, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
+  CALL GetValue(table=table, key="name", VALUE=p_hybrid_i, &
+                default_value=default_hybrid_i_char, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="maxIter", VALUE=p_hybrid_maxiter, &
+               default_value=default_hybrid_maxiter, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="ell", VALUE=p_hybrid_ell, &
+                default_value=default_hybrid_ell, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="restart", VALUE=p_hybrid_restart, &
+               default_value=default_hybrid_restart, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="tol", VALUE=p_hybrid_tol, &
+                default_value=default_hybrid_tol, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="omega", VALUE=p_hybrid_omega, &
+                default_value=default_hybrid_omega, origin=origin, stat=stat)
+
+  tempint = obj%solverName_ToInteger(p_hybrid_i%chars())
   CALL SetPrecondHybridParam(param=param, prefix=prefix, &
-                    p_hybrid_i=obj%solverName_ToInteger(p_hybrid_i%chars()), &
+                             p_hybrid_i=tempint, &
                              p_hybrid_maxiter=p_hybrid_maxiter, &
-                   p_hybrid_tol=p_hybrid_tol, p_hybrid_omega=p_hybrid_omega, &
-                 p_hybrid_ell=p_hybrid_ell, p_hybrid_restart=p_hybrid_restart)
+                             p_hybrid_tol=p_hybrid_tol, &
+                             p_hybrid_omega=p_hybrid_omega, &
+                             p_hybrid_ell=p_hybrid_ell, &
+                             p_hybrid_restart=p_hybrid_restart)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE hybrid_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -108,18 +147,32 @@ SUBROUTINE is_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "is_import_from_toml()"
+#endif
+
   INTEGER(I4B) :: p_is_m
   REAL(DFP) :: p_is_alpha
 
-  CALL toml_get(table, "m", p_is_m, &
-                default_is_m, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  CALL toml_get(table, "p_is_alpha", p_is_alpha, &
-                default_is_alpha, origin=origin, stat=stat)
+  CALL GetValue(table=table, key="m", VALUE=p_is_m, &
+                default_value=default_is_m, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="p_is_alpha", VALUE=p_is_alpha, &
+                default_value=default_is_alpha, origin=origin, stat=stat)
 
   CALL SetPrecondIsParam(param=param, prefix=prefix, &
                          p_is_m=p_is_m, p_is_alpha=p_is_alpha)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE is_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -132,16 +185,32 @@ SUBROUTINE adds_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "adds_import_from_toml()"
+#endif
+
   INTEGER(I4B) :: p_adds_iter
   LOGICAL(LGT) :: p_adds
 
-  CALL toml_get(table, "iter", p_adds_iter, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  CALL toml_get(table, "isAdditiveSchwarz", p_adds, &
-                origin=origin, stat=stat)
+  CALL GetValue(table=table, key="iter", VALUE=p_adds_iter, &
+                default_value=default_adds_iter, origin=origin, stat=stat)
+
+  CALL GetValue(table, "isAdditiveSchwarz", p_adds, &
+                default_value=default_adds, origin=origin, stat=stat)
 
   CALL SetPrecondAddsParam(param=param, prefix=prefix, &
                            p_adds_iter=p_adds_iter, p_adds=p_adds)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE adds_import_from_toml
 
@@ -155,12 +224,28 @@ SUBROUTINE ssor_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ssor_import_from_toml()"
+#endif
+
   REAL(DFP) :: p_ssor_omega
 
-  CALL toml_get(table, "omega", p_ssor_omega, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="omega", VALUE=p_ssor_omega, &
+                default_value=default_ssor_omega, origin=origin, stat=stat)
 
   CALL SetPrecondSsorParam(param=param, prefix=prefix, &
                            p_ssor_omega=p_ssor_omega)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ssor_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -173,13 +258,28 @@ SUBROUTINE sainv_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "sainv_import_from_toml()"
+#endif
+
   REAL(DFP) :: p_sainv_drop
 
-  CALL toml_get(table, "drop", p_sainv_drop, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="drop", VALUE=p_sainv_drop, &
+                default_value=default_sainv_drop, origin=origin, stat=stat)
 
   CALL SetPrecondSainvParam(param=param, prefix=prefix, &
                             p_sainv_drop=p_sainv_drop)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE sainv_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -192,15 +292,33 @@ SUBROUTINE saamg_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "saamg_import_from_toml()"
+#endif
+
   REAL(DFP) :: p_saamg_theta
   LOGICAL(LGT) :: p_saamg_unsym
 
-  CALL toml_get(table, "theta", p_saamg_theta, origin=origin, stat=stat)
-  CALL toml_get(table, "unsym", p_saamg_unsym, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="theta", VALUE=p_saamg_theta, &
+                default_value=default_saamg_theta, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="unsym", VALUE=p_saamg_unsym, &
+                default_value=default_saamg_unsym, origin=origin, stat=stat)
 
   CALL SetPrecondSaamgParam(param=param, prefix=prefix, &
-                     p_saamg_theta=p_saamg_theta, p_saamg_unsym=p_saamg_unsym)
+                            p_saamg_theta=p_saamg_theta, &
+                            p_saamg_unsym=p_saamg_unsym)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE saamg_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -213,14 +331,30 @@ SUBROUTINE iluc_import_from_toml(param, prefix, table)
   TYPE(toml_table), POINTER, INTENT(IN) :: table
   INTEGER(I4B) :: origin, stat
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "iluc_import_from_toml()"
+#endif
   REAL(DFP) :: p_iluc_drop, p_iluc_rate
 
-  CALL toml_get(table, "drop", p_iluc_drop, origin=origin, stat=stat)
-  CALL toml_get(table, "rate", p_iluc_rate, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="drop", VALUE=p_iluc_drop, &
+                default_value=default_iluc_drop, origin=origin, stat=stat)
+
+  CALL GetValue(table=table, key="rate", VALUE=p_iluc_rate, &
+                default_value=default_iluc_rate, origin=origin, stat=stat)
 
   CALL SetPrecondIlucParam(param=param, prefix=prefix, &
                            p_iluc_rate=p_iluc_rate, p_iluc_drop=p_iluc_drop)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE iluc_import_from_toml
 
 !----------------------------------------------------------------------------
@@ -228,24 +362,30 @@ END SUBROUTINE iluc_import_from_toml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportParamFromToml
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
-INTEGER(I4B) :: origin, stat
+#endif
+
 TYPE(toml_table), POINTER :: child, node
-CHARACTER(:), ALLOCATABLE :: prefix
+CHARACTER(:), ALLOCATABLE :: prefix, tempstr
 
 TYPE(String) :: engine, solverName, preconditionOption, &
                 p_name, convergenceIn, convergenceType, scale, p_hybrid_i
 
 INTEGER(I4B) :: maxIter, krylovSubspaceSize, bicgstab_ell, &
                 p_ilu_lfil, p_ilu_mbloc, p_ilu_fill, p_hybrid_maxiter, &
-                p_hybrid_ell, p_hybrid_restart, p_is_m, p_adds_iter
+                p_hybrid_ell, p_hybrid_restart, p_is_m, p_adds_iter, &
+                origin, stat, solverName_int, preconditionOption_int, &
+                convergenceIn_int, convergenceType_int, scale_int, &
+                p_name_int, p_hybrid_i_int
 
 REAL(DFP) :: atol, rtol, sor_omega, p_is_alpha, &
              p_ilu_droptol, p_ilu_permtol, p_ilu_alpha, p_ssor_omega, &
              p_hybrid_tol, p_hybrid_omega, p_sainv_drop, p_saamg_theta, &
              p_iluc_drop, p_iluc_rate
 
-LOGICAL(LGT) :: relativeToRHS, initx_zeros, p_saamg_unsym, p_adds
+LOGICAL(LGT) :: relativeToRHS, initx_zeros, p_saamg_unsym, p_adds, isok, &
+                isok2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -318,37 +458,46 @@ p_iluc_rate = default_iluc_rate
 CALL toml_get(table, "precondition", node, origin=origin, &
               stat=stat, requested=.FALSE.)
 
-IF (ASSOCIATED(node)) THEN
-  CALL toml_get(node, "option", preconditionOption%raw, &
-                default_preconditionOption_char, origin=origin, stat=stat)
-  CALL toml_get(node, "name", p_name%raw, default_p_name_char, &
+preconditionOption = default_preconditionOption_char
+p_name = default_p_name_char
+
+isok = ASSOCIATED(node)
+IF (isok) THEN
+  CALL GetValue(table=node, key="option", VALUE=preconditionOption, &
+                default_value=default_preconditionOption_char, &
                 origin=origin, stat=stat)
-ELSE
-  preconditionOption = default_preconditionOption_char
-  p_name = default_p_name_char
+
+  CALL GetValue(table=node, key="name", VALUE=p_name, &
+                default_value=default_p_name_char, origin=origin, stat=stat)
 END IF
 
 prefix = obj%GetPrefix()
+solverName_int = obj%solverName_ToInteger(solverName%chars())
+preconditionOption_int = obj%preconditionOption_ToInteger( &
+                         preconditionOption%chars())
+convergenceIn_int = obj%convergenceIn_ToInteger(convergenceIn%chars())
+convergenceType_int = obj%convergenceType_ToInteger(convergenceType%chars())
+scale_int = obj%scale_ToInteger(scale%chars())
+p_name_int = obj%preconditionName_ToInteger(p_name%chars())
+p_hybrid_i_int = obj%solverName_ToInteger(p_hybrid_i%chars())
+
 CALL SetAbstractLinSolverParam(param=param, &
                                prefix=prefix, &
                                engine=engine%chars(), &
-                    solverName=obj%solverName_ToInteger(solverName%chars()), &
-                               preconditionOption= &
-               obj%preconditionOption_ToInteger(preconditionOption%chars()), &
+                               solverName=solverName_int, &
+                               preconditionOption=preconditionOption_int, &
                                maxIter=maxIter, &
                                atol=atol, &
                                rtol=rtol, &
-                               convergenceIn= &
-                         obj%convergenceIn_ToInteger(convergenceIn%chars()), &
-                               convergenceType= &
-                     obj%convergenceType_ToInteger(convergenceType%chars()), &
+                               convergenceIn=convergenceIn_int, &
+                               convergenceType=convergenceType_int, &
                                relativeToRHS=relativeToRHS, &
                                krylovSubspaceSize=krylovSubspaceSize, &
-                               scale=obj%scale_ToInteger(scale%chars()), &
+                               scale=scale_int, &
                                initx_zeros=initx_zeros, &
                                bicgstab_ell=bicgstab_ell, &
                                sor_omega=sor_omega, &
-                      p_name=obj%preconditionName_ToInteger(p_name%chars()), &
+                               p_name=p_name_int, &
                                p_ilu_lfil=p_ilu_lfil, &
                                p_ilu_mbloc=p_ilu_mbloc, &
                                p_ilu_droptol=p_ilu_droptol, &
@@ -356,7 +505,7 @@ CALL SetAbstractLinSolverParam(param=param, &
                                p_ilu_alpha=p_ilu_alpha, &
                                p_ilu_fill=p_ilu_fill, &
                                p_ssor_omega=p_ssor_omega, &
-                    p_hybrid_i=obj%solverName_ToInteger(p_hybrid_i%chars()), &
+                               p_hybrid_i=p_hybrid_i_int, &
                                p_hybrid_maxiter=p_hybrid_maxiter, &
                                p_hybrid_tol=p_hybrid_tol, &
                                p_hybrid_omega=p_hybrid_omega, &
@@ -373,36 +522,65 @@ CALL SetAbstractLinSolverParam(param=param, &
                                p_adds_iter=p_adds_iter)
 
 child => NULL()
-IF (ASSOCIATED(node)) THEN
-  CALL toml_get(node, LowerCase(p_name%chars()), child, origin=origin, &
-                stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    SELECT CASE (p_name%chars())
-    CASE ("none", "NONE")
-      ! do nothing
-    CASE ("ilu", "ILU")
-      CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("hybrid", "HYBRID")
-      CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix, &
-                                   table=child)
-    CASE ("is", "IS")
-      CALL is_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("adds", "ADDS")
-      CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("ssor", "SSOR")
-      CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("sainv", "SAINV")
-      CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("saamg", "SAAMG")
-      CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("iluc", "ILUC")
-      CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
-    END SELECT
-    child => NULL()
-  END IF
+isok = ASSOCIATED(node)
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  prefix = ""
+  tempstr = ""
+  RETURN
 END IF
 
-DEALLOCATE (prefix)
+tempstr = LowerCase(p_name%chars())
+CALL toml_get(node, tempstr, child, origin=origin, stat=stat, &
+              requested=.FALSE.)
+
+isok = ASSOCIATED(child)
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  prefix = ""
+  tempstr = ""
+  RETURN
+END IF
+
+tempstr = UpperCase(tempstr)
+SELECT CASE (tempstr)
+CASE ("NONE")
+  ! do nothing
+CASE ("ILU")
+  CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
+CASE ("HYBRID")
+  CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix, &
+                               table=child)
+CASE ("IS")
+  CALL is_import_from_toml(param=param, prefix=prefix, table=child)
+
+CASE ("ADDS")
+  CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
+
+CASE ("SSOR")
+  CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
+
+CASE ("SAINV")
+  CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
+
+CASE ("SAAMG")
+  CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
+
+CASE ("ILUC")
+  CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
+
+END SELECT
+
+child => NULL()
+prefix = ""
+tempstr = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -415,8 +593,12 @@ END PROCEDURE obj_ImportParamFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
+#endif
+
 TYPE(ParameterList_) :: param
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ImportFromToml()')
