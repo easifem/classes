@@ -18,12 +18,11 @@
 SUBMODULE(LinSolver_Class) ConstructorMethods
 USE BaseType, ONLY: TypePrecondOpt, &
                     TypeConvergenceOpt
-
 USE InputUtility, ONLY: Input
-USE AbstractLinSolverParam
-
 USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
                                    AbstractLinSolverDeallocate
+
+USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -57,7 +56,7 @@ END SUBROUTINE SetPreconditionOption
 SUBROUTINE SetKrylovSubspaceSize(IPAR, m)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: m
-  IPAR(5) = INPUT(default=default_KrylovSubspaceSize, option=m)
+  IPAR(5) = INPUT(default=TypeLinSolverOpt%krylovSubspaceSize, option=m)
 END SUBROUTINE SetKrylovSubspaceSize
 
 !----------------------------------------------------------------------------

@@ -19,18 +19,12 @@ SUBMODULE(LinSolverLis_Class) ConstructorMethods
 USE BaseType, ONLY: TypePrecondOpt, &
                     TypeConvergenceOpt, &
                     TypeSolverNameOpt
-
 USE InputUtility, ONLY: Input
-USE AbstractLinSolverParam
-
 USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
                                    AbstractLinSolverDeallocate
-
 USE LinSolver_Class, ONLY: LinSolverInitiate, &
                            LinSolverDeallocate
-
 USE Display_Method, ONLY: ToString
-
 USE String_Class, ONLY: String
 
 IMPLICIT NONE
