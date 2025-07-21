@@ -413,6 +413,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 # FieldFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
+# LinSolverOpt
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolverOpt/CMakeLists.txt)
+
 # AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 

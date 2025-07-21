@@ -27,19 +27,19 @@ CONTAINS
 
 MODULE PROCEDURE obj_Deallocate
 obj%isInit = .FALSE.
-obj%engine = default_engine
-obj%solverName = default_solverName
+obj%engine = TypeLinSolverOpt%engine
+obj%solverName = TypeLinSolverOpt%solverName
 obj%ierr = 0
-obj%preconditionOption = default_preconditionOption
+obj%preconditionOption = TypeLinSolverOpt%preconditionOption
 obj%iter = 0
-obj%maxIter = default_maxIter
-obj%atol = default_atol
-obj%rtol = default_rtol
+obj%maxIter = TypeLinSolverOpt%maxIter
+obj%atol = TypeLinSolverOpt%atol
+obj%rtol = TypeLinSolverOpt%rtol
 obj%tol = 0.0
-obj%convergenceIn = default_convergenceIn
-obj%convergenceType = default_convergenceType
-obj%relativeToRHS = default_relativeToRHS
-obj%KrylovSubspaceSize = default_KrylovSubspaceSize
+obj%convergenceIn = TypeLinSolverOpt%convergenceIn
+obj%convergenceType = TypeLinSolverOpt%convergenceType
+obj%relativeToRHS = TypeLinSolverOpt%relativeToRHS
+obj%krylovSubspaceSize = TypeLinSolverOpt%krylovSubspaceSize
 obj%globalNumColumn = 0
 obj%globalNumRow = 0
 obj%localNumColumn = 0
@@ -56,14 +56,14 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myname = "ls_checkEssentialParam"
+CHARACTER(*), PARAMETER :: myName = "ls_checkEssentialParam"
 CHARACTER(:), ALLOCATABLE :: keys, prefix
 
 prefix = obj%GetPrefix()
 keys = "solverName/preconditionOption/convergenceIn/convergenceType/maxIter/" // &
        "relativeToRHS/KrylovSubspaceSize/rtol/atol"
 CALL FPL_CheckEssentialParam(obj=param, keys=keys, &
-                             prefix=prefix, myName=myname, modName=modName)
+                             prefix=prefix, myName=myName, modName=modName)
 prefix = ""
 keys = ""
 END PROCEDURE obj_CheckEssentialParam

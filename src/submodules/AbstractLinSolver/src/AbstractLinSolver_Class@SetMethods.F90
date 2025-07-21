@@ -73,37 +73,50 @@ END PROCEDURE obj_setTolerance
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractLinSolverParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetAbstractLinSolverParam()"
-INTEGER(I4B) :: p_name0
-LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: p_name0, tempint
+LOGICAL(LGT) :: isok, tempbool
+REAL(DFP) :: tempreal
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 isok = PRESENT(solverName)
 CALL AssertError1(isok, myname, &
                   'solverName should be present')
+#endif
 
+#ifdef DEBUG_VER
 IF (solverName .EQ. TypeSolverNameOpt%SOR) THEN
   isok = PRESENT(sor_omega)
   CALL AssertError1(isok, myname, &
                     'For solverName LIS_SOR sor_omega should be present')
 END IF
+#endif
 
+#ifdef DEBUG_VER
 IF (solverName .EQ. TypeSolverNameOpt%BICGSTABL) THEN
   isok = PRESENT(bicgstab_ell)
   CALL AssertError1(isok, myname, &
                 'For solverName LIS_BICGSTABL bicgstab_ell should be present')
 END IF
+#endif
 
+#ifdef DEBUG_VER
 isok = PRESENT(preconditionOption)
 CALL AssertError1(isok, myname, &
                   'preconditionOption should be present')
+#endif
 
 p_name0 = INPUT(option=p_name, default=TypePrecondOpt%NONE)
 
+#ifdef DEBUG_VER
 IF (preconditionOption .NE. TypePrecondOpt%NONE) THEN
   isok = PRESENT(p_name)
 
@@ -112,7 +125,9 @@ IF (preconditionOption .NE. TypePrecondOpt%NONE) THEN
                     'precondition name (p_name) should be present')
 
 END IF
+#endif
 
+#ifdef DEBUG_VER
 SELECT CASE (p_name0)
 CASE (TypePrecondOpt%NONE)
   !! Do nothing
@@ -251,6 +266,7 @@ CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
               '[INTERNAL ERROR] :: No case found for given precondition name')
 END SELECT
+#endif
 
 ! engine
 CALL Set(obj=param, prefix=prefix, key="engine", datatype="char", &
@@ -265,69 +281,85 @@ CALL Set(obj=param, prefix=prefix, key="preconditionOption", datatype=1_I4B, &
          VALUE=preconditionOption)
 
 ! maxIter
+tempint = INPUT(option=maxIter, default=TypeLinSolverOpt%maxIter)
 CALL Set(obj=param, prefix=prefix, key="maxIter", datatype=1_I4B, &
-         VALUE=Input(default=default_maxIter, option=maxIter))
+         VALUE=tempint)
 
 ! rtol
+tempreal = INPUT(option=rtol, default=TypeLinSolverOpt%rtol)
 CALL Set(obj=param, prefix=prefix, key="rtol", datatype=1.0_DFP, &
-         VALUE=Input(default=default_rtol, option=rtol))
+         VALUE=tempreal)
 
 ! atol
+tempreal = INPUT(option=atol, default=TypeLinSolverOpt%atol)
 CALL Set(obj=param, prefix=prefix, key="atol", datatype=1.0_DFP, &
-         VALUE=Input(default=default_atol, option=atol))
+         VALUE=tempreal)
 
 ! convergenceIn
+tempint = INPUT(option=convergenceIn, default=TypeLinSolverOpt%convergenceIn)
 CALL Set(obj=param, prefix=prefix, key="convergenceIn", datatype=1_I4B, &
-         VALUE=INPUT(option=convergenceIn, default=default_convergenceIn))
+         VALUE=tempint)
 
 ! convergenceType
+tempint = INPUT(option=convergenceType, &
+                default=TypeLinSolverOpt%convergenceType)
 CALL Set(obj=param, prefix=prefix, key="convergenceType", datatype=1_I4B, &
-         VALUE=INPUT(option=convergenceType, default=default_convergenceType))
+         VALUE=tempint)
 
 ! relativeToRHS
+tempbool = INPUT(option=relativeToRHS, &
+                 default=TypeLinSolverOpt%relativeToRHS)
 CALL Set(obj=param, prefix=prefix, key="relativeToRHS", datatype=.TRUE., &
-         VALUE=INPUT(option=relativeToRHS, default=default_relativeToRHS))
+         VALUE=tempbool)
 
 ! KrylovSubspaceSize
+tempint = INPUT(option=KrylovSubspaceSize, &
+                default=TypeLinSolverOpt%KrylovSubspaceSize)
 CALL Set(obj=param, prefix=prefix, key="KrylovSubspaceSize", &
-         datatype=1_I4B, &
-   VALUE=INPUT(option=KrylovSubspaceSize, default=default_KrylovSubspaceSize))
+         datatype=1_I4B, VALUE=tempint)
 
 ! scale
+tempint = INPUT(option=scale, default=TypeLinSolverOpt%scale)
 CALL Set(obj=param, prefix=prefix, key="scale", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=scale, default=default_scale))
+         datatype=1_I4B, VALUE=tempint)
 
 ! initx_zeros
+tempbool = INPUT(option=initx_zeros, &
+                 default=TypeLinSolverOpt%initx_zeros)
 CALL Set(obj=param, prefix=prefix, key="initx_zeros", &
-         datatype=.TRUE., &
-         VALUE=INPUT(option=initx_zeros, default=default_initx_zeros))
+         datatype=.TRUE., VALUE=tempbool)
 
 ! bicgstab_ell
+tempint = INPUT(option=bicgstab_ell, &
+                default=TypeLinSolverOpt%bicgstab_ell)
 CALL Set(obj=param, prefix=prefix, key="bicgstab_ell", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=bicgstab_ell, default=default_bicgstab_ell))
+         datatype=1_I4B, VALUE=tempint)
 
 ! sor_omega
+tempreal = INPUT(option=sor_omega, &
+                 default=TypeLinSolverOpt%sor_omega)
 CALL Set(obj=param, prefix=prefix, key="sor_omega", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=sor_omega, default=default_sor_omega))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_name
 CALL Set(obj=param, prefix=prefix, key="/Precond/name", &
-         datatype=1_I4B, &
-         VALUE=p_name0)
+         datatype=1_I4B, VALUE=p_name0)
 
-CALL SetPrecondIluParam(param=param, prefix=prefix, p_ilu_lfil=p_ilu_lfil, &
-                       p_ilu_mbloc=p_ilu_mbloc, p_ilu_droptol=p_ilu_droptol, &
-                       p_ilu_permtol=p_ilu_permtol, p_ilu_alpha=p_ilu_alpha, &
+CALL SetPrecondIluParam(param=param, prefix=prefix, &
+                        p_ilu_lfil=p_ilu_lfil, &
+                        p_ilu_mbloc=p_ilu_mbloc, &
+                        p_ilu_droptol=p_ilu_droptol, &
+                        p_ilu_permtol=p_ilu_permtol, &
+                        p_ilu_alpha=p_ilu_alpha, &
                         p_ilu_fill=p_ilu_fill)
 
 CALL SetPrecondSsorParam(param=param, prefix=prefix, p_ssor_omega=p_ssor_omega)
 
 CALL SetPrecondHybridParam(param=param, prefix=prefix, p_hybrid_i=p_hybrid_i,&
-               p_hybrid_maxiter=p_hybrid_maxiter, p_hybrid_tol=p_hybrid_tol, &
-                   p_hybrid_omega=p_hybrid_omega, p_hybrid_ell=p_hybrid_ell, &
+                           p_hybrid_maxiter=p_hybrid_maxiter, &
+                           p_hybrid_tol=p_hybrid_tol, &
+                           p_hybrid_omega=p_hybrid_omega, &
+                           p_hybrid_ell=p_hybrid_ell, &
                            p_hybrid_restart=p_hybrid_restart)
 
 CALL SetPrecondIsParam(param=param, prefix=prefix, p_is_m=p_is_m, &
@@ -337,7 +369,8 @@ CALL SetPrecondSainvParam(param=param, prefix=prefix, &
                           p_sainv_drop=p_sainv_drop)
 
 CALL SetPrecondSaamgParam(param=param, prefix=prefix, &
-                     p_saamg_theta=p_saamg_theta, p_saamg_unsym=p_saamg_unsym)
+                          p_saamg_theta=p_saamg_theta, &
+                          p_saamg_unsym=p_saamg_unsym)
 
 CALL SetPrecondIlucParam(param=param, prefix=prefix, &
                          p_iluc_rate=p_iluc_rate, p_iluc_drop=p_iluc_drop)
@@ -357,38 +390,52 @@ END PROCEDURE SetAbstractLinSolverParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondIluParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondIluParam()"
+#endif
+
+INTEGER(I4B) :: tempint
+REAL(DFP) :: tempreal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_ilu_lfil
+tempint = INPUT(option=p_ilu_lfil, default=TypeLinSolverOpt%ilu_lfil)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_lfil", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_ilu_lfil, default=default_ilu_lfil))
+         datatype=1_I4B, VALUE=tempint)
 
 ! p_ilu_mbloc
+tempint = INPUT(option=p_ilu_mbloc, default=TypeLinSolverOpt%ilu_mbloc)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_mbloc", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_ilu_mbloc, default=default_ilu_mbloc))
+         datatype=1_I4B, VALUE=tempint)
 
 ! p_ilu_droptol
+tempreal = INPUT(option=p_ilu_droptol, default=TypeLinSolverOpt%ilu_droptol)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_droptol", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_ilu_droptol, default=default_ilu_droptol))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_ilu_permtol
+tempreal = INPUT(option=p_ilu_permtol, default=TypeLinSolverOpt%ilu_permtol)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_permtol", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_ilu_permtol, default=default_ilu_permtol))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_ilu_alpha
+tempreal = INPUT(option=p_ilu_alpha, default=TypeLinSolverOpt%ilu_alpha)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_alpha", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_ilu_alpha, default=default_ilu_alpha))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_ilu_fill
+tempint = INPUT(option=p_ilu_fill, default=TypeLinSolverOpt%ilu_fill)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_fill", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_ilu_fill, default=default_ilu_fill))
+         datatype=1_I4B, VALUE=tempint)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondIluParam
 
 !----------------------------------------------------------------------------
@@ -396,38 +443,54 @@ END PROCEDURE SetPrecondIluParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondHybridParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondHybridParam()"
+#endif
+
+INTEGER(I4B) :: tempint
+REAL(DFP) :: tempreal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_hybrid_i
+tempint = INPUT(option=p_hybrid_i, default=TypeLinSolverOpt%hybrid_i)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_i", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_hybrid_i, default=default_hybrid_i))
+         datatype=1_I4B, VALUE=tempint)
 
 ! p_hybrid_maxiter
+tempint = INPUT(option=p_hybrid_maxiter, &
+                default=TypeLinSolverOpt%hybrid_maxiter)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_maxiter", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_hybrid_maxiter, default=default_hybrid_maxiter))
+         datatype=1_I4B, VALUE=tempint)
 
 ! p_hybrid_tol
+tempreal = INPUT(option=p_hybrid_tol, default=TypeLinSolverOpt%hybrid_tol)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_tol", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_hybrid_tol, default=default_hybrid_tol))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_hybrid_omega
+tempreal = INPUT(option=p_hybrid_omega, default=TypeLinSolverOpt%hybrid_omega)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_omega", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_hybrid_omega, default=default_hybrid_omega))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_hybrid_ell
+tempint = INPUT(option=p_hybrid_ell, default=TypeLinSolverOpt%hybrid_ell)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_ell", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_hybrid_ell, default=default_hybrid_ell))
+         datatype=1_I4B, VALUE=tempint)
 
 ! p_hybrid_restart
+tempint = INPUT(option=p_hybrid_restart, &
+                default=TypeLinSolverOpt%hybrid_restart)
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_restart", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_hybrid_restart, default=default_hybrid_restart))
+         datatype=1_I4B, VALUE=tempint)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondHybridParam
 
 !----------------------------------------------------------------------------
@@ -435,18 +498,32 @@ END PROCEDURE SetPrecondHybridParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondIsParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondIsParam()"
+#endif
+
+REAL(DFP) :: tempreal
+INTEGER(I4B) :: tempint
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_is_alpha
+tempreal = INPUT(option=p_is_alpha, default=TypeLinSolverOpt%is_alpha)
 CALL Set(obj=param, prefix=prefix, key="/Precond/is_alpha", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_is_alpha, default=default_is_alpha))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_is_m
+tempint = INPUT(option=p_is_m, default=TypeLinSolverOpt%is_m)
 CALL Set(obj=param, prefix=prefix, key="/Precond/is_m", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_is_m, default=default_is_m))
+         datatype=1_I4B, VALUE=tempint)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondIsParam
 
 !----------------------------------------------------------------------------
@@ -454,18 +531,32 @@ END PROCEDURE SetPrecondIsParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondAddsParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondAddsParam()"
+#endif
+
+LOGICAL(LGT) :: tempbool
+INTEGER(I4B) :: tempint
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_adds
+tempbool = INPUT(option=p_adds, default=TypeLinSolverOpt%adds)
 CALL Set(obj=param, prefix=prefix, key="/Precond/adds", &
-         datatype=.TRUE., &
-         VALUE=INPUT(option=p_adds, default=default_adds))
+         datatype=.TRUE., VALUE=tempbool)
 
 ! p_adds_iter
+tempint = INPUT(option=p_adds_iter, default=TypeLinSolverOpt%adds_iter)
 CALL Set(obj=param, prefix=prefix, key="/Precond/adds_iter", &
-         datatype=1_I4B, &
-         VALUE=INPUT(option=p_adds_iter, default=default_adds_iter))
+         datatype=1_I4B, VALUE=tempint)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondAddsParam
 
 !----------------------------------------------------------------------------
@@ -473,13 +564,26 @@ END PROCEDURE SetPrecondAddsParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondSsorParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondSsorParam()"
+#endif
+
+REAL(DFP) :: tempreal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_ssor_omega
+tempreal = INPUT(option=p_ssor_omega, default=TypeLinSolverOpt%ssor_omega)
 CALL Set(obj=param, prefix=prefix, key="/Precond/ssor_omega", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_ssor_omega, default=default_ssor_omega))
+         datatype=1.0_DFP, VALUE=tempreal)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondSsorParam
 
 !----------------------------------------------------------------------------
@@ -487,13 +591,26 @@ END PROCEDURE SetPrecondSsorParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondSainvParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondSainvParam()"
+#endif
+
+REAL(DFP) :: tempreal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_sainv_drop
+tempreal = INPUT(option=p_sainv_drop, default=TypeLinSolverOpt%sainv_drop)
 CALL Set(obj=param, prefix=prefix, key="/Precond/sainv_drop", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_sainv_drop, default=default_sainv_drop))
+         datatype=1.0_DFP, VALUE=tempreal)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondSainvParam
 
 !----------------------------------------------------------------------------
@@ -501,18 +618,32 @@ END PROCEDURE SetPrecondSainvParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondSaamgParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondSaamgParam()"
+#endif
+
+REAL(DFP) :: tempreal
+LOGICAL(LGT) :: tempbool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_saamg_unsym
+tempbool = INPUT(option=p_saamg_unsym, default=TypeLinSolverOpt%saamg_unsym)
 CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_unsym", &
-         datatype=.TRUE., &
-         VALUE=INPUT(option=p_saamg_unsym, default=default_saamg_unsym))
+         datatype=.TRUE., VALUE=tempbool)
 
 ! p_saamg_theta
+tempreal = INPUT(option=p_saamg_theta, default=TypeLinSolverOpt%saamg_theta)
 CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_theta", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_saamg_theta, default=default_saamg_theta))
+         datatype=1.0_DFP, VALUE=tempreal)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondSaamgParam
 
 !----------------------------------------------------------------------------
@@ -520,18 +651,31 @@ END PROCEDURE SetPrecondSaamgParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetPrecondIlucParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetPrecondIlucParam()"
+#endif
+
+REAL(DFP) :: tempreal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ! p_iluc_drop
+tempreal = INPUT(option=p_iluc_drop, default=TypeLinSolverOpt%iluc_drop)
 CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_drop", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_iluc_drop, default=default_iluc_drop))
+         datatype=1.0_DFP, VALUE=tempreal)
 
 ! p_iluc_rate
+tempreal = INPUT(option=p_iluc_rate, default=TypeLinSolverOpt%iluc_rate)
 CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_rate", &
-         datatype=1.0_DFP, &
-         VALUE=INPUT(option=p_iluc_rate, default=default_iluc_rate))
+         datatype=1.0_DFP, VALUE=tempreal)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetPrecondIlucParam
 
 !----------------------------------------------------------------------------

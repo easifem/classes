@@ -27,12 +27,9 @@ USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-
 USE tomlf, ONLY: toml_table
-
 USE TxtFile_Class, ONLY: TxtFile_
-
-USE AbstractLinSolverParam
+USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt
 
 IMPLICIT NONE
 
@@ -86,18 +83,13 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! is object initiated?
   TYPE(String) :: engine
   !! Name of the engine
-  !! NATIVE_SERIAL
-  !! NATIVE_OMP
-  !! NATIVE_ACC
-  !! NATIVE_MPI
-  !! PETSC
-  !! LIS_OMP
+  !! NATIVE_SERIAL ! NATIVE_OMP ! NATIVE_ACC ! NATIVE_MPI ! PETSC ! LIS_OMP
   !! LIS_MPI
-  INTEGER(I4B) :: solverName = default_solverName
+  INTEGER(I4B) :: solverName = TypeLinSolverOpt%solverName
   !! Solver name
   INTEGER(I4B) :: ierr = 0
   !! Error code returned by the solver
-  INTEGER(I4B) :: preconditionOption = default_preconditionOption
+  INTEGER(I4B) :: preconditionOption = TypeLinSolverOpt%preconditionOption
   !! Name of preconditioner;
   !! NO_PRECONDITION
   !! LEFT_PRECONDITION
@@ -105,11 +97,11 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! LEFT_RIGHT_PRECONDITON
   INTEGER(I4B) :: iter = 0
   !! Current iteration number
-  INTEGER(I4B) :: maxIter = default_maxIter
+  INTEGER(I4B) :: maxIter = TypeLinSolverOpt%maxIter
   !! Maximum iteration number
-  REAL(DFP) :: atol = default_atol
+  REAL(DFP) :: atol = TypeLinSolverOpt%atol
   !! absolute tolerance
-  REAL(DFP) :: rtol = default_rtol
+  REAL(DFP) :: rtol = TypeLinSolverOpt%rtol
   !! relative tolerance
   REAL(DFP) :: tol = 0.0_DFP
   !! Tolerance for testing convergence
@@ -119,16 +111,16 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! initial error res or sol
   REAL(DFP) :: error = 0.0_DFP
   !! final error in res of sol
-  INTEGER(I4B) :: convergenceIn = default_convergenceIn
+  INTEGER(I4B) :: convergenceIn = TypeLinSolverOpt%convergenceIn
   !! convergence in residual or solution
-  INTEGER(I4B) :: convergenceType = default_convergenceType
+  INTEGER(I4B) :: convergenceType = TypeLinSolverOpt%convergenceType
   !! relative/ absolute convergence
-  LOGICAL(LGT) :: relativeToRHS = default_relativeToRHS
+  LOGICAL(LGT) :: relativeToRHS = TypeLinSolverOpt%relativeToRHS
   !! In case of relative convergence
   !! is convergence
   !! is relative to
   !! right hand side
-  INTEGER(I4B) :: KrylovSubspaceSize = default_KrylovSubspaceSize
+  INTEGER(I4B) :: KrylovSubspaceSize = TypeLinSolverOpt%KrylovSubspaceSize
   !! Useful for GMRES type algorithm
   INTEGER(I4B) :: globalNumRow = 0, globalNumColumn = 0
   !! Size of the global problem;
@@ -202,22 +194,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: solverName_ToInteger
   !! Convert solver name to integer code
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
-    preconditionOption_ToInteger
-  !! Convert precondition option to integer code
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: convergenceIn_ToInteger
-  !! Convert convergence in to integer code
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: convergenceType_ToInteger
-  !! Convert convergence type to integer code
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: preconditionName_ToInteger
-  !! Convert precondition name to integer code
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: scale_ToInteger
-  !! Convert scale to integer
 
   PROCEDURE(obj_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
   !! Solve system of linear equation
@@ -1088,86 +1064,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION solverName_ToInteger
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    preconditionOption_ToInteger@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION preconditionOption_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION preconditionOption_ToInteger
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         convergenceIn_ToInteger@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION convergenceIn_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION convergenceIn_ToInteger
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       convergenceType_ToInteger@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION convergenceType_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION convergenceType_ToInteger
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 scale_ToInteger@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION scale_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION scale_ToInteger
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       preconditionName_ToInteger@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION preconditionName_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION preconditionName_ToInteger
 END INTERFACE
 
 END MODULE AbstractLinSolver_Class

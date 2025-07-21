@@ -1,12 +1,21 @@
 [linsolver]
-solverName = "BICG"
 engine = "NATIVE_SERIAL"
-# convergenceIn = "RESIDUAL"
-# convergenceType = "RELATIVE"
+solverName = "BICG"
+convergenceIn = "Residual"
+# convergenceIn = "Sol"
+convergenceType = "Relative"
+# convergenceType = "Absolute"
+# scale = "None"
 maxIter = -1
-relativeToRHS = false
+# if maxIter is not negative, then solver will stop after maxIter iterations
+# krylovSubspaceSize = 100
+# bicgstab_ell
 atol = 1.0e-10
 rtol = 1.0e-10
+relativeToRHS = false
+#initx_zeros
+#sor_omega
 
 [linSolver.precondition]
 option = "NO"
+#name = "None", "ilu", "hybrid", "is", "adds", "ssor", "sainv", "saamg", "iluc"
