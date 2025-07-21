@@ -73,12 +73,14 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
-! internal variables
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -87,16 +89,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(table=table, afile=afile, filename=filename)
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(table)
 CALL AssertError1(isok, myName, "table is not allocated from GetValue")
+#endif
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
                         mesh=mesh, timeOpt=timeOpt)

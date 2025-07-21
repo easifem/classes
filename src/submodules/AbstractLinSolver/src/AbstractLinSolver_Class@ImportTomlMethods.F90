@@ -17,19 +17,10 @@
 
 SUBMODULE(AbstractLinSolver_Class) ImportTomlMethods
 USE GlobalData, ONLY: CHAR_LF, stdout
-USE tomlf, ONLY: toml_error, &
-                 toml_load, &
-                 toml_parser_config, &
-                 toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_context, &
-                 toml_terminal, &
-                 toml_load, &
-                 toml_array, &
-                 toml_stat
+USE Display_Method, ONLY: Display, ToString
+USE tomlf, ONLY: toml_get => get_value, &
+                 toml_serialize
 USE TomlUtility, ONLY: GetValue, GetValue_
-USE Display_Method, ONLY: Display
 USE StringUtility, ONLY: LowerCase
 
 IMPLICIT NONE
@@ -447,82 +438,59 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-LOGICAL(LGT) :: isNotOpen, isNotRead
-LOGICAL(LGT), PARAMETER :: color = .TRUE.
-INTEGER(I4B), PARAMETER :: detail = 1
-TYPE(toml_error), ALLOCATABLE :: error
-TYPE(toml_context) :: context
-TYPE(toml_terminal) :: terminal
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ImportFromToml2()')
+                        '[START] ')
 #endif
 
-terminal = toml_terminal(color)
+CALL GetValue(table=table, afile=afile, filename=filename)
 
-IF (PRESENT(afile)) THEN
-  isNotOpen = .NOT. afile%IsOpen()
-  isNotRead = .NOT. afile%IsRead()
-
-  IF (isNotRead .OR. isNotOpen) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[INTERNAL ERROR] :: The file is not open or does not have '// &
-                      'the access to read!')
-  END IF
-
-  CALL toml_load(table, &
-                 afile%GetUnitNo(), &
-                 context=context, &
-           config=toml_parser_config(color=terminal, context_detail=detail), &
-                 error=error)
-
-ELSEIF (PRESENT(filename)) THEN
-  CALL toml_load(table, &
-                 filename, &
-                 context=context, &
-           config=toml_parser_config(color=terminal, context_detail=detail), &
-                 error=error)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[ARG ERROR] :: either filename or afile should be present!')
-  RETURN
-END IF
-
-IF (ALLOCATED(error)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: Some error occured while parsing toml file'// &
-                    ' with following message: '//error%message)
-END IF
+#ifdef DEBUG_VER
+isok = ALLOCATED(table)
+CALL AssertError1(isok, myName, "table is not allocated from GetValue")
+#endif
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
-IF (.NOT. ASSOCIATED(node)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[CONFIG ERROR] :: following error occured while reading '// &
-               'the toml file :: cannot find '//tomlName//" table in config.")
-END IF
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  "cannot find "//tomlName//" table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), &
-               "abstractLinSolver toml config = "//CHAR_LF, &
-               unitNo=stdout)
+  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
+               CHAR_LF, unitno=stdout)
 END IF
 #endif
 
+node => NULL()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ImportFromToml2()')
+                        '[END] ')
 #endif
+
 END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                             Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ImportTomlMethods
