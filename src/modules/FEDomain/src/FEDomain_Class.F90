@@ -97,6 +97,10 @@ CONTAINS
   !! Local element number
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   !! Local element number
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  !! Get local element number from global element number
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  !! Get local element number from global element number
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
     obj_GetGlobalEdgeNumber
   !! Get global Edge number from global element and localEdgenumber
@@ -302,6 +306,42 @@ INTERFACE
     !! If islocal is true, then globalNode is a local node number
     INTEGER(I4B) :: ans(SIZE(globalNode))
   END FUNCTION obj_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(SIZE(globalElement))
+  END FUNCTION obj_GetLocalElemNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetLocalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------

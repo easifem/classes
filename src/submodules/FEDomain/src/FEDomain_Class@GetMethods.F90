@@ -137,6 +137,52 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalFaceNumber
 
 !----------------------------------------------------------------------------
+!                                                          GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber1
+
+!----------------------------------------------------------------------------
+!                                                          GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

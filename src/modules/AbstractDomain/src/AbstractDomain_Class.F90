@@ -211,9 +211,14 @@ CONTAINS
   !! Get local node numbers stored in the domain
   PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   !! Get local node numbers stored in the domain
-  GENERIC, PUBLIC :: GetLocalNodeNumber => &
-    & GetLocalNodeNumber1, &
-    & GetLocalNodeNumber2
+  GENERIC, PUBLIC :: GetLocalNodeNumber => GetLocalNodeNumber1, &
+    GetLocalNodeNumber2
+
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  GENERIC, PUBLIC :: GetLocalElemNumber => GetLocalElemNumber1, &
+    GetLocalElemNumber2
+  !! Returns the local element number of a global element number
 
   PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
@@ -1076,6 +1081,42 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans(SIZE(globalNode))
   END FUNCTION obj_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(SIZE(globalElement))
+  END FUNCTION obj_GetLocalElemNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetLocalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
