@@ -811,6 +811,30 @@ ans = obj%maxNptrs
 END PROCEDURE obj_GetMaxNodeNumber
 
 !----------------------------------------------------------------------------
+!                                                        GetGlobalEdgeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalEdgeNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalEdgeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalEdgeNumber
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

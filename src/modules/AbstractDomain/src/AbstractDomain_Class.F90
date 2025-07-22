@@ -106,6 +106,7 @@ TYPE, ABSTRACT :: AbstractDomain_
   REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
     !! Nodal coordinates in XiJ format
     !! Number of rows are 3, and number of columns is total nodes
+    !! How are these node coords arranged?
 
   TYPE(Kdtree2_), POINTER :: kdtree => NULL()
   TYPE(Kdtree2Result_), ALLOCATABLE :: kdresult(:)
@@ -302,6 +303,10 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Returns parameters
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
+    obj_GetGlobalEdgeNumber
+  !! Get global Edge number from global element and localEdgenumber
 
   ! SET:
   ! @SetMethods
@@ -1040,8 +1045,8 @@ END INTERFACE
 ! summary: Returns local node number of a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
+    RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! Global node number in mesh of obj%nsd dimension
@@ -1060,8 +1065,8 @@ END INTERFACE
 ! summary: Returns local node number of a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
+    RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1632,6 +1637,25 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: tEntities(0:3)
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: nodeCoord(:, :)
   END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalEdgeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local Edge number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global Edge number
+  END FUNCTION obj_GetGlobalEdgeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
