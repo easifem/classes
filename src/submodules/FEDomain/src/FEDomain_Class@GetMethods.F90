@@ -46,11 +46,72 @@ ans => obj%mesh
 
 END PROCEDURE obj_GetMeshPointer1
 
-! IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
-! IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
-! IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
-! IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
-! IF (PRESENT(mesh)) mesh => obj%mesh
+!----------------------------------------------------------------------------
+!                                                         GetLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                        GetGlobalEdgeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalEdgeNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalEdgeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
+                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
 !

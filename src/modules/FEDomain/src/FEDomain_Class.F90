@@ -92,6 +92,14 @@ CONTAINS
   ! @GetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  !! Get the pointer to mesh object
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  !! Local element number
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  !! Local element number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
+    obj_GetGlobalEdgeNumber
+  !! Get global Edge number from global element and localEdgenumber
 
   ! SET:
   ! @MeshDataMethods
@@ -252,6 +260,66 @@ INTERFACE
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! Global node number in mesh of obj%nsd dimension
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true, then globalNode is a local node number
+    INTEGER(I4B) :: ans
+    !! Local node number in mesh of obj%nsd dimension
+  END FUNCTION obj_GetLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true, then globalNode is a local node number
+    INTEGER(I4B) :: ans(SIZE(globalNode))
+  END FUNCTION obj_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalEdgeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local Edge number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global Edge number
+  END FUNCTION obj_GetGlobalEdgeNumber
+END INTERFACE
+
 
 !----------------------------------------------------------------------------
 !                                     InitiateNodeToElements@MeshDataMethods
