@@ -31,6 +31,7 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 USE BaseType, ONLY: BoundingBox_
+USE ElemData_Class, ONLY: ElemData_
 
 IMPLICIT NONE
 PRIVATE
@@ -107,6 +108,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
     obj_GetGlobalFaceNumber
   !! Get global face number from global element and localFacenumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
+  !! Get element data from mesh of domain
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => obj_GetElemDataPointer
+  !! Get element data pointer from mesh of domain
 
   ! SET:
   ! @MeshDataMethods
@@ -384,6 +389,42 @@ MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
     INTEGER(I4B) :: ans
     !! global face number
   END FUNCTION obj_GetGlobalFaceNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemData(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemDataPointer(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemDataPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

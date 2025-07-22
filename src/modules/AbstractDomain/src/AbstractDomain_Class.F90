@@ -32,6 +32,7 @@ USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
 USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
+USE ElemData_Class, ONLY: ElemData_
 
 IMPLICIT NONE
 PRIVATE
@@ -215,10 +216,19 @@ CONTAINS
     GetLocalNodeNumber2
 
   PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  !! Get local element number from global element number
   PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  !! Get local element number from global element number
   GENERIC, PUBLIC :: GetLocalElemNumber => GetLocalElemNumber1, &
     GetLocalElemNumber2
   !! Returns the local element number of a global element number
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => &
+    obj_GetElemDataPointer
+  !! Get pointer to an element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
+  !! Get pointer to an element data
 
   PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
@@ -1117,6 +1127,42 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetLocalElemNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemData(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemDataPointer(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemDataPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -183,6 +183,51 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemNumber2
 
 !----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetElemData(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemData
+
+!----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemDataPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemDataPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
+                                   islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemDataPointer
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
