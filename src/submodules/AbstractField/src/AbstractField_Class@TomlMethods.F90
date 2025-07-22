@@ -20,8 +20,10 @@ USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
+                 toml_serialize, toml_array, &
+                 toml_len => len
 USE StringUtility, ONLY: UpperCase
+USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
 
 IMPLICIT NONE
 CONTAINS
@@ -48,19 +50,14 @@ CALL param%Initiate()
 
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
-
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
-
 CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
                                         timeOpt=timeOpt)
-
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
+prefix = ""
 
 CALL param%DEALLOCATE()
-
-prefix = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -186,16 +183,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(table=table, afile=afile, filename=filename)
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(table)
 CALL AssertError1(isok, myName, "table is not allocated from GetValue")
+#endif
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
                         mesh=mesh, timeOpt=timeOpt)
@@ -279,16 +280,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(table=table, afile=afile, filename=filename)
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(table)
 CALL AssertError1(isok, myName, "table is not allocated from GetValue")
+#endif
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
                         mesh=mesh, timeOpt=timeOpt)
@@ -308,6 +313,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ImportFromToml6
+
+!----------------------------------------------------------------------------
+!                                                         ImportNameFromToml
+!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !                                               SetAbstractFieldParamFromToml
@@ -395,8 +404,11 @@ key = "physicalVarNames"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//' ...')
 #endif
-CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-              origin=origin, stat=stat, &
+CALL GetValue(table=table, &
+              key=key, &
+              VALUE=physicalVarNames, &
+              origin=origin, &
+              stat=stat, &
               isFound=isPhysicalVarNames, &
               isScalar=isPhysicalVarNamesScalar)
 tPhysicalVarNames = 0
@@ -406,15 +418,18 @@ DO ii = 1, tPhysicalVarNames
   physicalVarNamesChar(ii) = physicalVarNames(ii)%slice(1, 1)
 END DO
 
-CALL SetAbstractFieldParam(param=param, name=name%chars(), &
+CALL SetAbstractFieldParam(param=param, &
+                           name=name%chars(), &
                            engine=engine%chars(), &
                            fieldType=fieldType, &
                            prefix=prefix, &
-                           comm=comm, local_n=local_n, global_n=global_n, &
+                           comm=comm, &
+                           local_n=local_n, &
+                           global_n=global_n, &
                            spaceCompo=spaceCompo, &
                            isSpaceCompo=isSpaceCompo, &
                            isSpaceCompoScalar=isSpaceCompoScalar, &
-                           timecompo=timecompo, &
+                           timeCompo=timeCompo, &
                            isTimeCompo=isTimeCompo, &
                            isTimeCompoScalar=isTimeCompoScalar, &
                            physicalVarNames=physicalVarNamesChar, &
@@ -803,8 +818,9 @@ END PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadUserFunctionFromToml
-! internal variables
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadUserFunctionFromToml()"
+#endif
 
 TYPE(toml_table), POINTER :: node => NULL()
 INTEGER(I4B) :: stat, origin
@@ -838,8 +854,7 @@ CALL GetValue(table=node, key="errorNorm", VALUE=obj%saveErrorNorm, &
 
 ! normType
 CALL GetValue(table=node, key="normType", VALUE=astr, &
-              default_value="L2SP", stat=stat, &
-              origin=origin, isfound=isok)
+              default_value="L2SP", stat=stat, origin=origin, isfound=isok)
 
 obj%errorType = UpperCase(astr%slice(1, 4))
 
@@ -857,8 +872,69 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE AbstractFieldReadUserFunctionFromToml
+
+!----------------------------------------------------------------------------
+!                                                           ImportDBCFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadDBCFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadDBCFromToml()"
+#endif
+
+CHARACTER(:), ALLOCATABLE :: astr
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: origin, stat, tsize
+TYPE(toml_table), POINTER :: node => NULL()
+TYPE(toml_array), POINTER :: array
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading dirichletBC ...')
+#endif
+
+astr = "dirichletBC"
+node => NULL()
+CALL toml_get(table, astr, array, origin=origin, requested=.FALSE., &
+              stat=stat)
+isok = ASSOCIATED(array)
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  node => NULL()
+  array => NULL()
+  RETURN
+END IF
+
+tsize = toml_len(array)
+ALLOCATE (obj%dbc(tsize))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'number of DirichletBC :: '//ToString(tsize))
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+! CALL DirichletBCImportFromToml(obj=obj%dbc, tomlName="dirichletBC", &
+!                                table=table, dom=obj%dom)
+array => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE AbstractFieldReadDBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

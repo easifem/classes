@@ -48,8 +48,8 @@ USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshPointer_
 USE UserFunction_Class, ONLY: UserFunction_
-
 USE tomlf, ONLY: toml_table
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -116,13 +116,16 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(UserFunction_), POINTER :: exact => NULL()
   !! reference function for displacement
   !! Reference displacement denotes the exact solution
-  LOGICAL(LGT) :: saveErrorNorm
+  LOGICAL(LGT) :: saveErrorNorm = .FALSE.
   !! save error norm
-  CHARACTER(4) :: errorType
+  CHARACTER(4) :: errorType = "NONE"
   !! errorType
-  LOGICAL(LGT) :: plotWithResult
+  LOGICAL(LGT) :: plotWithResult = .FALSE.
   !! do you want to plot exact solution with result
-  LOGICAL(LGT) :: plotErrorNorm
+  LOGICAL(LGT) :: plotErrorNorm = .FALSE.
+
+  TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
+  !! Dirichlet boundary conditions
 
 CONTAINS
   PRIVATE
@@ -132,7 +135,6 @@ CONTAINS
   PROCEDURE(obj_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     CheckEssentialParam
   !! Check essential parameters
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and given domain
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
@@ -146,7 +148,6 @@ CONTAINS
   !! Initiate the field by arguments
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4, Initiate5
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
 
@@ -671,6 +672,21 @@ END INTERFACE AbstractFieldExport
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-13
 ! summary:  Import data From toml file
+!
+!# Introduction
+!
+! This method is used to import data from toml table.
+! fedof: If fedof is not initiated then it will be initiated by
+!        calling fedof%ImportFromToml(node) method.
+!        the node name is specified by fedofName
+!
+! timefedof: If timefedof is not initiated then it will be initiated by
+!            calling timefedof%ImportFromToml(node) method.
+!            the node name is specified by timefedofName.
+!            It is needed for space-time fields.
+!
+! mesh: Mesh is needed to initiate fedof
+! timeOpt: It is needed to initiate timefedof
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, mesh, &
@@ -685,11 +701,12 @@ INTERFACE
     !! timefedof is needed for space-time fields
     !! if  it is present then following operations are performed
     !! - If timefedof is not initiated then it will be initiated by
-    !! calling timefedof%ImportFromToml(node) method, where node
-    !! is the table field called "time". In this case we need to
-    !! provide timeOpt. (Read more at TimeFEDOF_Class.F90)
+    !!   calling timefedof%ImportFromToml(node) method, where node
+    !!   is the table field specified by "timefedofName".
+    !!   In this case we need to provide timeOpt.
+    !!   (Read more at TimeFEDOF_Class.F90)
     !! - If timefedof is already initiated then it will be used. In
-    !! this case we do not need use timeOpt
+    !!   this case we do not need use timeOpt
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Abstract mesh object
     !! It is needed when fedof is not initiated.
@@ -707,6 +724,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-13
 ! summary:  Import data From toml file
+!
+!# Introduction
+!
+! In this method we call obj_ImportFromToml1 method.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, timefedof, &
@@ -745,6 +766,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-06
 ! summary:  Import data From toml file for block node fields
+!
+!# Introduction
+!
+! This method is like obj_ImportFromToml1 but this method is for
+! BlockNodeField_ and BlockMatrixField_
+!
+! fedof: fedof is a vector of FEDOFPointer_ objects.
+!        If it is not initiated then it will be initiated by calling
+!        fedof(ii)%ImportFromToml(node) method.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml3(obj, table, fedof, timefedof, mesh, &
@@ -786,7 +816,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, fedof, timefedof, &
-                                    mesh, timeOpt, afile, filename, printToml)
+                                        mesh, timeOpt, afile, filename, &
+                                        printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -926,7 +957,7 @@ END INTERFACE
 ! If fedof is not initiated then it will be initiated by
 ! calling fedof%ImportFromToml(node) method.
 
-INTERFACE AbstractFieldReadFEDOFFromToml
+INTERFACE
   MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, mesh)
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
@@ -938,6 +969,10 @@ INTERFACE AbstractFieldReadFEDOFFromToml
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
   END SUBROUTINE AbstractFieldReadFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml1
 END INTERFACE AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
@@ -955,7 +990,7 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! In this case we will initiate different fedof for each physical
 ! variables
 
-INTERFACE AbstractFieldReadFEDOFFromToml
+INTERFACE
   MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, mesh)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
@@ -965,6 +1000,10 @@ INTERFACE AbstractFieldReadFEDOFFromToml
     CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     !! Read docs of AbstractFieldReadFEDOFFromToml1
   END SUBROUTINE AbstractFieldReadFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml2
 END INTERFACE AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
@@ -982,7 +1021,7 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! In this case we will initiate different fedof for each physical
 ! variables
 
-INTERFACE AbstractFieldReadFEDOFFromToml
+INTERFACE
   MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, mesh)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
@@ -991,6 +1030,10 @@ INTERFACE AbstractFieldReadFEDOFFromToml
     TYPE(AbstractMeshPointer_), INTENT(IN) :: mesh(:)
     !! Read docs of AbstractFieldReadFEDOFFromToml1
   END SUBROUTINE AbstractFieldReadFEDOFFromToml3
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml3
 END INTERFACE AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
@@ -1008,7 +1051,7 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! - If timefedof is present and it is not initiated then it will be initiated
 ! by calling timefedof%ImportFromToml(node) method.
 
-INTERFACE AbstractFieldReadTimeFEDOFFromToml
+INTERFACE
   MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1(table, timefedof, &
                                                         timeOpt)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -1018,6 +1061,10 @@ INTERFACE AbstractFieldReadTimeFEDOFFromToml
     !! TimeOpt is need when timefedof is being initiated
     !! Read more at TimeOpt_Class.F90
   END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadTimeFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
 END INTERFACE AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
@@ -1035,7 +1082,7 @@ END INTERFACE AbstractFieldReadTimeFEDOFFromToml
 ! - If timefedof is present and it is not initiated then it will be initiated
 ! by calling timefedof%ImportFromToml(node) method.
 
-INTERFACE AbstractFieldReadTimeFEDOFFromToml
+INTERFACE
   MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2(table, timefedof, &
                                                         timeOpt)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -1046,18 +1093,41 @@ INTERFACE AbstractFieldReadTimeFEDOFFromToml
     !! TimeOpt is need when timefedof is being initiated
     !! Read more at TimeOpt_Class.F90
   END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadTimeFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
 END INTERFACE AbstractFieldReadTimeFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary: Read DBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadDBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadDBCFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     WriteData@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldWriteData
+INTERFACE
   MODULE SUBROUTINE obj_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_WriteData_hdf5
+END INTERFACE
+
+INTERFACE AbstractFieldWriteData
+  MODULE PROCEDURE obj_WriteData_hdf5
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -1068,11 +1138,15 @@ END INTERFACE AbstractFieldWriteData
 ! date:  2023-11-24
 ! summary:  Export data in vrkfile
 
-INTERFACE AbstractFieldWriteData
+INTERFACE
   MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk
+END INTERFACE
+
+INTERFACE AbstractFieldWriteData
+  MODULE PROCEDURE obj_WriteData_vtk
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
