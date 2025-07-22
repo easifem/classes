@@ -114,6 +114,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
+!                                                         GetGlobalFaceNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFaceNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFaceNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
+                             islocal=islocal, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFaceNumber
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

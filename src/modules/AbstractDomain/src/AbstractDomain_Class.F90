@@ -308,6 +308,10 @@ CONTAINS
     obj_GetGlobalEdgeNumber
   !! Get global Edge number from global element and localEdgenumber
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
+    obj_GetGlobalFaceNumber
+  !! Get global face number from global element and localFacenumber
+
   ! SET:
   ! @SetMethods
 
@@ -1656,6 +1660,29 @@ MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
     INTEGER(I4B) :: ans
     !! global Edge number
   END FUNCTION obj_GetGlobalEdgeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalFaceNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-21
+! summary:  Get global face number from globalElement and local face number
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global face number
+  END FUNCTION obj_GetGlobalFaceNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
