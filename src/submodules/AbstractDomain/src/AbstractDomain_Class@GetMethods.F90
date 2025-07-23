@@ -224,27 +224,33 @@ END PROCEDURE obj_tNodes3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElements()"
+#endif
+
 CLASS(AbstractMesh_), POINTER :: meshptr
-LOGICAL(LGT) :: case1, isDim, isEntityNum
+LOGICAL(LGT) :: isok
 
-isEntityNum = PRESENT(entityNum)
-isDim = PRESENT(dim)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-case1 = isDim .AND. isEntityNum
-IF (case1) THEN
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+isok = PRESENT(entityNum)
+
+IF (isok) THEN
+  ans = meshptr%GetTotalElements(meshid=entityNum)
+ELSE
   ans = meshptr%GetTotalElements()
-  meshptr => NULL()
-  RETURN
 END IF
 
-case1 = isDim .AND. (.NOT. isEntityNum)
-IF (case1) THEN
-  ans = obj%tElements(dim)
-  RETURN
-END IF
+meshptr => NULL()
 
-ans = SUM(obj%tElements)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalElements
 
 !----------------------------------------------------------------------------

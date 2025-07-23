@@ -962,24 +962,21 @@ END INTERFACE
 !
 !# Introduction
 !
-! This function returns the total number of elements in
+! This function returns the total number of elements in mesh.
+! It works as follow.
+! 
+! - If `dim` and `entityNum` are present then it will select the 
+!   mesh of dim dimension and returns the total number of elements 
+!   in entityNum
 !
-! - entire AbstractDomain
-! - selected region of domain
-! - The mesh selection can be made by specifying the `dim` and `entityNum`
+! - If `dim` is not present then it will select the cellMesh and 
+!   returns the total number of elements in cellMesh with entityNum
 !
-!@note
-!@endnote
+! - If `entityNum` is not present then it will returns the total number
+!   of elements in the mesh of `dim` dimension
 !
-!@warn
-! `entityNum` should not be out of bound
-!@endwarn
-!
-!@todo
-!
-! TODO: Use entityNum in AbstractDomain_GetTotalElements
-!
-!@endtodo
+! This routine does not returns the total number of elements in domain
+! For that you need to call it for each dimension and sum the results.
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElements(obj, dim, entityNum) RESULT(ans)
