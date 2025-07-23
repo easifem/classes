@@ -1027,6 +1027,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Getconnectivity2_
 
 !----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

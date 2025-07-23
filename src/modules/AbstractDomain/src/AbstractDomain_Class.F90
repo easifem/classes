@@ -339,6 +339,11 @@ CONTAINS
     GetConnectivity2_
   !! Generic method for getting the connectivity of an element
 
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  !! Get total number of vertex nodes in the mesh, global element
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  !! Get total number of vertex nodes in the list of global elements
+
   ! SET:
   ! @SetMethods
 
@@ -1857,6 +1862,74 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_GetConnectivity2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalVertexNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary: Returns total number of vertex nodes in the mesh
+!
+!# Introduction
+!
+! This function can perform several tasks as described below:
+!
+! - If `globalElement` is present then it returns the total number of vertex
+! nodes in the element. In this case if `islocal` is true then
+! `globalElement` is a local element number.
+!
+! - If `globalElement` is not present then it returns the total number of
+!   vertex nodes in the mesh of dimension `dim`.
+!   In this case if `entityNum` is present then it returns the total number
+!   of vertex nodes in the mesh of dimension `dim` and entity number
+!  `entityNum`.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
+                                           entityNum, islocal) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    !! Global element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If true then global element is a local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in a collection of elements
+!
+!# Introduction
+!
+! We use dim to get the mesh of dimension.
+! Then we call GetTotalVertexNodes on that mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
+                                           entityNum, islocal) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes2
 END INTERFACE
 
 !----------------------------------------------------------------------------

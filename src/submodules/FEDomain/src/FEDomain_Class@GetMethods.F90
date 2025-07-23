@@ -27,23 +27,43 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+#endif
 
-IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (0)
-    ans => obj%meshPoint
-  CASE (1)
-    ans => obj%meshCurve
-  CASE (2)
-    ans => obj%meshSurface
-  CASE (3)
-    ans => obj%meshVolume
-  END SELECT
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  ans => obj%mesh
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
-ans => obj%mesh
+SELECT CASE (dim)
+CASE (0)
+  ans => obj%meshPoint
+CASE (1)
+  ans => obj%meshCurve
+CASE (2)
+  ans => obj%meshSurface
+CASE (3)
+  ans => obj%meshVolume
+END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetMeshPointer1
 
 !----------------------------------------------------------------------------
@@ -379,6 +399,93 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetConnectivity2_
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim)
+
+! total vertex nodes in globalElement
+isok = PRESENT(globalElement)
+IF (isok) THEN
+  ans = meshptr%GetTotalVertexNodes(globalElement=globalElement, &
+                                    islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  meshptr => NULL()
+  RETURN
+END IF
+
+! total vertex nodes in mesh of given entityNum
+isok = PRESENT(entityNum)
+IF (isok) THEN
+  ans = meshptr%GetTotalVertexNodes(meshid=entityNum)
+  meshptr => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! total vertex nodes in mesh
+ans = meshptr%GetTotalVertexNodes()
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes2()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim)
+
+! total vertex nodes in globalElement
+ans = meshptr%GetTotalVertexNodes(globalElement=globalElement, &
+                                  islocal=islocal)
+
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes2
 
 !----------------------------------------------------------------------------
 !
