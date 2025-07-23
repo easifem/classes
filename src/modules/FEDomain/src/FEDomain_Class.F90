@@ -112,6 +112,9 @@ CONTAINS
   !! Get element data from mesh of domain
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => obj_GetElemDataPointer
   !! Get element data pointer from mesh of domain
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntitiesList => &
+    obj_GetTotalEntitiesList
+  !! Get the total number of entities list in a given element
 
   ! SET:
   ! @MeshDataMethods
@@ -425,6 +428,26 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     TYPE(ElemData_), POINTER :: ans
   END FUNCTION obj_GetElemDataPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalEntitiesList@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-23
+! summary: Get total number of entities in a given element
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEntitiesList(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true then globalElement is local element
+    INTEGER(I4B) :: ans(4)
+  END FUNCTION obj_GetTotalEntitiesList
 END INTERFACE
 
 !----------------------------------------------------------------------------

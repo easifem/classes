@@ -239,7 +239,10 @@ CONTAINS
     & GetGlobalNodeNumber2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
-  !! returns total number of mesh
+  !! Returns total number of mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntitiesList => &
+    obj_GetTotalEntitiesList
+  !! Return total number of entities in an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
   !! GetTotalMesh will be removed in future, please use GetTotalEntities
 
@@ -1217,13 +1220,41 @@ END INTERFACE
 ! - `dim=1` returns the total number of mesh of curve entities
 ! - `dim=2` returns the total number of mesh of surface entities
 ! - `dim=3` returns the total number of mesh of volume entities
+!
+! If globalElement and islocal are present
+!
+! ans(1) =  total number of nodes in element
+! ans(2) =  total number of edges in element
+! ans(3) =  total number of faces in element
+! ans(4) = 1
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalEntities(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entities
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalEntities
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalEntitiesList@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-23
+! summary: Get total number of entities in a given element
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEntitiesList(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true then globalElement is local element
+    INTEGER(I4B) :: ans(4)
+  END FUNCTION obj_GetTotalEntitiesList
 END INTERFACE
 
 !----------------------------------------------------------------------------

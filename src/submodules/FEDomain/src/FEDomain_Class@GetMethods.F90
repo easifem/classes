@@ -228,6 +228,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetElemDataPointer
 
 !----------------------------------------------------------------------------
+!                                                        GetTotalEntitiesList
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntitiesList
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntitiesList()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalEntitiesList
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

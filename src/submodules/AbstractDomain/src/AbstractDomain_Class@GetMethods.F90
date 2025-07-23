@@ -322,8 +322,46 @@ END PROCEDURE obj_GetGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tEntities(dim)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEntities
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalEntitiesList
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntitiesList
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntitiesList()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalEntitiesList
 
 !----------------------------------------------------------------------------
 !                                                           GetDimEntityNum
