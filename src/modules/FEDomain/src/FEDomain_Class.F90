@@ -116,6 +116,14 @@ CONTAINS
     obj_GetTotalEntitiesList
   !! Get the total number of entities list in a given element
 
+  PROCEDURE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
+  !! Get connectivity of an element in a single vector
+  !! you can specify opt="A, V, E, F, C" for all, vertex, edge, face, cell
+
+  PROCEDURE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
+  !! Get connectivity of an element into separate vectors
+  !! you can get cell, face, and edge connectivity
+
   ! SET:
   ! @MeshDataMethods
 
@@ -449,6 +457,87 @@ INTERFACE
     INTEGER(I4B) :: ans(4)
   END FUNCTION obj_GetTotalEntitiesList
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-12
+! summary: Returns the connectivity vector of a given element number
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
+                                          opt, dim, entityNum, islocal)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    !!
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    !! Make sure globalElement is present
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! vertex connectivity
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
+    !! Vertex, Edge, Face, Cell
+    !! Default is Vertex
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetConnectivity1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get connectivity
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tNodeCon, globalElement, &
+                                          dim, entityNum, islocal)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: faceCon(:)
+    !! face connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: edgeCon(:)
+    !! edge connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: nodeCon(:)
+    !! node connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tCellCon
+    !! size of data written in cellCon
+    INTEGER(I4B), INTENT(OUT) :: tFaceCon
+    !! size of data written in faceCon
+    INTEGER(I4B), INTENT(OUT) :: tEdgeCon
+    !! size of data written in edgecon
+    INTEGER(I4B), INTENT(OUT) :: tnodeCon
+    !! size of data written in nodecon
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetConnectivity2_
+END INTERFACE
+
 
 !----------------------------------------------------------------------------
 !                                     InitiateNodeToElements@MeshDataMethods

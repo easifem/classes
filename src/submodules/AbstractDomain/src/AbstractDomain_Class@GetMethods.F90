@@ -112,20 +112,6 @@ meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
-!                                                          GetConnectivity_
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetConnectivity_
-CLASS(AbstractMesh_), POINTER :: meshptr
-
-meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
-                              globalElement=globalElement, islocal=islocal)
-CALL meshptr%GetConnectivity_(globalElement=globalElement, &
-                              islocal=islocal, ans=ans, tsize=tsize)
-meshptr => NULL()
-END PROCEDURE obj_GetConnectivity_
-
-!----------------------------------------------------------------------------
 !                                                                    GetNNE
 !----------------------------------------------------------------------------
 
@@ -991,6 +977,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetElemDataPointer
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity1_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetConnectivity1_
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Getconnectivity2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Getconnectivity2_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Getconnectivity2_
 
 !----------------------------------------------------------------------------
 !

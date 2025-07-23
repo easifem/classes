@@ -250,6 +250,137 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalEntitiesList
 
 !----------------------------------------------------------------------------
+!                                                          GetConnectivity1_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity1_()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  CALL obj%mesh%GetConnectivity_(globalElement=globalElement, &
+                                 ans=ans, tsize=tsize, opt=opt, &
+                                 islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%GetConnectivity_(globalElement=globalElement, &
+                                      ans=ans, tsize=tsize, opt=opt, &
+                                      islocal=islocal)
+
+CASE (1)
+  CALL obj%meshCurve%GetConnectivity_(globalElement=globalElement, &
+                                      ans=ans, tsize=tsize, opt=opt, &
+                                      islocal=islocal)
+CASE (2)
+  CALL obj%meshSurface%GetConnectivity_(globalElement=globalElement, &
+                                        ans=ans, tsize=tsize, opt=opt, &
+                                        islocal=islocal)
+CASE (3)
+  CALL obj%meshVolume%GetConnectivity_(globalElement=globalElement, &
+                                       ans=ans, tsize=tsize, opt=opt, &
+                                       islocal=islocal)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetConnectivity1_
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity2_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity2_()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  CALL obj%mesh%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                 edgeCon=edgeCon, nodeCon=nodeCon, &
+                                 tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                 tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                 globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                      edgeCon=edgeCon, nodeCon=nodeCon, &
+                                      tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                      tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                      globalElement=globalElement, &
+                                      islocal=islocal)
+
+CASE (1)
+  CALL obj%meshCurve%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                      edgeCon=edgeCon, nodeCon=nodeCon, &
+                                      tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                      tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                      globalElement=globalElement, &
+                                      islocal=islocal)
+CASE (2)
+  CALL obj%meshSurface%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                        edgeCon=edgeCon, nodeCon=nodeCon, &
+                                       tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                       tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                        globalElement=globalElement, &
+                                        islocal=islocal)
+CASE (3)
+
+  CALL obj%meshVolume%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                       edgeCon=edgeCon, nodeCon=nodeCon, &
+                                       tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                       tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                       globalElement=globalElement, &
+                                       islocal=islocal)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetConnectivity2_
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
