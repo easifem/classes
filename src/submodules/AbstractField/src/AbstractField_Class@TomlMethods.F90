@@ -50,7 +50,7 @@ CALL param%Initiate()
 
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
-CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
+CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
                                         timeOpt=timeOpt)
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
@@ -102,7 +102,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        mesh=mesh, timeOpt=timeOpt)
+                        dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -144,7 +144,7 @@ CALL param%Initiate()
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
 
-CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
+CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 
 isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
@@ -199,7 +199,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        mesh=mesh, timeOpt=timeOpt)
+                        dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -241,11 +241,12 @@ CALL param%Initiate()
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
 
-CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, mesh=mesh)
+CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 
 isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
-                                         timefedof=timefedof, timeOpt=timeOpt)
+                                                  timefedof=timefedof, &
+                                                  timeOpt=timeOpt)
 
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 
@@ -296,7 +297,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        mesh=mesh, timeOpt=timeOpt)
+                        dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -313,10 +314,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ImportFromToml6
-
-!----------------------------------------------------------------------------
-!                                                         ImportNameFromToml
-!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !                                               SetAbstractFieldParamFromToml
@@ -350,8 +347,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key=key, VALUE=name, &
               default_value=prefix, origin=origin, &
               stat=stat, isFound=isfound)
+
+#ifdef DEBUG_VER
 CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
+#endif
 
 key = "engine"
 !=============
@@ -362,8 +362,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key=key, VALUE=engine, &
               default_value=default_engine, origin=origin, &
               stat=stat, isFound=isfound)
+#ifdef DEBUG_VER
 CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
+#endif
 
 key = "fieldType"
 !================
@@ -374,8 +376,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
               default_value=default_fieldTypeChar, origin=origin, &
               stat=stat, isFound=isfound)
+#ifdef DEBUG_VER
 CALL AssertError1(isfound, myName, &
                   key//" not found in the toml file")
+#endif
+
 fieldType = TypeField%ToNumber(fieldTypeChar%chars())
 
 key = "spaceCompo"
@@ -404,12 +409,8 @@ key = "physicalVarNames"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'Reading '//key//' ...')
 #endif
-CALL GetValue(table=table, &
-              key=key, &
-              VALUE=physicalVarNames, &
-              origin=origin, &
-              stat=stat, &
-              isFound=isPhysicalVarNames, &
+CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
+              origin=origin, stat=stat, isFound=isPhysicalVarNames, &
               isScalar=isPhysicalVarNamesScalar)
 tPhysicalVarNames = 0
 IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
@@ -418,19 +419,13 @@ DO ii = 1, tPhysicalVarNames
   physicalVarNamesChar(ii) = physicalVarNames(ii)%slice(1, 1)
 END DO
 
-CALL SetAbstractFieldParam(param=param, &
-                           name=name%chars(), &
-                           engine=engine%chars(), &
-                           fieldType=fieldType, &
-                           prefix=prefix, &
-                           comm=comm, &
-                           local_n=local_n, &
-                           global_n=global_n, &
-                           spaceCompo=spaceCompo, &
+CALL SetAbstractFieldParam(param=param, name=name%chars(), &
+                           engine=engine%chars(), fieldType=fieldType, &
+                           prefix=prefix, comm=comm, local_n=local_n, &
+                           global_n=global_n, spaceCompo=spaceCompo, &
                            isSpaceCompo=isSpaceCompo, &
                            isSpaceCompoScalar=isSpaceCompoScalar, &
-                           timeCompo=timeCompo, &
-                           isTimeCompo=isTimeCompo, &
+                           timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
                            isTimeCompoScalar=isTimeCompoScalar, &
                            physicalVarNames=physicalVarNamesChar, &
                            tPhysicalVarNames=tPhysicalVarNames, &
@@ -486,7 +481,7 @@ END IF
 
 #ifdef DEBUG_VER
 ! First lets check if mesh if given or not
-isok = PRESENT(mesh)
+isok = PRESENT(dom)
 CALL AssertError1(isok, myName, &
                   "Mesh is not given to initiate fedof")
 #endif
@@ -509,7 +504,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 ! Now we can init fedof from toml
-CALL fedof%ImportFromToml(table=node, mesh=mesh)
+CALL fedof%ImportFromToml(table=node, dom=dom)
 
 node => NULL(); key = ""; fedofName = ""
 
@@ -591,7 +586,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Now we can init fedof from toml
   CALL AbstractFieldReadFEDOFFromToml(table=node, &
-                                      fedof=fedof(ii)%ptr, mesh=mesh)
+                                      fedof=fedof(ii)%ptr, dom=dom)
 
 END DO
 
@@ -669,13 +664,13 @@ ELSE
 END IF
 
 #ifdef DEBUG_VER
-tmesh = SIZE(mesh)
+tmesh = SIZE(dom)
 isok = tmesh .EQ. tsize
 CALL AssertError1(isok, myName, &
                   "mesh size does not match physicalVarNames size")
 
 DO ii = 1, tsize
-  isok = ASSOCIATED(mesh(ii)%ptr)
+  isok = ASSOCIATED(dom(ii)%ptr)
   CALL AssertError1(isok, myName, &
                     "mesh("//ToString(ii)//")%ptr is not associated")
 END DO
@@ -697,7 +692,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Now we can init fedof from toml
   CALL AbstractFieldReadFEDOFFromToml(table=node, &
-                                      fedof=fedof(ii)%ptr, mesh=mesh(ii)%ptr)
+                                      fedof=fedof(ii)%ptr, dom=dom(ii)%ptr)
 
 END DO
 
@@ -888,6 +883,7 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: origin, stat, tsize
 TYPE(toml_table), POINTER :: node => NULL()
 TYPE(toml_array), POINTER :: array
+! CLASS(AbstractDomain_) :: dom
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

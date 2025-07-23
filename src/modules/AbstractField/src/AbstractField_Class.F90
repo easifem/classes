@@ -46,7 +46,7 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
-USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshPointer_
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
@@ -141,7 +141,7 @@ CONTAINS
   !! Initiate by copying other fields, and different options
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate  block fields (different physical variables) defined
-  !! over different order of meshes.
+  !! over different order of domain.
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate the field by arguments
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
@@ -685,11 +685,11 @@ END INTERFACE AbstractFieldExport
 !            the node name is specified by timefedofName.
 !            It is needed for space-time fields.
 !
-! mesh: Mesh is needed to initiate fedof
+! dom: dom is needed to initiate fedof
 ! timeOpt: It is needed to initiate timefedof
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, mesh, &
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, dom, &
                                         timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -707,8 +707,8 @@ INTERFACE
     !!   (Read more at TimeFEDOF_Class.F90)
     !! - If timefedof is already initiated then it will be used. In
     !!   this case we do not need use timeOpt
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
-    !! Abstract mesh object
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
     CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
@@ -731,7 +731,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, timefedof, &
-                                    mesh, timeOpt, afile, filename, printToml)
+                                        dom, timeOpt, afile, filename, &
+                                        printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -741,8 +742,8 @@ INTERFACE
     !! where node is the table field called "space".
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
     !! timefedof is needed for space-time fields
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
-    !! Abstract mesh object
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
     CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
@@ -777,7 +778,7 @@ END INTERFACE
 !        fedof(ii)%ImportFromToml(node) method.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml3(obj, table, fedof, timefedof, mesh, &
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, table, fedof, timefedof, dom, &
                                         timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -786,7 +787,7 @@ INTERFACE
     !! If fedof is not allocated then we will allocate it.
     !! If fedof(ii) not initiated then we will intiate it From
     !! toml table, in this case we will call improt From toml method
-    !! of fedof. We will need mesh in this case
+    !! of fedof. We will need domain in this case
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
     !! The size of timefedof should be total number of physical variables.
@@ -795,11 +796,11 @@ INTERFACE
     !! If timefedof(ii) not initiated then we will intiate it From
     !! toml table, in this case we will call improt From toml method
     !! of timefedof. We will need timeOpt in this case
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
-    !! Abstract mesh object
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
-    !! In this case all fedofs will have same mesh
+    !! In this case all fedofs will have same domain
     CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
     !! TimeOpt_ is needed when timefedof is not initiated
     !! Read more at TimeOpt_Class.F90
@@ -816,7 +817,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, fedof, timefedof, &
-                                        mesh, timeOpt, afile, filename, &
+                                        dom, timeOpt, afile, filename, &
                                         printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -826,7 +827,7 @@ INTERFACE
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
     !! Read the docs of obj_ImportFromToml3
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
     !! Read the docs of obj_ImportFromToml3
     CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
     !! Read the docs of obj_ImportFromToml1
@@ -851,22 +852,22 @@ END INTERFACE
 !
 !# Introduction
 !   This methos is like obj_ImportFromToml3 but in this case
-! we can provide different mesh for each physical variable.
+! we can provide different domain for each physical variable.
 !
-! In this case mesh is NOT optional, it is required.
+! In this case domain is NOT optional, it is required.
 ! This is because in this case we will initiate fedof
-! If fedof is already initiated then we do not need mesh. Hence
-! you should call obj_ImportFromToml3 (without mesh) instead of this method.
+! If fedof is already initiated then we do not need domain. Hence
+! you should call obj_ImportFromToml3 (without domain) instead of this method.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml5(obj, table, fedof, timefedof, mesh, &
+  MODULE SUBROUTINE obj_ImportFromToml5(obj, table, fedof, timefedof, dom, &
                                         timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
     !! Read the docs of obj_ImportFromToml3
-    TYPE(AbstractMeshPointer_), INTENT(IN) :: mesh(:)
-    !! The size of mesh should be total number of physical variables.
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! The size of domain should be total number of physical variables.
     !! Read the docs of obj_ImportFromToml3
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
@@ -886,11 +887,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml6(obj, tomlName, fedof, timefedof, &
-                                    mesh, timeOpt, afile, filename, printToml)
+                                     dom, timeOpt, afile, filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
-    TYPE(AbstractMeshPointer_), INTENT(IN) :: mesh(:)
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
     CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
@@ -958,14 +959,14 @@ END INTERFACE
 ! calling fedof%ImportFromToml(node) method.
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, mesh)
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, dom)
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
-    !! Abstract mesh object
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
   END SUBROUTINE AbstractFieldReadFEDOFFromToml1
@@ -991,13 +992,13 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! variables
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, mesh)
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
     !! The size of fedof should be total number of physical variables
     !! If fedof is allocated then all its ptr should be associated
     !! Read docs of AbstractFieldReadFEDOFFromToml1
-    CLASS(AbstractMesh_), OPTIONAL, TARGET, INTENT(IN) :: mesh
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
     !! Read docs of AbstractFieldReadFEDOFFromToml1
   END SUBROUTINE AbstractFieldReadFEDOFFromToml2
 END INTERFACE
@@ -1022,12 +1023,12 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! variables
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, mesh)
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
     !! The size of fedof should be total number of physical variables
     !! Read docs of AbstractFieldReadFEDOFFromToml1
-    TYPE(AbstractMeshPointer_), INTENT(IN) :: mesh(:)
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
     !! Read docs of AbstractFieldReadFEDOFFromToml1
   END SUBROUTINE AbstractFieldReadFEDOFFromToml3
 END INTERFACE

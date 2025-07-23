@@ -19,13 +19,13 @@
 MODULE FEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE BaseType, ONLY: CSRMatrix_, &
                     QuadraturePoint_, &
                     ElemshapeData_
 USE AbstractFE_Class, ONLY: AbstractFE_, AbstractFEPointer_
-
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 
@@ -141,6 +141,7 @@ TYPE :: FEDOF_
 
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
+  CLASS(AbstractDomain_), POINTER :: dom => NULL()
 
 CONTAINS
   PRIVATE
@@ -376,7 +377,7 @@ END INTERFACE
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
+  MODULE SUBROUTINE obj_Initiate1(obj, order, dom, baseContinuity, &
                                   baseInterpolation, feType, ipType, &
                                   basisType, alpha, beta, lambda, dofType, &
                                   transformType, quadratureIsHomogeneous, &
@@ -387,8 +388,8 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! cell mesh
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! Domain
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -453,7 +454,7 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
+  MODULE SUBROUTINE obj_Initiate2(obj, order, dom, baseContinuity, &
                                   baseInterpolation, feType, ipType, &
                                   basisType, alpha, lambda, beta, islocal, &
                                   dofType, transformType, &
@@ -468,8 +469,8 @@ INTERFACE
     !! Inhomogeneous value of order
     !! This is order of each cell element
     !! see the note on islocal
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! cell mesh
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  !! domain
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -523,7 +524,7 @@ INTERFACE
     !! Info at QuadratureOpt_
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
     !! Info at QuadratureOpt_
-    REAL( DFP ), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
     !! Info at QuadratureOpt_
   END SUBROUTINE obj_Initiate2
 END INTERFACE
@@ -537,13 +538,13 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, mesh)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! Fintie degree of freedom object
     TYPE(ParameterList_), INTENT(IN) :: param
     !! parameter list
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! mesh
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! domain
   END SUBROUTINE obj_Initiate3
 END INTERFACE
 
@@ -566,7 +567,7 @@ END INTERFACE
 ! This routine will make order0(:) from order(:,:) and call initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, order, mesh, baseContinuity, &
+  MODULE SUBROUTINE obj_Initiate4(obj, order, dom, baseContinuity, &
                                   baseInterpolation, feType, ipType, &
                                   basisType, alpha, beta, lambda, &
                                   dofType, transformType, &
@@ -581,8 +582,8 @@ INTERFACE
     !! the number of rows in order is equal to 2
     !! the first row contains the global element number
     !! the second rows contains the order of that element
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! mesh
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! Domain
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis function
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -628,7 +629,7 @@ INTERFACE
     !! Info at QuadratureOpt_
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
     !! Info at QuadratureOpt_
-    REAL( DFP ), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
     !! Info at QuadratureOpt_
   END SUBROUTINE obj_Initiate4
 END INTERFACE
@@ -1339,7 +1340,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetSparsity2(obj, col_fedof, cellToCell, mat, &
                                      ivar, jvar)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! Abstract mesh class
+    !! FEDOF object
     CLASS(FEDOF_), INTENT(INOUT) :: col_fedof
     !! Abstract mesh class
     INTEGER(I4B), INTENT(IN) :: cellToCell(:)
@@ -1475,10 +1476,10 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE FEDOFImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, mesh)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE FEDOFImportFromToml
 
@@ -1492,13 +1493,13 @@ END INTERFACE FEDOFImportFromToml
 
 INTERFACE FEDOFImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, mesh)
+                                        filename, printToml, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    CLASS(AbstractMesh_), OPTIONAL, INTENT(IN) :: mesh
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE FEDOFImportFromToml
 

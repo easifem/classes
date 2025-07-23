@@ -50,7 +50,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 obj%isInit = .TRUE.
-obj%mesh => mesh
+obj%dom => dom
+obj%mesh => obj%dom%GetMeshPointer()
 
 islocal = .FALSE.
 CALL OrderFromToml(table=table, order=order, islocal=islocal)
@@ -164,7 +165,7 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, mesh=mesh)
+CALL obj%ImportFromToml(table=node, dom=dom)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN

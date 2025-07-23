@@ -42,17 +42,24 @@ CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
 CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
 CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 CALL Display(obj%tCells, "tCells: ", unitno=unitno)
-CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", unitno=unitno)
+CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", &
+             unitno=unitno)
 CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
 CALL Display(obj%maxCellOrder, "maxCellOrder: ", unitno=unitno)
 CALL Display(obj%maxFaceOrder, "maxFaceOrder: ", unitno=unitno)
 CALL Display(obj%maxEdgeOrder, "maxEdgeOrder: ", unitno=unitno)
 
+isok = ASSOCIATED(obj%dom)
+CALL Display(isok, "dom ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%dom%DisplayDomainInfo("Domain information: ", unitno=unitno)
+END IF
+
 isok = ASSOCIATED(obj%mesh)
 CALL Display(isok, "mesh ASSOCIATED: ", unitno=unitno)
 IF (isok) THEN
-  CALL obj%mesh%DisplayMeshInfo("Mesh information: ", unitno=unitno)
+  CALL obj%mesh%DisplayMeshInfo("mesh information: ", unitno=unitno)
 END IF
 
 isok = ALLOCATED(obj%cellOrder)

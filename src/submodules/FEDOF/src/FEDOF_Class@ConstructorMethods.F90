@@ -84,7 +84,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 order0 = order
 
-CALL obj%Initiate(order=order0, mesh=mesh, baseContinuity=baseContinuity, &
+CALL obj%Initiate(order=order0, dom=dom, baseContinuity=baseContinuity, &
                   baseInterpolation=baseInterpolation, feType=feType, &
                   ipType=ipType, basisType=basisType, alpha=alpha, &
                   beta=beta, lambda=lambda, &
@@ -138,7 +138,8 @@ END IF
 
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
 
-obj%mesh => mesh
+obj%dom => dom
+obj%mesh => dom%GetMeshPointer()
 
 CALL obj%AllocateSizes()
 CALL obj%SetCellOrder(order=order, islocal=islocal)
@@ -315,7 +316,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-telems = mesh%GetTotalElements()
+telems = dom%GetTotalElements()
 tsize = SIZE(order, 2)
 
 #ifdef DEBUG_VER
@@ -334,12 +335,12 @@ ALLOCATE (order0(telems))
 
 DO ii = 1, telems
   globalElement = order(1, ii)
-  localElement = mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                         islocal=.FALSE.)
+  localElement = dom%GetLocalElemNumber(globalElement=globalElement, &
+                                        islocal=.FALSE.)
   order0(localElement) = order(2, ii)
 END DO
 
-CALL obj%Initiate(mesh=mesh, baseContinuity=baseContinuity, &
+CALL obj%Initiate(dom=dom, baseContinuity=baseContinuity, &
                   baseInterpolation=baseInterpolation, order=order0, &
                   ipType=ipType, feType=feType, basisType=basisType, &
                   alpha=alpha, beta=beta, lambda=lambda, islocal=.TRUE., &
@@ -561,7 +562,6 @@ IF (ALLOCATED(foundCells)) DEALLOCATE (foundCells)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrdersFromCellOrder
 
 !----------------------------------------------------------------------------
@@ -569,8 +569,17 @@ END PROCEDURE obj_SetOrdersFromCellOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
 LOGICAL(LGT) :: abool
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isInit = .FALSE.
 obj%isLagrange = .FALSE.
@@ -588,6 +597,7 @@ obj%maxFaceOrder = 0_INT8
 obj%maxEdgeOrder = 0_INT8
 
 obj%mesh => NULL()
+obj%dom => NULL()
 IF (ALLOCATED(obj%cellOrder)) DEALLOCATE (obj%cellOrder)
 IF (ALLOCATED(obj%faceOrder)) DEALLOCATE (obj%faceOrder)
 IF (ALLOCATED(obj%edgeOrder)) DEALLOCATE (obj%edgeOrder)
@@ -605,6 +615,10 @@ DO ii = 1, SIZE(obj%fe)
 
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -612,8 +626,17 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
+
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isLagrange = obj2%isLagrange
 obj%tdof = obj2%tdof
@@ -640,7 +663,12 @@ DO ii = 1, SIZE(obj2%fe)
 END DO
 
 obj%mesh => obj2%mesh
+obj%dom => obj2%dom
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
