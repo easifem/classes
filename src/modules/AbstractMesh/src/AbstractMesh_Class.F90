@@ -1444,7 +1444,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetElemTopoIndx@GetMethods
+!                                              GetElemTopologyIndx@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
