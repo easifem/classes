@@ -416,13 +416,12 @@ END INTERFACE
 ! summary:  Get teh element data (hardcopoy)
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemData(obj, globalElement, islocal) &
-    RESULT(ans)
-    CLASS(FEDomain_), TARGET, INTENT(IN) :: obj
+  MODULE SUBROUTINE obj_GetElemData(obj, elemdata, globalElement, islocal)
+    CLASS(FEDomain_), INTENT(in) :: obj
+    TYPE(ElemData_), INTENT(INOUT) :: elemdata
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    TYPE(ElemData_), POINTER :: ans
-  END FUNCTION obj_GetElemData
+  END SUBROUTINE obj_GetElemData
 END INTERFACE
 
 !----------------------------------------------------------------------------
