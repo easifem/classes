@@ -349,6 +349,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
   !! Get the orientation of the element of the mesh
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemTopologyIndx => &
+    obj_GetElemTopologyIndx
+  !! Get the topology index of the element of the mesh
+
   ! SET:
   ! @SetMethods
 
@@ -964,12 +968,12 @@ END INTERFACE
 !
 ! This function returns the total number of elements in mesh.
 ! It works as follow.
-! 
-! - If `dim` and `entityNum` are present then it will select the 
-!   mesh of dim dimension and returns the total number of elements 
+!
+! - If `dim` and `entityNum` are present then it will select the
+!   mesh of dim dimension and returns the total number of elements
 !   in entityNum
 !
-! - If `dim` is not present then it will select the cellMesh and 
+! - If `dim` is not present then it will select the cellMesh and
 !   returns the total number of elements in cellMesh with entityNum
 !
 ! - If `entityNum` is not present then it will returns the total number
@@ -1970,6 +1974,31 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_GetOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetElemTopoIndx@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-23
+! summary:  Get the element topology index
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemTopologyIndx(obj, globalElement, dim, &
+                                          entityNum, islocal) &
+    RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemTopologyIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
