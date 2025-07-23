@@ -343,6 +343,11 @@ CONTAINS
   !! Get total number of vertex nodes in the mesh, global element
   PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
   !! Get total number of vertex nodes in the list of global elements
+  GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
+    GetTotalVertexNodes2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
+  !! Get the orientation of the element of the mesh
 
   ! SET:
   ! @SetMethods
@@ -647,7 +652,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
-    & islocal) RESULT(ans)
+                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! Element number
@@ -1122,13 +1127,12 @@ END INTERFACE
 ! summary:  Get teh element data (hardcopoy)
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemData(obj, globalElement, islocal) &
-    RESULT(ans)
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: obj
+  MODULE SUBROUTINE obj_GetElemData(obj, elemdata, globalElement, islocal)
+    CLASS(AbstractDomain_), INTENT(in) :: obj
+    TYPE(ElemData_), INTENT(INOUT) :: elemdata
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    TYPE(ElemData_), POINTER :: ans
-  END FUNCTION obj_GetElemData
+  END SUBROUTINE obj_GetElemData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1930,6 +1934,45 @@ INTERFACE
     !! if true then global element is local element
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalVertexNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get the orientation flags of an element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
+                                       edgeOrient, tCellOrient, tFaceOrient, &
+                                       tEdgeOrient, globalElement, dim, &
+                                       entityNum, islocal)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: faceOrient(:, :)
+    !! face connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: edgeOrient(:)
+    !! edge connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tCellOrient
+    !! size of data written in cellCon
+    INTEGER(I4B), INTENT(OUT) :: tFaceOrient(2)
+    !! size of data written in faceCon
+    !! tFaceOrient(1) is the number of rows in faceOrient
+    !! tFaceOrient(2) is the number of columns in faceOrient
+    INTEGER(I4B), INTENT(OUT) :: tEdgeOrient
+    !! size of data written in edgecon
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------

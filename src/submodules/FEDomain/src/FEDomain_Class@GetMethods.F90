@@ -216,7 +216,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%mesh%GetElemData(globalElement=globalElement, islocal=islocal)
+CALL obj%mesh%GetElemData(elemdata=elemdata, globalElement=globalElement, &
+                          islocal=islocal)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

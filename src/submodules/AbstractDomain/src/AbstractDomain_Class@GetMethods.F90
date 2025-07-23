@@ -925,7 +925,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   'child classes')
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName / G/' - '// &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetLocalElemNumber2
@@ -1073,6 +1073,39 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalVertexNodes2
+
+!----------------------------------------------------------------------------
+!                                                             GetOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrientation()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+CALL meshptr%GetOrientation(cellOrient=cellOrient, &
+                            faceOrient=faceOrient, &
+                            edgeOrient=edgeOrient, &
+                            tCellOrient=tCellOrient, &
+                            tFaceOrient=tFaceOrient, &
+                            tEdgeOrient=tEdgeOrient, &
+                            globalElement=globalElement, &
+                            islocal=islocal)
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetOrientation
 
 !----------------------------------------------------------------------------
 !
