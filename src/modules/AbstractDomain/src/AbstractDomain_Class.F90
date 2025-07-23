@@ -353,6 +353,10 @@ CONTAINS
     obj_GetElemTopologyIndx
   !! Get the topology index of the element of the mesh
 
+  PROCEDURE, PUBLIC, PASS(obj) :: IsElementActive => &
+    obj_IsElementActive
+  !! Returns true if the element is active in the domain
+
   ! SET:
   ! @SetMethods
 
@@ -1999,6 +2003,22 @@ INTERFACE
     !! if true then global element is local element
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetElemTopologyIndx
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 isElementActive@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, entityNum, &
+                                      islocal) RESULT(ans)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isElementActive
 END INTERFACE
 
 !----------------------------------------------------------------------------

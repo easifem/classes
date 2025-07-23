@@ -1143,6 +1143,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetElemTopologyIndx
 
 !----------------------------------------------------------------------------
+!                                                           IsElementActive
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElementActive
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsElementActive()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+ans = meshptr%IsElementActive(globalElement=globalElement, &
+                              islocal=islocal)
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsElementActive
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
