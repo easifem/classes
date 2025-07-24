@@ -50,6 +50,7 @@ USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -125,6 +126,9 @@ TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: plotErrorNorm = .FALSE.
 
   TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
+  !! Dirichlet boundary conditions
+
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
   !! Dirichlet boundary conditions
 
 CONTAINS
@@ -456,8 +460,10 @@ INTERFACE
                                   isSpaceCompo, isSpaceCompoScalar, &
                                   timeCompo, isTimeCompo, isTimeCompoScalar, &
                                   tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, tNodes, isTNodes, &
-                                  isTNodesScalar, tSize, fedof, timefedof)
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, &
+                                  fedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -503,6 +509,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames acts as scalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
     !! total number of nodes in each physical variable
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
@@ -664,6 +672,49 @@ END INTERFACE
 INTERFACE AbstractFieldExport
   MODULE PROCEDURE obj_Export
 END INTERFACE AbstractFieldExport
+
+!----------------------------------------------------------------------------
+!                                  AbstractFieldReadOptsFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary:  Read options for intiating AbstractField from toml table
+!
+!# Introduction
+! This method reads options for intiating AbstractField from toml table.
+! The arguments details are given in Initiate4 and Initiate5 methods.
+! This method will be called internally by ImportFromToml methods.
+! We do not want to initiate AbstractField from param.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadOptsFromToml(table, name, engine, &
+                                                  fieldType, &
+                                                  spaceCompo, isSpaceCompo, &
+                                                  isSpaceCompoScalar, &
+                                                  timeCompo, isTimeCompo, &
+                                                  isTimeCompoScalar, &
+                                                  tPhysicalVarNames, &
+                                                  physicalVarNames, &
+                                                  isPhysicalVarNames, &
+                                                  isPhysicalVarNamesScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table
+    TYPE(String), INTENT(OUT) :: name
+    TYPE(String), INTENT(OUT) :: engine
+    INTEGER(I4B), INTENT(OUT) :: fieldType
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: spaceCompo(:)
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompoScalar
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: timeCompo(:)
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompoScalar
+    INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
+    CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
+    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
+  END SUBROUTINE AbstractFieldReadOptsFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
@@ -1101,7 +1152,7 @@ INTERFACE AbstractFieldReadTimeFEDOFFromToml
 END INTERFACE AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
-!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
+!                                     AbstractFieldReadDBCFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1113,6 +1164,21 @@ INTERFACE
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE AbstractFieldReadDBCFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     AbstractFieldReadNBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary: Read NBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadNBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadNBCFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------

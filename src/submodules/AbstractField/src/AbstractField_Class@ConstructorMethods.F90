@@ -56,7 +56,7 @@ END PROCEDURE AbstractFieldCheckEssentialParam
 
 MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr, aint, ii
+INTEGER(I4B) :: ierr, tempint, ii
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
 LOGICAL(LGT) :: isSublist, isok, isSpace, isTime, acase
 
@@ -97,17 +97,21 @@ CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
 CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", &
              VALUE=engine)
 
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
-             VALUE=input(option=fieldType, default=TypeField%normal))
+tempint = Input(option=fieldType, default=TypeField%normal)
+CALL FPL_Set(obj=sublist, datatype=TypeField%normal, prefix=prefix, &
+             key="fieldType", VALUE=tempint)
 
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
-             VALUE=input(option=comm, default=0_I4B))
+tempint = Input(option=comm, default=0_I4B)
+CALL FPL_Set(obj=sublist, datatype=tempint, prefix=prefix, key="comm", &
+             VALUE=tempint)
 
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
-             VALUE=input(option=local_n, default=0_I4B))
+tempint = Input(option=local_n, default=0_I4B)
+CALL FPL_Set(obj=sublist, datatype=tempint, prefix=prefix, key="local_n", &
+             VALUE=tempint)
 
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
-             VALUE=input(option=global_n, default=0_I4B))
+tempint = Input(option=global_n, default=0_I4B)
+CALL FPL_Set(obj=sublist, datatype=tempint, prefix=prefix, key="global_n", &
+             VALUE=tempint)
 
 isSpace = PRESENT(isSpaceCompo) .AND. PRESENT(spaceCompo)
 CALL FPL_Set(obj=sublist, datatype=isSpace, prefix=prefix, &
@@ -119,8 +123,7 @@ CALL FPL_Set(obj=sublist, datatype=isTime, prefix=prefix, key="isTimeCompo", &
 
 ! check isSpaceCompoScalar
 isok = isSpace .AND. PRESENT(isSpaceCompoScalar)
-acase = .FALSE.
-IF (isok) acase = isSpaceCompoScalar
+acase = .FALSE.; IF (isok) acase = isSpaceCompoScalar
 CALL FPL_Set(obj=sublist, datatype=acase, prefix=prefix, &
              key="isSpaceCompoScalar", VALUE=acase)
 IF (acase) THEN
@@ -150,18 +153,15 @@ IF (acase) THEN
 END IF
 
 ! physical variable names are handled here
-aint = Input(option=tPhysicalVarNames, default=0_I4B)
-CALL FPL_Set(obj=sublist, &
-             datatype=aint, &
-             prefix=prefix, &
-             key="tPhysicalVarNames", &
-             VALUE=aint)
+tempint = Input(option=tPhysicalVarNames, default=0_I4B)
+CALL FPL_Set(obj=sublist, datatype=tempint, prefix=prefix, &
+             key="tPhysicalVarNames", VALUE=tempint)
 
 isok = PRESENT(physicalVarNames) .AND. PRESENT(isPhysicalVarNames)
 acase = .FALSE.; IF (isok) acase = isPhysicalVarNames
 
 IF (acase) THEN
-  DO ii = 1, aint
+  DO ii = 1, tempint
     CALL FPL_Set(obj=sublist, datatype="char", prefix=prefix, &
               key="physicalVarName"//ToString(ii), VALUE=physicalVarNames(ii))
   END DO
@@ -173,7 +173,6 @@ sublist => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE SetAbstractFieldParam
 
 !----------------------------------------------------------------------------
@@ -197,9 +196,12 @@ prefix = obj%GetPrefix()
 ! main
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
+
+#ifdef DEBUG_VER
 isok = ierr .EQ. 0_I4B
 CALL AssertError1(isok, myName, &
                   'Error occured in getting sublist(1)')
+#endif
 
 ! note: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
@@ -208,9 +210,11 @@ CALL AssertError1(isok, myName, &
 ! here.
 ! CALL obj%DEALLOCATE()
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(sublist)
 CALL AssertError1(isok, myName, &
                   'Error occured in getting sublist(2)')
+#endif
 
 obj%isInitiated = .TRUE.
 CALL FPL_GetValue(obj=param, prefix=prefix, key="fieldType", &
@@ -225,7 +229,6 @@ CALL FPL_GetValue(obj=param, prefix=prefix, key="local_n", &
                   VALUE=obj%local_n)
 
 obj%fedof => fedof
-
 IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 sublist => NULL()

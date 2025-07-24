@@ -118,7 +118,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 #endif
 
 CHARACTER(1) :: dof_names(1)
-INTEGER(I4B) :: dof_tNodes(1), dof_tsize
+INTEGER(I4B) :: dof_tNodes(1), dof_tsize, dof_spaceCompo(1), &
+                dof_timeCompo(1), dof_tPhysicalVarNames
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -129,22 +130,27 @@ CALL obj%DEALLOCATE()
 dof_names(1) = name(1:1)
 dof_tNodes(1) = fedof%GetTotalDOF()
 dof_tsize = dof_tNodes(1)
+dof_spaceCompo(1) = 1_I4B
+dof_timeCompo(1) = 1_I4B
+dof_tPhysicalVarNames = 1_I4B
+
 CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
                                fieldType=fieldType, comm=comm, &
-                               storageFMT=STORAGE_FMT, &
                                local_n=local_n, global_n=global_n, &
-                               spaceCompo=[1_I4B], &
+                               fedof=fedof, timefedof=timefedof, &
+                               storageFMT=STORAGE_FMT, &
+                               spaceCompo=dof_spaceCompo, &
                                isSpaceCompo=.TRUE., &
                                isSpaceCompoScalar=.TRUE., &
-                               timeCompo=[1_I4B], &
+                               timeCompo=dof_timeCompo, &
                                isTimeCompo=.TRUE., &
                                isTimeCompoScalar=.TRUE., &
-                               tPhysicalVarNames=1_I4B, &
+                               tPhysicalVarNames=dof_tPhysicalVarNames, &
                                physicalVarNames=dof_names, &
                                isPhysicalVarNames=.TRUE., &
-                               tSize=dof_tsize, &
-                               tNodes=dof_tNodes, &
-                               fedof=fedof, timefedof=timefedof)
+                               isPhysicalVarNamesScalar=.TRUE., &
+                               tSize=dof_tsize, tNodes=dof_tNodes, &
+                               isTNodes=.TRUE., isTNodesScalar=.TRUE.)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -24,6 +24,7 @@ USE tomlf, ONLY: toml_get => get_value, &
                  toml_len => len
 USE StringUtility, ONLY: UpperCase
 USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
+USE NeumannBC_Class, ONLY: NeumannBCImportFromToml
 
 IMPLICIT NONE
 CONTAINS
@@ -37,27 +38,66 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
-TYPE(ParameterList_) :: param
-CHARACTER(:), ALLOCATABLE :: prefix
-! INTEGER(I4B) :: comm, local_n, global_n
+TYPE(String) :: name
+TYPE(String) :: engine
+INTEGER(I4B) :: fieldType
+INTEGER(I4B), ALLOCATABLE :: spaceCompo(:)
+LOGICAL(LGT) :: isSpaceCompo
+LOGICAL(LGT) :: isSpaceCompoScalar
+INTEGER(I4B), ALLOCATABLE :: timeCompo(:)
+LOGICAL(LGT) :: isTimeCompo
+LOGICAL(LGT) :: isTimeCompoScalar
+INTEGER(I4B) :: tPhysicalVarNames
+CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
+LOGICAL(LGT) :: isPhysicalVarNames
+LOGICAL(LGT) :: isPhysicalVarNamesScalar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+CALL AbstractFieldReadOptsFromToml(table=table, name=name, engine=engine, &
+                                   fieldType=fieldType, &
+                                   spaceCompo=spaceCompo, &
+                                   isSpaceCompo=isSpaceCompo, &
+                                   isSpaceCompoScalar=isSpaceCompoScalar, &
+                                   timeCompo=timeCompo, &
+                                   isTimeCompo=isTimeCompo, &
+                                   isTimeCompoScalar=isTimeCompoScalar, &
+                                   physicalVarNames=physicalVarNames, &
+                                   tPhysicalVarNames=tPhysicalVarNames, &
+                                   isPhysicalVarNames=isPhysicalVarNames, &
+                                   isPhysicalVarNamesScalar= &
+                                   isPhysicalVarNamesScalar)
 
-prefix = obj%GetPrefix()
-CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
+
 CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
                                         timeOpt=timeOpt)
-CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
-prefix = ""
 
-CALL param%DEALLOCATE()
+CALL obj%Initiate(name=name%chars(), &
+                  engine=engine%chars(), &
+                  fieldType=fieldType, &
+                  spaceCompo=spaceCompo, &
+                  isSpaceCompo=isSpaceCompo, &
+                  isSpaceCompoScalar=isSpaceCompoScalar, &
+                  timeCompo=timeCompo, &
+                  isTimeCompo=isTimeCompo, &
+                  isTimeCompoScalar=isTimeCompoScalar, &
+                  physicalVarNames=physicalVarNames, &
+                  tPhysicalVarNames=tPhysicalVarNames, &
+                  isPhysicalVarNames=isPhysicalVarNames, &
+                  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
+                  fedof=fedof, timefedof=timefedof)
+
+CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
+
+name = ""
+engine = ""
+IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
+IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -314,6 +354,301 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ImportFromToml6
+
+!----------------------------------------------------------------------------
+!                                                           ReadNameFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadNameFromToml(table, name)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(OUT) :: name
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadNameFromToml()"
+#endif
+
+  CHARACTER(*), PARAMETER :: default_name = "field"
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading name ...')
+#endif
+
+  CALL GetValue(table=table, key="name", VALUE=name, &
+                default_value=default_name, origin=origin, &
+                stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isFound, myName, &
+                    "name not found in the toml file")
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadNameFromToml
+
+!----------------------------------------------------------------------------
+!                                                           ReadNameFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadEngineFromToml(table, engine)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(OUT) :: engine
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadEngineFromToml()"
+#endif
+
+  CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading engine ...')
+#endif
+
+  CALL GetValue(table=table, key="engine", VALUE=engine, &
+                default_value=default_engine, origin=origin, &
+                stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isFound, myName, &
+                    "engine not found in the toml file")
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadEngineFromToml
+
+!----------------------------------------------------------------------------
+!                                                       ReadFieldTypeFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadFieldTypeFromToml(table, fieldType)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(OUT) :: fieldType
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadFieldTypeFromToml()"
+#endif
+
+  CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+  TYPE(String) :: fieldTypeChar
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading fieldType ...')
+#endif
+  CALL GetValue(table=table, key="fieldType", VALUE=fieldTypeChar, &
+                default_value=default_fieldTypeChar, origin=origin, &
+                stat=stat, isFound=isfound)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isFound, myName, &
+                    "fieldType not found in the toml file")
+#endif
+
+  fieldType = TypeField%ToNumber(fieldTypeChar%chars())
+
+  fieldTypeChar = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadFieldTypeFromToml
+
+!----------------------------------------------------------------------------
+!                                                     ReadSpaceCompoFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadSpaceCompoFromToml(table, spaceCompo, isSpaceCompo, &
+                                  isSpaceCompoScalar)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: spaceCompo(:)
+  LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
+  LOGICAL(LGT), INTENT(OUT) :: isSpaceCompoScalar
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadSpaceCompoFromToml()"
+#endif
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading spaceCompo ...')
+#endif
+
+  CALL GetValue(table=table, key="spaceCompo", VALUE=spaceCompo, &
+                origin=origin, stat=stat, isFound=isSpaceCompo, &
+                isScalar=isSpaceCompoScalar)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadSpaceCompoFromToml
+
+!----------------------------------------------------------------------------
+!                                                     ReadTimeCompoFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
+                                 isTimeCompoScalar)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: timeCompo(:)
+  LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
+  LOGICAL(LGT), INTENT(OUT) :: isTimeCompoScalar
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadTimeCompoFromToml()"
+#endif
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading timeCompo ...')
+#endif
+
+  CALL GetValue(table=table, key="timeCompo", VALUE=timeCompo, &
+                origin=origin, stat=stat, isFound=isTimeCompo, &
+                isScalar=isTimeCompoScalar)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadTimeCompoFromToml
+
+!----------------------------------------------------------------------------
+!                                              ReadPhysicalVarNamesFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadPhysicalVarNamesFromToml(table, physicalVarNames, &
+                                        isPhysicalVarNames, &
+                                        isPhysicalVarNamesScalar, &
+                                        tPhysicalVarNames)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
+  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
+  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
+  INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadPhysicalVarNamesFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat, ii
+  LOGICAL(LGT) :: isFound
+  TYPE(String), ALLOCATABLE :: tempstrs(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading physicalVarNames ...')
+#endif
+
+  CALL GetValue(table=table, key="physicalVarNames", &
+                VALUE=tempstrs, &
+                origin=origin, stat=stat, &
+                isFound=isPhysicalVarNames, &
+                isScalar=isPhysicalVarNamesScalar)
+
+  tPhysicalVarNames = 0
+  IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(tempstrs)
+  ALLOCATE (physicalVarNames(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+    physicalVarNames(ii) = tempstrs(ii)%slice(1, 1)
+    tempstrs(ii) = ""
+  END DO
+
+  IF (ALLOCATED(tempstrs)) DEALLOCATE (tempstrs)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadPhysicalVarNamesFromToml
+
+!----------------------------------------------------------------------------
+!                                               AbstractFieldReadOptsFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadOptsFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadOptsFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL ReadNameFromToml(table=table, name=name)
+CALL ReadEngineFromToml(table=table, engine=engine)
+CALL ReadFieldTypeFromToml(table=table, fieldType=fieldType)
+
+CALL ReadSpaceCompoFromToml(table=table, spaceCompo=spaceCompo, &
+                            isSpaceCompo=isSpaceCompo, &
+                            isSpaceCompoScalar=isSpaceCompoScalar)
+
+CALL ReadTimeCompoFromToml(table=table, timeCompo=timeCompo, &
+                           isTimeCompo=isTimeCompo, &
+                           isTimeCompoScalar=isTimeCompoScalar)
+
+CALL ReadPhysicalVarNamesFromToml(table=table, &
+                                  physicalVarNames=physicalVarNames, &
+                                  isPhysicalVarNames=isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar= &
+                                  isPhysicalVarNamesScalar, &
+                                  tPhysicalVarNames=tPhysicalVarNames)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadOptsFromToml
 
 !----------------------------------------------------------------------------
 !                                               SetAbstractFieldParamFromToml
@@ -870,7 +1205,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractFieldReadUserFunctionFromToml
 
 !----------------------------------------------------------------------------
-!                                                           ImportDBCFromToml
+!                                                AbstractFieldReadDBCFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadDBCFromToml
@@ -883,7 +1218,7 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: origin, stat, tsize
 TYPE(toml_table), POINTER :: node => NULL()
 TYPE(toml_array), POINTER :: array
-! CLASS(AbstractDomain_) :: dom
+CLASS(AbstractDomain_), POINTER :: dom
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -919,18 +1254,106 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         'number of DirichletBC :: '//ToString(tsize))
 #endif
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+dom => NULL()
+isok = ASSOCIATED(obj%fedof)
+IF (isok) THEN
+  dom => obj%fedof%GetDomainPointer()
+END IF
 
-! CALL DirichletBCImportFromToml(obj=obj%dbc, tomlName="dirichletBC", &
-!                                table=table, dom=obj%dom)
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+ '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+END IF
+
+CALL DirichletBCImportFromToml(obj=obj%dbc, tomlName="dirichletBC", &
+                               table=table, dom=dom)
 array => NULL()
+node => NULL()
+dom => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE AbstractFieldReadDBCFromToml
+
+!----------------------------------------------------------------------------
+!                                               AbstractFieldReadNBCFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadNBCFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadNBCFromToml()"
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+
+! CHARACTER(:), ALLOCATABLE :: astr
+! LOGICAL(LGT) :: isok
+! INTEGER(I4B) :: origin, stat, tsize
+! TYPE(toml_table), POINTER :: node => NULL()
+! TYPE(toml_array), POINTER :: array
+! CLASS(AbstractDomain_), POINTER :: dom
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading neumannBC ...')
+! #endif
+!
+! astr = "neumannBC"
+! node => NULL()
+! CALL toml_get(table, astr, array, origin=origin, requested=.FALSE., &
+!               stat=stat)
+! isok = ASSOCIATED(array)
+!
+! IF (.NOT. isok) THEN
+! #ifdef DEBUG_VER
+!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                           '[END] ')
+! #endif
+!   node => NULL()
+!   array => NULL()
+!   RETURN
+! END IF
+!
+! tsize = toml_len(array)
+! ALLOCATE (obj%nbc(tsize))
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'number of NeumannBC :: '//ToString(tsize))
+! #endif
+!
+! dom => NULL()
+! isok = ASSOCIATED(obj%fedof)
+! IF (isok) THEN
+!   dom => obj%fedof%GetDomainPointer()
+! END IF
+!
+! isok = ALLOCATED(obj%fedofs)
+! IF (isok) THEN
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!  '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+! END IF
+!
+! CALL NeumannBCImportFromToml(obj=obj%nbc, tomlName="neumannBC", table=table, &
+!                              dom=dom)
+! array => NULL()
+! node => NULL()
+! dom => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE AbstractFieldReadNBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

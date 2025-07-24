@@ -18,12 +18,11 @@
 SUBMODULE(DirichletBC_Class) IOMethods
 USE BaseMethod
 USE TomlUtility
-USE tomlf, ONLY:  &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_array,  &
-  & toml_stat
+USE tomlf, ONLY: toml_serialize, &
+                 toml_get => get_value, &
+                 toml_len => len, &
+                 toml_array, &
+                 toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -35,26 +34,28 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(toml_table), POINTER :: node
 TYPE(toml_array), POINTER :: array
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
 tsize1 = SIZE(obj)
 
 array => NULL()
 CALL toml_get(table, tomlName, array, origin=origin, &
-  & requested=.FALSE., stat=stat)
+              requested=.FALSE., stat=stat)
 
-IF (.NOT. ASSOCIATED(array)) THEN
+isok = ASSOCIATED(array)
+IF (.NOT. isok) THEN
   IF (tsize1 .GT. 0_I4B) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & 'In toml file :: cannot find ['//tomlName//"] table.")
+                      'In toml file :: cannot find ['//tomlName//"] table.")
   ELSE
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-      & 'In toml file :: cannot find ['//tomlName//"] table.")
+                        'In toml file :: cannot find ['//tomlName//"] table.")
   END IF
   RETURN
 END IF

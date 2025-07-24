@@ -421,6 +421,14 @@ ans => obj%mesh
 END PROCEDURE obj_GetMeshPointer
 
 !----------------------------------------------------------------------------
+!                                                           GetDomainPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDomainPointer
+ans => obj%dom
+END PROCEDURE obj_GetDomainPointer
+
+!----------------------------------------------------------------------------
 !                                                       GetBaseInterpolation
 !----------------------------------------------------------------------------
 

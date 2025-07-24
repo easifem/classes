@@ -264,6 +264,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get the mesh pointer
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDomainPointer => obj_GetDomainPointer
+  !! Get the domain pointer
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
@@ -1201,6 +1204,21 @@ INTERFACE
     CLASS(FEDOF_), INTENT(IN) :: obj
     CLASS(AbstractMesh_), POINTER :: ans
   END FUNCTION obj_GetMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetDomainPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary: Get the domain pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetDomainPointer(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    CLASS(AbstractDomain_), POINTER :: ans
+  END FUNCTION obj_GetDomainPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

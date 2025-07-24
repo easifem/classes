@@ -31,14 +31,14 @@ CONTAINS
 
 MODULE PROCEDURE obj_SetParam
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName="obj_SetParam()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
 #endif
 
 INTEGER(I4B) :: ii, tsize1
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
-'[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 IF (PRESENT(dof_tPhysicalVars)) obj%dof_tPhysicalVars = dof_tPhysicalVars
@@ -46,7 +46,7 @@ IF (PRESENT(dof_storageFMT)) obj%dof_storageFMT = dof_storageFMT
 IF (PRESENT(dof_spaceCompo)) obj%dof_spaceCompo = dof_spaceCompo
 IF (PRESENT(dof_timeCompo)) obj%dof_timeCompo = dof_timeCompo
 IF (PRESENT(dof_tNodes)) obj%dof_tNodes = dof_tNodes
-IF (PRESENT(tSize)) obj%tsize = tsize
+IF (PRESENT(tSize)) obj%tSize = tSize
 
 IF (PRESENT(dof_names_char)) THEN
   IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
@@ -59,8 +59,8 @@ IF (PRESENT(dof_names_char)) THEN
 END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
-'[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_SetParam

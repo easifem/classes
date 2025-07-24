@@ -276,8 +276,10 @@ INTERFACE
                                   isSpaceCompo, isSpaceCompoScalar, &
                                   timeCompo, isTimeCompo, isTimeCompoScalar, &
                                   tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, tNodes, isTNodes, &
-                                  isTNodesScalar, tSize, fedof, timefedof)
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, &
+                                  fedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -333,6 +335,8 @@ INTERFACE
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
     !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
     !! total number of nodes in each physical variable
     !! Not required

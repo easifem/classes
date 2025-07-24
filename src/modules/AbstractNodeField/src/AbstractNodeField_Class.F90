@@ -58,40 +58,40 @@ CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
   !! Total number of physical variables
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   INTEGER(I4B) :: dof_storageFMT = NODES_FMT
   !! Storage format
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
   !! Spatial components
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
   !! Total number of nodes
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
   !! Single character name of physical variable
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   INTEGER(I4B) :: tSize = 0
   !! Total length of the nodal field = tdof * tNodes
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   TYPE(RealVector_) :: realVec
   !! Vector of reals to contains the nodes
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
   TYPE(DOF_) :: dof
   !! Degree of freedom object,
   !! which contains the information about how the different
   !! components of the fields are stored inside the realVec
-  !! NOTE: This variable is only for internal use
+  !! note: This variable is only for internal use
 
 CONTAINS
   PRIVATE
@@ -358,8 +358,10 @@ INTERFACE
                                   isSpaceCompo, isSpaceCompoScalar, &
                                   timeCompo, isTimeCompo, isTimeCompoScalar, &
                                   tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, tNodes, isTNodes, &
-                                  isTNodesScalar, tSize, fedof, timefedof)
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, fedof, &
+                                  timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -405,6 +407,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then we physicalVarNames is scalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
     !! total number of nodes in each physical variable
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
