@@ -27,6 +27,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
 !                                                                 GetMeshID
 !----------------------------------------------------------------------------
 
@@ -187,7 +195,7 @@ IF (PRESENT(isNormal)) isNormal = obj%isNormal
 IF (PRESENT(useFunction)) useFunction = obj%isUserFunction
 IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
 END PROCEDURE obj_GetParam
 

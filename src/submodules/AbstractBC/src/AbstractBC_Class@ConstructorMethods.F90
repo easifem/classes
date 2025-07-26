@@ -37,7 +37,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 obj%name = ''
 obj%idof = 0
 obj%nodalValueType = -1
@@ -171,7 +171,7 @@ CALL obj%DEALLOCATE()
 
 CALL obj%CheckEssentialParam(param=param, prefix=prefix)
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%boundary = boundary
 obj%dom => dom
 

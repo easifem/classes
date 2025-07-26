@@ -62,7 +62,7 @@ PUBLIC :: AbstractBCImportParamFromToml
 TYPE, ABSTRACT :: AbstractBC_
   PRIVATE
 
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
   TYPE(String) :: name
   !! name of boundary condition
@@ -186,6 +186,9 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns isInit
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_GetMeshID
   !! Get MeshID
@@ -421,6 +424,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-26
+! summary: Returns isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------

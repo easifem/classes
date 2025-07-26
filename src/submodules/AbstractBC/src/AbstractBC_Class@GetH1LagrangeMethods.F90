@@ -42,7 +42,7 @@ SUBROUTINE checkerror(obj, myName)
 
   LOGICAL(LGT) :: isok
 
-  CALL AssertError1(obj%isInitiated, myName, &
+  CALL AssertError1(obj%isInit, myName, &
                     'AbstractBC_ object is not initiated, initiate it first.')
 
   isok = ASSOCIATED(obj%dom)

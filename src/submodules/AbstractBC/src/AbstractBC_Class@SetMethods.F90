@@ -132,7 +132,7 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
 
   CHARACTER(*), PARAMETER :: myname = "set_check_error()"
 
-  CALL AssertError1(obj%isInitiated, myName, &
+  CALL AssertError1(obj%isInit, myName, &
                     "AbstractBC_ object is not initiated")
 
   notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)

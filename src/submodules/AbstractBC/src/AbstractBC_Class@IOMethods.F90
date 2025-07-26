@@ -44,13 +44,13 @@ CALL e%RaiseInformation(modName//"::"//myName//" - "// &
 
 CALL obj%DEALLOCATE()
 
-IF (obj%isInitiated) THEN
+IF (obj%isInit) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[INTERNAL ERROR] :: AbstractBC_::obj is already initiated'//  &
   & ', deallocate first')
   RETURN
 END IF
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%dom => dom
 
 IF (.NOT. hdf5%isOpen()) THEN
@@ -175,7 +175,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] Export()')
 #endif
 
-IF (.NOT. obj%isInitiated) THEN
+IF (.NOT. obj%isInit) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[INTERNAL ERROR] :: The object is not initiated, initiate it first!')
   RETURN
@@ -271,7 +271,7 @@ REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
 
 !> check
-IF (.NOT. obj%isInitiated) THEN
+IF (.NOT. obj%isInit) THEN
   CALL Display("AbstractBC_::obj is not initiated, nothing to display", &
     & unitNo=unitNo)
   RETURN

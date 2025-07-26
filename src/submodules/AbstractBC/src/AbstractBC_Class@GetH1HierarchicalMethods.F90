@@ -70,7 +70,7 @@ SUBROUTINE checkerror(obj, myName)
 
   LOGICAL(LGT) :: isok
 
-  CALL AssertError1(obj%isInitiated, myName, &
+  CALL AssertError1(obj%isInit, myName, &
                     'AbstractBC_ object is not initiated, initiate it first.')
 
   isok = ASSOCIATED(obj%dom)
@@ -86,9 +86,6 @@ MODULE PROCEDURE obj_Get_H1_Hierarchical1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get_H1_Hierarchical1()"
 #endif
-
-INTEGER(I4B) :: ii, jj, nsd
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
