@@ -103,7 +103,7 @@ TYPE, ABSTRACT :: AbstractBC_
   !! number of col in elemToEdge
   INTEGER(I4B), ALLOCATABLE :: nodenum(:)
   !! node numbers, where dirichlet boundary condition will be imposed
-  !! INFO: to be used soon
+  !! info: to be used soon
 
   INTEGER(I4B), ALLOCATABLE :: elemToFace(:, :)
   !! each col contains the following data:

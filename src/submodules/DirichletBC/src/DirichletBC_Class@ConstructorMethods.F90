@@ -15,7 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(DirichletBC_Class) ConstructorMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display, ToString
+USE InputUtility, ONLY: Input
+
 IMPLICIT NONE
 CONTAINS
 
@@ -63,36 +65,37 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddDirichletBC
-CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC"
-
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AddDirichletBC()')
+CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC"
+LOGICAL(LGT) :: isok
 #endif
 
-IF (dbcNo .GT. SIZE(dbc)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[OUT OF BOUND ERROR] :: dbcNo [= '//TOSTRING(dbcNo)//  &
-  & '] is out of bound for dbc [= '// &
-  & TOSTRING(SIZE(dbc))//']')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (ASSOCIATED(dbc(dbcNo)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: DBC( '//TOSTRING(dbcNo)// &
-  &  ')%ptr is already associated, deallocate and nullify it first.')
-END IF
+#ifdef DEBUG_VER
+isok = dbcNo .LE. SIZE(dbc)
+CALL AssertError1(isok, myName, &
+                  '[OUT OF BOUND ERROR] :: dbcNo [= '//ToString(dbcNo)// &
+                  '] is out of bound for dbc [= '// &
+                  ToString(SIZE(dbc))//']')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. ASSOCIATED(dbc(dbcNo)%ptr)
+CALL AssertError1(isok, myName, &
+                  '[ALLOCATION ERROR] :: DBC( '//ToString(dbcNo)// &
+              ')%ptr is already associated, deallocate and nullify it first.')
+#endif
 
 ALLOCATE (dbc(dbcNo)%ptr)
-
-CALL dbc(dbcNo)%ptr%initiate( &
-  & param=param, &
-  & boundary=boundary, &
-  & dom=dom)
+CALL dbc(dbcNo)%ptr%Initiate(param=param, boundary=boundary, dom=dom)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AddDirichletBC()')
+                        '[END] ')
 #endif
 END PROCEDURE obj_AddDirichletBC
 
@@ -101,21 +104,21 @@ END PROCEDURE obj_AddDirichletBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AppendDirichletBC
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AppendDirichletBC()"
+#endif
+
 INTEGER(I4B) :: tsize, ii, dbcNo0
-LOGICAL(LGT) :: isExpand
+LOGICAL(LGT) :: isExpand, isok
 TYPE(DirichletBCPointer_), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-IF (ALLOCATED(dbc)) THEN
-  tsize = SIZE(dbc)
-ELSE
-  tsize = 0
-END IF
+tsize = 0
+isok = ALLOCATED(dbc); IF (isok) tsize = SIZE(dbc)
 
 dbcNo0 = Input(default=tsize + 1, option=dbcNo)
 
@@ -123,33 +126,50 @@ isExpand = dbcNo0 .GT. tsize
 
 IF (isExpand) THEN
   ALLOCATE (temp(tsize))
-  DO ii = 1, tsize; temp(ii)%ptr => dbc(ii)%ptr; END DO
-  DO ii = 1, tsize; dbc(ii)%ptr => NULL(); END DO
+  DO ii = 1, tsize
+    temp(ii)%ptr => dbc(ii)%ptr
+  END DO
+
+  DO ii = 1, tsize
+    dbc(ii)%ptr => NULL()
+  END DO
+
   DEALLOCATE (dbc)
   ALLOCATE (dbc(dbcNo0))
-  DO ii = 1, tsize; dbc(ii)%ptr => temp(ii)%ptr; END DO
-  DO ii = 1, tsize; temp(ii)%ptr => NULL(); END DO
-  DO ii = tsize + 1, dbcNo0; dbc(ii)%ptr => NULL(); END DO
+
+  DO ii = 1, tsize
+    dbc(ii)%ptr => temp(ii)%ptr
+  END DO
+
+  DO ii = 1, tsize
+    temp(ii)%ptr => NULL()
+  END DO
+
+  DO ii = tsize + 1, dbcNo0
+    dbc(ii)%ptr => NULL()
+  END DO
 END IF
 
-IF (ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: dbc( '//TOSTRING(dbcNo0)// &
-  &  ')%ptr is already associated, deallocate and nullify it first.')
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. ASSOCIATED(dbc(dbcNo0)%ptr)
+CALL AssertError1(isok, myName, &
+                  '[ALLOCATION ERROR] :: dbc( '//ToString(dbcNo0)// &
+              ')%ptr is already associated, deallocate and nullify it first.')
+#endif
 
 ALLOCATE (dbc(dbcNo0)%ptr)
-CALL dbc(dbcNo0)%ptr%initiate(param=param, boundary=boundary, dom=dom)
+CALL dbc(dbcNo0)%ptr%Initiate(param=param, boundary=boundary, dom=dom)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_AppendDirichletBC
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

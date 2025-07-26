@@ -19,8 +19,8 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) SetMethods
-USE IntVector_Method, ONLY: Append, RemoveDuplicates, isAllocated
-USE BoundingBox_Method, ONLY: BB_Append => Append
+USE IntVector_Method, ONLY: Append, RemoveDuplicates, IsAllocated
+USE BoundingBox_Method, ONLY: BoundingBox_Append => Append
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE Display_Method, ONLY: ToString
 
@@ -32,7 +32,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Add
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Add()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -58,23 +60,50 @@ SUBROUTINE addmeshid(obj, meshid, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshid(:), dim
 
-  LOGICAL(LGT) :: bool1
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "addmeshid()"
+#endif
 
-  bool1 = PRESENT(dim) .AND. PRESENT(meshID)
-  IF (bool1) THEN
-    obj%ms(1) = .TRUE.
-    SELECT CASE (dim)
-    CASE (0)
-      CALL Append(obj%pointMeshID, meshID)
-    CASE (1)
-      CALL Append(obj%curveMeshID, meshID)
-    CASE (2)
-      CALL Append(obj%surfaceMeshID, meshID)
-    CASE (3)
-      CALL Append(obj%volumeMeshID, meshID)
-    END SELECT
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = PRESENT(dim) .AND. PRESENT(meshID)
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
   END IF
 
+  obj%ms(1) = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL Append(obj%pointMeshID, meshID)
+  CASE (1)
+    CALL Append(obj%curveMeshID, meshID)
+  CASE (2)
+    CALL Append(obj%surfaceMeshID, meshID)
+  CASE (3)
+    CALL Append(obj%volumeMeshID, meshID)
+
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'No case found for dim = '//ToString(dim))
+#endif
+
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE addmeshid
 
 !----------------------------------------------------------------------------
@@ -85,23 +114,44 @@ SUBROUTINE addelemnum(obj, elemnum, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemnum(:), dim
 
-  LOGICAL(LGT) :: bool1
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "addelemnum()"
+#endif
 
-  bool1 = PRESENT(dim) .AND. PRESENT(elemnum)
-  IF (bool1) THEN
-    obj%ms(2) = .TRUE.
-    SELECT CASE (dim)
-    CASE (0)
-      CALL Append(obj%pointElemNum, elemnum)
-    CASE (1)
-      CALL Append(obj%curveElemNum, elemnum)
-    CASE (2)
-      CALL Append(obj%surfaceElemNum, elemnum)
-    CASE (3)
-      CALL Append(obj%volumeElemNum, elemnum)
-    END SELECT
+  LOGICAL(LGT) :: isok
+
+  isok = PRESENT(dim) .AND. PRESENT(elemnum)
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
   END IF
 
+  obj%ms(2) = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL Append(obj%pointElemNum, elemnum)
+  CASE (1)
+    CALL Append(obj%curveElemNum, elemnum)
+  CASE (2)
+    CALL Append(obj%surfaceElemNum, elemnum)
+  CASE (3)
+    CALL Append(obj%volumeElemNum, elemnum)
+
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'No case found for dim = '//ToString(dim))
+#endif
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE addelemnum
 
 !----------------------------------------------------------------------------
@@ -112,28 +162,60 @@ SUBROUTINE addnodenum(obj, nodenum, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodenum(:), dim
 
-  LOGICAL(LGT) :: bool1
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "addnodenum()"
+#endif
+  LOGICAL(LGT) :: isok
 
-  bool1 = PRESENT(nodeNum) .AND. (.NOT. PRESENT(dim))
-  IF (bool1) THEN
-    obj%ms(3) = .TRUE.
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = PRESENT(nodeNum)
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+  obj%ms(3) = .TRUE.
+  isok = .NOT. PRESENT(dim)
+  IF (isok) THEN
     CALL Append(obj%nodeNum, nodeNum)
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
   END IF
 
-  bool1 = PRESENT(nodeNum) .AND. (PRESENT(dim))
-  IF (bool1) THEN
-    obj%ms(3) = .TRUE.
-    SELECT CASE (dim)
-    CASE (0)
-      CALL Append(obj%pointNodeNum, nodeNum)
-    CASE (1)
-      CALL Append(obj%curveNodeNum, nodeNum)
-    CASE (2)
-      CALL Append(obj%surfaceNodeNum, nodeNum)
-    CASE (3)
-      CALL Append(obj%volumeNodeNum, nodeNum)
-    END SELECT
-  END IF
+  SELECT CASE (dim)
+  CASE (0)
+    CALL Append(obj%pointNodeNum, nodeNum)
+  CASE (1)
+    CALL Append(obj%curveNodeNum, nodeNum)
+  CASE (2)
+    CALL Append(obj%surfaceNodeNum, nodeNum)
+  CASE (3)
+    CALL Append(obj%volumeNodeNum, nodeNum)
+
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'No case found for dim = '//ToString(dim))
+#endif
+
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE addnodenum
 
 !----------------------------------------------------------------------------
@@ -145,22 +227,49 @@ SUBROUTINE addbox(obj, box, dim)
   TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
 
-  LOGICAL(LGT) :: bool1
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "addbox()"
+#endif
 
-  bool1 = PRESENT(dim) .AND. PRESENT(box)
-  IF (bool1) THEN
-    obj%ms(4) = .TRUE.
-    SELECT CASE (dim)
-    CASE (0)
-      CALL BB_Append(obj%pointBox, box)
-    CASE (1)
-      CALL BB_Append(obj%curveBox, box)
-    CASE (2)
-      CALL BB_Append(obj%surfaceBox, box)
-    CASE (3)
-      CALL BB_Append(obj%volumeBox, box)
-    END SELECT
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = PRESENT(dim) .AND. PRESENT(box)
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
   END IF
+
+  obj%ms(4) = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL BoundingBox_Append(obj%pointBox, box)
+  CASE (1)
+    CALL BoundingBox_Append(obj%curveBox, box)
+  CASE (2)
+    CALL BoundingBox_Append(obj%surfaceBox, box)
+  CASE (3)
+    CALL BoundingBox_Append(obj%volumeBox, box)
+
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'No case found for dim = '//ToString(dim))
+#endif
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE addbox
 
 !----------------------------------------------------------------------------
@@ -168,37 +277,60 @@ END SUBROUTINE addbox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set
-IF (isAllocated(obj%pointMeshID)) THEN
-  CALL RemoveDuplicates(obj%pointMeshID)
-END IF
-IF (isAllocated(obj%curveMeshID)) THEN
-  CALL RemoveDuplicates(obj%curveMeshID)
-END IF
-IF (isAllocated(obj%surfaceMeshID)) THEN
-  CALL RemoveDuplicates(obj%surfaceMeshID)
-END IF
-IF (isAllocated(obj%volumeMeshID)) THEN
-  CALL RemoveDuplicates(obj%volumeMeshID)
-END IF
-IF (isAllocated(obj%pointElemNum)) THEN
-  CALL RemoveDuplicates(obj%pointElemNum)
-END IF
-IF (isAllocated(obj%curveElemNum)) THEN
-  CALL RemoveDuplicates(obj%curveElemNum)
-END IF
-IF (isAllocated(obj%surfaceElemNum)) THEN
-  CALL RemoveDuplicates(obj%surfaceElemNum)
-END IF
-IF (isAllocated(obj%volumeElemNum)) THEN
-  CALL RemoveDuplicates(obj%volumeElemNum)
-END IF
-IF (isAllocated(obj%pointNodeNum)) CALL Append(obj%nodeNum, obj%pointNodeNum)
-IF (isAllocated(obj%curveNodeNum)) CALL Append(obj%nodeNum, obj%curveNodeNum)
-if(isAllocated(obj%surfaceNodeNum) ) CALL Append(obj%nodeNum, obj%surfaceNodeNum)
-if(isAllocated(obj%volumeNodeNum) ) CALL Append(obj%nodeNum, obj%volumeNodeNum)
-IF (isAllocated(obj%nodeNum)) THEN
-  CALL RemoveDuplicates(obj%nodeNum)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = IsAllocated(obj%pointMeshID)
+IF (isok) CALL RemoveDuplicates(obj%pointMeshID)
+
+isok = IsAllocated(obj%curveMeshID)
+IF (isok) CALL RemoveDuplicates(obj%curveMeshID)
+
+isok = IsAllocated(obj%surfaceMeshID)
+IF (isok) CALL RemoveDuplicates(obj%surfaceMeshID)
+
+isok = IsAllocated(obj%volumeMeshID)
+IF (isok) CALL RemoveDuplicates(obj%volumeMeshID)
+
+isok = IsAllocated(obj%pointElemNum)
+IF (isok) CALL RemoveDuplicates(obj%pointElemNum)
+
+isok = IsAllocated(obj%curveElemNum)
+IF (isok) CALL RemoveDuplicates(obj%curveElemNum)
+
+isok = IsAllocated(obj%surfaceElemNum)
+IF (isok) CALL RemoveDuplicates(obj%surfaceElemNum)
+
+isok = IsAllocated(obj%volumeElemNum)
+IF (isok) CALL RemoveDuplicates(obj%volumeElemNum)
+
+isok = IsAllocated(obj%pointNodeNum)
+IF (isok) CALL Append(obj%nodeNum, obj%pointNodeNum)
+
+isok = IsAllocated(obj%curveNodeNum)
+IF (isok) CALL Append(obj%nodeNum, obj%curveNodeNum)
+
+isok = IsAllocated(obj%surfaceNodeNum)
+IF (isok) CALL Append(obj%nodeNum, obj%surfaceNodeNum)
+
+isok = IsAllocated(obj%volumeNodeNum)
+IF (isok) CALL Append(obj%nodeNum, obj%volumeNodeNum)
+
+isok = IsAllocated(obj%nodeNum)
+IF (isok) CALL RemoveDuplicates(obj%nodeNum)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
@@ -215,7 +347,7 @@ INTEGER(I4B) :: ii, tsize
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 tsize = SIZE(obj)
 DO ii = 1, tsize
@@ -233,18 +365,25 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterialToMesh1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myname = "obj_SetMaterialToMesh1()"
+#endif
+
 CLASS(AbstractMesh_), POINTER :: mesh
 INTEGER(I4B), POINTER :: intptr(:)
 INTEGER(I4B) :: tsize, ii, iel
 LOGICAL(LGT) :: abool
-CHARACTER(*), PARAMETER :: myname = "obj_SetMaterialToMesh1()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 mesh => dom%GetMeshPointer(dim=dim)
 
 #ifdef DEBUG_VER
 abool = ASSOCIATED(mesh)
-CALL AssertError1(abool, myname, &
-                  "Mesh pointer is not associated")
+CALL AssertError1(abool, myname, "Mesh pointer is not associated")
 #endif
 
 ! isSelectionByMeshID
@@ -269,6 +408,11 @@ END DO
 mesh => NULL()
 intptr => NULL()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetMaterialToMesh1
 
 !----------------------------------------------------------------------------
@@ -276,12 +420,26 @@ END PROCEDURE obj_SetMaterialToMesh1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterialToMesh2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaterialToMesh2()"
+#endif
+
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 DO ii = 0, 3
   CALL obj%SetMaterialToMesh1(dom=dom, dim=ii, medium=medium, &
                               material=material)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_SetMaterialToMesh2
 

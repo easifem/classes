@@ -16,11 +16,9 @@
 !
 
 SUBMODULE(AbstractBC_Class) ConstructorMethods
-USE InputUtility, ONLY: Input
-
-USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
-
 USE GlobalData, ONLY: Char_LF
+USE InputUtility, ONLY: Input
+USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
 
 IMPLICIT NONE
 CONTAINS

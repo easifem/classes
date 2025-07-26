@@ -92,6 +92,8 @@ CALL obj%Initiate(name=name%chars(), &
                   fedof=fedof, timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
+CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
+CALL AbstractFieldReadNBCFromToml(obj=obj, table=table)
 
 name = ""
 engine = ""
@@ -1213,45 +1215,12 @@ MODULE PROCEDURE AbstractFieldReadDBCFromToml
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadDBCFromToml()"
 #endif
 
-CHARACTER(:), ALLOCATABLE :: astr
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: origin, stat, tsize
-TYPE(toml_table), POINTER :: node => NULL()
-TYPE(toml_array), POINTER :: array
 CLASS(AbstractDomain_), POINTER :: dom
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading dirichletBC ...')
-#endif
-
-astr = "dirichletBC"
-node => NULL()
-CALL toml_get(table, astr, array, origin=origin, requested=.FALSE., &
-              stat=stat)
-isok = ASSOCIATED(array)
-
-IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  node => NULL()
-  array => NULL()
-  RETURN
-END IF
-
-tsize = toml_len(array)
-ALLOCATE (obj%dbc(tsize))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'number of DirichletBC :: '//ToString(tsize))
 #endif
 
 dom => NULL()
@@ -1260,16 +1229,16 @@ IF (isok) THEN
   dom => obj%fedof%GetDomainPointer()
 END IF
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(obj%fedofs)
 IF (isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
  '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
 END IF
+#endif
 
 CALL DirichletBCImportFromToml(obj=obj%dbc, tomlName="dirichletBC", &
                                table=table, dom=dom)
-array => NULL()
-node => NULL()
 dom => NULL()
 
 #ifdef DEBUG_VER
@@ -1279,7 +1248,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractFieldReadDBCFromToml
 
 !----------------------------------------------------------------------------
-!                                               AbstractFieldReadNBCFromToml
+!                                                AbstractFieldReadNBCFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadNBCFromToml
@@ -1287,67 +1256,31 @@ MODULE PROCEDURE AbstractFieldReadNBCFromToml
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadNBCFromToml()"
 #endif
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+LOGICAL(LGT) :: isok
+CLASS(AbstractDomain_), POINTER :: dom
 
-! CHARACTER(:), ALLOCATABLE :: astr
-! LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: origin, stat, tsize
-! TYPE(toml_table), POINTER :: node => NULL()
-! TYPE(toml_array), POINTER :: array
-! CLASS(AbstractDomain_), POINTER :: dom
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading neumannBC ...')
-! #endif
-!
-! astr = "neumannBC"
-! node => NULL()
-! CALL toml_get(table, astr, array, origin=origin, requested=.FALSE., &
-!               stat=stat)
-! isok = ASSOCIATED(array)
-!
-! IF (.NOT. isok) THEN
-! #ifdef DEBUG_VER
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                           '[END] ')
-! #endif
-!   node => NULL()
-!   array => NULL()
-!   RETURN
-! END IF
-!
-! tsize = toml_len(array)
-! ALLOCATE (obj%nbc(tsize))
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'number of NeumannBC :: '//ToString(tsize))
-! #endif
-!
-! dom => NULL()
-! isok = ASSOCIATED(obj%fedof)
-! IF (isok) THEN
-!   dom => obj%fedof%GetDomainPointer()
-! END IF
-!
-! isok = ALLOCATED(obj%fedofs)
-! IF (isok) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!  '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
-! END IF
-!
-! CALL NeumannBCImportFromToml(obj=obj%nbc, tomlName="neumannBC", table=table, &
-!                              dom=dom)
-! array => NULL()
-! node => NULL()
-! dom => NULL()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+dom => NULL()
+isok = ASSOCIATED(obj%fedof)
+IF (isok) THEN
+  dom => obj%fedof%GetDomainPointer()
+END IF
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+ '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+END IF
+#endif
+
+CALL NeumannBCImportFromToml(obj=obj%nbc, tomlName="neumannBC", &
+                             table=table, dom=dom)
+dom => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

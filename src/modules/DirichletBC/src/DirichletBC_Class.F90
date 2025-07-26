@@ -216,7 +216,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
@@ -241,7 +241,7 @@ END INTERFACE DirichletBCImportFromToml
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, filename, &
                                         printToml)
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
