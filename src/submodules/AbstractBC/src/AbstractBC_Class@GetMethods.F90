@@ -17,9 +17,7 @@
 SUBMODULE(AbstractBC_Class) GetMethods
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString
-
 USE GlobalData, ONLY: CHAR_LF
-
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
@@ -63,7 +61,10 @@ END PROCEDURE obj_GetDOFNo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+#endif
+
 CHARACTER(6) :: casename
 
 #ifdef DEBUG_VER
@@ -78,16 +79,20 @@ SELECT CASE (casename)
 CASE ("H1LAGR")
 
   CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
+                         nodalValue=nodalValue, nrow=nrow, ncol=ncol, &
+                         times=times)
 
 CASE ("H1HIER", "H1HEIR")
 
   CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
+                             nodalValue=nodalValue, nrow=nrow, ncol=ncol, &
+                             times=times)
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
+  CALL AssertError1(.FALSE., myName, &
+                    "No case found for fedof casename="//casename)
+#endif
 
 END SELECT
 
@@ -102,7 +107,10 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+#endif
+
 CHARACTER(6) :: casename
 
 #ifdef DEBUG_VER
@@ -115,16 +123,16 @@ casename = fedof%GetCaseName()
 SELECT CASE (casename)
 
 CASE ("H1LAGR")
-
   CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, tsize=tsize)
 
 CASE ("H1HIER", "H1HEIR")
-
   CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, tsize=tsize)
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
+  CALL AssertError1(.FALSE., myname, &
+                    "No case found for fedof casename="//casename)
+#endif
 
 END SELECT
 

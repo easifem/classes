@@ -23,4 +23,6 @@ target_sources(
           ${src_path}/AbstractBC_Class@GetH1LagrangeMethods.F90
           ${src_path}/AbstractBC_Class@GetH1HierarchicalMethods.F90
           ${src_path}/AbstractBC_Class@IOMethods.F90
+          ${src_path}/AbstractBC_Class@TomlMethods.F90
+          ${src_path}/AbstractBC_Class@HDFMethods.F90
           ${src_path}/AbstractBC_Class@SetMethods.F90)

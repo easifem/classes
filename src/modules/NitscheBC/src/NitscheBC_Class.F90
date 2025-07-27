@@ -58,8 +58,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => obj_SetCellData
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => obj_GetMinCellEntity
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => obj_GetMaxCellEntity
-  PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent &
-   & => obj_IsCellEntityPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent => &
+    obj_IsCellEntityPresent
   PROCEDURE, PUBLIC, PASS(obj) :: GetStartIndex => obj_GetStartIndex
   PROCEDURE, PUBLIC, PASS(obj) :: GetEndIndex => obj_GetEndIndex
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellElem => obj_GetCellElem

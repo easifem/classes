@@ -15,14 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetH1HierarchicalMethods
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
-USE Display_Method, ONLY: ToString
-
 USE GlobalData, ONLY: CHAR_LF
-
+USE Display_Method, ONLY: Display, ToString
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
@@ -32,9 +26,16 @@ CONTAINS
 !                                                           GetTotalNodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_H1_Hierarchical_GetTotalNodenum
-!! internal variables
+MODULE PROCEDURE obj_GetTotalNodeNumH1Hierarchical
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNumH1Hierarchical()"
+#endif
 INTEGER(I4B) :: mysize, localElement, localboundary, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ans = 0
 mysize = obj%boundary%GetTotalNodeNum(dom=obj%dom)
@@ -58,7 +59,11 @@ DO ii = 1, obj%tElemToEdge
   ans = ans + mysize
 END DO
 
-END PROCEDURE obj_H1_Hierarchical_GetTotalNodenum
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalNodeNumH1Hierarchical
 
 !----------------------------------------------------------------------------
 !                                                             CheckError
@@ -68,23 +73,38 @@ SUBROUTINE checkerror(obj, myName)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   CHARACTER(*), INTENT(IN) :: myName
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName0 = "checkerror()"
   LOGICAL(LGT) :: isok
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
                     'AbstractBC_ object is not initiated, initiate it first.')
 
   isok = ASSOCIATED(obj%dom)
   CALL AssertError1(isok, myName, &
                     'AbstractBC_::obj%dom is not associated!')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE checkerror
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get_H1_Hierarchical1
+MODULE PROCEDURE obj_GetH1Hierarchical1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Get_H1_Hierarchical1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetH1Hierarchical1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -106,21 +126,25 @@ CASE (TypeFEVariableOpt%constant)
 
   IF (obj%isUserFunction) THEN
     CALL GetConstantValue_uf(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                             nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                             times=times)
   ELSE
     CALL GetConstantValue(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                          nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                          times=times)
   END IF
 
 CASE (TypeFEVariableOpt%space)
 
   IF (obj%isUserFunction) THEN
     CALL GetSpaceValue_uf(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                          nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                          times=times)
 
   ELSE
     CALL GetSpaceValue(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                       nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                       times=times)
   END IF
 
 ! Time
@@ -128,24 +152,31 @@ CASE (TypeFEVariableOpt%time)
 
   IF (obj%isUserFunction) THEN
     CALL GetTimeValue_uf(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                         nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                         times=times)
   ELSE
     CALL GetTimeValue(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                      nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                      times=times)
   END IF
 
-CASE (TypeFEVariableOpt%spacetime)
+CASE (TypeFEVariableOpt%spaceTime)
 
   IF (obj%isUserFunction) THEN
     CALL GetSpaceTimeValue_uf(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                              nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                              times=times)
   ELSE
     CALL GetSpaceTimeValue(obj=obj, fedof=fedof, nodenum=nodenum, &
-                     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
+                           nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, &
+                           times=times)
   END IF
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, 'No case found for nodalValueType')
+  CALL AssertError1(.FALSE., myname, &
+             'No case found for nodalValueType'//ToString(obj%nodalValueType))
+#endif
 
 END SELECT
 
@@ -153,15 +184,15 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_Get_H1_Hierarchical1
+END PROCEDURE obj_GetH1Hierarchical1
 
 !----------------------------------------------------------------------------
 !                                                         GetH1Hierarchical
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get_H1_Hierarchical2
+MODULE PROCEDURE obj_GetH1Hierarchical2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Get_H1_Hierarchical2()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetH1Hierarchical2()"
 #endif
 
 INTEGER(I4B) :: iNodeOnEdge, iNodeOnFace, iNodeOnNode
@@ -176,13 +207,14 @@ CALL checkerror(obj, myName)
 #endif
 
 CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=tsize, &
-    iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, iNodeOnEdge=iNodeOnEdge)
+                iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+                iNodeOnEdge=iNodeOnEdge)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Get_H1_Hierarchical2
+END PROCEDURE obj_GetH1Hierarchical2
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeNum
@@ -206,12 +238,21 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow, iNodeOnNode, iNodeOnFace, &
   !! starting point of nodes on edge
 
   !! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetNodeNum()"
+#endif
+
   INTEGER(I4B) :: mysize, nsd, localElement, localboundary, ii
   CLASS(AbstractMesh_), POINTER :: mesh
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   nrow = 0
 
-  !! INFO: Lets get vertex node, if there are any
+  !! info: Lets get vertex node, if there are any
   !! CALL obj%boundary%GetNodeNum(ans=nodenum, tsize=mysize)
   CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=mysize)
   nrow = nrow + mysize
@@ -227,7 +268,7 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow, iNodeOnNode, iNodeOnFace, &
 
   CALL obj%SetElemToLocalBoundary()
 
-  !! INFO: Now we have elemToFace and elemToEdge ready
+  !! info: Now we have elemToFace and elemToEdge ready
   !! - If tElemToFace is not zero then we call GetDOF from FEDOF to
   !! get DOF on the face
   !! - If tElemToEdge is not zero then we call GetDOF from FEDOF to get
@@ -253,6 +294,11 @@ SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow, iNodeOnNode, iNodeOnFace, &
   END DO
 
   mesh => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE GetNodeNum
 
@@ -281,7 +327,7 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   CHARACTER(*), PARAMETER :: myName = "GetConstantValue()"
 #endif
 
-  INTEGER(I4B) :: ii, jj, kk, iNodeOnNode, iNodeOnFace, iNodeOnEdge
+  INTEGER(I4B) :: ii, jj, iNodeOnNode, iNodeOnFace, iNodeOnEdge
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -292,7 +338,8 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   IF (PRESENT(times)) ncol = SIZE(times)
 
   CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=nrow, &
-    iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, iNodeOnEdge=iNodeOnEdge)
+                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+                  iNodeOnEdge=iNodeOnEdge)
 
   DO CONCURRENT(ii=1:iNodeOnFace - 1, jj=1:ncol)
     nodalValue(ii, jj) = obj%nodalValue(1, 1)
@@ -349,7 +396,8 @@ SUBROUTINE GetConstantValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   IF (PRESENT(times)) ncol = SIZE(times)
 
   CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=nrow, &
-    iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, iNodeOnEdge=iNodeOnEdge)
+                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+                  iNodeOnEdge=iNodeOnEdge)
 
   DO CONCURRENT(ii=1:iNodeOnFace - 1, jj=1:ncol)
     nodalValue(ii, jj) = ans
@@ -387,7 +435,16 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! times vector is only used when usefunction is true in obj
 
   !! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetSpaceValue()"
+#endif
+
   INTEGER(I4B) :: ii, jj, iNodeOnNode, iNodeOnFace, iNodeOnEdge
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   nrow = 0; ncol = 1
 
@@ -403,6 +460,11 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   DO CONCURRENT(ii=iNodeOnFace:nrow, jj=1:ncol)
     nodalValue(ii, jj) = 0.0_DFP
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE GetSpaceValue
 
@@ -428,11 +490,24 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! nrow is size of nodenum and size of number of rows in nodalvalue
   !! ncol is colsize of nodalvalue
 
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetSpaceValue_uf()"
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GetSpaceValue_uf
 
 !----------------------------------------------------------------------------
@@ -456,7 +531,16 @@ SUBROUTINE GetTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! times vector is only used when usefunction is true in obj
 
   !! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetTimeValue()"
+#endif
+
   INTEGER(I4B) :: ii, jj, iNodeOnNode, iNodeOnFace, iNodeOnEdge
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   nrow = 0
   ncol = obj%nrow
@@ -471,6 +555,11 @@ SUBROUTINE GetTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   DO CONCURRENT(ii=iNodeOnFace:nrow, jj=1:ncol)
     nodalValue(ii, jj) = 0.0_DFP
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GetTimeValue
 
 !----------------------------------------------------------------------------
@@ -495,8 +584,17 @@ SUBROUTINE GetTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
   !! ncol is colsize of nodalvalue
 
   !! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetTimeValue_uf()"
+#endif
+
   INTEGER(I4B) :: ii, jj, iNodeOnNode, iNodeOnFace, iNodeOnEdge
   REAL(DFP) :: ans
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   nrow = 0
   ncol = obj%nrow
@@ -515,6 +613,11 @@ SUBROUTINE GetTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
       nodalValue(ii, jj) = 0.0_DFP
     END DO
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE GetTimeValue_uf
 
@@ -539,7 +642,16 @@ SUBROUTINE GetSpaceTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   !! times vector is only used when usefunction is true in obj
 
   !! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetSpaceTimeValue()"
+#endif
+
   INTEGER(I4B) :: ii, jj, iNodeOnNode, iNodeOnFace, iNodeOnEdge
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   nrow = 0
   ncol = obj%ncol
@@ -554,13 +666,19 @@ SUBROUTINE GetSpaceTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   DO CONCURRENT(ii=iNodeOnFace:nrow, jj=1:ncol)
     nodalValue(ii, jj) = 0.0_DFP
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GetSpaceTimeValue
 
 !----------------------------------------------------------------------------
 !                                                       GetSpaceTimeValue_uf
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
+SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
+                                times)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   !! obj
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -577,9 +695,24 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, tim
   !! nrow is size of nodenum and size of number of rows in nodalvalue
   !! ncol is colsize of nodalvalue
 
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetSpaceTimeValue_uf()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GetSpaceTimeValue_uf
 
 !----------------------------------------------------------------------------
@@ -592,42 +725,61 @@ SUBROUTINE checkerror_uf(obj, myName, times)
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variable
-  LOGICAL(LGT) :: problem, isok
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName0 = "checkerror_uf()"
+  LOGICAL(LGT) :: isok, bool1
   INTEGER(I4B) :: aint
-  CHARACTER(:), ALLOCATABLE :: msg
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   isok = ASSOCIATED(obj%func)
-  msg = " When nodalValueType is "//CHAR_LF// &
-        "Space and useFunction is specified, "//CHAR_LF// &
-        "then SpaceFunction is needed, "//CHAR_LF// &
-        "but it is not associated"
+  CALL AssertError1(isok, myName, &
+       "When nodalValueType is Space and useFunction is specified, then &
+       &SpaceFunction is needed, but it is not associated")
+#endif
 
-  CALL AssertError1(isok, myName, msg)
-
+#ifdef DEBUG_VER
   aint = obj%func%GetReturnType()
-
   isok = aint .EQ. TypeFEVariableOpt%scalar
-  msg = "Return type of user function should be scalar."
-  CALL AssertError1(isok, myName, msg)
+  CALL AssertError1(isok, myName, &
+                    "Return type of user function should be scalar.")
+#endif
 
-  SELECT CASE (obj%nodalValueType)
-  CASE (TypeFEVariableOpt%time, TypeFEVariableOpt%spacetime)
-    isok = PRESENT(times)
-    msg = "When `nodalValueType` is Time "//CHAR_LF// &
-          " and `IsUserFunction` is TRUE, "//CHAR_LF// &
-          " then `times` is needed in the passing argument,"// &
-          " but it is not present"
-    CALL AssertError1(isok, myName, msg)
-  END SELECT
+#ifdef DEBUG_VER
+  bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%time
+  isok = .TRUE.
+  IF (bool1) isok = PRESENT(times)
+  CALL AssertError1(isok, myName, &
+       "When `nodalValueType` is Time `IsUserFunction` is TRUE, then `times`&
+       &is needed in the passing argument, but it is not present")
+#endif
 
+#ifdef DEBUG_VER
+  bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%spaceTime
+  isok = .TRUE.
+  IF (bool1) isok = PRESENT(times)
+  CALL AssertError1(isok, myName, &
+       "When `nodalValueType` is spaceTime `IsUserFunction` is TRUE, then &
+       &`times` is needed in the passing argument, but it is not present")
+#endif
+
+#ifdef DEBUG_VER
   aint = obj%func%GetArgType()
   isok = aint .EQ. obj%nodalValueType
-  msg = "argType="//tostring(aint)// &
-        " in user function is not same "// &
-        "as nodalValueType "//tostring(obj%nodalValueType)// &
-        " in AbstractBC_"
-  CALL AssertError1(isok, myName, msg)
+  CALL AssertError1(isok, myName, &
+       "argType="//ToString(aint)//" in user function is not same as &
+       &nodalValueType "//ToString(obj%nodalValueType)//" in AbstractBC_")
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE checkerror_uf
 
 !----------------------------------------------------------------------------

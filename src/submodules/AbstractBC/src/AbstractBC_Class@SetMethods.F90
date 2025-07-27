@@ -16,14 +16,10 @@
 !
 
 SUBMODULE(AbstractBC_Class) SetMethods
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
+USE Display_Method, ONLY: Display, ToString
 USE GlobalData, ONLY: CHAR_LF
 USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -236,7 +232,10 @@ END PROCEDURE obj_SetElemToLocalBoundary
 SUBROUTINE set_elem_to_faces(obj)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
 
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "set_elem_to_faces()"
+#endif
+
   LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
                              no = .FALSE.
 
@@ -255,21 +254,31 @@ SUBROUTINE set_elem_to_faces(obj)
                           '[START] ')
 #endif
 
-  IF (obj%isElemToFace) RETURN
+  IF (obj%isElemToFace) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
 
   obj%isElemToFace = .TRUE.
-
   nsd = obj%dom%GetNSD()
-
   tsize = nsd - 1
   CALL obj%boundary%GetMeshIDPointer(dim=tsize, ans=intptr, tsize=tmeshid)
+  ! The above statement tells us that this method works
+  ! when isSelectionByMeshID is set to .true. in the boundary object
 
   isok = tmeshid .EQ. 0 .OR. (nsd .LT. 2)
 
   IF (isok) THEN
     obj%tElemToFace = 0
     CALL Reallocate(obj%elemToFace, 0, 0)
-    CALL finishme
+    intptr => NULL()
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
     RETURN
   END IF
 
@@ -288,13 +297,15 @@ SUBROUTINE set_elem_to_faces(obj)
 
   indx = 0
 
+  ! Here we are getting the total number of boundary elements
+  ! which have meshid given in intptr
   indx(1) = bmesh%GetTotalElements(meshid=intptr(1:tmeshid))
   tsize = indx(1)
   ALLOCATE (bndy2cell(tsize))
   CALL Reallocate(obj%elemToFace, 2, tsize)
   obj%tElemToFace = tsize
 
-  ! INFO: here we are getting the local element number of boundary
+  ! info: here we are getting the local element number of boundary
   CALL bmesh%GetElemNum_(meshid=intptr, islocal=yes, ans=bndy2cell, &
                          tsize=indx(2))
 
@@ -307,28 +318,36 @@ SUBROUTINE set_elem_to_faces(obj)
 
   ALLOCATE (bndy_con(tsize), cell_con(tsize))
 
-  ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
+  ! info: Now we start a loop over all boundary elements
+  !       here,tsize is total num of boundary elems returned by GetElemNum_
   tsize = indx(2)
 
   boundary_loop: DO ii = 1, tsize
 
+    ! info: Here we are getting connectivity of boundary elements
+    !       only vertex connectivity is needed
+    !       here islocal is set to yes because globalElement is local
     CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
                             ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
 
-    isok = indx(3) .NE. 0
-    IF (.NOT. isok) CYCLE
+    isok = indx(3) .EQ. 0
+    IF (isok) CYCLE
 
-    !INFO: select a node, bndy_con(1)
+    !info: select a vertex node of boundary element, say, bndy_con(1)
+    !      and get all elements connected to this node in cell mesh
+    !      here islocal is set to no because globalNode is not local
     CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &
                                   globalNode=bndy_con(1), islocal=no)
 
-    !INFO: loop over all elements connected to con(1)
+    !info: now we start a new loop over all elements in n2e
     node_to_element_loop: DO jj = 1, indx(4)
+      ! todo: we can check if the element is active or not
+
       localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
 
 #ifdef DEBUG_VER
       isok = localCellNumber .NE. 0
-      CALL AssertError1(isok, myName, "debug localCellNumber is zero")
+      CALL AssertError1(isok, myName, "found localCellNumber is zero")
 #endif
 
       CALL cmesh%FindFace(globalElement=localCellNumber, &
@@ -347,23 +366,18 @@ SUBROUTINE set_elem_to_faces(obj)
 
   END DO boundary_loop
 
-  CALL finishme
+  IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+  IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+  IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+  IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+  intptr => NULL()
+  bmesh => NULL()
+  cmesh => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
-CONTAINS
-  SUBROUTINE finishme
-    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
-    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
-    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
-    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
-    intptr => NULL()
-    bmesh => NULL()
-    cmesh => NULL()
-  END SUBROUTINE finishme
 
 END SUBROUTINE set_elem_to_faces
 
