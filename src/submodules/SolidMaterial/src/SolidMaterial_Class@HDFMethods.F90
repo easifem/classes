@@ -15,89 +15,86 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(SolidMaterial_Class) GetMethods
+SUBMODULE(SolidMaterial_Class) HDFMethods
 USE Display_Method, ONLY: ToString
+USE AbstractMaterial_Class, ONLY: AbstractMaterialImport, &
+                                  AbstractMaterialExport
+USE MaterialFactory, ONLY: SolidMechanicsModelFactory
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   GetSolidMaterialPointer
+!                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSolidMaterialPointer
+MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize
+TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj)
+CALL AbstractMaterialImport(obj=obj, hdf5=hdf5, group=group)
 
+! stressStrainModel
+isok = hdf5%PathExists(TRIM(group)//"/stressStrainModel")
+IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-isok = materialNo .LE. tsize
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+dsetname = TRIM(group)//"/stressStrainModel/name"
+#ifdef DEBUG_VER
+isok = hdf5%PathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
-     'materialNo = '//Tostring(materialNo)//' is greater than total &
-     &materials = '//Tostring(tsize))
+                  'dataset '//dsetname//' should be present.')
 #endif
 
-ans => NULL()
-ans => obj(materialNo)%ptr
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
+obj%stressStrainModel => SolidMechanicsModelFactory(strval%chars())
+dsetname = TRIM(group)//"/stressStrainModel"
+CALL obj%stressStrainModel%IMPORT(hdf5=hdf5, group=dsetname%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSolidMaterialPointer
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                GetStressStrainModelPointer
+!                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetStressStrainModelPointer
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
+TYPE(String) :: dsetname
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetStressStrainModelPointer()"
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Export()")
 #endif
+
+CALL AbstractMaterialExport(obj=obj, hdf5=hdf5, group=group)
+IF (ASSOCIATED(obj%stressStrainModel)) THEN
+  dsetname = TRIM(group)//"/stressStrainModel"
+  CALL obj%stressStrainModel%export(hdf5=hdf5, group=dsetname%chars())
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[END] Export()')
 #endif
 
-ans => obj%stressStrainModel
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetStressStrainModelPointer
-
-!----------------------------------------------------------------------------
-!                                                                  GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = myprefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                            Include Error
@@ -105,4 +102,4 @@ END PROCEDURE obj_GetPrefix
 
 #include "../../include/errors.F90"
 
-END SUBMODULE GetMethods
+END SUBMODULE HDFMethods

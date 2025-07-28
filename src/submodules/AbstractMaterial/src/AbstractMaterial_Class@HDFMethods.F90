@@ -15,94 +15,119 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(SolidMaterial_Class) GetMethods
+SUBMODULE(AbstractMaterial_Class) HDFMethods
 USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   GetSolidMaterialPointer
+!                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSolidMaterialPointer
+MODULE PROCEDURE obj_Export
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer()"
-#endif
-
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize
+#endif
+
+TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj)
-
 #ifdef DEBUG_VER
-isok = materialNo .LE. tsize
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! check
+#ifdef DEBUG_VER
+isok = obj%isInit
 CALL AssertError1(isok, myName, &
-     'materialNo = '//Tostring(materialNo)//' is greater than total &
-     &materials = '//Tostring(tsize))
+     'Instance of AbstractMaterial_ or its child-class is not initiated, &
+     &initiate it first.')
 #endif
 
-ans => NULL()
-ans => obj(materialNo)%ptr
+! check
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, 'HDF5 file is not opened')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsWrite()
+CALL AssertError1(isok, myName, 'HDF5 file is does not have write permission')
+#endif
+
+! name
+dsetname = TRIM(group)//"/name"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSolidMaterialPointer
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                GetStressStrainModelPointer
+!                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetStressStrainModelPointer
+MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetStressStrainModelPointer()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+LOGICAL(LGT) :: isok
 #endif
+
+TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans => obj%stressStrainModel
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. obj%isInit
+CALL AssertError1(isok, myName, &
+  'Instance of AbstractMaterial_ or its child is already initiated, &
+  &Deallocate it first!')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, 'HDF5 file is not opened')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsRead()
+CALL AssertError1(isok, myName, 'HDF5 file does not have read permission')
+#endif
+
+obj%isInit = .TRUE.
+
+dsetname = TRIM(group)//"/name"
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
+
+dsetname = ''
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetStressStrainModelPointer
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                                  GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = myprefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
-!                                                            Include Error
+!                                                           Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE GetMethods
+END SUBMODULE HDFMethods

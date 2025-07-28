@@ -20,5 +20,7 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/SolidMaterial_Class@ConstructorMethods.F90
           ${src_path}/SolidMaterial_Class@IOMethods.F90
+          ${src_path}/SolidMaterial_Class@TomlMethods.F90
+          ${src_path}/SolidMaterial_Class@HDFMethods.F90
           ${src_path}/SolidMaterial_Class@GetMethods.F90
           ${src_path}/SolidMaterial_Class@SetMethods.F90)

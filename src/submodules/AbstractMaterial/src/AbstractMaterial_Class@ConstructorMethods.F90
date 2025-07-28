@@ -16,8 +16,10 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE FPL_Method, ONLY: Set, GetValue
+USE Display_Method, ONLY: ToString
+USE UserFunction_Class, ONLY: UserFunctionDeallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -26,9 +28,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'This routine does nothing... It should be implemented by child class.')
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -36,7 +54,21 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractMaterialParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "SetAbstractMaterialParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL Set(obj=param, prefix=prefix, key="name", VALUE=name, dataType="char")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetAbstractMaterialParam
 
 !----------------------------------------------------------------------------
@@ -44,16 +76,20 @@ END PROCEDURE SetAbstractMaterialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
 CHARACTER(:), ALLOCATABLE :: prefix0
 
 ! main
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Initiate()')
+                        '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
+
 ! check essential param
 CALL obj%CheckEssentialParam(param)
 
@@ -68,9 +104,11 @@ obj%isInit = .TRUE.
 ! name
 CALL GetValue(obj=param, prefix=prefix0, key="name", VALUE=obj%name)
 
+prefix0 = ''
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Initiate()')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -79,11 +117,53 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isInit = .FALSE.
 obj%name = ""
 obj%tProperties = 0
-! CALL Deallocate(obj%matProps)
-! CALL tbl%Deallocate()
+CALL obj%tbl%DEALLOCATE()
+CALL UserFunctionDeallocate(obj%matProps)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
+END PROCEDURE obj_Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
+END PROCEDURE obj_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -37,6 +37,7 @@ CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 CHARACTER(*), PARAMETER :: myprefix = "MeshSelection"
 
 PUBLIC :: MeshSelectionDeallocate
+PUBLIC :: MeshSelectionReallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
 PUBLIC :: MeshSelectionImportParamFromToml
@@ -332,6 +333,36 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                             Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector of NeumannBC_
+
+INTERFACE MeshSelectionReallocate
+  MODULE SUBROUTINE Reallocate_Vector(obj, tsize)
+    TYPE(MeshSelection_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Vector
+END INTERFACE MeshSelectionReallocate
+
+!----------------------------------------------------------------------------
+!                                             Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector of NeumannBC_
+
+INTERFACE MeshSelectionReallocate
+  MODULE SUBROUTINE Reallocate_Ptr_Vector(obj, tsize)
+    TYPE(MeshSelectionPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Ptr_Vector
+END INTERFACE MeshSelectionReallocate
+
+!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -341,7 +372,7 @@ END INTERFACE
 
 INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(MeshSelection_), ALLOCATABLE :: obj(:)
+    TYPE(MeshSelection_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE MeshSelectionDeallocate
 

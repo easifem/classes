@@ -17,12 +17,10 @@
 
 SUBMODULE(UserFunction_Class) ConstructorMethods
 USE StringUtility, ONLY: UpperCase
-
 USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
-
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
-
 USE GlobalData, ONLY: CHAR_LF
+USE Display_Method, ONLY: Display, ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -378,7 +376,31 @@ SUBROUTINE checerror_numargs(argType, numArgs0, myname)
 END SUBROUTINE checerror_numargs
 
 !----------------------------------------------------------------------------
-!
+!                                                             Deallocate
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
+END PROCEDURE obj_Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
+END PROCEDURE obj_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

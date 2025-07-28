@@ -55,6 +55,7 @@ PUBLIC :: SetUserFunctionParam
 PUBLIC :: UserFunctionImportFromToml
 PUBLIC :: UserFunctionImportParamFromToml
 PUBLIC :: UserFunctionPointer_
+PUBLIC :: UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
 !
@@ -262,6 +263,46 @@ INTERFACE
     CLASS(UserFunction_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE
+
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate
+END INTERFACE UserFunctionDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate a vector of UserFunction_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    CLASS(UserFunction_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate_Vector
+END INTERFACE UserFunctionDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate vector of UserFunctionPointer_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(UserFunctionPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+END INTERFACE UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods

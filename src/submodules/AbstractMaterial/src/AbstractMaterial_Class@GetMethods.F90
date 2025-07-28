@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) GetMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
 USE HashTables, ONLY: Hashkey
 IMPLICIT NONE
 CONTAINS
@@ -34,33 +34,42 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaterialPointer
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetMaterialPointer()"
-LOGICAL(LGT) :: isOK
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: indx
 
-matPtr => NULL()
-isOK = obj%IsMaterialPresent(name)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (.NOT. isOK) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: '//name//" material not found"//  &
-    & CHAR_LF//' please use AddMaterial first.')
-  RETURN
-END IF
+matPtr => NULL()
+
+#ifdef DEBUG_VER
+isok = obj%IsMaterialPresent(name)
+CALL AssertError1(isok, myName, &
+                  name//' material not found please use AddMaterial first.')
+#endif
 
 indx = 0
 CALL obj%tbl%Get(Hashkey(name), indx)
 
-isOK = indx .LE. obj%tProperties
-
-IF (.NOT. isOK) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: out of bound index.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tProperties
+CALL AssertError1(isok, myName, &
+          'indx='//ToString(indx)//' is out of bound for obj%tProperties='// &
+                  ToString(obj%tProperties))
+#endif
 
 matPtr => obj%matProps(indx)%ptr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetMaterialPointer
 
 !----------------------------------------------------------------------------
@@ -68,12 +77,29 @@ END PROCEDURE obj_GetMaterialPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsMaterialPresent
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsMaterialPresent()"
+#endif
 INTEGER(I4B) :: stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%tbl%check_key(key=Hashkey(name), stat=stat)
-IF (stat .EQ. 0_I4B) THEN
-  ans = .TRUE.
-ELSE
-  ans = .FALSE.
-END IF
+ans = stat .EQ. 0_I4B
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_IsMaterialPresent
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
 END SUBMODULE GetMethods

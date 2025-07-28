@@ -15,9 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(SolidMaterial_Class) ConstructorMethods
-USE BaseMethod, ONLY: ToString
-USE MaterialFactory
-USE FPL_Method
+USE Display_Method, ONLY: ToString
+USE MaterialFactory, ONLY: SolidMechanicsModelFactory
+USE FPL_Method, ONLY: Set, GetValue
+USE AbstractMaterial_Class, ONLY: SetAbstractMaterialParam, &
+                                  AbstractMaterialInitiate, &
+                                  AbstractMaterialDeallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -27,19 +30,20 @@ CONTAINS
 
 MODULE PROCEDURE SetSolidMaterialParam
 CHARACTER(*), PARAMETER :: myName = "SetSolidMaterialParam()"
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 CALL SetAbstractMaterialParam(param=param, prefix=myprefix, name=name)
-CALL Set(obj=param, prefix=myprefix, key="stressStrainModel",  &
-  & VALUE=stressStrainModel, dataType="char")
+CALL Set(obj=param, prefix=myprefix, key="stressStrainModel", &
+         VALUE=stressStrainModel, dataType="char")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE SetSolidMaterialParam
 
 !----------------------------------------------------------------------------
@@ -47,11 +51,26 @@ END PROCEDURE SetSolidMaterialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
-END IF
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = param%isPresent(key=myprefix//"/name")
+CALL AssertError1(isok, myName, &
+                  myprefix//'/name should be present in param')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -59,14 +78,16 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
 TYPE(String) :: prefix0, stressStrainModel
-LOGICAL(LGT) :: bool1
-! main
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Initiate()')
+                        '[START] ')
 #endif
 
 IF (PRESENT(prefix)) THEN
@@ -75,32 +96,36 @@ ELSE
   prefix0 = obj%GetPrefix()
 END IF
 
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: The "//prefix0//"/stressStrainModel is "//  &
-    & "already associated, "//  &
-    & CHAR_LF//"nullify it first.")
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. ASSOCIATED(obj%stressStrainModel)
+CALL AssertError1(isok, myName, &
+       prefix0//"/stressStrainModel is already associated, nullify it first.")
+#endif
 
 CALL AbstractMaterialInitiate(obj=obj, param=param, prefix=prefix0%chars())
 
-bool1 = param%isPresent(key=prefix0//"/stressStrainModel")
-IF (bool1) THEN
-  ! stressStrainModel
-  CALL GetValue(obj=param, prefix=prefix0%chars(),  &
-    & key="stressStrainModel", VALUE=stressStrainModel)
-
-  obj%stressStrainModel => NULL()
-  obj%stressStrainModel => SolidMechanicsModelFactory( &
-    & stressStrainModel%chars())
-
-  CALL obj%stressStrainModel%Initiate(param)
+isok = param%isPresent(key=prefix0//"/stressStrainModel")
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
 END IF
+
+! stressStrainModel
+CALL GetValue(obj=param, prefix=prefix0%chars(), &
+              key="stressStrainModel", VALUE=stressStrainModel)
+
+obj%stressStrainModel => NULL()
+obj%stressStrainModel => SolidMechanicsModelFactory( &
+                         stressStrainModel%chars())
+
+CALL obj%stressStrainModel%Initiate(param)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Initiate()')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -109,11 +134,29 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractMaterialDeallocate(obj)
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
+
+isok = ASSOCIATED(obj%stressStrainModel)
+IF (isok) THEN
   CALL obj%stressStrainModel%DEALLOCATE()
   obj%stressStrainModel => NULL()
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -129,13 +172,10 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
 END PROCEDURE Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -143,16 +183,38 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName= "Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Vector()"
+#endif
+#include "../../include/reallocate_vector.F90"
+END PROCEDURE Reallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName= "Reallocate_Ptr_Vector()"
+#endif
+#include "../../include/reallocate_vector_ptr.F90"
+END PROCEDURE Reallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

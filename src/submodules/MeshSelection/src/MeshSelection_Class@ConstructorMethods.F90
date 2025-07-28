@@ -453,6 +453,30 @@ CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
+!                                                                  Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Vector()"
+#endif
+
+#include "../../include/reallocate_vector.F90"
+END PROCEDURE Reallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Ptr_Vector()"
+#endif
+
+#include "../../include/reallocate_vector_ptr.F90"
+END PROCEDURE Reallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 
