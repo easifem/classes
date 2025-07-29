@@ -15,12 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) IOMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix, Nodal, Quadrature
-
-USE Display_Method, ONLY: Display
-
+USE Display_Method, ONLY: Display, ToString
 USE SafeSizeUtility, ONLY: SafeSize
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -31,50 +28,73 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
 LOGICAL(LGT) :: bool1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Display(obj%isInit, 'Object INITIATED: ', unitno=unitno)
 
-IF (.NOT. obj%isInit) RETURN
+IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
 CALL Display('name: '//obj%name%chars(), unitno=unitno)
 CALL Display('prefix: '//obj%GetPrefix(), unitno=unitno)
 
-CALL Display('fieldType: '//TypeField%ToString(obj%fieldType), &
+CALL Display('fieldType: '//typefield%ToString(obj%fieldType), &
              unitno=unitno)
 
 CALL Display('engine: '//obj%engine%chars(), unitno=unitno)
 
 CALL Display(obj%tSize, 'tSize: ', unitno=unitno)
 
-IF (obj%defineOn .EQ. Nodal) THEN
+IF (obj%defineOn .EQ. fevaropt%nodal) THEN
   CALL Display('defineOn: Nodal', unitno=unitno)
 ELSE
   CALL Display('defineOn: Quadrature', unitno=unitno)
 END IF
 
 SELECT CASE (obj%rank)
-CASE (Scalar)
+CASE (fevaropt%scalar)
   CALL Display('rank: Scalar', unitno=unitno)
-CASE (Vector)
+CASE (fevaropt%vector)
   CALL Display('rank: Vector', unitno=unitno)
-CASE (Matrix)
+CASE (fevaropt%matrix)
   CALL Display('rank: Matrix', unitno=unitno)
+
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL Display('rank: Unknown', unitno=unitno)
+  CALL assertError1(.FALSE., myName, &
+                    'No case found for rank = '//ToString(obj%rank))
+#endif
+
 END SELECT
 
 SELECT CASE (obj%varType)
-CASE (Constant)
+CASE (typefield%constant)
   CALL Display('varType: Constant', unitno=unitno)
-CASE (Space)
+CASE (typefield%space)
   CALL Display('varType: Space', unitno=unitno)
-CASE (Time)
+CASE (typefield%time)
   CALL Display('varType: Time', unitno=unitno)
-CASE (SpaceTime)
+CASE (typefield%spaceTime)
   CALL Display('varType: SpaceTime', unitno=unitno)
+
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL Display('varType: Unknown', unitno=unitno)
+  CALL AssertError1(.FALSE., myName, &
+                    'No case found for varType = '//ToString(obj%varType))
+#endif
 END SELECT
 
 bool1 = ALLOCATED(obj%val)
@@ -88,7 +108,13 @@ CALL Display(SafeSize(obj%indxVal), "Size of indxVal:", unitno=unitno)
 bool1 = ASSOCIATED(obj%mesh)
 CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)
 
-! CALL Display(obj%SHAPE(), 'shape: ', unitno=unitno)
+CALL Display(obj%totalShape, 'totalShape: ', unitno=unitno)
+CALL Display(obj%ss, 'ss:', unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -96,9 +122,25 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'This routine is under development!!')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -106,26 +148,38 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
 TYPE(String) :: strval, dsetname
+LOGICAL(LGT) :: isok
 
-IF (.NOT. obj%isInit) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'MeshField object is not initiated initiated')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file is not opened')
-END IF
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'MeshField object is not initiated')
+#endif
 
-IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file does not have write permission')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, &
+                  'HDF5 file is not opened')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsWrite()
+CALL AssertError1(isok, myName, &
+                  'HDF5 file does not have write permission')
+#endif
 
 dsetname = TRIM(group)//"/fieldType"
-strval = TypeField%ToString(obj%fieldType)
+strval = typefield%ToString(obj%fieldType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 dsetname = TRIM(group)//"/name"
@@ -146,29 +200,37 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%rank)
 dsetname = TRIM(group)//"/varType"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%varType)
 
-IF (ALLOCATED(obj%val)) THEN
+isok = ALLOCATED(obj%val)
+IF (isok) THEN
   dsetname = TRIM(group)//"/val"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
 END IF
 
-IF (ALLOCATED(obj%indxVal)) THEN
+isok = ALLOCATED(obj%indxVal)
+IF (isok) THEN
   dsetname = TRIM(group)//"/indxVal"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
 END IF
 
-IF (ALLOCATED(obj%ss)) THEN
+dsetname = TRIM(group)//"/totalShape"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%totalShape)
+
+isok = ALLOCATED(obj%ss)
+IF (isok) THEN
   dsetname = TRIM(group)//"/shape"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ss)
 END IF
 
-IF (ALLOCATED(obj%indxShape)) THEN
+isok = ALLOCATED(obj%indxShape)
+IF (isok) THEN
   dsetname = TRIM(group)//"/indxShape"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxShape)
 END IF
 
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[INTERNAL ERROR] :: Exporting AbstractMeshField_")
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
@@ -176,13 +238,31 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExportInVTK
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[INTERNAL ERROR] :: This routine is under development.')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ExportInVTK
 
 !----------------------------------------------------------------------------
-!
+!                                                               Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

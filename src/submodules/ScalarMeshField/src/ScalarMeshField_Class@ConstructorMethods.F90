@@ -51,7 +51,8 @@ ELSE
 END IF
 
 CALL SetAbstractMeshFieldParam(param=param, prefix=myprefix, name=name, &
-     fieldType=fieldType, varType=varType, engine=engine, defineOn=defineOn, &
+                               fieldType=fieldType, varType=varType, &
+                               engine=engine, defineOn=defineOn, &
                                rank=Scalar, s=s)
 
 END PROCEDURE SetScalarMeshFieldParam
@@ -88,7 +89,8 @@ END IF
 
 CALL param%Initiate()
 CALL SetScalarMeshFieldParam(param=param, name=name, fieldType=fieldType, &
-                      varType=varType, engine=engine, defineOn=Nodal, nns=nns)
+                             varType=varType, engine=engine, &
+                             defineOn=Nodal, nns=nns)
 
 CALL obj%Initiate(param=param, mesh=mesh)
 
@@ -106,13 +108,10 @@ END PROCEDURE obj_Initiate4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
 END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -120,16 +119,10 @@ END PROCEDURE obj_Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
@@ -137,7 +130,21 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------

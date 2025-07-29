@@ -26,7 +26,7 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_
@@ -68,7 +68,7 @@ TYPE, ABSTRACT :: AbstractMeshField_
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
 
-  INTEGER(I4B) :: fieldType = TypeField%normal
+  INTEGER(I4B) :: fieldType = typefield%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
 
   TYPE(String) :: name
@@ -91,6 +91,9 @@ TYPE, ABSTRACT :: AbstractMeshField_
 
   INTEGER(I4B) :: varType = 0
   !! Space ! Time ! SpaceTime ! Constant
+
+  INTEGER(I4B) :: totalShape = 0
+  !! total shape of the data
 
   INTEGER(I4B), ALLOCATABLE :: ss(:)
   !! shape of the data
@@ -137,8 +140,12 @@ CONTAINS
   !! Initiate from user function
   !! This routine should be implemened by the child class
 
+  PROCEDURE, PASS(obj) :: Initiate5 => obj_Initiate5
+  !! Initiate from user function
+  !! This routine should be implemened by the child class
+
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
-    Initiate4
+    Initiate4, Initiate5
   !! Generic initiate
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
@@ -157,7 +164,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ExportInVTK => &
+    obj_ExportInVTK
   !! Export data in vtkFile
 
   ! GET:
@@ -278,7 +286,8 @@ END TYPE AbstractMeshFieldPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractMeshFieldParam(param, prefix, name, &
-                                fieldType, engine, defineOn, varType, rank, s)
+                                              fieldType, engine, defineOn, &
+                                              varType, rank, s)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -309,11 +318,15 @@ END INTERFACE
 ! date: 17 Feb 2022
 ! summary: This routine Check the essential parameters in param.
 
-INTERFACE AbstractMeshFieldCheckEssentialParam
+INTERFACE
   MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE
+
+INTERFACE AbstractMeshFieldCheckEssentialParam
+  MODULE PROCEDURE obj_CheckEssentialParam
 END INTERFACE AbstractMeshFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -324,12 +337,16 @@ END INTERFACE AbstractMeshFieldCheckEssentialParam
 ! date: 17 Feb 2022
 ! summary: Initiate the field by reading param and given domain
 
-INTERFACE AbstractMeshFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE AbstractMeshFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE AbstractMeshFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -409,6 +426,48 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary:  Initiate AbstractMeshField_ from arguments
+!
+!# Introduction
+!   This routine is used to initiate the AbstractMeshField_ from
+!   arguments.
+!   It is like Initiate1, but it does not use ParameterList_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate5(obj, name, fieldType, engine, defineOn, &
+                                  varType, rank, s, mesh)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! field type
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine
+    INTEGER(I4B), INTENT(IN) :: defineOn
+    !! define on Nodal or Quadrature
+    INTEGER(I4B), INTENT(IN) :: varType
+    !! variable type
+    !! how the field varies inside the element
+    !! space, time, spaceTime, constant
+    INTEGER(I4B), INTENT(IN) :: rank
+    !! rank of the field, scalar, vector, matrix
+    INTEGER(I4B), INTENT(IN) :: s(:)
+    !! shape of the field
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_Initiate5
+END INTERFACE
+
+INTERFACE AbstractMeshFieldInitiate
+  MODULE PROCEDURE obj_Initiate5
+END INTERFACE AbstractMeshFieldInitiate
+
+!----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -416,10 +475,14 @@ END INTERFACE
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractMeshField_]]
 
-INTERFACE AbstractMeshFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -430,10 +493,14 @@ END INTERFACE AbstractMeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE AbstractMeshFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE :: obj(:)
+    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -444,10 +511,14 @@ END INTERFACE AbstractMeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE AbstractMeshFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar(obj)
-    TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
+   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar
+END INTERFACE
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -458,10 +529,14 @@ END INTERFACE AbstractMeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE AbstractMeshFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Vector(obj)
-    TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector_Vector
+END INTERFACE
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Vector
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -472,10 +547,14 @@ END INTERFACE AbstractMeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE AbstractMeshFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor(obj)
-    TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+   TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor
+END INTERFACE
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------

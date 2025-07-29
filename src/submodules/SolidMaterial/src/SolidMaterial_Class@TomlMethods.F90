@@ -30,6 +30,7 @@ USE tomlf, ONLY: toml_serialize, &
                  toml_array, &
                  toml_stat
 USE AbstractMaterial_Class, ONLY: AbstractMaterialImportFromToml
+
 IMPLICIT NONE
 CONTAINS
 
@@ -40,26 +41,28 @@ CONTAINS
 MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-LOGICAL(LGT) :: isok
 #endif
 
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
 TYPE(String) :: astr
-LOGICAL(LGT) :: isFound
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractMaterialImportFromToml(obj=obj, table=table)
+CALL obj%DEALLOCATE()
+
+CALL AbstractMaterialImportFromToml(obj=obj, table=table, region=region, &
+                                    dom=dom)
 
 CALL GetValue(table=table, key="stressStrainModel", &
               VALUE=astr, default_value="NONE", origin=origin, &
-              stat=stat, isFound=isFound)
+              stat=stat, isFound=isok)
 
-IF (.NOT. isFound) THEN
+IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -98,151 +101,119 @@ END PROCEDURE obj_ImportFromToml1
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_ImportFromToml2_part1(obj, tsize, table, tomlName)
-  TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-    !! Should be allocated outside
-  INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the array of SolidMaterialPointer_
-    !! Allocated inside the routine
-  TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table to returned
-  CHARACTER(*), INTENT(IN) :: tomlName
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2_part1()"
-#endif
-
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-  isok = ASSOCIATED(node)
-
-  IF (.NOT. isok) THEN
-    tsize = 0
-    node => NULL()
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  tsize = 1
-  CALL SolidMaterialReallocate(obj, tsize)
-
-  isok = .NOT. ASSOCIATED(obj(1)%ptr)
-  IF (isok) ALLOCATE (obj(1)%ptr)
-
-  CALL obj(1)%ptr%ImportFromToml(table=node)
-  node => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE obj_ImportFromToml2_part1
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_ImportFromToml2_part2(obj, tsize, table, tomlName)
-  TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-    !! Should be allocated outside
-  INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the array of SolidMaterialPointer_
-    !! Allocated inside the routine
-  TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table to returned
-  CHARACTER(*), INTENT(IN) :: tomlName
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2_part2()"
-#endif
-
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node
-  TYPE(toml_array), POINTER :: array
-  INTEGER(I4B) :: origin, stat, ii
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  array => NULL()
-  CALL toml_get(table, tomlName, array, origin=origin, &
-                requested=.FALSE., stat=stat)
-
-  isok = ASSOCIATED(array)
-  IF (isok) THEN
-    tsize = toml_len(array)
-  ELSE
-    tsize = 0
-  END IF
-
-  CALL SolidMaterialReallocate(obj, tsize)
-
-  DO ii = 1, tsize
-    node => NULL()
-    CALL toml_get(array, ii, node)
-
-#ifdef DEBUG_VER
-    isok = ASSOCIATED(node)
-    CALL AssertError1(isok, myName, &
-          tomlName//'['//tostring(ii)//'] cannot be read from the toml file.')
-#endif
-
-    isok = .NOT. ASSOCIATED(obj(ii)%ptr)
-    IF (isok) ALLOCATE (obj(ii)%ptr)
-
-    CALL obj(ii)%ptr%ImportFromToml(table=node)
-  END DO
-
-  array => NULL()
-  node => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE obj_ImportFromToml2_part2
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 #endif
+
+LOGICAL(LGT) :: isok
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat, ii, mysize
+LOGICAL(LGT) :: isRegion
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj_ImportFromToml2_part1(obj=obj, tsize=tsize, table=table, &
-                               tomlName=tomlName)
+isRegion = PRESENT(region)
+mysize = SIZE(materialNames)
 
-CALL obj_ImportFromToml2_part2(obj=obj, tsize=tsize, table=table, &
-                               tomlName=tomlName)
+tsize = 0
+DO ii = 1, mysize
+  node => NULL()
+  CALL toml_get(table, materialNames(ii)%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
+
+  isok = ASSOCIATED(node)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+               'Cannot find/read materialName='//materialNames(ii)%chars()// &
+                    ' in the config file.')
+#endif
+
+  IF (isok) tsize = tsize + 1
+
+  isok = .NOT. ASSOCIATED(obj(ii)%ptr)
+  IF (isok) ALLOCATE (obj(ii)%ptr)
+
+  IF (isRegion) THEN
+    isok = .NOT. ASSOCIATED(region(ii)%ptr)
+    IF (isok) ALLOCATE (region(ii)%ptr)
+    CALL obj(ii)%ptr%ImportFromToml(table=node, region=region(ii)%ptr, &
+                                    dom=dom)
+  ELSE
+    CALL obj(ii)%ptr%ImportFromToml(table=node)
+  END IF
+
+END DO
+
+node => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                       ReadPropNamesFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadMaterialNamesFromToml(table, materialNames, tsize)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadMaterialNamesFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat, ii
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading solidMaterialNames ...')
+#endif
+
+  isok = ALLOCATED(materialNames)
+  IF (isok) THEN
+    tsize = SIZE(materialNames)
+    DO ii = 1, tsize
+      materialNames(ii) = ""
+    END DO
+    DEALLOCATE (materialNames)
+  END IF
+
+  CALL GetValue(table=table, key="solidMaterialNames", VALUE=materialNames, &
+                origin=origin, stat=stat, isFound=isok)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    'Cannot find/read "materialNames" in the config file.')
+#endif
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(materialNames)
+  CALL AssertError1(isok, myName, &
+                   'Could not allocate "materialNames" from the config file.')
+#endif
+
+  tsize = SIZE(materialNames)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                              ImportFromToml
@@ -254,6 +225,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 #endif
 
 TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
+TYPE(String), ALLOCATABLE :: materialNames(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -262,248 +237,43 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(table=table, afile=afile, filename=filename)
 
-CALL SolidMaterialImportFromToml(obj=obj, tsize=tsize, &
-                                 table=table, tomlName=tomlName)
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+      'following error occured while reading the toml file :: cannot find [' &
+                  //tomlName//"] table in config.")
+#endif
+
+CALL ReadMaterialNamesFromToml(table=node, materialNames=materialNames, &
+                               tsize=tsize)
+CALL SolidMaterialReallocate(obj, tsize)
+
+isok = PRESENT(region)
+IF (isok) THEN
+  CALL MeshSelectionReallocate(region, tsize)
+END IF
+CALL SolidMaterialImportFromToml(obj=obj, table=node, &
+                                 materialNames=materialNames, &
+                                 tsize=tsize, region=region, dom=dom)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+               unitNo=stdout)
+END IF
+#endif
+
+node => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml3
-
-!----------------------------------------------------------------------------
-!                                                              ImportFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_ImportFromToml4_part1(obj, tsize, table, tomlName, &
-                                     regions, dom)
-  TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  !! Should be allocated outside
-  INTEGER(I4B), INTENT(OUT) :: tsize
-  !! Size of the array of SolidMaterialPointer_
-  TYPE(toml_table), INTENT(INOUT) :: table
-  !! Toml table to returned
-  CHARACTER(*), INTENT(IN) :: tomlName
-  TYPE(MeshSelectionPointer_), ALLOCATABLE, INTENT(INOUT) :: regions(:)
-  !! Mesh regions which are contained in the solid materials
-  CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml4_part1()"
-#endif
-
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node, regionNode
-  INTEGER(I4B) :: origin, stat
-  TYPE(String) :: materialName
-  TYPE(MeshSelection_), POINTER :: region
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
-#endif
-
-  CALL toml_get(table, tomlName, node, origin=origin, &
-                requested=.FALSE., stat=stat)
-
-  isok = ASSOCIATED(node)
-
-  IF (.NOT. isok) THEN
-    tsize = 0
-    node => NULL()
-
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  tsize = 1
-  CALL SolidMaterialReallocate(obj, tsize)
-  CALL MeshSelectionReallocate(regions, tsize)
-
-  CALL GetValue(table=node, key="materialName", VALUE=materialName, &
-                default_value="NA", origin=origin, stat=stat, isFound=isok)
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    tomlName//'[1] materialName field is missing.')
-#endif
-
-#ifdef DEBUG_VER
-  isok = .NOT. ASSOCIATED(obj(1)%ptr)
-  CALL AssertError1(isok, myName, &
-                    'obj(1)%ptr is already associated.')
-#endif
-
-  obj(1)%ptr => SolidMaterialFactory(materialName%chars())
-  !! info: Solid material factory is defined in MaterialFactory.
-
-  CALL obj(1)%ptr%ImportFromToml(table=node)
-
-  CALL toml_get(node, "region", regionNode, &
-                origin=origin, requested=.FALSE., stat=stat)
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(regionNode)
-  CALL AssertError1(isok, myName, &
-                    tomlName//'[1] region field is missing.')
-#endif
-
-  ALLOCATE (region)
-  CALL region%ImportFromToml(table=regionNode, dom=dom)
-
-#ifdef DEBUG_VER
-  isok = .NOT. ASSOCIATED(regions(1)%ptr)
-  CALL AssertError1(isok, myName, &
-                    'regions(1)%ptr is already associated.')
-#endif
-
-  regions(1)%ptr => region
-
-  region => NULL()
-  node => NULL()
-  regionNode => NULL()
-  materialName = ""
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END]')
-#endif
-END SUBROUTINE obj_ImportFromToml4_part1
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_ImportFromToml4_part2(obj, tsize, table, tomlName, &
-                                     regions, dom)
-  TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-    !! Should be allocated outside
-  INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the array of SolidMaterialPointer_
-  TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table to returned
-  CHARACTER(*), INTENT(IN) :: tomlName
-  TYPE(MeshSelectionPointer_), ALLOCATABLE, INTENT(INOUT) :: regions(:)
-  CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml4_part2()"
-#endif
-
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node, regionNode
-  TYPE(toml_array), POINTER :: array
-  INTEGER(I4B) :: origin, stat, ii
-  TYPE(String) :: materialName
-  TYPE(MeshSelection_), POINTER :: region
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
-#endif
-
-  array => NULL()
-  CALL toml_get(table, tomlName, array, origin=origin, &
-                requested=.FALSE., stat=stat)
-
-  isok = ASSOCIATED(array)
-  tsize = 0; IF (isok) tsize = toml_len(array)
-
-  CALL SolidMaterialReallocate(obj, tsize)
-  CALL MeshSelectionReallocate(regions, tsize)
-
-  DO ii = 1, tsize
-    node => NULL()
-    CALL toml_get(array, ii, node)
-
-#ifdef DEBUG_VER
-    isok = ASSOCIATED(node)
-    CALL AssertError1(isok, myName, &
-          tomlName//'['//ToString(ii)//'] cannot be read from the toml file.')
-#endif
-
-    CALL GetValue(table=node, key="materialName", VALUE=materialName, &
-                  default_value="NA", origin=origin, stat=stat, isFound=isok)
-
-#ifdef DEBUG_VER
-    CALL AssertError1(isok, myName, &
-              tomlName//'['//ToString(ii)//"] materialName field is missing.")
-#endif
-
-#ifdef DEBUG_VER
-    isok = .NOT. ASSOCIATED(obj(ii)%ptr)
-    CALL AssertError1(isok, myName, &
-                      'obj('//ToString(ii)//')%ptr is already associated.')
-#endif
-
-    obj(ii)%ptr => SolidMaterialFactory(materialName%chars())
-    !! info: Solid material factory is defined in MaterialFactory.
-
-    CALL obj(ii)%ptr%ImportFromToml(table=node)
-
-    CALL toml_get(node, "region", regionNode, &
-                  origin=origin, requested=.FALSE., stat=stat)
-
-#ifdef DEBUG_VER
-    isok = ASSOCIATED(regionNode)
-    CALL AssertError1(isok, myName, &
-                    tomlName//'['//ToString(ii)//'] region field is missing.')
-#endif
-
-    ALLOCATE (region)
-    CALL region%ImportFromToml(table=regionNode, dom=dom)
-
-#ifdef DEBUG_VER
-    isok = .NOT. ASSOCIATED(regions(ii)%ptr)
-    CALL AssertError1(isok, myName, &
-                     'regions('//ToString(ii)//')%ptr is already associated.')
-#endif
-
-    ALLOCATE (regions(ii)%ptr)
-    regions(ii)%ptr => region
-
-  END DO
-
-  region => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END]')
-#endif
-END SUBROUTINE obj_ImportFromToml4_part2
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml4
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml4()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj_ImportFromToml4_part1(obj=obj, tsize=tsize, table=table, &
-                               tomlName=tomlName, regions=regions, &
-                               dom=dom)
-
-CALL obj_ImportFromToml4_part2(obj=obj, tsize=tsize, table=table, &
-                               tomlName=tomlName, regions=regions, &
-                               dom=dom)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml4
 
 !----------------------------------------------------------------------------
 !                                                             Include Error

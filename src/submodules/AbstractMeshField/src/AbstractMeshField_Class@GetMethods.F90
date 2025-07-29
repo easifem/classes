@@ -15,12 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) GetMethods
-
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE Display_Method, ONLY: ToString
-
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
@@ -31,85 +27,98 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Shape
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Shape()"
+#endif
+
 INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 iel = obj%mesh%GetLocalElemNumber(globalelement=globalElement, &
                                   islocal=islocal)
 
 SELECT CASE (obj%rank)
 
-CASE (Scalar)
+CASE (fevaropt%scalar)
 
   SELECT CASE (obj%vartype)
 
-  CASE (Constant)
+  CASE (typefield%constant)
 
     ALLOCATE (ans(1))
     ans(1) = obj%ss(obj%indxShape(iel))
 
-  CASE (Space, Time)
+  CASE (typefield%space, typefield%Time)
 
     ALLOCATE (ans(1))
     ans(1) = obj%ss(obj%indxShape(iel))
 
-  CASE (SpaceTime)
+  CASE (typefield%spaceTime)
 
     ALLOCATE (ans(2))
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
 
-  CASE default
-
-    CALL no_case_found_error
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL AssertError1(.FALSE., myName, &
+                      "No case found for vartype="//ToString(obj%vartype))
+#endif
 
   END SELECT
 
-CASE (Vector)
+CASE (fevaropt%vector)
 
   SELECT CASE (obj%vartype)
 
-  CASE (Constant)
+  CASE (typefield%constant)
 
     ALLOCATE (ans(1))
     ans(1) = obj%ss(obj%indxShape(iel))
 
-  CASE (Space, Time)
+  CASE (typefield%space, typefield%time)
 
     ALLOCATE (ans(2))
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
 
-  CASE (SpaceTime)
+  CASE (typefield%spaceTime)
 
     ALLOCATE (ans(3))
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
     ans(3) = obj%ss(obj%indxShape(iel) + 2)
 
-  CASE default
-
-    CALL no_case_found_error
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL AssertError1(.FALSE., myName, &
+                      "No case found for vartype="//ToString(obj%vartype))
+#endif
 
   END SELECT
 
-CASE (Matrix)
+CASE (fevaropt%matrix)
 
   SELECT CASE (obj%vartype)
 
-  CASE (Constant)
+  CASE (typefield%constant)
 
     ALLOCATE (ans(2))
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
 
-  CASE (Space, Time)
+  CASE (typefield%space, typefield%time)
 
     ALLOCATE (ans(3))
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
     ans(3) = obj%ss(obj%indxShape(iel) + 2)
 
-  CASE (SpaceTime)
+  CASE (typefield%spaceTime)
 
     ALLOCATE (ans(4))
     ans(1) = obj%ss(obj%indxShape(iel))
@@ -117,28 +126,26 @@ CASE (Matrix)
     ans(3) = obj%ss(obj%indxShape(iel) + 2)
     ans(4) = obj%ss(obj%indxShape(iel) + 3)
 
-  CASE default
-
-    CALL no_case_found_error
+#ifdef DEBUG_VER
+  CASE DEFAULT
+    CALL AssertError1(.FALSE., myName, &
+                      "No case found for vartype="//ToString(obj%vartype))
+#endif
 
   END SELECT
 
-CASE default
-
-  CALL no_case_found_error
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, &
+                    "No case found for rank="//ToString(obj%rank))
+#endif
 
 END SELECT
 
-CONTAINS
-
-SUBROUTINE no_case_found_error
-
-  CHARACTER(*), PARAMETER :: myName = "obj_Shape()"
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found')
-
-END SUBROUTINE no_case_found_error
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Shape
 
 !----------------------------------------------------------------------------
@@ -146,14 +153,21 @@ END PROCEDURE obj_Shape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get()"
+#endif
 INTEGER(I4B) :: iel, ii, a, b
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (obj%fieldType .EQ. TypeField%constant) THEN
   iel = 1
 ELSE
   iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                     islocal=islocal)
-
 END IF
 
 a = obj%indxVal(iel)
@@ -178,6 +192,10 @@ fevar%defineOn = obj%defineOn
 fevar%varType = obj%varType
 fevar%rank = obj%rank
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get
 
 !----------------------------------------------------------------------------
@@ -185,10 +203,26 @@ END PROCEDURE obj_Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = ""
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------

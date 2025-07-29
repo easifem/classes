@@ -15,16 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) InsertMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
 USE Display_Method, ONLY: ToString
-
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_SIZE => Size, &
                              FEVariable_Shape => Shape
-
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -59,7 +55,16 @@ END SUBROUTINE MasterInsert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert1()"
+#endif
+
 INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
   iel = 1
@@ -78,6 +83,10 @@ CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel,
                   tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
                   s=s, tshape=tshape)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Insert1
 
 !----------------------------------------------------------------------------
@@ -85,7 +94,10 @@ END PROCEDURE obj_Insert1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Insert2()"
+#endif
+
 INTEGER(I4B) :: iel, telem, nns, nsd, tsize, nrow, ncol
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -98,10 +110,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-bool1 = obj%fieldType .EQ. TypeField%Constant
+bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
   CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -137,7 +153,7 @@ mesh => NULL()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 END PROCEDURE obj_Insert2
 
 !----------------------------------------------------------------------------
@@ -145,14 +161,17 @@ END PROCEDURE obj_Insert2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Insert3()"
+#endif
+
 LOGICAL(LGT) :: isok
 CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 #ifdef DEBUG_VER
 isok = material%IsMaterialPresent(name)
@@ -168,8 +187,7 @@ func => material%GetMaterialPointer(name)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(func)
-CALL AssertError1(isok, myName, &
-                  'material pointer not found.')
+CALL AssertError1(isok, myName, 'material pointer not found.')
 #endif
 
 CALL obj%Insert(func=func, times=times)
@@ -179,8 +197,7 @@ func => NULL()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
-
+#endif
 END PROCEDURE obj_Insert3
 
 !----------------------------------------------------------------------------
@@ -188,7 +205,15 @@ END PROCEDURE obj_Insert3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert4()"
+#endif
 INTEGER(I4B) :: iel, telem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (obj%fieldType .EQ. TypeField%Constant) THEN
   telem = 1
@@ -200,6 +225,10 @@ DO iel = 1, telem
   CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=.TRUE.)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Insert4
 
 !----------------------------------------------------------------------------

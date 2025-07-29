@@ -15,16 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) SetMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
 USE Display_Method, ONLY: ToString
-
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_SIZE => Size, &
                              FEVariable_Shape => Shape
-
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -56,9 +52,18 @@ END SUBROUTINE MasterSet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+#endif
+
 INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%fieldType .EQ. typefield%Constant) THEN
   iel = 1
 ELSE
   iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
@@ -66,15 +71,17 @@ ELSE
 END IF
 
 tsize = FEVariable_SIZE(fevar)
-
 tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
-
 s(1:tshape) = FEVariable_Shape(fevar)
 
-CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
-               tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
-               s=s, tshape=tshape)
+CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
+               indx=iel, tsize=tsize, ss=obj%ss, &
+               indxShape=obj%indxShape, s=s, tshape=tshape)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
@@ -82,7 +89,10 @@ END PROCEDURE obj_Set1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+#endif
+
 INTEGER(I4B) :: iel, telem, nns, nsd, tsize, nrow, ncol
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -95,10 +105,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-bool1 = obj%fieldType .EQ. TypeField%Constant
+bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
   CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -140,8 +154,11 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 LOGICAL(LGT) :: isok
+#endif
+
 CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
@@ -183,9 +200,18 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+#endif
+
 INTEGER(I4B) :: iel, telem
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%fieldType .EQ. typefield%Constant) THEN
   telem = 1
 ELSE
   telem = obj%mesh%GetTotalElements()
@@ -195,6 +221,10 @@ DO iel = 1, telem
   CALL obj%Set(globalElement=iel, islocal=.TRUE., fevar=fevar)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
@@ -202,7 +232,10 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+#endif
+
 INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
 LOGICAL(LGT) :: bool1
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -215,10 +248,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-bool1 = obj%fieldType .EQ. TypeField%Constant
+bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
   CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -246,7 +283,7 @@ mesh => NULL()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------

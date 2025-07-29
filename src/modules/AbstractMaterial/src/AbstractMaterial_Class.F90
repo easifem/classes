@@ -30,6 +30,8 @@ USE FPL, ONLY: ParameterList_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 USE HashTables, ONLY: HashTable_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE MeshSelection_Class, ONLY: MeshSelection_
 
 IMPLICIT NONE
 
@@ -384,9 +386,11 @@ END INTERFACE AbstractMaterialDisplay
 ! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -404,17 +408,23 @@ END INTERFACE AbstractMaterialImportFromToml
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
+                                        printToml, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 INTERFACE AbstractMaterialImportFromToml
   MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE AbstractMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractMaterial_Class

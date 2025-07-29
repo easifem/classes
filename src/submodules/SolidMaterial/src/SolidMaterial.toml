@@ -1,0 +1,25 @@
+[solid]
+name = "solid"
+propNames = ["massDensity", "poissonRatio", "youngsModulus"]
+stressStrainModel = "linearElasticModel"
+
+[solid.massDensity]
+returnType = "Scalar"
+argType = "Constant"
+value = 1.0
+
+[solid.poissonRatio]
+returnType = "Scalar"
+argType = "Constant"
+value = 0.33
+
+[solid.youngsModulus]
+returnType = "Scalar"
+argType = "Constant"
+value = 3.0
+
+[solid.linearElasticModel]
+name = "linearElasticModel"
+elasticityType = "ISO"
+poissonRatio = 0.1
+youngsModulus = 1.0

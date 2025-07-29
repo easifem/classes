@@ -30,6 +30,12 @@ CONTAINS
 !                                                          ReadNameFromToml
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary: This subroutine reads the name of AbstractMaterial_
+!
+! [material]
+! --> name = "nameOfMaterial"
 SUBROUTINE ReadNameFromToml(obj, table)
   CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
@@ -68,12 +74,92 @@ SUBROUTINE ReadNameFromToml(obj, table)
 END SUBROUTINE ReadNameFromToml
 
 !----------------------------------------------------------------------------
+!                                                      ReadPropNamesFromToml
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary: This subroutine reads the propNames of AbstractMaterial_
+!
+! [material]
+! name = "nameOfMaterial"
+! --> propNames = ["prop1", "prop2", "prop3"]
+
+SUBROUTINE ReadPropNamesFromToml(obj, table, propNames)
+  CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), ALLOCATABLE, INTENT(INOUT) :: propNames(:)
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadPropNamesFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat, ii, tsize
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading propNames ...')
+#endif
+
+  isok = ALLOCATED(propNames)
+  IF (isok) THEN
+    tsize = SIZE(propNames)
+    DO ii = 1, tsize
+      propNames(ii) = ""
+    END DO
+    DEALLOCATE (propNames)
+  END IF
+
+  CALL GetValue(table=table, key="propNames", VALUE=propNames, &
+                origin=origin, stat=stat, isFound=isok)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    'Cannot find/read "propNames" in the config file.')
+#endif
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(propNames)
+  CALL AssertError1(isok, myName, &
+                    'Could not allocate "propNames" from the config file.')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadPropNamesFromToml
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE ReadDataFromTomlTable(obj, table)
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary: This subroutine reads the userFucntion data from toml table
+!
+!# Introduction
+!
+! [material.prop1]
+! name = "prop1"
+! numReturns = 1 # number of returns, it is 1 for scalar
+! argType = "Space"
+! numArgs = 3 # number of arguments
+! luaScript = "./hello.lua" # lua script
+! luaFunctionName = "hello" #lua function
+! value = 1.0 # constant scalar value
+
+SUBROUTINE ReadDataFromTomlTable(obj, table, default_name)
   CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(IN) :: default_name
 
   ! Internal variables
 #ifdef DEBUG_VER
@@ -91,13 +177,8 @@ SUBROUTINE ReadDataFromTomlTable(obj, table)
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=name, &
-                default_value=myprefix, origin=origin, &
+                default_value=default_name%chars(), origin=origin, &
                 stat=stat, isFound=isok)
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'Cannot find/read "name" in the config file.')
-#endif
 
   CALL obj%AddMaterial(name=name%chars())
   afunc => NULL()
@@ -122,16 +203,16 @@ END SUBROUTINE ReadDataFromTomlTable
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportFromTomlArray(obj, table)
+SUBROUTINE ReadMatPropsFromPropNames(obj, table, propNames)
   CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(IN) :: propNames(:)
 
   ! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "ImportFromTomlArray()"
+  CHARACTER(*), PARAMETER :: myName = "ReadMatPropsFromPropNames()"
 #endif
 
-  TYPE(toml_array), POINTER :: array
   TYPE(toml_table), POINTER :: node
   INTEGER(I4B) :: origin, stat, tsize, ii
   LOGICAL(LGT) :: isok
@@ -141,35 +222,22 @@ SUBROUTINE ImportFromTomlArray(obj, table)
                           '[START]')
 #endif
 
-  array => NULL()
-  ! Try for an array of material tables
-  CALL toml_get(table, toml_mat_prop_name, array, origin=origin, &
-                requested=.FALSE., stat=stat)
-
-  isok = ASSOCIATED(array)
-
-  IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    array => NULL()
-    RETURN
-  END IF
-
-  tsize = toml_len(array)
+  tsize = SIZE(propNames)
 
   DO ii = 1, tsize
+
     node => NULL()
-    CALL toml_get(array, ii, node)
+    CALL toml_get(table, propNames(ii)%chars(), node, origin=origin, &
+                  requested=.FALSE., stat=stat)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(node)
     CALL AssertError1(isok, myName, &
-         'Cannot find/read '//ToString(ii)//'th material in the config file.')
+          'Cannot find/read propName='//propNames(ii)//' in the config file.')
 #endif
 
-    CALL ReadDataFromTomlTable(obj=obj, table=node)
+    CALL ReadDataFromTomlTable(obj=obj, table=node, &
+                               default_name=propNames(ii))
   END DO
 
   node => NULL()
@@ -179,55 +247,60 @@ SUBROUTINE ImportFromTomlArray(obj, table)
                           '[END]')
 #endif
 
-END SUBROUTINE ImportFromTomlArray
+END SUBROUTINE ReadMatPropsFromPropNames
 
 !----------------------------------------------------------------------------
-!                                                         ImportFromTomlTable
+!
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportFromTomlTable(obj, table)
+SUBROUTINE ReadRegionFromToml(obj, table, region, dom)
   CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+  CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
 
   ! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "ImportFromTomlTable()"
+  CHARACTER(*), PARAMETER :: myName = "ReadRegionFromToml()"
 #endif
 
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: origin, stat
+  TYPE(toml_table), POINTER :: node
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START]')
 #endif
 
-  node => NULL()
-  CALL toml_get(table, toml_mat_prop_name, node, origin=origin, &
-                requested=.FALSE., stat=stat)
-  isok = ASSOCIATED(node)
+  isok = PRESENT(region)
 
   IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            'region is not present, nothing to do here.')
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
 #endif
-    node => NULL()
     RETURN
   END IF
 
-  CALL ReadNameFromToml(obj=obj, table=node)
-  CALL ReadDataFromTomlTable(obj=obj, table=node)
+  CALL toml_get(table, "region", node, &
+                origin=origin, requested=.FALSE., stat=stat)
 
-  node => NULL()
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    'region field is missing in toml table')
+#endif
+
+  CALL region%ImportFromToml(table=node, dom=dom)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END]')
+                          '[END] ')
 #endif
-
-END SUBROUTINE ImportFromTomlTable
+END SUBROUTINE ReadRegionFromToml
 
 !----------------------------------------------------------------------------
 !                                                           ImportFromToml
@@ -238,13 +311,21 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+TYPE(String), ALLOCATABLE :: propNames(:)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-CALL ImportFromTomlTable(obj=obj, table=table)
-CALL ImportFromTomlArray(obj=obj, table=table)
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+CALL ReadNameFromToml(obj=obj, table=table)
+CALL ReadPropNamesFromToml(obj=obj, table=table, propNames=propNames)
+CALL ReadMatPropsFromPropNames(obj=obj, table=table, propNames=propNames)
+CALL ReadRegionFromToml(obj=obj, table=table, region=region, dom=dom)
+
+IF (ALLOCATED(propNames)) DEALLOCATE (propNames)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -284,7 +365,7 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node)
+CALL obj%ImportFromToml(table=node, region=region, dom=dom)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN

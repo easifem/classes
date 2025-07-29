@@ -443,9 +443,11 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -464,15 +466,28 @@ END INTERFACE
 !  If the array of toml is not found then the size of obj will be set to 0
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tsize, table, tomlName)
-    TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, table, materialNames, tsize, &
+                                        region, dom)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the array of SolidMaterialPointer_
-    !! Allocated inside the routine
+    !! The size should be atleast size of materialNames
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
-    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(String), INTENT(IN) :: materialNames(:)
+    !! Material names that will be read from the toml table
+    !! It should be provided by the user
+    !! In the table we will look for nodes with these names
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! How many material read from the toml table
+    !! If tSize equals to the size of materialNames, then
+    !! all the materials are read from the toml table
+    !! Otherwise size(materialNames) - tsize materials are not
+    !! read successfully from the toml table
+    TYPE(MeshSelectionPointer_), OPTIONAL, INTENT(INOUT) :: region(:)
+    !! It should be allocated outside
+    !! The size of regions should be alteast size of materialNames
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
+    !! Domain to which the materials belong
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
@@ -489,11 +504,9 @@ END INTERFACE SolidMaterialImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-MODULE SUBROUTINE obj_ImportFromToml3(obj, tsize, tomlName, afile, filename, &
-                                        printToml)
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename, &
+                                        printToml, tsize, region, dom)
     TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the obj allocated inside the routine
     CHARACTER(*), INTENT(IN) :: tomlName
     !! tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -501,38 +514,19 @@ MODULE SUBROUTINE obj_ImportFromToml3(obj, tsize, tomlName, afile, filename, &
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     !! Name of the toml file
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! See docs of `obj_ImportFromToml2`
+    TYPE(MeshSelectionPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      region(:)
+    !! It should be allocated outside
+    !! The size of region should be alteast size of materialNames
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
+    !! Domain to which the materials belong
   END SUBROUTINE obj_ImportFromToml3
 END INTERFACE
 
 INTERFACE SolidMaterialImportFromToml
   MODULE PROCEDURE obj_ImportFromToml3
-END INTERFACE SolidMaterialImportFromToml
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tsize, table, tomlName, &
-                                        regions, dom)
-    TYPE(SolidMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-    !! Should be allocated outside
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Size of the array of SolidMaterialPointer_
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table to returned
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(MeshSelectionPointer_), ALLOCATABLE, INTENT(INOUT) :: regions(:)
-    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
-  END SUBROUTINE obj_ImportFromToml4
-END INTERFACE
-
-INTERFACE SolidMaterialImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml4
 END INTERFACE SolidMaterialImportFromToml
 
 !----------------------------------------------------------------------------
