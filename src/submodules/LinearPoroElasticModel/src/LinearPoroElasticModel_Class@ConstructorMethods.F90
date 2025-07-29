@@ -18,11 +18,11 @@
 SUBMODULE(LinearPoroElasticModel_Class) ConstructorMethods
 USE BaseMethod, ONLY: Input
 USE FPL_Method
-USE AbstractSolidMechanicsModel_Class, ONLY:  &
-  & AbstractSolidMechanicsModelDeallocate
+USE AbstractSolidMechanicsModel_Class, ONLY: &
+  AbstractSolidMechanicsModelDeallocate
 USE LinearElasticModel_Class, ONLY: ElasticityType_char,  &
   & ElasticityType_tonumber,  &
-  & TypeElasticity,  &
+  & TypeElasticityOpt,  &
   & Get_PlaneStress_C_InvC, &
   & Get_PlaneStrain_C_InvC,  &
   & Get_3D_C_InvC,  &
@@ -55,7 +55,7 @@ CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain",  &
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress",  &
   & VALUE=input(option=isPlaneStress, default=.FALSE.))
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = elasticityType .EQ. TypeElasticityOpt%Isotropic
 
 IF (isIsotropic) THEN
   CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
@@ -210,7 +210,7 @@ ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 
 obj%elasticityType = ElasticityType_tonumber(charVar)
 
-isIsotropic = obj%elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = obj%elasticityType .EQ. TypeElasticityOpt%Isotropic
 IF (isIsotropic) THEN
   ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
   ierr = param%get(key=myprefix//"/shearModulus", VALUE=obj%G)

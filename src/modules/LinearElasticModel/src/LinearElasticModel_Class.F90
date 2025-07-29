@@ -19,16 +19,16 @@
 ! summary: Data type of linear elastic model
 
 MODULE LinearElasticModel_Class
-USE GlobalData
-USE String_Class
-USE BaseType
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-USE AbstractSolidMechanicsModel_Class
-USE LinearElasticModelUtility, ONLY: GetShearModulus, GetYoungsModulus
+USE AbstractSolidMechanicsModel_Class, ONLY: AbstractSolidMechanicsModel_
+USE LinearElasticModelUtility, ONLY: GetShearModulus, &
+                                     GetYoungsModulus
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModel_Class"
@@ -38,12 +38,13 @@ CHARACTER(*), PUBLIC, PARAMETER :: LinearElasticModel_Prefix = myPrefix
 PUBLIC :: LinearElasticModel_
 PUBLIC :: TypeLinearElasticModel
 PUBLIC :: LinearElasticModelPointer_
+PUBLIC :: LinearElasticModelInitiate
 PUBLIC :: SetLinearElasticModelParam
 PUBLIC :: GetElasticParam
 PUBLIC :: Get_PlaneStress_C_InvC
 PUBLIC :: Get_PlaneStrain_C_InvC
 PUBLIC :: Get_3D_C_InvC
-PUBLIC :: TypeElasticity
+PUBLIC :: TypeElasticityOpt
 PUBLIC :: ElasticityType_char
 PUBLIC :: ElasticityType_tonumber
 PUBLIC :: GetYoungsModulus
@@ -57,10 +58,10 @@ INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRESS = 3
 INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRAIN = 3
 
 !----------------------------------------------------------------------------
-!                                                           ElasticityType_
+!                                                           ElasticityOpt_
 !----------------------------------------------------------------------------
 
-TYPE :: ElasticityType_
+TYPE :: ElasticityOpt_
   INTEGER(I4B) :: Isotropic = IsoLinearElasticModel
   INTEGER(I4B) :: Anisotropic = AnisoLinearElasticModel
   INTEGER(I4B) :: Orthotropic = OrthoLinearElasticModel
@@ -69,9 +70,9 @@ TYPE :: ElasticityType_
   CHARACTER(5) :: Anisotropic_char = "ANISO"
   CHARACTER(5) :: Orthotropic_char = "ORTHO"
   CHARACTER(5) :: TransIsotropic_chars = "TRANS"
-END TYPE ElasticityType_
+END TYPE ElasticityOpt_
 
-TYPE(ElasticityType_), PARAMETER :: TypeElasticity = ElasticityType_()
+TYPE(ElasticityOpt_), PARAMETER :: TypeElasticityOpt = ElasticityOpt_()
 
 !----------------------------------------------------------------------------
 !                                                       LinearElasticModel_
@@ -107,8 +108,9 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_FINAL
@@ -143,7 +145,7 @@ CONTAINS
 END TYPE LinearElasticModel_
 
 TYPE(LinearElasticModel_), PARAMETER :: TypeLinearElasticModel = &
-  & LinearElasticModel_()
+                                        LinearElasticModel_()
 
 !----------------------------------------------------------------------------
 !
@@ -193,8 +195,10 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetLinearElasticModelParam(param, elasticityType, &
-    & isPlaneStrain, isPlaneStress, poissonRatio, youngsModulus, &
-    & shearModulus, lambda, C, invC, stiffnessPower)
+                                               isPlaneStrain, isPlaneStress, &
+                                               poissonRatio, youngsModulus, &
+                                               shearModulus, lambda, C, &
+                                               invC, stiffnessPower)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     INTEGER(I4B), INTENT(IN) :: elasticityType
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStress
@@ -243,6 +247,46 @@ INTERFACE
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine initiates the the Linear elastic model
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelInitiate(obj, elasticityType, &
+                                               isPlaneStrain, isPlaneStress, &
+                                               poissonRatio, youngsModulus, &
+                                               shearModulus, lambda, C, &
+                                               invC, stiffnessPower)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: elasticityType
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStress
+    !! Is Plane stress
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStrain
+    !! Is plane strain
+    REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
+    !! Poisson ratio
+    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
+    !! Yongs modulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
+    !! Shear modulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    !! Lame parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: C(:, :)
+    !! In the case of plane-stress and plane-strain
+    !! c should be at least 3-by-3. Otherwise, it should
+    !! 6-by-6
+    REAL(DFP), OPTIONAL, INTENT(IN) :: invC(:, :)
+    !! In the case of plane-stress and plane-strain
+    !! invC should be at least 3-by-3. Otherwise, it should
+    !! 6-by-6
+    REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
+  END SUBROUTINE LinearElasticModelInitiate
 END INTERFACE
 
 !----------------------------------------------------------------------------

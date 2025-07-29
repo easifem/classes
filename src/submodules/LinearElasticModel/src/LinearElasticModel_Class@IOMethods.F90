@@ -97,7 +97,7 @@ ELSE
   isPlaneStress = .FALSE.
 END IF
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = elasticityType .EQ. TypeElasticityOpt%Isotropic
 
 IF (isIsotropic) THEN
   dsetname = TRIM(group)//"/poissonRatio"
@@ -357,8 +357,8 @@ bool1 = (stat .NE. toml_stat%success) .OR. (.NOT. ALLOCATED(elas_type_char))
 IF (bool1) THEN
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & 'elasticityType field not found in toml file, so using  '//  &
-    & 'elasticityType ='//TypeElasticity%Isotropic_char)
-  elas_type_char = TypeElasticity%Isotropic_char
+    & 'elasticityType ='//TypeElasticityOpt%Isotropic_char)
+  elas_type_char = TypeElasticityOpt%Isotropic_char
 END IF
 
 elasticityType = ElasticityType_tonumber(elas_type_char)
@@ -366,7 +366,7 @@ elasticityType = ElasticityType_tonumber(elas_type_char)
 CALL toml_get(table, "poissonRatio", poissonRatio, origin=origin, stat=stat)
 bool1 = stat .NE. toml_stat%success
 IF (bool1) THEN
-  IF (elasticityType .EQ. TypeElasticity%Isotropic) THEN
+  IF (elasticityType .EQ. TypeElasticityOpt%Isotropic) THEN
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
       & 'In case of Isotropic elasticity '//  &
       & 'poissonRatio (missing) and youngsModulus should be present.'//  &
@@ -375,7 +375,7 @@ IF (bool1) THEN
   END IF
 END IF
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = elasticityType .EQ. TypeElasticityOpt%Isotropic
 
 CALL toml_get(table, "youngsModulus", youngsModulus, origin=origin,  &
   & stat=stat)
