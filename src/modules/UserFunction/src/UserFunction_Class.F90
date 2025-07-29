@@ -117,7 +117,11 @@ CONTAINS
 
   FINAL :: obj_Final
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate the userFunction from the ParameterList_
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate the user function from the arguments
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
 
   ! SET:
   ! @SetMethods
@@ -227,7 +231,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType, &
-                 numArgs, numReturns, luaScript, luaFunctionName, returnShape)
+                                         numArgs, numReturns, luaScript, &
+                                         luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! parameter to be constructed
     CHARACTER(*), INTENT(IN) :: name
@@ -327,10 +332,44 @@ END INTERFACE
 ! summary: Initiate the user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate1(obj, param)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Initiate the user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, name, returnType, argType, &
+                                  numArgs, numReturns, luaScript, &
+                                  luaFunctionName, returnShape)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    !! User function object
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the function
+    INTEGER(I4B), INTENT(IN) :: returnType
+    !! Scalar, Vector, Matrix
+    INTEGER(I4B), INTENT(IN) :: argType
+    !! Constant, Space, Time, SpaceTime
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
+    !! number of argument
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
+    !! number of returns
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
+    !! lua script
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
+    !! lua function name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
+    !! Shape of return type
+    !! Only used when returnType is Matrix
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------

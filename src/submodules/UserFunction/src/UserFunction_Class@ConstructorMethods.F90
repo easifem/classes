@@ -256,7 +256,15 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-!> main
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isInitiated = .FALSE.
 obj%isUserFunctionSet = .FALSE.
 obj%isLuaScript = .FALSE.
@@ -274,6 +282,11 @@ IF (ALLOCATED(obj%matrixValue)) DEALLOCATE (obj%matrixValue)
 obj%scalarFunction => NULL()
 obj%vectorFunction => NULL()
 obj%matrixFunction => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -288,18 +301,25 @@ END PROCEDURE obj_Final
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
 
-CALL GetValue(obj=param, prefix=myprefix, key="name", &
-              VALUE=obj%name)
+CALL GetValue(obj=param, prefix=myprefix, key="name", VALUE=obj%name)
 
 CALL GetValue(obj=param, prefix=myprefix, key="returnType", &
               VALUE=obj%returnType)
 
-CALL GetValue(obj=param, prefix=myprefix, key="argType", &
-              VALUE=obj%argType)
+CALL GetValue(obj=param, prefix=myprefix, key="argType", VALUE=obj%argType)
 
 CALL GetValue(obj=param, prefix=myprefix, key="isLuaScript", &
               VALUE=obj%isLuaScript)
@@ -319,7 +339,105 @@ CALL GetValue(obj=param, prefix=myprefix, key="numReturns", &
 CALL GetValue(obj=param, prefix=myprefix, key="returnShape", &
               VALUE=obj%returnShape)
 obj%isInitiated = .TRUE.
-END PROCEDURE obj_Initiate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                    Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+LOGICAL(LGT) :: abool
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInitiated = .TRUE.
+
+obj%name = name
+obj%returnType = returnType
+obj%argType = argType
+
+! Handle optional arguments numArgs
+isok = PRESENT(numArgs)
+IF (isok) THEN
+  obj%numArgs = numArgs
+ELSE
+  obj%numArgs = GetDefaultNumArgs(argType)
+END IF
+
+! Handle optional arguments numReturns
+! obj%numReturns = numReturns
+isok = PRESENT(numReturns)
+IF (isok) THEN
+  obj%numReturns = numReturns
+ELSE
+  obj%numReturns = GetDefaultNumReturns(returnType)
+END IF
+
+! obj%returnShape = returnShape
+#ifdef DEBUG_VER
+abool = obj%returnType .EQ. varopt%matrix
+IF (abool) THEN
+  isok = PRESENT(returnShape)
+  CALL AssertError1(isok, myName, &
+             'When returnType is Matrix, then returnShape should be present.')
+
+  isok = obj%numReturns .EQ. returnShape(1) * returnShape(2)
+  CALL AssertError1(isok, myName, &
+       'When returnType is Matrix, then numReturns should be equal to the &
+       &total number of elements of returned matrix.')
+END IF
+#endif
+
+#ifdef DEBUG_VER
+abool = obj%returnType .EQ. varopt%scalar
+IF (abool) THEN
+  isok = obj%numReturns .EQ. 1
+  CALL AssertError1(isok, myName, &
+                    'When returnType is Scalar, then numReturns should be 1.')
+END IF
+#endif
+
+IF (PRESENT(returnShape)) obj%returnShape = returnShape
+
+! obj%isLuaScript = isLuaScript
+obj%isLuaScript = PRESENT(luaScript)
+IF (.NOT. obj%isLuaScript) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+obj%luaScript = luaScript
+
+#ifdef DEBUG_VER
+isok = PRESENT(luaFunctionName)
+CALL AssertError1(isok, myName, &
+           'When luaScript is given, then luaFunctionName should be present.')
+#endif
+
+obj%luaFunctionName = luaFunctionName
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                         checkerror_numargs
