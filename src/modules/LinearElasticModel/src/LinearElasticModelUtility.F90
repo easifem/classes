@@ -20,172 +20,115 @@ USE GlobalData, ONLY: DFP, LGT
 USE ExceptionHandler_Class, ONLY: err => e
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModelUtility"
+
 PUBLIC :: GetYoungsModulus
 PUBLIC :: GetShearModulus
+PUBLIC :: GetElasticParam
+PUBLIC :: Get_PlaneStrain_C_InvC
+PUBLIC :: Get_PlaneStress_C_InvC
+PUBLIC :: Get_3D_C_InvC
 
-CONTAINS
+!----------------------------------------------------------------------------
+!                                                  Get_3D_C_InvC@GetMethods
+!----------------------------------------------------------------------------
 
-FUNCTION GetYoungsModulus(E, G, lambda, mu, nu, K) RESULT(ans)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: E
-  REAL(DFP), OPTIONAL, INTENT(IN) :: G
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-  REAL(DFP), OPTIONAL, INTENT(IN) :: mu
-  REAL(DFP), OPTIONAL, INTENT(IN) :: nu
-  REAL(DFP), OPTIONAL, INTENT(IN) :: K
-  REAL(DFP) :: ans
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-01
+! summary:  This routine returns C and invC from E and nu
 
-  CHARACTER(*), PARAMETER :: myName = "GetYoungsModulus"
-  LOGICAL(LGT) :: isK, isE, isLambda, isG, isMu
+INTERFACE
+  MODULE SUBROUTINE Get_3D_C_InvC(C, invC, youngsModulus, nu)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), INTENT(INOUT) :: invC(:, :)
+    REAL(DFP), INTENT(IN) :: youngsModulus
+    REAL(DFP), INTENT(IN) :: nu
+  END SUBROUTINE Get_3D_C_InvC
+END INTERFACE
 
-  isE = PRESENT(E)
-  IF (isE) THEN
-    ans = E
-    RETURN
-  END IF
+!----------------------------------------------------------------------------
+!                                                     Get_PlaneStrain_C_InvC
+!----------------------------------------------------------------------------
 
-  isK = PRESENT(K)
-  isLambda = PRESENT(lambda)
-  isG = PRESENT(G)
-  isMu = PRESENT(mu)
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-01
+! summary:  This routine returns C and invC from E and nu
 
-  IF (isK) THEN
+INTERFACE
+  MODULE SUBROUTINE Get_PlaneStrain_C_InvC(C, invC, youngsModulus, nu)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), INTENT(INOUT) :: invC(:, :)
+    REAL(DFP), INTENT(IN) :: youngsModulus
+    REAL(DFP), INTENT(IN) :: nu
+  END SUBROUTINE Get_PlaneStrain_C_InvC
+END INTERFACE
 
-    IF (isLambda) THEN
-      ans = 9.0_DFP * K * (K - lambda) / (3.0_DFP * K - lambda)
-      RETURN
-    END IF
+!----------------------------------------------------------------------------
+!                                                      Get_PlaneStress_C_InvC
+!----------------------------------------------------------------------------
 
-    IF (isG) THEN
-      ans = 9.0_DFP * K * G / (3.0_DFP * K + G)
-      RETURN
-    END IF
+INTERFACE
+  MODULE SUBROUTINE Get_PlaneStress_C_InvC(C, invC, youngsModulus, nu)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), INTENT(INOUT) :: invC(:, :)
+    REAL(DFP), INTENT(IN) :: youngsModulus
+    REAL(DFP), INTENT(IN) :: nu
+  END SUBROUTINE Get_PlaneStress_C_InvC
+END INTERFACE
 
-    IF (isMu) THEN
-      ans = 9.0_DFP * K * mu / (3.0_DFP * K + mu)
-      RETURN
-    END IF
+!----------------------------------------------------------------------------
+!                                                            GetYoungsModulus
+!----------------------------------------------------------------------------
 
-    IF (PRESENT(nu)) THEN
-      ans = 3.0_DFP * K * (1.0_DFP - 2.0_DFP * nu)
-      RETURN
-    END IF
-
-  END IF
-
-  IF (isLambda) THEN
-
-    IF (isG) THEN
-      ans = G * (3 * lambda + 2 * G) / (lambda + G)
-      RETURN
-    END IF
-
-    IF (ismu) THEN
-      ans = mu * (3 * lambda + 2 * mu) / (lambda + mu)
-      RETURN
-    END IF
-
-    IF (PRESENT(nu)) THEN
-      ans = lambda * (1 + nu) * (1 - 2 * nu) / nu
-      RETURN
-    END IF
-  END IF
-
-  IF (isG) THEN
-    IF (PRESENT(nu)) THEN
-      ans = 2 * G * (1 + nu)
-      RETURN
-    END IF
-  END IF
-
-  IF (ismu) THEN
-    IF (PRESENT(nu)) THEN
-      ans = 2 * mu * (1 + nu)
-      RETURN
-    END IF
-  END IF
-
-  CALL err%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case is found')
-
-END FUNCTION GetYoungsModulus
+INTERFACE
+  MODULE FUNCTION GetYoungsModulus(E, G, lambda, mu, nu, K) RESULT(ans)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E
+    REAL(DFP), OPTIONAL, INTENT(IN) :: G
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(IN) :: mu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: K
+    REAL(DFP) :: ans
+  END FUNCTION GetYoungsModulus
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetShearModulus
 !----------------------------------------------------------------------------
 
-FUNCTION GetShearModulus(E, G, lambda, mu, nu, K) RESULT(ans)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: E
-  REAL(DFP), OPTIONAL, INTENT(IN) :: G
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-  REAL(DFP), OPTIONAL, INTENT(IN) :: mu
-  REAL(DFP), OPTIONAL, INTENT(IN) :: nu
-  REAL(DFP), OPTIONAL, INTENT(IN) :: K
-  REAL(DFP) :: ans
+INTERFACE
+  MODULE FUNCTION GetShearModulus(E, G, lambda, mu, nu, K) RESULT(ans)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E
+    REAL(DFP), OPTIONAL, INTENT(IN) :: G
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(IN) :: mu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: K
+    REAL(DFP) :: ans
+  END FUNCTION GetShearModulus
+END INTERFACE
 
-  CHARACTER(*), PARAMETER :: myName = "GetShearModulus"
-  LOGICAL(LGT) :: isK, isE, isLambda, isG, isMu
-  REAL(DFP) :: r
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-  isG = PRESENT(G)
-  IF (isG) THEN
-    ans = G
-    RETURN
-  END IF
+INTERFACE
+  MODULE SUBROUTINE GetElasticParam(lam, G, EE, nu, shearModulus, &
+                                    youngsModulus, poissonRatio, lambda)
+    REAL(DFP), INTENT(OUT) :: lam
+    REAL(DFP), INTENT(OUT) :: G
+    REAL(DFP), INTENT(OUT) :: EE
+    REAL(DFP), INTENT(OUT) :: nu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+  END SUBROUTINE GetElasticParam
+END INTERFACE
 
-  isMu = PRESENT(mu)
-  IF (isMu) THEN
-    ans = mu
-    RETURN
-  END IF
-
-  isE = PRESENT(E)
-  isK = PRESENT(K)
-  isLambda = PRESENT(lambda)
-
-  IF (isK) THEN
-
-    IF (isE) THEN
-      ans = 3 * K * E / (9 * K - E)
-      RETURN
-    END IF
-
-    IF (isLambda) THEN
-      ans = 1.5 * (K - lambda)
-      RETURN
-    END IF
-
-    IF (PRESENT(nu)) THEN
-      ans = 1.5 * K * (1 - 2 * nu) / (1 + nu)
-      RETURN
-    END IF
-
-  END IF
-
-  IF (isE) THEN
-    IF (isLambda) THEN
-      r = E**2 + 9 * lambda**2 + 2 * E * lambda
-      r = SQRT(r)
-      ans = 0.25 * (E - 3 * lambda + r)
-      RETURN
-    END IF
-
-    IF (PRESENT(nu)) THEN
-      ans = 0.5 * E / (1 + nu)
-      RETURN
-    END IF
-  END IF
-
-  IF (isLambda) THEN
-    IF (PRESENT(nu)) THEN
-      ans = lambda * (1 - 2 * nu) / 2.0 / nu
-      RETURN
-    END IF
-  END IF
-
-  CALL err%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case is found')
-
-END FUNCTION GetShearModulus
+!----------------------------------------------------------------------------
+!                                                               Include error
+!----------------------------------------------------------------------------
 
 END MODULE LinearElasticModelUtility

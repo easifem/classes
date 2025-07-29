@@ -28,7 +28,13 @@ USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE AbstractSolidMechanicsModel_Class, ONLY: AbstractSolidMechanicsModel_
 USE LinearElasticModelUtility, ONLY: GetShearModulus, &
-                                     GetYoungsModulus
+                                     GetYoungsModulus, &
+                                     GetElasticParam, &
+                                     Get_PlaneStress_C_InvC, &
+                                     Get_PlaneStrain_C_InvC, &
+                                     Get_3D_C_InvC
+USE ElasticityOpt_Class, ONLY: ElasticityOpt_, TypeElasticityOpt
+
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModel_Class"
@@ -40,15 +46,14 @@ PUBLIC :: TypeLinearElasticModel
 PUBLIC :: LinearElasticModelPointer_
 PUBLIC :: LinearElasticModelInitiate
 PUBLIC :: SetLinearElasticModelParam
-PUBLIC :: GetElasticParam
+PUBLIC :: TypeElasticityOpt
+
 PUBLIC :: Get_PlaneStress_C_InvC
 PUBLIC :: Get_PlaneStrain_C_InvC
 PUBLIC :: Get_3D_C_InvC
-PUBLIC :: TypeElasticityOpt
-PUBLIC :: ElasticityType_char
-PUBLIC :: ElasticityType_tonumber
 PUBLIC :: GetYoungsModulus
 PUBLIC :: GetShearModulus
+PUBLIC :: GetElasticParam
 
 INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
@@ -56,23 +61,6 @@ INTEGER(I4B), PARAMETER, PUBLIC :: OrthoLinearElasticModel = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: TransLinearElasticModel = 4
 INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRESS = 3
 INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRAIN = 3
-
-!----------------------------------------------------------------------------
-!                                                           ElasticityOpt_
-!----------------------------------------------------------------------------
-
-TYPE :: ElasticityOpt_
-  INTEGER(I4B) :: Isotropic = IsoLinearElasticModel
-  INTEGER(I4B) :: Anisotropic = AnisoLinearElasticModel
-  INTEGER(I4B) :: Orthotropic = OrthoLinearElasticModel
-  INTEGER(I4B) :: TransIsotropic = TransLinearElasticModel
-  CHARACTER(3) :: Isotropic_char = "ISO"
-  CHARACTER(5) :: Anisotropic_char = "ANISO"
-  CHARACTER(5) :: Orthotropic_char = "ORTHO"
-  CHARACTER(5) :: TransIsotropic_chars = "TRANS"
-END TYPE ElasticityOpt_
-
-TYPE(ElasticityOpt_), PARAMETER :: TypeElasticityOpt = ElasticityOpt_()
 
 !----------------------------------------------------------------------------
 !                                                       LinearElasticModel_
@@ -154,36 +142,6 @@ TYPE(LinearElasticModel_), PARAMETER :: TypeLinearElasticModel = &
 TYPE :: LinearElasticModelPointer_
   CLASS(LinearElasticModel_), POINTER :: ptr => NULL()
 END TYPE LinearElasticModelPointer_
-
-!----------------------------------------------------------------------------
-!                               ElasticityType_tonumber@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Returns the elasticity number
-
-INTERFACE
-  MODULE FUNCTION ElasticityType_tonumber(name) RESULT(ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION ElasticityType_tonumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               ElasticityType_tonumber@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Returns the elasticity number
-
-INTERFACE
-  MODULE FUNCTION ElasticityType_char(num) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: num
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION ElasticityType_char
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                             SetLinearElasticModelParam@ConstructorMethods
@@ -378,79 +336,6 @@ INTERFACE
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetElasticParameter@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This returns the elastic parameter
-
-INTERFACE
-  MODULE SUBROUTINE GetElasticParam(lam, G, EE, nu, shearModulus, &
-    & youngsModulus, poissonRatio, lambda)
-    REAL(DFP), INTENT(OUT) :: lam
-    REAL(DFP), INTENT(OUT) :: G
-    REAL(DFP), INTENT(OUT) :: EE
-    REAL(DFP), INTENT(OUT) :: nu
-    REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
-    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
-    REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-  END SUBROUTINE GetElasticParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          Get_PlaneStress_C_InvC@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-01
-! summary:  This routine returns C and invC from E and nu
-
-INTERFACE
-  MODULE SUBROUTINE Get_PlaneStress_C_InvC(C, invC, youngsModulus, nu)
-    REAL(DFP), INTENT(INOUT) :: C(:, :)
-    REAL(DFP), INTENT(INOUT) :: invC(:, :)
-    REAL(DFP), INTENT(IN) :: youngsModulus
-    REAL(DFP), INTENT(IN) :: nu
-  END SUBROUTINE Get_PlaneStress_C_InvC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          Get_PlaneStrain_C_InvC@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-01
-! summary:  This routine returns C and invC from E and nu
-
-INTERFACE
-  MODULE SUBROUTINE Get_PlaneStrain_C_InvC(C, invC, youngsModulus, nu)
-    REAL(DFP), INTENT(INOUT) :: C(:, :)
-    REAL(DFP), INTENT(INOUT) :: invC(:, :)
-    REAL(DFP), INTENT(IN) :: youngsModulus
-    REAL(DFP), INTENT(IN) :: nu
-  END SUBROUTINE Get_PlaneStrain_C_InvC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  Get_3D_C_InvC@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-01
-! summary:  This routine returns C and invC from E and nu
-
-INTERFACE
-  MODULE SUBROUTINE Get_3D_C_InvC(C, invC, youngsModulus, nu)
-    REAL(DFP), INTENT(INOUT) :: C(:, :)
-    REAL(DFP), INTENT(INOUT) :: invC(:, :)
-    REAL(DFP), INTENT(IN) :: youngsModulus
-    REAL(DFP), INTENT(IN) :: nu
-  END SUBROUTINE Get_3D_C_InvC
 END INTERFACE
 
 !----------------------------------------------------------------------------
