@@ -710,7 +710,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 CALL ReadNamefromToml(obj=obj, table=table)
 CALL ReadReturnTypeFromToml(obj=obj, table=table)
 CALL ReadReturnShapeFromToml(obj=obj, table=table)

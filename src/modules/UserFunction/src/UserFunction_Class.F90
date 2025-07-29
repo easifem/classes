@@ -69,7 +69,7 @@ TYPE :: UserFunction_
   PRIVATE
   TYPE(String) :: name
   !! name of the function
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   LOGICAL(LGT) :: isUserFunctionSet = .FALSE.
   LOGICAL(LGT) :: isLuaScript = .FALSE.
   TYPE(String) :: luaScript
@@ -147,6 +147,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnShape => obj_GetReturnShape
   !! Get the shape of return matrix
   !! Use only when return type if matrix.
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns isInit
 
   ! IO:
   ! @IOMethods
@@ -525,6 +527,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary:  Returns isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
@@ -691,7 +708,7 @@ SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
                           '[START]')
 #endif
 
-  isNotOK = .NOT. obj%isInitiated
+  isNotOK = .NOT. obj%isInit
   IF (isNotOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                    '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')
