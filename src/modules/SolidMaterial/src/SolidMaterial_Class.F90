@@ -50,11 +50,13 @@ CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
 PUBLIC :: SolidMaterialDeallocate
+PUBLIC :: SolidMaterialReallocate
 PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
 PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
 PUBLIC :: SolidMaterialImportFromToml
+PUBLIC :: ReadSolidMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                            SolidMaterial_
@@ -528,6 +530,33 @@ END INTERFACE
 INTERFACE SolidMaterialImportFromToml
   MODULE PROCEDURE obj_ImportFromToml3
 END INTERFACE SolidMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                              ReadSolidMaterialNamesFromToml
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-30
+! summary:  Read solidMaterialNames from the toml table
+!
+!# Introduction
+!
+! This routine reads the solidMaterialNames from the toml table
+! It will reallocate materialNames  and return the size of it in tsize.
+!
+! Then you can allocate a vector of SolidMaterialPointer_ with tsize
+! Then you can call SolidMaterialImportFromToml to read the materials
+
+INTERFACE
+  MODULE SUBROUTINE ReadSolidMaterialNamesFromToml(table, materialNames, &
+                                                   tsize)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
+    !! materialNames to be read from the toml table
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of the materialNames
+  END SUBROUTINE ReadSolidMaterialNamesFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

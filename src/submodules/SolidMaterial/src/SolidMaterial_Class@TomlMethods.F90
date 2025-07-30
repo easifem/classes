@@ -161,59 +161,55 @@ END PROCEDURE obj_ImportFromToml2
 !                                                       ReadPropNamesFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ReadMaterialNamesFromToml(table, materialNames, tsize)
-  TYPE(toml_table), INTENT(INOUT) :: table
-  TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
-  INTEGER(I4B), INTENT(OUT) :: tsize
-
-  ! Internal variables
+MODULE PROCEDURE ReadSolidMaterialNamesFromToml
+! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "ReadMaterialNamesFromToml()"
+CHARACTER(*), PARAMETER :: myName = "ReadSolidMaterialNamesFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat, ii
-  LOGICAL(LGT) :: isok
+INTEGER(I4B) :: origin, stat, ii
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading solidMaterialNames ...')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading solidMaterialNames ...')
 #endif
 
-  isok = ALLOCATED(materialNames)
-  IF (isok) THEN
-    tsize = SIZE(materialNames)
-    DO ii = 1, tsize
-      materialNames(ii) = ""
-    END DO
-    DEALLOCATE (materialNames)
-  END IF
-
-  CALL GetValue(table=table, key="solidMaterialNames", VALUE=materialNames, &
-                origin=origin, stat=stat, isFound=isok)
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'Cannot find/read "materialNames" in the config file.')
-#endif
-
-#ifdef DEBUG_VER
-  isok = ALLOCATED(materialNames)
-  CALL AssertError1(isok, myName, &
-                   'Could not allocate "materialNames" from the config file.')
-#endif
-
+isok = ALLOCATED(materialNames)
+IF (isok) THEN
   tsize = SIZE(materialNames)
+  DO ii = 1, tsize
+    materialNames(ii) = ""
+  END DO
+  DEALLOCATE (materialNames)
+END IF
+
+CALL GetValue(table=table, key="solidMaterialNames", VALUE=materialNames, &
+              origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+CALL AssertError1(isok, myName, &
+                  'Cannot find/read "materialNames" in the config file.')
 #endif
-END SUBROUTINE ReadMaterialNamesFromToml
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(materialNames)
+CALL AssertError1(isok, myName, &
+                  'Could not allocate "materialNames" from the config file.')
+#endif
+
+tsize = SIZE(materialNames)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE ReadSolidMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                              ImportFromToml
@@ -248,7 +244,7 @@ CALL AssertError1(isok, myName, &
                   //tomlName//"] table in config.")
 #endif
 
-CALL ReadMaterialNamesFromToml(table=node, materialNames=materialNames, &
+CALL ReadSolidMaterialNamesFromToml(table=node, materialNames=materialNames, &
                                tsize=tsize)
 CALL SolidMaterialReallocate(obj, tsize)
 
