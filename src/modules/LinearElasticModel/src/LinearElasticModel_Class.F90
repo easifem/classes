@@ -55,13 +55,6 @@ PUBLIC :: GetYoungsModulus
 PUBLIC :: GetShearModulus
 PUBLIC :: GetElasticParam
 
-INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
-INTEGER(I4B), PARAMETER, PUBLIC :: OrthoLinearElasticModel = 3
-INTEGER(I4B), PARAMETER, PUBLIC :: TransLinearElasticModel = 4
-INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRESS = 3
-INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRAIN = 3
-
 !----------------------------------------------------------------------------
 !                                                       LinearElasticModel_
 !----------------------------------------------------------------------------

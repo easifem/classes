@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(LinearElasticModel_Class) SetMethods
-USE BaseMethod, ONLY: ToString
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -25,12 +25,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 IF (PRESENT(elasticityType)) obj%elasticityType = elasticityType
 IF (PRESENT(nu)) obj%nu = nu
@@ -43,8 +45,8 @@ IF (PRESENT(stiffnessPower)) obj%stiffnessPower = stiffnessPower
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_SetParam
 
@@ -53,34 +55,37 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetData()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 SELECT CASE (obj%elasticityType)
-CASE (IsoLinearElasticModel)
+CASE (TypeElasticityOpt%isotropic)
   CALL LinearElasticModelSetData_Iso(obj, DATA)
-CASE (AnisoLinearElasticModel)
+CASE (TypeElasticityOpt%anisotropic)
   CALL LinearElasticModelSetData_Aniso(obj, DATA)
-CASE (TransLinearElasticModel)
+CASE (TypeElasticityOpt%transIsotropic)
   CALL LinearElasticModelSetData_Trans(obj, DATA)
-CASE (OrthoLinearElasticModel)
+CASE (TypeElasticityOpt%orthotropic)
   CALL LinearElasticModelSetData_Ortho(obj, DATA)
-CASE default
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for elasticityType = '//  &
-    & tostring(obj%elasticityType))
-  RETURN
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, &
+                    'No case found for elasticityType = '// &
+                    ToString(obj%elasticityType))
+#endif
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetData
 
 !----------------------------------------------------------------------------
@@ -88,17 +93,21 @@ END PROCEDURE obj_SetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelSetData_Iso
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Iso()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
+
 obj%lambda = DATA(1)
 obj%G = DATA(2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END] ')
 #endif
 END PROCEDURE LinearElasticModelSetData_Iso
 
@@ -107,12 +116,16 @@ END PROCEDURE LinearElasticModelSetData_Iso
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelSetData_Aniso
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Aniso()"
+#endif
+
 INTEGER(I4B) :: ii, jj, kk
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 kk = 0
 DO jj = 1, 6
@@ -125,8 +138,8 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelSetData_Aniso
 
 !----------------------------------------------------------------------------
@@ -134,12 +147,16 @@ END PROCEDURE LinearElasticModelSetData_Aniso
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelSetData_Ortho
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Ortho()"
+#endif
+
 INTEGER(I4B) :: ii
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 DO ii = 1, 6
   obj%C(ii, ii) = DATA(ii)
@@ -155,8 +172,8 @@ obj%C(3, 1) = DATA(9)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelSetData_Ortho
 
 !----------------------------------------------------------------------------
@@ -164,11 +181,14 @@ END PROCEDURE LinearElasticModelSetData_Ortho
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelSetData_Trans
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Trans()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 obj%C(1, 1) = DATA(1)
 obj%C(2, 2) = DATA(1)
@@ -185,8 +205,8 @@ obj%C(3, 2) = DATA(5)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelSetData_Trans
 
 !----------------------------------------------------------------------------
@@ -194,19 +214,28 @@ END PROCEDURE LinearElasticModelSetData_Trans
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_UpdateData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_UpdateData()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 CALL obj%GetData(DATA)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_UpdateData
+
+!----------------------------------------------------------------------------
+!                                                           Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

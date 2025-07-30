@@ -27,56 +27,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   ElasticityType_tonumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ElasticityType_tonumber
-CHARACTER(*), PARAMETER :: myName = "ElasticityType_tonumber"
-TYPE(String) :: name0
-
-name0 = UpperCase(name)
-SELECT CASE (name0%chars())
-CASE ("ISO", "ISOTROPIC")
-  ans = TypeElasticityOpt%Isotropic
-CASE ("ANISO", "ANISOTROPIC")
-  ans = TypeElasticityOpt%Anisotropic
-CASE ("ORTHO", "ORTHOTROPIC")
-  ans = TypeElasticityOpt%Orthotropic
-CASE ("TRANS", "TRANSISOTROPIC")
-  ans = TypeElasticityOpt%TransIsotropic
-CASE default
-  ans = 0
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    'NO CASE FOUND for name = '//name0)
-END SELECT
-
-name0 = ""
-END PROCEDURE ElasticityType_tonumber
-
-!----------------------------------------------------------------------------
-!                                                 ElasticityType_char
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ElasticityType_char
-CHARACTER(*), PARAMETER :: myName = "ElasticityType_char"
-SELECT CASE (num)
-CASE (IsoLinearElasticModel)
-  ans = TypeElasticityOpt%Isotropic_char
-CASE (AnisoLinearElasticModel)
-  ans = TypeElasticityOpt%Anisotropic_char
-CASE (OrthoLinearElasticModel)
-  ans = TypeElasticityOpt%Orthotropic_char
-CASE (TransLinearElasticModel)
-  ans = TypeElasticityOpt%TransIsotropic_chars
-CASE default
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] No case found for elasticityType = '// &
-                    tostring(num))
-  RETURN
-END SELECT
-END PROCEDURE ElasticityType_char
-
-!----------------------------------------------------------------------------
 !                                                setLinearElasticModelParam
 !----------------------------------------------------------------------------
 
@@ -96,7 +46,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL Set(obj=param, datatype="char", prefix=myprefix, key="name", &
          VALUE=myprefix)
 
-astr = ElasticityType_char(elasticityType)
+astr = TypeElasticityOpt%ToString(elasticityType)
 
 CALL Set(obj=param, datatype="char", prefix=myprefix, &
          key="elasticityType", VALUE=astr%chars())
@@ -107,12 +57,12 @@ nc = 6
 isPlaneStrain0 = INPUT(option=isPlaneStrain, default=.FALSE.)
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain", &
          VALUE=isPlaneStrain0)
-IF (isPlaneStrain0) nc = SIZE_C_PLANE_STRAIN
+IF (isPlaneStrain0) nc = TypeElasticityOpt%size_c_plane_strain
 
 isPlaneStress0 = input(option=isPlaneStress, default=.FALSE.)
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress", &
          VALUE=isPlaneStress0)
-IF (isPlaneStress0) nc = SIZE_C_PLANE_STRESS
+IF (isPlaneStress0) nc = TypeElasticityOpt%size_c_plane_stress
 
 is2D = (isPlaneStress0 .OR. isPlaneStrain0)
 
@@ -251,16 +201,16 @@ CALL obj%SetName(myprefix)
 
 ierr = param%Get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
 CALL obj%SetPlaneStress(isPlaneStress)
-IF (isPlaneStress) obj%nc = SIZE_C_PLANE_STRESS
+IF (isPlaneStress) obj%nc = TypeElasticityOpt%size_c_plane_stress
 
 ierr = param%Get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 CALL obj%SetPlaneStrain(isPlaneStrain)
-IF (isPlaneStrain) obj%nc = SIZE_C_PLANE_STRAIN
+IF (isPlaneStrain) obj%nc = TypeElasticityOpt%size_c_plane_strain
 
 ierr = param%Get(key=myprefix//"/elasticityType", VALUE=charVar)
-obj%elasticityType = elasticityType_tonumber(charVar)
+obj%elasticityType = TypeElasticityOpt%ToNumber(charVar)
 
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+IF (obj%elasticityType .EQ. TypeElasticityOpt%isotropic) THEN
   ierr = param%Get(key=myprefix//"/lambda", VALUE=obj%lambda)
   ierr = param%Get(key=myprefix//"/shearModulus", VALUE=obj%G)
   ierr = param%Get(key=myprefix//"/youngsModulus", VALUE=obj%E)
@@ -298,15 +248,102 @@ MODULE PROCEDURE LinearElasticModelInitiate
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelInitiate()"
 #endif
 
+LOGICAL(LGT) :: isok, isPlaneStress0, isPlaneStrain0, isIsotropic, abool
+INTEGER(I4B) :: shapeOfC(2)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL obj%DEALLOCATE()
+CALL obj%SetIsInitiated(.TRUE.)
+CALL obj%SetName(myprefix)
+
+obj%nc = 6
+! isPlaneStress
+isok = PRESENT(isPlaneStress)
+IF (isok) THEN
+  CALL obj%SetPlaneStress(isPlaneStress)
+  IF (isPlaneStress) obj%nc = TypeElasticityOpt%size_c_plane_stress
+END IF
+
+! isPlaneStrain
+isok = PRESENT(isPlaneStrain)
+IF (isok) THEN
+  CALL obj%SetPlaneStrain(isPlaneStrain)
+  IF (isPlaneStrain) obj%nc = TypeElasticityOpt%size_c_plane_strain
+END IF
+
+isPlaneStress0 = obj%IsPlaneStress()
+isPlaneStrain0 = obj%IsPlaneStrain()
+
+! stiffnessPower
+isok = PRESENT(stiffnessPower)
+IF (isok) obj%stiffnessPower = stiffnessPower
+
+! elasticityType
+obj%elasticityType = elasticityType
+
+! IsoLinearElasticModel
+isIsotropic = obj%elasticityType .EQ. TypeElasticityOpt%Isotropic
+IF (isIsotropic) THEN
+  ! Check that atleast two elastic parameters should be given
+  obj%lambda = 1.0
+  obj%G = 1.0
+  obj%E = 1.0
+  obj%nu = 0.3
+  CALL GetElasticParam(lam=obj%lambda, G=obj%G, EE=obj%E, nu=obj%nu, &
+                       shearModulus=shearModulus, &
+                       youngsModulus=youngsModulus, &
+                       poissonRatio=poissonRatio, &
+                       lambda=lambda)
+
+  IF (isPlaneStress0) THEN
+    CALL Get_PlaneStress_C_InvC(C=obj%C, invC=obj%invC, &
+                                youngsModulus=obj%E, nu=obj%nu)
+  ELSE IF (isPlaneStrain0) THEN
+    CALL Get_PlaneStrain_C_InvC(C=obj%C, invC=obj%invC, youngsModulus=obj%E, &
+                                nu=obj%nu)
+  ELSE
+    CALL Get_3D_C_InvC(C=obj%C, invC=obj%invC, youngsModulus=obj%E, &
+                       nu=obj%nu)
+  END IF
+
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
+
+  RETURN
+
+END IF
+
+abool = PRESENT(c)
+IF (abool) THEN
+#ifdef DEBUG_VER
+  shapeOfC = SHAPE(c)
+  isok = (shapeOfC(1) .GE. obj%nc) .AND. (shapeOfC(2) .GE. obj%nc)
+  CALL AssertError1(isok, myName, &
+      'The shape of c should be at least [3,3] in case of plane-stress or &
+      &plane-strain. In 3D case it should be [6,6]. But it is '// &
+      ToString(shapeOfC))
+  obj%c(1:obj%nc, 1:obj%nc) = c(1:obj%nc, 1:obj%nc)
+#endif
+END IF
+
+abool = PRESENT(invC)
+IF (abool) THEN
+#ifdef DEBUG_VER
+  shapeOfC = SHAPE(invC)
+  isok = (shapeOfC(1) .GE. obj%nc) .AND. (shapeOfC(2) .GE. obj%nc)
+  CALL AssertError1(isok, myName, &
+      'The shape of invC should be at least [3,3] in case of plane-stress or &
+      &plane-strain. In 3D case it should be [6,6]. But it is '// &
+      ToString(shapeOfC))
+#endif
+  obj%invC(1:obj%nc, 1:obj%nc) = invC(1:obj%nc, 1:obj%nc)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -235,6 +235,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
 # AbstractSolidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
 
+# ElasticityOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ElasticityOpt/CMakeLists.txt)
+
 # LinearElasticModel
 include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
 

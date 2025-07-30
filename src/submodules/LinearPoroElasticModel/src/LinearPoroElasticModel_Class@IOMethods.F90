@@ -21,9 +21,7 @@
 
 SUBMODULE(LinearPoroElasticModel_Class) IOMethods
 USE BaseMethod
-USE LinearElasticModel_Class, ONLY: TypeElasticityOpt,  &
-& ElasticityType_tonumber,  &
-& ElasticityType_char
+USE LinearElasticModel_Class, ONLY: TypeElasticityOpt
 IMPLICIT NONE
 CONTAINS
 
@@ -78,7 +76,7 @@ IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
 END IF
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-elasticityType = ElasticityType_tonumber(strval%chars())
+elasticityType = TypeElasticityOpt%ToNumber(strval%chars())
 
 !> READ isPlaneStrain
 dsetname = TRIM(group)//"/isPlaneStrain"
@@ -200,7 +198,7 @@ strval = ""
 
 !> WRITE elasticityType
 dsetname = TRIM(group)//"/elasticityType"
-strval = ElasticityType_char(obj%elasticityType)
+strval = TypeElasticityOpt%ToString(obj%elasticityType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 !> WRITE isPlaneStrain
