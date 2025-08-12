@@ -21,6 +21,7 @@ USE GlobalData, ONLY: I4B, Constant, Space, Time, SpaceTime
 USE ExceptionHandler_Class, ONLY: e
 USE StringUtility, ONLY: UpperCase
 USE Display_Method, ONLY: Tostring
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -47,12 +48,19 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = Space
 
 TYPE :: FieldOpt_
   INTEGER(I4B) :: normal = FIELD_TYPE_NORMAL
-  INTEGER(I4B) :: constant = FIELD_TYPE_CONSTANT
-  INTEGER(I4B) :: space = FIELD_TYPE_SPACE
-  INTEGER(I4B) :: time = FIELD_TYPE_TIME
-  INTEGER(I4B) :: spaceTime = FIELD_TYPE_SPACETIME
-  INTEGER(I4B) :: constantSpace = FIELD_TYPE_CONSTANT_SPACE
-  INTEGER(I4B) :: constantTime = FIELD_TYPE_CONSTANT_TIME
+  INTEGER(I4B) :: constantSpace = fevaropt%time
+  INTEGER(I4B) :: constantTime = fevaropt%space
+  INTEGER(I4B) :: constant = fevaropt%constant
+  INTEGER(I4B) :: space = fevaropt%space
+  INTEGER(I4B) :: time = fevaropt%time
+  INTEGER(I4B) :: spaceTime = fevaropt%spaceTime
+  INTEGER(I4B) :: scalar = fevaropt%scalar
+  INTEGER(I4B) :: vector = fevaropt%vector
+  INTEGER(I4B) :: matrix = fevaropt%matrix
+  INTEGER(I4B) :: nodal = fevaropt%nodal
+  INTEGER(i4b) :: quadrature = fevaropt%quadrature
+  INTEGER(I4B) :: solutionDependent = fevaropt%solutionDependent
+  INTEGER(I4B) :: randomSpace = fevaropt%randomSpace
   CHARACTER(6) :: normal_char = "NORMAL"
   CHARACTER(8) :: constant_char = "CONSTANT"
   CHARACTER(5) :: space_char = "SPACE"
