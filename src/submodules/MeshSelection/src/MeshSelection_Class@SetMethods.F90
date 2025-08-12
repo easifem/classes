@@ -424,17 +424,16 @@ MODULE PROCEDURE obj_SetMaterialToMesh2
 CHARACTER(*), PARAMETER :: myName = "obj_SetMaterialToMesh2()"
 #endif
 
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: dim
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-DO ii = 0, 3
-  CALL obj%SetMaterialToMesh1(dom=dom, dim=ii, medium=medium, &
-                              material=material)
-END DO
+dim = dom%GetNSD()
+CALL obj%SetMaterialToMesh1(dom=dom, dim=dim, medium=medium, &
+                            material=material)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
