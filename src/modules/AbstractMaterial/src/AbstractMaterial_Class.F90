@@ -383,7 +383,13 @@ END INTERFACE AbstractMaterialDisplay
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate param from the toml file
+! summary:  Initiate AbstractMaterial_ from the toml file
+!
+!# Introduction
+!  This interface is used to import material properties from a toml file.
+! If region is given, then we can import the region (MeshSelection_)
+! Domain is needed for calling importFromToml on region.
+! See MeshSelection_ ImportFromToml for more details.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
