@@ -65,6 +65,9 @@ CALL GetValue(table=table, key="stressStrainModel", &
 IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+         'stressStrainModel not found in the config file. Nothing to import.')
+
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
   node => NULL()
@@ -245,7 +248,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL ReadSolidMaterialNamesFromToml(table=node, materialNames=materialNames, &
-                               tsize=tsize)
+                                    tsize=tsize)
 CALL SolidMaterialReallocate(obj, tsize)
 
 isok = PRESENT(region)

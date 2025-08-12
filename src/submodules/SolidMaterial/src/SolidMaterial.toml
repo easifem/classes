@@ -23,3 +23,6 @@ name = "linearElasticModel"
 elasticityType = "ISO"
 poissonRatio = 0.1
 youngsModulus = 1.0
+
+[solid.region]
+# This is same as meshSelection.toml
