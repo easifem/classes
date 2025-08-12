@@ -300,7 +300,6 @@ MODULE PROCEDURE obj_SetTotalMaterial
 CHARACTER(*), PARAMETER :: myName = "obj_SetTotalMaterial()"
 #endif
 
-INTEGER(I4B) :: ii, tsize
 CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
@@ -308,20 +307,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(entityNum)) THEN
-
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-  CALL meshptr%SetTotalMaterial(n)
-  meshptr => NULL()
-
-  RETURN
-END IF
-
-tsize = obj%GetTotalEntities(dim=dim)
-DO ii = 1, tsize
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=ii)
-  CALL meshptr%SetTotalMaterial(n)
-END DO
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+CALL meshptr%SetTotalMaterial(n)
 meshptr => NULL()
 
 #ifdef DEBUG_VER
