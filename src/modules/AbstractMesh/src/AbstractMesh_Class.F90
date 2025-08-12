@@ -4090,12 +4090,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Set the materials id of a given medium
+! summary: Set the total material (medium) assigned to a given element
 
 INTERFACE
   MODULE SUBROUTINE obj_SetTotalMaterial1(obj, n, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
+    !! Total number of medium assigned to a given element
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_SetTotalMaterial1
@@ -4107,7 +4108,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Set the materials id of a given medium
+! summary: Set the total number of medium assigned to the entire mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
