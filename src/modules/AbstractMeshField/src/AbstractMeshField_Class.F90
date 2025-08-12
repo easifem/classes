@@ -41,18 +41,10 @@ CHARACTER(*), PARAMETER :: AbstractMeshFieldEssential = "/name/fieldType"// &
                            "/engine/defineOn/varType/rank/s/totalShape"
 
 PUBLIC :: AbstractMeshField_
-PUBLIC :: AbstractMeshFieldPointer_
 PUBLIC :: SetAbstractMeshFieldParam
 PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
-
-PUBLIC :: AbstractScalarMeshField_
-PUBLIC :: AbstractScalarMeshFieldPointer_
-PUBLIC :: AbstractVectorMeshField_
-PUBLIC :: AbstractVectorMeshFieldPointer_
-PUBLIC :: AbstractTensorMeshField_
-PUBLIC :: AbstractTensorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -222,59 +214,6 @@ CONTAINS
   GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4
 
 END TYPE AbstractMeshField_
-
-!----------------------------------------------------------------------------
-!                                                 AbstractScalarMeshField_
-!----------------------------------------------------------------------------
-
-TYPE, EXTENDS(AbstractMeshField_) :: AbstractScalarMeshField_
-END TYPE AbstractScalarMeshField_
-
-!----------------------------------------------------------------------------
-!                                           AbstractScalarMeshFieldPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: AbstractScalarMeshFieldPointer_
-  CLASS(AbstractScalarMeshField_), POINTER :: ptr => NULL()
-END TYPE AbstractScalarMeshFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                                 AbstractVectorMeshField_
-!----------------------------------------------------------------------------
-
-TYPE, EXTENDS(AbstractMeshField_) :: AbstractVectorMeshField_
-END TYPE AbstractVectorMeshField_
-
-!----------------------------------------------------------------------------
-!                                           AbstractVectorMeshFieldPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: AbstractVectorMeshFieldPointer_
-  CLASS(AbstractVectorMeshField_), POINTER :: ptr => NULL()
-END TYPE AbstractVectorMeshFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                                 AbstractTensorMeshField_
-!----------------------------------------------------------------------------
-
-TYPE, EXTENDS(AbstractMeshField_) :: AbstractTensorMeshField_
-END TYPE AbstractTensorMeshField_
-
-!----------------------------------------------------------------------------
-!                                           AbstractTensorMeshFieldPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: AbstractTensorMeshFieldPointer_
-  CLASS(AbstractTensorMeshField_), POINTER :: ptr => NULL()
-END TYPE AbstractTensorMeshFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                                 AbstractMeshFieldPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: AbstractMeshFieldPointer_
-  CLASS(AbstractMeshField_), POINTER :: ptr => NULL()
-END TYPE AbstractMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              SetAbstractMeshFieldParam@ConstructorMethods
@@ -483,78 +422,6 @@ END INTERFACE
 
 INTERFACE AbstractMeshFieldDeallocate
   MODULE PROCEDURE obj_Deallocate
-END INTERFACE AbstractMeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-END INTERFACE AbstractMeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar(obj)
-   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
-END INTERFACE AbstractMeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Vector(obj)
-   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector_Vector
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Vector
-END INTERFACE AbstractMeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor(obj)
-   TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
