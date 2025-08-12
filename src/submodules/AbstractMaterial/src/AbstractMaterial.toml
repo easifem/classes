@@ -34,3 +34,13 @@ returnType = "Vector" # For scalar properties
 numReturns = 2
 argType = "Constant"
 value = [1.0, 2.0, 3.0] # constant vector value
+
+[material.prop3]
+name = "prop3"
+returnType = "Scalar" # For scalar properties
+numReturns = 1
+argType = "Constant"
+value = 1.0 # constant scalar value
+
+[material.region]
+# This is same as meshSelection.toml
