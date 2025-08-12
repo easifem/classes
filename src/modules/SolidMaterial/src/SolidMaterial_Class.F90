@@ -541,11 +541,26 @@ END INTERFACE SolidMaterialImportFromToml
 !
 !# Introduction
 !
-! This routine reads the solidMaterialNames from the toml table
-! It will reallocate materialNames  and return the size of it in tsize.
+! This routine reads the solidMaterialNames (a String) from the toml table
+! It will reallocate materialNames and return the size of it in tsize.
 !
 ! Then you can allocate a vector of SolidMaterialPointer_ with tsize
 ! Then you can call SolidMaterialImportFromToml to read the materials
+!
+! Your toml table looks something like the following (For details
+! see SolidMaterial2.toml):
+!
+! ```toml
+! solidMaterialNames = ['solid1', 'solid2', 'solid3']
+! # other data
+! ```
+!
+! To read SolidMaterial2.toml you will do the following tasks:
+!
+! 1. CALL ReadSolidMaterialNamesFromToml(table, materialNames, tsize)
+! 2. ALLOCATE(obj(tsize), region(tsize))
+! 3. CALL SolidMaterialImportFromToml(obj,table,materialNames,tsize,&
+!                                     region,dom)
 
 INTERFACE
   MODULE SUBROUTINE ReadSolidMaterialNamesFromToml(table, materialNames, &
