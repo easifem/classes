@@ -21,19 +21,10 @@
 
 MODULE FieldFactory
 USE GlobalData, ONLY: I4B, LGT, DFP
-
 USE String_Class, ONLY: String
-
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-
 USE ExceptionHandler_Class, ONLY: e
-
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-
-USE AbstractMeshField_Class, ONLY: AbstractMeshField_, &
-                                   AbstractScalarMeshField_, &
-                                   AbstractVectorMeshField_, &
-                                   AbstractTensorMeshField_
 
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 USE MatrixField_Class, ONLY: MatrixField_, MatrixFieldPointer_
@@ -66,75 +57,6 @@ PUBLIC :: InitiateScalarFields
 PUBLIC :: InitiateVectorFields
 PUBLIC :: InitiateSTScalarFields
 PUBLIC :: InitiateSTVectorFields
-
-PUBLIC :: MeshFieldFactory
-PUBLIC :: ScalarMeshFieldFactory
-PUBLIC :: VectorMeshFieldFactory
-PUBLIC :: TensorMeshFieldFactory
-
-!----------------------------------------------------------------------------
-!                                                           MeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns child of AbstractMeshField
-
-INTERFACE
-  MODULE FUNCTION MeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractMeshField_), POINTER :: ans
-  END FUNCTION MeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     ScalarMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractScalarMeshField
-
-INTERFACE
-  MODULE FUNCTION ScalarMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractScalarMeshField_), POINTER :: ans
-  END FUNCTION ScalarMeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     VectorMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractVectorMeshField
-
-INTERFACE
-  MODULE FUNCTION VectorMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractVectorMeshField_), POINTER :: ans
-  END FUNCTION VectorMeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     TensorMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractTensorMeshField
-
-INTERFACE
-  MODULE FUNCTION TensorMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractTensorMeshField_), POINTER :: ans
-  END FUNCTION TensorMeshFieldFactory
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
