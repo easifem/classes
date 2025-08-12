@@ -604,7 +604,12 @@ END INTERFACE MeshSelectionSet
 !
 !# Introduction
 !
-! This routine set the material to the mesh. It performs following tasks
+! This routine set the material to the mesh. The elements in 
+! mesh corresponding to the elements in MeshSelection_
+! will be assigned medium and material
+! (mesh%elementData%material(medium) = material
+!
+! It performs following tasks
 !
 ! Task-1: isSelectionByMeshID
 ! - First it get the pointer to mesh from dom of given dim
@@ -625,12 +630,20 @@ END INTERFACE MeshSelectionSet
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToMesh1(obj, dom, dim, medium, material)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(INOUT) :: dom
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium is like fluid, solid, etc. On a mesh we can have several
+    !! overlapping mediums (for example in coupled problem)
     INTEGER(I4B), INTENT(IN) :: material
+    !! material number of the medium. For example if medium is soil then
+    !! material = 1, 2, 3 represents different types of soils
   END SUBROUTINE obj_SetMaterialToMesh1
 END INTERFACE
+
+INTERFACE MeshSelectionSetMaterialToMesh
+  MODULE PROCEDURE obj_SetMaterialToMesh1
+END INTERFACE MeshSelectionSetMaterialToMesh
 
 !----------------------------------------------------------------------------
 !                                               SetMaterialToMesh@SetMethods
@@ -641,16 +654,20 @@ END INTERFACE
 ! summary:  Set material to mesh
 !
 !# Introduction
-!   This method calls SetMaterialToMesh1 for each dimension
+! This method calls SetMaterialToMesh1 with dim=dom%GetNSD() 
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToMesh2(obj, dom, medium, material)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(INOUT) :: dom
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B), INTENT(IN) :: material
   END SUBROUTINE obj_SetMaterialToMesh2
 END INTERFACE
+
+INTERFACE MeshSelectionSetMaterialToMesh
+  MODULE PROCEDURE obj_SetMaterialToMesh2
+END INTERFACE MeshSelectionSetMaterialToMesh
 
 !----------------------------------------------------------------------------
 !                                                          Import@IOMethods
