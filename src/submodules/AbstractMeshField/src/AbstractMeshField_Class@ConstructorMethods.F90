@@ -87,17 +87,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                                 Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
-#endif
-#include "../../include/deallocate_vector_ptr.F90"
-END PROCEDURE obj_Deallocate_Ptr_Vector
-
-!----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
@@ -401,39 +390,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate5
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector_Scalar()"
-#endif
-#include "../../include/deallocate_vector_ptr.F90"
-END PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Vector
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector_Vector()"
-#endif
-#include "../../include/deallocate_vector_ptr.F90"
-END PROCEDURE obj_Deallocate_Ptr_Vector_Vector
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector_Tensor()"
-#endif
-#include "../../include/deallocate_vector_ptr.F90"
-END PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
