@@ -2083,6 +2083,8 @@ INTERFACE
     !! Total number of materials
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
     !! entity number of given dimension
+    !! It is used to get the mesh from dom (dim, entityNum) is used 
+    !! to get the mesh from domain
   END SUBROUTINE obj_SetTotalMaterial
 END INTERFACE
 
