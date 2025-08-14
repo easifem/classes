@@ -118,6 +118,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: AddMaterial2 => obj_AddMaterial2
   GENERIC, PUBLIC :: AddMaterial => AddMaterial1, AddMaterial2
   PROCEDURE, PUBLIC, PASS(obj) :: ExpandMatProps => obj_ExpandMatProps
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  !! Set the name of the material
 END TYPE AbstractMaterial_
 
 !----------------------------------------------------------------------------
@@ -283,6 +285,22 @@ INTERFACE
   MODULE SUBROUTINE obj_ExpandMatProps(obj)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_ExpandMatProps
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-14
+! summary:  Set the name of the material
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+  !! Abstract Material object
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
