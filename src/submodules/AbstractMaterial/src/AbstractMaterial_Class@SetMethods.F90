@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) SetMethods
-USE BaseMethod
+USE Display_Method, only: ToString
 USE HashTables, ONLY: Hashkey
 IMPLICIT NONE
 CONTAINS
@@ -26,44 +26,47 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddMaterial1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AddMaterial1()"
-LOGICAL(LGT) :: isMatPresent, matPropsAlloc, sizeOK
-INTEGER(I4B) :: matPropSize
+#endif
 
-IF (.NOT. obj%isInit) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: AbstractMaterial_::obj is not initiated.')
-  RETURN
-END IF
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
 
-isMatPresent = obj%IsMaterialPresent(name)
-IF (isMatPresent) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: The material '//name// &
-                    ' is already present!')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'AbstractMaterial_::obj is not initated ')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. (obj%IsMaterialPresent(name))
+CALL AssertError1(isok, myName, &
+                  'The material name='//name//' is already present!')
+#endif
 
 obj%tProperties = obj%tProperties + 1
 
 CALL obj%tbl%set(Hashkey(name), obj%tProperties)
 
-matPropsAlloc = ALLOCATED(obj%matProps)
+tsize = 0
+isok = ALLOCATED(obj%matProps)
+IF (isok) tsize = SIZE(obj%matProps)
 
-IF (matPropsAlloc) THEN
-  matPropSize = SIZE(obj%matProps)
-ELSE
-  matPropSize = 0
-END IF
-
-sizeOK = obj%tProperties .LE. matPropSize
-
-IF (.NOT. sizeOK) THEN
-  CALL obj%ExpandMatProps()
-END IF
+isok = obj%tProperties .LE. tsize
+IF (.NOT. isok) CALL obj%ExpandMatProps()
 
 ALLOCATE (obj%matProps(obj%tProperties)%ptr)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_AddMaterial1
 
 !----------------------------------------------------------------------------
@@ -71,11 +74,26 @@ END PROCEDURE obj_AddMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddMaterial2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_AddMaterial2()"
+#endif
+
 INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = SIZE(name)
 DO ii = 1, tsize
   CALL obj%AddMaterial(name=name(ii)%chars())
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_AddMaterial2
 
 !----------------------------------------------------------------------------
@@ -83,14 +101,27 @@ END PROCEDURE obj_AddMaterial2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ExpandMatProps
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ExpandMatProps()"
+#endif
+
+LOGICAL(LGT) :: isok
 TYPE(UserFunctionPointer_), ALLOCATABLE :: temp(:)
 INTEGER(I4B) :: oldSize, newSize, ii
-LOGICAL(LGT) :: matPropsAlloc
 
-matPropsAlloc = ALLOCATED(obj%matProps)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (.NOT. matPropsAlloc) THEN
+isok = ALLOCATED(obj%matProps)
+IF (.NOT. isok) THEN
   ALLOCATE (obj%matProps(thresholdSize))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -119,6 +150,38 @@ END DO
 
 DEALLOCATE (temp)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ExpandMatProps
+
+!----------------------------------------------------------------------------
+!                                                                     SetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%name = name
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetName
+
+!----------------------------------------------------------------------------
+!                                                              Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

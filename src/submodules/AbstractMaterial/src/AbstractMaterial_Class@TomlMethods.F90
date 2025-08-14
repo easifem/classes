@@ -63,8 +63,11 @@ SUBROUTINE ReadNameFromToml(obj, table)
                 stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'Cannot find/read "name" in the config file.')
+  IF (.NOT. isok) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+        'Cannot find/read "name" in the config file. Using default name: '// &
+                            myprefix)
+  END IF
 #endif
 
 #ifdef DEBUG_VER
@@ -191,6 +194,7 @@ SUBROUTINE ReadDataFromTomlTable(obj, table, default_name)
 #endif
 
   CALL afunc%ImportFromToml(table=table)
+  CALL afunc%SetName(name%chars())
   afunc => NULL()
 
 #ifdef DEBUG_VER
@@ -236,8 +240,7 @@ SUBROUTINE ReadMatPropsFromPropNames(obj, table, propNames)
           'Cannot find/read propName='//propNames(ii)//' in the config file.')
 #endif
 
-    CALL ReadDataFromTomlTable(obj=obj, table=node, &
-                               default_name=propNames(ii))
+   CALL ReadDataFromTomlTable(obj=obj, table=node, default_name=propNames(ii))
   END DO
 
   node => NULL()
