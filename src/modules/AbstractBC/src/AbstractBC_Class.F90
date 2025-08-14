@@ -757,7 +757,7 @@ END INTERFACE
 ! 3. Start a loop for tElemToFace, get the localCellNum and localFaceNum from
 !    elemToFace, and call fedof%GetTotalFaceDOF
 ! 4. Start a loop for tElemToEdge, get the localCellNum and localEdgeNum from
-!    elemToEdge, and call fedof%GetTotalEdgeDOF
+!    elemToEdge,
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodeNumH1Hierarchical(obj, fedof) RESULT(ans)
