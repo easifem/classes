@@ -746,11 +746,11 @@ CONTAINS
     SetSparsity3, SetSparsity4
   !! Generic method for Setting the sparsity
 
-  PROCEDURE, PASS(obj) :: SetTotalMaterial1 => obj_SetTotalMaterial1
+  PROCEDURE, PASS(obj) :: SetTotalMedium1 => obj_SetTotalMedium1
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PASS(obj) :: SetTotalMaterial2 => obj_SetTotalMaterial2
+  PROCEDURE, PASS(obj) :: SetTotalMedium2 => obj_SetTotalMedium2
   !! Adding a material ID of a medium which is mapped to the mesh
-  GENERIC, PUBLIC :: SetTotalMaterial => SetTotalMaterial1, SetTotalMaterial2
+  GENERIC, PUBLIC :: SetTotalMedium => SetTotalMedium1, SetTotalMedium2
   !! Generic method
 
   PROCEDURE, PASS(obj) :: SetMaterial1 => obj_SetMaterial1
@@ -4093,13 +4093,13 @@ END INTERFACE
 ! summary: Set the total material (medium) assigned to a given element
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial1(obj, n, globalElement, islocal)
+  MODULE SUBROUTINE obj_SetTotalMedium1(obj, n, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
     !! Total number of medium assigned to a given element
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_SetTotalMaterial1
+  END SUBROUTINE obj_SetTotalMedium1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4111,10 +4111,10 @@ END INTERFACE
 ! summary: Set the total number of medium assigned to the entire mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+  MODULE SUBROUTINE obj_SetTotalMedium2(obj, n)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
-  END SUBROUTINE obj_SetTotalMaterial2
+  END SUBROUTINE obj_SetTotalMedium2
 END INTERFACE
 
 !----------------------------------------------------------------------------

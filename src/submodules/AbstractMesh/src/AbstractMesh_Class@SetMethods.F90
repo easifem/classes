@@ -32,7 +32,7 @@ USE CSRMatrix_Method, ONLY: SetSparsity
 
 USE FacetData_Class, ONLY: FacetData_SetParam
 
-USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, &
+USE ElemData_Class, ONLY: ElemData_SetTotalMedium, &
                           ElemData_Set
 
 IMPLICIT NONE
@@ -341,29 +341,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSparsity4
 
 !----------------------------------------------------------------------------
-!                                                           setTotalMaterial
+!                                                           SetTotalMedium
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial1
+MODULE PROCEDURE obj_SetTotalMedium1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
-CALL ElemData_SetTotalMaterial(obj%elementData(iel)%ptr, n=n)
-END PROCEDURE obj_SetTotalMaterial1
+CALL ElemData_SetTotalMedium(obj%elementData(iel)%ptr, n=n)
+END PROCEDURE obj_SetTotalMedium1
 
 !----------------------------------------------------------------------------
-!                                                           setTotalMaterial
+!                                                           SetTotalMedium
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial2
+MODULE PROCEDURE obj_SetTotalMedium2
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
 DO ii = 1, obj%tElements
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemData_SetTotalMaterial(obj%elementData(ii)%ptr, n=n)
+  CALL ElemData_SetTotalMedium(obj%elementData(ii)%ptr, n=n)
 END DO
-END PROCEDURE obj_SetTotalMaterial2
+END PROCEDURE obj_SetTotalMedium2
 
 !----------------------------------------------------------------------------
 !                                                                setMaterial

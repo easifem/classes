@@ -367,7 +367,7 @@ CONTAINS
   PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMedium => obj_SetTotalMedium
   !! set the total number of materials
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
@@ -2067,7 +2067,7 @@ INTERFACE AbstractDomainSetSparsity
 END INTERFACE AbstractDomainSetSparsity
 
 !----------------------------------------------------------------------------
-!                                               SetTotalMaterial@SetMethods
+!                                               SetTotalMedium@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2075,7 +2075,7 @@ END INTERFACE AbstractDomainSetSparsity
 ! summary:
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial(obj, dim, n, entityNum)
+  MODULE SUBROUTINE obj_SetTotalMedium(obj, dim, n, entityNum)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh to select from
@@ -2085,7 +2085,7 @@ INTERFACE
     !! entity number of given dimension
     !! It is used to get the mesh from dom (dim, entityNum) is used 
     !! to get the mesh from domain
-  END SUBROUTINE obj_SetTotalMaterial
+  END SUBROUTINE obj_SetTotalMedium
 END INTERFACE
 
 !----------------------------------------------------------------------------

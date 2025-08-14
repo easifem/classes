@@ -15,14 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractDomain_Class) IOMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
-USE Display_Method
-USE StringUtility
-USE ReallocateUtility
-USE tomlf, ONLY: toml_serialize, toml_get => get_value
-USE TomlUtility
-USE HDF5File_Method
-USE FEMesh_Class, ONLY: FEMesh_, FEMesh_Pointer
+USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -31,40 +24,49 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
 LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
 CALL Display("engine: "//obj%engine, unitno=unitno)
-CALL Display("majorVersion: "//tostring(obj%majorVersion), unitno=unitno)
-CALL Display("minorVersion: "//tostring(obj%minorVersion), unitno=unitno)
-CALL Display("version: "//tostring(obj%version), unitno=unitno)
-CALL Display("nsd: "//tostring(obj%nsd), unitno=unitno)
-CALL Display("maxNptrs: "//tostring(obj%maxNptrs), unitno=unitno)
-CALL Display("minNptrs: "//tostring(obj%minNptrs), unitno=unitno)
-CALL Display("tNodes: "//tostring(obj%tNodes), unitno=unitno)
+CALL Display("majorVersion: "//ToString(obj%majorVersion), unitno=unitno)
+CALL Display("minorVersion: "//ToString(obj%minorVersion), unitno=unitno)
+CALL Display("version: "//ToString(obj%version), unitno=unitno)
+CALL Display("nsd: "//ToString(obj%nsd), unitno=unitno)
+CALL Display("maxNptrs: "//ToString(obj%maxNptrs), unitno=unitno)
+CALL Display("minNptrs: "//ToString(obj%minNptrs), unitno=unitno)
+CALL Display("tNodes: "//ToString(obj%tNodes), unitno=unitno)
 CALL Display(obj%isNodeNumberSparse, "isNodeNumberSparse: ", unitno=unitno)
-CALL Display("maxElemNum: "//tostring(obj%maxElemNum), unitno=unitno)
-CALL Display("minElemNum: "//tostring(obj%minElemNum), unitno=unitno)
+CALL Display("maxElemNum: "//ToString(obj%maxElemNum), unitno=unitno)
+CALL Display("minElemNum: "//ToString(obj%minElemNum), unitno=unitno)
 CALL Display(obj%isElemNumberSparse, "isElemNumberSparse: ", unitno=unitno)
-CALL Display("tEntitiesForNodes: "//tostring(obj%tEntitiesForNodes), &
+CALL Display("tEntitiesForNodes: "//ToString(obj%tEntitiesForNodes), &
              unitno=unitno)
-CALL Display("tEntitiesForElements: "//tostring(obj%tEntitiesForElements), &
+CALL Display("tEntitiesForElements: "//ToString(obj%tEntitiesForElements), &
              unitno=unitno)
-CALL Display("tElements: "//tostring(obj%tElements), &
-             unitno=unitno)
-CALL Display("tEntities: "//tostring(obj%tEntities), &
-             unitno=unitno)
+CALL Display("tElements: "//ToString(obj%tElements), unitno=unitno)
+CALL Display("tEntities: "//ToString(obj%tEntities), unitno=unitno)
 abool = ALLOCATED(obj%nodeCoord)
 CALL Display(abool, "nodeCoord Allocated: ", unitno=unitno)
-
 abool = ASSOCIATED(obj%kdtree)
 CALL Display(abool, "kdtree Associated: ", unitno=unitno)
-
 abool = ALLOCATED(obj%kdresult)
 CALL Display(abool, "kdresult Allocated: ", unitno=unitno)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -72,325 +74,51 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayDomainInfo
-CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", &
-             unitno=unitno)
-IF (.NOT. obj%isInit) RETURN
-
-CALL EqualLine(unitno=unitno)
-CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
-CALL Display("engine: "//obj%engine, unitno=unitno)
-CALL Display("version: "//tostring(obj%version), unitno=unitno)
-CALL Display("nsd: "//tostring(obj%nsd), unitno=unitno)
-CALL Display("minNptrs: "//tostring(obj%minNptrs), unitno=unitno)
-CALL Display("maxNptrs: "//tostring(obj%maxNptrs), unitno=unitno)
-CALL Display("minElemNum: "//tostring(obj%minElemNum), unitno=unitno)
-CALL Display("maxElemNum: "//tostring(obj%maxElemNum), unitno=unitno)
-
-CALL Display("tNodes: "//tostring(obj%tNodes), unitno=unitno)
-
-CALL Display("tEntitiesForNodes: "//tostring(obj%tEntitiesForNodes), &
-             unitno=unitno)
-
-CALL Display("tEntitiesForElements: "//tostring(obj%tEntitiesForElements), &
-             unitno=unitno)
-
-CALL Display("tElements: "//tostring(obj%tElements), unitno=unitno)
-
-CALL Display("Total mesh of volume: "//tostring(obj%tEntities(3)), &
-             unitno=unitno)
-
-CALL Display("Total mesh of surface: "//tostring(obj%tEntities(2)), &
-             unitno=unitno)
-
-CALL Display("Total mesh of curve: "//tostring(obj%tEntities(1)), &
-             unitno=unitno)
-
-CALL Display("Total mesh of point: "//tostring(obj%tEntities(0)), &
-             unitno=unitno)
-
-END PROCEDURE obj_DisplayDomainInfo
-
-!----------------------------------------------------------------------------
-!                                                                     Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_DisplayDomainInfo()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling AbstractDomainImportCheckErr()')
-#endif
+CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
 
-CALL AbstractDomainImportCheckErr(obj=obj, hdf5=hdf5, myName=myName)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Calling AbstractDomainImportMetaData')
-#endif
-
-CALL AbstractDomainImportMetaData(obj=obj, hdf5=hdf5, group=group, &
-                                  myName=myName)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                               AbstractDomainImportCheckErr
-!----------------------------------------------------------------------------
-
-SUBROUTINE AbstractDomainImportCheckErr(obj, hdf5, myName)
-  CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-  CHARACTER(*), INTENT(IN) :: myName
-
-  ! internal variable
-  LOGICAL(LGT) :: problem
-
-  problem = obj%isInit
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
-        "[INTERNAL ERROR] :: AbstractDomain_Class::obj is already initiated.")
-    RETURN
-  END IF
-
-  problem = .NOT. hdf5%isOpen()
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INTERNAL ERROR] :: HDF5 file is not opened')
-    RETURN
-  END IF
-
-  problem = .NOT. hdf5%isRead()
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
-    RETURN
-  END IF
-END SUBROUTINE AbstractDomainImportCheckErr
-
-!----------------------------------------------------------------------------
-!                                               AbstractDomainImportMetaData
-!----------------------------------------------------------------------------
-
-SUBROUTINE AbstractDomainImportMetaData(obj, hdf5, group, myName)
-  CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-  CHARACTER(*), INTENT(IN) :: group
-  CHARACTER(*), INTENT(IN) :: myName
-
-  obj%isInit = .TRUE.
-
-  ! read engine
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-         VALUE=obj%engine, fieldname="engine", myName=myName, modName=modName)
-
-  ! read majorVersion
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-            VALUE=obj%majorVersion, fieldname="majorVersion", myName=myName, &
-                      modName=modName)
-
-  ! read minorVersion
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-            VALUE=obj%minorVersion, fieldname="minorVersion", myName=myName, &
-                      modName=modName)
-
-  ! read version
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%version, fieldname="version", myName=myName, &
-                      modName=modName)
-
-  ! read NSD
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%NSD, fieldname="NSD", myName=myName, &
-                      modName=modName)
-
-  ! maxNptrs
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                    VALUE=obj%maxNptrs, fieldname="maxNptrs", myName=myName, &
-                      modName=modName)
-
-  ! minNptrs
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                    VALUE=obj%minNptrs, fieldname="minNptrs", myName=myName, &
-                      modName=modName)
-
-  ! tNodes
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%tNodes, fieldname="tNodes", myName=myName, &
-                      modName=modName)
-
-  ! nodeCoord
-  CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=group, &
-                  VALUE=obj%nodeCoord, fieldname="nodeCoord", myName=myName, &
-                      modName=modName)
-
-  ! is node number sparse
-  IF ((obj%maxNptrs - obj%minNptrs) .EQ. (obj%tNodes - 1)) THEN
-    obj%isNodeNumberSparse = .FALSE.
-  ELSE
-    obj%isNodeNumberSparse = .TRUE.
-  END IF
-
-  ! maxElemNum
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                VALUE=obj%maxElemNum, fieldname="maxElemNum", myName=myName, &
-                      modName=modName)
-
-  ! minElemNum
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                VALUE=obj%minElemNum, fieldname="minElemNum", myName=myName, &
-                      modName=modName)
-
-  ! tEntitiesForNodes
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                 VALUE=obj%tEntitiesForNodes, fieldname="tEntitiesForNodes", &
-                      myName=myName, modName=modName)
-
-  ! tEntitiesForElements
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-           VALUE=obj%tEntitiesForElements, fieldname="tEntitiesForElements", &
-                      myName=myName, modName=modName)
-
-  ! numVolumeEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%tEntities(3), fieldname="numVolumeEntities", &
-                      myName=myName, modName=modName)
-
-  ! numSurfaceEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                     VALUE=obj%tEntities(2), fieldname="numSurfaceEntities", &
-                      myName=myName, modName=modName)
-
-  ! numCurveEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%tEntities(1), fieldname="numCurveEntities", &
-                      myName=myName, modName=modName)
-
-  ! numPointEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=obj%tEntities(0), fieldname="numPointEntities", &
-                      myName=myName, modName=modName)
-
-END SUBROUTINE AbstractDomainImportMetaData
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-TYPE(HDF5File_) :: meshfile
-CHARACTER(:), ALLOCATABLE :: meshfilename, ext, group
-CHARACTER(*), PARAMETER :: default_meshfilename = "mesh.h5"
-CHARACTER(*), PARAMETER :: default_group = ""
-INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: problem
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-CALL Display(myName//" reading filename...")
-#endif
-
-CALL toml_get(table, "filename", meshfilename, default_meshfilename, &
-              origin=origin, stat=stat)
-
-#ifdef DEBUG_VER
-CALL Display(myName//" filename: "//meshfilename)
-#endif
-
-ext = getExtension(meshfilename)
-problem = .NOT. ext .EQ. "h5"
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: given filename is not HDF5File. '// &
-                    'Extension should be "h5"')
-END IF
-
-
-#ifdef DEBUG_VER
-CALL Display(myName//" reading group...")
-#endif
-
-CALL toml_get(table, "group", group, default_group, origin=origin, stat=stat)
-
-#ifdef DEBUG_VER
-CALL Display(myName//" group: " // group)
-#endif
-
-CALL meshfile%Initiate(meshfilename, mode="READ")
-CALL meshfile%OPEN()
-CALL obj%IMPORT(hdf5=meshfile, group=group)
-CALL meshfile%DEALLOCATE()
+CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
+CALL Display("engine: "//obj%engine, unitno=unitno)
+CALL Display("version: "//ToString(obj%version), unitno=unitno)
+CALL Display("nsd: "//ToString(obj%nsd), unitno=unitno)
+CALL Display("minNptrs: "//ToString(obj%minNptrs), unitno=unitno)
+CALL Display("maxNptrs: "//ToString(obj%maxNptrs), unitno=unitno)
+CALL Display("minElemNum: "//ToString(obj%minElemNum), unitno=unitno)
+CALL Display("maxElemNum: "//ToString(obj%maxElemNum), unitno=unitno)
+CALL Display("tNodes: "//ToString(obj%tNodes), unitno=unitno)
+CALL Display("tEntitiesForNodes: "//ToString(obj%tEntitiesForNodes), &
+             unitno=unitno)
+CALL Display("tEntitiesForElements: "//ToString(obj%tEntitiesForElements), &
+             unitno=unitno)
+CALL Display("tElements: "//ToString(obj%tElements), unitno=unitno)
+CALL Display("total mesh of volume: "//ToString(obj%tEntities(3)), &
+             unitno=unitno)
+CALL Display("total mesh of surface: "//ToString(obj%tEntities(2)), &
+             unitno=unitno)
+CALL Display("total mesh of curve: "//ToString(obj%tEntities(1)), &
+             unitno=unitno)
+CALL Display("total mesh of point: "//ToString(obj%tEntities(0)), &
+             unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
-
-IF (.NOT. ASSOCIATED(node)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[CONFIG ERROR] :: following error occured while reading '// &
-               'the toml file :: cannot find '//tomlName//" table in config.")
-  RETURN
-END IF
-
-CALL obj%ImportFromToml(table=node)
-
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
- CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF, &
-               unitno=stdout)
-END IF
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-
-END PROCEDURE obj_ImportFromToml2
+END PROCEDURE obj_DisplayDomainInfo
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

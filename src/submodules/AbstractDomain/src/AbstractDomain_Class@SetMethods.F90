@@ -292,12 +292,12 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
 END SUBROUTINE part2_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalMaterial
+!                                                           SetTotalMedium
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial
+MODULE PROCEDURE obj_SetTotalMedium
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetTotalMaterial()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetTotalMedium()"
 #endif
 
 CLASS(AbstractMesh_), POINTER :: meshptr
@@ -308,7 +308,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
-CALL meshptr%SetTotalMaterial(n)
+CALL meshptr%SetTotalMedium(n)
 meshptr => NULL()
 
 #ifdef DEBUG_VER
@@ -316,10 +316,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_SetTotalMaterial
+END PROCEDURE obj_SetTotalMedium
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalMaterial
+!                                                                   SetMedium
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial

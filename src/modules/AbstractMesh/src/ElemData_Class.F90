@@ -64,7 +64,7 @@ PUBLIC :: Elemdata_eq
 PUBLIC :: Elemdata_SetID
 PUBLIC :: Elemdata_Copy
 PUBLIC :: Elemdata_GetGlobalFaceCon
-PUBLIC :: Elemdata_SetTotalMaterial
+PUBLIC :: Elemdata_SetTotalMedium
 PUBLIC :: ASSIGNMENT(=)
 PUBLIC :: Elemdata_GetConnectivity
 PUBLIC :: Elemdata_GetConnectivity2
@@ -414,7 +414,7 @@ SUBROUTINE Elemdata_Deallocate(obj)
 END SUBROUTINE Elemdata_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                         SetTotalMaterial
+!                                                         SetTotalMedium
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -423,7 +423,7 @@ END SUBROUTINE Elemdata_Deallocate
 !
 ! this subroutine allocates materials in obj
 
-PURE SUBROUTINE Elemdata_SetTotalMaterial(obj, n)
+PURE SUBROUTINE Elemdata_SetTotalMedium(obj, n)
   TYPE(Elemdata_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
 
@@ -441,7 +441,7 @@ PURE SUBROUTINE Elemdata_SetTotalMaterial(obj, n)
     CALL Reallocate(obj%material, n)
   END IF
 
-END SUBROUTINE Elemdata_SetTotalMaterial
+END SUBROUTINE Elemdata_SetTotalMedium
 
 !----------------------------------------------------------------------------
 !                                                           ElemdataInitiate
