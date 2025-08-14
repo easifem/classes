@@ -21,6 +21,7 @@ USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_Shape => Shape
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE UserFunction_Class, ONLY: UserFunctionPointer_
 
 IMPLICIT NONE
 
@@ -164,7 +165,7 @@ CLASS(UserFunction_), POINTER :: func
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 #ifdef DEBUG_VER
 isok = material%IsMaterialPresent(name)
@@ -180,8 +181,7 @@ func => material%GetMaterialPointer(name)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(func)
-CALL AssertError1(isok, myName, &
-                  'material pointer not found.')
+CALL AssertError1(isok, myName, 'material pointer not found.')
 #endif
 
 CALL obj%Set(func=func, times=times)
@@ -191,8 +191,7 @@ func => NULL()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
-
+#endif
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -287,7 +286,118 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
-!
+!                                                                        Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set6
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: tsize, ii
+TYPE(UserFunctionPointer_), ALLOCATABLE :: func(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(material)
+ALLOCATE (func(tsize))
+
+DO ii = 1, tsize
+
+! Check if material(ii)%ptr is associated or not
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(material(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'material('//ToString(ii)//')%ptr is not associated')
+#endif
+
+! Check if material(ii)%ptr has the name or not
+#ifdef DEBUG_VER
+  isok = material(ii)%ptr%IsMaterialPresent(name)
+  CALL AssertError1(isok, myName, &
+                    'material name = '//name//' not found in material('// &
+                    ToString(ii)//')')
+#endif
+
+  func(ii)%ptr => material(ii)%ptr%GetMaterialPointer(name)
+
+END DO
+
+CALL obj%Set(medium=medium, func=func, times=times)
+
+! Clean up func
+DO ii = 1, tsize
+  func(ii)%ptr => NULL()
+END DO
+DEALLOCATE (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set6
+
+!----------------------------------------------------------------------------
+!                                                                         Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set7
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
+LOGICAL(LGT) :: isok
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: tsize, ii, telements, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(func)
+
+! Check if func(ii)%ptr is associated or not
+#ifdef DEBUG_VER
+DO ii = 1, tsize
+  isok = ASSOCIATED(func(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'func('//ToString(ii)//')%ptr is not associated')
+END DO
+#endif
+
+telements = obj%mesh%GetTotalElements()
+
+DO ii = 1, telements
+  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=yes, &
+                            medium=medium)
+
+  ! Check if material index is out of bound or not
+#ifdef DEBUG_VER
+  isok = (jj .LE. tsize) .AND. (jj .NE. 0)
+  CALL AssertError1(isok, myName, &
+                    'material index '//ToString(jj)// &
+                    ' is out of bounds for func size '// &
+                    ToString(tsize)//' for local element = '// &
+                    ToString(ii))
+#endif
+
+  CALL obj%Set(func=func(jj)%ptr, globalElement=ii, islocal=yes, &
+               times=times)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set7
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

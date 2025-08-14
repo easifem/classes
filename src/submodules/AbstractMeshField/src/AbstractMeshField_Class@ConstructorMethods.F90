@@ -270,46 +270,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                           Iniitate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-LOGICAL(LGT) :: isok
-#endif
-
-CLASS(UserFunction_), POINTER :: func
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = material%IsMaterialPresent(name)
-CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
-#endif
-
-func => NULL()
-func => material%GetMaterialPointer(name)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(func)
-CALL AssertError1(isok, myname, 'Material pointer not found.')
-#endif
-
-CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
-
-NULLIFY (func)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate3
-
-!----------------------------------------------------------------------------
 !                                                           Initiate
 !----------------------------------------------------------------------------
 
@@ -390,6 +350,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate5
+
+!----------------------------------------------------------------------------
+!                                                           Iniitate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+LOGICAL(LGT) :: isok
+#endif
+
+CLASS(UserFunction_), POINTER :: func
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = material%IsMaterialPresent(name)
+CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
+#endif
+
+func => NULL()
+func => material%GetMaterialPointer(name)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(func)
+CALL AssertError1(isok, myname, 'Material pointer not found.')
+#endif
+
+CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
+
+NULLIFY (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
