@@ -29,8 +29,9 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
-USE AbstractMaterial_Class, ONLY: AbstractMaterial_
-USE UserFunction_Class, ONLY: UserFunction_
+USE AbstractMaterial_Class, ONLY: AbstractMaterial_, &
+                                  AbstractMaterialPointer_
+USE UserFunction_Class, ONLY: UserFunction_, UserFunctionPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -195,8 +196,12 @@ CONTAINS
   !! Set all values by using the FEVariable
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set all values by using the FEVariable
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  !! Set the values by using AbstractMaterialPointer_
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  !! Set the values by using user function pointers
 
-  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, Set7
 
   ! SET:
   ! @InsertMethods
@@ -313,38 +318,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Initiate from abstractMaterials
-!
-!# Introduction
-!
-! We first search the name in material
-! If the name is found in the material  then we get the pointer to
-! user function corresponding to the material name.
-! Then we call Initiate4 method
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    !! AbstractMeshField
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! mesh
-    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
-    !! Abstract material
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the material
-    CHARACTER(*), INTENT(IN) :: engine
-    !! engine of the AbstractMeshField
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes in time
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
 ! summary: Initiate from UserFunction_
 
 INTERFACE
@@ -405,6 +378,38 @@ END INTERFACE
 INTERFACE AbstractMeshFieldInitiate
   MODULE PROCEDURE obj_Initiate5
 END INTERFACE AbstractMeshFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Initiate from abstractMaterials
+!
+!# Introduction
+!
+! We first search the name in material
+! If the name is found in the material  then we get the pointer to
+! user function corresponding to the material name.
+! Then we call Initiate4 method
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the material
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate3
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -560,7 +565,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Set values in AbstractMeshField_
+! summary: Set values in AbstractMeshField_ from FEVariable
+!
+!# Introduction
+! This routine sets the values in AbstractMeshField_ from FEVariable.
 
 INTERFACE
   MODULE SUBROUTINE obj_Set1(obj, globalElement, islocal, fevar)
@@ -581,6 +589,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Set values in AbstractMeshField_
+!
+!# Introduction
+! This routine sets the values in AbstractMeshField_ from UserFunction.
+!
+! - For each element of the mesh we get coordinates
+! - Then we get value from userfunction by using the coordinates
+! - Then we set the value in AbstractMeshField_
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, func, times)
@@ -599,6 +614,12 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Set values in AbstractMeshField_ by AbstractMaterial
+!
+!# Introduction
+! This routine sets the values in AbstractMeshField_ from
+! AbstractMaterial.
+! Step 1: First we get the usefucntion from material by using the name
+! Step 2: Then we call Set2 method to set the values in AbstractMeshField_
 
 INTERFACE
   MODULE SUBROUTINE obj_Set3(obj, material, name, times)
@@ -618,7 +639,11 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Set values in AbstractMeshField_
+! summary: Set values in AbstractMeshField_ using FeVariable
+!
+!# Introduction
+!
+! This routine sets the values in AbstractMeshField_ from FEVariable.
 
 INTERFACE
   MODULE SUBROUTINE obj_Set4(obj, fevar)
@@ -633,7 +658,12 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Set values in AbstractMeshField_ by AbstractMaterial
+! summary: Set values in AbstractMeshField_ by UserFunction
+!
+!# Introduction
+! This routine sets the value of globalElement in AbstractMeshField_
+! from user function. This function is like Set2, but in this case
+! we set the value of a single element.
 
 INTERFACE
   MODULE SUBROUTINE obj_Set5(obj, func, globalElement, islocal, times)
@@ -648,6 +678,80 @@ INTERFACE
     !! time vector when the var type is `Time` or `SpaceTime`
   END SUBROUTINE obj_Set5
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-13
+! summary: Set AbstractMeshField_ using AbstractMaterial Add
+!          MeshSelection_
+!
+!# Introduction
+! This routine sets the values in AbstractMeshField_ from
+! AbstractMaterial. The following steps are performed:
+!
+! 1. The elements of mesh contains the medium and material information
+! 2. We first get the material number which acts as a pointer to
+!    material.
+! 3. Then from the material we get the user function by using the name
+! 4. Then we set the values in that element using this function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set6(obj, medium, material, name, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium number
+    CLASS(AbstractMaterialPointer_), INTENT(INOUT) :: material(:)
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the material
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set6
+END INTERFACE
+
+INTERFACE AbstractMeshFieldSet
+  MODULE PROCEDURE obj_Set6
+END INTERFACE AbstractMeshFieldSet
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-13
+! summary: Set AbstractMeshField_ using AbstractMaterial Add
+!          MeshSelection_
+!
+!# Introduction
+! This routine sets the values in AbstractMeshField_ from
+! AbstractMaterial. The following steps are performed:
+!
+! 1. The elements of mesh contains the medium and material information
+! 2. We first get the material number which acts as a pointer to
+!    material.
+! 3. Then from the material we get the user function by using the name
+! 4. Then we set the values in that element using this function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set7(obj, medium, func, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium number
+    CLASS(UserFunctionPointer_), INTENT(INOUT) :: func(:)
+    !! Abstract material
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set7
+END INTERFACE
+
+INTERFACE AbstractMeshFieldSet
+  MODULE PROCEDURE obj_Set7
+END INTERFACE AbstractMeshFieldSet
 
 !----------------------------------------------------------------------------
 !                                                       Insert@InsertMethods
