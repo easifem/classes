@@ -1,0 +1,8 @@
+[check]
+select = []
+ignore = []
+line-length = 78
+fix = false
+# output-format =  "full"
+# show-fixes = false
+# unsafe-fixes = true
