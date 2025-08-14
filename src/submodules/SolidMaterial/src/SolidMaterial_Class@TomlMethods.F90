@@ -150,6 +150,8 @@ DO ii = 1, mysize
     CALL obj(ii)%ptr%ImportFromToml(table=node)
   END IF
 
+  CALL obj(ii)%ptr%SetName(materialNames(ii)%chars())
+
 END DO
 
 node => NULL()
@@ -164,10 +166,10 @@ END PROCEDURE obj_ImportFromToml2
 !                                                       ReadPropNamesFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ReadSolidMaterialNamesFromToml
+MODULE PROCEDURE SolidMaterialNamesFromToml
 ! Internal variables
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "ReadSolidMaterialNamesFromToml()"
+CHARACTER(*), PARAMETER :: myName = "SolidMaterialNamesFromToml()"
 #endif
 
 INTEGER(I4B) :: origin, stat, ii
@@ -197,7 +199,7 @@ CALL GetValue(table=table, key="solidMaterialNames", VALUE=materialNames, &
 
 #ifdef DEBUG_VER
 CALL AssertError1(isok, myName, &
-                  'Cannot find/read "materialNames" in the config file.')
+                  'Cannot find/read "solidMaterialNames" in the config file.')
 #endif
 
 #ifdef DEBUG_VER
@@ -212,7 +214,7 @@ tsize = SIZE(materialNames)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE ReadSolidMaterialNamesFromToml
+END PROCEDURE SolidMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                              ImportFromToml
@@ -247,8 +249,8 @@ CALL AssertError1(isok, myName, &
                   //tomlName//"] table in config.")
 #endif
 
-CALL ReadSolidMaterialNamesFromToml(table=node, materialNames=materialNames, &
-                                    tsize=tsize)
+CALL SolidMaterialNamesFromToml(table=node, materialNames=materialNames, &
+                                tsize=tsize)
 CALL SolidMaterialReallocate(obj, tsize)
 
 isok = PRESENT(region)
