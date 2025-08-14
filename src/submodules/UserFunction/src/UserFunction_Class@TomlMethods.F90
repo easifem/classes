@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(UserFunction_Class) ImportTomlMethods
+SUBMODULE(UserFunction_Class) TomlMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF, stdout
 USE Display_Method, ONLY: Display, ToString
@@ -177,8 +177,10 @@ SUBROUTINE ReadNameFromToml(obj, table)
                 stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'Cannot find/read "name" in the config file.')
+  IF (.NOT. isok) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+       'Cannot find/read "name" in the config file. Using default='//myprefix)
+  END IF
 #endif
 
 #ifdef DEBUG_VER
@@ -827,4 +829,4 @@ END FUNCTION GetDefaultNumReturns
 
 #include "../../include/errors.F90"
 
-END SUBMODULE ImportTomlMethods
+END SUBMODULE TomlMethods
