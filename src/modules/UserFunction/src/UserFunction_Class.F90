@@ -127,6 +127,8 @@ CONTAINS
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  !! Set name of the function
 
   ! GET:
   ! @GetMethods
@@ -640,6 +642,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                          SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-14
+! summary:  Set name of the function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -677,9 +694,8 @@ CONTAINS
 ! summary: Sets the user function
 
 SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
-                 luaScript, luaFunctionName, scalarFunction, vectorFunction, &
-                   matrixFunction)
-
+                   luaScript, luaFunctionName, scalarFunction, &
+                   vectorFunction, matrixFunction)
   USE BaseType, ONLY: varopt => TypeFEVariableOpt
   USE GlobalData, ONLY: CHAR_LF
   USE Display_Method, ONLY: ToString
