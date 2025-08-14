@@ -56,7 +56,7 @@ PUBLIC :: AddSolidMaterial
 PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
 PUBLIC :: SolidMaterialImportFromToml
-PUBLIC :: ReadSolidMaterialNamesFromToml
+PUBLIC :: SolidMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                            SolidMaterial_
@@ -563,14 +563,14 @@ END INTERFACE SolidMaterialImportFromToml
 !                                     region,dom)
 
 INTERFACE
-  MODULE SUBROUTINE ReadSolidMaterialNamesFromToml(table, materialNames, &
+  MODULE SUBROUTINE SolidMaterialNamesFromToml(table, materialNames, &
                                                    tsize)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
     !! materialNames to be read from the toml table
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! Size of the materialNames
-  END SUBROUTINE ReadSolidMaterialNamesFromToml
+  END SUBROUTINE SolidMaterialNamesFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
