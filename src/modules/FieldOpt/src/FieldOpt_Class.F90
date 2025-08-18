@@ -74,6 +74,8 @@ CONTAINS
     !! Convert the number (id) to string name of field
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => obj_ToNumber
     !! Convert the string name of field to number (id)
+  PROCEDURE, PUBLIC, PASS(obj) :: RankToString => obj_RankToString
+  !! Convert the rank to string name
 END TYPE FieldOpt_
 
 !----------------------------------------------------------------------------
@@ -186,6 +188,49 @@ FUNCTION obj_ToNumber(obj, name) RESULT(RESULT)
 #endif
 
 END FUNCTION obj_ToNumber
+
+!----------------------------------------------------------------------------
+!                                                           obj_RankToString
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary:  Convert the rank to string name
+
+FUNCTION obj_RankToString(obj, id) RESULT(RESULT)
+  CLASS(FieldOpt_) :: obj
+  INTEGER(I4B), INTENT(IN) :: id
+  !! Id of the field type
+  CHARACTER(:), ALLOCATABLE :: RESULT
+  !! id will be converted to string
+
+  ! internal variables
+
+  CHARACTER(*), PARAMETER :: myName = "obj_RankToString()"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  SELECT CASE (id)
+  CASE (TypeFieldOpt%scalar)
+    RESULT = "SCALAR"
+  CASE (TypeFieldOpt%vector)
+    RESULT = "VECTOR"
+  CASE (TypeFieldOpt%matrix)
+    RESULT = "MATRIX"
+  CASE DEFAULT
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'No case found for id = '//Tostring(id))
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END FUNCTION obj_RankToString
 
 !----------------------------------------------------------------------------
 !
