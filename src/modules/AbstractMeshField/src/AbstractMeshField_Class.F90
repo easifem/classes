@@ -17,8 +17,7 @@
 MODULE AbstractMeshField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 
-USE BaseType, ONLY: MAX_RANK_FEVARIABLE, &
-                    FEVariable_
+USE BaseType, ONLY: FEVariable_
 
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
@@ -46,6 +45,7 @@ PUBLIC :: SetAbstractMeshFieldParam
 PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
+PUBLIC :: AbstractMeshFieldGetShapeAndSize
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -129,11 +129,11 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from Abstract materials
 
-  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate5 => obj_Initiate5
   !! Initiate from user function
   !! This routine should be implemened by the child class
 
-  PROCEDURE, PASS(obj) :: Initiate5 => obj_Initiate5
+  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
   !! This routine should be implemened by the child class
 
@@ -212,11 +212,17 @@ CONTAINS
   !! Insertting the value by using UserFunction_
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert3 => obj_Insert3
   !! Insertting the value by using material
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert4 => obj_Insert4
   !! Insert all values by using the FEVariable
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert5 => obj_Insert5
+  !! Insert globalElement value by using user function
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert6 => obj_Insert6
+  !!  Insert the values by using AbstractMaterialPointer
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert7 => obj_Insert7
+  !! Insert the values by using user functions
 
-  GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4
+  GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4, &
+    Insert5, Insert6, Insert7
 
 END TYPE AbstractMeshField_
 
@@ -495,6 +501,101 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                  ScalarMeshFieldGetShapeAndSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-31
+! summary:  Get shape and size of scalar and stscalar within the element
+
+INTERFACE
+  MODULE SUBROUTINE ScalarMeshFieldGetShapeAndSize(varType, s, tsize, &
+                                                   nns, nnt)
+    INTEGER(I4B), INTENT(IN) :: varType
+    INTEGER(I4B), INTENT(INOUT) :: s(4)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
+    !! number of nodes or quadrature points in an element
+    !! nns should be present when varType is space or spaceTime
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes or quadrature points in a time element
+    !! nnt should be present when varType is time or spaceTime
+  END SUBROUTINE ScalarMeshFieldGetShapeAndSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  ScalarMeshFieldGetShapeAndSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-31
+! summary:  Get shape and size of scalar and stscalar within the element
+
+INTERFACE
+  MODULE SUBROUTINE VectorMeshFieldGetShapeAndSize(varType, s, tsize, &
+                                                   spaceCompo, nns, nnt)
+    INTEGER(I4B), INTENT(IN) :: varType
+    INTEGER(I4B), INTENT(INOUT) :: s(4)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space components
+    !! spaceCompo should be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
+    !! number of nodes or quadrature points in an element
+    !! nns should be present when varType is space or spaceTime
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes or quadrature points in a time element
+    !! nnt should be present when varType is time or spaceTime
+  END SUBROUTINE VectorMeshFieldGetShapeAndSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  TensorMeshFieldGetShapeAndSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-31
+! summary:  Get shape and size of tensor and sttensor within the element
+
+INTERFACE
+  MODULE SUBROUTINE TensorMeshFieldGetShapeAndSize(varType, s, tsize, &
+                                                   dim1, dim2, nns, nnt)
+    INTEGER(I4B), INTENT(IN) :: varType
+    INTEGER(I4B), INTENT(INOUT) :: s(4)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim1, dim2
+    !! dim1 and dim2 of the tensor mesh field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
+    !! number of nodes or quadrature points in an element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes or quadrature points in a time element
+  END SUBROUTINE TensorMeshFieldGetShapeAndSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetShapeAndSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-31
+! summary:  Get shape and size of data within the element
+
+INTERFACE
+ MODULE SUBROUTINE AbstractMeshFieldGetShapeAndSize(rank, varType, s, tsize, &
+                                             spaceCompo, dim1, dim2, nns, nnt)
+    INTEGER(I4B), INTENT(IN) :: rank
+    INTEGER(I4B), INTENT(IN) :: varType
+    INTEGER(I4B), INTENT(INOUT) :: s(4)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim1, dim2
+    !! dim1 and dim2 of the tensor mesh field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns, nnt
+  END SUBROUTINE AbstractMeshFieldGetShapeAndSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
@@ -653,7 +754,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -680,7 +781,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -760,6 +861,10 @@ END INTERFACE AbstractMeshFieldSet
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-06-14
 ! summary: Insert values in AbstractMeshField_
+!
+!# Introduction
+! This routine inserts the values in AbstractMeshField_ for globalElement
+! from FEVariable.
 
 INTERFACE
   MODULE SUBROUTINE obj_Insert1(obj, globalElement, islocal, fevar)
@@ -780,6 +885,15 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Insert values in AbstractMeshField_
+!
+!# Introduction
+!
+! This routine inserts the values in AbstractMeshField_ from UserFunction
+! for globalElement.
+! It performs following steps:
+!
+! 1. Get the FEVariable_ from UserFunction
+! 2. Call obj_Insert1 method to insert the values in AbstractMeshField_
 
 INTERFACE
   MODULE SUBROUTINE obj_Insert2(obj, func, times)
@@ -798,6 +912,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Insert values in AbstractMeshField_ by AbstractMaterial
+!
+!# Introduction
+! This routine inserts the values in AbstractMeshField_ from
+! AbstractMaterial.
+!
+! Step 1: First we get the usefucntion from material by using the name
+! Step 2: Then we call Insert2 method to insert the values
 
 INTERFACE
   MODULE SUBROUTINE obj_Insert3(obj, material, name, times)
@@ -827,12 +948,111 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Insert values in AbstractMeshField from userFunction
+!
+!# Introduction
+! This routine sets the value of globalElement in AbstractMeshField_
+! from user function. This function is like Insert2, but in this case
+! we insert the value of a single element.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert5(obj, func, globalElement, islocal, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Insert@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-13
+! summary: Insert AbstractMeshField_ using AbstractMaterial Add
+!          MeshSelection_
+!
+!# Introduction
+!
+! This routine Inserts the values in AbstractMeshField_ from
+! AbstractMaterial. The following steps are performed:
+!
+! 1. The elements of mesh contains the medium and material information
+! 2. We first get the material number which acts as a pointer to
+!    material.
+! 3. Then from the material we get the user function by using the name
+! 4. Then we Insert the values in that element using this function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert6(obj, medium, material, name, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium number
+    CLASS(AbstractMaterialPointer_), INTENT(INOUT) :: material(:)
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the material
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-13
+! summary: Insert AbstractMeshField_ using AbstractMaterial Add
+!          MeshSelection_
+!
+!# Introduction
+! This routine Inserts the values in AbstractMeshField_ from
+! AbstractMaterial. The following steps are performed:
+!
+! 1. The elements of mesh contains the medium and material information
+! 2. We first get the material number which acts as a pointer to
+!    material.
+! 3. Then from the material we get the user function by using the name
+! 4. Then we Insert the values in that element using this function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert7(obj, medium, func, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium number
+    CLASS(UserFunctionPointer_), INTENT(INOUT) :: func(:)
+    !! Abstract material
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert7
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Add@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
 ! summary: Add values to AbstractMeshField_
+!
+!# Introduction
+!
+! Add values to AbstractMeshField_ form FEVariable.
+! This routine can be used while updating the abstractMeshField
 
 INTERFACE
   MODULE SUBROUTINE obj_Add1(obj, globalElement, islocal, scale, fevar)
