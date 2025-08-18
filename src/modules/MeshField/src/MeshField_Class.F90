@@ -22,7 +22,6 @@ USE ExceptionHandler_Class, ONLY: e
 USE UserFunction_Class, ONLY: UserFunction_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractMeshField_Class, ONLY: AbstractMeshField_
-USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 
@@ -416,27 +415,6 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
-    CLASS(MeshField_), INTENT(INOUT) :: obj
-    !! AbstractMeshField
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! mesh
-    CLASS(UserFunction_), INTENT(INOUT) :: func
-    !! Abstract material
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the AbstractMeshField
-    CHARACTER(*), INTENT(IN) :: engine
-    !! engine of the AbstractMeshField
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes in time
-  END SUBROUTINE obj_Initiate4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
   MODULE SUBROUTINE ScalarMeshFieldInitiate4(obj, mesh, func, name, engine, &
                                              nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
@@ -577,101 +555,6 @@ INTERFACE
     CLASS(MeshField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  ScalarMeshFieldGetShapeAndSize@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-31
-! summary:  Get shape and size of scalar and stscalar within the element
-
-INTERFACE
-  MODULE SUBROUTINE ScalarMeshFieldGetShapeAndSize(varType, s, tsize, &
-                                                   nns, nnt)
-    INTEGER(I4B), INTENT(IN) :: varType
-    INTEGER(I4B), INTENT(INOUT) :: s(4)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
-    !! number of nodes or quadrature points in an element
-    !! nns should be present when varType is space or spaceTime
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes or quadrature points in a time element
-    !! nnt should be present when varType is time or spaceTime
-  END SUBROUTINE ScalarMeshFieldGetShapeAndSize
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  ScalarMeshFieldGetShapeAndSize@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-31
-! summary:  Get shape and size of scalar and stscalar within the element
-
-INTERFACE
-  MODULE SUBROUTINE VectorMeshFieldGetShapeAndSize(varType, s, tsize, &
-                                                   spaceCompo, nns, nnt)
-    INTEGER(I4B), INTENT(IN) :: varType
-    INTEGER(I4B), INTENT(INOUT) :: s(4)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! space components
-    !! spaceCompo should be present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
-    !! number of nodes or quadrature points in an element
-    !! nns should be present when varType is space or spaceTime
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes or quadrature points in a time element
-    !! nnt should be present when varType is time or spaceTime
-  END SUBROUTINE VectorMeshFieldGetShapeAndSize
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  TensorMeshFieldGetShapeAndSize@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-31
-! summary:  Get shape and size of tensor and sttensor within the element
-
-INTERFACE
-  MODULE SUBROUTINE TensorMeshFieldGetShapeAndSize(varType, s, tsize, &
-                                                   dim1, dim2, nns, nnt)
-    INTEGER(I4B), INTENT(IN) :: varType
-    INTEGER(I4B), INTENT(INOUT) :: s(4)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim1, dim2
-    !! dim1 and dim2 of the tensor mesh field
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns
-    !! number of nodes or quadrature points in an element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes or quadrature points in a time element
-  END SUBROUTINE TensorMeshFieldGetShapeAndSize
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetShapeAndSize@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-31
-! summary:  Get shape and size of data within the element
-
-INTERFACE
-  MODULE SUBROUTINE MeshFieldGetShapeAndSize(rank, varType, s, tsize, &
-                                             spaceCompo, dim1, dim2, nns, nnt)
-    INTEGER(I4B), INTENT(IN) :: rank
-    INTEGER(I4B), INTENT(IN) :: varType
-    INTEGER(I4B), INTENT(INOUT) :: s(4)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! space components
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim1, dim2
-    !! dim1 and dim2 of the tensor mesh field
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nns, nnt
-  END SUBROUTINE MeshFieldGetShapeAndSize
 END INTERFACE
 
 !----------------------------------------------------------------------------
