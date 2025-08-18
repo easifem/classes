@@ -254,9 +254,8 @@ CALL SolidMaterialNamesFromToml(table=node, materialNames=materialNames, &
 CALL SolidMaterialReallocate(obj, tsize)
 
 isok = PRESENT(region)
-IF (isok) THEN
-  CALL MeshSelectionReallocate(region, tsize)
-END IF
+IF (isok) CALL MeshSelectionReallocate(region, tsize)
+
 CALL SolidMaterialImportFromToml(obj=obj, table=node, &
                                  materialNames=materialNames, &
                                  tsize=tsize, region=region, dom=dom)
