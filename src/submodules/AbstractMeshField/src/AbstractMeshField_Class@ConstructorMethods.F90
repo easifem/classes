@@ -131,7 +131,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
 TYPE(String) :: dsetname
-INTEGER(I4B) :: ierr, nrow, s(MAX_RANK_FEVARIABLE)
+INTEGER(I4B) :: ierr, nrow, s(fevaropt%maxRank)
 CHARACTER(:), ALLOCATABLE :: prefix
 LOGICAL(LGT) :: isok
 
@@ -278,15 +278,31 @@ MODULE PROCEDURE obj_Initiate4
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 #endif
 
+INTEGER(I4B) :: rank, nns, varType, fieldType, &
+                spaceCompo, dims(2), s(4), tsize, rank
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
-#endif
+nns = mesh%GetMaxNNE()
+rank = func%GetReturnType()
+varType = func%GetArgType()
+spaceCompo = func%GetNumReturns()
+dims = func%GetReturnShape()
+
+fieldType = typefield%normal
+IF (varType .EQ. typefield%constant) fieldType = varType
+
+CALL AbstractMeshFieldGetShapeAndSize(rank=rank, varType=varType, s=s, &
+                                      tsize=tsize, nns=nns, &
+                                      spaceCompo=spaceCompo, dim1=dims(1), &
+                                      dim2=dims(2), nnt=nnt)
+
+CALL obj%Initiate(name=name, fieldType=fieldType, varType=varType, &
+                  engine=engine, defineOn=typefield%nodal, &
+                  rank=rank, s=s(1:tsize), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

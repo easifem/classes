@@ -43,8 +43,22 @@ SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
   INTEGER(I4B), INTENT(IN) :: s(:)
   INTEGER(I4B), INTENT(IN) :: tshape
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "MasterSet()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
   ss(indxShape(indx):indxShape(indx + 1) - 1) = s(1:tshape)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
 END SUBROUTINE MasterSet
 
@@ -55,9 +69,10 @@ END SUBROUTINE MasterSet
 MODULE PROCEDURE obj_Set1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+LOGICAL( LGT ) :: isok
 #endif
 
-INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
+INTEGER(I4B) :: iel, tsize, tshape, s(fevaropt%maxRank)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -73,6 +88,13 @@ END IF
 
 tsize = FEVariable_SIZE(fevar)
 tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
+
+#ifdef DEBUG_VER
+isok = tshape .NE. 0
+CALL AssertError1(isok, myName, &
+        "tshape is zero from GetTotalRow(rank=obj%rank, varType=obj%varType)")
+#endif
+
 s(1:tshape) = FEVariable_Shape(fevar)
 
 CALL MasterSet(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
@@ -235,8 +257,11 @@ MODULE PROCEDURE obj_Set5
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 #endif
 
+LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
+
 INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
-LOGICAL(LGT) :: bool1
+
+LOGICAL(LGT) :: isok
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 TYPE(FEVariable_) :: fevar
@@ -247,14 +272,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-bool1 = obj%fieldType .EQ. typefield%Constant
-IF (bool1) THEN
+isok = obj%fieldType .EQ. typefield%Constant
+IF (isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'obj%fieldType is Constant... ')
+#endif
+
   CALL func%Get(fevar=fevar)
   CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
+
   RETURN
 END IF
 
@@ -262,17 +294,20 @@ mesh => obj%mesh
 
 nns = mesh%GetMaxNNE()
 nsd = mesh%GetNSD()
+
 ALLOCATE (nptrs(nns), xij(nsd, nns))
 
-CALL mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
-                           ans=nptrs, tsize=tsize)
+iel = mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL mesh%GetConnectivity_(globalElement=iel, islocal=yes, ans=nptrs, &
+                           tsize=tsize)
 
 CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
+                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=no)
 
 CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
-CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+CALL obj%Set(fevar=fevar, globalElement=iel, islocal=yes)
 
 CALL FEVariable_Deallocate(fevar)
 DEALLOCATE (xij, nptrs)

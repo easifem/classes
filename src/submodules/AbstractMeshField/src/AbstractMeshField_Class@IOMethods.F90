@@ -38,7 +38,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL Display(obj%isInit, 'Object INITIATED: ', unitno=unitno)
+CALL Display(obj%isInit, 'isInit: ', unitno=unitno)
 
 IF (.NOT. obj%isInit) THEN
 #ifdef DEBUG_VER
@@ -64,46 +64,27 @@ ELSE
   CALL Display('defineOn: Quadrature', unitno=unitno)
 END IF
 
-SELECT CASE (obj%rank)
-CASE (fevaropt%scalar)
-  CALL Display('rank: Scalar', unitno=unitno)
-CASE (fevaropt%vector)
-  CALL Display('rank: Vector', unitno=unitno)
-CASE (fevaropt%matrix)
-  CALL Display('rank: Matrix', unitno=unitno)
-
-#ifdef DEBUG_VER
-CASE DEFAULT
-  CALL assertError1(.FALSE., myName, &
-                    'No case found for rank = '//ToString(obj%rank))
-#endif
-
-END SELECT
-
-SELECT CASE (obj%varType)
-CASE (typefield%constant)
-  CALL Display('varType: Constant', unitno=unitno)
-CASE (typefield%space)
-  CALL Display('varType: Space', unitno=unitno)
-CASE (typefield%time)
-  CALL Display('varType: Time', unitno=unitno)
-CASE (typefield%spaceTime)
-  CALL Display('varType: SpaceTime', unitno=unitno)
-
-#ifdef DEBUG_VER
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, &
-                    'No case found for varType = '//ToString(obj%varType))
-#endif
-END SELECT
+CALL Display('rank: '//typefield%RankToString(obj%rank), unitno=unitno)
+CALL Display('varType: '//typefield%ToString(obj%varType), &
+             unitno=unitno)
 
 bool1 = ALLOCATED(obj%val)
 CALL Display(bool1, 'val ALLOCATED: ', unitno=unitno)
 CALL Display(SafeSize(obj%val), "Size of val:", unitno=unitno)
+#ifdef DEBUG_VER
+IF (bool1) THEN
+  CALL Display(obj%val, 'val: ', unitno=unitno)
+END IF
+#endif
 
 bool1 = ALLOCATED(obj%indxVal)
 CALL Display(bool1, 'indxVal ALLOCATED: ', unitno=unitno)
 CALL Display(SafeSize(obj%indxVal), "Size of indxVal:", unitno=unitno)
+#ifdef DEBUG_VER
+IF (bool1) THEN
+  CALL Display(obj%indxVal, 'indxVal: ', unitno=unitno)
+END IF
+#endif
 
 bool1 = ASSOCIATED(obj%mesh)
 CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)

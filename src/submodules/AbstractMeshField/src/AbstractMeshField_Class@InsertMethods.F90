@@ -16,10 +16,13 @@
 
 SUBMODULE(AbstractMeshField_Class) InsertMethods
 USE Display_Method, ONLY: ToString
+
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_SIZE => Size, &
                              FEVariable_Shape => Shape
+
 USE ReallocateUtility, ONLY: Reallocate
+
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
@@ -59,7 +62,7 @@ MODULE PROCEDURE obj_Insert1
 CHARACTER(*), PARAMETER :: myName = "obj_Insert1()"
 #endif
 
-INTEGER(I4B) :: iel, tsize, tshape, s(MAX_RANK_FEVARIABLE)
+INTEGER(I4B) :: iel, tsize, tshape, s(fevaropt%maxRank)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -79,8 +82,8 @@ tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
 
 s(1:tshape) = FEVariable_Shape(fevar)
 
-CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, indx=iel, &
-                  tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
+CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
+                  indx=iel, tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
                   s=s, tshape=tshape)
 
 #ifdef DEBUG_VER
@@ -114,10 +117,12 @@ bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
   CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
+
   RETURN
 END IF
 
@@ -230,6 +235,184 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Insert4
+
+!----------------------------------------------------------------------------
+!                                                                       Insert
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Insert5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert5()"
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
+
+INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
+
+LOGICAL(LGT) :: isok
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+TYPE(FEVariable_) :: fevar
+CLASS(AbstractMesh_), POINTER :: mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = obj%fieldType .EQ. typefield%Constant
+IF (isok) THEN
+  CALL func%Get(fevar=fevar)
+  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+mesh => obj%mesh
+
+nns = mesh%GetMaxNNE()
+nsd = mesh%GetNSD()
+
+ALLOCATE (nptrs(nns), xij(nsd, nns))
+
+iel = mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL mesh%GetConnectivity_(globalElement=iel, islocal=yes, ans=nptrs, &
+                           tsize=tsize)
+
+CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
+                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=no)
+
+CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
+
+CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=yes)
+
+CALL FEVariable_Deallocate(fevar)
+DEALLOCATE (xij, nptrs)
+
+mesh => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Insert5
+
+!----------------------------------------------------------------------------
+!                                                                        Insert
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Insert6
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert6()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: tsize, ii
+TYPE(UserFunctionPointer_), ALLOCATABLE :: func(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(material)
+ALLOCATE (func(tsize))
+
+DO ii = 1, tsize
+
+! Check if material(ii)%ptr is associated or not
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(material(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'material('//ToString(ii)//')%ptr is not associated')
+#endif
+
+! Check if material(ii)%ptr has the name or not
+#ifdef DEBUG_VER
+  isok = material(ii)%ptr%IsMaterialPresent(name)
+  CALL AssertError1(isok, myName, &
+                    'material name = '//name//' not found in material('// &
+                    ToString(ii)//')')
+#endif
+
+  func(ii)%ptr => material(ii)%ptr%GetMaterialPointer(name)
+
+END DO
+
+CALL obj%Insert(medium=medium, func=func, times=times)
+
+! Clean up func
+DO ii = 1, tsize
+  func(ii)%ptr => NULL()
+END DO
+DEALLOCATE (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Insert6
+
+!----------------------------------------------------------------------------
+!                                                                      Insert
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Insert7
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert7()"
+LOGICAL(LGT) :: isok
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: tsize, ii, telements, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(func)
+
+! Check if func(ii)%ptr is associated or not
+#ifdef DEBUG_VER
+DO ii = 1, tsize
+  isok = ASSOCIATED(func(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'func('//ToString(ii)//')%ptr is not associated')
+END DO
+#endif
+
+telements = obj%mesh%GetTotalElements()
+
+DO ii = 1, telements
+  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=yes, &
+                            medium=medium)
+
+  ! Check if material index is out of bound or not
+#ifdef DEBUG_VER
+  isok = (jj .LE. tsize) .AND. (jj .NE. 0)
+  CALL AssertError1(isok, myName, &
+                    'material index '//ToString(jj)// &
+                    ' is out of bounds for func size '// &
+                    ToString(tsize)//' for local element = '// &
+                    ToString(ii))
+#endif
+
+  CALL obj%Insert(func=func(jj)%ptr, globalElement=ii, islocal=yes, &
+                  times=times)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Insert7
 
 !----------------------------------------------------------------------------
 !
