@@ -19,6 +19,7 @@
 SUBMODULE(MeshField_Class) ConstructorMethods
 USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
 USE Display_Method, ONLY: ToString
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 IMPLICIT NONE
 
 CONTAINS
@@ -870,51 +871,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE STTensorMeshFieldInitiate4
-
-!----------------------------------------------------------------------------
-!                                                  STTensorMeshFieldInitiate4
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate4
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "STTensorMeshFieldInitiate4()"
-#endif
-
-INTEGER(I4B) :: rank, nns, varType, fieldType, &
-                spaceCompo, dims(2), s(4), tsize, rank
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-nns = mesh%GetMaxNNE()
-rank = func%GetReturnType()
-varType = func%GetArgType()
-spaceCompo = func%GetNumReturns()
-dims = func%GetReturnShape()
-
-fieldType = TypeFieldOpt%normal
-IF (varType .EQ. TypeFieldOpt%constant) fieldType = varType
-
-CALL MeshFieldGetShapeAndSize(rank=rank, varType=varType, s=s, tsize=tsize, &
-                              nns=nns, spaceCompo=spaceCompo, dim1=dims(1), &
-                              dim2=dims(2), nnt=nnt)
-
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=TypeFieldOpt%nodal, &
-                  rank=rank, &
-                  s=s(1:tsize), &
-                  mesh=mesh)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
