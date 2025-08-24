@@ -510,7 +510,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isok = PRESENT(order) .AND. obj%isHomogeneous
+
 IF (isok) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'order is present and obj%isHomogeneous is true.')
+#endif
+
   obj%order = order(1)
   obj%isOrder = .TRUE.
   obj%isNips = .FALSE.
@@ -1219,12 +1226,18 @@ IF (.NOT. obj%isHomogeneous .AND. obj%isNips) THEN
                                 lambda2=obj%lambda(2), &
                                 lambda3=obj%lambda(3), &
                                 xij=obj%refelemCoord(1:obj%xidim, :))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  'No valid case found')
 #endif
+
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------

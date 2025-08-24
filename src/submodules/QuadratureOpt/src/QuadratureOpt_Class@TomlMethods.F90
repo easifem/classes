@@ -262,7 +262,8 @@ SUBROUTINE OrderFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="order", VALUE=myint, tsize=tsize, &
-             isScalar=isScalar, origin=origin, stat=stat, isFound=obj%isOrder)
+                 isScalar=isScalar, origin=origin, stat=stat, &
+                 isFound=obj%isOrder)
 
   IF (.NOT. obj%isOrder) THEN
 #ifdef DEBUG_VER
