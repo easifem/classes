@@ -209,8 +209,8 @@ CALL AssertError1(isok, myName, "spaceCompo should be present.")
 CALL obj%DEALLOCATE()
 dof_names(1) = name(1:1)
 dof_tNodes(1) = fedof%GetTotalDOF()
-dof_tsize = dof_tNodes(1)
 dof_spaceCompo(1) = spaceCompo(1)
+dof_tsize = dof_tNodes(1) * dof_spaceCompo(1)
 dof_timeCompo(1) = 1_I4B
 dof_tPhysicalVarNames = 1_I4B
 
