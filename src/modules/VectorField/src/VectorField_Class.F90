@@ -98,56 +98,40 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a Vector values
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given Vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@spaceCompo = value (if value is a scalar)
   !! obj@spaceCompo = value@spaceCompo (if value is vector )
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a vector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a vector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set nodal values of a space component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set a single value
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set values by using a FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all values to the constant value
   !! WE call SetAll method here
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   !! obj@[ivar, idof] = value@[ivar, idof]
-
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! obj = value (we call copy method here)
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetFromSTVectorField => &
     obj_SetFromSTVectorField
   !! Set values from the STVectorField_
-
   !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
@@ -158,41 +142,33 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! returns vector values at single node or
   !! get all nodal values of a space-components
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! returns all entries in rank2 array of real
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! returns selected values in rank2 aray of real
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! returns selected values of a space components
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get a single value
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get nodal values of a vector in FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get value of vector field in the ScalarField or another VectorField
   !! value = obj@spaceCompo (if value is ScalarField_)
   !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
   !! Copy  value=obj
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get9 => obj_Get9
   !! value@[ivar, idof] = obj@[ivar, idof]
-
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     Get5, Get6, Get7, Get8, Get9
   !! Get the entries of Vector field
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix name
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
+  !! Get the storage format of the scalar field
 
   ! SET:
   ! @DirichletBCMethods
@@ -1377,6 +1353,21 @@ INTERFACE
     CLASS(VectorField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetStorageFMT@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns storage format
+
+INTERFACE
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
+    CLASS(VectorField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
