@@ -34,12 +34,14 @@ USE Tomlf, ONLY: toml_table
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
+INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
@@ -321,7 +323,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    !! Not required 
+    !! Not required
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written

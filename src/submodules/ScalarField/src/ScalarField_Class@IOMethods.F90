@@ -18,14 +18,8 @@
 SUBMODULE(ScalarField_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE Display_Method, ONLY: ToString
-USE TomlUtility, ONLY: GetValue
 USE FPL, ONLY: FPL_INIT, FPL_FINALIZE
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
-#ifdef DEBUG_VER
-USE tomlf, ONLY: toml_serialize
-USE GlobalData, ONLY: CHAR_LF
-#endif
 
 IMPLICIT NONE
 CONTAINS

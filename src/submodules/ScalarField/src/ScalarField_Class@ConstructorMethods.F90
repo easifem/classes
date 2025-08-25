@@ -17,7 +17,6 @@
 
 SUBMODULE(ScalarField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
-USE GlobalData, ONLY: STORAGE_FMT => NODES_FMT
 USE FPL_Method, ONLY: FPL_GetValue => GetValue
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
@@ -89,7 +88,7 @@ names(1) (:) = astr%slice(1, 1)
 !note: STORAGE_FMT is defined at the top of this file
 CALL AbstractNodeFieldSetParam(obj=obj, &
                                dof_tPhysicalVars=1_I4B, &
-                               dof_storageFMT=STORAGE_FMT, &
+                               dof_storageFMT=MYSTORAGEFORMAT, &
                                dof_spaceCompo=[1_I4B], &
                                dof_timeCompo=[1_I4B], &
                                dof_tNodes=[tNodes], &
@@ -138,7 +137,7 @@ CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
                                fieldType=fieldType, comm=comm, &
                                local_n=local_n, global_n=global_n, &
                                fedof=fedof, timefedof=timefedof, &
-                               storageFMT=STORAGE_FMT, &
+                               storageFMT=MYSTORAGEFORMAT, &
                                spaceCompo=dof_spaceCompo, &
                                isSpaceCompo=.TRUE., &
                                isSpaceCompoScalar=.TRUE., &
