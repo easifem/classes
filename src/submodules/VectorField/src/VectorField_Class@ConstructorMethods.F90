@@ -168,7 +168,8 @@ MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: ii, tsize
 
 CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                           copyStructure=copyStructure, usePointer=usePointer)
+                               copyStructure=copyStructure, &
+                               usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (VectorField_)
   obj%spaceCompo = obj2%spaceCompo
@@ -231,6 +232,10 @@ CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
                                isPhysicalVarNamesScalar=.TRUE., &
                                tSize=dof_tsize, tNodes=dof_tNodes, &
                                isTNodes=.TRUE., isTNodesScalar=.TRUE.)
+
+obj%spaceCompo = spaceCompo(1)
+CALL Reallocate(obj%idofs, obj%spaceCompo)
+obj%idofs = Arange(1_I4B, obj%spaceCompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
