@@ -251,11 +251,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
-                           storageFMT=storageFMT, &
-                           fieldType=fieldType, &
-                           comm=comm, &
-                           local_n=local_n, &
-                           global_n=global_n, &
+                           storageFMT=storageFMT, fieldType=fieldType, &
+                           comm=comm, local_n=local_n, global_n=global_n, &
                            fedof=fedof, timefedof=timefedof)
 
 #ifdef DEBUG_VER
