@@ -592,6 +592,8 @@ obj%maxTotalConnectivity = 0
 
 obj%baseContinuity = "H1"
 obj%baseInterpolation = "LAGR"
+
+obj%scaleForQuadOrder = 1_INT8
 obj%maxCellOrder = 0_INT8
 obj%maxFaceOrder = 0_INT8
 obj%maxEdgeOrder = 0_INT8
@@ -647,6 +649,7 @@ obj%tCells = obj2%tCells
 obj%maxTotalConnectivity = obj2%maxTotalConnectivity
 obj%baseContinuity = obj2%baseContinuity
 obj%baseInterpolation = obj2%baseInterpolation
+obj%scaleForQuadOrder = obj2%scaleForQuadOrder
 obj%maxCellOrder = obj2%maxCellOrder
 obj%maxFaceOrder = obj2%maxFaceOrder
 obj%maxEdgeOrder = obj2%maxEdgeOrder
@@ -672,12 +675,59 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
-!                                                               IsInitiated
+!                                                                IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
 ans = obj%isInit
 END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateGeoFEDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateGeoFEDOF()"
+#endif
+
+INTEGER(I4B), ALLOCATABLE :: order(:)
+INTEGER(I4B) :: telements
+CLASS(AbstractMesh_), POINTER :: mesh
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => dom%GetMeshPointer()
+telements = mesh%GetTotalElements()
+CALL Reallocate(order, telements)
+CALL mesh%GetOrder_(order=order, tsize=telements)
+mesh => NULL()
+
+CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
+                  baseInterpolation=baseInterpolation, feType=feType, &
+                  ipType=ipType, basisType=basisType, alpha=alpha, &
+                  lambda=lambda, beta=beta, islocal=yes, dofType=dofType, &
+                  transformType=transformType, &
+                  quadratureIsHomogeneous=quadratureIsHomogeneous, &
+                  quadratureType=quadratureType, &
+                  quadratureOrder=quadratureOrder, &
+                  quadratureIsOrder=quadratureIsOrder, &
+                  quadratureNips=quadratureNips, &
+                  quadratureIsNips=quadratureIsNips, &
+                  quadratureAlpha=quadratureAlpha, &
+                  quadratureBeta=quadratureBeta, &
+                  quadratureLambda=quadratureLambda)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_InitiateGeoFEDOF
 
 !----------------------------------------------------------------------------
 !

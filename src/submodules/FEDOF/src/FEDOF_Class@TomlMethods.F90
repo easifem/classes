@@ -26,6 +26,7 @@ USE tomlf, ONLY: toml_get => get_value, &
 USE String_Class, ONLY: String
 USE FEFactory_Method, ONLY: FEFactory
 USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
 CONTAINS
@@ -40,8 +41,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 INTEGER(I4B), ALLOCATABLE :: order(:)
-INTEGER(I4B) :: totalTopo, topoList(8), nsd, ii, jj, elemType
-LOGICAL(LGT) :: islocal
+INTEGER(I4B) :: totalTopo, topoList(8), nsd, ii, jj, elemType, tsize
+LOGICAL(LGT) :: islocal, isFound
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -54,7 +55,17 @@ obj%dom => dom
 obj%mesh => obj%dom%GetMeshPointer()
 
 islocal = .FALSE.
-CALL OrderFromToml(table=table, order=order, islocal=islocal)
+CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
+                         isFound=isFound)
+
+IF (.NOT. isFound) THEN
+  tsize = obj%mesh%GetTotalElements()
+  CALL Reallocate(order, tsize)
+  CALL obj%mesh%GetOrder_(order=order, tsize=tsize)
+  islocal = .TRUE.
+END IF
+
+CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
 
 CALL obj%AllocateSizes()
 CALL obj%SetCellOrder(order=order, islocal=islocal)
@@ -84,20 +95,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                              OrderFromToml
+!                                                         ImportOrderFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE OrderFromToml(table, order, islocal)
+SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: order(:)
   LOGICAL(LGT), INTENT(OUT) :: islocal
+  LOGICAL(LGT), INTENT(OUT) :: isFound
 
   ! Internal variables
   INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "OrderFromToml()"
+  CHARACTER(*), PARAMETER :: myName = "ImportOrderFromToml()"
 #endif
 
 #ifdef DEBUG_VER
@@ -124,14 +135,53 @@ SUBROUTINE OrderFromToml(table, order, islocal)
   CALL GetValue(table=table, key="order", VALUE=order, &
                 origin=origin, stat=stat, isFound=isFound)
 
-  CALL AssertError1(isFound, myName, &
-                    'order not found in toml file.')
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportOrderFromToml
+
+!----------------------------------------------------------------------------
+!                                            ImportScaleForQuadOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
+  CLASS(FEDOF_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! internal variables
+  INTEGER(I4B) :: origin, stat, scaleForQuadOrder
+  LOGICAL(LGT) :: isFound
+  INTEGER(I4B), PARAMETER :: default_value = 1
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportScaleForQuadOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue(table=table, key="scaleForQuadOrder", &
+                VALUE=scaleForQuadOrder, &
+                default_value=default_value, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  IF (.NOT. isFound) THEN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'scaleForQuadOrder not found, using default value ')
+  END IF
+#endif
+
+  obj%scaleForQuadOrder = INT(scaleForQuadOrder, kind=INT8)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE OrderFromToml
+END SUBROUTINE ImportScaleForQuadOrderFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml

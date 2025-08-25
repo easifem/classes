@@ -472,9 +472,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
 CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=.TRUE., &
-         cellCon=cellCon, faceCon=faceCon, edgeCon=edgeCon, nodeCon=nodeCon, &
-              tCellCon=tCellOrder, tFaceCon=tFaceOrder, tEdgeCon=tEdgeOrder, &
-                               tNodeCon=tNodeOrder)
+                               cellCon=cellCon, faceCon=faceCon, &
+                               edgeCon=edgeCon, nodeCon=nodeCon, &
+                               tCellCon=tCellOrder, tFaceCon=tFaceOrder, &
+                               tEdgeCon=tEdgeOrder, tNodeCon=tNodeOrder)
 
 DO ii = 1, tCellOrder
   cellOrder(ii) = obj%cellOrder(jj)
@@ -492,14 +493,15 @@ DO jj = 1, tEdgeOrder
 END DO
 
 CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
-    edgeOrient=edgeOrient, tCellOrient=tCellOrient, tFaceOrient=tFaceOrient, &
-         tEdgeOrient=tEdgeOrient, globalElement=globalElement, islocal=.TRUE.)
+                             edgeOrient=edgeOrient, tCellOrient=tCellOrient, &
+                             tFaceOrient=tFaceOrient, &
+                             tEdgeOrient=tEdgeOrient, &
+                             globalElement=globalElement, islocal=.TRUE.)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetOrders
 
 !----------------------------------------------------------------------------
@@ -539,18 +541,42 @@ END PROCEDURE obj_GetMaxTotalConnectivity
 
 MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints1()'
+CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints()'
+LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, jj
+INTEGER(I4B) :: cellOrder(1), tsize
+CLASS(AbstractFE_), POINTER :: feptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, &
+                                  islocal=islocal)
 
-CALL obj%fe(ii)%ptr%GetQuadraturePoints(quad=quad)
+#ifdef DEBUG_VER
+isok = ii .NE. 0
+CALL AssertError1(isok, myname, &
+                  'Element topology index is not found')
+
+isok = ASSOCIATED(obj%fe(ii)%ptr)
+CALL AssertError1(isok, myname, &
+                  'obj%fe('//ToString(ii)//')%ptr is not associated')
+#endif
+
+CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
+                      globalElement=globalElement, islocal=islocal)
+
+DO jj = 1, tsize
+  cellOrder(jj) = cellOrder(jj) * obj%scaleForQuadOrder
+END DO
+
+feptr => obj%fe(ii)%ptr
+CALL feptr%SetQuadratureOrder(order=cellOrder(1:tsize))
+CALL feptr%GetQuadraturePoints(quad=quad)
+feptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -595,7 +621,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalElemShapeData1
+!                                             GetLocalElemShapeDataH1Lagrange
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeDataH1Lagrange
@@ -620,6 +646,7 @@ isok = ii .NE. 0
 CALL AssertError1(isok, myname, &
                   'Element topology index is not found')
 #endif
+
 CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), errCheck=.TRUE.)
 CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
@@ -630,7 +657,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeDataH1Lagrange
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalElemShapeData1
+!                                       GetLocalElemShapeDataH1Hierarchhical
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
@@ -653,19 +680,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
 
 CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
-              cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
-        cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
-                 tcellOrder=indx(1), tfaceOrder=indx(2), tedgeOrder=indx(3), &
-                   tcellOrient=indx(4), tfaceOrient=indx(5:6), &
-                   tedgeOrient=indx(7))
+                   cellOrder=cellOrder, faceOrder=faceOrder, &
+                   edgeOrder=edgeOrder, cellOrient=cellOrient, &
+                   faceOrient=faceOrient, edgeOrient=edgeOrient, &
+                   tcellOrder=indx(1), tfaceOrder=indx(2), &
+                   tedgeOrder=indx(3), tcellOrient=indx(4), &
+                   tfaceOrient=indx(5:6), tedgeOrient=indx(7))
 
 ! The above modification is necessary for quad and hexa elements
 ! Here we are setting uniform cell order in all directions
 ! for such elements
 IF (indx(1) .EQ. 1) cellOrder(2:3) = cellOrder(1)
 CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
-            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-              faceOrient=faceOrient, edgeOrient=edgeOrient, errCheck=.TRUE., &
+                             faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                             cellOrient=cellOrient, faceOrient=faceOrient, &
+                             edgeOrient=edgeOrient, errCheck=.TRUE., &
                              tcell=indx(1), tface=indx(2), tedge=indx(3))
 
 CALL obj%fe(ii)%ptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
@@ -694,7 +723,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, &
+                                  islocal=islocal)
 
 #ifdef DEBUG_VER
 isok = ii .GT. 0
