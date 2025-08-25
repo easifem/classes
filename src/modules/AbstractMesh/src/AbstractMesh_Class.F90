@@ -640,8 +640,10 @@ CONTAINS
   !! get order of an element
   GENERIC, PUBLIC :: GetOrder => GetOrder1, GetOrder2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
-    obj_GetNSD
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder_ => obj_GetOrder_
+  !! Get order of elements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Return the NSD
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
@@ -3016,6 +3018,23 @@ INTERFACE
     !! if true then global element is local element
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-24
+! summary:  Get the orders
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrder_(obj, order, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: order(:)
+    !! global or local element number
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetOrder_
 END INTERFACE
 
 !----------------------------------------------------------------------------

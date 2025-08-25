@@ -2095,6 +2095,35 @@ ans = Elemdata_Order(obj=obj%elementData(iel)%ptr)
 END PROCEDURE obj_GetOrder2
 
 !----------------------------------------------------------------------------
+!                                                                   GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrder_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrder_()"
+#endif
+
+INTEGER(I4B) :: ii
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalElements()
+
+DO ii = 1, tsize
+  order(ii) = obj%GetOrder(globalElement=ii, islocal=yes)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetOrder_
+
+!----------------------------------------------------------------------------
 !                                                                     GetNSD
 !----------------------------------------------------------------------------
 
@@ -2676,7 +2705,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 nrow = 0
 ncol = SIZE(globalNode)
 
-DO ii = 1, SIZE(globalNode)
+DO ii = 1, ncol
   jj = obj%GetLocalNodeNumber(globalNode(ii), islocal=islocal)
   CALL NodeData_GetNodeCoord(obj=obj%nodeData(jj)%ptr, &
                              ans=nodeCoord(:, ii), tsize=nrow)
