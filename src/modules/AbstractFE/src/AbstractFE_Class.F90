@@ -109,6 +109,13 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetLocalElemShapeData => &
+    obj_SetLocalElemShapeData
+  !! Get local element shape data for Discontinuous Galerkin
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadraturePoints => &
+    obj_SetQuadraturePoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
 
   !GET:
   ! @GetMethods
@@ -784,9 +791,23 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(ElemShapedata_), OPTIONAL, INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), OPTIONAL, INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          SetLocalElemShapeData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-19
+! summary:  Set local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeData(obj)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -853,9 +874,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-   quadratureType1, quadratureType2, quadratureType3, order, order1, order2, &
-      order3, nips, nips1, nips2, nips3, alpha, beta, lambda, alpha1, beta1, &
-                      lambda1, alpha2, beta2, lambda2, alpha3, beta3, lambda3)
+                                            quadratureType1, &
+                                            quadratureType2, &
+                                            quadratureType3, order, order1, &
+                                            order2, order3, nips, nips1, &
+                                            nips2, nips3, alpha, beta, &
+                                            lambda, alpha1, beta1, &
+                                            lambda1, alpha2, beta2, &
+                                            lambda2, alpha3, beta3, lambda3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
@@ -889,6 +915,38 @@ INTERFACE
     !! lambda2: Ultraspherical parameter in y direction
     !! lambda3: Ultraspherical parameter in z direction
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order for quadrature
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+  END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-19
+! summary: Set quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadraturePoints(obj)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

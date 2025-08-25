@@ -89,6 +89,11 @@ TYPE :: FEDOF_
   !! HERM: HermitInterpolation
   !! SERE: SerendipityInterpolation
 
+  INTEGER(INT8) :: scaleForQuadOrder = 1_INT8
+  !! Scale for quadrature order
+  !! Quadrature order = element order * scaleForQuadOrder
+  !! This is used for constructing the quadrature points
+
   INTEGER(INT8) :: maxCellOrder = 0_INT8
   !! maximum value of cell order
 
@@ -188,6 +193,26 @@ CONTAINS
   !! Set the face order, this is a private method
   PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
   !! Set the edge order, this is a private method
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadraturePoints => &
+    obj_SetQuadraturePoints
+  !! Set the quadrature points for an element
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeData => &
+    obj_SetLocalElemShapeData
+  !! Set the local element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeData => &
+    obj_SetGlobalElemShapeData
+  !! Set the global element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: SetGeoElemShapeData => &
+    obj_SetGeoElemShapeData
+  !! Set the geometric element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
+  !! Set the node coordinates
+
+  PROCEDURE, PASS(obj) :: SetLocalElemShapeDataH1Lagrange => &
+    obj_SetLocalElemShapeDataH1Lagrange
+
+  PROCEDURE, PASS(obj) :: SetLocalElemShapeDataH1Hierarchical => &
+    obj_SetLocalElemShapeDataH1Hierarchical
 
   !IO:
   !@IOMethods
@@ -373,6 +398,82 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
+! summary: Initiate geometric fedof
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateGeoFEDOF(obj, dom, baseContinuity, &
+                                         baseInterpolation, feType, ipType, &
+                                         basisType, alpha, beta, lambda, &
+                                         dofType, transformType, &
+                                         quadratureIsHomogeneous, &
+                                         quadratureType, quadratureOrder, &
+                                         quadratureIsOrder, quadratureNips, &
+                                         quadratureIsNips, quadratureAlpha, &
+                                         quadratureBeta, quadratureLambda)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! Finite element degree of freedom object
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! domain
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! continuity of basis (regularity)
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! basis function used for interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    !! Finite element type, scalar, vector, tensor
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    !! interpolation type
+    !! used when baseInterpolation is Lagrange
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+    !! type of basis function used for
+    !! constructing the Lagrange polynomial
+    !! Used when baseInterpolation is Lagrange
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! alpha parameter for jacobian parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Jacobi
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! beta parameter for jacobian parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Jacobi
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! lambda parameter for Ultraspherical parameter
+    !! used when baseInterpolation is Lagrange
+    !! used when basistype is Ultraspherical
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
+    !! Degree of freedom type, default is nodal
+    !! Size should be 4
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    !! Size should be 3, Read more at QuadratureOpt_
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    !! Size should be 3, Read more at QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    !! Size should be 3, Read more at QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Should we consider quadratureNips
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
+    !! Size should be 3, Read more at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    !! Size should be 3, Read more at QuadratureOpt_
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    !! Size should be 3, Read more at QuadratureOpt_
+  END SUBROUTINE obj_InitiateGeoFEDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
 !
 !# Introduction
@@ -473,7 +574,7 @@ INTERFACE
     !! This is order of each cell element
     !! see the note on islocal
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
-  !! domain
+    !! domain
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -503,7 +604,7 @@ INTERFACE
     !! islocal denotes whether the order(:) is based on
     !! local element or global element number.
     !! local element means in order(ii) ii is the local
-    !! element number, global element means in order(ii) ii is the
+    !! element number, global element means in order(ii), ii is the
     !! global element number. Note that getting local element
     !! number is difficult for user, so it is better to use
     !! global element number.
@@ -1192,6 +1293,131 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              SetQuadraturePoints@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary:  Set quadrature points for a global element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadraturePoints(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetLocalElemShapeData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary:  Set quadrature points for a global element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeData(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Set local element shape data for H1 Lagrange elements
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataH1Lagrange(obj, globalElement, &
+                                                        islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_SetLocalElemShapeDataH1Lagrange
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataH1Hierarchical(obj, &
+                                                       globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_SetLocalElemShapeDataH1Hierarchical
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetGeoElemShapeData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Set geometric element shape data for a global element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetGeoElemShapeData(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetGeoElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetNodeCoord@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Set nodal coordinates for a global element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNodeCoord(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetGlobalElemShapeData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Set nodal coordinates for a global element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetGlobalElemShapeData(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 GetMeshPointer@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1271,8 +1497,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetOrders(obj, cellOrder, faceOrder, edgeOrder, &
-                 cellOrient, faceOrient, edgeOrient, tCellOrder, tFaceOrder, &
-                          tEdgeOrder, tCellOrient, tFaceOrient, tEdgeOrient, &
+                                  cellOrient, faceOrient, edgeOrient, &
+                                  tCellOrder, tFaceOrder, tEdgeOrder, &
+                                  tCellOrient, tFaceOrient, tEdgeOrient, &
                                   globalElement, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     !! fedof object
@@ -1391,6 +1618,10 @@ END INTERFACE FEDOFSetSparsity
 !                                                        GetQuadraturePoints
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary:  Get quadrature points for a global element
+
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, globalElement, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
@@ -1417,8 +1648,8 @@ INTERFACE
                                               quad, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
@@ -1433,7 +1664,7 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetLocalElemShapeDataH1Lagrange
 END INTERFACE
@@ -1448,7 +1679,7 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetLocalElemShapeDataH1Hierarchical
 END INTERFACE
@@ -1493,12 +1724,16 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE FEDOFImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE FEDOFImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE FEDOFImportFromToml
 
 !----------------------------------------------------------------------------
@@ -1509,7 +1744,7 @@ END INTERFACE FEDOFImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE FEDOFImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
                                         filename, printToml, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
@@ -1519,6 +1754,10 @@ INTERFACE FEDOFImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE FEDOFImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE FEDOFImportFromToml
 
 !----------------------------------------------------------------------------
