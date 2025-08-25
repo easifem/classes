@@ -21,6 +21,8 @@ USE LagrangePolynomialUtility, ONLY: LagrangeDOF
 USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString, Display
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
+                                HierarchicalElemShapeData
 
 IMPLICIT NONE
 CONTAINS
@@ -79,8 +81,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 IF (PRESENT(nsd)) obj%nsd = nsd
-IF (PRESENT(xidim)) obj%xidim= xidim
-IF (PRESENT(refelemCoord)) obj%refelemCoord=refelemCoord
+IF (PRESENT(xidim)) obj%xidim = xidim
+IF (PRESENT(refelemCoord)) obj%refelemCoord = refelemCoord
 IF (PRESENT(order)) obj%order = order
 IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
 IF (PRESENT(edgeOrder)) obj%edgeOrder(1:SIZE(edgeOrder)) = edgeOrder
@@ -143,7 +145,7 @@ CALL obj%quadOpt%SetParam(isHomogeneous=quadratureIsHomogeneous, &
                           isOrder=quadratureIsOrder, &
                           isNips=quadratureIsNips, &
                           xidim=xidim, &
-                          refelemDomain=refelemDomain,&
+                          refelemDomain=refelemDomain, &
                           refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
@@ -240,6 +242,108 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ResetAnisotropicOrder
+
+!----------------------------------------------------------------------------
+!                                                       SetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadraturePoints()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%GetQuadraturePoints(quad=obj%quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                      SetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+SELECT CASE (obj%baseInterpolation)
+CASE ("LAGR")
+
+  CALL LagrangeElemShapeData(obj=obj%elemsd, quad=obj%quad, nsd=obj%nsd, &
+                             xidim=obj%xidim, elemType=obj%elemType, &
+                             refelemCoord=obj%refelemCoord, &
+                             domainName=obj%refelemDomain, &
+                             order=obj%order, &
+                             ipType=obj%ipType, &
+                             basisType=obj%basisType(1), &
+                             coeff=coeff, firstCall=obj%firstCall, &
+                             alpha=obj%alpha(1), beta=obj%beta(1), &
+                             lambda=obj%lambda(1))
+
+CASE ("HIER", "HEIR")
+
+  CALL HierarchicalElemShapeData(obj=obj%elemsd, quad=obj%quad, &
+                                 nsd=obj%nsd, xidim=obj%xidim, &
+                                 elemType=obj%elemType, &
+                                 refelemCoord=obj%refelemCoord, &
+                                 domainName=obj%refelemDomain, &
+                                 cellOrder=obj%cellOrder, &
+                                 faceOrder=obj%faceOrder, &
+                                 edgeOrder=obj%edgeOrder, &
+                                 cellOrient=obj%cellOrient, &
+                                 faceOrient=obj%faceOrient, &
+                                 edgeOrient=obj%edgeOrient)
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
+#endif
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                         SetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%SetOrder(order=order, order1=order1, &
+                          order2=order2, order3=order3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureOrder
 
 !----------------------------------------------------------------------------
 !                                                              Include error

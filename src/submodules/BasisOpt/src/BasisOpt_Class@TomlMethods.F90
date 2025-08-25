@@ -202,7 +202,8 @@ SUBROUTINE QuadOptFromToml(obj, table)
 #endif
 
   CALL obj%quadOpt%ImportFromToml(table=node, topoType=obj%topoType, &
-              nsd=obj%nsd, xidim=obj%xidim, refelemDomain=obj%refelemDomain, &
+                                  nsd=obj%nsd, xidim=obj%xidim, &
+                                  refelemDomain=obj%refelemDomain, &
                                   refelemCoord=obj%refelemCoord)
 
   node => NULL()

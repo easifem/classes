@@ -122,29 +122,144 @@ MODULE PROCEDURE obj_GetLocalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
 #endif
 
+LOGICAL(LGT) :: isok
+CHARACTER(2) :: acase
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+acase = "FF"
+
+isok = PRESENT(elemsd)
+IF (isok) acase(1:1) = "T"
+
+isok = PRESENT(quad)
+IF (isok) acase(2:2) = "T"
+
 SELECT CASE (obj%baseInterpolation)
 CASE ("LAGR")
-  CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-           domainName=obj%refelemDomain, order=obj%order, ipType=obj%ipType, &
-           basisType=obj%basisType(1), coeff=coeff, firstCall=obj%firstCall, &
-                   alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
+
+  SELECT CASE (acase)
+
+  CASE ("TT")
+
+    CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+                               xidim=obj%xidim, elemType=obj%elemType, &
+                               refelemCoord=obj%refelemCoord, &
+                               domainName=obj%refelemDomain, &
+                               order=obj%order, &
+                               ipType=obj%ipType, &
+                               basisType=obj%basisType(1), &
+                               coeff=coeff, firstCall=obj%firstCall, &
+                               alpha=obj%alpha(1), beta=obj%beta(1), &
+                               lambda=obj%lambda(1))
+
+  CASE ("TF")
+
+    CALL LagrangeElemShapeData(obj=elemsd, quad=obj%quad, nsd=obj%nsd, &
+                               xidim=obj%xidim, elemType=obj%elemType, &
+                               refelemCoord=obj%refelemCoord, &
+                               domainName=obj%refelemDomain, &
+                               order=obj%order, &
+                               ipType=obj%ipType, &
+                               basisType=obj%basisType(1), &
+                               coeff=coeff, firstCall=obj%firstCall, &
+                               alpha=obj%alpha(1), beta=obj%beta(1), &
+                               lambda=obj%lambda(1))
+
+  CASE ("FT")
+
+    CALL LagrangeElemShapeData(obj=obj%elemsd, quad=quad, nsd=obj%nsd, &
+                               xidim=obj%xidim, elemType=obj%elemType, &
+                               refelemCoord=obj%refelemCoord, &
+                               domainName=obj%refelemDomain, &
+                               order=obj%order, &
+                               ipType=obj%ipType, &
+                               basisType=obj%basisType(1), &
+                               coeff=coeff, firstCall=obj%firstCall, &
+                               alpha=obj%alpha(1), beta=obj%beta(1), &
+                               lambda=obj%lambda(1))
+
+  CASE ("FF")
+
+    CALL LagrangeElemShapeData(obj=obj%elemsd, quad=obj%quad, nsd=obj%nsd, &
+                               xidim=obj%xidim, elemType=obj%elemType, &
+                               refelemCoord=obj%refelemCoord, &
+                               domainName=obj%refelemDomain, &
+                               order=obj%order, &
+                               ipType=obj%ipType, &
+                               basisType=obj%basisType(1), &
+                               coeff=coeff, firstCall=obj%firstCall, &
+                               alpha=obj%alpha(1), beta=obj%beta(1), &
+                               lambda=obj%lambda(1))
+
+  END SELECT
 
 CASE ("HIER", "HEIR")
-  CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-      xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-                      domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
-                           faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
-                       cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
-                                 edgeOrient=obj%edgeOrient)
 
-CASE DEFAULT
+  SELECT CASE (acase)
+  CASE ("TT")
+    CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
+                                   xidim=obj%xidim, elemType=obj%elemType, &
+                                   refelemCoord=obj%refelemCoord, &
+                                   domainName=obj%refelemDomain, &
+                                   cellOrder=obj%cellOrder, &
+                                   faceOrder=obj%faceOrder, &
+                                   edgeOrder=obj%edgeOrder, &
+                                   cellOrient=obj%cellOrient, &
+                                   faceOrient=obj%faceOrient, &
+                                   edgeOrient=obj%edgeOrient)
+  CASE ("TF")
+
+    CALL HierarchicalElemShapeData(obj=elemsd, quad=obj%quad, nsd=obj%nsd, &
+                                   xidim=obj%xidim, elemType=obj%elemType, &
+                                   refelemCoord=obj%refelemCoord, &
+                                   domainName=obj%refelemDomain, &
+                                   cellOrder=obj%cellOrder, &
+                                   faceOrder=obj%faceOrder, &
+                                   edgeOrder=obj%edgeOrder, &
+                                   cellOrient=obj%cellOrient, &
+                                   faceOrient=obj%faceOrient, &
+                                   edgeOrient=obj%edgeOrient)
+  CASE ("FT")
+
+    CALL HierarchicalElemShapeData(obj=obj%elemsd, quad=quad, nsd=obj%nsd, &
+                                   xidim=obj%xidim, elemType=obj%elemType, &
+                                   refelemCoord=obj%refelemCoord, &
+                                   domainName=obj%refelemDomain, &
+                                   cellOrder=obj%cellOrder, &
+                                   faceOrder=obj%faceOrder, &
+                                   edgeOrder=obj%edgeOrder, &
+                                   cellOrient=obj%cellOrient, &
+                                   faceOrient=obj%faceOrient, &
+                                   edgeOrient=obj%edgeOrient)
+  CASE ("FF")
+    CALL HierarchicalElemShapeData(obj=obj%elemsd, quad=obj%quad, &
+                                   nsd=obj%nsd, xidim=obj%xidim, &
+                                   elemType=obj%elemType, &
+                                   refelemCoord=obj%refelemCoord, &
+                                   domainName=obj%refelemDomain, &
+                                   cellOrder=obj%cellOrder, &
+                                   faceOrder=obj%faceOrder, &
+                                   edgeOrder=obj%edgeOrder, &
+                                   cellOrient=obj%cellOrient, &
+                                   faceOrient=obj%faceOrient, &
+                                   edgeOrient=obj%edgeOrient)
+  END SELECT
+
 #ifdef DEBUG_VER
+CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found for baseInterpolation')
-  RETURN
 #endif
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
@@ -183,29 +298,40 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
 
 INTEGER(I4B) :: nns, nips, nsd, xidim
+LOGICAL(LGT) :: isgeoelemsd
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(geoelemsd)) THEN
+isgeoelemsd = PRESENT(geoelemsd)
+
+IF (isgeoelemsd) THEN
   nns = geoelemsd%nns
   nips = geoelemsd%nips
   nsd = geoelemsd%nsd
   xidim = geoelemsd%xidim
+
   CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
                   N=geoelemsd%N(1:nns, 1:nips), &
                   dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
-ELSE
-  nns = elemsd%nns
-  nips = elemsd%nips
-  nsd = elemsd%nsd
-  xidim = elemsd%xidim
-  CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
-                  N=elemsd%N(1:nns, 1:nips), &
-                  dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END IF
+
+!! If geoelemsd is not present, we use elemsd
+
+nns = elemsd%nns
+nips = elemsd%nips
+nsd = elemsd%nsd
+xidim = elemsd%xidim
+CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                N=elemsd%N(1:nns, 1:nips), &
+                dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -222,12 +348,19 @@ MODULE PROCEDURE obj_GetQuadraturePoints
 CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints1()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%quadOpt%GetQuadraturePoints(quad=quad)
+isok = PRESENT(quad)
+IF (isok) THEN
+  CALL obj%quadOpt%GetQuadraturePoints(quad=quad)
+ELSE
+  CALL obj%quadOpt%GetQuadraturePoints(quad=obj%quad)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
