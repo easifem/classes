@@ -17,7 +17,8 @@
 !
 
 MODULE FieldOpt_Class
-USE GlobalData, ONLY: I4B, Constant, Space, Time, SpaceTime
+USE GlobalData, ONLY: I4B, Constant, Space, Time, SpaceTime, &
+                      DOF_FMT, NODES_FMT, NodesToDOF, DOFToNodes
 USE ExceptionHandler_Class, ONLY: e
 USE StringUtility, ONLY: UpperCase
 USE Display_Method, ONLY: Tostring
@@ -68,6 +69,10 @@ TYPE :: FieldOpt_
   CHARACTER(9) :: spaceTime_char = "SPACETIME"
   CHARACTER(13) :: constantSpace_char = "CONSTANTSPACE"
   CHARACTER(12) :: constantTime_char = "CONSTANTTIME"
+  INTEGER(I4B) :: storageFormatDOF = DOF_FMT
+  INTEGER(I4B) :: storageFormatNodes = NODES_FMT
+  INTEGER(I4B) :: conversionNodesToDOF = NodesToDOF
+  INTEGER(I4B) :: conversionDOFToNodes = DOFToNodes
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToString => obj_ToString
