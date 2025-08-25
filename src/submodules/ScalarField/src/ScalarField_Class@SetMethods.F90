@@ -77,7 +77,7 @@ INTEGER(I4B) :: indx
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=1_I4B)
 CALL obj%SetSingle(indx=indx, VALUE=VALUE, scale=scale, &
@@ -109,7 +109,7 @@ INTEGER(I4B) :: s(3)
 
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
 
 isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
@@ -138,11 +138,11 @@ REAL(DFP) :: value0(SIZE(globalNode))
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 value0 = VALUE
 
@@ -166,7 +166,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
 
 isok = SIZE(VALUE) .GE. SIZE(globalNode)
@@ -174,7 +174,7 @@ CALL AssertError1(isok, myName, "Size of value is not enought")
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 CALL obj%SetMultiple(indx=globalNode, VALUE=VALUE, scale=scale, &
                      addContribution=addContribution)

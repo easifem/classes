@@ -49,7 +49,7 @@ USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ReallocateUtility, ONLY: Reallocate
 
-USE Display_Method, ONLY: Tostring
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -60,7 +60,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Get1
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 CALL obj%GetSingle(VALUE=VALUE, indx=globalNode)
 END PROCEDURE obj_Get1
 
@@ -81,7 +81,7 @@ END PROCEDURE obj_Get2
 
 MODULE PROCEDURE obj_Get3
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 CALL obj%GetMultiple(VALUE=VALUE, indx=globalNode, tsize=tsize)
 END PROCEDURE obj_Get3
 
@@ -91,7 +91,7 @@ END PROCEDURE obj_Get3
 
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 VALUE = NodalVariable( &
         Get( &
@@ -229,6 +229,14 @@ END PROCEDURE obj_GetPrefix
 MODULE PROCEDURE obj_Size
 ans = obj%local_n
 END PROCEDURE obj_Size
+
+!----------------------------------------------------------------------------
+!                                                              GetStorageFMT
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetStorageFMT
+ans = MYSTORAGEFORMAT
+END PROCEDURE obj_GetStorageFMT
 
 !----------------------------------------------------------------------------
 !

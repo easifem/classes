@@ -19,7 +19,6 @@ SUBMODULE(ScalarField_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE Display_Method, ONLY: ToString
 USE FPL, ONLY: FPL_INIT, FPL_FINALIZE
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 IMPLICIT NONE
 CONTAINS

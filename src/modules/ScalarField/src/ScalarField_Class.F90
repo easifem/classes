@@ -86,88 +86,72 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry, we call SetSingle method
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a scalar values
   !! We call SetAll method here
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given scalar
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! This method is used for ASSIGNMENT operator
   !! WE call copy method
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set selected values using FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
   !! (we call Set9 method here)
-
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   !! obj@[ivar, idof] = value@[ivar, idof
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
+    obj_SetByFunction
   !! Set scalar field using a function
-
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
     Set5, Set6, Set7, Set8, Set9
-
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
   !! Set values to a vector
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get single entry
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get all values in Real vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! Get selected values
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get selected values in FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get values in ScalarField by copy
   !! We call Get6 here
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! value@[ivar, idof] = obj@[ivar, idof]
-
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
   !! Get the entries of scalar field
-
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
   !! Get Finite Element variable
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-
+  !! Get the prefix of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  !! Get the size of the scalar field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
+  !! Get the storage format of the scalar field
 
   ! SET:
   ! @DirichletBCMethods
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
+    obj_ApplyDirichletBC1
   !! Apply Dirichlet Boundary Condition
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
+    obj_ApplyDirichletBC2
   !! Apply Dirichlet Boundary Condition
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5 file
 
@@ -909,6 +893,21 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetStorageFMT@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns storage format
+
+INTERFACE
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
+    CLASS(ScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
