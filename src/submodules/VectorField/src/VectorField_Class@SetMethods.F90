@@ -20,8 +20,6 @@ USE InputUtility, ONLY: Input
 
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 
@@ -82,13 +80,13 @@ LOGICAL(LGT) :: isok
 #endif
 
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-INTEGER(I4B) :: ierr, tsize
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 
 CALL AssertError1(obj%isInitiated, myName, "STScalarField_::obj not initiated")
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   "Not callable for constant STScalar field")
 
 CALL AssertError2(SIZE(VALUE), obj%spaceCompo, myName, &
@@ -98,7 +96,7 @@ isok = obj%spaceCompo .LE. TEMP_INTVEC_LEN
 CALL AssertError1(isok, myName, "size of TEMP_INTVEC is not enough")
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
                tsize=tsize)
@@ -122,7 +120,7 @@ INTEGER(I4B) :: idof, s(3)
 
 CALL AssertError1(obj%isInitiated, myName, &
                   'STScalarField_::obj is not initiated')
-CALL AssertError1(obj%fieldType .EQ. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .EQ. TypeFieldOpt%constant, myName, &
                   'Not callable for constant STScalar field')
 
 #endif
@@ -157,7 +155,7 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
                   'spaceComposhould be less or equal to obj%spaceCompo')
 
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant field')
 #endif
@@ -175,7 +173,6 @@ END PROCEDURE obj_Set3
 MODULE PROCEDURE obj_Set4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
-LOGICAL(LGT) :: isok
 INTEGER(I4B) :: nrow
 #endif
 
@@ -186,10 +183,10 @@ INTEGER(I4B) :: jj, ncol
 CALL AssertError1(obj%isInitiated, myName, &
                   'STScalarField::obj is not initiated')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant STScalar field')
 
-IF (storageFMT .EQ. NODES_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatNodes) THEN
   nrow = obj%spaceCompo
   ncol = obj%dof.tNodes.1
 ELSE
@@ -202,7 +199,7 @@ CALL AssertError2(SIZE(VALUE, 2), ncol, myName, 'a=SIZE(VALUE, 2), b=ncol')
 
 #endif
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
   DO jj = 1, obj%spaceCompo
     CALL obj%Set(VALUE=VALUE(:, jj), spaceCompo=jj, scale=scale, &
                  addContribution=addContribution)
@@ -241,7 +238,7 @@ CALL AssertError1(obj%isInitiated, myName, &
 isok = spaceCompo .LE. obj%spaceCompo
 CALL AssertError1(isok, myName, "spaceCompoout of bound")
 
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for constant field")
 
 tsize = obj%dof.tNodes.spaceCompo
@@ -291,10 +288,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 CALL AssertError1(obj%isInitiated, myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
 
-IF (storageFMT .EQ. NODES_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatNodes) THEN
   CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
                     'a=SIZE(VALUE, 1), b=obj%spaceCompo')
 
@@ -314,7 +311,7 @@ END IF
 
 SELECT CASE (storageFMT)
 
-CASE (NODES_FMT)
+CASE (TypeFieldOpt%storageFormatNodes)
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, SIZE(VALUE, 2)
@@ -323,7 +320,7 @@ CASE (NODES_FMT)
   END DO
   !$OMP END PARALLEL DO
 
-CASE (DOF_FMT)
+CASE (MYSTORAGEFORMAT)
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, SIZE(VALUE, 2)
@@ -356,7 +353,7 @@ CALL AssertError1(obj%isInitiated, myName, &
 isok = spaceCompo .LE. obj%spaceCompo
 CALL AssertError1(isok, myName, "spaceCompois out of bound")
 
-isok = obj%fieldType .NE. TypeField%constant
+isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 
@@ -365,7 +362,7 @@ CALL AssertError2(SIZE(VALUE), SIZE(globalNode), &
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 tsize = SIZE(globalNode)
 
@@ -409,12 +406,12 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
             'given spaceCompo should be less than or equal to obj%spaceCompo')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, idof=spaceCompo, nodenum=globalNode)
 
@@ -435,7 +432,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 CALL AssertError1(obj%isInitiated, myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
 
 #endif
@@ -451,7 +448,8 @@ CASE (Constant)
 CASE (Space)
   CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableSpace), &
                globalNode=globalNode, scale=scale, islocal=islocal, &
-               addContribution=addContribution, storageFMT=NODES_FMT)
+               addContribution=addContribution, &
+               storageFMT=TypeFieldOpt%storageFormatNodes)
 
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -596,7 +594,6 @@ END PROCEDURE obj_Set14
 
 MODULE PROCEDURE obj_SetFromSTVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTVectorField()"
-INTEGER(I4B) :: jj, ii
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated, myName, &
@@ -605,7 +602,7 @@ CALL AssertError1(obj%isInitiated, myName, &
 CALL AssertError1(VALUE%isInitiated, myName, &
                   'VectorField_::value is not initiated')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
 
 #endif

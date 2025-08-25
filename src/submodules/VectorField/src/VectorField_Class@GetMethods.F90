@@ -15,8 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(VectorField_Class) GetMethods
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 
@@ -55,7 +53,7 @@ LOGICAL(LGT) :: isok
 #endif
 
 LOGICAL(LGT) :: bool1, bool2
-INTEGER(I4B) :: ierr, ii, s(3), indx(obj%spaceCompo)
+INTEGER(I4B) :: s(3), indx(obj%spaceCompo)
 
 bool1 = PRESENT(globalNode)
 bool2 = PRESENT(spaceCompo)
@@ -125,7 +123,7 @@ INTEGER(I4B) :: indx(obj%spaceCompo)
 CALL AssertError1(obj%isInitiated, myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%spaceCompo
 
@@ -148,7 +146,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%spaceCompo
 
@@ -190,13 +188,13 @@ LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 INTEGER(I4B) :: jj, mynrow
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated, myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
   nrow = SIZE(globalNode)
   ncol = obj%spaceCompo
 
@@ -220,7 +218,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
   nrow = SIZE(globalNode)
   ncol = obj%spaceCompo
 
@@ -253,7 +251,7 @@ END PROCEDURE obj_Get3
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
 
@@ -295,7 +293,7 @@ CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=spaceCompo)
 CALL obj%GetSingle(VALUE=VALUE, indx=indx)
@@ -402,10 +400,12 @@ TYPE IS (ScalarFieldLis_)
   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
 
 TYPE IS (STScalarFieldLis_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, idof_value=idof)
+  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+                 idof_value=idof)
 
 TYPE IS (VectorFieldLis_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, idof_value=idof)
+  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+                 idof_value=idof)
 
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &

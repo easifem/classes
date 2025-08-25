@@ -19,7 +19,7 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
@@ -30,10 +30,10 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
-USE tomlf, ONLY: toml_table
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 
@@ -41,8 +41,8 @@ PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "VectorField"
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
-INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
+INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
+INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_
 PUBLIC :: VectorFieldPointer_
@@ -79,6 +79,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   FINAL :: obj_Final
 
   ! IO:
@@ -235,7 +236,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
+!                                            checkEssentialParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -249,15 +250,19 @@ END INTERFACE
 ! - CHARACTER(  * ) :: name
 ! - INTEGER( I4B ) :: tdof
 
-INTERFACE VectorFieldCheckEssentialParam
+INTERFACE
   MODULE SUBROUTINE obj_checkEssentialParam(obj, param)
     CLASS(VectorField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_checkEssentialParam
+END INTERFACE
+
+INTERFACE VectorFieldCheckEssentialParam
+  MODULE PROCEDURE obj_checkEssentialParam
 END INTERFACE VectorFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
+!                                                        Initiate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -273,24 +278,28 @@ END INTERFACE VectorFieldCheckEssentialParam
 ! - `spaceCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE VectorFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE VectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE VectorFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
@@ -300,30 +309,144 @@ INTERFACE VectorFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE VectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Initiates by passing arguments
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, &
+                                  fedof, timefedof)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the scalar field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    !! Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE VectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
+END INTERFACE VectorFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                      Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: Deallocates the data stored inside the VectorField_ obj
 
-INTERFACE VectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(VectorField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE VectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE VectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE VectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -339,17 +462,21 @@ END INTERFACE VectorFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE VectorFieldSafeAllocate
+INTERFACE
   MODULE SUBROUTINE obj_VectorFieldSafeAllocate1(obj, newsize)
     TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable Vector field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_VectorFieldSafeAllocate1
+END INTERFACE
+
+INTERFACE VectorFieldSafeAllocate
+  MODULE PROCEDURE obj_VectorFieldSafeAllocate1
 END INTERFACE VectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
-!                                                         Final@Constructor
+!                                                          Final@Constructor
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -366,12 +493,16 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This function returns an instance of [[VectorField_]]
 
-INTERFACE VectorField
+INTERFACE
   MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     TYPE(VectorField_) :: ans
   END FUNCTION obj_Constructor1
+END INTERFACE
+
+INTERFACE VectorField
+  MODULE PROCEDURE obj_Constructor1
 END INTERFACE VectorField
 
 !----------------------------------------------------------------------------
@@ -382,12 +513,16 @@ END INTERFACE VectorField
 ! date: 25 June 2021
 ! summary: This function returns an instance of [[VectorField_]]
 
-INTERFACE VectorField_Pointer
+INTERFACE
   MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     CLASS(VectorField_), POINTER :: ans
   END FUNCTION obj_Constructor_1
+END INTERFACE
+
+INTERFACE VectorField_Pointer
+  MODULE PROCEDURE obj_Constructor_1
 END INTERFACE VectorField_Pointer
 
 !----------------------------------------------------------------------------
@@ -398,12 +533,16 @@ END INTERFACE VectorField_Pointer
 ! date: 26 June 2021
 ! summary: Display the content of [[VectorField_]]
 
-INTERFACE VectorFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE VectorFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE VectorFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -428,19 +567,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Export@IO
+!                                                                  Export@IO
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE VectorFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE VectorFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE VectorFieldExport
 
 !----------------------------------------------------------------------------
@@ -571,7 +714,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -616,7 +759,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -654,7 +797,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -698,7 +841,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -740,7 +883,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -788,7 +931,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -830,7 +973,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -862,7 +1005,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -887,7 +1030,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -904,7 +1047,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -926,7 +1069,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -941,7 +1084,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1041,7 +1184,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1074,7 +1217,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                              Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1176,7 +1319,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1205,7 +1348,7 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE VectorFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(VectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1215,6 +1358,10 @@ INTERFACE VectorFieldGetFEVariable
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_GetFeVariable
+END INTERFACE
+
+INTERFACE VectorFieldGetFEVariable
+  MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE VectorFieldGetFEVariable
 
 !----------------------------------------------------------------------------
