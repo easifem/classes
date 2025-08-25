@@ -139,7 +139,8 @@ tdof = tNodes(1) * obj%spaceCompo
 names(1) (:) = astr%slice(1, 1)
 
 CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
-            dof_storageFMT=mystorageformat, dof_spaceCompo=[obj%spaceCompo], &
+                               dof_storageFMT=MYSTORAGEFORMAT, &
+                               dof_spaceCompo=[obj%spaceCompo], &
                                dof_timeCompo=[1_I4B], dof_tNodes=tNodes, &
                                dof_names_char=names, tSize=tdof)
 
@@ -181,7 +182,64 @@ END SELECT
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+#endif
+
+CHARACTER(1) :: dof_names(1)
+INTEGER(I4B) :: dof_tNodes(1), dof_tsize, dof_spaceCompo(1), &
+                dof_timeCompo(1), dof_tPhysicalVarNames
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = PRESENT(spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo should be present.")
+
+#endif
+
+CALL obj%DEALLOCATE()
+dof_names(1) = name(1:1)
+dof_tNodes(1) = fedof%GetTotalDOF()
+dof_tsize = dof_tNodes(1)
+dof_spaceCompo(1) = spaceCompo(1)
+dof_timeCompo(1) = 1_I4B
+dof_tPhysicalVarNames = 1_I4B
+
+CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
+                               fieldType=fieldType, comm=comm, &
+                               local_n=local_n, global_n=global_n, &
+                               fedof=fedof, timefedof=timefedof, &
+                               storageFMT=MYSTORAGEFORMAT, &
+                               spaceCompo=dof_spaceCompo, &
+                               isSpaceCompo=.TRUE., &
+                               isSpaceCompoScalar=.TRUE., &
+                               timeCompo=dof_timeCompo, &
+                               isTimeCompo=.TRUE., &
+                               isTimeCompoScalar=.TRUE., &
+                               tPhysicalVarNames=dof_tPhysicalVarNames, &
+                               physicalVarNames=dof_names, &
+                               isPhysicalVarNames=.TRUE., &
+                               isPhysicalVarNamesScalar=.TRUE., &
+                               tSize=dof_tsize, tNodes=dof_tNodes, &
+                               isTNodes=.TRUE., isTNodesScalar=.TRUE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                  Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
@@ -191,7 +249,7 @@ CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                     Final
+!                                                                       Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
@@ -199,7 +257,7 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                                VectorField
+!                                                                 VectorField
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
@@ -207,7 +265,7 @@ CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
-!                                                        VectorField_Pointer
+!                                                         VectorField_Pointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
@@ -216,7 +274,7 @@ CALL ans%Initiate(param=param, fedof=fedof)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
-!                                                               Deallocate
+!                                                                  Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_ptr_vector
@@ -233,7 +291,7 @@ END IF
 END PROCEDURE obj_Deallocate_ptr_vector
 
 !----------------------------------------------------------------------------
-!                                                           SafeAlllocate
+!                                                               SafeAlllocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_VectorFieldSafeAllocate1
@@ -257,7 +315,7 @@ END IF
 END PROCEDURE obj_VectorFieldSafeAllocate1
 
 !----------------------------------------------------------------------------
-!                                                             include error
+!                                                               Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
