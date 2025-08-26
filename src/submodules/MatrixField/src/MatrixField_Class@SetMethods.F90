@@ -29,6 +29,7 @@ USE DOF_Method, ONLY: OPERATOR(.tdof.), &
 
 USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer
 USE BaseType, ONLY: DOF_
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -42,37 +43,40 @@ MODULE PROCEDURE obj_Set1
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 INTEGER(I4B) :: val1, val2, val3
 LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: isok
 #endif
 
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
 #ifdef DEBUG_VER
-
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
 
 ! check: this routine should not be called for rectangle matrix
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isRectangle
+CALL AssertError1(isok, myName, &
+                  'This routine is not for rectangle matrix')
+#endif
 
-! check:
+#ifdef DEBUG_VER
 val1 = SIZE(VALUE, 1)
 val2 = SIZE(VALUE, 2)
+isok = val1 .EQ. val2
+CALL AssertError1(isok, myName, &
+                  'value is not square matrix, nrow='//ToString(val1)// &
+                  ' ncol='//ToString(val2))
+#endif
+
+#ifdef DEBUG_VER
 val3 = (.tdof.obj%mat%csr%idof) * SIZE(globalNode)
-problem = (val1 .NE. val2) .OR. (val1 .NE. val3)
-
-IF (problem) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-                    "[INTERNAL ERROR] :: value is not square matrix, "// &
-                    "or its shape is inconsistent "// &
-                    "with the degree of freedom stored in MatrixField")
-  RETURN
-END IF
-
+isok = val1 .EQ. val3
+CALL AssertError1(isok, myName, &
+                  "The shape of value is inconsistent, &
+                   &nrow of value = "//ToString(val1)//" val3 = "// &
+                   ToString(val3))
 #endif
 
 #include "./localNodeError.F90"
@@ -81,8 +85,8 @@ abool = Input(default=.FALSE., option=addContribution)
 
 IF (abool) THEN
   areal = Input(default=1.0_DFP, option=scale)
-  CALL Add(obj=obj%mat, VALUE=VALUE, nodenum=globalNode, &
-           storageFMT=storageFMT, scale=areal)
+  CALL Add(obj=obj%mat, VALUE=VALUE, nodenum=globalNode, scale=areal, &
+           storageFMT=storageFMT)
   RETURN
 END IF
 
@@ -789,5 +793,7 @@ END SUBROUTINE obj_SetToSTMatrix_help
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
