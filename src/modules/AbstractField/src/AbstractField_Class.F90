@@ -188,64 +188,50 @@ CONTAINS
   ! @GetMethods
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam => obj_GetParam
   !! Get the parameters of AbstractField
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     obj_GetTotalPhysicalVars
   !! Returns the total number of physical variables
   !!  This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Returns the name
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Returns the names of physical variables
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Return space component
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Return time component
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Return storage format
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
     obj_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
   !! Returns the total number of edge degree of freedoms
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
   !! Returns the total number of face degree of freedoms
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
     obj_isConstant
   !! It returns true if the field is constant field
   !!  This routine should be implemented by child classes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix of the field, it is necessary for Setting essential param
   !!  This routine should be implemented by child classes
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
     obj_GetFEDOFPointer1
   !! Get the FEDOF pointer, a single pointer is returned
@@ -254,7 +240,6 @@ CONTAINS
   !! Get the fedof pointer, a vector of pointers is returned
   GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
     GetFEDOFPointer2
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer1 => &
     obj_GetTimeFEDOFPointer1
   !! Get the timefedof pointer, a single pointer is returned
@@ -263,7 +248,6 @@ CONTAINS
   !! Get the TimeFEDOF pointer, a vector of pointers is returned
   GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
     GetTimeFEDOFPointer2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetEngineName => &
     obj_GetEngineName
   !! Get the engine name
