@@ -124,13 +124,16 @@ CONTAINS
     obj_SymLargestEigenVal
   !! SymLargestEigenVal
 
-  PROCEDURE(obj_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
+  PROCEDURE(obj_ApplyDirichletBC), DEFERRED, PUBLIC, PASS(obj) :: &
+    ApplyDirichletBC
+  !! Apply DirichletBC
+
+  PROCEDURE(obj_GetDirichletBCSubMat), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetDirichletBCSubMat
   !! ApplyDBC
 
-  PROCEDURE(obj_GetDBCSubMat), DEFERRED, PUBLIC, PASS(obj) :: GetDBCSubMat
-  !! ApplyDBC
-
-  PROCEDURE(obj_ApplyDBCToRHS), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBCtoRHS
+  PROCEDURE(obj_ApplyDirichletBCToRHS), DEFERRED, PUBLIC, PASS(obj) :: &
+    ApplyDirichletBCtoRHS
   !! ApplyDBC
 
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
@@ -593,11 +596,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_ApplyDBC(obj, dbcPtrs)
+  SUBROUTINE obj_ApplyDirichletBC(obj, dbcPtrs)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_ApplyDBC
+  END SUBROUTINE obj_ApplyDirichletBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -605,11 +608,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_GetDBCSubMat(obj, submat)
+  SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
-  END SUBROUTINE obj_GetDBCSubMat
+  END SUBROUTINE obj_GetDirichletBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -621,8 +624,8 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose,  &
-    & scale, addContribution)
+  SUBROUTINE obj_ApplyDirichletBCToRHS(obj, x, y, isTranspose, &
+                               scale, addContribution)
     IMPORT :: AbstractMatrixField_, LGT, DFP, AbstractNodeField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
@@ -630,7 +633,7 @@ ABSTRACT INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_ApplyDBCToRHS
+  END SUBROUTINE obj_ApplyDirichletBCToRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------

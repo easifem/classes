@@ -27,8 +27,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplyDBC1
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBC1()"
+MODULE PROCEDURE obj_ApplyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 LOGICAL(LGT) :: case1, isok
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
@@ -66,7 +66,6 @@ CALL AssertError1(isok, myname, &
 #endif
 
 IF (obj%tsubindices .GT. 0) THEN
-
   CALL GetSubMatrix(obj=obj%mat, &
                     subIndices=obj%subindices(1:obj%tsubindices), &
                     submat=obj%submat)
@@ -87,24 +86,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_ApplyDBC1
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !                                                             GetDBCSubMat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetDBCSubMat
-CHARACTER(*), PARAMETER :: myName = "obj_GetDBCSubMat()"
+MODULE PROCEDURE obj_GetDirichletBCSubMat
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCSubMat()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_GetDBCSubMat
+END PROCEDURE obj_GetDirichletBCSubMat
 
 !----------------------------------------------------------------------------
 !                                                       ApplyDBCToRHS
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplyDBCToRHS
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBCToRHS()"
+MODULE PROCEDURE obj_ApplyDirichletBCToRHS
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBCToRHS()"
 REAL(DFP), POINTER :: xvec(:)
 REAL(DFP), POINTER :: yvec(:)
 
@@ -125,8 +124,7 @@ NULLIFY (xvec, yvec)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_ApplyDBCToRHS
+END PROCEDURE obj_ApplyDirichletBCToRHS
 
 !----------------------------------------------------------------------------
 !

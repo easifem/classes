@@ -398,9 +398,11 @@ CONTAINS
     obj_SymLargestEigenVal
 
   ! SET:
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => obj_ApplyDBC1
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBCtoRHS => obj_ApplyDBCToRHS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDBCSubMat => obj_GetDBCSubMat
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC => obj_ApplyDirichletBC1
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
+    obj_ApplyDirichletBCToRHS
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCSubMat => &
+    obj_GetDirichletBCSubMat
 
   ! GET:
   ! @UnaryMethods
@@ -1234,7 +1236,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      ApplyDBC@DBCMethods
+!                                                 ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1242,15 +1244,15 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to matrixfield_
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDBC1(obj, dbcPtrs)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
     !! These are column numbers which are local node
-  END SUBROUTINE obj_ApplyDBC1
+  END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 ApplyDBCtoRHS@DBCMethods
+!                                            ApplyDirichletBCtoRHS@DBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1258,19 +1260,19 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose, &
-                                      scale, addContribution)
+  MODULE SUBROUTINE obj_ApplyDirichletBCToRHS(obj, x, y, isTranspose, &
+                                              scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     CLASS(AbstractNodeField_), INTENT(INOUT) :: y
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_ApplyDBCToRHS
+  END SUBROUTINE obj_ApplyDirichletBCToRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetDBCSubMat@DBCMethods
+!                                            GetDirichletBCSubMat@DBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1278,10 +1280,10 @@ END INTERFACE
 ! summary:  Get submatrix for apply dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetDBCSubMat(obj, submat)
+  MODULE SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
-  END SUBROUTINE obj_GetDBCSubMat
+  END SUBROUTINE obj_GetDirichletBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
