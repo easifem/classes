@@ -242,11 +242,11 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalNodeNum => GetTotalNodeNum1, GetTotalNodeNum2, &
     GetTotalNodeNum3
 
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum1
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum2
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum3
-  GENERIC, PUBLIC :: GetNodeNum => obj_GetNodeNum1, obj_GetNodeNum2, &
-    obj_GetNodeNum3
+  PROCEDURE, PASS(obj) :: GetNodeNum1 => obj_GetNodeNum1
+  PROCEDURE, PASS(obj) :: GetNodeNum2 => obj_GetNodeNum2
+  PROCEDURE, PASS(obj) :: GetNodeNum3 => obj_GetNodeNum3
+  GENERIC, PUBLIC :: GetNodeNum => GetNodeNum1, GetNodeNum2, &
+    GetNodeNum3
     !! Returns the node number if available
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsMeshIDAllocated => &
@@ -604,7 +604,7 @@ END INTERFACE MeshSelectionSet
 !
 !# Introduction
 !
-! This routine set the material to the mesh. The elements in 
+! This routine set the material to the mesh. The elements in
 ! mesh corresponding to the elements in MeshSelection_
 ! will be assigned medium and material
 ! (mesh%elementData%material(medium) = material
@@ -654,7 +654,7 @@ END INTERFACE MeshSelectionSetMaterialToMesh
 ! summary:  Set material to mesh
 !
 !# Introduction
-! This method calls SetMaterialToMesh1 with dim=dom%GetNSD() 
+! This method calls SetMaterialToMesh1 with dim=dom%GetNSD()
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToMesh2(obj, dom, medium, material)
