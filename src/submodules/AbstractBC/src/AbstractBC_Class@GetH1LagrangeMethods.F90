@@ -29,6 +29,7 @@ CONTAINS
 MODULE PROCEDURE obj_GetTotalNodeNumH1Lagrange
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNumH1Lagrange()"
+LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
@@ -36,7 +37,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%boundary%GetTotalNodeNum(obj%dom)
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myName, &
+                  'AbstractBC_::obj%dom is not associated!')
+#endif
+
+ans = obj%boundary%GetTotalNodeNum(dom=obj%dom)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

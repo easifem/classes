@@ -683,6 +683,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 obj%isInit = .TRUE.
+obj%dom => dom
 CALL ReadNameFromToml(obj=obj, table=table)
 CALL ReadIdofFromToml(obj=obj, table=table)
 CALL ReadNodalValueTypeFromToml(obj=obj, table=table)
