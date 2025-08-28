@@ -53,18 +53,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!                                                             GetMeshPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshPointer1
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-ans => NULL()
-END PROCEDURE obj_GetMeshPointer1
-
-!----------------------------------------------------------------------------
 !                                                             IsNodePresent
 !----------------------------------------------------------------------------
 

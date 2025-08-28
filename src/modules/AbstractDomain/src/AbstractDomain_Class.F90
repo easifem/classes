@@ -151,7 +151,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns obj%isInit
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  PROCEDURE(obj_GetMeshPointer), DEFERRED, PUBLIC, PASS(obj) :: GetMeshPointer
   !! Returns pointer to the mesh in the domain
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
@@ -611,9 +611,10 @@ END INTERFACE
 ! curve, surface, volume meshes.
 ! - the default value of dim is obj%nsd
 
-INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-                                      globalElement, isLocal) RESULT(Ans)
+ABSTRACT INTERFACE
+  FUNCTION obj_GetMeshPointer(obj, dim, entityNum, &
+                               globalElement, isLocal) RESULT(ans)
+    IMPORT :: AbstractDomain_, I4B, LGT, AbstractMesh_
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! dimension of mesh entity
@@ -623,7 +624,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     CLASS(AbstractMesh_), POINTER :: ans
-  END FUNCTION obj_GetMeshPointer1
+  END FUNCTION obj_GetMeshPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2083,7 +2084,7 @@ INTERFACE
     !! Total number of materials
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
     !! entity number of given dimension
-    !! It is used to get the mesh from dom (dim, entityNum) is used 
+    !! It is used to get the mesh from dom (dim, entityNum) is used
     !! to get the mesh from domain
   END SUBROUTINE obj_SetTotalMedium
 END INTERFACE
