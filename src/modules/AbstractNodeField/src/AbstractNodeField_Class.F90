@@ -166,16 +166,40 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
   !! Get location of global node number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
   !! Get location of global node number from AbstractBC
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
   !! Get location of global node number from DirichletBCPointer
-
   GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
     GetNodeLoc3
   !! Generic method for getting location of nodes
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
+  !! Like GetNodeLoc1 but without allocation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
+  !! Like GetNodeLoc1 but without allocation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
+  !! Like GetNodeLoc1 but without allocation
+  GENERIC, PUBLIC :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
+    GetNodeLoc_3
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc1 => obj_GetTotalNodeLoc1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc2 => obj_GetTotalNodeLoc2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc3 => obj_GetTotalNodeLoc3
+  GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
+    GetTotalNodeLoc3
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCIndex => &
+    obj_GetDirichletBCIndex
+  !! Get the Dirichlet BC indices
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCIndex_ => &
+    obj_GetDirichletBCIndex_
+  !! Get the Dirichlet BC indices
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDirichletBCIndex => &
+    obj_GetTotalDirichletBCIndex
+  !! Get the Dirichlet BC indices
 
   ! SET:
   ! @SetMethods
@@ -1077,6 +1101,37 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      GetNodeLoc_@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_1(obj, ans, tsize, globalNode, ivar, &
+                                     spaceCompo, timeCompo)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! Abstract node field
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    !! We get localNodeNumber from the mesh
+    !! This routine is designed for getting the nodelocation
+    !! in AbstractNodeField for Dirichlet boundary nodes
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+  END SUBROUTINE obj_GetNodeLoc_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      GetNodeLoc@GeMethods
 !----------------------------------------------------------------------------
 
@@ -1095,6 +1150,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      GetNodeLoc_@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_2(obj, ans, tsize, dbc, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! Abstract node field
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetNodeLoc_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      GetNodeLoc@GeMethods
 !----------------------------------------------------------------------------
 
@@ -1110,6 +1187,136 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeLoc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_3(obj, ans, tsize, dbc, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetNodeLoc_3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Returns total number of nodes for globalNode
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc1(obj, globalNode, ivar, spaceCompo, &
+                                       timeCompo) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodeLoc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary:  Get total number of nodes corresponding to dbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodeLoc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Get total number of nodes corresponding to dbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc3(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodeLoc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDirichletBCIndex(obj, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDirichletBCIndex
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetDirichletBCIndex(obj, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetDirichletBCIndex
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCIndex_(obj, ans, tsize, ivar)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetDirichletBCIndex_
 END INTERFACE
 
 !----------------------------------------------------------------------------

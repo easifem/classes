@@ -15,31 +15,20 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) GetMethods
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
+USE Display_Method, ONLY: Display, ToString
 USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer, &
                              RealVector_Get => Get, &
                              GetValue_
-
 USE BaseType, ONLY: IntVector_
-
 USE IntVector_Method, ONLY: IntVector_Get => Get, &
                             IntVector_DEALLOCATE => DEALLOCATE, &
                             ASSIGNMENT(=)
-
-USE Display_Method, ONLY: ToString
-
-USE DOF_Method, ONLY: GetNodeLoc
-
+USE DOF_Method, ONLY: GetNodeLoc, GetNodeLoc_
 USE InputUtility, ONLY: Input
-
 USE ArangeUtility, ONLY: Arange
-
 USE AppendUtility, ONLY: Append
-
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE ReallocateUtility, ONLY: Reallocate
 
 #ifdef USE_LIS
 #include "lisf.h"
@@ -387,95 +376,159 @@ RETURN
 END PROCEDURE obj_GetMultiple3
 
 !----------------------------------------------------------------------------
-!                                                                GetNodeLoc
+!                                                             GetTotalNodeLoc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeLoc1
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc1()"
-INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
-INTEGER(I4B) :: ivar0, tsize, itime, ttime
-TYPE(IntVector_), ALLOCATABLE :: int_vec_list(:)
-CLASS(AbstractMesh_), POINTER :: mesh
+MODULE PROCEDURE obj_GetTotalNodeLoc1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeLoc1()"
+#endif
+
+INTEGER(I4B) :: ttime, tspace, tnode
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(spaceCompo)) THEN
-  tsize = SIZE(spaceCompo)
-  ALLOCATE (spaceCompo0(tsize))
-  spaceCompo0(1:tsize) = spaceCompo(1:tsize)
-ELSE
-  ALLOCATE (spaceCompo0(1))
-  spaceCompo0(1) = 1
-END IF
+tspace = 1
+isok = PRESENT(spaceCompo)
+IF (isok) tspace = SIZE(spaceCompo)
 
-IF (PRESENT(timeCompo)) THEN
-  tsize = SIZE(timeCompo)
-  ALLOCATE (timeCompo0(tsize))
-  timeCompo0(1:tsize) = timeCompo(1:tsize)
-ELSE
-  ALLOCATE (timeCompo0(1))
-  timeCompo0(1) = 1
-END IF
-ttime = SIZE(timeCompo0)
+ttime = 1
+isok = PRESENT(timeCompo)
+IF (isok) ttime = SIZE(timeCompo)
 
-IF (PRESENT(ivar)) THEN
-  ivar0 = ivar
-ELSE
-  ivar0 = 1
-END IF
+tnode = SIZE(globalNode)
 
-ALLOCATE (int_vec_list(ttime))
-tsize = SIZE(globalNode)
-ALLOCATE (localNode(tsize))
+ans = ttime * tspace * tnode
 
-IF (ASSOCIATED(obj%fedof)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_GetTotalNodeLoc1
 
-  mesh => obj%fedof%GetMeshPointer()
-  localNode = mesh%GetLocalNodeNumber(globalNode=globalNode)
+!----------------------------------------------------------------------------
+!                                                           GetTotalNodeLoc2
+!----------------------------------------------------------------------------
 
-ELSEIF (ALLOCATED(obj%fedofs)) THEN
+MODULE PROCEDURE obj_GetTotalNodeLoc2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
+#endif
 
+INTEGER(I4B), ALLOCATABLE :: timeCompo(:)
+INTEGER(I4B) :: tPhysicalVars, ivar0
+INTEGER(I4B) :: tsize, tspace, ttime, tnode
+LOGICAL(LGT) :: isfedof, isfedofs, isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ivar0 = Input(default=1_I4B, option=ivar)
+tspace = 1
+
+tPhysicalVars = obj%GetTotalPhysicalVars()
+ALLOCATE (timeCompo(tPhysicalVars))
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
+ttime = timeCompo(ivar0)
+
+isfedof = ASSOCIATED(obj%fedof)
+isfedofs = ALLOCATED(obj%fedofs)
+
+#ifdef DEBUG_VER
+isok = isfedof .OR. isfedofs
+CALL AssertError1(isok, myName, &
+                  "Neither fedof is associated nor fedofs is allocated.")
+
+isok = .NOT. (isfedof .AND. isfedofs)
+CALL AssertError1(isok, myName, &
+                  "Both fedof and fedofs are allocated/associated.")
+#endif
+
+#ifdef DEBUG_VER
+IF (isfedofs) THEN
   tsize = SIZE(obj%fedofs)
+  isok = ivar0 .LE. tsize
+  CALL AssertError1(isok, myName, &
+                    'ivar='//ToString(ivar0)//' is greater than size of &
+                    &obj%fedofs='//ToString(tsize))
 
-  IF (ivar0 .GT. tsize) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: ivar is greater than size of '// &
-                      ' AbstractNodeField_::obj%fedofs.')
-    RETURN
-  END IF
-
-  mesh => obj%fedofs(ivar0)%ptr%GetMeshPointer()
-  localNode = mesh%GetLocalNodeNumber(globalNode)
-
-ELSE
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: AbstractNodeField_::obj%fedof'// &
-                    ' obj%fedofs are not allocated.')
-  RETURN
-
+  isok = ASSOCIATED(obj%fedofs(ivar0)%ptr)
+  CALL AssertError1(isok, myName, &
+                   'obj%fedofs('//ToString(ivar0)//')%ptr is not associated.')
 END IF
+#endif
 
-DO itime = 1, ttime
-  int_vec_list(itime) = GetNodeLoc(obj=obj%dof, nodenum=localNode, &
-              ivar=ivar0, spaceCompo=spaceCompo0, timeCompo=timeCompo0(itime))
+IF (isfedofs) tnode = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
+IF (isfedof) tnode = dbc%GetTotalNodeNum(obj%fedof)
+
+ans = tnode * tspace * ttime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalNodeLoc2
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalNodeLoc3
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNodeLoc3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeLoc3()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(dbc)
+
+ans = 0
+
+DO ii = 1, tsize
+  ans = ans + obj%GetTotalNodeLoc(dbc=dbc(ii)%ptr, ivar=ivar)
 END DO
 
-ans = IntVector_Get(obj=int_vec_list, dataType=1_I4B)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalNodeLoc3
 
-IF (ALLOCATED(int_vec_list)) THEN
-  DO itime = 1, ttime
-    CALL IntVector_DEALLOCATE(int_vec_list(itime))
-  END DO
-  DEALLOCATE (int_vec_list)
-END IF
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
 
-IF (ALLOCATED(spaceCompo0)) DEALLOCATE (spaceCompo0)
-IF (ALLOCATED(timeCompo0)) DEALLOCATE (timeCompo0)
-IF (ALLOCATED(localNode)) DEALLOCATE (localNode)
+MODULE PROCEDURE obj_GetNodeLoc1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc1()"
+#endif
+
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalNodeLoc(globalNode=globalNode, ivar=ivar, &
+                            spaceCompo=spaceCompo, timeCompo=timeCompo)
+
+CALL Reallocate(ans, tsize)
+
+CALL obj%GetNodeLoc_(globalNode=globalNode, ivar=ivar, &
+                     spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                     ans=ans, tsize=tsize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -485,13 +538,117 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetNodeLoc1
 
 !----------------------------------------------------------------------------
+!                                                                 GetNodeLoc_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeLoc_1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc_1()"
+INTEGER(I4B) :: tfedofs
+#endif
+
+INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
+INTEGER(I4B) :: ivar0, ttime, tspace, tnode, ii, jj
+CLASS(AbstractMesh_), POINTER :: mesh
+LOGICAL(LGT) :: isok, isfedof, isfedofs
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! Check errors here
+ivar0 = Input(default=1_I4B, option=ivar)
+isfedof = ASSOCIATED(obj%fedof)
+isfedofs = ALLOCATED(obj%fedofs)
+
+#ifdef DEBUG_VER
+isok = isfedof .OR. isfedofs
+CALL AssertError1(isok, myName, &
+                  "Neither fedof is associated nor fedofs is allocated.")
+
+isok = .NOT. (isfedof .AND. isfedofs)
+CALL AssertError1(isok, myName, &
+                  "Both fedof and fedofs are allocated/associated.")
+
+IF (isfedofs) THEN
+  tfedofs = SIZE(obj%fedofs)
+  isok = ivar0 .LE. tfedofs
+  CALL AssertError1(isok, myName, &
+                    'ivar='//ToString(ivar0)//' is greater than size of &
+                    &obj%fedofs='//ToString(tfedofs))
+
+  isok = ASSOCIATED(obj%fedofs(ivar0)%ptr)
+  CALL AssertError1(isok, myName, &
+                   'obj%fedofs('//ToString(ivar0)//')%ptr is not associated.')
+END IF
+#endif
+
+isok = PRESENT(spaceCompo)
+IF (isok) THEN
+  tspace = SIZE(spaceCompo)
+  ALLOCATE (spaceCompo0(tspace))
+  spaceCompo0(1:tspace) = spaceCompo(1:tspace)
+ELSE
+  tspace = 1
+  ALLOCATE (spaceCompo0(tspace))
+  spaceCompo0(1:tspace) = 1
+END IF
+
+isok = PRESENT(timeCompo)
+IF (isok) THEN
+  ttime = SIZE(timeCompo)
+  ALLOCATE (timeCompo0(ttime))
+  timeCompo0(1:ttime) = timeCompo(1:ttime)
+ELSE
+  ttime = 1
+  ALLOCATE (timeCompo0(ttime))
+  timeCompo0(1:ttime) = 1
+END IF
+
+tnode = SIZE(globalNode)
+ALLOCATE (localNode(tnode))
+
+IF (isfedof) THEN
+  mesh => obj%fedof%GetMeshPointer()
+END IF
+
+IF (isfedofs) THEN
+  mesh => obj%fedofs(ivar0)%ptr%GetMeshPointer()
+END IF
+
+CALL mesh%GetLocalNodeNumber_(globalNode=globalNode, ans=localNode, &
+                              islocal=.FALSE.)
+
+tsize = 0
+DO ii = 1, ttime
+  CALL GetNodeLoc_(obj=obj%dof, nodenum=localNode, &
+                   ivar=ivar0, spaceCompo=spaceCompo0, &
+                   timeCompo=timeCompo0(ii), &
+                   ans=ans(tsize + 1:), tsize=jj)
+  tsize = tsize + jj
+END DO
+
+mesh => NULL()
+IF (ALLOCATED(spaceCompo0)) DEALLOCATE (spaceCompo0)
+IF (ALLOCATED(timeCompo0)) DEALLOCATE (timeCompo0)
+IF (ALLOCATED(localNode)) DEALLOCATE (localNode)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_GetNodeLoc_1
+
+!----------------------------------------------------------------------------
 !                                                                GetNodeLoc
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeLoc2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
-INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
-INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0
+#endif
+
 INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
@@ -499,43 +656,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tPhysicalVars = obj%GetTotalPhysicalVars()
-
-ALLOCATE (timeCompo(tPhysicalVars))
-
-timeCompo = obj%GetTimeCompo(tPhysicalVars)
-
-spaceCompo(1) = dbc%GetDOFNo()
-
-ivar0 = Input(default=1_I4B, option=ivar)
-
-IF (ALLOCATED(obj%fedofs)) THEN
-  IF (ivar0 .GT. SIZE(obj%fedofs)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: ivar is greater than size of '// &
-                      ' AbstractNodeField_::obj%fedofs.')
-    RETURN
-  END IF
-
-  tsize = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
-  ALLOCATE (globalNode(tsize))
-
-  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
-               fedof=obj%fedofs(ivar0)%ptr)
-ELSE
-  tsize = dbc%GetTotalNodeNum(obj%fedof)
-  ALLOCATE (globalNode(tsize))
-
-  CALL dbc%Get(nodeNum=globalNode, tsize=tsize, &
-               fedof=obj%fedof)
-END IF
-
-ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar, &
-                     spaceCompo=spaceCompo, &
-                     timeCompo=Arange(1_I4B, timeCompo(ivar0)))
-
-IF (ALLOCATED(globalNode)) DEALLOCATE (globalNode)
-IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+tsize = obj%GetTotalNodeLoc(dbc=dbc, ivar=ivar)
+CALL Reallocate(ans, tsize)
+CALL obj%GetNodeLoc_(ans=ans, tsize=tsize, dbc=dbc, ivar=ivar)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -548,34 +671,235 @@ END PROCEDURE obj_GetNodeLoc2
 !                                                                GetNodeLoc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetNodeLoc3
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc3()"
-INTEGER(I4B) :: ii, tsize
-INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+MODULE PROCEDURE obj_GetNodeLoc_2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc_2()"
+INTEGER(I4B) :: tfedofs
+#endif
+
+INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
+INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode
+LOGICAL(LGT) :: isok, isfedof, isfedofs
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(dbc)
+ivar0 = Input(default=1_I4B, option=ivar)
 
-DO ii = 1, tsize
-  nptrs = obj%GetNodeLoc(dbc=dbc(ii)%ptr, ivar=ivar)
-  CALL Append(ans, nptrs)
-END DO
+tPhysicalVars = obj%GetTotalPhysicalVars()
+ALLOCATE (timeCompo(tPhysicalVars))
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
 
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+spaceCompo(1) = dbc%GetDOFNo()
+
+isfedof = ASSOCIATED(obj%fedof)
+isfedofs = ALLOCATED(obj%fedofs)
+
+#ifdef DEBUG_VER
+isok = isfedof .OR. isfedofs
+CALL AssertError1(isok, myName, &
+                  "Neither fedof is associated nor fedofs is allocated.")
+isok = .NOT. (isfedof .AND. isfedofs)
+CALL AssertError1(isok, myName, &
+                  "Both fedof and fedofs are allocated/associated.")
+#endif
+
+#ifdef DEBUG_VER
+IF (isfedofs) THEN
+  tfedofs = SIZE(obj%fedofs)
+  isok = ivar0 .LE. tfedofs
+  CALL AssertError1(isok, myName, &
+                    'ivar='//ToString(ivar0)//' is greater than size of &
+                    &obj%fedofs='//ToString(tfedofs))
+
+  isok = ASSOCIATED(obj%fedofs(ivar0)%ptr)
+  CALL AssertError1(isok, myName, &
+                   'obj%fedofs('//ToString(ivar0)//')%ptr is not associated.')
+
+END IF
+#endif
+
+IF (isfedofs) THEN
+  tnode = dbc%GetTotalNodeNum(obj%fedofs(ivar0)%ptr)
+  ALLOCATE (globalNode(tnode))
+  CALL dbc%Get(nodeNum=globalNode, tsize=tnode, &
+               fedof=obj%fedofs(ivar0)%ptr)
+END IF
+
+IF (isfedof) THEN
+  tnode = dbc%GetTotalNodeNum(obj%fedof)
+  ALLOCATE (globalNode(tnode))
+  CALL dbc%Get(nodeNum=globalNode, tsize=tnode, &
+               fedof=obj%fedof)
+END IF
+
+CALL obj%GetNodeLoc_(globalNode=globalNode, ans=ans, tsize=tsize, &
+                     ivar=ivar0, spaceCompo=spaceCompo, &
+                     timeCompo=Arange(1_I4B, timeCompo(ivar0)))
+
+IF (ALLOCATED(globalNode)) DEALLOCATE (globalNode)
+IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
+END PROCEDURE obj_GetNodeLoc_2
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeLoc3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc3()"
+#endif
+
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalNodeLoc(dbc=dbc, ivar=ivar)
+CALL Reallocate(ans, tsize)
+CALL obj%GetNodeLoc_(ans=ans, tsize=tsize, dbc=dbc, ivar=ivar)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetNodeLoc3
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeLoc_3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc_3()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, tdbc, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tdbc = SIZE(dbc)
+
+#ifdef DEBUG_VER
+DO ii = 1, tdbc
+  isok = ASSOCIATED(dbc(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'dbc('//ToString(ii)//')%ptr is not associated.')
+END DO
+#endif
+
+tsize = 0
+DO ii = 1, tdbc
+  CALL obj%GetNodeLoc_(dbc=dbc(ii)%ptr, ivar=ivar, ans=ans(tsize + 1:), &
+                       tsize=jj)
+  tsize = tsize + jj
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetNodeLoc_3
+
+!----------------------------------------------------------------------------
+!                                                    GetTotalDirichletBCIndex
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDirichletBCIndex
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDirichletBCIndex()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%dbc)
+ans = 0
+IF (isok) ans = obj%GetTotalNodeLoc(dbc=obj%dbc, ivar=ivar)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalDirichletBCIndex
+
+!----------------------------------------------------------------------------
+!                                                         GetDirichletBCIndex
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDirichletBCIndex
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCIndex()"
+#endif
+
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%GetTotalDirichletBCIndex(ivar=ivar)
+CALL Reallocate(ans, tsize)
+CALL obj%GetDirichletBCIndex_(ans=ans, tsize=tsize, ivar=ivar)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetDirichletBCIndex
+
+!----------------------------------------------------------------------------
+!                                                       GetDirichletBCIndex_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDirichletBCIndex_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCIndex_()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%dbc)
+tsize = 0
+IF (isok) CALL obj%GetNodeLoc_(dbc=obj%dbc, ivar=ivar, ans=ans, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetDirichletBCIndex_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
