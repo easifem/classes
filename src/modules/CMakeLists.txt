@@ -455,10 +455,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
-# components to be used in the kernel
+# Kernel level utilities
 # ----------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/Kernel/CMakeLists.txt)
+# AssembleBodySource
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleBodySource/CMakeLists.txt)
+
+# AssembleDiffusionMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
 # time integration algorithms

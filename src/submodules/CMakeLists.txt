@@ -368,3 +368,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 
 # PLPlot
 include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# Kernel level utilities
+# ----------------------------------------------------------------------------
+
+# AssembleBodySource
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleBodySource/CMakeLists.txt)
+
+# AssembleDiffusionMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
