@@ -47,8 +47,8 @@ CONTAINS
 !                                                   KernelAssembleBodySource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
-  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
+SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE, &
+                  geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(UserFunction_), INTENT(INOUT) :: func
@@ -142,8 +142,8 @@ END SUBROUTINE KernelAssembleBodySource1
 !                                                   KernelAssembleBodySource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
-  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale)
+SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE, &
+                         geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(VectorField_), INTENT(INOUT) :: bodyVec
@@ -244,8 +244,8 @@ END SUBROUTINE KernelAssembleBodySource2
 !                                                   KernelAssembleBodySource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
-  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
+SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE, &
+                  geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(ScalarField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(UserFunction_), INTENT(INOUT) :: func
@@ -271,8 +271,8 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
-#endif DEBUG_VER
+                          '[START] ')
+#endif
 
   IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
 
@@ -307,8 +307,8 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
       IF (SIZE(xij, 2) .EQ. SIZE(geoElemSD%N, 1)) THEN
-        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-          & geoElemSD=geoElemSD)
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                            geoElemSD=geoElemSD)
       ELSE
         CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
       END IF
