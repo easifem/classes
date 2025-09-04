@@ -17,8 +17,12 @@
 
 SUBMODULE(UserFunction_Class) GetFEVariableMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt, &
-           TypeFEVariableScalar, TypeFEVariableVector, TypeFEVariableMatrix, &
-           TypeFEVariableSpace, TypeFEVariableTime, TypeFEVariableSpaceTime, &
+                    TypeFEVariableScalar, &
+                    TypeFEVariableVector, &
+                    TypeFEVariableMatrix, &
+                    TypeFEVariableSpace, &
+                    TypeFEVariableTime, &
+                    TypeFEVariableSpaceTime, &
                     TypeFEVariableConstant
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
