@@ -26,6 +26,7 @@ USE FieldOpt_Class, ONLY: TypeFieldOpt
 IMPLICIT NONE
 
 PRIVATE
+PUBLIC :: ScalarFieldAssembleBodySource
 
 CHARACTER(*), PARAMETER :: modName = "AssembleBodySourceUtility"
 
@@ -48,14 +49,14 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 !                                               ScalarFieldAssembleBodySource
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE ScalarFieldAssembleBodySource1(rhs, mesh, func, &
+INTERFACE ScalarFieldAssembleBodySource
+  MODULE SUBROUTINE ScalarFieldAssembleBodySource1(rhs, mesh, bodySource, &
                                                    geofedof, fedof, &
                                                    nodeCoord, reset, scale, &
                                                    times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
     CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
-    CLASS(UserFunction_), INTENT(INOUT) :: func
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
@@ -63,32 +64,27 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleBodySource1
-END INTERFACE
+END INTERFACE ScalarFieldAssembleBodySource
 
-! !----------------------------------------------------------------------------
-! !                                               ScalarFieldAssembleBodySource
-! !----------------------------------------------------------------------------
-!
-! !> author: Vikas Sharma, Ph. D.
-! ! date: 2025-08-28
-! ! summary:  Assemble body source vector in scalar field
-!
-! INTERFACE
-!   MODULE SUBROUTINE ScalarFieldAssembleBodySource2(rhs, dom, bodyVec, &
-!                                                    cellFE, geoCellFE, &
-!                                                    spaceElemSD, &
-!                                                    geoSpaceElemSD, &
-!                                                    reset, scale)
-!     CLASS(ScalarField_), INTENT(INOUT) :: rhs
-!     CLASS(AbstractDomain_), INTENT(INOUT) :: dom
-!     CLASS(ScalarField_), INTENT(INOUT) :: bodyVec
-!     TYPE(AbstractFEPointer_), INTENT(INOUT) :: cellFE(:)
-!     TYPE(AbstractFEPointer_), INTENT(INOUT) :: geoCellFE(:)
-!     TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-!     TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
-!     LOGICAL(LGT), INTENT(IN) :: reset
-!     REAL(DFP), INTENT(IN) :: scale
-!   END SUBROUTINE ScalarFieldAssembleBodySource2
-! END INTERFACE
+!----------------------------------------------------------------------------
+!                                               ScalarFieldAssembleBodySource
+!----------------------------------------------------------------------------
+
+INTERFACE ScalarFieldAssembleBodySource
+  MODULE SUBROUTINE ScalarFieldAssembleBodySource2(rhs, mesh, bodySource, &
+                                                   geofedof, fedof, &
+                                                   nodeCoord, reset, scale, &
+                                                   times)
+    CLASS(ScalarField_), INTENT(INOUT) :: rhs
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
+    CLASS(ScalarField_), INTENT(INOUT) :: bodySource
+    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    LOGICAL(LGT), INTENT(IN) :: reset
+    REAL(DFP), INTENT(IN) :: scale
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE ScalarFieldAssembleBodySource2
+END INTERFACE ScalarFieldAssembleBodySource
 
 END MODULE AssembleBodySourceUtility
