@@ -49,7 +49,7 @@ USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
-USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 USE NeumannBC_Class, ONLY: NeumannBCPointer_
 
 IMPLICIT NONE
@@ -256,6 +256,14 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+
+  ! SET:
+  ! @DirichletBCMethods
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+    ApplyDirichletBC2, ApplyDirichletBC3
 
 END TYPE AbstractField_
 
@@ -1599,6 +1607,53 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetEngineName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, dbcPtrs)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+  END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------

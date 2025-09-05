@@ -1356,7 +1356,7 @@ INTERFACE
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1378,7 +1378,7 @@ INTERFACE
     !! times
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! physical variable
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
     !! external field
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE

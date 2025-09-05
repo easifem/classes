@@ -203,44 +203,27 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-
   PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
   !! Set multiple entries using indices
-
   PROCEDURE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
   !! Set multiple entries using range
-
   PROCEDURE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
   !! Set multiple entries using range
-
   PROCEDURE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries using range
-
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
     SetMultiple3, SetMultiple4
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set by user function
 
   GENERIC, PUBLIC :: Set => SetByFunction
 
-  ! SET:
-  ! @DirichletBCMethods
-
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-    & ApplyDirichletBC2
-
   ! GET:
   ! @BlasMethods
-
   PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
   PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
   PROCEDURE, PASS(obj) :: AXPY3 => obj_AXPY3
@@ -1317,42 +1300,6 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_GetDirichletBCIndex_
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Apply Dirichlet boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyDirichletBC1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Apply Dirichlet boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -124,17 +124,13 @@ CONTAINS
     obj_SymLargestEigenVal
   !! SymLargestEigenVal
 
-  PROCEDURE(obj_ApplyDirichletBC), DEFERRED, PUBLIC, PASS(obj) :: &
-    ApplyDirichletBC
-  !! Apply DirichletBC
-
   PROCEDURE(obj_GetDirichletBCSubMat), DEFERRED, PUBLIC, PASS(obj) :: &
     GetDirichletBCSubMat
-  !! ApplyDBC
+  !! Get Submatrix corresponding to Dirichlet BC
 
   PROCEDURE(obj_ApplyDirichletBCToRHS), DEFERRED, PUBLIC, PASS(obj) :: &
     ApplyDirichletBCtoRHS
-  !! ApplyDBC
+  !! Apply Dirichlet Boundary Condition to RHS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   ! SPY
@@ -153,7 +149,6 @@ CONTAINS
   PROCEDURE(obj_Set9), DEFERRED, PASS(obj) :: Set9
   PROCEDURE(obj_Set10), DEFERRED, PASS(obj) :: Set10
   PROCEDURE(obj_Set11), DEFERRED, PASS(obj) :: Set11
-
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     Set6, Set7, Set8, Set9, Set10, Set11
 
@@ -596,18 +591,6 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_ApplyDirichletBC(obj, dbcPtrs)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_ApplyDirichletBC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
   SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -625,7 +608,7 @@ END INTERFACE
 
 ABSTRACT INTERFACE
   SUBROUTINE obj_ApplyDirichletBCToRHS(obj, x, y, isTranspose, &
-                               scale, addContribution)
+                                       scale, addContribution)
     IMPORT :: AbstractMatrixField_, LGT, DFP, AbstractNodeField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x

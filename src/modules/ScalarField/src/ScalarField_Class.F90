@@ -22,6 +22,7 @@ MODULE ScalarField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE String_Class, ONLY: String
 USE BaseType, ONLY: FEVariable_
+USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
@@ -924,7 +925,7 @@ INTERFACE
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -942,7 +943,7 @@ INTERFACE
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
