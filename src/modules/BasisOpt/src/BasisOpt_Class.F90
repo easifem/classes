@@ -332,6 +332,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
@@ -1167,6 +1170,25 @@ INTERFACE
     TYPE(QuadraturePoint_), OPTIONAL, INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        GetTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary:  Get total quadrature points for the basis functions
+!
+!# Introduction
+!   You get the quadrature poitns based on the current state of the object
+! You can change the state of the object by calling SetParam method
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

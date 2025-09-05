@@ -1554,6 +1554,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                      GetMaxTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Get maximum number of quadrature points in an element
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             SetSparsity@SetSparsityMethods
 !----------------------------------------------------------------------------
 

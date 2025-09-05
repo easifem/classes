@@ -17,13 +17,15 @@
 !
 
 SUBMODULE(QuadratureOpt_Class) Methods
-
 USE Display_Method, ONLY: Display, ToString
 USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger, &
-                                  QuadraturePoint_Initiate => Initiate
+                                  QuadraturePoint_Initiate => Initiate, &
+                                 QuadraturePoint_GetTotalQuadraturePoints => &
+                                  GetTotalQuadraturePoints
 USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
 
 IMPLICIT NONE
 
@@ -1239,6 +1241,111 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                    GetTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalQuadraturePoints()"
+#endif
+
+LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+abool = obj%isOrder .AND. obj%isNips
+IF (abool) THEN
+  CALL AssertError1(.TRUE., myName, &
+                    "Both isOrder and isNips is set, I am confuse what to do")
+END IF
+#endif
+
+abool = obj%isHomogeneous .AND. obj%isNips
+IF (abool) THEN
+
+  SELECT CASE (obj%topoType)
+  CASE (TypeElemNameOpt%quadrangle)
+    ans = obj%nips(1) * obj%nips(1)
+  CASE (TypeElemNameOpt%hexahedron)
+    ans = obj%nips(1) * obj%nips(1) * obj%nips(1)
+  CASE DEFAULT
+    ans = obj%nips(1)
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+abool = .NOT. obj%isHomogeneous .AND. obj%isNips
+IF (abool) THEN
+  SELECT CASE (obj%topoType)
+  CASE (TypeElemNameOpt%quadrangle)
+    ans = PRODUCT(obj%nips(1:2))
+  CASE (TypeElemNameOpt%hexahedron)
+    ans = PRODUCT(obj%nips(1:3))
+  CASE DEFAULT
+    ans = obj%nips(1)
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+abool = obj%isHomogeneous .AND. obj%isOrder
+IF (abool) THEN
+  ans = QuadraturePoint_GetTotalQuadraturePoints( &
+        elemType=obj%topoType, &
+        p=obj%order(1), &
+        q=obj%order(1), &
+        r=obj%order(1), &
+        quadratureType1=obj%quadratureType(1), &
+        quadratureType2=obj%quadratureType(1), &
+        quadratureType3=obj%quadratureType(1))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+abool = .NOT. obj%isHomogeneous .AND. obj%isOrder
+IF (abool) THEN
+  ans = QuadraturePoint_GetTotalQuadraturePoints( &
+        elemType=obj%topoType, &
+        p=obj%order(1), &
+        q=obj%order(2), &
+        r=obj%order(3), &
+        quadratureType1=obj%quadratureType(1), &
+        quadratureType2=obj%quadratureType(2), &
+        quadratureType3=obj%quadratureType(3))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  'No valid case found')
+#endif
+END PROCEDURE obj_GetTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
 !

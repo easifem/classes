@@ -536,6 +536,63 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMaxTotalConnectivity
 
 !----------------------------------------------------------------------------
+!                                                 GetMaxTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetMaxTotalQuadraturePoints()'
+LOGICAL(LGT) :: isok
+#endif
+INTEGER(I4B) :: ii, jj
+INTEGER(I4B) :: cellOrder(1), tsize
+CLASS(AbstractFE_), POINTER :: feptr
+LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
+
+INTEGER(I4B) :: telements, iel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+telements = obj%mesh%GetTotalElements()
+
+DO iel = 1, telements
+  ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=yes)
+
+#ifdef DEBUG_VER
+  isok = ii .NE. 0
+  CALL AssertError1(isok, myname, &
+                    'Element topology index is not found')
+
+  isok = ASSOCIATED(obj%fe(ii)%ptr)
+  CALL AssertError1(isok, myname, &
+                    'obj%fe('//ToString(ii)//')%ptr is not associated')
+
+  CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
+                        globalElement=iel, islocal=yes)
+#endif
+
+  DO jj = 1, tsize
+    cellOrder(jj) = cellOrder(jj) * obj%scaleForQuadOrder
+  END DO
+
+  feptr => obj%fe(ii)%ptr
+  CALL feptr%SetQuadratureOrder(order=cellOrder(1:tsize))
+  ans = feptr%GetTotalQuadraturePoints()
+  feptr => NULL()
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetMaxTotalQuadraturePoints
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

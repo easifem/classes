@@ -134,6 +134,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetRefElemCoord => &
     obj_SetRefElemCoord
   !! Set the quadrature type
@@ -466,6 +469,21 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalQuadraturePoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the total quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

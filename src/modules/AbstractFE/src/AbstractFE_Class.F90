@@ -148,6 +148,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -915,6 +918,21 @@ INTERFACE
     !! lambda2: Ultraspherical parameter in y direction
     !! lambda3: Ultraspherical parameter in z direction
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        GetTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Get total number of quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
