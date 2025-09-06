@@ -58,10 +58,17 @@ CALL toml_get(table, tomlName, array, origin=origin, &
 isok = ASSOCIATED(array)
 
 IF (.NOT. isok) THEN
+  ALLOCATE (obj(0))
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           tomlName//' not found, nothing to import.')
 #endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
