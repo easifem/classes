@@ -376,5 +376,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 # AssembleBodySource
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleBodySource/CMakeLists.txt)
 
+# AssemblePointSource
+include(${CMAKE_CURRENT_LIST_DIR}/AssemblePointSource/CMakeLists.txt)
+
 # AssembleDiffusionMatrix
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
