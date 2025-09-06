@@ -129,7 +129,10 @@ TYPE, ABSTRACT :: AbstractField_
   !! Dirichlet boundary conditions
 
   TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
-  !! Dirichlet boundary conditions
+  !! Neumann boundary conditions on surfaces and edges
+
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc_point(:)
+  !! Neumann boundary conditions for point
 
 CONTAINS
   PRIVATE
@@ -264,6 +267,12 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
+
+  !SET:
+  ! @NeumannBCMethods
+  PROCEDURE, PASS(obj) :: ApplyPointNeumannBC1 => obj_ApplyPointNeumannBC1
+  !! Apply point Neumann BC to field
+  GENERIC, PUBLIC :: ApplyPointNeumannBC => ApplyPointNeumannBC1
 
 END TYPE AbstractField_
 
@@ -1174,6 +1183,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                 AbstractFieldReadPointNBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary: Read NBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadPointNBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadPointNBCFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     WriteData@IOMethods
 !----------------------------------------------------------------------------
 
@@ -1654,6 +1678,19 @@ INTERFACE
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
   END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             ApplyPointNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, times, ivar, extField)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyPointNeumannBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------

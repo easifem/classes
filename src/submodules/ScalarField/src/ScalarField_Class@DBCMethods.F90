@@ -43,9 +43,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 istimes = PRESENT(times)
-aint = 0
 
 #ifdef DEBUG_VER
+aint = 0
 IF (istimes) THEN
   aint = SIZE(times)
   problem = aint .NE. 1
@@ -93,14 +93,18 @@ END PROCEDURE obj_ApplyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
 
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, tsize, aint, idof, nrow, ncol
-LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: ibc, tsize, idof, nrow, ncol
+LOGICAL(LGT) :: istimes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -108,18 +112,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 istimes = PRESENT(times)
-aint = 0
+tsize = 0
 
 #ifdef DEBUG_VER
 IF (istimes) THEN
-  aint = SIZE(times)
-  problem = aint .NE. 1
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
-    RETURN
-  END IF
+  tsize = SIZE(times)
+  isok = tsize .EQ. 1
+  CALL AssertError1(isok, myName, &
+                    '[INERNAL ERROR] :: SIZE( times ) is '// &
+                    ToString(tsize)//' which is not equal to 1 ')
 END IF
 #endif
 
@@ -146,6 +147,12 @@ IF (istimes) THEN
 
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -168,7 +175,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods

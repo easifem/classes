@@ -29,6 +29,7 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE NeumannBC_Class, ONLY: NeumannBC_, NeumannBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE Tomlf, ONLY: toml_table
@@ -142,7 +143,7 @@ CONTAINS
   !! Get the storage format of the scalar field
 
   ! SET:
-  ! @DirichletBCMethods
+  ! @DBCMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
   !! Apply Dirichlet Boundary Condition
@@ -150,6 +151,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
   !! Apply Dirichlet Boundary Condition
+
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC1 => &
+    obj_ApplyPointNeumannBC1
+  !! Apply point neumann boundary condition
 
   ! IO:
   ! @IOMethods
@@ -945,6 +952,19 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             ApplyPointNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, times, ivar, extField)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyPointNeumannBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------

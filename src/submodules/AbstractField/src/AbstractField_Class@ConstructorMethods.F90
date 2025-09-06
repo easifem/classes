@@ -55,9 +55,12 @@ END PROCEDURE AbstractFieldCheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractFieldParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
+#endif
+
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr, tempint, ii
-CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
 LOGICAL(LGT) :: isSublist, isok, isSpace, isTime, acase
 
 #ifdef DEBUG_VER
@@ -571,6 +574,24 @@ IF (isok) THEN
     obj%dbc(ii)%ptr => NULL()
   END DO
   DEALLOCATE (obj%dbc)
+END IF
+
+isok = ALLOCATED(obj%nbc)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc)
+  DO ii = 1, tsize
+    obj%nbc(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc)
+END IF
+
+isok = ALLOCATED(obj%nbc_point)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc_point)
+  DO ii = 1, tsize
+    obj%nbc_point(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc_point)
 END IF
 
 #ifdef DEBUG_VER

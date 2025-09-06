@@ -94,6 +94,7 @@ CALL obj%Initiate(name=name%chars(), &
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
 CALL AbstractFieldReadNBCFromToml(obj=obj, table=table)
+CALL AbstractFieldReadPointNBCFromToml(obj=obj, table=table)
 
 name = ""
 engine = ""
@@ -190,7 +191,8 @@ CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 
 isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
-                                         timefedof=timefedof, timeOpt=timeOpt)
+                                                  timefedof=timefedof, &
+                                                  timeOpt=timeOpt)
 
 CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
 
@@ -1287,6 +1289,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE AbstractFieldReadNBCFromToml
+
+!----------------------------------------------------------------------------
+!                                           AbstractFieldReadPointNBCFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadPointNBCFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadPointNBCFromToml()"
+#endif
+
+LOGICAL(LGT) :: isok
+CLASS(AbstractDomain_), POINTER :: dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+dom => NULL()
+isok = ASSOCIATED(obj%fedof)
+IF (isok) THEN
+  dom => obj%fedof%GetDomainPointer()
+END IF
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+ '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+END IF
+#endif
+
+CALL NeumannBCImportFromToml(obj=obj%nbc_point, tomlName="pointNeumannBC", &
+                             table=table, dom=dom)
+dom => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE AbstractFieldReadPointNBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors
