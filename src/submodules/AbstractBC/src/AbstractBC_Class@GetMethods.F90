@@ -147,7 +147,10 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodenum
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodenum()"
+#endif
+
 CHARACTER(6) :: casename
 
 #ifdef DEBUG_VER
@@ -160,16 +163,16 @@ casename = fedof%GetCaseName()
 SELECT CASE (casename)
 
 CASE ("H1LAGR")
-
   ans = obj%GetTotalNodeNumH1Lagrange(fedof=fedof)
 
 CASE ("H1HIER", "H1HEIR")
-
   ans = obj%GetTotalNodeNumH1Hierarchical(fedof=fedof)
 
+#ifdef DEBUG_VER
 CASE DEFAULT
   CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
   RETURN
+#endif
 
 END SELECT
 
