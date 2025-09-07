@@ -76,7 +76,9 @@ IF (istimes) THEN
                     times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
     DO idof = 1, ncol
       CALL obj%Set(globalNode=nodenum(1:nrow), &
-                   VALUE=nodalvalue(1:nrow, idof), islocal=yes)
+                   VALUE=nodalvalue(1:nrow, idof), &
+                   scale=scale, addContribution=yes, &
+                   islocal=yes)
     END DO
   END DO
 
@@ -98,7 +100,7 @@ DO ibc = 1, tsize
                   ncol=ncol, fedof=obj%fedof)
 
   CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               islocal=yes)
+               scale=scale, addContribution=yes, islocal=yes)
 END DO
 
 nbcptr => NULL()
