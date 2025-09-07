@@ -33,10 +33,13 @@ value = 20.0
 # real values
 # value=[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]
 
-isUserFunction = false
 isNormal = false
 isTangent = false
 useExternal = false
+
+isUserFunction = false
+# If isUserFunction is true then bc.function will be read and used 
+# for constructing the userfunction.
 
 [bc.function]
 name = "boundaryFunction"
