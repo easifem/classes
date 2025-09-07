@@ -53,7 +53,6 @@ PUBLIC :: UserFunctionGetReturnType
 PUBLIC :: UserFunctionGetArgType
 PUBLIC :: SetUserFunctionParam
 PUBLIC :: UserFunctionImportFromToml
-PUBLIC :: UserFunctionImportParamFromToml
 PUBLIC :: UserFunctionPointer_
 PUBLIC :: UserFunctionDeallocate
 
@@ -167,9 +166,6 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     & ImportFromToml2
   !! Import abstract kernel from toml
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & obj_ImportParamFromToml
-  !! Import param from toml
 END TYPE UserFunction_
 
 !----------------------------------------------------------------------------
@@ -574,22 +570,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              ImportParamFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param by reading the toml table
-
-INTERFACE UserFunctionImportParamFromToml
-  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportParamFromToml
-END INTERFACE UserFunctionImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods

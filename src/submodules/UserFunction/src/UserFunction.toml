@@ -14,6 +14,9 @@ numReturns = 1
 # It is 3, when returnType is "Vector"
 # It is 9, when returnType is "Matrix"
 
+returnShape = [2,3]
+# returnShape is needed when returnType is Matrix
+
 argType = "Space"
 # argumen type of function, It can take following values
 # "Constant", when the user function is constant
@@ -57,4 +60,6 @@ value = 1.0
 # - numArgs should be 0.
 # In this case returnShape must be given
 
-returnShape = [3, 3]
+luaScript = "./wavelets.lua"
+luaFunctionName = "Wavelet"
+
