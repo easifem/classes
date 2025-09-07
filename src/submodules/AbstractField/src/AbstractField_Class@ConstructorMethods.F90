@@ -250,18 +250,24 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-IF (.NOT. obj2%isInitiated .OR. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: Either obj is already initiated or '// &
-                    ' obj2 is not initiated.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = obj2%isInitiated
+CALL AssertError1(isok, myName, &
+                  'obj2 is not initiated.')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. obj%isInitiated
+CALL AssertError1(isok, myName, &
+                  'obj is already initiated.')
+#endif
 
 obj%isInitiated = obj2%isInitiated
 obj%fieldType = obj2%fieldType
@@ -277,16 +283,56 @@ obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
 
 obj%fedof => obj2%fedof
-
-IF (ALLOCATED(obj2%fedofs)) THEN
-
+isok = ALLOCATED(obj2%fedofs)
+IF (isok) THEN
   tsize = SIZE(obj2%fedofs)
   ALLOCATE (obj%fedofs(tsize))
-
   DO ii = 1, tsize
     obj%fedofs(ii)%ptr => obj2%fedofs(ii)%ptr
   END DO
+END IF
 
+obj%timefedof => obj2%timefedof
+isok = ALLOCATED(obj2%timefedofs)
+IF (isok) THEN
+  tsize = SIZE(obj2%timefedofs)
+  ALLOCATE (obj%timefedofs(tsize))
+  DO ii = 1, tsize
+    obj%timefedofs(ii)%ptr => obj2%timefedofs(ii)%ptr
+  END DO
+END IF
+
+obj%exact => obj2%exact
+obj%saveErrorNorm = obj2%saveErrorNorm
+obj%errorType = obj2%errorType
+obj%plotWithResult = obj2%plotWithResult
+obj%plotErrorNorm = obj2%plotErrorNorm
+
+isok = ALLOCATED(obj2%dbc)
+IF (isok) THEN
+  tsize = SIZE(obj2%dbc)
+  ALLOCATE (obj%dbc(tsize))
+  DO ii = 1, tsize
+    obj%dbc(ii)%ptr => obj2%dbc(ii)%ptr
+  END DO
+END IF
+
+isok = ALLOCATED(obj2%nbc)
+IF (isok) THEN
+  tsize = SIZE(obj2%nbc)
+  ALLOCATE (obj%nbc(tsize))
+  DO ii = 1, tsize
+    obj%nbc(ii)%ptr => obj2%nbc(ii)%ptr
+  END DO
+END IF
+
+isok = ALLOCATED(obj2%nbc_point)
+IF (isok) THEN
+  tsize = SIZE(obj2%nbc_point)
+  ALLOCATE (obj%nbc_point(tsize))
+  DO ii = 1, tsize
+    obj%nbc_point(ii)%ptr => obj2%nbc_point(ii)%ptr
+  END DO
 END IF
 
 #ifdef DEBUG_VER
