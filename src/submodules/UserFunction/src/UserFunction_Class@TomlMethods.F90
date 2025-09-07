@@ -287,7 +287,8 @@ SUBROUTINE ReadNumReturnsFromToml(obj, table)
                           'Reading numReturns ...')
 #endif
 
-  default_value = GetDefaultNumReturns(obj%argType)
+  default_value = GetDefaultNumReturns(obj%returnType)
+
   CALL GetValue(table=table, key="numReturns", VALUE=obj%numReturns, &
           default_value=default_value, origin=origin, stat=stat, isFound=isok)
 
