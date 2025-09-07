@@ -958,9 +958,17 @@ END INTERFACE
 !                                             ApplyPointNeumannBC@NBCMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-06
+! summary: Add Contribution of point neumann boundary condition
+
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, scale, times, ivar, &
+                                             extField)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
