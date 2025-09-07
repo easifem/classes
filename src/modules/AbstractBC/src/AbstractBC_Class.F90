@@ -569,7 +569,7 @@ MODULE SUBROUTINE obj_Get1(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     !! Degree of freedom
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    !! size of nodeNum can be obtained from obj%GetTotalNodeNum
     REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
     !! Nodal values of boundary value
     !! nrow = size of nodeNum
