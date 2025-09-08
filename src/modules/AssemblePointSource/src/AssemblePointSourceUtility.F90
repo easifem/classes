@@ -44,7 +44,7 @@ END TYPE DefaultOpt_
 TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 
 !----------------------------------------------------------------------------
-!
+!                          ScalarFieldAssemblePointSource@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -52,13 +52,13 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 ! summary: Assemble RHS
 
 INTERFACE ScalarFieldAssemblePointSource
-  MODULE SUBROUTINE ScalarFieldAssemblePointSource1(rhs, nbc, fedof, reset, &
-                                                    scale)
+  MODULE SUBROUTINE ScalarFieldAssemblePointSource1(rhs, nbc, fedof, scale, &
+                                                    times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
     CLASS(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    LOGICAL(LGT), INTENT(IN) :: reset
     REAL(DFP), INTENT(IN) :: scale
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssemblePointSource1
 END INTERFACE ScalarFieldAssemblePointSource
 

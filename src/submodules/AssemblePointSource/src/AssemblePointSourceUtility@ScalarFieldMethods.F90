@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AssemblePointSourceUtility) Methods
+SUBMODULE(AssemblePointSourceUtility) ScalarFieldMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -70,7 +70,7 @@ DO inbc = 1, tnbc
                   nodalValue=nodalValue, nrow=ii, ncol=jj)
 
   CALL rhs%Set(globalNode=nodeNum(1:ii), VALUE=nodalValue(1:ii, 1), &
-               scale=defaultOpt%one, addContribution=defaultOpt%yes, &
+               scale=scale, addContribution=defaultOpt%yes, &
                islocal=defaultOpt%yes)
 END DO
 
@@ -90,4 +90,4 @@ END PROCEDURE ScalarFieldAssemblePointSource1
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE ScalarFieldMethods
