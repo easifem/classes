@@ -219,17 +219,8 @@ TYPE :: BasisOpt_
   !! finite element type in string format
   !! scalar, vector, matrix
 
-  TYPE(ElemShapeData_) :: geoelemsd
-  !! Element shape data for geometry
-
-  TYPE(ElemShapeData_) :: elemsd
-  !! Element shape data
-
   TYPE(QuadratureOpt_) :: quadOpt
   !! Quadrature options
-
-  TYPE(QuadraturePoint_) :: quad
-  !! quadrature points
 
 CONTAINS
 
@@ -292,12 +283,6 @@ CONTAINS
   !! Set the order of Hierarchical finite elements, private method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Set the total number of degrees of freedom
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadraturePoints => &
-    obj_SetQuadraturePoints
-  !! Set the quadrature points based on the current state
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetLocalElemShapeData => &
-    obj_SetLocalElemShapeData
-  !! Get local element shape data for Discontinuous Galerkin
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature points
@@ -403,8 +388,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetBasisOptParam(param, prefix, nsd, elemType, &
-          baseContinuity, baseInterpolation, ipType, basisType, alpha, beta, &
-         lambda, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+                                     baseContinuity, baseInterpolation, &
+                                     ipType, basisType, alpha, beta, &
+                                     lambda, order, anisoOrder, &
+                                     edgeOrder, faceOrder, &
+                                     cellOrder, fetype, &
                                      dofType, transformType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! ParameterList
@@ -911,8 +899,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
-                    edgeOrder, cellOrient, faceOrient, edgeOrient, errCheck, &
-                                             tcell, tface, tedge)
+                                             edgeOrder, cellOrient, &
+                                             faceOrient, edgeOrient, &
+                                             errCheck, tcell, tface, tedge)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! cell order
@@ -962,7 +951,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(BasisOpt_), INTENT(inout) :: obj
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
@@ -1074,8 +1063,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad, coeff)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), OPTIONAL, INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), OPTIONAL, INTENT(INOUT) :: quad
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
     !! coefficient matrix needed for Lagrange interpolation
     !! We supply this from AbstractFE_ class
@@ -1083,22 +1072,6 @@ INTERFACE
     !! ignore this argument. Coeff helps us in
     !! reducing the computation time for Lagrange polynomials
   END SUBROUTINE obj_GetLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeData(obj, coeff)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
-    !! coefficient matrix needed for Lagrange interpolation
-    !! We supply this from AbstractFE_ class
-    !! If you are calling it outside AbstractFE_ then please
-    !! ignore this argument. Coeff helps us in
-    !! reducing the computation time for Lagrange polynomials
-  END SUBROUTINE obj_SetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1113,15 +1086,15 @@ INTERFACE
   MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
                                                    facetElemsd, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
-      !! finite element
+    !! finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
-      !! element shape data on cell
+    !! element shape data on cell
     TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
-      !! element shapedata on facet element
-      !! The size of facetElemsd should be equal to total number of
-      !! facets in element.
+    !! element shapedata on facet element
+    !! The size of facetElemsd should be equal to total number of
+    !! facets in element.
     TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
-      !! Quadrature points on each facet element
+    !! Quadrature points on each facet element
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
@@ -1142,7 +1115,7 @@ INTERFACE
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    TYPE(ElemShapedata_), OPTIONAL, INTENT(INOUT) :: elemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
     TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoelemsd
     !! shape function data for geometry which contains local shape function
@@ -1167,7 +1140,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), OPTIONAL, INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
@@ -1189,25 +1162,6 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              SetQuadraturePoints@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-19
-! summary: Set the quadrature points for the basis functions
-!
-!# Introduction
-!   You set the quadrature points based on the current state of the object
-! You can change the state of the object by calling SetParam method
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadraturePoints(obj)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! Quadrature points
-  END SUBROUTINE obj_SetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

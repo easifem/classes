@@ -114,8 +114,7 @@ CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
 CALL Display(obj%refelemCoord, msg="refelemCoord: ", unitno=unitno)
 CALL obj%quadOpt%Display(msg="quadOpt: ", unitno=unitno)
-CALL QuadraturePoint_Display(obj=obj%quad, msg="quad: ", &
-                             unitno=unitno)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

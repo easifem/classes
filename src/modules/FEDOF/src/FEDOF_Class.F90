@@ -193,26 +193,8 @@ CONTAINS
   !! Set the face order, this is a private method
   PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
   !! Set the edge order, this is a private method
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadraturePoints => &
-    obj_SetQuadraturePoints
-  !! Set the quadrature points for an element
-  PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeData => &
-    obj_SetLocalElemShapeData
-  !! Set the local element shape data
-  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeData => &
-    obj_SetGlobalElemShapeData
-  !! Set the global element shape data
-  PROCEDURE, PUBLIC, PASS(obj) :: SetGeoElemShapeData => &
-    obj_SetGeoElemShapeData
-  !! Set the geometric element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates
-
-  PROCEDURE, PASS(obj) :: SetLocalElemShapeDataH1Lagrange => &
-    obj_SetLocalElemShapeDataH1Lagrange
-
-  PROCEDURE, PASS(obj) :: SetLocalElemShapeDataH1Hierarchical => &
-    obj_SetLocalElemShapeDataH1Hierarchical
 
   !IO:
   !@IOMethods
@@ -1297,93 +1279,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              SetQuadraturePoints@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-18
-! summary:  Set quadrature points for a global element
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadraturePoints(obj, globalElement, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! fedof object
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then global element is local element
-  END SUBROUTINE obj_SetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetLocalElemShapeData@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-18
-! summary:  Set quadrature points for a global element
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeData(obj, globalElement, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! fedof object
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then global element is local element
-  END SUBROUTINE obj_SetLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-18
-! summary: Set local element shape data for H1 Lagrange elements
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeDataH1Lagrange(obj, globalElement, &
-                                                        islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_SetLocalElemShapeDataH1Lagrange
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeDataH1Hierarchical(obj, &
-                                                       globalElement, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_SetLocalElemShapeDataH1Hierarchical
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetGeoElemShapeData@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-18
-! summary: Set geometric element shape data for a global element
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetGeoElemShapeData(obj, globalElement, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! fedof object
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then global element is local element
-  END SUBROUTINE obj_SetGeoElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                     SetNodeCoord@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1400,25 +1295,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_SetNodeCoord
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           SetGlobalElemShapeData@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-18
-! summary: Set nodal coordinates for a global element
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetGlobalElemShapeData(obj, globalElement, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! fedof object
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then global element is local element
-  END SUBROUTINE obj_SetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

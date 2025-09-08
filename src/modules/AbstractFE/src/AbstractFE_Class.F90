@@ -109,11 +109,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetLocalElemShapeData => &
-    obj_SetLocalElemShapeData
-  !! Get local element shape data for Discontinuous Galerkin
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadraturePoints => &
-    obj_SetQuadraturePoints
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
 
@@ -803,20 +798,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          SetLocalElemShapeData@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-19
-! summary:  Set local element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeData(obj)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                          GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -934,20 +915,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
   END SUBROUTINE obj_SetQuadratureOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                SetQuadraturePoints@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-08-19
-! summary: Set quadrature points
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadraturePoints(obj)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

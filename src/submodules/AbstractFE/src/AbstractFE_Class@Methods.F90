@@ -512,29 +512,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                     SetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetLocalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%SetLocalElemShapeData(coeff=obj%coeff)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_SetLocalElemShapeData
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -672,28 +649,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureOrder
-
-!----------------------------------------------------------------------------
-!                                                         SetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadraturePoints()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%SetQuadraturePoints()
-
-#ifdef DEBUG_VERS
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                                  SetParam

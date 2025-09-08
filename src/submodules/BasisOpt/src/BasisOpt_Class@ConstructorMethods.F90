@@ -172,9 +172,7 @@ obj%refelemCoord = obj2%refelemCoord
 obj%basisType_char = obj2%basisType_char
 obj%ipType_char = obj2%ipType_char
 obj%feType_char = obj2%feType_char
-
 CALL obj%quadOpt%Copy(obj2%quadOpt)
-CALL QuadraturePoint_Copy(obj=obj%quad, obj2=obj2%quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
