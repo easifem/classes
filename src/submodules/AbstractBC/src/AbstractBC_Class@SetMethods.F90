@@ -255,12 +255,23 @@ SUBROUTINE set_elem_to_faces(obj)
 #endif
 
   IF (obj%isElemToFace) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                  'obj%isElemToFace is already .true., so nothing to do here')
+#endif
+
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
 #endif
     RETURN
   END IF
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(obj%dom)
+  CALL AssertError1(isok, myName, "dom is not associated")
+#endif
 
   obj%isElemToFace = .TRUE.
   nsd = obj%dom%GetNSD()
@@ -328,7 +339,8 @@ SUBROUTINE set_elem_to_faces(obj)
     !       only vertex connectivity is needed
     !       here islocal is set to yes because globalElement is local
     CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
-                            ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
+                                ans=bndy_con, tsize=indx(3), &
+                                islocal=yes, opt="V")
 
     isok = indx(3) .EQ. 0
     IF (isok) CYCLE
