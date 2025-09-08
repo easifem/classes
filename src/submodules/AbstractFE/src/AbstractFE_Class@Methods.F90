@@ -604,6 +604,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                         GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                    GetTotalQuadraturePoints
 !----------------------------------------------------------------------------
 

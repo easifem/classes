@@ -311,6 +311,10 @@ CONTAINS
     obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
+    obj_GetFacetQuadraturePoints
+  !! Get quadrature points on a local face of global element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
 
@@ -1648,6 +1652,30 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary:  Get quadrature points for a global element on a local face
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, globalElement, &
+                                                 localFaceNumber, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! fedof object
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! quadrature points
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in the global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -646,6 +646,62 @@ END PROCEDURE obj_GetQuadraturePoints
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetQuadraturePoints()'
+LOGICAL(LGT) :: isok
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: ii, jj, localElement
+INTEGER(I4B) :: cellOrder(1), tsize
+CLASS(AbstractFE_), POINTER :: feptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                           islocal=islocal)
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=localElement, &
+                                  islocal=yes)
+
+#ifdef DEBUG_VER
+isok = ii .NE. 0
+CALL AssertError1(isok, myname, &
+                  'Element topology index is not found')
+
+isok = ASSOCIATED(obj%fe(ii)%ptr)
+CALL AssertError1(isok, myname, &
+                  'obj%fe('//ToString(ii)//')%ptr is not associated')
+#endif
+
+CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
+                      globalElement=localElement, islocal=yes)
+
+DO jj = 1, tsize
+  cellOrder(jj) = cellOrder(jj) * obj%scaleForQuadOrder
+END DO
+
+feptr => obj%fe(ii)%ptr
+CALL feptr%SetQuadratureOrder(order=cellOrder(1:tsize))
+CALL feptr%GetFacetQuadraturePoints(quad=quad, &
+                                    localFaceNumber=localFaceNumber)
+feptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetLocalElemShapeData
 CHARACTER(6) :: casename
 CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeData()'

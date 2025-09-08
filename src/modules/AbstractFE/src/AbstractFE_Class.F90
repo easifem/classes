@@ -144,9 +144,12 @@ CONTAINS
 
   ! GET:
   ! @QuadratureMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  !! Get quadrature points in cell element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  !! Get quadrature points on the face of cell element
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
@@ -918,6 +921,23 @@ INTERFACE
     !! lambda2: Ultraspherical parameter in y direction
     !! lambda3: Ultraspherical parameter in z direction
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  GetFacetQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points on a local face of element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, localFaceNumber)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
