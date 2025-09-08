@@ -879,47 +879,10 @@ END INTERFACE
 ! alpha, beta, lambda, xij)
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-                                            quadratureType1, &
-                                            quadratureType2, &
-                                            quadratureType3, order, order1, &
-                                            order2, order3, nips, nips1, &
-                                            nips2, nips3, alpha, beta, &
-                                            lambda, alpha1, beta1, &
-                                            lambda1, alpha2, beta2, &
-                                            lambda2, alpha3, beta3, lambda3)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType, quadratureType1, &
-                                          quadratureType2, quadratureType3
-    !! Type of quadrature points
-    !! See QuadratureOpt_
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order, order1, order2, order3
-    !! order: Order of integrand in x, y, and z (homogeneous)
-    !! p: order of integrand in x
-    !! q: order of integrand in y
-    !! r: order of integrand in z direction
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips, nips1, nips2, nips3
-    !! nips: Number of interpolation points
-    !! nips1: Number of interpolation points in x direction
-    !! nips2: Number of interpolation points in y direction
-    !! nips3:: Number of interpolation points in z direction
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, alpha1, alpha2, alpha3
-    !! alpha: Jacobi parameter
-    !! alpha1: Jacobi parameter in x direction
-    !! alpha2: Jacobi parameter in y direction
-    !! alpha3: Jacobi parameter in z direction
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta, beta1, beta2, beta3
-    !! beta: Jacobi parameter
-    !! beta1: Jacobi parameter in x direction
-    !! beta2: Jacobi parameter in y direction
-    !! beta3: Jacobi parameter in z direction
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda, lambda1, lambda2, lambda3
-    !! lambda: Ultraspherical parameter
-    !! lambda1: Ultraspherical parameter in x direction
-    !! lambda2: Ultraspherical parameter in y direction
-    !! lambda3: Ultraspherical parameter in z direction
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
