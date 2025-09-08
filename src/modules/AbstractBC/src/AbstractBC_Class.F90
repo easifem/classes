@@ -203,6 +203,17 @@ CONTAINS
     obj_IsInitiated
   !! Returns isInit
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsElemToFaceInitiated => &
+    obj_IsElemToFaceInitiated
+  !! Returns isElemToFace
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsElemToEdgeInitiated => &
+    obj_IsElemToEdgeInitiated
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalElemToFace => &
+    obj_GetTotalElemToFace
+  !! Get total elemToFace
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalElemToEdge => &
+    obj_GetTotalElemToEdge
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID => &
     obj_GetMeshID
   !! Get MeshID
@@ -237,7 +248,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
   !! Get node numbers where the boundary condition is applied
   GENERIC, PUBLIC :: Get => Get1, Get2
-  !! Generic method to get the node number and nodal values of the 
+  !! Generic method to get the node number and nodal values of the
   !! boundary conditions
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
@@ -527,6 +538,66 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                            IsElemToEdgeInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-26
+! summary: Returns isElemToEdge
+
+INTERFACE
+  MODULE FUNCTION obj_IsElemToEdgeInitiated(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsElemToEdgeInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            IsElemToFaceInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-26
+! summary: Returns isElemToFace
+
+INTERFACE
+  MODULE FUNCTION obj_IsElemToFaceInitiated(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsElemToFaceInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalElemToEdge@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-26
+! summary: Returns tElemToEdge
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemToEdge(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElemToEdge
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalElemToFace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-26
+! summary: Returns tElemToFace
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElemToFace(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B)  :: ans
+  END FUNCTION obj_GetTotalElemToFace
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      GetMeshID@GetMethods
 !----------------------------------------------------------------------------
 
@@ -799,10 +870,16 @@ END INTERFACE
 ! summary:  Get field values of abstract boundary condition
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, &
-                isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
-               isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
-                                nodalValueType, isUseExternal, isUserFunction)
+  MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, isSelectionByBox, &
+                                      isSelectionByMeshID, &
+                                      isSelectionByElemNum, &
+                                      isSelectionByNodeNum, &
+                                      idof, isTangent, isNormal, &
+                                      useFunction, &
+                                      nodalValueType, &
+                                      isUseExternal, &
+                                      isUserFunction, isElemToFace, &
+                                      isElemToEdge)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
@@ -816,6 +893,8 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUseExternal
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToFace
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToEdge
   END SUBROUTINE obj_GetParam
 END INTERFACE
 

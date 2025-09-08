@@ -33,6 +33,38 @@ ans = obj%isInit
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
+!                                                       IsElemToEdgeInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToEdgeInitiated
+ans = obj%isElemToEdge
+END PROCEDURE obj_IsElemToEdgeInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsElemToFaceInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToFaceInitiated
+ans = obj%isElemToFace
+END PROCEDURE obj_IsElemToFaceInitiated
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToEdge
+ans = obj%tElemToEdge
+END PROCEDURE obj_GetTotalElemToEdge
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToFace
+ans = obj%tElemToFace
+END PROCEDURE obj_GetTotalElemToFace
+
+!----------------------------------------------------------------------------
 !                                                                 GetMeshID
 !----------------------------------------------------------------------------
 
@@ -208,6 +240,8 @@ IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
 IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
+IF (PRESENT(isElemToFace)) isElemToFace = obj%isElemToFace
+IF (PRESENT(isElemToEdge)) isElemToEdge = obj%isElemToEdge
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
