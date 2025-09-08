@@ -461,6 +461,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 # AssembleBodySource
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleBodySource/CMakeLists.txt)
 
+# AssembleSurfaceSource
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleSurfaceSource/CMakeLists.txt)
+
 # AssemblePointSource
 include(${CMAKE_CURRENT_LIST_DIR}/AssemblePointSource/CMakeLists.txt)
 

@@ -52,13 +52,13 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 ! summary: Assemble RHS
 
 INTERFACE ScalarFieldAssembleSurfaceSource
- MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1(rhs, nbc, fedof, reset, &
-                                                      scale)
+  MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1(rhs, nbc, fedof, &
+                                                      scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
     CLASS(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    LOGICAL(LGT), INTENT(IN) :: reset
     REAL(DFP), INTENT(IN) :: scale
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleSurfaceSource1
 END INTERFACE ScalarFieldAssembleSurfaceSource
 
