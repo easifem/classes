@@ -83,9 +83,9 @@ tsize1 = SIZE(obj)
 #ifdef DEBUG_VER
 isok = tsize .EQ. tsize1
 CALL AssertError1(isok, myName, &
-            '[CONFIG ERROR] :: The number of boundary condition '//CHAR_LF// &
-                ' in the toml config ('//ToString(tsize)//') is not same '// &
-                  ' as the size of obj ('//ToString(tsize1)//")")
+                  'The number of boundary condition in the toml config ('// &
+                  ToString(tsize)//') is not same as the size of obj ('// &
+                  ToString(tsize1)//")")
 #endif
 
 DO ii = 1, tsize
@@ -95,13 +95,14 @@ DO ii = 1, tsize
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   CALL AssertError1(isok, myName, &
-                    '[CONFIG ERROR] :: DirichletBC '//ToString(ii)// &
+                    'DirichletBC '//ToString(ii)// &
                     ' cannot be read from the toml file.')
 #endif
 
   isok = ASSOCIATED(obj(ii)%ptr)
   IF (.NOT. isok) ALLOCATE (obj(ii)%ptr)
   CALL obj(ii)%ptr%ImportFromToml(table=node, dom=dom)
+  CALL obj(ii)%ptr%SetElemToLocalBoundary()
 END DO
 
 node => NULL()
