@@ -55,7 +55,9 @@ DO ii = minNodeNum, maxNodeNum
   CALL mesh%GetNodeCoord(globalNode=jj, islocal=yes, nodeCoord=xij, &
                          tsize=tsize)
 
-  CALL obj%Set(globalNode=jj, islocal=yes, VALUE=xij(1:nsd))
+  tsize = MIN(tsize, nsd)
+
+  CALL obj%Set(globalNode=jj, islocal=yes, VALUE=xij(1:tsize))
 END DO
 
 #ifdef DEBUG_VER
