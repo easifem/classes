@@ -46,13 +46,13 @@ END TYPE DefaultOpt_
 TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 
 !----------------------------------------------------------------------------
-!                                               ScalarFieldAssembleBodySource
+!                            ScalarFieldAssembleBodySource@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldAssembleBodySource
   MODULE SUBROUTINE ScalarFieldAssembleBodySource1(rhs, mesh, bodySource, &
                                                    geofedof, fedof, &
-                                                   nodeCoord, reset, scale, &
+                                                   nodeCoord, scale, &
                                                    times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
     CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
@@ -60,20 +60,19 @@ INTERFACE ScalarFieldAssembleBodySource
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
-    LOGICAL(LGT), INTENT(IN) :: reset
     REAL(DFP), INTENT(IN) :: scale
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleBodySource1
 END INTERFACE ScalarFieldAssembleBodySource
 
 !----------------------------------------------------------------------------
-!                                               ScalarFieldAssembleBodySource
+!                            ScalarFieldAssembleBodySource@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldAssembleBodySource
   MODULE SUBROUTINE ScalarFieldAssembleBodySource2(rhs, mesh, bodySource, &
                                                    geofedof, fedof, &
-                                                   nodeCoord, reset, scale, &
+                                                   nodeCoord, scale, &
                                                    times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
     CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
@@ -81,7 +80,6 @@ INTERFACE ScalarFieldAssembleBodySource
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
-    LOGICAL(LGT), INTENT(IN) :: reset
     REAL(DFP), INTENT(IN) :: scale
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleBodySource2

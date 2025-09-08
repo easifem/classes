@@ -15,7 +15,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AssembleBodySourceUtility) Methods
+SUBMODULE(AssembleBodySourceUtility) ScalarFieldMethods
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: ToString
 
@@ -55,8 +55,6 @@ REAL(DFP), ALLOCATABLE :: xij(:, :), fevec(:)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
-
-IF (reset) CALL rhs%set(VALUE=defaultOpt%zero)
 
 tElements = mesh%GetTotalElements()
 
@@ -139,8 +137,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (reset) CALL rhs%set(VALUE=defaultOpt%zero)
-
 tElements = mesh%GetTotalElements()
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
@@ -208,4 +204,4 @@ END PROCEDURE ScalarFieldAssembleBodySource2
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE ScalarFieldMethods
