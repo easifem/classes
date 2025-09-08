@@ -53,8 +53,7 @@ IF (istimes) THEN
   tsize = SIZE(times)
   isok = tsize .EQ. 1
   CALL AssertError1(isok, myName, &
-                    '[INERNAL ERROR] :: SIZE( times ) is '// &
-                    ToString(tsize)//', but it should be 1 ')
+                   'SIZE(times) is '//ToString(tsize)//', but it should be 1')
 END IF
 #endif
 
