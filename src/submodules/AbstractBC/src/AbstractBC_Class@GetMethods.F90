@@ -65,6 +65,68 @@ ans = obj%tElemToFace
 END PROCEDURE obj_GetTotalElemToFace
 
 !----------------------------------------------------------------------------
+!                                                               GetElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToFace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToFace()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToFace
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToFace ("// &
+                  ToString(obj%tElemToFace)//")")
+#endif
+
+localCellNumber = obj%elemToFace(1, indx)
+localFaceNumber = obj%elemToFace(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToFace
+
+!----------------------------------------------------------------------------
+!                                                               GetElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToEdge
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToEdge()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToEdge
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToEdge ("// &
+                  ToString(obj%tElemToEdge)//")")
+#endif
+
+localCellNumber = obj%elemToEdge(1, indx)
+localEdgeNumber = obj%elemToEdge(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToEdge
+
+!----------------------------------------------------------------------------
 !                                                                 GetMeshID
 !----------------------------------------------------------------------------
 

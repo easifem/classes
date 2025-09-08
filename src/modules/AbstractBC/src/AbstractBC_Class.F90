@@ -213,6 +213,12 @@ CONTAINS
   !! Get total elemToFace
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalElemToEdge => &
     obj_GetTotalElemToEdge
+  !! Get total elemToEdge
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetElemToFace => &
+    obj_GetElemToFace
+  !! Get elemToFace
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetElemToEdge => &
+    obj_GetElemToEdge
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID => &
     obj_GetMeshID
@@ -593,8 +599,44 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemToFace(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B)  :: ans
+    INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalElemToFace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetElemToFace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-08
+! summary:  Get data from ElemToFace
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemToFace(obj, indx, localCellNumber, &
+                                      localFaceNumber)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    INTEGER(I4B), INTENT(OUT) :: localCellNumber
+    INTEGER(I4B), INTENT(OUT) :: localFaceNumber
+  END SUBROUTINE obj_GetElemToFace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetElemToEdge@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-08
+! summary:  Get data from ElemToEdge
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemToEdge(obj, indx, localCellNumber, &
+                                      localEdgeNumber)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    INTEGER(I4B), INTENT(OUT) :: localCellNumber
+    INTEGER(I4B), INTENT(OUT) :: localEdgeNumber
+  END SUBROUTINE obj_GetElemToEdge
 END INTERFACE
 
 !----------------------------------------------------------------------------
