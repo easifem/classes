@@ -214,10 +214,13 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Lagrange1 => &
     obj_GetH1Lagrange1
   !! Get nodenum and nodal value for H1 and Lagrange polynomial
+  !! This is a private method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Lagrange2 => &
     obj_GetH1Lagrange2
   !! Get the node number for H1 and Lagrange polynomials
+  !! This is a private method
   GENERIC, PUBLIC :: GetH1Lagrange => GetH1Lagrange1, GetH1Lagrange2
+  !! Get the node number and nodal value for H1 and Lagrange polynomials
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Hierarchical1 => &
     obj_GetH1Hierarchical1
@@ -227,13 +230,15 @@ CONTAINS
   !! Get the node number for H1 and Lagrange polynomials
   GENERIC, PUBLIC :: GetH1Hierarchical => GetH1Hierarchical1, &
     GetH1Hierarchical2
+  !! Get the node number and nodal value for H1 Hierarchical polynomials
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
-  !! Get the nodal value of boundary condition
+  !! Get the node number and nodal value of the boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
-  !! Get node numbers where boundary condition is applied
+  !! Get node numbers where the boundary condition is applied
   GENERIC, PUBLIC :: Get => Get1, Get2
-  !! Generic method to get the boundary condition
+  !! Generic method to get the node number and nodal values of the 
+  !! boundary conditions
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
     obj_GetTotalNodeNum

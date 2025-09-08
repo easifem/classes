@@ -269,7 +269,7 @@ SUBROUTINE set_elem_to_faces(obj)
   ! The above statement tells us that this method works
   ! when isSelectionByMeshID is set to .true. in the boundary object
 
-  isok = tmeshid .EQ. 0 .OR. (nsd .LT. 2)
+  isok = (tmeshid .EQ. 0) .OR. (nsd .LT. 2)
 
   IF (isok) THEN
     obj%tElemToFace = 0
