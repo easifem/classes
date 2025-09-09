@@ -1539,11 +1539,12 @@ END INTERFACE
 ! summary:  Get quadrature points for a global element on a local face
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, globalElement, &
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
+                                                 globalElement, &
                                                  localFaceNumber, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! fedof object
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! quadrature points
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number

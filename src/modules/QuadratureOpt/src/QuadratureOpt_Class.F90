@@ -133,6 +133,11 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  !! Get quadrature points in the cell
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  !! Get quadrature points on the local face of the cell
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
@@ -469,6 +474,25 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetFacetQuadraturePoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on local face of the cell
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
+                                                 localFaceNumber)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number of the cell
+  END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

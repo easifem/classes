@@ -687,7 +687,7 @@ END DO
 
 feptr => obj%fe(ii)%ptr
 CALL feptr%SetQuadratureOrder(order=cellOrder(1:tsize))
-CALL feptr%GetFacetQuadraturePoints(quad=quad, &
+CALL feptr%GetFacetQuadraturePoints(quad=quad, facetQuad=facetQuad, &
                                     localFaceNumber=localFaceNumber)
 feptr => NULL()
 

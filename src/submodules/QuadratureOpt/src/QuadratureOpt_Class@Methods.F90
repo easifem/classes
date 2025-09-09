@@ -22,8 +22,8 @@ USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger, &
                                   QuadraturePoint_Initiate => Initiate, &
-                                 QuadraturePoint_GetTotalQuadraturePoints => &
-                                  GetTotalQuadraturePoints
+                                  GetTotalQuadraturePoints, &
+                                  InitiateFacetQuadrature
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: TypeElemNameOpt
 
@@ -1243,6 +1243,131 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                          GetQuadraturePoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (obj%isOrder .AND. obj%isNips) THEN
+  CALL AssertError1(.TRUE., myName, &
+                    "Both isOrder and isNips is set, I am confuse what to do")
+END IF
+#endif
+
+IF (obj%isHomogeneous .AND. obj%isOrder) THEN
+  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
+                               localFaceNumber=localFaceNumber, &
+                               elemType=obj%topoType, &
+                               domainName=obj%refelemDomain, &
+                               order=obj%order(1), &
+                               quadratureType=obj%quadratureType(1), &
+                               alpha=obj%alpha(1), &
+                               beta=obj%beta(1), &
+                               lambda=obj%lambda(1), &
+                               xij=obj%refelemCoord(1:obj%xidim, :))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (obj%isHomogeneous .AND. obj%isNips) THEN
+  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
+                               localFaceNumber=localFaceNumber, &
+                               elemType=obj%topoType, &
+                               domainName=obj%refelemDomain, &
+                               nips=obj%nips(1:1), &
+                               quadratureType=obj%quadratureType(1), &
+                               alpha=obj%alpha(1), &
+                               beta=obj%beta(1), &
+                               lambda=obj%lambda(1), &
+                               xij=obj%refelemCoord(1:obj%xidim, :))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (.NOT. obj%isHomogeneous .AND. obj%isOrder) THEN
+  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
+                               localFaceNumber=localFaceNumber, &
+                               elemType=obj%topoType, &
+                               domainName=obj%refelemDomain, &
+                               p=obj%order(1), &
+                               q=obj%order(2), &
+                               r=obj%order(3), &
+                               quadratureType1=obj%quadratureType(1), &
+                               quadratureType2=obj%quadratureType(2), &
+                               quadratureType3=obj%quadratureType(3), &
+                               alpha1=obj%alpha(1), &
+                               alpha2=obj%alpha(2), &
+                               alpha3=obj%alpha(3), &
+                               beta1=obj%beta(1), &
+                               beta2=obj%beta(2), &
+                               beta3=obj%beta(3), &
+                               lambda1=obj%lambda(1), &
+                               lambda2=obj%lambda(2), &
+                               lambda3=obj%lambda(3), &
+                               xij=obj%refelemCoord(1:obj%xidim, :))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+IF (.NOT. obj%isHomogeneous .AND. obj%isNips) THEN
+  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
+                               localFaceNumber=localFaceNumber, &
+                               elemType=obj%topoType, &
+                               domainName=obj%refelemDomain, &
+                               nipsx=obj%order(1:1), &
+                               nipsy=obj%order(2:2), &
+                               nipsz=obj%order(3:3), &
+                               quadratureType1=obj%quadratureType(1), &
+                               quadratureType2=obj%quadratureType(2), &
+                               quadratureType3=obj%quadratureType(3), &
+                               alpha1=obj%alpha(1), &
+                               alpha2=obj%alpha(2), &
+                               alpha3=obj%alpha(3), &
+                               beta1=obj%beta(1), &
+                               beta2=obj%beta(2), &
+                               beta3=obj%beta(3), &
+                               lambda1=obj%lambda(1), &
+                               lambda2=obj%lambda(2), &
+                               lambda3=obj%lambda(3), &
+                               xij=obj%refelemCoord(1:obj%xidim, :))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  'No valid case found')
+#endif
+
+END PROCEDURE obj_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                    GetTotalQuadraturePoints
 !----------------------------------------------------------------------------
 
@@ -1306,7 +1431,7 @@ END IF
 
 abool = obj%isHomogeneous .AND. obj%isOrder
 IF (abool) THEN
-  ans = QuadraturePoint_GetTotalQuadraturePoints( &
+  ans = GetTotalQuadraturePoints( &
         elemType=obj%topoType, &
         p=obj%order(1), &
         q=obj%order(1), &
@@ -1325,7 +1450,7 @@ END IF
 
 abool = .NOT. obj%isHomogeneous .AND. obj%isOrder
 IF (abool) THEN
-  ans = QuadraturePoint_GetTotalQuadraturePoints( &
+  ans = GetTotalQuadraturePoints( &
         elemType=obj%topoType, &
         p=obj%order(1), &
         q=obj%order(2), &

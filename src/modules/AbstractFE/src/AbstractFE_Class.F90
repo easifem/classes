@@ -876,9 +876,10 @@ END INTERFACE
 ! summary: Get quadrature points on a local face of element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, localFaceNumber)
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
+                                                 localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! Quadrature points
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE obj_GetFacetQuadraturePoints
