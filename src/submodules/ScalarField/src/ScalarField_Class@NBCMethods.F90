@@ -18,6 +18,13 @@
 SUBMODULE(ScalarField_Class) NBCMethods
 USE Display_Method, ONLY: ToString, Display
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
+
+#ifdef DEBUG_VER
+USE QuadraturePoint_Method, ONLY: QP_Display => Display
+USE ElemshapeData_Method, ONLY: Elemsd_Display => Display
+#endif
+
 IMPLICIT NONE
 CONTAINS
 
@@ -31,8 +38,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyNeumannBC1()"
 LOGICAL(LGT) :: isok
 #endif
 
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 LOGICAL(LGT) :: istimes, isElemToEdge, isElemToFace
 INTEGER(I4B) :: tsize, tElemToFace, indx, localCellNumber, localFaceNumber
+TYPE(QuadraturePoint_) :: quad, facetQuad
+TYPE(ElemShapeData_) :: elemsd
 
 istimes = PRESENT(times)
 
@@ -74,8 +84,19 @@ DO indx = 1, tElemToFace
   CALL nbc%GetElemToFace(indx=indx, localCellNumber=localCellNumber, &
                          localFaceNumber=localFaceNumber)
 
+  CALL obj%fedof%GetFacetQuadraturePoints(quad=quad, &
+                                          facetQuad=facetQuad, &
+                                          globalElement=localCellNumber, &
+                                          localFaceNumber=localFaceNumber, &
+                                          islocal=yes)
 
+  CALL obj%fedof%GetLocalElemShapeData(globalElement=localCellNumber, &
+                                       elemsd=elemsd, &
+                                       islocal=yes, quad=quad)
 
+  ! CALL QP_Display(facetQuad, "facetQuad: ")
+  CALL QP_Display(quad, "quad: ")
+  CALL Elemsd_Display(elemsd, "elemsd: ")
 
 END DO
 
