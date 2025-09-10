@@ -2318,22 +2318,40 @@ END PROCEDURE obj_GetGlobalEdgeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshGetFacetConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractMeshGetFacetConnectivity()"
+#endif
+
 INTEGER(I4B) :: localFaceID, cellNum
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (isMaster) THEN
-  CALL FacetData_GetParam(obj=obj%facetData(facetElement),  &
-    & masterCellNumber=cellNum, masterLocalFacetID=localFaceID)
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                     masterCellNumber=cellNum, masterLocalFacetID=localFaceID)
 ELSE
-  CALL FacetData_GetParam(obj=obj%facetData(facetElement),  &
-    & slaveCellNumber=cellNum, slaveLocalFacetID=localFaceID)
+  CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
+                       slaveCellNumber=cellNum, slaveLocalFacetID=localFaceID)
 END IF
 
 IF (cellNum .EQ. 0) THEN
   ALLOCATE (ans(0))
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
 ans = obj%GetFacetConnectivity(iface=localFaceID, globalElement=cellNum)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE AbstractMeshGetFacetConnectivity
 
@@ -2342,16 +2360,40 @@ END PROCEDURE AbstractMeshGetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity
-INTEGER(I4B) :: iel, temp4(4), elemType, order,  &
-  & con(MaxNodesInElement, REFELEM_MAX_FACES), &
-  & ii, tFaceNodes(REFELEM_MAX_FACES)
+INTEGER(I4B) :: tsize
+tsize = obj%GetTotalFacetConnectivity(globalElement=globalElement, &
+                                      iface=iface, islocal=islocal)
+CALL Reallocate(ans, tsize)
+CALL obj%GetFacetConnectivity_( &
+  globalElement=globalElement, iface=iface, islocal=islocal, ans=ans, &
+  tsize=tsize)
+END PROCEDURE obj_GetFacetConnectivity
+
+!----------------------------------------------------------------------------
+!                                                      GetFacetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetConnectivity_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity_()"
+#endif
+
+INTEGER(I4B) :: iel, temp4(4), elemType, order, &
+                con(MaxNodesInElement, REFELEM_MAX_FACES), &
+                ii, tFaceNodes(REFELEM_MAX_FACES)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 
 SELECT CASE (obj%xidim)
 
 CASE (1_I4B)
-  CALL Reallocate(ans, 1)
+
+  tsize = 1
   IF (iface .EQ. 1) THEN
     ans(1) = obj%elementData(iel)%ptr%globalNodes(1)
   ELSE
@@ -2363,11 +2405,11 @@ CASE (2_I4B)
   elemType = obj%elementData(iel)%ptr%name
   order = ElementOrder(elemType)
 
-  CALL Reallocate(ans, order + 1)
+  tsize = order + 1
   CALL GetEdgeConnectivity(elemType=elemType, con=con, order=order, &
-    & opt=1_I4B)
+                           opt=1_I4B)
 
-  DO ii = 1, order + 1
+  DO ii = 1, tsize
     ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
   END DO
 
@@ -2377,21 +2419,67 @@ CASE (3_I4B)
   temp4 = TotalEntities(elemType)
   order = ElementOrder(elemType)
 
-  CALL RefElemGetGeoParam(elemType=elemType,  &
-    & faceCon=con,  &
-    & faceOpt=1_I4B, &
-    & order=order, &
-    & tFaceNodes=tFaceNodes)
+  CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, faceOpt=1_I4B, &
+                          order=order, tFaceNodes=tFaceNodes)
 
-  CALL Reallocate(ans, tFaceNodes(iface))
-
-  DO ii = 1, tFaceNodes(iface)
+  tsize = tFaceNodes(iface)
+  DO ii = 1, tsize
     ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
   END DO
 
 END SELECT
 
-END PROCEDURE obj_GetFacetConnectivity
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetConnectivity_
+
+!----------------------------------------------------------------------------
+!                                                      GetFacetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalFacetConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFacetConnectivity()"
+#endif
+
+INTEGER(I4B) :: iel, temp4(4), elemType, order, &
+                con(MaxNodesInElement, REFELEM_MAX_FACES), &
+                tFaceNodes(REFELEM_MAX_FACES)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
+ans = 0
+
+SELECT CASE (obj%xidim)
+
+CASE (1_I4B)
+  ans = 1
+
+CASE (2_I4B)
+  elemType = obj%elementData(iel)%ptr%name
+  order = ElementOrder(elemType)
+  ans = order + 1
+
+CASE (3_I4B)
+  elemType = obj%elementData(iel)%ptr%name
+  temp4 = TotalEntities(elemType)
+  order = ElementOrder(elemType)
+  CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, faceOpt=1_I4B, &
+                          order=order, tFaceNodes=tFaceNodes)
+  ans = tFaceNodes(iface)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalFacetConnectivity
 
 !----------------------------------------------------------------------------
 !                                                        GetFacetElementType

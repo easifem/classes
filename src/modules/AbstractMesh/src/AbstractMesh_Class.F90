@@ -629,6 +629,13 @@ CONTAINS
     obj_GetFacetConnectivity
   !! Generic method to Get the connectivity of a facet element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
+    obj_GetFacetConnectivity_
+  !! Generic method to Get the connectivity of a facet element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetConnectivity => &
+    obj_GetTotalFacetConnectivity
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
     obj_GetFacetElementType
   !! Returns the facet element type of a given cell element number
@@ -3359,13 +3366,17 @@ END INTERFACE
 !# Introduction
 !
 ! - Returns the connectivity of a given facet element
-! - facetElement is local facet element number
+! - facetElement is facet element number in face connectivity of element
+! - This method will get the globalElement and localFaceID and
+!   then call GetFacetConnectivity method
 
 INTERFACE
-  MODULE FUNCTION AbstractMeshGetFacetConnectivity(obj, facetElement, &
-                                            elementType, isMaster) RESULT(ans)
+  MODULE FUNCTION AbstractMeshGetFacetConnectivity( &
+    obj, facetElement, elementType, isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
+    !! facet element number, it can be obtained from the
+    !! connectivity
     INTEGER(I4B), INTENT(IN) :: elementType
     LOGICAL(LGT), INTENT(IN) :: isMaster
       !! if isMaster is true then connectivity of facet in master-cell
@@ -3388,7 +3399,8 @@ END INTERFACE
 !
 !# Introduction
 !
-! - Returns the connectivity of a given facet element of a cellElement
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
 ! - globalElement is global element number of cell number
 ! - iface is the local face number in globalElement
 
@@ -3401,6 +3413,59 @@ INTERFACE
     LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetFacetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetConnectivity_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetConnectivity_(obj, globalElement, &
+                                              iface, ans, tsize, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetFacetConnectivity_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetConnectivity_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFacetConnectivity(obj, globalElement, &
+                                                iface, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
