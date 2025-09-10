@@ -413,48 +413,32 @@ MODULE PROCEDURE obj_GetFacetConnectivity_
 CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetConnectivity_()'
 #endif
 
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: localElement
+INTEGER(I4B) :: temp(8)
+
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! INTEGER(I4B) :: ent(4)
-! INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
-! INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
-! LOGICAL(LGT), PARAMETER :: yes = .TRUE.
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-!                                            islocal=islocal)
-!
-! ent = obj%mesh%GetTotalEntities(globalElement=localElement, islocal=yes)
-!
-! CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
-!                                opt=opt, tsize=jj, ans=temp)
-!
-! ! points
-! tvertices = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
-!                                          islocal=yes)
-!
-! jj = 1
-!
-! ! faces
-! DO ii = 1, ent(3)
-!   CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
-!   jj = jj + kk
-! END DO
-!
-! tsize = jj - 1
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                           islocal=islocal)
+
+CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
+                               ans=temp, tsize=tsize, opt="F")
+
+CALL obj%GetFaceDOF(globalFace=temp(localFaceNumber), ans=ans, tsize=tsize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetFacetConnectivity_
 
 !----------------------------------------------------------------------------
