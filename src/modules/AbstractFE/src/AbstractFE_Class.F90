@@ -119,7 +119,11 @@ CONTAINS
   !! Get prefix
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get local element shape data for Discontinuous Galerkin
+  !! Get local element shape data for cell element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
+  !! Get local element shape data for cell element and
+  !! local face number
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
@@ -792,32 +796,26 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), OPTIONAL, INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), OPTIONAL, INTENT(INOUT) :: quad
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                       GetLocalFacetElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local element shape data shape data on facets
+! summary:  Get local element shape data shape data in cell and facet
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-                                                   facetElemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd, facetElemsd, &
+                                             quad, facetQuad, localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-      !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
-      !! element shape data on cell
-    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
-      !! element shapedata on facet element
-      !! The size of facetElemsd should be equal to total number of
-      !! facets in element.
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
-      !! Quadrature points on each facet element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 

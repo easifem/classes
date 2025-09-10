@@ -1088,18 +1088,19 @@ END INTERFACE
 ! summary:  Get local facet element shape data
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-                                                   facetElemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd, facetElemsd, &
+                                                   quad, facetQuad, &
+                                                   localFaceNumber, coeff)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: cellElemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
     !! element shape data on cell
-    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
-    !! element shapedata on facet element
-    !! The size of facetElemsd should be equal to total number of
-    !! facets in element.
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad(:)
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
     !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
+    !! coefficient matrix needed for Lagrange interpolation
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 

@@ -548,8 +548,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%GetLocalFacetElemShapeData(cellElemsd=cellElemsd, &
-                                        facetElemsd=facetElemsd, quad=quad)
+CALL obj%opt%GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber, coeff=obj%coeff)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
