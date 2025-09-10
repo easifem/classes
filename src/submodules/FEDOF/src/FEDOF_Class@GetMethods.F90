@@ -418,11 +418,6 @@ INTEGER(I4B) :: localElement
 INTEGER(I4B) :: temp(8)
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
