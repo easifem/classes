@@ -405,6 +405,59 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
+!                                                       GetFacetConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetConnectivity_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetConnectivity_()'
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! INTEGER(I4B) :: ent(4)
+! INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
+! INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+! LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+!                                            islocal=islocal)
+!
+! ent = obj%mesh%GetTotalEntities(globalElement=localElement, islocal=yes)
+!
+! CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
+!                                opt=opt, tsize=jj, ans=temp)
+!
+! ! points
+! tvertices = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
+!                                          islocal=yes)
+!
+! jj = 1
+!
+! ! faces
+! DO ii = 1, ent(3)
+!   CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
+!   jj = jj + kk
+! END DO
+!
+! tsize = jj - 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFacetConnectivity_
+
+!----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
@@ -818,6 +871,146 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetLocalElemShapeDataH1Hierarchical
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalFacetElemShapeData()'
+#endif
+
+CHARACTER(6) :: casename
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+casename = obj%GetCaseName()
+
+SELECT CASE (casename)
+CASE ('H1LAGR')
+  CALL obj%GetLocalFacetElemShapeDataH1Lagrange( &
+    globalElement=globalElement, elemsd=elemsd, facetElemsd=facetElemsd, &
+    quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber, &
+    islocal=islocal)
+
+CASE ('H1HIER', 'H1HEIR')
+  CALL obj%GetLocalFacetElemShapeDataH1Hierarchical( &
+    globalElement=globalElement, elemsd=elemsd, facetElemsd=facetElemsd, &
+    quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber, &
+    islocal=islocal)
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, &
+                    'No case found for case name '//casename)
+#endif
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                        GetLocalFacetElemShapeDataH1Lagrange
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeDataH1Lagrange
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetLocalElemShapeDataH1Lagrange()'
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, iel, cellOrder(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+cellOrder(1) = obj%cellOrder(iel)
+ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=.TRUE.)
+
+#ifdef DEBUG_VER
+isok = ii .NE. 0
+CALL AssertError1(isok, myname, &
+                  'Element topology index is not found')
+#endif
+
+CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), errCheck=.TRUE.)
+CALL obj%fe(ii)%ptr%GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalFacetElemShapeDataH1Lagrange
+
+!----------------------------------------------------------------------------
+!                                  GetLocalFacetElemShapeDataH1Hierarchhical
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeDataH1Hierarchical
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  myName = 'obj_GetLocalFacetElemShapeDataH1Hierarchical()'
+#endif
+
+INTEGER(I4B) :: ii, cellOrder(3), &
+                faceOrder(3, ReferenceElementInfo%maxEdges), &
+                edgeOrder(ReferenceElementInfo%maxEdges), &
+                faceOrient(3, ReferenceElementInfo%maxEdges), &
+                edgeOrient(ReferenceElementInfo%maxEdges), &
+                cellOrient(3), indx(10)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, islocal=islocal)
+
+CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
+                   cellOrder=cellOrder, faceOrder=faceOrder, &
+                   edgeOrder=edgeOrder, cellOrient=cellOrient, &
+                   faceOrient=faceOrient, edgeOrient=edgeOrient, &
+                   tcellOrder=indx(1), tfaceOrder=indx(2), &
+                   tedgeOrder=indx(3), tcellOrient=indx(4), &
+                   tfaceOrient=indx(5:6), tedgeOrient=indx(7))
+
+! The above modification is necessary for quad and hexa elements
+! Here we are setting uniform cell order in all directions
+! for such elements
+IF (indx(1) .EQ. 1) cellOrder(2:3) = cellOrder(1)
+CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
+                             faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                             cellOrient=cellOrient, faceOrient=faceOrient, &
+                             edgeOrient=edgeOrient, errCheck=.TRUE., &
+                             tcell=indx(1), tface=indx(2), tedge=indx(3))
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+CALL obj%fe(ii)%ptr%GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalFacetElemShapeDataH1Hierarchical
 
 !----------------------------------------------------------------------------
 !
