@@ -2406,7 +2406,7 @@ CASE (2_I4B)
   order = ElementOrder(elemType)
 
   tsize = order + 1
-  CALL GetEdgeConnectivity(elemType=elemType, con=con, order=order, &
+  CALL GetFaceConnectivity(elemType=elemType, con=con, order=order, &
                            opt=1_I4B)
 
   DO ii = 1, tsize
