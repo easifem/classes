@@ -66,7 +66,6 @@ IF (.NOT. isFound) THEN
 END IF
 
 CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
-
 CALL obj%AllocateSizes()
 CALL obj%SetCellOrder(order=order, islocal=islocal)
 CALL obj%SetFaceOrder()

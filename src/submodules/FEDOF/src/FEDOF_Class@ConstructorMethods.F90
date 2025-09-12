@@ -419,6 +419,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrdersFromCellOrder()"
 #endif
 
 ! Internal variables
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 INTEGER(I4B) :: ent(4), tsize, iel, tedgedof, tfacedof, tcelldof, ii, jj, &
                 tdof, myorder
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
@@ -448,10 +449,10 @@ obj%cellIA(1) = 1
 #ifdef DEBUG_VER
 DO iel = 1, obj%tCells
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=.TRUE.)
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=yes)
   IF (.NOT. isok) CYCLE
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=.TRUE.)
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=yes)
 
   isok = ASSOCIATED(elemdata)
   CALL AssertError1(isok, myName, 'elemdata is not allocated')
@@ -461,10 +462,10 @@ END DO
 
 cellLoop: DO iel = 1, obj%tCells
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=.TRUE.)
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=yes)
   IF (.NOT. isok) CYCLE
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=.TRUE.)
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=yes)
 
   ent = ElemData_GetTotalEntities(elemdata)
 
@@ -476,9 +477,11 @@ cellLoop: DO iel = 1, obj%tCells
     ! if edge node found
     IF (.NOT. isok) THEN
       myorder = INT(obj%edgeOrder(jj), kind=INT8)
-      tsize = ElemData_GetTotalEdgeDOF(obj=elemdata, ii=ii, order=myorder, &
-                                       baseContinuity=obj%baseContinuity, &
-                                      baseInterpolation=obj%baseInterpolation)
+      tsize = ElemData_GetTotalEdgeDOF( &
+              obj=elemdata, ii=ii, order=myorder, &
+              baseContinuity=obj%baseContinuity, &
+              baseInterpolation=obj%baseInterpolation)
+
       tdof = tdof + tsize
       obj%edgeIA(jj + 1) = obj%edgeIA(jj) + tsize
       tedgedof = tedgedof + tsize
@@ -500,9 +503,10 @@ cellLoop: DO iel = 1, obj%tCells
 
       myorder = INT(obj%faceOrder(jj), kind=INT8)
 
-      tsize = ElemData_GetTotalFaceDOF(obj=elemdata, ii=ii, order=myorder, &
-                                       baseContinuity=obj%baseContinuity, &
-                                      baseInterpolation=obj%baseInterpolation)
+      tsize = ElemData_GetTotalFaceDOF( &
+              obj=elemdata, ii=ii, order=myorder, &
+              baseContinuity=obj%baseContinuity, &
+              baseInterpolation=obj%baseInterpolation)
 
       tdof = tdof + tsize
       foundFaces(jj) = .TRUE.

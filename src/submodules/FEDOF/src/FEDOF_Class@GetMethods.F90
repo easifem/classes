@@ -104,12 +104,27 @@ END PROCEDURE obj_GetTotalEdgeDOF2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFaceDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFaceDOF1()'
+#endif
+
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = 0
 DO ii = obj%faceIA(globalface), obj%faceIA(globalface + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetFaceDOF1
 
 !----------------------------------------------------------------------------
@@ -125,11 +140,28 @@ END PROCEDURE obj_GetTotalFaceDOF1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFaceDOF2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFaceDOF2()'
+#endif
+
 INTEGER(I4B) :: globalFace
-globalFace = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
-                             islocal=islocal, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+globalFace = obj%mesh%GetGlobalFaceNumber( &
+             globalElement=globalElement, islocal=islocal, &
+             localFaceNumber=localFaceNumber)
+
 CALL obj%GetFaceDOF(globalFace=globalFace, ans=ans, tsize=tsize, &
                     islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetFaceDOF2
 
 !----------------------------------------------------------------------------
@@ -403,38 +435,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetConnectivity_
-
-!----------------------------------------------------------------------------
-!                                                       GetFacetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetConnectivity_
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetConnectivity_()'
-#endif
-
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
-INTEGER(I4B) :: localElement
-INTEGER(I4B) :: temp(8)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                           islocal=islocal)
-
-CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
-                               ans=temp, tsize=tsize, opt="F")
-
-CALL obj%GetFaceDOF(globalFace=temp(localFaceNumber), ans=ans, tsize=tsize)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetConnectivity_
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
@@ -1029,6 +1029,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                      GetFacetConnectivity_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetConnectivity_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFacetConnectivity_()'
+#endif
+
+INTEGER(I4B) :: tsize0, localElement
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                           islocal=islocal)
+
+CALL obj%mesh%GetFacetConnectivity_( &
+  ans=ans, tsize=tsize0, globalElement=localElement, islocal=yes, &
+  iface=localFaceNumber)
+
+CALL obj%GetFaceDOF(ans=ans(tsize0 + 1:), tsize=tsize, &
+                    globalElement=localElement, islocal=yes, &
+                    localFaceNumber=localFaceNumber)
+
+tsize = tsize + tsize0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetConnectivity_
 
 !----------------------------------------------------------------------------
 !

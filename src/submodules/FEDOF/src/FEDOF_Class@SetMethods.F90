@@ -137,7 +137,9 @@ DO iel = 1, obj%tCells
 
     foundFaces(kk) = .TRUE.
 
-   jj = obj%mesh%GetLocalElemNumber(globalElement=e2e(ii, 1), islocal=.FALSE.)
+    jj = obj%mesh%GetLocalElemNumber(globalElement=e2e(ii, 1), &
+                                     islocal=.FALSE.)
+
     obj%faceOrder(kk) = MIN(obj%cellOrder(iel), obj%cellOrder(jj))
   END DO
 
