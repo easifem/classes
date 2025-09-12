@@ -70,8 +70,15 @@ IF (istimes) THEN
     CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:ncol, idof), &
                  islocal=.FALSE.)
   END DO
+
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
