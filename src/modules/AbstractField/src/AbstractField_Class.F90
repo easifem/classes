@@ -50,7 +50,7 @@ USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
-USE NeumannBC_Class, ONLY: NeumannBCPointer_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_, NeumannBC_
 
 IMPLICIT NONE
 PRIVATE
@@ -254,6 +254,18 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetEngineName => &
     obj_GetEngineName
   !! Get the engine name
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNBC => &
+    obj_GetTotalNBC
+  !! Get size of nbc
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalPointNBC => &
+    obj_GetTotalPointNBC
+  !! Get the size of nbc_point
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetNBCPointer => &
+    obj_GetNBCPointer
+  !! Get the pointer to nbc
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetPointNBCPointer => &
+    obj_GetPointNBCPointer
+  !! Get the pointer to nbc_point
 
   ! SET:
   ! @SetMethods
@@ -1281,6 +1293,80 @@ INTERFACE
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNBC(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc is not allocated then ans is zero
+  END FUNCTION obj_GetTotalNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalPointNBC(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc_point is not allocated then ans is zero
+  END FUNCTION obj_GetTotalPointNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+  !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+  !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+  !! if nbc is not allocated then ans%ptr is null()
+  !! if nbc is allocated but nbc(ii)%ptr is not associated
+  !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetNBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetPointNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc_point
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+  !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+  !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+  !! if nbc is not allocated then ans%ptr is null()
+  !! if nbc is allocated but nbc(ii)%ptr is not associated
+  !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetPointNBCPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -464,6 +464,146 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetEngineName
 
 !----------------------------------------------------------------------------
+!                                                                GetTotalNBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNBC()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc)
+ans = 0
+IF (isok) ans = SIZE(obj%nbc)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalNBC
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalPointNBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalPointNBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNBC()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc_point)
+ans = 0
+IF (isok) ans = SIZE(obj%nbc_point)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalPointNBC
+
+!----------------------------------------------------------------------------
+!                                                               GetNBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNBCPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNBCPointer()"
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc)
+
+IF (.NOT. isok) THEN
+  ans => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+tsize = SIZE(obj%nbc)
+isok = indx .LE. tsize
+CALL AssertError1(isok, myName, &
+                  "indx should be less than or equal to size of nbc")
+
+#endif
+
+ans => obj%nbc(indx)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetNBCPointer
+
+!----------------------------------------------------------------------------
+!                                                          GetPointNBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointNBCPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointNBCPointer()"
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc_point)
+
+IF (.NOT. isok) THEN
+  ans => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+tsize = SIZE(obj%nbc_point)
+isok = indx .LE. tsize
+CALL AssertError1(isok, myName, &
+                  "indx should be less than or equal to size of nbc_point")
+
+#endif
+
+ans => obj%nbc_point(indx)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetPointNBCPointer
+
+!----------------------------------------------------------------------------
 !                                                             Include error
 !----------------------------------------------------------------------------
 
