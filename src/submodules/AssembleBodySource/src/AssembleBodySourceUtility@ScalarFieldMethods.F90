@@ -183,7 +183,8 @@ DO iel = 1, tElements
   CALL bodySource%Get(VALUE=forceVec, globalNode=cellcon(1:tcellCon), &
                       tsize=tforceVec, islocal=defaultOpt%yes)
   ! TODO:
-  forceVar = NodalVariable(val=forceVec(1:tforceVec), rank=TypeFEVariableScalar, &
+  forceVar = NodalVariable(val=forceVec(1:tforceVec), &
+                           rank=TypeFEVariableScalar, &
                            vartype=TypeFEVariableSpace)
   fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
 
