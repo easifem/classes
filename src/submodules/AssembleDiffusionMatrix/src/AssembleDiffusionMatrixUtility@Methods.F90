@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AssembleDiffusionMatrixUtility) Methods
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE ExceptionHandler_Class, ONLY: e
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
@@ -94,7 +94,7 @@ DO iel = 1, tElements
 
   CALL fedof%GetGlobalElemShapeData(globalElement=iel, &
                                     elemsd=elemsd, &
-                                    xij=xij(1:nrow, 1:ncol), &
+                                    xij=xij(1:elemsd%nsd, 1:geoelemsd%nns), &
                                     geoelemsd=geoelemsd, &
                                     islocal=defaultOpt%yes)
 
@@ -103,6 +103,7 @@ DO iel = 1, tElements
 
   CALL diffCoeffField%Get(globalElement=iel, islocal=defaultOpt%yes, &
                           fevar=diffCoeffVar)
+
   ks = defaultOpt%zero
   CALL DiffusionMatrix_(test=elemsd, trial=elemsd, k=diffCoeffVar, &
                         krank=TypeFEVariableScalar, ans=ks, &
