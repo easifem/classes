@@ -1123,7 +1123,7 @@ INTERFACE
     !! present in the reference element in geoElemsd.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
-    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoelemsd
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
     !! shape function data for geometry which contains local shape function
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
