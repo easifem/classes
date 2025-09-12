@@ -1177,8 +1177,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-29
-! summary:  This function returns the location of globalNode from bc
+! date: 2023-11-29
+! summary: This function returns the location of globalNode from bc
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeLoc_3(obj, ans, tsize, dbc, ivar)

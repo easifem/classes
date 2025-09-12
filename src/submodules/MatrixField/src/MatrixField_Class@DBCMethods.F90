@@ -59,6 +59,11 @@ IF (case1) THEN
     CALL ApplyDBC(obj=obj%mat, dbcptrs=obj%dbcptrs(1:obj%tdbcptrs))
   END IF
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
