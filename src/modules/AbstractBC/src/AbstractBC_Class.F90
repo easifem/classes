@@ -725,7 +725,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Get@GetMethods
+!                                                    Get@GetH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -751,7 +751,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetH1Lagrange@GetMethods
+!                                          GetH1Lagrange@GetH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -771,7 +771,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetH1Hierarchical@GetMethods
+!                                  GetH1Hierarchical@GetH1HierarchicalMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -797,7 +797,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetH1Lagrange@GetMethods
+!                                  GetH1Hierarchical@GetH1HierarchicalMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
