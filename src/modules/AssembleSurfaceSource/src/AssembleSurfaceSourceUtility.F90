@@ -21,6 +21,8 @@ USE GlobalData, ONLY: DFP, LGT, I4B
 USE ExceptionHandler_Class, ONLY: e
 USE NeumannBC_Class, ONLY: NeumannBC_, NeumannBCPointer_
 USE ScalarField_Class, ONLY: ScalarField_
+USE VectorField_Class, ONLY: VectorField_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE FEDOF_Class, ONLY: FEDOF_
 
 IMPLICIT NONE
@@ -39,6 +41,8 @@ TYPE :: DefaultOpt_
                half = 0.5_DFP
   LOGICAL(LGT) :: yes = .TRUE.
   LOGICAL(LGT) :: no = .FALSE.
+  INTEGER(I4B) :: storageFormatDOF = TypeFieldOpt%storageFormatDOF
+  INTEGER(I4B) :: storageFormatNodes = TypeFieldOpt%storageFormatNodes
 END TYPE DefaultOpt_
 
 TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
@@ -52,13 +56,15 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 ! summary: Assemble RHS
 
 INTERFACE ScalarFieldAssembleSurfaceSource
-  MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1(rhs, nbc, fedof, &
-                                                      scale, times)
-    CLASS(ScalarField_), INTENT(INOUT) :: rhs
-    CLASS(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
+  MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1( &
+    obj, nbc, fedof, geofedof, nodeCoord, nbcField, scale)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(NeumannBC_), INTENT(INOUT) :: nbc
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(ScalarField_), INTENT(INOUT) :: nbcField
     REAL(DFP), INTENT(IN) :: scale
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleSurfaceSource1
 END INTERFACE ScalarFieldAssembleSurfaceSource
 
