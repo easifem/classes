@@ -150,6 +150,8 @@ CONTAINS
   !! Use only when return type if matrix.
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns isInit
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNumArgs => obj_GetNumArgs
+  !! Get the number of Args
 
   ! IO:
   ! @IOMethods
@@ -511,6 +513,21 @@ INTERFACE
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetNumReturns
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNumArgs@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Get the number of arguments
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetNumArgs(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNumArgs
 END INTERFACE
 
 !----------------------------------------------------------------------------
