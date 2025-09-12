@@ -832,7 +832,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetTotalNodeNum@GetMethods
+!                                       GetTotalNodeNum@GetH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

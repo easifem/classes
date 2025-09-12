@@ -102,9 +102,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL checkerror(obj, myName)
 
-IF (obj%isUserFunction) THEN
-  CALL checkerror_uf(obj, myName, times)
-END IF
+IF (obj%isUserFunction) CALL checkerror_uf(obj, myName, times)
 #endif
 
 ! If obj%isUserFunction is true, then call GetSpaceValue_uf
