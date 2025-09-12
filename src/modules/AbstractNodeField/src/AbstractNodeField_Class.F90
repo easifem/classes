@@ -1093,7 +1093,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeLoc_1(obj, ans, tsize, globalNode, ivar, &
-                                     spaceCompo, timeCompo)
+                                     spaceCompo, timeCompo, islocal)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     !! Abstract node field
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1111,6 +1111,8 @@ INTERFACE
     !! list of space components
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
     !! list of time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalNode are local to obj
   END SUBROUTINE obj_GetNodeLoc_1
 END INTERFACE
 
