@@ -26,4 +26,5 @@ target_sources(
           ${src_path}/UserFunction_Class@GetVectorValueMethods.F90
           ${src_path}/UserFunction_Class@GetMatrixValueMethods.F90
           ${src_path}/UserFunction_Class@GetFEVariableMethods.F90
+          ${src_path}/UserFunction_Class@GetFEVariable2Methods.F90
           ${src_path}/UserFunction_Class@SetMethods.F90)

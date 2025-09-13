@@ -137,8 +137,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue1 => obj_GetVectorValue1
   PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable_ => obj_GetFEVariable_
   GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue1, &
     GetMatrixValue, GetFEVariable
+  GENERIC, PUBLIC :: Get_ => GetFEVariable_
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -457,6 +459,23 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE obj_GetFEVariable
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the Matrix value
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFEVariable_(obj, fevar, xij, times)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(INOUT) :: fevar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_GetFEVariable_
 END INTERFACE
 
 !----------------------------------------------------------------------------
