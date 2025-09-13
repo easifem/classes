@@ -495,8 +495,9 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   CHARACTER(*), PARAMETER :: myName = "GetSpaceValue_uf()"
 #endif
 
-  REAL(DFP) :: ans, xij(4, 1)
-  INTEGER(I4B) :: ii, jj, nsd, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge
+  REAL(DFP) :: ans, xij(4)
+  INTEGER(I4B) :: ii, jj, nsd, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge, &
+                  nargs
   CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
@@ -512,14 +513,17 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   nsd = obj%dom%GetNSD()
   meshptr => obj%dom%GetMeshPointer(dim=nsd)
 
+  nargs = obj%func%GetNumArgs()
+  xij = 0.0_DFP
+
   ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
 
   DO ii = 1, nrow
-    CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
+    CALL meshptr%GetNodeCoord(nodeCoord=xij, tsize=tsize, &
                               globalNode=nodeNum(ii), islocal=.TRUE.)
 
-    CALL obj%func%Get(val=ans, args=xij(1:3, 1))
+    CALL obj%func%Get(val=ans, args=xij(1:nargs))
 
     DO jj = 1, ncol
       nodalValue(ii, jj) = ans
@@ -532,7 +536,6 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE GetSpaceValue_uf
 
 !----------------------------------------------------------------------------
@@ -729,8 +732,9 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   CHARACTER(*), PARAMETER :: myName = "GetSpaceTimeValue_uf()"
 #endif
 
-  INTEGER(I4B) :: ii, jj, nsd, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge
-  REAL(DFP) :: xij(4, 1), ans
+  INTEGER(I4B) :: ii, jj, nsd, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge, &
+                  nargs
+  REAL(DFP) :: xij(4), ans
   CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
@@ -742,20 +746,19 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                   iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
                   iNodeOnEdge=iNodeOnEdge)
 
+  nargs = obj%func%GetNumArgs()
   ncol = SIZE(times)
-
   nsd = obj%dom%GetNSD()
-
   meshptr => obj%dom%GetMeshPointer(dim=nsd)
 
   DO jj = 1, ncol
-    xij(nsd + 1, 1) = times(jj)
+    xij(nargs) = times(jj)
 
     DO ii = 1, nrow
-      CALL meshptr%GetNodeCoord(nodeCoord=xij(:, 1), tsize=tsize, &
+      CALL meshptr%GetNodeCoord(nodeCoord=xij, tsize=tsize, &
                                 globalNode=nodeNum(ii), islocal=.TRUE.)
 
-      CALL obj%func%Get(val=ans, args=xij(1:4, 1))
+      CALL obj%func%Get(val=ans, args=xij(1:nargs))
 
       nodalValue(ii, jj) = ans
     END DO
