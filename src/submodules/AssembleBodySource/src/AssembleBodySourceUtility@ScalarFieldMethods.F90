@@ -27,9 +27,13 @@ USE BaseType, ONLY: QuadraturePoint_, &
 
 USE ReallocateUtility, ONLY: Reallocate
 
-USE ForceVector_Method, ONLY: ForceVector
+USE ForceVector_Method, ONLY: ForceVector_, ForceVector
 
-USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: NodalVariable, QuadratureVariable
+
+#ifdef DEBUG_VER
+USE FEVariable_Method, ONLY: Fevar_Display => Display
+#endif
 
 IMPLICIT NONE
 CONTAINS
@@ -47,9 +51,9 @@ TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
 INTEGER(I4B) :: nrow, ncol, iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, tgeoCellCon
+                tcellCon, tgeoCellCon, tforceVec
 INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
-REAL(DFP), ALLOCATABLE :: xij(:, :), fevec(:)
+REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -59,12 +63,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 tElements = mesh%GetTotalElements()
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
+maxNNE = fedof%GetMaxTotalConnectivity()
+
 CALL Reallocate(geoCellCon, maxNNEGeo)
 CALL Reallocate(xij, 3, maxNNEGeo)
-
-maxNNE = fedof%GetMaxTotalConnectivity()
 CALL Reallocate(cellcon, maxNNE)
-CALL Reallocate(fevec, maxNNE)
+CALL Reallocate(forceVec, maxNNE)
+
+forceVar = QuadratureVariable(val=forceVec, rank=TypeFEVariableScalar, &
+                              vartype=TypeFEVariableSpace)
 
 DO iel = 1, tElements
 
@@ -98,14 +105,17 @@ DO iel = 1, tElements
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
 
-  ! TODO: Use Get method which does not reallocate forceVar
-  CALL bodySource%Get(fevar=forceVar, xij=xij(1:nrow, 1:ncol), times=times)
+  ! TODO:
+  ! Use get method which does not reallocate forceVar
+  ! and uses the barycentric coordinates
+  CALL bodySource%Get_(fevar=forceVar, xij=xij(1:nrow, 1:ncol))
 
-  ! TODO: Use ForceVector which does not reallocate fevec
-  fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
+  ! fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
+  CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
+                    ans=forceVec, tsize=tforceVec)
 
   CALL rhs%Set(globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
-               scale=scale, addContribution=defaultOpt%yes, VALUE=fevec)
+     scale=scale, addContribution=defaultOpt%yes, VALUE=forceVec(1:tforceVec))
 
 END DO
 
@@ -116,12 +126,37 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE ScalarFieldAssembleBodySource1
 
 !----------------------------------------------------------------------------
-!                                              ScalarFieldAssembleBodySource
+!                                               ScalarFieldAssembleBodySource
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarFieldAssembleBodySource2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleBodySource2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE ScalarFieldAssembleBodySource2
+
+!----------------------------------------------------------------------------
+!                                              ScalarFieldAssembleBodySource
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ScalarFieldAssembleBodySource3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleBodySource3()"
 #endif
 
 TYPE(QuadraturePoint_) :: quad
@@ -197,7 +232,7 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE ScalarFieldAssembleBodySource2
+END PROCEDURE ScalarFieldAssembleBodySource3
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
