@@ -106,8 +106,7 @@ DO iel = 1, tElements
                               ans=cellcon, tsize=tcellCon, opt="A")
 
   ! TODO:
-  ! Use get method which does not reallocate forceVar
-  ! and uses the barycentric coordinates
+  ! Here we should use the barycentric coordinates
   CALL bodySource%Get_(fevar=forceVar, xij=xij(1:nrow, 1:ncol))
 
   ! fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
