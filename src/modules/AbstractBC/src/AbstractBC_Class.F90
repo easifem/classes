@@ -693,7 +693,7 @@ MODULE SUBROUTINE obj_Get1(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
     !! nrow = size of nodeNum
     !! ncol = 1 or size of times
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !!
+    !! number of rows and cols written in nodalValue
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_Get1
