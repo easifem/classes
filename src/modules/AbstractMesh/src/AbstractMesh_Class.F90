@@ -2393,9 +2393,9 @@ END INTERFACE
 ! summary:  Get the orientation flags of an element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
-           edgeOrient, tCellOrient, tFaceOrient, tEdgeOrient, globalElement, &
-                                       islocal)
+  MODULE SUBROUTINE obj_GetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tCellOrient, tFaceOrient, &
+    tEdgeOrient, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
     !! cell connectivity of element
