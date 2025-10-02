@@ -1,0 +1,5 @@
+[domain]
+filename = "./mesh/square_3x3.h5"
+# meshfile name
+totalMedium = 1
+# total number of mediums attached to the domain
