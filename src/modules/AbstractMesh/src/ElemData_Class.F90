@@ -110,6 +110,7 @@ PUBLIC :: Elemdata_FindEdge
 PUBLIC :: Elemdata_GetGlobalFaceNumber
 PUBLIC :: Elemdata_GetGlobalEdgeNumber
 PUBLIC :: Elemdata_Order
+public :: Elemdata_GetCellOrient
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -1513,6 +1514,24 @@ PURE SUBROUTINE Elemdata_GetEdgeOrient(obj, ans, tsize)
   END DO
 
 END SUBROUTINE Elemdata_GetEdgeOrient
+
+!----------------------------------------------------------------------------
+!                                                            GetCellOrient
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-10
+! summary:  This subroutine returns the cellOrient in the element
+
+PURE SUBROUTINE Elemdata_GetCellOrient(obj, ans, tsize)
+  TYPE(Elemdata_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: ans(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
+  tsize = 3
+  ans(1:3) = 1
+
+END SUBROUTINE Elemdata_GetCellOrient
 
 !----------------------------------------------------------------------------
 !                                                            GetFaceOrient

@@ -56,6 +56,9 @@ USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           Elemdata_topoName, &
                           Elemdata_topoIndx, &
                           Elemdata_GetOrientation, &
+                          Elemdata_GetCellOrient, &
+                          Elemdata_GetFaceOrient, &
+                          Elemdata_GetEdgeOrient, &
                           Elemdata_Meshid, &
                           Elemdata_localElemNum, &
                           Elemdata_globalElemNum, &
@@ -801,7 +804,7 @@ ans = obj%elementData(iel)%ptr%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
 END PROCEDURE obj_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
-!                                                   isDomainFacetElement
+!                                                        isDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
@@ -1368,7 +1371,8 @@ LOGICAL(LGT) :: problem
 INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
-problem = .NOT. obj%isElementPresent(globalElement=globalElement, islocal=islocal)
+problem = .NOT. obj%isElementPresent(globalElement=globalElement, &
+                                     islocal=islocal)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -1386,6 +1390,90 @@ CALL Elemdata_GetOrientation(obj=obj%elementData(iel)%ptr, &
                              tFaceOrient=tFaceOrient, tEdgeOrient=tEdgeOrient)
 
 END PROCEDURE obj_GetOrientation
+
+!----------------------------------------------------------------------------
+!                                                         GetCellOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCellOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellOrientation()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+isok = obj%isElementPresent(globalElement=globalElement, &
+                            islocal=islocal)
+
+CALL AssertError1(isok, myName, &
+            'problem in getting localElement number from globalElement = '// &
+                  ToString(globalElement))
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL Elemdata_GetCellOrient(obj=obj%elementData(iel)%ptr, &
+                            ans=ans, tsize=tsize)
+
+END PROCEDURE obj_GetCellOrientation
+
+!----------------------------------------------------------------------------
+!                                                         GetFaceOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFaceOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFaceOrientation()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+isok = obj%isElementPresent(globalElement=globalElement, &
+                            islocal=islocal)
+
+CALL AssertError1(isok, myName, &
+            'problem in getting localElement number from globalElement = '// &
+                  ToString(globalElement))
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL Elemdata_GetFaceOrient(obj=obj%elementData(iel)%ptr, &
+                            ans=ans, nrow=nrow, ncol=ncol)
+
+END PROCEDURE obj_GetFaceOrientation
+
+!----------------------------------------------------------------------------
+!                                                         GetEdgeOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEdgeOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEdgeOrientation()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+isok = obj%isElementPresent(globalElement=globalElement, &
+                            islocal=islocal)
+
+CALL AssertError1(isok, myName, &
+            'problem in getting localElement number from globalElement = '// &
+                  ToString(globalElement))
+#endif
+
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL Elemdata_GetEdgeOrient(obj=obj%elementData(iel)%ptr, &
+                            ans=ans, tsize=tsize)
+
+END PROCEDURE obj_GetEdgeOrientation
 
 !----------------------------------------------------------------------------
 !                                                            GetConnectivity
@@ -2957,5 +3045,11 @@ DO ii = 1, tElements
   ans = MAX(ans, tsize)
 END DO
 END PROCEDURE obj_GetMaxElementToElements
+
+!----------------------------------------------------------------------------
+!                                                           Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

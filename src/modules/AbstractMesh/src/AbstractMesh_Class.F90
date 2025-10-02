@@ -488,6 +488,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
   !! Get the orientation of the element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrientation => obj_GetCellOrientation
+  !! Get the orientation of the cell element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrientation => obj_GetFaceOrientation
+  !! Get the orientation of the faces in an element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrientation => obj_GetEdgeOrientation
+  !! Get the orientation of the edges in an element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
     obj_GetNodeConnectivity
   !! Returns all the node connectivity of the mesh elements
@@ -2416,6 +2425,75 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_GetOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-02
+! summary:  Get the orientation of cell
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCellOrientation(obj, ans, tsize, &
+                                           globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetCellOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get the orientation of faces
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceOrientation(obj, ans, nrow, ncol, &
+                                           globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+    !! Face connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! size of data written in faceOrient
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetFaceOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetEdgeOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-02
+! summary: Get the orientation of edges
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeOrientation(obj, ans, tsize, globalElement, &
+                                           islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! Edge connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetEdgeOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------
