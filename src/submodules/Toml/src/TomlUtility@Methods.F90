@@ -17,7 +17,6 @@
 
 SUBMODULE(TomlUtility) Methods
 USE ReallocateUtility, ONLY: Reallocate
-
 USE Display_Method, ONLY: ToString, Display
 
 USE tomlf, ONLY: toml_error, &
@@ -573,7 +572,7 @@ TYPE(toml_terminal) :: terminal
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 terminal = toml_terminal(color)
 isNotOpen = .NOT. afile%IsOpen()
@@ -597,7 +596,7 @@ END IF
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 
 END PROCEDURE GetValue_from_file
 
@@ -606,37 +605,39 @@ END PROCEDURE GetValue_from_file
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_from_filename
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "GetValue_from_filename()"
+LOGICAL(LGT) :: isok
+#endif
+
 LOGICAL(LGT), PARAMETER :: color = .TRUE.
 INTEGER(I4B), PARAMETER :: detail = 1
+
 TYPE(toml_error), ALLOCATABLE :: error
 TYPE(toml_context) :: context
 TYPE(toml_terminal) :: terminal
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 terminal = toml_terminal(color)
-CALL toml_load(table,  &
-  & filename,  &
-  & context=context,  &
-  & config=toml_parser_config(color=terminal, context_detail=detail), &
-  & error=error  &
-  & )
+CALL toml_load(table, filename, context=context, error=error, &
+               config=toml_parser_config(color=terminal, &
+                                         context_detail=detail))
 
-IF (ALLOCATED(error)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Some error occured while parsing toml file'//  &
-    & ' with following message: '//CHAR_LF//error%message)
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. ALLOCATED(error)
+CALL AssertError1(isok, myName, &
+       'Some error occured while parsing toml file with following message: ' &
+                  //CHAR_LF//error%message)
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE GetValue_from_filename
 
 !----------------------------------------------------------------------------
@@ -644,26 +645,33 @@ END PROCEDURE GetValue_from_filename
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_from_file_master
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "GetValue_from_file_master"
+#endif
+
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
-IF (PRESENT(afile)) THEN
-  CALL GetValue_from_file(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue_from_filename(table=table, filename=filename)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    'either filename or afile should be present!')
-  RETURN
-END IF
+isok = PRESENT(afile)
+IF (isok) CALL GetValue_from_file(table=table, afile=afile)
+
+isok = PRESENT(filename)
+IF (isok) CALL GetValue_from_filename(table=table, filename=filename)
+
+#ifdef DEBUG_VER
+isok = PRESENT(afile) .OR. PRESENT(filename)
+CALL AssertError1(isok, myName, &
+                  'either filename or afile should be present!')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 END PROCEDURE GetValue_from_file_master
 
 !----------------------------------------------------------------------------
@@ -672,19 +680,25 @@ END PROCEDURE GetValue_from_file_master
 
 MODULE PROCEDURE ArrayLength
 TYPE(toml_array), POINTER :: array
+LOGICAL(LGT) :: isok
 
 ! try to read from the array
 array => NULL()
-CALL toml_get(table, key, array, origin=origin, stat=stat,  &
-  & requested=.FALSE.)
+CALL toml_get(table, key, array, origin=origin, stat=stat, &
+              requested=.FALSE.)
 
 ans = 0
-IF (ASSOCIATED(array)) THEN
-  ans = toml_len(array)
-END IF
+isok = ASSOCIATED(array)
+IF (isok) ans = toml_len(array)
 
 array => NULL()
 
 END PROCEDURE ArrayLength
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods
