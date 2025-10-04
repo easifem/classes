@@ -842,6 +842,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Get the connectivity (function)
+!
+!# Introduction
+!
+! Opt can take following values:
+! - Vertex: get the vertex connectivity
+! - Edge: get the edge connectivity
+! - Face: get the face connectivity
+! - Cell: get the cell connectivity
+! - All: get the vertex, edge, face, and cell connectivity
 
 INTERFACE
   MODULE FUNCTION obj_GetConnectivity(obj, opt, globalElement, islocal) &
@@ -849,11 +858,7 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     CHARACTER(*), INTENT(IN) :: opt
-    !! opt = Vertex
-    !! opt = Edge
-    !! opt = Face
-    !! opt = Cell
-    !! opt = All
+    !! opt = Vertex ! opt = Edge ! opt = Face ! opt = Cell ! opt = All
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! Global element number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -870,6 +875,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Get the connectivity
+!
+!# Introduction
+!
+! Opt can take following values:
+! - Vertex: get the vertex connectivity
+! - Edge: get the edge connectivity
+! - Face: get the face connectivity
+! - Cell: get the cell connectivity
+! - All: get the vertex, edge, face, and cell connectivity
 
 INTERFACE
  MODULE SUBROUTINE obj_GetConnectivity_(obj, ans, tsize, opt, globalElement, &
