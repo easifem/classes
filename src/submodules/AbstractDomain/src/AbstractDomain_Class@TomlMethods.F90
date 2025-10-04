@@ -134,7 +134,11 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -150,17 +154,18 @@ node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
-IF (.NOT. ASSOCIATED(node)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[CONFIG ERROR] :: following error occured while reading '// &
-               'the toml file :: cannot find '//tomlName//" table in config.")
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+       'following error occured while reading the toml file :: cannot find ' &
+                  //tomlName//" table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
+isok = PRESENT(printToml)
+IF (isok) THEN
  CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF, &
                unitno=stdout)
 END IF
