@@ -628,10 +628,10 @@ CALL toml_load(table, filename, context=context, error=error, &
                                          context_detail=detail))
 
 #ifdef DEBUG_VER
-isok = .NOT. ALLOCATED(error)
-CALL AssertError1(isok, myName, &
+isok = ALLOCATED(error)
+IF (isok) CALL e%RaiseError(modName//'::'//myName//' - '// &
        'Some error occured while parsing toml file with following message: ' &
-                  //CHAR_LF//error%message)
+                            //CHAR_LF//error%message)
 #endif
 
 #ifdef DEBUG_VER
