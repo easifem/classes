@@ -636,9 +636,9 @@ END INTERFACE
 ! This routine will call SetHierarchicalFE for HierarchicalFE
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetOrder(obj, order, anisoorder, cellOrder, &
-     faceOrder, edgeOrder, cellOrient, faceOrient, edgeOrient, tcell, tface, &
-                                 tedge, errCheck)
+  MODULE SUBROUTINE obj_SetOrder( &
+    obj, order, anisoorder, cellOrder, faceOrder, edgeOrder, cellOrient, &
+    faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
