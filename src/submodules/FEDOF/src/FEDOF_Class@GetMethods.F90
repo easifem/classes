@@ -354,8 +354,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tdof = obj%GetTotalDOF(globalElement=globalElement, isLocal=isLocal)
+tdof = obj%GetTotalDOF(globalElement=globalElement, isLocal=isLocal, &
+                       opt=opt)
+
 ALLOCATE (ans(tdof))
+
 CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
                           globalElement=globalElement, islocal=islocal)
 
@@ -375,59 +378,96 @@ MODULE PROCEDURE obj_GetConnectivity_
 CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 #endif
 
+LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 INTEGER(I4B) :: ent(4)
-INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
-INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices, tcon
+INTEGER(I4B) :: con(PARAM_MAX_CONNECTIVITY_SIZE)
+CHARACTER(1) :: opt0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+tsize = 0
+opt0 = opt(1:1)
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
-
-ent = obj%mesh%GetTotalEntities(globalElement=localElement, islocal=yes)
-
 CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
-                               opt=opt, tsize=jj, ans=temp)
+                               opt=opt, tsize=tcon, ans=con)
 
-! points
-tvertices = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
-                                         islocal=yes)
+SELECT CASE (opt)
+CASE ('v', 'V')
+  tsize = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
+                                       islocal=yes)
+  DO ii = 1, tsize
+    CALL obj%GetVertexDOF(globalNode=con(ii), ans=ans(ii:), tsize=kk, &
+                          islocal=no)
+  END DO
 
-a = 1; b = ent(1)
-jj = 1
-DO ii = a, tvertices
-  CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
-                        islocal=.FALSE.)
-  jj = jj + kk
-END DO
+CASE ('e', 'E')
+  jj = 1
+  DO ii = 1, tcon
+    CALL obj%GetEdgeDOF(globalEdge=con(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+  tsize = jj - 1
 
-! edges
-a = b + 1; b = b + ent(2)
-DO ii = a, b
-  CALL obj%GetEdgeDOF(globalEdge=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
+CASE ('f', 'F')
+  jj = 1
+  DO ii = 1, tcon
+    CALL obj%GetFaceDOF(globalFace=con(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+  tsize = jj - 1
 
-! faces
-a = b + 1; b = b + ent(3)
-DO ii = a, b
-  CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
+CASE ('c', 'C')
+  jj = 1
+  DO ii = 1, tcon
+    CALL obj%GetCellDOF(globalCell=con(ii), ans=ans(jj:), tsize=kk, &
+                        islocal=no)
+    jj = jj + kk
+  END DO
+  tsize = jj - 1
 
-! cell
-a = b + 1; b = b + ent(4)
-DO ii = a, b
-  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
-                      islocal=.FALSE.)
-  jj = jj + kk
-END DO
+CASE DEFAULT
+  ent = obj%mesh%GetTotalEntities(globalElement=localElement, islocal=yes)
 
-tsize = jj - 1
+  tvertices = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
+                                           islocal=yes)
+
+  a = 1; b = ent(1); jj = 1
+  DO ii = 1, tvertices
+    CALL obj%GetVertexDOF(globalNode=con(ii), ans=ans(jj:), tsize=kk, &
+                          islocal=no)
+    jj = jj + kk
+  END DO
+
+  ! edges
+  a = b + 1; b = b + ent(2)
+  DO ii = a, b
+    CALL obj%GetEdgeDOF(globalEdge=con(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+
+  ! faces
+  a = b + 1; b = b + ent(3)
+  DO ii = a, b
+    CALL obj%GetFaceDOF(globalFace=con(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+
+  ! cells
+  a = b + 1; b = b + ent(4)
+  DO ii = a, b
+    CALL obj%GetCellDOF(globalCell=con(ii), ans=ans(jj:), tsize=kk, &
+                        islocal=no)
+    jj = jj + kk
+  END DO
+
+  tsize = jj - 1
+
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
