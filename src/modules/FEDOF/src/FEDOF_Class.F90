@@ -283,6 +283,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrder => obj_GetFaceOrder
+  !! Get the face order
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrder => obj_GetEdgeOrder
+  !! Get the edge order
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
   !! Get cell,face, and edge orders
   !! Also get orientation of face and edge
@@ -1415,19 +1421,67 @@ END INTERFACE
 ! summary:  Get the order of cell
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetCellOrder(obj, cellOrder, tCellOrder, &
-                                     globalElement, islocal)
+  MODULE SUBROUTINE obj_GetCellOrder(obj, ans, tsize, globalElement, islocal)
     CLASS(FEDOF_), INTENT(IN) :: obj
     !! fedof object
-    INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
     !! cell order
-    INTEGER(I4B), INTENT(OUT) :: tCellOrder
+    INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in cellOrder
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global or local element number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then globalElement is local element
   END SUBROUTINE obj_GetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!                                                      GetCellOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary:  Get the order of cell
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceOrder(obj, ans, nrow, ncol, &
+                                     globalElement, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+    !! face order
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetFaceOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!                                                      GetCellOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary:  Get the order of cell
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeOrder(obj, ans, tsize, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    !! fedof object
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! face order
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in cellOrder
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalElement is local element
+  END SUBROUTINE obj_GetEdgeOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

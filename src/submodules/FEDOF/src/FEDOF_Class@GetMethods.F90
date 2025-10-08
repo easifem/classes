@@ -513,14 +513,96 @@ END PROCEDURE obj_GetBaseInterpolation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetCellOrder()'
+#endif
+
 INTEGER(I4B) :: jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
-cellOrder(1) = obj%cellOrder(jj)
-tcellOrder = 1
+ans(1) = obj%cellOrder(jj)
+tsize = 1
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCellOrder
+
+!----------------------------------------------------------------------------
+!                                                               GetFaceOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFaceOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFaceOrder()'
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: ii, jj, faceCon(ReferenceElementInfo%maxEdges)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=yes, ans=faceCon, &
+                               tsize=ncol, opt="F")
+
+nrow = 3
+
+DO jj = 1, ncol
+  ii = faceCon(jj)
+  ans(1, jj) = obj%faceOrder(ii)
+  ans(2:3, jj) = ans(1, jj)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFaceOrder
+
+!----------------------------------------------------------------------------
+!                                                               GetEdgeOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEdgeOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetEdgeOrder()'
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+INTEGER(I4B) :: ii, jj, edgeCon(ReferenceElementInfo%maxEdges)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=yes, ans=edgeCon, &
+                               tsize=tsize, opt="E")
+
+DO jj = 1, tsize
+  ii = edgeCon(jj)
+  ans(jj) = obj%EdgeOrder(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetEdgeOrder
 
 !----------------------------------------------------------------------------
 !                                                                  GetOrders
@@ -642,8 +724,8 @@ DO iel = 1, telements
   CALL AssertError1(isok, myname, &
                     'obj%fe('//ToString(ii)//')%ptr is not associated')
 
-  CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
-                        globalElement=iel, islocal=yes)
+  CALL obj%GetCellOrder(ans=cellOrder, tsize=tsize, globalElement=iel, &
+                        islocal=yes)
 #endif
 
   DO jj = 1, tsize
@@ -695,7 +777,7 @@ CALL AssertError1(isok, myname, &
                   'obj%fe('//ToString(ii)//')%ptr is not associated')
 #endif
 
-CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
+CALL obj%GetCellOrder(ans=cellOrder, tsize=tsize, &
                       globalElement=globalElement, islocal=islocal)
 
 DO jj = 1, tsize
@@ -750,8 +832,8 @@ CALL AssertError1(isok, myname, &
                   'obj%fe('//ToString(ii)//')%ptr is not associated')
 #endif
 
-CALL obj%GetCellOrder(cellOrder=cellOrder, tCellOrder=tsize, &
-                      globalElement=localElement, islocal=yes)
+CALL obj%GetCellOrder(ans=cellOrder, tsize=tsize, globalElement=localElement,&
+                      islocal=yes)
 
 DO jj = 1, tsize
   cellOrder(jj) = cellOrder(jj) * obj%scaleForQuadOrder
