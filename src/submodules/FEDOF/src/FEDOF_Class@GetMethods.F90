@@ -775,8 +775,11 @@ END PROCEDURE obj_GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
-CHARACTER(6) :: casename
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeData()'
+#endif
+
+CHARACTER(6) :: casename
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -787,22 +790,25 @@ casename = obj%GetCaseName()
 
 SELECT CASE (casename)
 CASE ('H1LAGR')
-  CALL obj%GetLocalElemShapeDataH1Lagrange(globalElement=globalElement, &
-                                    elemsd=elemsd, quad=quad, islocal=islocal)
+  CALL obj%GetLocalElemShapeDataH1Lagrange( &
+    globalElement=globalElement, elemsd=elemsd, quad=quad, islocal=islocal)
+
 CASE ('H1HIER', 'H1HEIR')
-  CALL obj%GetLocalElemShapeDataH1Hierarchical(globalElement=globalElement, &
-                                    elemsd=elemsd, quad=quad, islocal=islocal)
+  CALL obj%GetLocalElemShapeDataH1Hierarchical( &
+    globalElement=globalElement, elemsd=elemsd, quad=quad, islocal=islocal)
+
+#ifdef DEBUG_VER
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: No case found for case name')
-  RETURN
+#endif
+
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
