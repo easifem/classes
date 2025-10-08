@@ -1215,6 +1215,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-21
 ! summary: Returns total number of dof in the FEDOF with opt filter
+!
+!# Introduction
+!
+! Opt can take following values:
+! opt = Vertex
+! opt = Edge
+! opt = Face
+! opt = Cell
+! opt = All
 
 INTERFACE
 MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
@@ -1223,11 +1232,6 @@ MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
     !! global or local element number
     CHARACTER(*), INTENT(IN) :: opt
     !! opt for Vertex, Edge, Face, Cell, and All
-    !! opt = Vertex
-    !! opt = Edge
-    !! opt = Face
-    !! opt = Cell
-    !! opt = All
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if islocal true then globalElement is local element number
     INTEGER(I4B) :: ans
