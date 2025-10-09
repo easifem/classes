@@ -24,6 +24,7 @@ USE ScalarField_Class, ONLY: ScalarField_
 USE VectorField_Class, ONLY: VectorField_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE FEDOF_Class, ONLY: FEDOF_
+USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_, QuadraturePoint_, ElemShapeData_
 
 IMPLICIT NONE
@@ -54,7 +55,12 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-05
-! summary: Assemble RHS
+! summary: Assemble surface source into RHS
+!
+!# Introduction
+!
+! This is an internal routine that assemble surface source (Neumann BC)
+! into the right-hand side (RHS) vector of a scalar field.
 
 INTERFACE ScalarFieldAssembleSurfaceSource
   MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1( &
@@ -101,6 +107,66 @@ INTERFACE ScalarFieldAssembleSurfaceSource
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE ScalarFieldAssembleSurfaceSource2
+END INTERFACE ScalarFieldAssembleSurfaceSource
+
+!----------------------------------------------------------------------------
+!                        ScalarFieldAssembleSurfaceSource@ScalarFieldMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Assemble surface source into RHS
+!
+!# Introduction
+!
+! This is an internal routine that assemble surface source (Neumann BC)
+! into the right-hand side (RHS) vector of a scalar field.
+
+INTERFACE ScalarFieldAssembleSurfaceSource
+  MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource3( &
+    obj, nbc, fedof, geofedof, nodeCoord, func, scale, geoCellCon, &
+    geoFacetCon, cellCon, xij, facetXij, forceVec, nbcValue, forceVar, &
+    quad, facetQuad, elemsd, facetElemsd, geoElemsd, geoFacetElemsd)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(NeumannBC_), INTENT(INOUT) :: nbc
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    REAL(DFP), INTENT(IN) :: scale
+    INTEGER(I4B), INTENT(INOUT) :: geoCellCon(:), geoFacetCon(:), &
+                                   cellCon(:)
+    !! Working array
+    REAL(DFP), INTENT(INOUT) :: xij(:, :), facetXij(:, :), forceVec(:), &
+                                nbcValue(:)
+    !! Working variable
+    TYPE(FEVariable_), INTENT(INOUT) :: forceVar
+    !! Working variables
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Working variables
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
+                                           geoFacetElemsd
+    !! Working variables
+  END SUBROUTINE ScalarFieldAssembleSurfaceSource3
+END INTERFACE ScalarFieldAssembleSurfaceSource
+
+!----------------------------------------------------------------------------
+!                        ScalarFieldAssembleSurfaceSource@ScalarFieldMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Add contribution of surface traction (NBC) to RHS
+
+INTERFACE ScalarFieldAssembleSurfaceSource
+  MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource4( &
+    obj, geofedof, nodeCoord, func, scale)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    REAL(DFP), INTENT(IN) :: scale
+  END SUBROUTINE ScalarFieldAssembleSurfaceSource4
 END INTERFACE ScalarFieldAssembleSurfaceSource
 
 !----------------------------------------------------------------------------

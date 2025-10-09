@@ -496,7 +496,7 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
 #endif
 
   REAL(DFP) :: ans, xij(4)
-  INTEGER(I4B) :: ii, jj, nsd, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge, &
+  INTEGER(I4B) :: ii, jj, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge, &
                   nargs
   CLASS(AbstractMesh_), POINTER :: meshptr
 
@@ -505,13 +505,18 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                           '[START] ')
 #endif
 
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    '1')
+
   nrow = 0
   CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
                   iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
                   iNodeOnEdge=iNodeOnEdge)
 
-  nsd = obj%dom%GetNSD()
-  meshptr => obj%dom%GetMeshPointer(dim=nsd)
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    '2')
+
+  meshptr => obj%dom%GetMeshPointer()
 
   nargs = obj%func%GetNumArgs()
   xij = 0.0_DFP

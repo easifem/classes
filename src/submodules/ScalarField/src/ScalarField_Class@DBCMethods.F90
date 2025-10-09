@@ -58,12 +58,21 @@ IF (istimes) THEN
 END IF
 #endif
 
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  '1')
+
 ncol = 1
 nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
 ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
 
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  '2')
+
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
              ncol=ncol, fedof=obj%fedof)
+
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  '3')
 
 IF (istimes) THEN
   DO idof = 1, ncol
@@ -84,6 +93,9 @@ END IF
 
 CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
              islocal=.TRUE.)
+
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  '4')
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
