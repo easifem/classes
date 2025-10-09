@@ -75,9 +75,9 @@ IF (isok) THEN
   obj%elemType = elemType
   obj%topoType = ElementTopology(elemType)
   obj%xidim = XiDimension(obj%topoType)
-  astr = RefElemDomain(elemType=obj%topoType, &
-                       baseContinuity=obj%baseContinuity, &
-                       baseInterpol=obj%baseInterpolation)
+  astr = RefElemDomain( &
+         elemType=obj%topoType, baseContinuity=obj%baseContinuity, &
+         baseInterpol=obj%baseInterpolation)
   obj%refelemDomain = astr%Slice(1, 1)
   astr = ""
   CALL RefCoord_(elemType=obj%topoType, ans=obj%refelemCoord, &
