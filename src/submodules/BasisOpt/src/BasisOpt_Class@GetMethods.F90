@@ -17,7 +17,7 @@
 !
 
 SUBMODULE(BasisOpt_Class) GetMethods
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 HierarchicalElemShapeData, &
                                 Elemsd_Set => Set, &
