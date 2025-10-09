@@ -956,14 +956,18 @@ CALL obj%GetOrders(globalElement=globalElement, islocal=islocal, &
                    cellOrder=cellOrder, faceOrder=faceOrder, &
                    edgeOrder=edgeOrder, cellOrient=cellOrient, &
                    faceOrient=faceOrient, edgeOrient=edgeOrient, &
-                   tcellOrder=indx(1), tfaceOrder=indx(2), &
-                   tedgeOrder=indx(3), tcellOrient=indx(4), &
-                   tfaceOrient=indx(5:6), tedgeOrient=indx(7))
+                   tCellOrder=indx(1), tFaceOrder=indx(2), &
+                   tEdgeOrder=indx(3), tCellOrient=indx(4), &
+                   tFaceOrient=indx(5:6), tEdgeOrient=indx(7))
 
 ! The above modification is necessary for quad and hexa elements
 ! Here we are setting uniform cell order in all directions
 ! for such elements
-IF (indx(1) .EQ. 1) cellOrder(2:3) = cellOrder(1)
+IF (indx(1) .EQ. 1) THEN
+  cellOrder(2:3) = cellOrder(1)
+  indx(1) = 3
+END IF
+
 CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
                              faceOrder=faceOrder, edgeOrder=edgeOrder, &
                              cellOrient=cellOrient, faceOrient=faceOrient, &
