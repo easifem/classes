@@ -60,6 +60,7 @@ SUBROUTINE SetIntegerType1(a, n, b)
   isok = PRESENT(b)
 
   IF (.NOT. isok) THEN
+
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
