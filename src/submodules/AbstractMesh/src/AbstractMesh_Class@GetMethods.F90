@@ -1346,10 +1346,10 @@ END IF
 
 iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
-CALL Elemdata_GetConnectivity2(obj=obj%elementData(iel)%ptr, &
-         cellCon=cellCon, faceCon=faceCon, edgeCon=edgeCon, nodeCon=nodeCon, &
-                    tCellCon=tCellCon, tFaceCon=tFaceCon, tEdgeCon=tEdgeCon, &
-                               tNodeCon=tNodeCon)
+CALL Elemdata_GetConnectivity2( &
+  obj=obj%elementData(iel)%ptr, cellCon=cellCon, faceCon=faceCon, &
+  edgeCon=edgeCon, nodeCon=nodeCon, tCellCon=tCellCon, tFaceCon=tFaceCon, &
+  tEdgeCon=tEdgeCon, tNodeCon=tNodeCon)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
