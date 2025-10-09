@@ -18,7 +18,7 @@
 SUBMODULE(BasisOpt_Class) HierarchicalMethods
 ! USE FPL_Method, ONLY: GetValue, CheckEssentialParam, Set
 USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE BasisOptUtility, ONLY: SetIntegerType
 
 IMPLICIT NONE
@@ -178,10 +178,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 errCheck0 = .FALSE.
 IF (errCheck) errCheck0 = errCheck
 IF (errCheck0) THEN
-  CALL CheckErrorHierarchical(obj=obj, cellOrder=cellOrder, &
-            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-     faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, tface=tface, &
-                              tedge=tedge)
+  CALL CheckErrorHierarchical( &
+    obj=obj, cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
+    cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
+    tcell=tcell, tface=tface, tedge=tedge)
 END IF
 #endif
 
