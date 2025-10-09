@@ -75,28 +75,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = myprefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                   FiniteElementDeallocate
 !----------------------------------------------------------------------------
 

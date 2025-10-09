@@ -27,101 +27,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%CheckEssentialParam(param=param)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                       SetAbstractFEParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetAbstractFEParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetAbstractFEParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL SetBasisOptParam(param=param, &
-                      prefix=prefix, &
-                      nsd=nsd, &
-                      elemType=elemType, &
-                      baseContinuity=baseContinuity, &
-                      baseInterpolation=baseInterpolation, &
-                      ipType=ipType, &
-                      basisType=basisType, &
-                      alpha=alpha, &
-                      beta=beta, &
-                      lambda=lambda, &
-                      order=order, &
-                      anisoOrder=anisoOrder, &
-                      edgeOrder=edgeOrder, &
-                      faceOrder=faceOrder, &
-                      cellOrder=cellOrder, &
-                      fetype=fetype, &
-                      dofType=dofType, &
-                      transformType=transformType)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetAbstractFEParam
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL obj%opt%Initiate(param=param)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
@@ -169,7 +80,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                     Copy

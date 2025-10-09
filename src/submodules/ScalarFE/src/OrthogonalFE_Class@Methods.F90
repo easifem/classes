@@ -46,28 +46,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_OrthogonalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = myprefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                   FiniteElementDeallocate
 !----------------------------------------------------------------------------
 
@@ -107,8 +85,8 @@ CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
-'[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 IF (ALLOCATED(obj)) THEN

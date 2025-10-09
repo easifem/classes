@@ -32,7 +32,6 @@ PUBLIC :: OrthogonalFEPointer
 PUBLIC :: FiniteElementDeallocate
 
 CHARACTER(*), PARAMETER :: modName = "OrthogonalFE_Class"
-CHARACTER(*), PARAMETER :: myprefix = "OrthogonalFE"
 
 !----------------------------------------------------------------------------
 !                                                                OrthogonalFE_
@@ -45,9 +44,6 @@ CHARACTER(*), PARAMETER :: myprefix = "OrthogonalFE"
 !{!pages/docs-api/OrthogonalFE/OrthogonalFE_.md!}
 
 TYPE, EXTENDS(ScalarFE_) :: OrthogonalFE_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE OrthogonalFE_
 
 !----------------------------------------------------------------------------
@@ -99,21 +95,6 @@ INTERFACE FiniteElementDeallocate
     TYPE(OrthogonalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          GetPrefix@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Get prefix of the class
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(OrthogonalFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !

@@ -18,7 +18,6 @@ MODULE AbstractFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE BasisOpt_Class, ONLY: BasisOpt_
 USE tomlf, ONLY: toml_table
@@ -29,11 +28,8 @@ PRIVATE
 
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
-PUBLIC :: SetAbstractFEParam
-PUBLIC :: SetFiniteElementParam
 PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
-PUBLIC :: AbstractFECheckEssentialParam
 PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
@@ -67,18 +63,12 @@ CONTAINS
   ! CONSTRUCTOR:
   !@ConstructorMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate object from the ParameterList_
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate method from arguments
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameters in ParameterList_
 
   !IO:
   !@IOMethods
@@ -115,8 +105,6 @@ CONTAINS
   !GET:
   ! @GetMethods
 
-  PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
-  !! Get prefix
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for cell element
@@ -164,96 +152,6 @@ TYPE :: AbstractFEPointer_
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
-!                                    CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE AbstractFECheckEssentialParam
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractFE_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE AbstractFECheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                     SetAbstractFEParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-11
-! summary:  Sets the parameters for initiating abstract finite element
-
-INTERFACE SetFiniteElementParam
-  MODULE SUBROUTINE SetAbstractFEParam(param, prefix, nsd, elemType, &
-                                       baseContinuity, baseInterpolation, &
-                                       ipType, basisType, alpha, beta, &
-                                       lambda, order, anisoOrder, edgeOrder, &
-                                       faceOrder, cellOrder, fetype, &
-                                       dofType, transformType)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! ParameterList
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! Prefix
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: elemType
-    !! Type of finite element
-    !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-    !! Hexahedron
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! Continuity or Conformity of basis function.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! H1* (default), HDiv, HCurl, DG
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Basis function family used for interpolation.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! LagrangeInterpolation, LagrangePolynomial
-    !! SerendipityInterpolation, SerendipityPolynomial
-    !! HierarchyInterpolation, HierarchyPolynomial
-    !! OrthogonalInterpolation, OrthogonalPolynomial
-    !! HermitInterpolation, HermitPolynomial
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! Interpolation point type, It is required when
-    !! baseInterpol is LagrangePolynomial
-    !! Default ipType is Equidistance
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type: Legendre, Lobatto, Ultraspherical,
-    !! Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! Anisotropic order, order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! Order of approximation along edges
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! Order of approximation along face
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! Order of approximation along cell
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
-    !! Degree of freedom type, default is nodal
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
-    !! transformation type, from reference element to physical element
-  END SUBROUTINE SetAbstractFEParam
-END INTERFACE SetFiniteElementParam
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -262,22 +160,7 @@ END INTERFACE SetFiniteElementParam
 ! summary: Initiates an instance of the finite element
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, elemType, nsd, baseContinuity, &
+  MODULE SUBROUTINE obj_Initiate(obj, elemType, nsd, baseContinuity, &
                                   baseInterpolation, feType, ipType, &
                                   basisType, alpha, beta, lambda, dofType, &
                                   transformType, order, anisoOrder, &
@@ -384,7 +267,7 @@ INTERFACE
     !! Quadrature beta
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
     !! Quadrature lambda
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -672,22 +555,6 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-11
-! summary:  Get prefix
-
-ABSTRACT INTERFACE
-  FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    IMPORT :: AbstractFE_
-    CLASS(AbstractFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

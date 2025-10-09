@@ -32,7 +32,6 @@ PUBLIC :: LagrangeFEPointer
 PUBLIC :: FiniteElementDeallocate
 
 CHARACTER(*), PARAMETER :: modName = "LagrangeFE_Class"
-CHARACTER(*), PARAMETER :: myprefix = "LagrangeFE"
 
 !----------------------------------------------------------------------------
 !                                                                LagrangeFE_
@@ -45,9 +44,6 @@ CHARACTER(*), PARAMETER :: myprefix = "LagrangeFE"
 !{!pages/docs-api/LagrangeFE/LagrangeFE_.md!}
 
 TYPE, EXTENDS(ScalarFE_) :: LagrangeFE_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -139,21 +135,6 @@ INTERFACE FiniteElementDeallocate
     TYPE(LagrangeFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          GetPrefix@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Get prefix of the class
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(LagrangeFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !

@@ -33,7 +33,6 @@ PUBLIC :: FiniteElementDeallocate
 PUBLIC :: HierarchicalFEPointer
 
 CHARACTER(*), PARAMETER :: modName = "HierarchicalFE_Class"
-CHARACTER(*), PARAMETER :: myprefix = "HierarchicalFE"
 
 !----------------------------------------------------------------------------
 !                                                             HierarchicalFE_
@@ -44,9 +43,6 @@ CHARACTER(*), PARAMETER :: myprefix = "HierarchicalFE"
 ! summary: Finite element class
 
 TYPE, EXTENDS(ScalarFE_) :: HierarchicalFE_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE HierarchicalFE_
 
 !----------------------------------------------------------------------------
@@ -121,21 +117,6 @@ INTERFACE FiniteElementDeallocate
     TYPE(HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          GetPrefix@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Get prefix of the class
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(HierarchicalFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !
