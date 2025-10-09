@@ -60,9 +60,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ALLOCATE (ans)
-CALL ans%Initiate(elemType=elemType, fetype=TypeFeVariableOpt%scalar, &
-       nsd=nsd, baseContinuity=baseContinuity, baseInterpolation="LAGRANGE", &
-    ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, lambda=lambda)
+CALL ans%Initiate( &
+  elemType=elemType, fetype=TypeFeVariableOpt%scalar, nsd=nsd, &
+  baseContinuity=baseContinuity, baseInterpolation="LAGRANGE", &
+  ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, &
+  lambda=lambda)
 
 CALL ans%SetOrder(order=order, anisoOrder=anisoOrder)
 
