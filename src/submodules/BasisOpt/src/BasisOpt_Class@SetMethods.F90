@@ -175,10 +175,10 @@ CASE ("LAGR")
                             errCheck=errCheck)
 
 CASE ("HIER", "HEIR")
-  CALL obj%SetHierarchicalOrder(cellOrder=cellOrder, faceOrder=faceOrder, &
-          edgeOrder=edgeOrder, cellOrient=cellOrient, faceOrient=faceOrient, &
-                      edgeOrient=edgeOrient, errCheck=errCheck, tcell=tcell, &
-                                tface=tface, tedge=tedge)
+  CALL obj%SetHierarchicalOrder( &
+    cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
+    cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
+    errCheck=errCheck, tcell=tcell, tface=tface, tedge=tedge)
 
 #ifdef DEBUG_VER
 CASE DEFAULT
