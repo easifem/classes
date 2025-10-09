@@ -102,14 +102,10 @@ obj%isInit = obj2%isInit
 CALL obj%opt%Copy(obj2%opt)
 
 isok = ALLOCATED(obj2%coeff)
-IF (isok) THEN
-  obj%coeff = obj2%coeff
-END IF
+IF (isok) obj%coeff = obj2%coeff
 
 isok = ALLOCATED(obj2%xij)
-IF (isok) THEN
-  obj%xij = obj2%xij
-END IF
+IF (isok) obj%xij = obj2%xij
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
