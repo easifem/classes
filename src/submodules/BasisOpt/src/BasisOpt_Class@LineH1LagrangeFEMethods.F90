@@ -92,10 +92,6 @@ DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
 END DO
 
-! SUBROUTINE LagrangeGradientEvalAll_Line1_( &
-!     order, x, xij, ans, dim1, dim2, dim3, coeff, firstCall, basisType, &
-!     alpha, beta, lambda)
-
 CALL LagrangeGradientEvalAll_Line_( &
   order=obj%order, x=quad%points(1:quad%txi, 1:nips), &
   xij=obj%xij(1:indx(1), 1:indx(2)), &
