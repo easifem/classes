@@ -22,7 +22,6 @@ USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     QuadraturePoint_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 
@@ -32,7 +31,6 @@ PRIVATE
 
 PUBLIC :: QuadratureOpt_
 PUBLIC :: TypeQuadratureOpt
-PUBLIC :: SetQuadratureOptParam1, SetQuadratureOptParam2
 
 CHARACTER(*), PARAMETER :: modName = "QuadratureOpt_Class"
 
@@ -112,14 +110,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters
 
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Intiate the object with parameterList
-
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Intiate by using parameters directly
-
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-  !! Generic method for initiating the object
 
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml table
@@ -203,48 +195,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               SetQuadratureOptParam@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE SetQuadratureOptParam1(param, prefix, quadratureType, &
-                                           order, nips, alpha, beta, lambda, &
-                                           nsd, topoType)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN), OPTIONAL :: prefix
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: order
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips
-    REAL(DFP), INTENT(IN), OPTIONAL :: alpha
-    REAL(DFP), INTENT(IN), OPTIONAL :: beta
-    REAL(DFP), INTENT(IN), OPTIONAL :: lambda
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
-  END SUBROUTINE SetQuadratureOptParam1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetQuadratureOptParam@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE SetQuadratureOptParam2(param, prefix, quadratureType, &
-                                           order, nips, alpha, beta, lambda, &
-                                           nsd, topoType)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN), OPTIONAL :: prefix
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: order(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips(3)
-    REAL(DFP), INTENT(IN), OPTIONAL :: alpha(3)
-    REAL(DFP), INTENT(IN), OPTIONAL :: beta(3)
-    REAL(DFP), INTENT(IN), OPTIONAL :: lambda(3)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
-  END SUBROUTINE SetQuadratureOptParam2
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                            SetParam@Methods
 !----------------------------------------------------------------------------
 
@@ -253,15 +203,12 @@ END INTERFACE
 ! summary: Sets the parameters for 1D quadrature options
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, isHomogeneous, nsd, xidim, topoType, &
-                                 isOrder, isNips, quadratureType, &
-                                 quadratureType1, quadratureType2, &
-                                 quadratureType3, order, order1, order2, &
-                                 order3, nips, nips1, nips2, &
-                                 nips3, alpha, alpha1, alpha2, alpha3, &
-                                 beta, beta1, beta2, beta3, &
-                                 lambda, lambda1, lambda2, lambda3, &
-                                 refelemDomain, refelemCoord)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isHomogeneous, nsd, xidim, topoType, isOrder, isNips, &
+    quadratureType, quadratureType1, quadratureType2, quadratureType3, &
+    order, order1, order2, order3, nips, nips1, nips2, nips3, alpha, &
+    alpha1, alpha2, alpha3, beta, beta1, beta2, beta3, lambda, lambda1, &
+    lambda2, lambda3, refelemDomain, refelemCoord)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isHomogeneous
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
@@ -299,27 +246,14 @@ END INTERFACE
 !                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, prefix)
-    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Initiate@Methods
-!----------------------------------------------------------------------------
-
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-01
 ! summary:  Initiate by parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, isHomogeneous, quadratureType, &
-                                  order, isOrder, nips, isNips, alpha, beta, &
-                                  lambda, topoType, nsd, xidim, &
-                                  refelemDomain, refelemCoord)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, isHomogeneous, quadratureType, order, isOrder, nips, isNips, alpha, &
+    beta, lambda, topoType, nsd, xidim, refelemDomain, refelemCoord)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isHomogeneous
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)
@@ -335,7 +269,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
     CHARACTER(1), OPTIONAL, INTENT(IN) :: refelemDomain
     REAL(DFP), OPTIONAL, INTENT(IN) :: refelemCoord(:, :)
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -347,14 +281,11 @@ END INTERFACE
 ! summary: Get parameters of quadrature
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, isHomogeneous, quadratureType, &
-                                 quadratureType1, quadratureType2, &
-                                 quadratureType3, order, order1, order2, &
-                                 order3, nips, nips1, nips2, nips3, &
-                                 alpha, alpha1, alpha2, alpha3, beta, &
-                                 beta1, beta2, beta3, lambda, lambda1, &
-                                 lambda2, lambda3, nsd, topoType, &
-                                 isOrder, isNips)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isHomogeneous, quadratureType, quadratureType1, quadratureType2, &
+    quadratureType3, order, order1, order2, order3, nips, nips1, nips2, &
+    nips3, alpha, alpha1, alpha2, alpha3, beta, beta1, beta2, beta3, lambda, &
+    lambda1, lambda2, lambda3, nsd, topoType, isOrder, isNips)
     CLASS(QuadratureOpt_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isHomogeneous
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: quadratureType(:)

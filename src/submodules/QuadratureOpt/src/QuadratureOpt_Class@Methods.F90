@@ -18,7 +18,6 @@
 
 SUBMODULE(QuadratureOpt_Class) Methods
 USE Display_Method, ONLY: Display, ToString
-USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger, &
                                   QuadraturePoint_Initiate => Initiate, &
@@ -146,170 +145,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                SetQuadratureOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetQuadratureOptParam1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetQuadratureOptParam()"
-#endif
-INTEGER(I4B) :: myint
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting isHomogeneous
-CALL Set(obj=param, prefix=prefix, key="isHomogeneous", &
-         datatype=.TRUE., VALUE=.TRUE.)
-
-! setting quadratureType
-myint = Input(default=TypeQuadratureOpt%quadratureType(1), &
-              option=quadratureType)
-CALL Set(obj=param, prefix=prefix, key="quadratureType", &
-         datatype=myint, VALUE=myint)
-
-! setting order
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isOrder", &
-         datatype=abool, VALUE=abool)
-myint = Input(default=TypeQuadratureOpt%order(1), &
-              option=order)
-CALL Set(obj=param, prefix=prefix, key="order", &
-         datatype=myint, VALUE=myint)
-
-! setting nips
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isNips", &
-         datatype=abool, VALUE=abool)
-
-myint = Input(default=TypeQuadratureOpt%nips(1), &
-              option=nips)
-CALL Set(obj=param, prefix=prefix, key="nips", &
-         datatype=myint, VALUE=myint)
-
-! setting alpha
-areal = Input(default=TypeQuadratureOpt%alpha(1), &
-              option=alpha)
-CALL Set(obj=param, prefix=prefix, key="alpha", &
-         datatype=areal, VALUE=areal)
-
-! setting beta
-areal = Input(default=TypeQuadratureOpt%beta(1), &
-              option=beta)
-CALL Set(obj=param, prefix=prefix, key="beta", &
-         datatype=areal, VALUE=areal)
-
-! setting lambda
-areal = Input(default=TypeQuadratureOpt%lambda(1), &
-              option=lambda)
-CALL Set(obj=param, prefix=prefix, key="lambda", &
-         datatype=areal, VALUE=areal)
-
-! setting nsd
-myint = Input(default=TypeQuadratureOpt%nsd, &
-              option=nsd)
-CALL Set(obj=param, prefix=prefix, key="nsd", &
-         datatype=myint, VALUE=myint)
-
-! setting topoType
-myint = Input(default=TypeQuadratureOpt%topoType, &
-              option=topoType)
-CALL Set(obj=param, prefix=prefix, key="topoType", &
-         datatype=myint, VALUE=myint)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetQuadratureOptParam1
-
-!----------------------------------------------------------------------------
-!                                                SetQuadratureOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetQuadratureOptParam2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetQuadratureOptParam()"
-#endif
-INTEGER(I4B) :: myint(3)
-REAL(DFP) :: areal(3)
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting isHomogeneous
-CALL Set(obj=param, prefix=prefix, key="isHomogeneous", &
-         datatype=.FALSE., VALUE=.FALSE.)
-
-! setting quadratureType
-myint = Input(default=TypeQuadratureOpt%quadratureType, &
-              option=quadratureType)
-CALL Set(obj=param, prefix=prefix, key="quadratureType", &
-         datatype=myint, VALUE=myint)
-
-! setting order
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isOrder", datatype=abool, &
-         VALUE=abool)
-myint = Input(default=TypeQuadratureOpt%order, option=order)
-CALL Set(obj=param, prefix=prefix, key="order", datatype=myint, &
-         VALUE=myint)
-
-! setting nips
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isNips", &
-         datatype=abool, VALUE=abool)
-
-myint = Input(default=TypeQuadratureOpt%nips, &
-              option=nips)
-CALL Set(obj=param, prefix=prefix, key="nips", &
-         datatype=myint, VALUE=myint)
-
-! setting alpha
-areal = Input(default=TypeQuadratureOpt%alpha, &
-              option=alpha)
-CALL Set(obj=param, prefix=prefix, key="alpha", &
-         datatype=areal, VALUE=areal)
-
-! setting beta
-areal = Input(default=TypeQuadratureOpt%beta, &
-              option=beta)
-CALL Set(obj=param, prefix=prefix, key="beta", &
-         datatype=areal, VALUE=areal)
-
-! setting lambda
-areal = Input(default=TypeQuadratureOpt%lambda, &
-              option=lambda)
-CALL Set(obj=param, prefix=prefix, key="lambda", &
-         datatype=areal, VALUE=areal)
-
-! setting nsd
-myint(1) = Input(default=TypeQuadratureOpt%nsd, &
-                 option=nsd)
-CALL Set(obj=param, prefix=prefix, key="nsd", &
-         datatype=myint(1), VALUE=myint(1))
-
-! setting topoType
-myint(1) = Input(default=TypeQuadratureOpt%topoType, &
-                 option=topoType)
-CALL Set(obj=param, prefix=prefix, key="topoType", &
-         datatype=myint(1), VALUE=myint(1))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetQuadratureOptParam2
 
 !----------------------------------------------------------------------------
 !                                                                SetParam
@@ -905,135 +740,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetLambda
 
 !----------------------------------------------------------------------------
-!                                                                    Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-! Internal variables
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-              VALUE=obj%isHomogeneous)
-
-IF (obj%isHomogeneous) THEN
-  CALL InitiateFromParamHomogeneous(obj=obj, param=param, prefix=prefix)
-ELSE
-  CALL InitiateFromParamInHomogeneous(obj=obj, param=param, prefix=prefix)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogeneous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamHomogeneous
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamInHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogenous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType)
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha)
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta)
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda)
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order)
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamInHomogeneous
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1054,7 +766,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                   GetParam
