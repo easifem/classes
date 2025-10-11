@@ -27,6 +27,11 @@ USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: TypeElemNameOpt
 
+USE LineInterpolationUtility, ONLY: QuadraturePoint_Line_, &
+                                    QuadratureNumber_Line
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 
 CONTAINS
@@ -1236,6 +1241,51 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                      LineGetQuadraturePoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LineGetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "LineGetQuadraturePoints()"
+#endif
+
+INTEGER(I4B) :: nips(1), nrow
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (obj%isOrder .AND. obj%isNips) THEN
+  CALL AssertError1(.TRUE., myName, &
+                    "Both isOrder and isNips is set, I am confuse what to do")
+END IF
+#endif
+
+IF (obj%isOrder) THEN
+  nips(1) = QuadratureNumber_Line(order=obj%order(1), &
+                                  quadtype=obj%quadratureType(1))
+ELSE
+  nips(1) = obj%nips(1)
+END IF
+
+nrow = obj%xidim + 1
+CALL Reallocate(quad%points, nrow, nips(1))
+
+CALL QuadraturePoint_Line_( &
+  nips=nips, quadType=obj%quadratureType(1), layout="INCREASING", &
+  xij=obj%refelemCoord(1:obj%xidim, 1:2), alpha=obj%alpha(1), &
+  beta=obj%beta(1), lambda=obj%lambda(1), ans=quad%points, &
+  nrow=nrow, ncol=nips(1))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE LineGetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                          GetQuadraturePoint
