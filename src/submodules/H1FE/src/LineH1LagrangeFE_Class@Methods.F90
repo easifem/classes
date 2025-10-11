@@ -174,6 +174,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
+!                                                         GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Line_GetQuadraturePoints(quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

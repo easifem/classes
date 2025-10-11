@@ -127,7 +127,7 @@ CONTAINS
     obj_GetQuadraturePoints
   !! Get quadrature points in the cell
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: LineGetQuadraturePoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
   !! Get quadrature points in the cell
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
@@ -411,7 +411,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              LineGetQuadraturePoint@Methods
+!                                             Line_GetQuadraturePoint@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -419,11 +419,11 @@ END INTERFACE
 ! summary: Get the quadrature points on line
 
 INTERFACE
-  MODULE SUBROUTINE LineGetQuadraturePoints(obj, quad)
+  MODULE SUBROUTINE Line_GetQuadraturePoints(obj, quad)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-  END SUBROUTINE LineGetQuadraturePoints
+  END SUBROUTINE Line_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

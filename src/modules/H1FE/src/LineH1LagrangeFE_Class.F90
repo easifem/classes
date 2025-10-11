@@ -47,6 +47,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
 END TYPE LineH1LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -206,6 +208,25 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points
+
+! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
+! alpha, beta, lambda, xij)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
+    CLASS(LineH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

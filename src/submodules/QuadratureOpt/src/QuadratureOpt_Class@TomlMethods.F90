@@ -17,9 +17,7 @@
 !
 
 SUBMODULE(QuadratureOpt_Class) TomlMethods
-
 USE Display_Method, ONLY: Display, ToString
-USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger
 USE InputUtility, ONLY: Input

@@ -416,6 +416,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetBaseContinuity
 
 !----------------------------------------------------------------------------
+!                                                    Line_GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_GetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_GetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Line_GetQuadraturePoints(quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                           Include error
 !----------------------------------------------------------------------------
 

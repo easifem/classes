@@ -338,6 +338,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
   !! Get local element shape data for LineH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_SetOrder
+  !! Set the order of Quadrature points
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
+  !! Get quadrature points for line element
 
 END TYPE BasisOpt_
 
@@ -1209,7 +1212,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            GetLocalElemShapeData@GetMethods
+!                                 GetLocalElemShapeData@LineH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -1221,7 +1224,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               SetLagrangeOrder@SetMethods
+!                                      SetLagrangeOrder@LineH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1234,6 +1237,22 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Order of Lagrange finite element
   END SUBROUTINE LineH1LagFE_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         LineGetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on line
+
+INTERFACE
+  MODULE SUBROUTINE Line_GetQuadraturePoints(obj, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Line_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

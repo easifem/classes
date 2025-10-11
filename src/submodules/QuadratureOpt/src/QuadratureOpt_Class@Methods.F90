@@ -955,15 +955,15 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                      LineGetQuadraturePoint
+!                                                     Line_GetQuadraturePoint
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LineGetQuadraturePoints
+MODULE PROCEDURE Line_GetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LineGetQuadraturePoints()"
+CHARACTER(*), PARAMETER :: myName = "Line_GetQuadraturePoints()"
 #endif
 
-INTEGER(I4B) :: nips(1), nrow
+INTEGER(I4B) :: nips(1), nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -991,13 +991,13 @@ CALL QuadraturePoint_Line_( &
   nips=nips, quadType=obj%quadratureType(1), layout="INCREASING", &
   xij=obj%refelemCoord(1:obj%xidim, 1:2), alpha=obj%alpha(1), &
   beta=obj%beta(1), lambda=obj%lambda(1), ans=quad%points, &
-  nrow=nrow, ncol=nips(1))
+  nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE LineGetQuadraturePoints
+END PROCEDURE Line_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                          GetQuadraturePoint
