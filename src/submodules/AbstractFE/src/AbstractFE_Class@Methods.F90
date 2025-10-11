@@ -101,9 +101,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 obj%isInit = obj2%isInit
 CALL obj%opt%Copy(obj2%opt)
 
-isok = ALLOCATED(obj2%coeff)
-IF (isok) obj%coeff = obj2%coeff
-
 isok = ALLOCATED(obj2%xij)
 IF (isok) obj%xij = obj2%xij
 
@@ -129,7 +126,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
-IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
 IF (ALLOCATED(obj%xij)) DEALLOCATE (obj%xij)
 CALL obj%opt%DEALLOCATE()
 
@@ -194,12 +190,6 @@ CALL Display(obj%isInit, msg="isInit: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
 CALL obj%opt%Display(msg="BasisOpt: ", unitno=unitno)
-
-isok = ALLOCATED(obj%coeff)
-CALL Display(isok, msg="obj%coeff allocated: ", unitno=unitno)
-IF (isok) THEN
-  CALL Display(SHAPE(obj%coeff), msg="obj%coeff shape: ", unitno=unitno)
-END IF
 
 isok = ALLOCATED(obj%xij)
 CALL Display(isok, msg="obj%xij allocated: ", unitno=unitno)
@@ -409,7 +399,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%GetLocalElemShapeData(elemsd=elemsd, quad=quad, coeff=obj%coeff)
+CALL obj%opt%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -457,7 +447,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%opt%GetLocalFacetElemShapeData( &
   elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
-  localFaceNumber=localFaceNumber, coeff=obj%coeff)
+  localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -555,6 +545,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                          SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%SetQuadratureType( &
+  quadratureType=quadratureType, quadratureType1=quadratureType1, &
+  quadratureType2=quadratureType2, quadratureType3=quadratureType3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureType
 
 !----------------------------------------------------------------------------
 !                                                                  SetParam
@@ -664,8 +678,6 @@ CALL obj%opt%SetOrder(order=order, &
 
 tdof = obj%opt%GetTotalDOF()
 
-CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., &
-                expandFactor=2_I4B)
 CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 
 #ifdef DEBUG_VER

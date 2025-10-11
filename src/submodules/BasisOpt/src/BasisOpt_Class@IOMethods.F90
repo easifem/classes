@@ -115,6 +115,12 @@ CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
 CALL Display(obj%refelemCoord, msg="refelemCoord: ", unitno=unitno)
 CALL obj%quadOpt%Display(msg="quadOpt: ", unitno=unitno)
 
+isok = ALLOCATED(obj%coeff)
+CALL Display(isok, msg="obj%coeff allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%coeff), msg="obj%coeff shape: ", unitno=unitno)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

@@ -534,8 +534,8 @@ END INTERFACE
 ! summary:  Set the quadrature type
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureType(obj, quadratureType, &
-                            quadratureType1, quadratureType2, quadratureType3)
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
     CLASS(QuadratureOpt_), INTENT(inout) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1

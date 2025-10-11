@@ -66,7 +66,6 @@ IF (obj%isAnisotropicOrder) THEN
                          elemType=obj%topoType)
 END IF
 
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -91,14 +90,10 @@ SUBROUTINE CheckErrorLagrange(obj, order, anisoOrder)
   CHARACTER(*), PARAMETER :: myName = "CheckErrorLagrange()"
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: tsize
-#endif
 
-#ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
-#endif
 
-#ifdef DEBUG_VER
   IF (PRESENT(order)) THEN
     isok = order .NE. 0
     CALL AssertError1(isok, myName, "zero order found.")
@@ -112,9 +107,7 @@ SUBROUTINE CheckErrorLagrange(obj, order, anisoOrder)
 
   isok = PRESENT(order) .OR. PRESENT(anisoOrder)
   CALL AssertError1(isok, myName, "no order or anisotropic order found.")
-#endif
 
-#ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif

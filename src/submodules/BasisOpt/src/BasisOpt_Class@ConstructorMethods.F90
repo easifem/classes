@@ -113,6 +113,8 @@ MODULE PROCEDURE obj_Copy
 CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -174,6 +176,9 @@ obj%ipType_char = obj2%ipType_char
 obj%feType_char = obj2%feType_char
 CALL obj%quadOpt%Copy(obj2%quadOpt)
 
+isok = ALLOCATED(obj2%coeff)
+IF (isok) obj%coeff = obj2%coeff
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -196,6 +201,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%Copy(TypeBasisOpt)
+IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

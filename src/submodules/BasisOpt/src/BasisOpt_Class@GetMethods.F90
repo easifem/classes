@@ -139,7 +139,7 @@ CASE ("LAGR")
                              order=obj%order, &
                              ipType=obj%ipType, &
                              basisType=obj%basisType(1), &
-                             coeff=coeff, firstCall=obj%firstCall, &
+                             coeff=obj%coeff, firstCall=obj%firstCall, &
                              alpha=obj%alpha(1), beta=obj%beta(1), &
                              lambda=obj%lambda(1))
 
@@ -191,7 +191,7 @@ CASE ("L")
     localFaceNumber=localFaceNumber, nsd=obj%nsd, xidim=obj%xidim, &
     elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
     domainName=obj%refelemDomain, order=obj%order, ipType=obj%ipType, &
-    basisType=obj%basisType(1), coeff=coeff, firstCall=obj%firstCall, &
+    basisType=obj%basisType(1), coeff=obj%coeff, firstCall=obj%firstCall, &
     alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
 
 CASE ("H")

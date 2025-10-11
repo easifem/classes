@@ -246,6 +246,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/VectorFE/CMakeLists.txt)
 # TensorFE
 include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
 
+# H1FE
+include(${CMAKE_CURRENT_LIST_DIR}/H1FE/CMakeLists.txt)
+
 # OneDimFEFactory
 include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEFactory/CMakeLists.txt)
 

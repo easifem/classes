@@ -515,11 +515,6 @@ isok = PRESENT(order) .AND. obj%isHomogeneous
 
 IF (isok) THEN
 
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'order is present and obj%isHomogeneous is true.')
-#endif
-
   obj%order = order(1)
   obj%isOrder = .TRUE.
   obj%isNips = .FALSE.

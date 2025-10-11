@@ -161,6 +161,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
 # ScalarFE
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
 
+# H1FE
+include(${CMAKE_CURRENT_LIST_DIR}/H1FE/CMakeLists.txt)
+
 # # FiniteElement
 # include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
 #

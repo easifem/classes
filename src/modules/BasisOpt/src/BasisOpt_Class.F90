@@ -163,7 +163,7 @@ TYPE :: BasisOpt_
   INTEGER(I4B) :: cellOrient(3) = 0
   !! Orientation of each cell
 
-  INTEGER(I4B) :: dofType(4) = 0
+  INTEGER(I4B) :: dofType(4) = DEFAULT_DOF_TYPE
   !! Currently it is not used
   !! dofType(1): Type of dof for shape function defined on vertex
   !! dofType(2): Type of dof for shape functions on edge
@@ -221,6 +221,11 @@ TYPE :: BasisOpt_
 
   TYPE(QuadratureOpt_) :: quadOpt
   !! Quadrature options
+
+  REAL(DFP), ALLOCATABLE :: coeff(:, :)
+  !! coefficient necessary for lagrange Interpolation
+  !! coefficient matrix needed for Lagrange interpolation
+  !! Coeff helps us in reducing the computation time for Lagrange polynomials
 
 CONTAINS
 
@@ -286,6 +291,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature points
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
+  !! Set quadrature type
 
   !GET:
   ! @GetMethods
@@ -332,6 +340,10 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
+
+  !@ LineH1LagrangeFEMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
+  !! Get local element shape data for LineH1LagrangeFE
 
 END TYPE BasisOpt_
 
@@ -965,6 +977,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+  END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         GetParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1066,16 +1097,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad, coeff)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
-    !! coefficient matrix needed for Lagrange interpolation
-    !! We supply this from AbstractFE_ class
-    !! If you are calling it outside AbstractFE_ then please
-    !! ignore this argument. Coeff helps us in
-    !! reducing the computation time for Lagrange polynomials
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -1090,7 +1115,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd, facetElemsd, &
                                                    quad, facetQuad, &
-                                                   localFaceNumber, coeff)
+                                                   localFaceNumber)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
@@ -1099,8 +1124,6 @@ INTERFACE
     !! Quadrature points on each facet element
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: coeff(:, :)
-    !! coefficient matrix needed for Lagrange interpolation
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
@@ -1299,6 +1322,18 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(IN) :: obj
     CHARACTER(2) :: ans
   END FUNCTION obj_GetBaseContinuity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE LineH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+  END SUBROUTINE LineH1LagFE_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

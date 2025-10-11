@@ -45,11 +45,9 @@ CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
 !{!pages/docs-api/AbstractFE/AbstractFE_.md!}
 
 TYPE, ABSTRACT :: AbstractFE_
-  PRIVATE
+  ! PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
-  !! coefficient necessary for lagrange Interpolation
   REAL(DFP), ALLOCATABLE :: xij(:, :)
   !! Interpolation points for lagrange polynomial
   !! coeff, and xij are needed internally for
@@ -101,6 +99,10 @@ CONTAINS
   !! already initiated AbstractFE_
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
+  !! Set order of quadrature
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
+  !! Set quadrature type
 
   !GET:
   ! @GetMethods
@@ -131,15 +133,15 @@ CONTAINS
 
   ! GET:
   ! @QuadratureMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get quadrature points in cell element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Get quadrature points on the face of cell element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+  !! Get total number of quadrature points
 
 END TYPE AbstractFE_
 
@@ -161,17 +163,17 @@ END TYPE AbstractFEPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, elemType, nsd, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, beta, lambda, dofType, &
-                                  transformType, order, anisoOrder, &
-                                  cellOrder, faceOrder, edgeOrder, &
-                                  cellOrient, faceOrient, edgeOrient, tcell, &
-                                  tface, tedge, errCheck, &
-                                  quadratureIsHomogeneous, quadratureType, &
-                                  quadratureOrder, quadratureIsOrder, &
-                                  quadratureNips, quadratureIsNips, &
-                                  quadratureAlpha, quadratureBeta, &
-                                  quadratureLambda)
+                                 baseInterpolation, feType, ipType, &
+                                 basisType, alpha, beta, lambda, dofType, &
+                                 transformType, order, anisoOrder, &
+                                 cellOrder, faceOrder, edgeOrder, &
+                                 cellOrient, faceOrient, edgeOrient, tcell, &
+                                 tface, tedge, errCheck, &
+                                 quadratureIsHomogeneous, quadratureType, &
+                                 quadratureOrder, quadratureIsOrder, &
+                                 quadratureNips, quadratureIsNips, &
+                                 quadratureAlpha, quadratureBeta, &
+                                 quadratureLambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -566,14 +568,15 @@ END INTERFACE
 ! summary: Get the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-         faceOrder, cellOrder, fetype, elemType, topoType, elemIndx, ipType, &
-      basisType, alpha, beta, lambda, dofType, transformType, refElemDomain, &
-    baseContinuity, baseInterpolation, isIsotropicOrder, isAnisotropicOrder, &
-              isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, &
-       tCellOrder, quadratureIsHomogeneous, quadratureType, quadratureOrder, &
-       quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
-                                 quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+    elemType, topoType, elemIndx, ipType, basisType, alpha, beta, lambda, &
+    dofType, transformType, refElemDomain, baseContinuity, &
+    baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+    isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -781,6 +784,25 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
   END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuadratureType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary:  Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+  END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------

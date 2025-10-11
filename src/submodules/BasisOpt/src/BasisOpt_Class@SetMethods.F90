@@ -174,6 +174,9 @@ CASE ("LAGR")
   CALL obj%SetLagrangeOrder(order=order, anisoOrder=anisoOrder, &
                             errCheck=errCheck)
 
+  CALL Reallocate(obj%coeff, obj%tdof, obj%tdof, isExpand=.TRUE., &
+                  expandFactor=2_I4B)
+
 CASE ("HIER", "HEIR")
   CALL obj%SetHierarchicalOrder( &
     cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
@@ -265,6 +268,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                         SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%SetQuadratureType(&
+  quadratureType=quadratureType, quadratureType1=quadratureType1, &
+  quadratureType2=quadratureType2, quadratureType3=quadratureType3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureType
 
 !----------------------------------------------------------------------------
 !                                                              Include error
