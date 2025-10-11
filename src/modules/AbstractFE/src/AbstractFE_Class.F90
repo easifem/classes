@@ -103,16 +103,6 @@ CONTAINS
   !GET:
   ! @GetMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
-    obj_GetLocalElemShapeData
-  !! Get local element shape data for cell element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
-  !! Get local element shape data for cell element and
-  !! local face number
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
-  !! Get global element shape data
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
@@ -126,6 +116,17 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data for cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
+  !! Get local element shape data for cell element and
+  !! local face number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get global element shape data
 
   ! GET:
   ! @QuadratureMethods

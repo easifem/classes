@@ -227,6 +227,14 @@ TYPE :: BasisOpt_
   !! coefficient matrix needed for Lagrange interpolation
   !! Coeff helps us in reducing the computation time for Lagrange polynomials
 
+  REAL(DFP), ALLOCATABLE :: xij(:, :)
+  !! Interpolation points used for Lagrange interpolation
+  !! It is internal variables used in GetLocalElemShapeData
+
+  REAL(DFP), ALLOCATABLE :: temp(:, :, :)
+  !! temporary array used in case of Lagrange Interpolation
+  !! It is internal variables used in GetLocalElemShapeData
+
 CONTAINS
 
   ! CONSTRUCTOR:
@@ -351,7 +359,8 @@ END TYPE BasisOpt_
 !                                                              TypeBasisOpt
 !----------------------------------------------------------------------------
 
-TYPE(BasisOpt_), PARAMETER :: TypeBasisOpt = BasisOpt_()
+TYPE(BasisOpt_), PARAMETER :: TypeBasisOpt = BasisOpt_( &
+                              xij=NULL(), temp=NULL(), coeff=NULL())
 
 !----------------------------------------------------------------------------
 !                                                           BasisOptPointer_

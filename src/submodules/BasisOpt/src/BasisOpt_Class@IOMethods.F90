@@ -121,6 +121,18 @@ IF (isok) THEN
   CALL Display(SHAPE(obj%coeff), msg="obj%coeff shape: ", unitno=unitno)
 END IF
 
+isok = ALLOCATED(obj%xij)
+CALL Display(isok, msg="obj%xij allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%xij), msg="obj%xij shape: ", unitno=unitno)
+END IF
+
+isok = ALLOCATED(obj%temp)
+CALL Display(isok, msg="obj%temp allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%temp), msg="obj%temp shape: ", unitno=unitno)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

@@ -179,6 +179,12 @@ CALL obj%quadOpt%Copy(obj2%quadOpt)
 isok = ALLOCATED(obj2%coeff)
 IF (isok) obj%coeff = obj2%coeff
 
+isok = ALLOCATED(obj2%xij)
+IF (isok) obj%xij = obj2%xij
+
+isok = ALLOCATED(obj2%temp)
+IF (isok) obj%temp = obj2%temp
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

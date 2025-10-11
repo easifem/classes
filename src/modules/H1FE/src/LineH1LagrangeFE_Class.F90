@@ -43,6 +43,9 @@ CHARACTER(*), PARAMETER :: modName = "LineH1LagrangeFE_Class"
 ! summary:  Scalar H1 Lagrange Finite Element
 
 TYPE, EXTENDS(AbstractFE_) :: LineH1LagrangeFE_
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
 END TYPE LineH1LagrangeFE_
 
 !----------------------------------------------------------------------------
