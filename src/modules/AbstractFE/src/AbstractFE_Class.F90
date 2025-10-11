@@ -90,7 +90,7 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
@@ -513,9 +513,6 @@ END INTERFACE
 !
 ! This routine sets order in the already initiated AbstractFE_
 ! Make sure the object is initiated by calling correct constructor methods
-!
-! This routine will call SetLagrangeOrder for LagrangeFE
-! This routine will call SetHierarchicalFE for HierarchicalFE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &

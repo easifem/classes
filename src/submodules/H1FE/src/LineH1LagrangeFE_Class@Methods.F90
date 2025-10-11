@@ -20,6 +20,7 @@ SUBMODULE(LineH1LagrangeFE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -118,5 +119,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                                    SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(order)
+
+IF (isok) THEN
+  CALL obj%opt%LineH1LagFE_SetOrder(order=order)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+isok = PRESENT(anisoOrder)
+IF (isok) THEN
+  CALL obj%opt%LineH1LagFE_SetOrder(order=anisoOrder(1))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL AssertError1(.FALSE., myName, &
+                  "either order or anisoOrder must be provided")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods

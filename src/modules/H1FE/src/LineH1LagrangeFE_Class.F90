@@ -46,6 +46,7 @@ TYPE, EXTENDS(AbstractFE_) :: LineH1LagrangeFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
 END TYPE LineH1LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -153,6 +154,58 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder( &
+    obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
+    faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
+    CLASS(LineH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    !! aniso tropic order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order
+    !! size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

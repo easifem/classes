@@ -646,8 +646,6 @@ MODULE PROCEDURE obj_SetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
-INTEGER(I4B) :: tdof
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -665,9 +663,6 @@ CALL obj%opt%SetOrder(order=order, &
                       tcell=tcell, &
                       tface=tface, &
                       tedge=tedge)
-
-! tdof = obj%opt%GetTotalDOF()
-! CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

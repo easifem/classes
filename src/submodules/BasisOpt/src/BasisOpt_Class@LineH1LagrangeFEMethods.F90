@@ -57,8 +57,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 nips = GetTotalQuadraturePoints(obj=quad)
-tdof = LagrangeDOF_Line(order=obj%order)
-! tdof = obj%opt%GetTotalDOF()
+tdof = obj%GetTotalDOF()
 
 #ifdef DEBUG_VER
 isok = tdof .GT. 0
@@ -108,6 +107,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE LineH1LagFE_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                        LineH1LagFE_SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LineH1LagFE_SetOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "LineH1LagFE_SetOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isIsotropicOrder = .TRUE.
+CALL obj%ResetAnisotropicOrder()
+obj%order = order
+obj%tdof = LagrangeDOF_Line(order=obj%order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE LineH1LagFE_SetOrder
 
 !----------------------------------------------------------------------------
 !                                                                      Error

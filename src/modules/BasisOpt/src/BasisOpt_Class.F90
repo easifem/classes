@@ -350,8 +350,9 @@ CONTAINS
   !! Get the base continuity
 
   !@ LineH1LagrangeFEMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
+  PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
   !! Get local element shape data for LineH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_SetOrder
 
 END TYPE BasisOpt_
 
@@ -1343,6 +1344,22 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE LineH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetLagrangeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
+
+INTERFACE
+  MODULE SUBROUTINE LineH1LagFE_SetOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of Lagrange finite element
+  END SUBROUTINE LineH1LagFE_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
