@@ -73,21 +73,6 @@ CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 ! TODO: Reallocate if necessary
 ALLOCATE (xij(3, nns), temp(nips, nns, 3))
 
-! CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-!                            xidim=obj%xidim, elemType=obj%elemType, &
-!                            refelemCoord=obj%refelemCoord, &
-!                            domainName=obj%refelemDomain, &
-!                            order=obj%order, &
-!                            ipType=obj%ipType, &
-!                            basisType=obj%basisType(1), &
-!                            coeff=obj%coeff, firstCall=obj%firstCall, &
-!                            alpha=obj%alpha(1), beta=obj%beta(1), &
-!                            lambda=obj%lambda(1))
-
-! CALL InterpolationPoint_Line_(order=order, ipType=ipType, ans=ans, &
-!      nrow=nrow, ncol=ncol, xij=xij, layout=layout, alpha=alpha, beta=beta, &
-!                               lambda=lambda)
-
 CALL InterpolationPoint_Line_( &
   order=obj%order, ipType=obj%ipType, layout="VEFC", &
   xij=obj%refelemCoord(1:obj%xidim, :), &
