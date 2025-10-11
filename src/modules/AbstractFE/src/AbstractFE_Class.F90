@@ -48,10 +48,6 @@ TYPE, ABSTRACT :: AbstractFE_
   ! PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-  REAL(DFP), ALLOCATABLE :: xij(:, :)
-  !! Interpolation points for lagrange polynomial
-  !! coeff, and xij are needed internally for
-  !! constructing the lagrange polynomial
   TYPE(BasisOpt_) :: opt
   !! basis options
 

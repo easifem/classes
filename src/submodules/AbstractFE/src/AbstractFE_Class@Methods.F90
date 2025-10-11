@@ -101,9 +101,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 obj%isInit = obj2%isInit
 CALL obj%opt%Copy(obj2%opt)
 
-isok = ALLOCATED(obj2%xij)
-IF (isok) obj%xij = obj2%xij
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -126,7 +123,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
-IF (ALLOCATED(obj%xij)) DEALLOCATE (obj%xij)
 CALL obj%opt%DEALLOCATE()
 
 #ifdef DEBUG_VER
@@ -190,12 +186,6 @@ CALL Display(obj%isInit, msg="isInit: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
 CALL obj%opt%Display(msg="BasisOpt: ", unitno=unitno)
-
-isok = ALLOCATED(obj%xij)
-CALL Display(isok, msg="obj%xij allocated: ", unitno=unitno)
-IF (isok) THEN
-  CALL Display(SHAPE(obj%xij), msg="obj%xij shape: ", unitno=unitno)
-END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -676,9 +666,8 @@ CALL obj%opt%SetOrder(order=order, &
                       tface=tface, &
                       tedge=tedge)
 
-tdof = obj%opt%GetTotalDOF()
-
-CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+! tdof = obj%opt%GetTotalDOF()
+! CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
