@@ -19,7 +19,6 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/BasisOptUtility.F90
-          ${src_path}/BasisOpt_Class@ParameterConstructorMethods.F90
           ${src_path}/BasisOpt_Class@ConstructorMethods.F90
           ${src_path}/BasisOpt_Class@LagrangeMethods.F90
           ${src_path}/BasisOpt_Class@HierarchicalMethods.F90

@@ -17,7 +17,6 @@
 SUBMODULE(AbstractFE_Class) Methods
 USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: ToString, Display
-USE BasisOpt_Class, ONLY: SetBasisOptParam
 USE TomlUtility, ONLY: GetValue, GetValue_
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
@@ -90,8 +89,6 @@ MODULE PROCEDURE obj_Copy
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
 #endif
-
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -173,8 +170,6 @@ MODULE PROCEDURE obj_Display
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
-
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

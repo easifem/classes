@@ -35,9 +35,9 @@ CONTAINS
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 TYPE(String) :: mystr
@@ -102,7 +102,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                       Copy
