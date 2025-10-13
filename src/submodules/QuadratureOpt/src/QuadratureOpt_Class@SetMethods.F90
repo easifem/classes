@@ -16,9 +16,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(QuadratureOpt_Class) Methods
+SUBMODULE(QuadratureOpt_Class) SetMethods
 USE Display_Method, ONLY: Display, ToString
-USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger, &
                                   QuadraturePoint_Initiate => Initiate, &
@@ -37,282 +36,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                       Copy
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-06-27
-! summary: Copy the content from obj2 to obj
-
-MODULE PROCEDURE obj_Copy
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%isInit = obj2%isInit
-obj%isHomogeneous = obj2%isHomogeneous
-obj%isOrder = obj2%isOrder
-obj%isNips = obj2%isNips
-obj%topoType = obj2%topoType
-obj%nsd = obj2%nsd
-obj%xidim = obj2%xidim
-obj%quadratureType = obj2%quadratureType
-obj%alpha = obj2%alpha
-obj%beta = obj2%beta
-obj%lambda = obj2%lambda
-obj%refelemCoord = obj2%refelemCoord
-obj%order = obj2%order
-obj%nips = obj2%nips
-obj%quadratureType_char = obj2%quadratureType_char
-obj%refelemDomain = obj2%refelemDomain
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Copy
-
-!----------------------------------------------------------------------------
-!                                                                   Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Display
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Display()"
-#endif
-
-INTEGER(I4B) :: ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Display(msg, unitNo=unitNo)
-CALL Display(obj%isInit, "isInit: ", unitNo=unitNo)
-
-IF (.NOT. obj%isInit) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-CALL Display(msg, unitNo=unitNo)
-CALL Display(obj%isHomogeneous, "isHomogeneous: ", unitNo=unitNo)
-CALL Display(obj%isOrder, "isOrder: ", unitNo=unitNo)
-CALL Display(obj%isNips, "isNips: ", unitNo=unitNo)
-
-CALL Display(obj%topoType, "topoType: ", unitNo=unitNo)
-CALL Display(obj%nsd, "nsd: ", unitNo=unitNo)
-CALL Display(obj%xidim, "xidim: ", unitNo=unitNo)
-
-DO ii = 1, 3
-  CALL Display(obj%quadratureType(ii), &
-               "quadratureType("//ToString(ii)//"): ", unitNo=unitNo)
-
-  CALL Display(TRIM(obj%quadratureType_char(ii)), &
-               "quadratureType_char("//ToString(ii)//"): ", unitNo=unitNo)
-
-  CALL Display(obj%alpha(ii), "alpha("//ToString(ii)//"): ", unitNo=unitNo)
-
-  CALL Display(obj%beta(ii), "beta("//ToString(ii)//"): ", &
-               unitNo=unitNo)
-
-  CALL Display(obj%lambda(ii), "lambda("//ToString(ii)//"): ", &
-               unitNo=unitNo)
-
-  CALL Display(obj%order(ii), "order("//ToString(ii)//"): ", &
-               unitNo=unitNo)
-
-  CALL Display(obj%nips(ii), "nips("//ToString(ii)//', 1): ', &
-               unitNo=unitNo)
-END DO
-
-CALL Display(obj%refelemCoord, "refelemCoord: ", unitNo=unitNo)
-
-CALL Display(obj%refelemDomain, "refelemDomain: ", unitNo=unitNo)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                SetQuadratureOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetQuadratureOptParam1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetQuadratureOptParam()"
-#endif
-INTEGER(I4B) :: myint
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting isHomogeneous
-CALL Set(obj=param, prefix=prefix, key="isHomogeneous", &
-         datatype=.TRUE., VALUE=.TRUE.)
-
-! setting quadratureType
-myint = Input(default=TypeQuadratureOpt%quadratureType(1), &
-              option=quadratureType)
-CALL Set(obj=param, prefix=prefix, key="quadratureType", &
-         datatype=myint, VALUE=myint)
-
-! setting order
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isOrder", &
-         datatype=abool, VALUE=abool)
-myint = Input(default=TypeQuadratureOpt%order(1), &
-              option=order)
-CALL Set(obj=param, prefix=prefix, key="order", &
-         datatype=myint, VALUE=myint)
-
-! setting nips
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isNips", &
-         datatype=abool, VALUE=abool)
-
-myint = Input(default=TypeQuadratureOpt%nips(1), &
-              option=nips)
-CALL Set(obj=param, prefix=prefix, key="nips", &
-         datatype=myint, VALUE=myint)
-
-! setting alpha
-areal = Input(default=TypeQuadratureOpt%alpha(1), &
-              option=alpha)
-CALL Set(obj=param, prefix=prefix, key="alpha", &
-         datatype=areal, VALUE=areal)
-
-! setting beta
-areal = Input(default=TypeQuadratureOpt%beta(1), &
-              option=beta)
-CALL Set(obj=param, prefix=prefix, key="beta", &
-         datatype=areal, VALUE=areal)
-
-! setting lambda
-areal = Input(default=TypeQuadratureOpt%lambda(1), &
-              option=lambda)
-CALL Set(obj=param, prefix=prefix, key="lambda", &
-         datatype=areal, VALUE=areal)
-
-! setting nsd
-myint = Input(default=TypeQuadratureOpt%nsd, &
-              option=nsd)
-CALL Set(obj=param, prefix=prefix, key="nsd", &
-         datatype=myint, VALUE=myint)
-
-! setting topoType
-myint = Input(default=TypeQuadratureOpt%topoType, &
-              option=topoType)
-CALL Set(obj=param, prefix=prefix, key="topoType", &
-         datatype=myint, VALUE=myint)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetQuadratureOptParam1
-
-!----------------------------------------------------------------------------
-!                                                SetQuadratureOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetQuadratureOptParam2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetQuadratureOptParam()"
-#endif
-INTEGER(I4B) :: myint(3)
-REAL(DFP) :: areal(3)
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting isHomogeneous
-CALL Set(obj=param, prefix=prefix, key="isHomogeneous", &
-         datatype=.FALSE., VALUE=.FALSE.)
-
-! setting quadratureType
-myint = Input(default=TypeQuadratureOpt%quadratureType, &
-              option=quadratureType)
-CALL Set(obj=param, prefix=prefix, key="quadratureType", &
-         datatype=myint, VALUE=myint)
-
-! setting order
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isOrder", datatype=abool, &
-         VALUE=abool)
-myint = Input(default=TypeQuadratureOpt%order, option=order)
-CALL Set(obj=param, prefix=prefix, key="order", datatype=myint, &
-         VALUE=myint)
-
-! setting nips
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isNips", &
-         datatype=abool, VALUE=abool)
-
-myint = Input(default=TypeQuadratureOpt%nips, &
-              option=nips)
-CALL Set(obj=param, prefix=prefix, key="nips", &
-         datatype=myint, VALUE=myint)
-
-! setting alpha
-areal = Input(default=TypeQuadratureOpt%alpha, &
-              option=alpha)
-CALL Set(obj=param, prefix=prefix, key="alpha", &
-         datatype=areal, VALUE=areal)
-
-! setting beta
-areal = Input(default=TypeQuadratureOpt%beta, &
-              option=beta)
-CALL Set(obj=param, prefix=prefix, key="beta", &
-         datatype=areal, VALUE=areal)
-
-! setting lambda
-areal = Input(default=TypeQuadratureOpt%lambda, &
-              option=lambda)
-CALL Set(obj=param, prefix=prefix, key="lambda", &
-         datatype=areal, VALUE=areal)
-
-! setting nsd
-myint(1) = Input(default=TypeQuadratureOpt%nsd, &
-                 option=nsd)
-CALL Set(obj=param, prefix=prefix, key="nsd", &
-         datatype=myint(1), VALUE=myint(1))
-
-! setting topoType
-myint(1) = Input(default=TypeQuadratureOpt%topoType, &
-                 option=topoType)
-CALL Set(obj=param, prefix=prefix, key="topoType", &
-         datatype=myint(1), VALUE=myint(1))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetQuadratureOptParam2
-
-!----------------------------------------------------------------------------
-!                                                                SetParam
+!                                                                    SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
@@ -499,6 +223,164 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetQuadratureType
 
 !----------------------------------------------------------------------------
+!                                                      Line_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_SetQuadratureType
+! internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isHomogeneous = .TRUE.
+obj%quadratureType(1:3) = quadratureType
+obj%quadratureType_char(1) = QuadraturePoint_ToChar(quadratureType, &
+                                                    isUpper=.TRUE.)
+obj%quadratureType_char(2) = obj%quadratureType_char(1)
+obj%quadratureType_char(3) = obj%quadratureType_char(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                  Triangle_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_SetQuadratureType
+! internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isHomogeneous = .TRUE.
+obj%quadratureType(1:3) = quadratureType
+obj%quadratureType_char(1) = QuadraturePoint_ToChar(quadratureType, &
+                                                    isUpper=.TRUE.)
+obj%quadratureType_char(2) = obj%quadratureType_char(1)
+obj%quadratureType_char(3) = obj%quadratureType_char(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                Quadrangle_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_SetQuadratureType()"
+#endif
+
+LOGICAL(LGT) :: isQuadratureType, isQuadratureType1, isQuadratureType2
+INTEGER(I4B) :: tsize, quadratureType0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isQuadratureType = PRESENT(quadratureType)
+tsize = 0; IF (isQuadratureType) tsize = SIZE(quadratureType)
+
+IF (tsize .EQ. 1) THEN
+  obj%quadratureType = quadratureType(1)
+  obj%isHomogeneous = .TRUE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (tsize .GT. 1) THEN
+  obj%quadratureType(1:2) = quadratureType(1:2)
+  obj%isHomogeneous = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+isQuadratureType1 = PRESENT(quadratureType1)
+isQuadratureType2 = PRESENT(quadratureType2)
+
+IF (isQuadratureType1 .AND. isQuadratureType2) THEN
+  obj%quadratureType(1) = quadratureType1
+  obj%quadratureType(2) = quadratureType2
+  obj%isHomogeneous = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isQuadratureType1) quadratureType0 = quadratureType1
+IF (isQuadratureType2) quadratureType0 = quadratureType2
+
+IF (obj%isHomogeneous) THEN
+  obj%quadratureType = quadratureType0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isQuadratureType1) THEN
+  obj%quadratureType(1) = quadratureType1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isQuadratureType2) THEN
+  obj%quadratureType(2) = quadratureType2
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_SetQuadratureType
+
+!----------------------------------------------------------------------------
 !                                                                    SetOrder
 !----------------------------------------------------------------------------
 
@@ -591,6 +473,164 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                              Line_SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_SetOrder
+! internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_SetOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%order = order
+obj%isHomogeneous = .TRUE.
+obj%isOrder = .TRUE.
+obj%isNips = .FALSE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                           Triangle_SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_SetOrder
+! internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_SetOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%order = order
+obj%isHomogeneous = .TRUE.
+obj%isOrder = .TRUE.
+obj%isNips = .FALSE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                        Quadrangle_SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_SetOrder
+! internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_SetOrder()"
+#endif
+
+LOGICAL(LGT) :: isOrder, isOrder1, isOrder2
+INTEGER(I4B) :: tsize, order0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isOrder = .TRUE.
+obj%isNips = .FALSE.
+
+isOrder = PRESENT(order)
+tsize = 0; IF (isOrder) tsize = SIZE(order)
+
+IF (tsize .EQ. 1) THEN
+  obj%order = order(1)
+  obj%isHomogeneous = .TRUE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (tsize .GT. 1) THEN
+  obj%order(1:2) = order(1:2)
+  obj%isHomogeneous = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+isOrder1 = PRESENT(order1)
+isOrder2 = PRESENT(order2)
+
+IF (isOrder1 .AND. isOrder2) THEN
+  obj%order(1) = order1
+  obj%order(2) = order2
+  obj%isHomogeneous = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isOrder1) order0 = order1
+IF (isOrder2) order0 = order2
+
+IF (obj%isHomogeneous) THEN
+  obj%order = order0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isOrder1) THEN
+  obj%order(1) = order1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (isOrder2) THEN
+  obj%order(2) = order2
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_SetOrder
 
 !----------------------------------------------------------------------------
 !                                                                     SetNips
@@ -905,622 +945,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetLambda
 
 !----------------------------------------------------------------------------
-!                                                                    Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-! Internal variables
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-              VALUE=obj%isHomogeneous)
-
-IF (obj%isHomogeneous) THEN
-  CALL InitiateFromParamHomogeneous(obj=obj, param=param, prefix=prefix)
-ELSE
-  CALL InitiateFromParamInHomogeneous(obj=obj, param=param, prefix=prefix)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogeneous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamHomogeneous
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamInHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogenous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType)
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha)
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta)
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda)
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order)
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamInHomogeneous
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL obj%SetParam(isHomogeneous=isHomogeneous,quadratureType=quadratureType,&
-                  order=order, isOrder=isOrder, nips=nips, isNips=isNips, &
-                  alpha=alpha, beta=beta, lambda=lambda, topoType=topoType, &
-                  nsd=nsd, xidim=xidim, refelemDomain=refelemDomain, &
-                  refelemCoord=refelemCoord)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                   GetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-IF (PRESENT(isHomogeneous)) isHomogeneous = obj%isHomogeneous
-IF (PRESENT(nsd)) nsd = obj%nsd
-IF (PRESENT(topoType)) topoType = obj%topoType
-IF (PRESENT(isOrder)) isOrder = obj%isOrder
-IF (PRESENT(isNips)) isNips = obj%isNips
-
-IF (PRESENT(quadratureType)) quadratureType(1:3) = obj%quadratureType
-IF (PRESENT(quadratureType1)) quadratureType1 = obj%quadratureType(1)
-IF (PRESENT(quadratureType2)) quadratureType2 = obj%quadratureType(2)
-IF (PRESENT(quadratureType3)) quadratureType3 = obj%quadratureType(3)
-
-IF (PRESENT(order)) order(1:3) = obj%order
-IF (PRESENT(order1)) order1 = obj%order(1)
-IF (PRESENT(order2)) order2 = obj%order(2)
-IF (PRESENT(order3)) order3 = obj%order(3)
-
-IF (PRESENT(nips)) nips(1:3) = obj%nips(1:3)
-IF (PRESENT(nips1)) nips1 = obj%nips(1)
-IF (PRESENT(nips2)) nips2 = obj%nips(2)
-IF (PRESENT(nips3)) nips3 = obj%nips(3)
-
-IF (PRESENT(alpha)) alpha(1:3) = obj%alpha
-IF (PRESENT(alpha1)) alpha1 = obj%alpha(1)
-IF (PRESENT(alpha2)) alpha2 = obj%alpha(2)
-IF (PRESENT(alpha3)) alpha3 = obj%alpha(3)
-
-IF (PRESENT(beta)) beta(1:3) = obj%beta
-IF (PRESENT(beta1)) beta1 = obj%beta(1)
-IF (PRESENT(beta2)) beta2 = obj%beta(2)
-IF (PRESENT(beta3)) beta3 = obj%beta(3)
-
-IF (PRESENT(lambda)) lambda(1:3) = obj%lambda
-IF (PRESENT(lambda1)) lambda1 = obj%lambda(1)
-IF (PRESENT(lambda2)) lambda2 = obj%lambda(2)
-IF (PRESENT(lambda3)) lambda3 = obj%lambda(3)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
-!                                                               Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate
-CALL obj%Copy(TypeQuadratureOpt)
-END PROCEDURE obj_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                          GetQuadraturePoint
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
-END IF
-#endif
-
-IF (obj%isHomogeneous .AND. obj%isOrder) THEN
-  CALL QuadraturePoint_Initiate(obj=quad, &
-                                elemType=obj%topoType, &
-                                domainName=obj%refelemDomain, &
-                                order=obj%order(1), &
-                                quadratureType=obj%quadratureType(1), &
-                                alpha=obj%alpha(1), &
-                                beta=obj%beta(1), &
-                                lambda=obj%lambda(1), &
-                                xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-IF (obj%isHomogeneous .AND. obj%isNips) THEN
-  CALL QuadraturePoint_Initiate(obj=quad, &
-                                elemType=obj%topoType, &
-                                domainName=obj%refelemDomain, &
-                                nips=obj%nips(1:1), &
-                                quadratureType=obj%quadratureType(1), &
-                                alpha=obj%alpha(1), &
-                                beta=obj%beta(1), &
-                                lambda=obj%lambda(1), &
-                                xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-IF (.NOT. obj%isHomogeneous .AND. obj%isOrder) THEN
-  CALL QuadraturePoint_Initiate(obj=quad, &
-                                elemType=obj%topoType, &
-                                domainName=obj%refelemDomain, &
-                                p=obj%order(1), &
-                                q=obj%order(2), &
-                                r=obj%order(3), &
-                                quadratureType1=obj%quadratureType(1), &
-                                quadratureType2=obj%quadratureType(2), &
-                                quadratureType3=obj%quadratureType(3), &
-                                alpha1=obj%alpha(1), &
-                                alpha2=obj%alpha(2), &
-                                alpha3=obj%alpha(3), &
-                                beta1=obj%beta(1), &
-                                beta2=obj%beta(2), &
-                                beta3=obj%beta(3), &
-                                lambda1=obj%lambda(1), &
-                                lambda2=obj%lambda(2), &
-                                lambda3=obj%lambda(3), &
-                                xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-IF (.NOT. obj%isHomogeneous .AND. obj%isNips) THEN
-  CALL QuadraturePoint_Initiate(obj=quad, &
-                                elemType=obj%topoType, &
-                                domainName=obj%refelemDomain, &
-                                nipsx=obj%order(1:1), &
-                                nipsy=obj%order(2:2), &
-                                nipsz=obj%order(3:3), &
-                                quadratureType1=obj%quadratureType(1), &
-                                quadratureType2=obj%quadratureType(2), &
-                                quadratureType3=obj%quadratureType(3), &
-                                alpha1=obj%alpha(1), &
-                                alpha2=obj%alpha(2), &
-                                alpha3=obj%alpha(3), &
-                                beta1=obj%beta(1), &
-                                beta2=obj%beta(2), &
-                                beta3=obj%beta(3), &
-                                lambda1=obj%lambda(1), &
-                                lambda2=obj%lambda(2), &
-                                lambda3=obj%lambda(3), &
-                                xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'No valid case found')
-#endif
-
-END PROCEDURE obj_GetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!                                                      LineGetQuadraturePoint
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE LineGetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LineGetQuadraturePoints()"
-#endif
-
-INTEGER(I4B) :: nips(1), nrow
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
-END IF
-#endif
-
-IF (obj%isOrder) THEN
-  nips(1) = QuadratureNumber_Line(order=obj%order(1), &
-                                  quadtype=obj%quadratureType(1))
-ELSE
-  nips(1) = obj%nips(1)
-END IF
-
-nrow = obj%xidim + 1
-CALL Reallocate(quad%points, nrow, nips(1))
-
-CALL QuadraturePoint_Line_( &
-  nips=nips, quadType=obj%quadratureType(1), layout="INCREASING", &
-  xij=obj%refelemCoord(1:obj%xidim, 1:2), alpha=obj%alpha(1), &
-  beta=obj%beta(1), lambda=obj%lambda(1), ans=quad%points, &
-  nrow=nrow, ncol=nips(1))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE LineGetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!                                                          GetQuadraturePoint
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
-END IF
-#endif
-
-IF (obj%isHomogeneous .AND. obj%isOrder) THEN
-  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
-                               localFaceNumber=localFaceNumber, &
-                               elemType=obj%topoType, &
-                               domainName=obj%refelemDomain, &
-                               order=obj%order(1), &
-                               quadratureType=obj%quadratureType(1), &
-                               alpha=obj%alpha(1), &
-                               beta=obj%beta(1), &
-                               lambda=obj%lambda(1), &
-                               xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-IF (obj%isHomogeneous .AND. obj%isNips) THEN
-  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
-                               localFaceNumber=localFaceNumber, &
-                               elemType=obj%topoType, &
-                               domainName=obj%refelemDomain, &
-                               nips=obj%nips(1:1), &
-                               quadratureType=obj%quadratureType(1), &
-                               alpha=obj%alpha(1), &
-                               beta=obj%beta(1), &
-                               lambda=obj%lambda(1), &
-                               xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-IF (.NOT. obj%isHomogeneous .AND. obj%isOrder) THEN
-  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
-                               localFaceNumber=localFaceNumber, &
-                               elemType=obj%topoType, &
-                               domainName=obj%refelemDomain, &
-                               p=obj%order(1), &
-                               q=obj%order(2), &
-                               r=obj%order(3), &
-                               quadratureType1=obj%quadratureType(1), &
-                               quadratureType2=obj%quadratureType(2), &
-                               quadratureType3=obj%quadratureType(3), &
-                               alpha1=obj%alpha(1), &
-                               alpha2=obj%alpha(2), &
-                               alpha3=obj%alpha(3), &
-                               beta1=obj%beta(1), &
-                               beta2=obj%beta(2), &
-                               beta3=obj%beta(3), &
-                               lambda1=obj%lambda(1), &
-                               lambda2=obj%lambda(2), &
-                               lambda3=obj%lambda(3), &
-                               xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-IF (.NOT. obj%isHomogeneous .AND. obj%isNips) THEN
-  CALL InitiateFacetQuadrature(obj=quad, facetQuad=facetQuad, &
-                               localFaceNumber=localFaceNumber, &
-                               elemType=obj%topoType, &
-                               domainName=obj%refelemDomain, &
-                               nipsx=obj%order(1:1), &
-                               nipsy=obj%order(2:2), &
-                               nipsz=obj%order(3:3), &
-                               quadratureType1=obj%quadratureType(1), &
-                               quadratureType2=obj%quadratureType(2), &
-                               quadratureType3=obj%quadratureType(3), &
-                               alpha1=obj%alpha(1), &
-                               alpha2=obj%alpha(2), &
-                               alpha3=obj%alpha(3), &
-                               beta1=obj%beta(1), &
-                               beta2=obj%beta(2), &
-                               beta3=obj%beta(3), &
-                               lambda1=obj%lambda(1), &
-                               lambda2=obj%lambda(2), &
-                               lambda3=obj%lambda(3), &
-                               xij=obj%refelemCoord(1:obj%xidim, :))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'No valid case found')
-#endif
-
-END PROCEDURE obj_GetFacetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!                                                    GetTotalQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalQuadraturePoints()"
-#endif
-
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-abool = obj%isOrder .AND. obj%isNips
-IF (abool) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
-END IF
-#endif
-
-abool = obj%isHomogeneous .AND. obj%isNips
-IF (abool) THEN
-
-  SELECT CASE (obj%topoType)
-  CASE (TypeElemNameOpt%quadrangle)
-    ans = obj%nips(1) * obj%nips(1)
-  CASE (TypeElemNameOpt%hexahedron)
-    ans = obj%nips(1) * obj%nips(1) * obj%nips(1)
-  CASE DEFAULT
-    ans = obj%nips(1)
-  END SELECT
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-abool = .NOT. obj%isHomogeneous .AND. obj%isNips
-IF (abool) THEN
-  SELECT CASE (obj%topoType)
-  CASE (TypeElemNameOpt%quadrangle)
-    ans = PRODUCT(obj%nips(1:2))
-  CASE (TypeElemNameOpt%hexahedron)
-    ans = PRODUCT(obj%nips(1:3))
-  CASE DEFAULT
-    ans = obj%nips(1)
-  END SELECT
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-abool = obj%isHomogeneous .AND. obj%isOrder
-IF (abool) THEN
-  ans = GetTotalQuadraturePoints( &
-        elemType=obj%topoType, &
-        p=obj%order(1), &
-        q=obj%order(1), &
-        r=obj%order(1), &
-        quadratureType1=obj%quadratureType(1), &
-        quadratureType2=obj%quadratureType(1), &
-        quadratureType3=obj%quadratureType(1))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-abool = .NOT. obj%isHomogeneous .AND. obj%isOrder
-IF (abool) THEN
-  ans = GetTotalQuadraturePoints( &
-        elemType=obj%topoType, &
-        p=obj%order(1), &
-        q=obj%order(2), &
-        r=obj%order(3), &
-        quadratureType1=obj%quadratureType(1), &
-        quadratureType2=obj%quadratureType(2), &
-        quadratureType3=obj%quadratureType(3))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'No valid case found')
-#endif
-END PROCEDURE obj_GetTotalQuadraturePoints
-
-!----------------------------------------------------------------------------
-!
+!                                                              Include Errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE SetMethods

@@ -17,13 +17,7 @@
 !
 
 SUBMODULE(QuadratureOpt_Class) ConstructorMethods
-USE Display_Method, ONLY: Display, ToString
-USE FPL_Method, ONLY: Set, GetValue
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
-                                  QuadraturePoint_ToInteger, &
-                                  QuadraturePoint_Initiate => Initiate, &
-                                  GetTotalQuadraturePoints, &
-                                  InitiateFacetQuadrature
+USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: TypeElemNameOpt
 
@@ -82,132 +76,9 @@ END PROCEDURE obj_Copy
 !                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-! Internal variables
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-              VALUE=obj%isHomogeneous)
-
-IF (obj%isHomogeneous) THEN
-  CALL InitiateFromParamHomogeneous(obj=obj, param=param, prefix=prefix)
-ELSE
-  CALL InitiateFromParamInHomogeneous(obj=obj, param=param, prefix=prefix)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogeneous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips(1))
-
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamHomogeneous
-
-!----------------------------------------------------------------------------
-!                                               InitiateFromParamHomogeneous
-!----------------------------------------------------------------------------
-
-SUBROUTINE InitiateFromParamInHomogeneous(obj, param, prefix)
-  CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "InitiateFromParamHomogenous()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL GetValue(obj=param, prefix=prefix, key="isHomogeneous", &
-                VALUE=obj%isHomogeneous)
-  CALL GetValue(obj=param, prefix=prefix, key="isNips", VALUE=obj%isNips)
-  CALL GetValue(obj=param, prefix=prefix, key="isOrder", VALUE=obj%isOrder)
-  CALL GetValue(obj=param, prefix=prefix, key="topoType", VALUE=obj%topoType)
-  CALL GetValue(obj=param, prefix=prefix, key="nsd", VALUE=obj%nsd)
-  CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-                VALUE=obj%quadratureType)
-  CALL GetValue(obj=param, prefix=prefix, key="alpha", VALUE=obj%alpha)
-  CALL GetValue(obj=param, prefix=prefix, key="beta", VALUE=obj%beta)
-  CALL GetValue(obj=param, prefix=prefix, key="lambda", VALUE=obj%lambda)
-  CALL GetValue(obj=param, prefix=prefix, key="order", VALUE=obj%order)
-  CALL GetValue(obj=param, prefix=prefix, key="nips", VALUE=obj%nips)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE InitiateFromParamInHomogeneous
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
@@ -228,10 +99,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                               Deallocate
+!                                                                  Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate

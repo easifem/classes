@@ -127,8 +127,14 @@ CONTAINS
     obj_GetQuadraturePoints
   !! Get quadrature points in the cell
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
-  !! Get quadrature points in the cell
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
+  !! Get quadrature points on line
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetQuadraturePoints
+  !! Get quadrature points on triangle
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
+  !! Get quadrature points on quadrangle
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
@@ -143,8 +149,23 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set the quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureType
+  !! Set the quadrature type on line
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureType
+  !! Set the quadrature type on triangle
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureType
+  !! Set the quadrature type on Quadrangle
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of accuracy
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_SetOrder
+  !! Set the order of quadrature on line
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetOrder
+  !! Set the order of quadrature on triangle
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetOrder
+  !! Set the order of quadrature on Quadrangle
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetNips => obj_SetNips
   !! Set the number of integration points
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetAlpha => obj_SetAlpha
@@ -427,6 +448,38 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                     Triangle_GetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on triangle
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_GetQuadraturePoints(obj, quad)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Triangle_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    Quadrangle_GetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on Quadrangle
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_GetQuadraturePoints(obj, quad)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Quadrangle_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                            GetFacetQuadraturePoint@Methods
 !----------------------------------------------------------------------------
 
@@ -476,6 +529,71 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                            SetOrder@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder(obj, order, order1, order2, order3)
+    CLASS(QuadratureOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    Line_SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy on line
+
+INTERFACE
+  MODULE SUBROUTINE Line_SetOrder(obj, order)
+    CLASS(QuadratureOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE Line_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Triangle_SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy on triangle
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_SetOrder(obj, order)
+    CLASS(QuadratureOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE Triangle_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              Quadrangle_SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy on Quadrangle
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_SetOrder(obj, order, order1, order2)
+    CLASS(QuadratureOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+  END SUBROUTINE Quadrangle_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   SetQuadratureType@Methods
 !----------------------------------------------------------------------------
 
@@ -495,21 +613,51 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            SetOrder@Methods
+!                                           Line_SetQuadratureType@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-17
-! summary: Set the order of accuracy
+! summary: Set type of quadrature on line
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetOrder(obj, order, order1, order2, order3)
-    CLASS(QuadratureOpt_), INTENT(inout) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
-  END SUBROUTINE obj_SetOrder
+  MODULE SUBROUTINE Line_SetQuadratureType(obj, quadratureType)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+  END SUBROUTINE Line_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       Triangle_SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set type of quadrature on triangle
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_SetQuadratureType(obj, quadratureType)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+  END SUBROUTINE Triangle_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     Quadrangle_SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set type of quadrature on Quadrangle
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+  END SUBROUTINE Quadrangle_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------
