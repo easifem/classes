@@ -22,6 +22,12 @@ USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
 
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
+                                          InterpolationPoint_Quadrangle_
+
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
+                                    InterpolationPoint_Line_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -212,6 +218,112 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
+#endif
+
+INTEGER(I4B) :: p, q, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+p = order(1)
+q = p
+
+tsize = SIZE(order)
+isok = tsize .GT. 1
+IF (isok) q = order(2)
+
+ans = GetTotalDOF_Line(order=p, baseContinuity="H1", &
+                       baseInterpolation="Lagrange")
+
+tsize = GetTotalDOF_Line(order=q, baseContinuity="H1", &
+                         baseInterpolation="Lagrange")
+
+ans = ans * tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalInterpolationPoints
+
+!----------------------------------------------------------------------------
+!                                                      GetInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
+#endif
+
+REAL(DFP) :: alpha1, beta1, lambda1, alpha2, beta2, lambda2
+INTEGER(I4B) :: ipType1, ipType2, order1, order2, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+alpha1 = 0.0_DFP; beta1 = 0.0_DFP; lambda1 = 0.5_DFP
+alpha2 = 0.0_DFP; beta2 = 0.0_DFP; lambda2 = 0.5_DFP
+
+order1 = order(1)
+order2 = order1
+tsize = SIZE(order)
+isok = tsize .GT. 1
+IF (isok) order2 = order(2)
+
+ipType1 = ipType(1)
+ipType2 = ipType1
+tsize = SIZE(ipType)
+isok = tsize .GT. 1
+IF (isok) ipType2 = ipType(2)
+
+IF (PRESENT(alpha)) THEN
+  alpha1 = alpha(1)
+  alpha2 = alpha1
+  tsize = SIZE(alpha)
+  isok = tsize .GT. 1
+  IF (isok) alpha2 = alpha(2)
+END IF
+
+IF (PRESENT(beta)) THEN
+  beta1 = beta(1)
+  beta2 = beta1
+  tsize = SIZE(beta)
+  isok = tsize .GT. 1
+  IF (isok) beta2 = beta(2)
+END IF
+
+IF (PRESENT(lambda)) THEN
+  lambda1 = lambda(1)
+  lambda2 = lambda1
+  tsize = SIZE(lambda)
+  isok = tsize .GT. 1
+  IF (isok) lambda2 = lambda(2)
+END IF
+
+CALL InterpolationPoint_Quadrangle_( &
+  p=order1, q=order2, ipType1=ipType1, ipType2=ipType2, ans=ans, &
+  nrow=nrow, ncol=ncol, layout="VEFC", xij=xij, alpha1=alpha1, beta1=beta1, &
+  lambda1=lambda1, alpha2=alpha2, beta2=beta2, lambda2=lambda2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
