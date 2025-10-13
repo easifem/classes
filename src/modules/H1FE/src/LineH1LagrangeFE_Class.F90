@@ -89,7 +89,7 @@ INTERFACE LineH1LagrangeFEPointer
 END INTERFACE LineH1LagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                                       LagrangeFE@Methods
+!                                                          LagrangeFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -158,7 +158,7 @@ INTERFACE FiniteElementDeallocate
 END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                               GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -282,7 +282,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
+!                                        GetTotalInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -303,7 +303,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
+!                                              GetInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -328,6 +328,33 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
+    CLASS(LineH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

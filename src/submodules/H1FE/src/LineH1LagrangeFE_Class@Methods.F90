@@ -387,7 +387,7 @@ IF (PRESENT(beta)) beta0 = beta(1)
 IF (PRESENT(lambda)) lambda0 = lambda(1)
 
 ! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
-CALL InterpolationPoint_Line_(&
+CALL InterpolationPoint_Line_( &
   order=order(1), ipType=ipType(1), ans=ans, nrow=nrow, ncol=ncol, &
   layout="VEFC", xij=xij, alpha=alpha0, beta=beta0, lambda=lambda0)
 
@@ -396,6 +396,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+CALL obj%opt%LineH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                                geoelemsd=geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
