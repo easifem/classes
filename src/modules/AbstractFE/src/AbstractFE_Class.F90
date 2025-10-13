@@ -93,10 +93,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set quadrature type
 
@@ -108,15 +108,12 @@ CONTAINS
   !! returns the topoType
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for cell element
@@ -140,6 +137,14 @@ CONTAINS
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
   !! Get total number of quadrature points
 
+  ! GET:
+  ! @InterpolationMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+    obj_GetInterpolationPoints
+  !! Get Interpolation points in cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
+  !! Get total number of Interpolation points
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -159,18 +164,13 @@ END TYPE AbstractFEPointer_
 ! summary: Initiates an instance of the finite element
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, elemType, nsd, baseContinuity, &
-                                 baseInterpolation, feType, ipType, &
-                                 basisType, alpha, beta, lambda, dofType, &
-                                 transformType, order, anisoOrder, &
-                                 cellOrder, faceOrder, edgeOrder, &
-                                 cellOrient, faceOrient, edgeOrient, tcell, &
-                                 tface, tedge, errCheck, &
-                                 quadratureIsHomogeneous, quadratureType, &
-                                 quadratureOrder, quadratureIsOrder, &
-                                 quadratureNips, quadratureIsNips, &
-                                 quadratureAlpha, quadratureBeta, &
-                                 quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, elemType, nsd, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, order, &
+    anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, faceOrient, &
+    edgeOrient, tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -372,29 +372,19 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-                                 faceOrder, cellOrder, fetype, elemType, &
-                                 topoType, elemIndx, ipType, basisType, &
-                                 alpha, beta, lambda, dofType, &
-                                 transformType, refElemDomain, &
-                                 baseContinuity, baseInterpolation, &
-                                 isIsotropicOrder, isAnisotropicOrder, &
-                                 isEdgeOrder, isFaceOrder, isCellOrder, &
-                                 tEdgeOrder, tFaceOrder, tCellOrder, &
-                                 quadratureIsHomogeneous, quadratureType, &
-                                 quadratureType1, quadratureType2, &
-                                 quadratureType3, quadratureOrder, &
-                                 quadratureOrder1, quadratureOrder2, &
-                                 quadratureOrder3, quadratureIsOrder, &
-                                 quadratureNips, quadratureNips1, &
-                                 quadratureNips2, quadratureNips3, &
-                                 quadratureIsNips, quadratureAlpha, &
-                                 quadratureAlpha1, quadratureAlpha2, &
-                                 quadratureAlpha3, quadratureBeta, &
-                                 quadratureBeta1, quadratureBeta2, &
-                                 quadratureBeta3, quadratureLambda, &
-                                 quadratureLambda1, quadratureLambda2, &
-                                 quadratureLambda3)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+    elemType, topoType, elemIndx, ipType, basisType, alpha, beta, lambda, &
+    dofType, transformType, refElemDomain, baseContinuity, &
+    baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+    isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureType1, &
+    quadratureType2, quadratureType3, quadratureOrder, quadratureOrder1, &
+    quadratureOrder2, quadratureOrder3, quadratureIsOrder, quadratureNips, &
+    quadratureNips1, quadratureNips2, quadratureNips3, quadratureIsNips, &
+    quadratureAlpha, quadratureAlpha1, quadratureAlpha2, quadratureAlpha3, &
+    quadratureBeta, quadratureBeta1, quadratureBeta2, quadratureBeta3, &
+    quadratureLambda, quadratureLambda1, quadratureLambda2, quadratureLambda3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -763,7 +753,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         SetOrder@SetMethods
+!                                              SetQuadratureOrder@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -879,5 +869,58 @@ INTERFACE
     CHARACTER(2) :: ans
   END FUNCTION obj_GetBaseContinuity
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                           GetTotalInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Get total number of interpolation points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
+    obj, order, ipType) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation in x, y, and z directions
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type in x, y, and z directions
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GetInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInterpolationPoints( &
+    obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! data written in xij
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
+    !! Jacobi and Ultraspherical parameters
+  END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractFE_Class
