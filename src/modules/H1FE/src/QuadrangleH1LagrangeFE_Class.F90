@@ -35,7 +35,7 @@ PUBLIC :: FiniteElementDeallocate
 CHARACTER(*), PARAMETER :: modName = "QuadrangleH1LagrangeFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                           QuadrangleH1LagrangeFE_
+!                                                     QuadrangleH1LagrangeFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -58,6 +58,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set the quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
+    obj_GetTotalInterpolationPoints
+  !! Get total number of interpolation points
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+    obj_GetInterpolationPoints
+  !! Get the interpolation points
 END TYPE QuadrangleH1LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -277,6 +283,55 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
   END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                           GetTotalInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Get total number of interpolation points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
+    obj, order, ipType) RESULT(ans)
+    CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation in x, y, and z directions
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type in x, y, and z directions
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GetInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInterpolationPoints( &
+    obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
+    CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! data written in xij
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
+    !! Jacobi and Ultraspherical parameters
+  END SUBROUTINE obj_GetInterpolationPoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
