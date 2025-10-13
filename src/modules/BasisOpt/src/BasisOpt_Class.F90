@@ -284,9 +284,21 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature points
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
+  !! Set quadrature order on line element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureOrder
+  !! Set quadrature order on triangle element
+PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
+  !! Set quadrature order on Quadrangle element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureType
+  !! Set quadrature type on line element
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureType
+  !! Set quadrature type on Triangle element
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureType
+  !! Set quadrature type on Quadrangle element
 
   !GET:
   ! @GetMethods
@@ -319,6 +331,15 @@ CONTAINS
     obj_GetQuadraturePoints
   !! Get quadrature points
 
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
+  !! Get quadrature points for line element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetQuadraturePoints
+  !! Get quadrature points for Triangle element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
+  !! Get quadrature points for Quadrangle element
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Get quadrature points on the facet
@@ -339,8 +360,18 @@ CONTAINS
   !! Get local element shape data for LineH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_SetOrder
   !! Set the order of Quadrature points
-  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
-  !! Get quadrature points for line element
+
+  !@ TriangleH1LagrangeFEMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetLocalElemShapeData
+  !! Get local element shape data for TriangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_SetOrder
+  !! Set the order of Quadrature points
+
+  !@ QuadrangleH1LagrangeFEMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetLocalElemShapeData
+  !! Get local element shape data for QuadrangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_SetOrder
+  !! Set the order of Quadrature points
 
 END TYPE BasisOpt_
 
@@ -745,6 +776,53 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                          Line_SetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy for line elements
+
+INTERFACE
+  MODULE SUBROUTINE Line_SetQuadratureOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE Line_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      Triangle_SetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy for Triangle elements
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_SetQuadratureOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE Triangle_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    Quadrangle_SetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order of accuracy for Quadrangle elements
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_SetQuadratureOrder(obj, order, order1, order2)
+    CLASS(BasisOpt_), INTENT(inout) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+  END SUBROUTINE Quadrangle_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                           ResetAnisotropicOrder@SetMethods
 !----------------------------------------------------------------------------
 
@@ -880,6 +958,54 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
   END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           Line_SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the quadrature type on line element
+
+INTERFACE
+  MODULE SUBROUTINE Line_SetQuadratureType(obj, quadratureType)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+  END SUBROUTINE Line_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       Triangle_SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the quadrature type on Triangle element
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_SetQuadratureType(obj, quadratureType)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+  END SUBROUTINE Triangle_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     Quadrangle_SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the quadrature type on Quadrangle element
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+  END SUBROUTINE Quadrangle_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1212,7 +1338,55 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GetLocalElemShapeData@LineH1LagrangeMethods
+!                                          Line_GetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on line
+
+INTERFACE
+  MODULE SUBROUTINE Line_GetQuadraturePoints(obj, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Line_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       TriangleGetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on Triangle
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_GetQuadraturePoints(obj, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Triangle_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     QuadrangleGetQuadraturePoint@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on Quadrangle
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_GetQuadraturePoints(obj, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE Quadrangle_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                     LineH1LagFE_GetLocalElemShapeData@LineH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -1224,7 +1398,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      SetLagrangeOrder@LineH1LagrangeMethods
+!                                  LineH1LagFE_SetOrder@LineH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1240,19 +1414,59 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         LineGetQuadraturePoint@GetMethods
+!            TriangleH1LagFE_GetLocalElemShapeData@TriangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE TriangleH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+  END SUBROUTINE TriangleH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                          TriangleH1LagFE_SetOrder@TriangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-07-15
-! summary: Get the quadrature points on line
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
 
 INTERFACE
-  MODULE SUBROUTINE Line_GetQuadraturePoints(obj, quad)
+  MODULE SUBROUTINE TriangleH1LagFE_SetOrder(obj, order)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of Lagrange finite element
+  END SUBROUTINE TriangleH1LagFE_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!         QuadrangleH1LagFE_GetLocalElemShapeData@QuadrangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-  END SUBROUTINE Line_GetQuadraturePoints
+  END SUBROUTINE QuadrangleH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                      QuadrangleH1LagFE_SetOrder@QuadrangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1LagFE_SetOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of Lagrange finite element
+  END SUBROUTINE QuadrangleH1LagFE_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

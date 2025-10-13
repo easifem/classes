@@ -267,6 +267,73 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetQuadratureOrder
 
 !----------------------------------------------------------------------------
+!                                                    Line_SetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Line_SetOrder(order=order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                 Triangle_SetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Triangle_SetOrder(order=order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                               Quadrangle_SetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Quadrangle_SetOrder(order=order, order1=order1, &
+                                     order2=order2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
 !                                                         SetQuadratureType
 !----------------------------------------------------------------------------
 
@@ -289,6 +356,74 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                     Line_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Line_SetQuadratureType(quadratureType=quadratureType)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                 Triangle_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Triangle_SetQuadratureType(quadratureType=quadratureType)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                Quadrangle_SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Quadrangle_SetQuadratureType( &
+  quadratureType=quadratureType, quadratureType1=quadratureType1, &
+  quadratureType2=quadratureType2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_SetQuadratureType
 
 !----------------------------------------------------------------------------
 !                                                              Include error

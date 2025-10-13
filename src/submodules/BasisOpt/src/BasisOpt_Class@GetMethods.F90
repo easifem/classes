@@ -438,6 +438,50 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Line_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                Triangle_GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_GetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_GetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Triangle_GetQuadraturePoints(quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                              Quadrangle_GetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_GetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_GetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Quadrangle_GetQuadraturePoints(quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                           Include error
 !----------------------------------------------------------------------------
 
