@@ -302,6 +302,9 @@ PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
   !GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemCoord => obj_GetRefElemCoord
+  !! Get the reference element coordiantes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
 
@@ -1005,24 +1008,36 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  GetRefElemCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Get the reference element coordinates
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetRefElemCoord(obj, ans, nrow, ncol)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    INTEGER(I4B), INTENT(OUT) :: ncol
+  END SUBROUTINE obj_GetRefElemCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         GetParam@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, nsd, order, anisoOrder, edgeOrder, &
-                                 faceOrder, cellOrder, fetype, elemType, &
-                                 topoType, elemIndx, ipType, &
-                                 basisType, alpha, beta, lambda, &
-                                 dofType, transformType, refElemDomain, &
-                                 baseContinuity, baseInterpolation, &
-                                 isIsotropicOrder, isAnisotropicOrder, &
-                                 isEdgeOrder, isFaceOrder, isCellOrder, &
-                                 tEdgeOrder, tFaceOrder, tCellOrder, &
-                                 quadratureIsHomogeneous, quadratureType, &
-                                 quadratureOrder, quadratureNips, &
-                                 quadratureIsOrder, quadratureIsNips, &
-                                 quadratureAlpha, quadratureBeta, &
-                                 quadratureLambda)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+    elemType, topoType, elemIndx, ipType, basisType, alpha, beta, lambda, &
+    dofType, transformType, refElemDomain, baseContinuity, &
+    baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+    isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(BasisOpt_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension

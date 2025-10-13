@@ -765,6 +765,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalInterpolationPoints
 
 !----------------------------------------------------------------------------
+!                                                            GetRefElemCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRefElemCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetRefElemCoord()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%GetRefElemCoord(ans=ans, nrow=nrow, ncol=ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetRefElemCoord
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

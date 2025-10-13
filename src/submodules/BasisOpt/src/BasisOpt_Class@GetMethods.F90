@@ -18,6 +18,7 @@
 
 SUBMODULE(BasisOpt_Class) GetMethods
 USE Display_Method, ONLY: ToString, Display
+USE ReferenceElement_Method, ONLY: GetTotalNodes
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 HierarchicalElemShapeData, &
                                 Elemsd_Set => Set, &
@@ -26,6 +27,30 @@ USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
 
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                          GetRefElemCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRefElemCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetRefElemCoord()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = 3
+ncol = GetTotalNodes(obj%topoType)
+ans(1:nrow, 1:ncol) = obj%refelemCoord(1:nrow, 1:ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetRefElemCoord
 
 !----------------------------------------------------------------------------
 !                                                                    GetParam

@@ -103,6 +103,9 @@ CONTAINS
   !GET:
   ! @GetMethods
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRefElemCoord => &
+    obj_GetRefElemCoord
+  !! Get the coordinates of reference element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
@@ -541,6 +544,24 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetRefElemCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Get the reference element coordinates
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetRefElemCoord(obj, ans, nrow, ncol)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Reference element coordinates
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! Number of data written in ans
+  END SUBROUTINE obj_GetRefElemCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------

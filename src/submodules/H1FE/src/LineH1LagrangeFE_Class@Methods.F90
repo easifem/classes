@@ -22,6 +22,9 @@ USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
 
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
+                                    InterpolationPoint_Line_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -337,6 +340,62 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                      GetInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = GetTotalDOF_Line(order=order(1), baseContinuity="H1", &
+                       baseInterpolation="Lagrange")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalInterpolationPoints
+
+!----------------------------------------------------------------------------
+!                                                      GetInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
+#endif
+
+REAL(DFP) :: alpha0, beta0, lambda0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+alpha0 = 0.0_DFP; beta0 = 0.0_DFP; lambda0 = 0.5_DFP
+
+IF (PRESENT(alpha)) alpha0 = alpha(1)
+IF (PRESENT(beta)) beta0 = beta(1)
+IF (PRESENT(lambda)) lambda0 = lambda(1)
+
+! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
+CALL InterpolationPoint_Line_(&
+  order=order(1), ipType=ipType(1), ans=ans, nrow=nrow, ncol=ncol, &
+  layout="VEFC", xij=xij, alpha=alpha0, beta=beta0, lambda=lambda0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
