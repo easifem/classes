@@ -16,4 +16,8 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(${PROJECT_NAME} PRIVATE ${src_path}/LineH1LagrangeFE_Class.F90)
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/LineH1LagrangeFE_Class.F90
+          ${src_path}/TriangleH1LagrangeFE_Class.F90
+          ${src_path}/QuadrangleH1LagrangeFE_Class.F90)

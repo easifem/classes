@@ -49,6 +49,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
 END TYPE LineH1LagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -227,6 +231,43 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order for quadrature
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
+    CLASS(LineH1LagrangeFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+  END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuadratureType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary:  Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
+    CLASS(LineH1LagrangeFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+  END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------

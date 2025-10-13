@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LineH1LagrangeFE_Class) Methods
+SUBMODULE(QuadrangleH1LagrangeFE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
@@ -26,12 +26,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1LagrangeFEPointer
+!                                              QuadrangleH1LagrangeFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1LagrangeFEPointer1
+MODULE PROCEDURE obj_QuadrangleH1LagrangeFEPointer1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1LagrangeFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = "obj_QuadrangleH1LagrangeFEPointer1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -46,21 +46,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1LagrangeFEPointer1
+END PROCEDURE obj_QuadrangleH1LagrangeFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                     LineH1LagrangeFEPointer
+!                                              QuadrangleH1LagrangeFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1LagrangeFEPointer2
+MODULE PROCEDURE obj_QuadrangleH1LagrangeFEPointer2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1LagrangeFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "obj_QuadrangleH1LagrangeFEPointer2()"
 #endif
-
-INTEGER(I4B) :: basisType0(1), cellOrient0(1), quadratureType0(1), &
-                quadratureOrder0(1)
-REAL(DFP) :: alpha0(1), beta0(1), lambda0(1), quadratureAlpha0(1), &
-             quadratureBeta0(1), quadratureLambda0(1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -68,35 +63,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ALLOCATE (ans)
-
-basisType0(1) = Input(option=basisType, default=TypePolynomialOpt%default)
-alpha0(1) = Input(option=alpha, default=0.0_DFP)
-beta0(1) = Input(option=beta, default=0.0_DFP)
-lambda0(1) = Input(option=lambda, default=0.0_DFP)
-cellOrient0(1) = Input(option=cellOrient, default=1_I4B)
-quadratureType0(1) = Input(option=quadratureType, &
-                           default=TypeInterpolationOpt%default)
-quadratureAlpha0(1) = Input(option=quadratureAlpha, default=0.0_DFP)
-quadratureBeta0(1) = Input(option=quadratureBeta, default=0.0_DFP)
-quadratureLambda0(1) = Input(option=quadratureLambda, default=0.0_DFP)
-quadratureOrder0(1) = Input(option=quadratureOrder, default=order)
 
 CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", ipType=ipType, basisType=basisType0, &
-  alpha=alpha0, beta=beta0, lambda=lambda0, &
-  fetype=TypeFEVariableOpt%scalar, order=order, cellOrient=cellOrient0, &
-  tcell=1_I4B, quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder0, quadratureType=quadratureType0, &
-  quadratureAlpha=quadratureAlpha0, quadratureBeta=quadratureBeta0, &
-  quadratureLambda=quadratureLambda0)
+  elemType=TypeElemNameOpt%Quadrangle, nsd=nsd, baseContinuity="H1", &
+  baseInterpolation="Lagrange", fetype=TypeFEVariableOpt%scalar, &
+  ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+  order=order, cellOrient=cellOrient, tCell=3_I4B, faceOrient=faceOrient, &
+  tFace=4_I4B, quadratureIsHomogeneous=quadratureIsHomogeneous, &
+  quadratureIsOrder=.TRUE., quadratureOrder=quadratureOrder, &
+  quadratureType=quadratureType, quadratureAlpha=quadratureAlpha, &
+  quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1LagrangeFEPointer2
+END PROCEDURE obj_QuadrangleH1LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                       GetLocalElemShapeData
@@ -112,7 +95,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL obj%opt%QuadrangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, &
+                                                     quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -130,41 +114,28 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: order0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+isok = PRESENT(order) .OR. PRESENT(anisoOrder)
+CALL AssertError1(isok, myName, &
+                  "either order or anisoOrder must be provided")
+#endif
+
 isok = PRESENT(order)
 
 IF (isok) THEN
-  CALL obj%opt%LineH1LagFE_SetOrder(order=order)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
+  order0 = order
+ELSE
+  order0 = anisoOrder(1)
 END IF
 
-isok = PRESENT(anisoOrder)
-IF (isok) THEN
-  CALL obj%opt%LineH1LagFE_SetOrder(order=anisoOrder(1))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-CALL AssertError1(.FALSE., myName, &
-                  "either order or anisoOrder must be provided")
-#endif
+CALL obj%opt%QuadrangleH1LagFE_SetOrder(order=order0)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -187,7 +158,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%Line_GetQuadraturePoints(quad=quad)
+CALL obj%opt%Quadrangle_GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -204,61 +175,13 @@ MODULE PROCEDURE obj_SetQuadratureOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
 #endif
 
-LOGICAL(LGT) :: isok
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-isok = PRESENT(order)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureOrder(order=order(1))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(order1)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureOrder(order=order1)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(order2)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureOrder(order=order2)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(order3)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureOrder(order=order3)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-CALL AssertError1(.FALSE., myName, &
-                  'order, order1, order2, or order3 must be provided')
-#endif
+CALL obj%opt%Quadrangle_SetQuadratureOrder(order=order, order1=order1, &
+                                           order2=order2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -275,62 +198,14 @@ MODULE PROCEDURE obj_SetQuadratureType
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
 #endif
 
-LOGICAL(LGT) :: isok
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-isok = PRESENT(quadratureType)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureType(quadratureType=quadratureType(1))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(quadratureType1)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureType(quadratureType=quadratureType1)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(quadratureType2)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureType(quadratureType=quadratureType2)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-isok = PRESENT(quadratureType3)
-IF (isok) THEN
-  CALL obj%opt%Line_SetQuadratureType(quadratureType=quadratureType3)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-CALL AssertError1(.FALSE., myName, &
-                  'quadratureType, quadratureType1, quadratureType2, or &
-                  &quadratureType3 must be provided')
-#endif
+CALL obj%opt%Quadrangle_SetQuadratureType( &
+  quadratureType=quadratureType, quadratureType1=quadratureType1, &
+  quadratureType2=quadratureType2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -20,6 +20,7 @@ MODULE TriangleH1LagrangeFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ExceptionHandler_Class, ONLY: e
+USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 
 IMPLICIT NONE
 
@@ -34,7 +35,7 @@ PUBLIC :: FiniteElementDeallocate
 CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                       TriangleH1LagrangeFE_
+!                                                           TriangleH1LagrangeFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -42,10 +43,25 @@ CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
 ! summary:  Scalar H1 Lagrange Finite Element
 
 TYPE, EXTENDS(AbstractFE_) :: TriangleH1LagrangeFE_
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order of shape functions
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
+  !! Get the quadrature points
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
+  !! Set the quadrature order
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
+  !! Set the quadrature type
 END TYPE TriangleH1LagrangeFE_
 
 !----------------------------------------------------------------------------
-!                                                TriangleH1LagrangeFEPointer_
+!                                                    TriangleH1LagrangeFEPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: TriangleH1LagrangeFEPointer_
@@ -53,7 +69,7 @@ TYPE :: TriangleH1LagrangeFEPointer_
 END TYPE TriangleH1LagrangeFEPointer_
 
 !----------------------------------------------------------------------------
-!                                         TriangleH1LagrangeFEPointer@Methods
+!                                             TriangleH1LagrangeFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -67,7 +83,7 @@ INTERFACE TriangleH1LagrangeFEPointer
 END INTERFACE TriangleH1LagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                         TriangleH1LagrangeFEPointer@Methods
+!                                                       LagrangeFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -76,7 +92,10 @@ END INTERFACE TriangleH1LagrangeFEPointer
 
 INTERFACE TriangleH1LagrangeFEPointer
   MODULE FUNCTION obj_TriangleH1LagrangeFEPointer2( &
-    nsd, ipType, basisType, alpha, beta, lambda, order) RESULT(ans)
+    order, nsd, ipType, basisType, cellOrient, faceOrient, quadratureType, &
+    quadratureOrder) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: order
+    !! Isotropic Order of finite element
     INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
     INTEGER(I4B), INTENT(IN) :: ipType
@@ -84,12 +103,16 @@ INTERFACE TriangleH1LagrangeFEPointer
     !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
     !! Basis type: Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameters
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Isotropic Order of finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
+    !! Orientation of cell
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! number of rows in faceorient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    !! Quadrature type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
+    !! Order of quadrature
     TYPE(TriangleH1LagrangeFE_), POINTER :: ans
     !! TriangleH1LagrangeFE_ pointer
   END FUNCTION obj_TriangleH1LagrangeFEPointer2
@@ -122,6 +145,130 @@ INTERFACE FiniteElementDeallocate
     TYPE(TriangleH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder( &
+    obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
+    faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    !! aniso tropic order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order
+    !! size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points
+
+! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
+! alpha, beta, lambda, xij)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+  END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order for quadrature
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+  END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuadratureType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary:  Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+  END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
