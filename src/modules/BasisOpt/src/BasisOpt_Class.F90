@@ -35,7 +35,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class"
-CHARACTER(*), PARAMETER :: myprefix = "BasisOpt"
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
 INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
@@ -302,9 +301,6 @@ PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
 
   !GET:
   ! @GetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get prefix
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
@@ -1237,21 +1233,6 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTopologyType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get the prefix of the object for parameter list
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(BasisOpt_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
