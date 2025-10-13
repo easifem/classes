@@ -120,13 +120,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and
   !! local face number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
-  !! Get global element shape data
 
   ! GET:
   ! @QuadratureMethods
