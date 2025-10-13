@@ -33,7 +33,7 @@ USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
 
 USE ReallocateUtility, ONLY: Reallocate
 
-USE SwapUtility, ONLY: SWAP_
+USE SwapUtility, ONLY: SWAP_, SWAP
 
 IMPLICIT NONE
 
@@ -133,6 +133,61 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE LineH1LagFE_SetOrder
+
+!----------------------------------------------------------------------------
+!                                          LineH1LagFE_GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LineH1LagFE_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+INTEGER(I4B) :: nns, nips, nsd, xidim, tsize, ii, jj
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nns = geoelemsd%nns
+nips = geoelemsd%nips
+nsd = geoelemsd%nsd
+xidim = geoelemsd%xidim
+
+CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                N=geoelemsd%N(1:nns, 1:nips), &
+                dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
+isok = (nns .NE. elemsd%nns) .AND. &
+       (obj%cellOrient(1) .EQ. -1_I4B) .AND. &
+       (nns .GT. 2_I4B)
+
+! If notIsoparametric,
+! cellorient .ne. 1,
+! nns .GT. 2
+! then we need to reverse the order
+! of shape functions (the internal ones)
+
+IF (isok) THEN
+  tsize = elemsd%nns / 2
+  DO ii = 1, tsize
+    jj = elemsd%nns - ii + 1
+    CALL SWAP(elemsd%N(ii, 1:nips), elemsd%N(jj, 1:nips))
+    CALL SWAP(elemsd%dNdXi(ii, 1:xidim, 1:nips), &
+              elemsd%dNdXi(jj, 1:xidim, 1:nips))
+    CALL SWAP(elemsd%dNdXt(ii, 1:nsd, 1:nips), &
+              elemsd%dNdXi(jj, 1:nsd, 1:nips))
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE LineH1LagFE_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                      Error

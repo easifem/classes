@@ -77,10 +77,11 @@ CALL SetRealType(a=obj%lambda, b=lambda, n=obj%xidim)
 
 obj%elemIndx = GetElementIndex(obj%topoType)
 
-CALL obj%SetOrder(order=order, anisoOrder=anisoOrder, cellOrder=cellOrder, &
-            faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-                  faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
-                  tface=tface, tedge=tedge, errCheck=errCheck)
+CALL obj%SetOrder( &
+  order=order, anisoOrder=anisoOrder, cellOrder=cellOrder, &
+  faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+  faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
+  tface=tface, tedge=tedge, errCheck=errCheck)
 
 CALL obj%quadOpt%Initiate(isHomogeneous=quadratureIsHomogeneous, &
                           quadratureType=quadratureType, &

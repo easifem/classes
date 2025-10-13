@@ -42,9 +42,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 isok = PRESENT(errCheck)
 IF (isok) THEN
-  IF (errCheck) CALL CheckErrorLagrange(obj=obj, &
-                                        order=order, &
-                                        anisoOrder=anisoOrder)
+  IF (errCheck) CALL CheckErrorLagrange( &
+    obj=obj, order=order, anisoOrder=anisoOrder)
 END IF
 #endif
 
