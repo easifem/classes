@@ -79,29 +79,40 @@ CALL Display(obj%ipType, msg="ipType: ", unitno=unitno)
 CALL Display(obj%order, msg="order: ", unitno=unitno)
 CALL Display(obj%anisoOrder, msg="anisoOrder: ", unitno=unitno)
 
-IF (obj%isEdgeOrder) THEN
-  IF (obj%tEdgeOrder .GT. 0_I4B) THEN
-    CALL Display(obj%edgeOrder(:obj%tEdgeOrder), msg="edgeOrder: ", &
-                 unitno=unitno)
-
-    CALL Display(obj%edgeOrient(:obj%tEdgeOrder), msg="edgeOrient: ", &
-                 unitno=unitno)
-  END IF
+isok = obj%isEdgeOrder .AND. (obj%tEdgeOrder .GT. 0_I4B)
+IF (isok) THEN
+  CALL Display(obj%edgeOrder(1:obj%tEdgeOrder), msg="edgeOrder: ", &
+               unitno=unitno)
 END IF
 
-IF (obj%isFaceOrder) THEN
-  isok = obj%tFaceOrder .GT. 0_I4B
-  IF (isok) THEN
-    CALL Display(obj%faceOrder(1:3, 1:obj%tFaceOrder), msg="faceOrder: ", &
-                 unitno=unitno)
-    CALL Display(obj%faceOrient(1:3, 1:obj%tFaceOrder), msg="faceOrient: ", &
-                 unitno=unitno)
-  END IF
+isok = obj%isEdgeOrient .AND. (obj%tEdgeOrder .GT. 0_I4B)
+IF (isok) THEN
+  CALL Display(obj%edgeOrient(:obj%tEdgeOrder), msg="edgeOrient: ", &
+               unitno=unitno)
 END IF
 
-IF (obj%isCellOrder) THEN
-  CALL Display(obj%cellOrder, msg="cellOrder: ", unitno=unitno)
-  CALL Display(obj%cellOrient, msg="cellOrient: ", unitno=unitno)
+isok = obj%isFaceOrder .AND. (obj%tFaceOrder .GT. 0_I4B)
+IF (isok) THEN
+  CALL Display(obj%faceOrder(1:3, 1:obj%tFaceOrder), msg="faceOrder: ", &
+               unitno=unitno)
+END IF
+
+isok = obj%isFaceOrient .AND. (obj%tFaceOrder .GT. 0_I4B)
+IF (isok) THEN
+  CALL Display(obj%faceOrient(1:3, 1:obj%tFaceOrder), msg="faceOrient: ", &
+               unitno=unitno)
+END IF
+
+isok = (obj%tCellOrder .GT. 0_I4B) .AND. obj%isCellOrder
+IF (isok) THEN
+  CALL Display(obj%cellOrder(1:obj%tCellOrder), msg="cellOrder: ", &
+               unitno=unitno)
+END IF
+
+isok = obj%isCellOrient .AND. (obj%tCellOrder .GT. 0_I4B)
+IF (isok) THEN
+  CALL Display(obj%CellOrient(1:obj%tCellOrder), msg="cellOrient: ", &
+               unitno=unitno)
 END IF
 
 CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)

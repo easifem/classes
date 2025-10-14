@@ -21,6 +21,8 @@ USE LagrangePolynomialUtility, ONLY: LagrangeDOF
 USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString, Display
+USE InputUtility, ONLY: Input
+USE BasisOptUtility, ONLY: SetIntegerType
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 HierarchicalElemShapeData
 
@@ -115,38 +117,20 @@ IF (PRESENT(alpha)) obj%alpha = alpha
 IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
 
-CALL obj%quadOpt%SetParam(isHomogeneous=quadratureIsHomogeneous, &
-                          quadratureType=quadratureType, &
-                          quadratureType1=quadratureType1, &
-                          quadratureType2=quadratureType2, &
-                          quadratureType3=quadratureType3, &
-                          order=quadratureOrder, &
-                          order1=quadratureOrder1, &
-                          order2=quadratureOrder2, &
-                          order3=quadratureOrder3, &
-                          nips=quadratureNips, &
-                          nips1=quadratureNips1, &
-                          nips2=quadratureNips2, &
-                          nips3=quadratureNips3, &
-                          alpha=quadratureAlpha, &
-                          alpha1=quadratureAlpha1, &
-                          alpha2=quadratureAlpha2, &
-                          alpha3=quadratureAlpha3, &
-                          beta=quadratureBeta, &
-                          beta1=quadratureBeta1, &
-                          beta2=quadratureBeta2, &
-                          beta3=quadratureBeta3, &
-                          lambda=quadratureLambda, &
-                          lambda1=quadratureLambda1, &
-                          lambda2=quadratureLambda2, &
-                          lambda3=quadratureLambda3, &
-                          nsd=nsd, &
-                          topoType=topoType, &
-                          isOrder=quadratureIsOrder, &
-                          isNips=quadratureIsNips, &
-                          xidim=xidim, &
-                          refelemDomain=refelemDomain, &
-                          refelemCoord=refelemCoord)
+CALL obj%quadOpt%SetParam( &
+  isHomogeneous=quadratureIsHomogeneous, quadratureType=quadratureType, &
+  quadratureType1=quadratureType1, quadratureType2=quadratureType2, &
+  quadratureType3=quadratureType3, order=quadratureOrder, &
+  order1=quadratureOrder1, order2=quadratureOrder2, &
+  order3=quadratureOrder3, nips=quadratureNips, nips1=quadratureNips1, &
+  nips2=quadratureNips2, nips3=quadratureNips3, alpha=quadratureAlpha, &
+  alpha1=quadratureAlpha1, alpha2=quadratureAlpha2, &
+  alpha3=quadratureAlpha3, beta=quadratureBeta, beta1=quadratureBeta1, &
+  beta2=quadratureBeta2, beta3=quadratureBeta3, lambda=quadratureLambda, &
+  lambda1=quadratureLambda1, lambda2=quadratureLambda2, &
+  lambda3=quadratureLambda3, nsd=nsd, topoType=topoType, &
+  isOrder=quadratureIsOrder, isNips=quadratureIsNips, xidim=xidim, &
+  refelemDomain=refelemDomain, refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -156,7 +140,379 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                         SetCellOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetCellOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrientation()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+
+IF (errCheck0) THEN
+  isok = PRESENT(cellOrient)
+  CALL AssertError1(isok, myName, "cellOrient is not present")
+
+  isok = PRESENT(tCell)
+  CALL AssertError1(isok, myName, "tCell is not present")
+
+  tsize = SIZE(cellOrient)
+  isok = tCell .LE. tsize
+  CALL AssertError1(isok, myName, &
+                    "size of cellOrient is not enough. tCell = "// &
+                    ToString(tCell)//", size(cellOrient) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isCellOrient = PRESENT(cellOrient)
+isok = PRESENT(tCell)
+IF (isok) obj%tCellOrder = tCell
+
+IF (obj%isCellOrient) CALL SetIntegerType(a=obj%cellOrient, &
+                                          n=obj%tCellOrder, b=cellOrient)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetCellOrientation
+
+!----------------------------------------------------------------------------
+!                                                         SetFaceOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFaceOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFaceOrientation()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+errCheck0 = errCheck0 .AND. (obj%xidim .GE. 2)
+
+IF (errCheck0) THEN
+  isok = PRESENT(tFace)
+  CALL AssertError1(isok, myName, "tFace is not present")
+
+  isok = PRESENT(faceOrient)
+  CALL AssertError1(isok, myName, "faceOrient is not present")
+
+  tsize = SIZE(faceOrient, 1)
+  isok = tsize .EQ. 3
+  CALL AssertError1(isok, myName, &
+           "rowsize in faceOrient should be 3.  but size(faceOrient,1) = "// &
+                    ToString(tsize))
+
+  tsize = SIZE(faceOrient, 2)
+  isok = tsize .GE. tFace
+  CALL AssertError1(isok, myName, &
+                    "colsize in faceOrient is not enough. tFace = "// &
+                    ToString(tFace)//", size(faceOrient, 2) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isFaceOrient = PRESENT(faceOrient)
+isok = PRESENT(tFace)
+IF (isok) obj%tFaceOrder = tFace
+
+IF (obj%isFaceOrient) CALL SetIntegerType(a=obj%faceOrient, b=faceOrient, &
+                                          nrow=3, ncol=obj%tFaceOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFaceOrientation
+
+!----------------------------------------------------------------------------
+!                                                         SetEdgeOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetEdgeOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetEdgeOrientation()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+errCheck0 = errCheck0 .AND. (obj%xidim .GE. 3)
+
+IF (errCheck0) THEN
+  isok = PRESENT(edgeOrient)
+  CALL AssertError1(isok, myName, "edgeOrient is not present")
+
+  isok = PRESENT(tedge)
+  CALL AssertError1(isok, myName, "tedge is not present")
+
+  tsize = SIZE(edgeOrient)
+  isok = tsize .GE. tedge
+  CALL AssertError1(isok, myName, &
+                    "size of edgeOrient is not enough. tedge = "// &
+                    ToString(tedge)//", size(edgeOrient) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isEdgeOrient = PRESENT(edgeOrient)
+isok = PRESENT(tEdge)
+IF (isok) obj%tEdgeOrder = tEdge
+
+IF (obj%isEdgeOrient) CALL SetIntegerType(a=obj%edgeOrient, &
+                                          n=obj%tEdgeOrder, b=edgeOrient)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetEdgeOrientation
+
+!----------------------------------------------------------------------------
+!                                                               SetCellOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+
+IF (errCheck0) THEN
+  isok = PRESENT(cellOrder)
+  CALL AssertError1(isok, myName, "cellOrder is not present")
+
+  isok = PRESENT(tCell)
+  CALL AssertError1(isok, myName, "tCell is not present")
+
+  tsize = SIZE(cellOrder)
+  isok = tCell .LE. tsize
+  CALL AssertError1(isok, myName, &
+                    "size of cellOrder is not enough. tCell = "// &
+                    ToString(tCell)//", size(cellOrder) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isCellOrder = PRESENT(cellOrder)
+isok = PRESENT(tCell)
+IF (isok) obj%tCellOrder = tCell
+
+IF (obj%isCellOrder) CALL SetIntegerType(a=obj%cellOrder, &
+                                         n=obj%tCellOrder, b=cellOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetCellOrder
+
+!----------------------------------------------------------------------------
+!                                                               SetFaceOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFaceOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFaceOrder()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+errCheck0 = errCheck0 .AND. (obj%xidim .GE. 2)
+
+IF (errCheck0) THEN
+  isok = PRESENT(tFace)
+  CALL AssertError1(isok, myName, "tFace is not present")
+
+  isok = PRESENT(faceOrder)
+  CALL AssertError1(isok, myName, "faceOrder is not present")
+
+  tsize = SIZE(faceOrder, 1)
+  isok = tsize .EQ. 3
+  CALL AssertError1(isok, myName, &
+             "rowsize in faceOrder should be 3.  but size(faceOrder,1) = "// &
+                    ToString(tsize))
+
+  tsize = SIZE(faceOrder, 2)
+  isok = tsize .GE. tFace
+  CALL AssertError1(isok, myName, &
+                    "colsize in faceOrder is not enough. tFace = "// &
+                    ToString(tFace)//", size(faceOrder, 2) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isFaceOrder = PRESENT(faceOrder)
+isok = PRESENT(tFace)
+IF (isok) obj%tFaceOrder = tFace
+
+IF (obj%isFaceOrder) CALL SetIntegerType(a=obj%faceOrder, b=faceOrder, &
+                                         nrow=3, ncol=obj%tFaceOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFaceOrder
+
+!----------------------------------------------------------------------------
+!                                                               SetEdgeOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetEdgeOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetEdgeOrder()"
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: errCheck0
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+errCheck0 = Input(option=errCheck, default=.FALSE.)
+errCheck0 = errCheck0 .AND. (obj%xidim .GE. 3)
+
+IF (errCheck0) THEN
+  isok = PRESENT(edgeOrder)
+  CALL AssertError1(isok, myName, "edgeOrder is not present")
+
+  isok = PRESENT(tEdge)
+  CALL AssertError1(isok, myName, "tEdge is not present")
+
+  tsize = SIZE(edgeOrder)
+  isok = tsize .GE. tEdge
+  CALL AssertError1(isok, myName, &
+                    "size of edgeOrder is not enough. tEdge = "// &
+                    ToString(tEdge)//", size(edgeOrder) = "// &
+                    ToString(tsize))
+END IF
+#endif
+
+obj%isEdgeOrder = PRESENT(edgeOrder)
+isok = PRESENT(tEdge)
+IF (isok) obj%tEdgeOrder = tEdge
+
+IF (obj%isEdgeOrder) CALL SetIntegerType(a=obj%edgeOrder, n=obj%tEdgeOrder, &
+                                         b=edgeOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetEdgeOrder
+
+!----------------------------------------------------------------------------
+!                                                          SetIsotropicOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetIsotropicOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetIsotropicOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isIsotropicOrder = PRESENT(order)
+IF (obj%isIsotropicOrder) THEN
+  CALL obj%ResetAnisotropicOrder()
+  obj%order = order
+  obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoType)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetIsotropicOrder
+
+!----------------------------------------------------------------------------
+!                                                        SetAnisotropicOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetAnisotropicOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetAnisotropicOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isAnisotropicOrder = PRESENT(anisoOrder)
+IF (obj%isAnisotropicOrder) THEN
+  CALL obj%ResetIsotropicOrder()
+  CALL SetIntegerType(a=obj%anisoOrder, b=anisoOrder, n=obj%xidim)
+  obj%tdof = LagrangeDOF( &
+             p=obj%anisoOrder(1), q=obj%anisoOrder(2), r=obj%anisoOrder(3), &
+             elemType=obj%topoType)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetAnisotropicOrder
+
+!----------------------------------------------------------------------------
+!                                                                   SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrder
@@ -169,21 +525,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-SELECT CASE (obj%baseInterpolation)
-CASE ("LAGR")
-  CALL obj%SetLagrangeOrder(order=order, anisoOrder=anisoOrder, &
-                            errCheck=errCheck)
+SELECT CASE (obj%baseInterpolation(1:1))
+CASE ("L") !! Lagrange
+  CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
+                              errCheck=.FALSE.)
 
-CASE ("HIER", "HEIR")
-  CALL obj%SetHierarchicalOrder( &
-    cellOrder=cellOrder, faceOrder=faceOrder, edgeOrder=edgeOrder, &
-    cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
-    errCheck=errCheck, tcell=tcell, tface=tface, tedge=tedge)
+  CALL obj%SetFaceOrientation(faceOrient=faceOrient, tFace=tFace, &
+                              errCheck=.FALSE.)
+
+  CALL obj%SetEdgeOrientation(edgeOrient=edgeOrient, tEdge=tEdge, &
+                              errCheck=.FALSE.)
+
+  CALL obj%SetIsotropicOrder(order=order, errCheck=errCheck)
+
+  CALL obj%SetAnisotropicOrder(anisoOrder=anisoOrder, errCheck=errCheck)
+
+CASE ("H") !! Hierarchical
+  CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
+                              errCheck=errCheck)
+
+  CALL obj%SetFaceOrientation(faceOrient=faceOrient, tFace=tFace, &
+                              errCheck=errCheck)
+
+  CALL obj%SetEdgeOrientation(edgeOrient=edgeOrient, tEdge=tEdge, &
+                              errCheck=errCheck)
+
+  CALL obj%SetCellOrder(cellOrder=cellOrder, tCell=tCell, errCheck=errCheck)
+  CALL obj%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, errCheck=errCheck)
+  CALL obj%SetEdgeOrder(edgeOrder=edgeOrder, tEdge=tEdge, errCheck=errCheck)
+
+  obj%tdof = HierarchicalDOF(elemType=obj%topoType, cellOrder=obj%cellOrder, &
+                             faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder)
 
 #ifdef DEBUG_VER
 CASE DEFAULT
   CALL AssertError1(.FALSE., myName, &
-                    'No case found for baseInterpolation is not defined.')
+                    'No case found for baseInterpolation.')
 #endif
 
 END SELECT

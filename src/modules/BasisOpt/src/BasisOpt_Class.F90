@@ -261,35 +261,46 @@ CONTAINS
   ! SET:
   ! @SetMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ResetAnisotropicOrder => &
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  !! Set the cell order
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  !! Set the face order
+  PROCEDURE, PUBLIC, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+  !! Set the edge order
+  PROCEDURE, PUBLIC, PASS(obj) :: SetIsotropicOrder => obj_SetIsotropicOrder
+  !! Set the isotropic order
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAnisotropicOrder => &
+    obj_SetAnisotropicOrder
+  !! Set the anisotropic order
+  PROCEDURE, PASS(obj) :: ResetAnisotropicOrder => &
     obj_ResetAnisotropicOrder
   !! Reset anisotropic order to factory settings
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ResetIsotropicOrder => &
+  PROCEDURE, PASS(obj) :: ResetIsotropicOrder => &
     obj_ResetIsotropicOrder
   !! Reset isotropic order ot factory settings
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetLagrangeOrder => &
+  PROCEDURE, PASS(obj) :: SetLagrangeOrder => &
     obj_SetLagrangeOrder
   !! Set the order of Lagrange finite elements, this is a private method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetHierarchicalOrder => &
+  PROCEDURE, PASS(obj) :: SetHierarchicalOrder => &
     obj_SetHierarchicalOrder
   !! Set the order of Hierarchical finite elements, private method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
+  PROCEDURE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Set the total number of degrees of freedom
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature points
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
   !! Set quadrature order on line element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureOrder
   !! Set quadrature order on triangle element
-PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
   !! Set quadrature order on Quadrangle element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set quadrature type
   PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureType
@@ -298,6 +309,14 @@ PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
   !! Set quadrature type on Triangle element
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureType
   !! Set quadrature type on Quadrangle element
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCellOrientation => obj_SetCellOrientation
+  !! Set the cell orientation
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFaceOrientation => &
+    obj_SetFaceOrientation
+  !! Set the facet orientation
+  PROCEDURE, PUBLIC, PASS(obj) :: SetEdgeOrientation => &
+    obj_SetEdgeOrientation
+  !! Set the Edge orientation
 
   !GET:
   ! @GetMethods
@@ -604,29 +623,19 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, nsd, xidim, order, anisoOrder, &
-                                 edgeOrder, faceOrder, cellOrder, fetype, &
-                                 elemType, topoType, elemIndx, ipType, &
-                                 basisType, alpha, beta, lambda, dofType, &
-                                 transformType, refElemDomain, refelemCoord, &
-                                 baseContinuity, baseInterpolation, &
-                                 isIsotropicOrder, isAnisotropicOrder, &
-                                 isEdgeOrder, isFaceOrder, isCellOrder, &
-                                 tEdgeOrder, tFaceOrder, tCellOrder, &
-                                 quadratureIsHomogeneous, quadratureType, &
-                                 quadratureType1, quadratureType2, &
-                                 quadratureType3, quadratureOrder, &
-                                 quadratureOrder1, quadratureOrder2, &
-                                 quadratureOrder3, quadratureIsOrder, &
-                                 quadratureNips, quadratureNips1, &
-                                 quadratureNips2, quadratureNips3, &
-                                 quadratureIsNips, quadratureAlpha, &
-                                 quadratureAlpha1, quadratureAlpha2, &
-                                 quadratureAlpha3, quadratureBeta, &
-                                 quadratureBeta1, quadratureBeta2, &
-                                 quadratureBeta3, quadratureLambda, &
-                                 quadratureLambda1, quadratureLambda2, &
-                                 quadratureLambda3)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, nsd, xidim, order, anisoOrder, edgeOrder, faceOrder, cellOrder, &
+    fetype, elemType, topoType, elemIndx, ipType, basisType, alpha, beta, &
+    lambda, dofType, transformType, refElemDomain, refelemCoord, &
+    baseContinuity, baseInterpolation, isIsotropicOrder, isAnisotropicOrder, &
+  isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureType1, &
+    quadratureType2, quadratureType3, quadratureOrder, quadratureOrder1, &
+    quadratureOrder2, quadratureOrder3, quadratureIsOrder, quadratureNips, &
+    quadratureNips1, quadratureNips2, quadratureNips3, quadratureIsNips, &
+    quadratureAlpha, quadratureAlpha1, quadratureAlpha2, quadratureAlpha3, &
+    quadratureBeta, quadratureBeta1, quadratureBeta2, quadratureBeta3, &
+    quadratureLambda, quadratureLambda1, quadratureLambda2, quadratureLambda3)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -732,14 +741,85 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              SetCellOrientation@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Set the cell orientation
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCellOrientation(obj, cellOrient, tCell, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetCellOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetFaceOrientation@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary:  Set the face orientation
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFaceOrientation(obj, faceOrient, tFace, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! Size(faceOrient, 1) should be 3
+    !! Size(faceOrient, 2) should be at least tFace
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetFaceOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              SetEdgeOrientation@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary:  Set the edge orientation
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetEdgeOrientation(obj, edgeOrient, tEdge, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! size of edgeOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetEdgeOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         SetOrder@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary:  Set the order and orientation in finite element
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetOrder(obj, order, anisoOrder, cellOrder, &
-                                 faceOrder, edgeOrder, cellOrient, &
-                                 faceOrient, edgeOrient, tcell, &
-                                 tface, tedge, errCheck)
+  MODULE SUBROUTINE obj_SetOrder( &
+    obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
+    faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
@@ -774,6 +854,112 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetCellOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Set the cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCellOrder(obj, cellOrder, tCell, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetFaceOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Set the face order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFaceOrder(obj, faceOrder, tFace, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetFaceOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    SetEdgeOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Set the edge order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetEdgeOrder(obj, edgeOrder, tEdge, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetEdgeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetIsotropicOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-14
+! summary: Set isotropic order
+!
+!# Introduction
+!
+! This routine is needed for Lagrage finite element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetIsotropicOrder(obj, order, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+  END SUBROUTINE obj_SetIsotropicOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetIsotropicOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-14
+! summary: Set isotropic order
+!
+!# Introduction
+!
+! This routine is needed for Lagrange finite element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetAnisotropicOrder(obj, anisoOrder, errCheck)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+  END SUBROUTINE obj_SetAnisotropicOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
