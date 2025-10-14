@@ -46,7 +46,10 @@ TYPE, EXTENDS(AbstractFE_) :: LineH1LagrangeFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get the local element shape data
+  !! Get the Local element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get the Global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &

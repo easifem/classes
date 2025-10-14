@@ -130,6 +130,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE QuadrangleH1LagFE_SetOrder
 
 !----------------------------------------------------------------------------
+!                                     QuadrangleH1LagFE_GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE QuadrangleH1LagFE_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName= "QuadrangleH1LagFE_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE QuadrangleH1LagFE_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                                      Error
 !----------------------------------------------------------------------------
 

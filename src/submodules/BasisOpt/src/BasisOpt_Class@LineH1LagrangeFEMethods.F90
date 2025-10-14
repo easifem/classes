@@ -160,19 +160,17 @@ CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
                 N=geoelemsd%N(1:nns, 1:nips), &
                 dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 
-isok = (nns .NE. elemsd%nns) .AND. &
+isok = (nns .NE. elemsd%nns) .AND. obj%isCellOrient .AND. &
        (obj%cellOrient(1) .EQ. -1_I4B) .AND. &
-       (nns .GT. 2_I4B)
+       (elemsd%nns .GT. 2_I4B)
 
-! If notIsoparametric,
-! cellorient .ne. 1,
-! nns .GT. 2
-! then we need to reverse the order
-! of shape functions (the internal ones)
+! If notIsoparametric and isCellOrient and (cellorient .ne. 1) and
+! (nns .GT. 2)
+! then we need to reverse the order of shape functions (the internal ones)
 
 IF (isok) THEN
   tsize = elemsd%nns / 2
-  DO ii = 1, tsize
+  DO ii = 3, tsize
     jj = elemsd%nns - ii + 1
     CALL SWAP(elemsd%N(ii, 1:nips), elemsd%N(jj, 1:nips))
     CALL SWAP(elemsd%dNdXi(ii, 1:xidim, 1:nips), &

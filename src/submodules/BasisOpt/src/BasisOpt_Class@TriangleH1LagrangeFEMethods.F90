@@ -35,12 +35,14 @@ USE ReallocateUtility, ONLY: Reallocate
 
 USE SwapUtility, ONLY: SWAP_
 
+USE ReverseUtility, ONLY: Reverse
+
 IMPLICIT NONE
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                           TriangleH1LagFE_GetLocalElemShapeData
+!                                       TriangleH1LagFE_GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE TriangleH1LagFE_GetLocalElemShapeData
@@ -104,7 +106,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE TriangleH1LagFE_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                        TriangleH1LagFE_SetOrder
+!                                                    TriangleH1LagFE_SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE TriangleH1LagFE_SetOrder
@@ -128,6 +130,89 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE TriangleH1LagFE_SetOrder
+
+!----------------------------------------------------------------------------
+!                                      TriangleH1LagFE_GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE TriangleH1LagFE_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+INTEGER(I4B) :: nns, nips, nsd, xidim, n1, n2
+LOGICAL(LGT) :: isok, bool1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nns = geoelemsd%nns
+nips = geoelemsd%nips
+nsd = geoelemsd%nsd
+xidim = geoelemsd%xidim
+
+CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                N=geoelemsd%N(1:nns, 1:nips), &
+                dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
+bool1 = (nns .NE. elemsd%nns) .AND. (obj%order .GT. 2_I4B) &
+        .AND. obj%isFaceOrient
+
+IF (.NOT. bool1) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+n1 = 1; n2 = 3
+! Edge-1: dof starts from 3+1 to 3+obj%order-1
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 1) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+! Edge-2: dof starts from 3+1 to 3+obj%order-1
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 2) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+! Edge-3: dof starts from 3+1 to 3+obj%order-1
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 3) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE TriangleH1LagFE_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                      Error
