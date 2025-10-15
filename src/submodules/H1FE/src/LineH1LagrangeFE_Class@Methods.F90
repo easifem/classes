@@ -398,7 +398,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
-!
+!                                                      GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
