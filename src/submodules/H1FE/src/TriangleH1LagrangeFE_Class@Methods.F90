@@ -374,11 +374,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
 CALL obj%opt%TriangleH1LagFE_GetLocalFacetElemShapeData( &
   elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
   localFaceNumber=localFaceNumber)

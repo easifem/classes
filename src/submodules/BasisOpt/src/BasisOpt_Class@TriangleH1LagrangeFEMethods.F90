@@ -235,11 +235,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
 CALL obj%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 nips = GetTotalQuadraturePoints(obj=facetQuad)
