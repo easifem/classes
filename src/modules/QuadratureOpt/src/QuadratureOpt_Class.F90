@@ -136,9 +136,18 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
   !! Get quadrature points on quadrangle
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
+    obj_GetFacetQuadraturePoints
   !! Get quadrature points on the local face of the cell
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetFacetQuadraturePoints
+  !! Get quadrature points on line and local face of line
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetFacetQuadraturePoints
+  !! Get quadrature points on triangle and local facet of triangle
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetFacetQuadraturePoints
+  !! Get quadrature points on quadrangle and local facet of quadrangle
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
@@ -496,6 +505,63 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number of the cell
   END SUBROUTINE obj_GetFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        Line_GetFacetQuadraturePoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on local face of the cell
+
+INTERFACE
+  MODULE SUBROUTINE Line_GetFacetQuadraturePoints( &
+    obj, quad, facetQuad, localFaceNumber)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number of the cell
+  END SUBROUTINE Line_GetFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    Triangle_GetFacetQuadraturePoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on local face of the cell
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_GetFacetQuadraturePoints( &
+    obj, quad, facetQuad, localFaceNumber)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number of the cell
+  END SUBROUTINE Triangle_GetFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    Quadrangle_GetFacetQuadraturePoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-15
+! summary: Get the quadrature points on local face of the cell
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_GetFacetQuadraturePoints( &
+    obj, quad, facetQuad, localFaceNumber)
+    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number of the cell
+  END SUBROUTINE Quadrangle_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

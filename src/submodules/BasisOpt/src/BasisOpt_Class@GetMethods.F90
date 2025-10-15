@@ -321,6 +321,75 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                               Line_GetFacetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_GetFacetQuadraturePoints1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Line_GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                           Triangle_GetFacetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_GetFacetQuadraturePoints1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Triangle_GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                        Quadrangle_GetFacetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_GetFacetQuadraturePoints1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%Quadrangle_GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                   GetTotalQuadraturePoints
 !----------------------------------------------------------------------------
 

@@ -55,6 +55,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get the quadrature points
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
+    obj_GetFacetQuadraturePoints
+  !! Get the quadrature points on a local face of element
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set the quadrature order
@@ -267,6 +270,24 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  GetFacetQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points on a local face of element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
+                                                 localFaceNumber)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

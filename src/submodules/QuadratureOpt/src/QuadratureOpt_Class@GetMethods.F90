@@ -22,7 +22,8 @@ USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger, &
                                   QuadraturePoint_Initiate => Initiate, &
                                   GetTotalQuadraturePoints, &
-                                  InitiateFacetQuadrature
+                                  InitiateFacetQuadrature, &
+                                  GetQuadratureWeights_
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: TypeElemNameOpt
 
@@ -30,12 +31,16 @@ USE LineInterpolationUtility, ONLY: QuadraturePoint_Line_, &
                                     QuadratureNumber_Line
 
 USE TriangleInterpolationUtility, ONLY: QuadraturePoint_Triangle_, &
-                                        QuadratureNumber_Triangle
+                                        QuadratureNumber_Triangle, &
+                                        FacetConnectivity_Triangle
 
 USE QuadrangleInterpolationUtility, ONLY: QuadraturePoint_Quadrangle_, &
-                                          QuadratureNumber_Quadrangle
+                                          QuadratureNumber_Quadrangle, &
+                                          FacetConnectivity_Quadrangle
 
 USE ReallocateUtility, ONLY: Reallocate
+
+USE MappingUtility, ONLY: FromBiUnitLine2Segment_
 
 IMPLICIT NONE
 
@@ -267,6 +272,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Line_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                Line_GetFacetQuadraturePoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_GetFacetQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                 Triangle_GetQuadraturePoint
 !----------------------------------------------------------------------------
 
@@ -314,7 +344,133 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Triangle_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                 Quadrangle_GetQuadraturePoint
+!                                            Triangle_GetFacetQuadraturePoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_GetFacetQuadraturePoints()"
+#endif
+
+INTEGER(I4B) :: nips(1), nrow, ncol, faceCon(2, 3)
+REAL(DFP) :: x1(3), x2(3)
+REAL(DFP), PARAMETER :: reflineCoord(1, 2) = &
+                        RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (obj%isOrder .AND. obj%isNips) THEN
+  CALL AssertError1(.TRUE., myName, &
+                    "Both isOrder and isNips is set, I am confuse what to do")
+END IF
+#endif
+
+nips(1) = obj%nips(1)
+IF (obj%isOrder) THEN
+  nips(1) = QuadratureNumber_Line(order=obj%order(1), &
+                                  quadtype=obj%quadratureType(1))
+END IF
+
+nrow = obj%xidim + 1
+CALL Reallocate(quad%points, nrow, nips(1))
+CALL Reallocate(facetQuad%points, 2, nips(1))
+quad%txi = obj%xidim
+facetQuad%txi = 1
+
+!! Get quadrature points on [-1, 1]
+CALL QuadraturePoint_Line_( &
+  nips=nips, quadType=obj%quadratureType(1), layout="INCREASING", &
+  xij=reflineCoord, alpha=obj%alpha(1), beta=obj%beta(1), &
+  lambda=obj%lambda(1), ans=facetQuad%points, nrow=nrow, ncol=ncol)
+
+facecon(1:2, 1:3) = FacetConnectivity_Triangle()
+x1(1:obj%xidim) = obj%refelemCoord(1:obj%xidim, facecon(1, localFaceNumber))
+x2(1:obj%xidim) = obj%refelemCoord(1:obj%xidim, facecon(2, localFaceNumber))
+
+! Map quadrature points from[-1, 1] to the face of quadrangle
+CALL FromBiUnitLine2Segment_( &
+  xin=facetQuad%points(1, 1:nips(1)), x1=x1(1:obj%xidim), &
+  x2=x2(1:obj%xidim), ans=quad%points, nrow=nrow, ncol=ncol)
+
+! Get weights from faceQuad to quad
+CALL GetQuadratureWeights_( &
+  obj=facetQuad, weights=quad%points(obj%xidim + 1, :), tsize=ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                         Quadrangle_GetFacetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_GetFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_GetFacetQuadraturePoints()"
+#endif
+
+REAL(DFP), PARAMETER :: reflineCoord(1, 2) = &
+                        RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
+INTEGER(I4B) :: nips(1), nrow, ncol, faceCon(2, 4)
+REAL(DFP) :: x1(3), x2(3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (obj%isOrder .AND. obj%isNips) THEN
+  CALL AssertError1(.TRUE., myName, &
+                    "Both isOrder and isNips is set, I am confuse what to do")
+END IF
+#endif
+
+nips(1) = obj%nips(1)
+IF (obj%isOrder) THEN
+  nips(1) = QuadratureNumber_Line(order=obj%order(1), &
+                                  quadType=obj%quadratureType(1))
+END IF
+
+nrow = obj%xidim + 1
+CALL Reallocate(quad%points, nrow, nips(1))
+CALL Reallocate(facetQuad%points, 2, nips(1))
+quad%txi = obj%xidim
+facetQuad%txi = 1
+
+!! Get quadrature points on [-1, 1]
+CALL QuadraturePoint_Line_( &
+  nips=nips, quadType=obj%quadratureType(1), layout="INCREASING", &
+  xij=reflineCoord, alpha=obj%alpha(1), beta=obj%beta(1), &
+  lambda=obj%lambda(1), ans=facetQuad%points, nrow=nrow, ncol=ncol)
+
+facecon(1:2, 1:4) = FacetConnectivity_Quadrangle()
+x1(1:obj%xidim) = obj%refelemCoord(1:obj%xidim, facecon(1, localFaceNumber))
+x2(1:obj%xidim) = obj%refelemCoord(1:obj%xidim, facecon(2, localFaceNumber))
+
+! Map quadrature points from[-1, 1] to the face of quadrangle
+CALL FromBiUnitLine2Segment_( &
+  xin=facetQuad%points(1, 1:nips(1)), x1=x1(1:obj%xidim), &
+  x2=x2(1:obj%xidim), ans=quad%points, nrow=nrow, ncol=ncol)
+
+! Get weights from faceQuad to quad
+CALL GetQuadratureWeights_( &
+  obj=facetQuad, weights=quad%points(obj%xidim + 1, :), tsize=ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                               Quadrangle_GetQuadraturePoint
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Quadrangle_GetQuadraturePoints
@@ -336,13 +492,12 @@ IF (obj%isOrder .AND. obj%isNips) THEN
 END IF
 #endif
 
+nips = obj%nips(1:2)
 IF (obj%isOrder) THEN
   nips = QuadratureNumber_Quadrangle( &
          p=obj%order(1), q=obj%order(2), quadType1=obj%quadratureType(1), &
          quadType2=obj%quadratureType(2))
 
-ELSE
-  nips = obj%nips(1:2)
 END IF
 
 nrow = obj%xidim + 1
