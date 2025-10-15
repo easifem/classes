@@ -326,6 +326,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
+!                                                     GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%QuadrangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                                      geoelemsd=geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

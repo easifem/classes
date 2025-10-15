@@ -17,23 +17,19 @@
 
 SUBMODULE(BasisOpt_Class) QuadrangleH1LagrangeFEMethods
 USE Display_Method, ONLY: ToString, Display
-
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Set => Set, &
                                 LagrangeFacetElemShapeData, &
                                 Elemsd_Allocate => ALLOCATE
-
 USE QuadrangleInterpolationUtility, ONLY: LagrangeDOF_Quadrangle, &
                                           InterpolationPoint_Quadrangle_, &
                                           LagrangeEvalAll_Quadrangle_, &
                                           LagrangeGradientEvalAll_Quadrangle_
-
 USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
                                   GetQuadratureWeights_
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE SwapUtility, ONLY: SWAP_
+USE ReverseUtility, ONLY: Reverse
 
 IMPLICIT NONE
 
@@ -105,7 +101,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE QuadrangleH1LagFE_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                        QuadrangleH1LagFE_SetOrder
+!                                                  QuadrangleH1LagFE_SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE QuadrangleH1LagFE_SetOrder
@@ -130,23 +126,94 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE QuadrangleH1LagFE_SetOrder
 
 !----------------------------------------------------------------------------
-!                                     QuadrangleH1LagFE_GetGlobalElemShapeData
+!                                    QuadrangleH1LagFE_GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE QuadrangleH1LagFE_GetGlobalElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName= "QuadrangleH1LagFE_GetGlobalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
+
+INTEGER(I4B) :: nns, nips, nsd, xidim, n1, n2
+LOGICAL(LGT) :: isok, bool1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+nns = geoelemsd%nns
+nips = geoelemsd%nips
+nsd = geoelemsd%nsd
+xidim = geoelemsd%xidim
+
+CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
+                N=geoelemsd%N(1:nns, 1:nips), &
+                dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
+bool1 = (nns .NE. elemsd%nns) .AND. (obj%order .GT. 2_I4B) &
+        .AND. obj%isFaceOrient
+
+IF (.NOT. bool1) THEN
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
+  RETURN
+END IF
+
+n1 = 1; n2 = 4
+! Edge-1: 1 --> 2
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 1) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+! Edge-2: 2 --> 3
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 2) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+! Edge-3: 3 --> 4
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 3) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
+
+! Edge-4: 4 --> 1
+n1 = n2 + 1; n2 = n2 + obj%order - 1
+isok = bool1 .AND. (obj%faceOrient(1, 4) .EQ. -1_I4B)
+IF (isok) THEN
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

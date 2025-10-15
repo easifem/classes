@@ -47,6 +47,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get Global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
@@ -175,6 +178,33 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
+    CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
