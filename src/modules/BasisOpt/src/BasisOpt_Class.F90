@@ -283,12 +283,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ResetIsotropicOrder => &
     obj_ResetIsotropicOrder
   !! Reset isotropic order ot factory settings
-  PROCEDURE, PASS(obj) :: SetLagrangeOrder => &
-    obj_SetLagrangeOrder
-  !! Set the order of Lagrange finite elements, this is a private method
-  PROCEDURE, PASS(obj) :: SetHierarchicalOrder => &
-    obj_SetHierarchicalOrder
-  !! Set the order of Hierarchical finite elements, private method
   PROCEDURE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Set the total number of degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
@@ -1050,62 +1044,6 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
   !! Basis options
   END SUBROUTINE obj_ResetIsotropicOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetLagrangeOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLagrangeOrder(obj, order, anisoOrder, errCheck)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
-  END SUBROUTINE obj_SetLagrangeOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    SetHierarchicalOrder@HierarchicalMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order in hierarchical basis functions
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetHierarchicalOrder(obj, cellOrder, faceOrder, &
-                                             edgeOrder, cellOrient, &
-                                             faceOrient, edgeOrient, &
-                                             errCheck, tcell, tface, tedge)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! eddge orient
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Check the eror in debug mode
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder
-  END SUBROUTINE obj_SetHierarchicalOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

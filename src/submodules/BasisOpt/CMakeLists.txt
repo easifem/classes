@@ -20,8 +20,6 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/BasisOptUtility.F90
           ${src_path}/BasisOpt_Class@ConstructorMethods.F90
-          ${src_path}/BasisOpt_Class@LagrangeMethods.F90
-          ${src_path}/BasisOpt_Class@HierarchicalMethods.F90
           ${src_path}/BasisOpt_Class@IOMethods.F90
           ${src_path}/BasisOpt_Class@TomlMethods.F90
           ${src_path}/BasisOpt_Class@SetMethods.F90

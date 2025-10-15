@@ -374,9 +374,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%Line_GetLocalFacetElemShapeData( &
-  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
-  localFaceNumber=localFaceNumber)
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! CALL obj%opt%Line_GetLocalFacetElemShapeData( &
+!   elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+!   localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
