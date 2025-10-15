@@ -321,15 +321,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
 
@@ -379,6 +379,8 @@ CONTAINS
   !@ LineH1LagrangeFEMethods
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
   !! Get local element shape data for LineH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalFacetElemShapeData
+  !! Get local element shape data for LineH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_SetOrder
   !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetGlobalElemShapeData
@@ -387,6 +389,8 @@ CONTAINS
   !@ TriangleH1LagrangeFEMethods
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetLocalElemShapeData
   !! Get local element shape data for TriangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetLocalFacetElemShapeData
+  !! Get local element shape data for TriangleH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_SetOrder
   !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetGlobalElemShapeData
@@ -394,6 +398,8 @@ CONTAINS
 
   !@ QuadrangleH1LagrangeFEMethods
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetLocalElemShapeData
+  !! Get local element shape data for QuadrangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetLocalFacetElemShapeData
   !! Get local element shape data for QuadrangleH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_SetOrder
   !! Set the order of Quadrature points
@@ -1291,72 +1297,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  Line_GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get local facet element shape data
-
-INTERFACE
-  MODULE SUBROUTINE Line_GetLocalFacetElemShapeData( &
-    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    !! element shape data on cell
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
-    !! Quadrature points on each facet element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-  END SUBROUTINE Line_GetLocalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              Triangle_GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get local facet element shape data
-
-INTERFACE
-  MODULE SUBROUTINE Triangle_GetLocalFacetElemShapeData( &
-    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    !! element shape data on cell
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
-    !! Quadrature points on each facet element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-  END SUBROUTINE Triangle_GetLocalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                            Quadrangle_GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get local facet element shape data
-
-INTERFACE
-  MODULE SUBROUTINE Quadrangle_GetLocalFacetElemShapeData( &
-    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    !! element shape data on cell
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
-    !! Quadrature points on each facet element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-  END SUBROUTINE Quadrangle_GetLocalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                          GetGlobalElemShapeData@GetMethhods
 !----------------------------------------------------------------------------
 
@@ -1644,12 +1584,38 @@ END INTERFACE
 !                     LineH1LagFE_GetLocalElemShapeData@LineH1LagrangeMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-15
+! summary:  Get local element shape data for line H1 lagrange FE
+
 INTERFACE
   MODULE SUBROUTINE LineH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE LineH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                       Line_GetLocalFacetElemShapeData@LineH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE LineH1LagFE_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE LineH1LagFE_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1700,12 +1666,38 @@ END INTERFACE
 !            TriangleH1LagFE_GetLocalElemShapeData@TriangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-15
+! summary: Get local element shape data for Triangle H1 lagrange FE
+
 INTERFACE
   MODULE SUBROUTINE TriangleH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE TriangleH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!        TriangleH1LagFE_GetLocalFacetElemShapeData@TriangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE TriangleH1LagFE_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE TriangleH1LagFE_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1760,8 +1752,30 @@ INTERFACE
   MODULE SUBROUTINE QuadrangleH1LagFE_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE QuadrangleH1LagFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!    QuadrangleH1LagFE_GetLocalFacetElemShapeData@QuadrangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1LagFE_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE QuadrangleH1LagFE_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

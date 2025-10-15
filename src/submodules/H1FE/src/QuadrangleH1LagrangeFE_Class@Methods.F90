@@ -111,6 +111,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%QuadrangleH1LagFE_GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                                    SetOrder
 !----------------------------------------------------------------------------
 

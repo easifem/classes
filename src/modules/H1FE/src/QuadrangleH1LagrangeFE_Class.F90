@@ -46,7 +46,10 @@ TYPE, EXTENDS(AbstractFE_) :: QuadrangleH1LagrangeFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get local element shape data
+  !! Get local element shape data on quadrangle
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
+    obj_GetLocalFacetElemShapeData
+  !! Get local element shape data on a facet of quadrangle
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get Global element shape data
@@ -181,6 +184,24 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -188,6 +188,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE LineH1LagFE_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                     LineH1LagFE_GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LineH1LagFE_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "LineH1LagFE_GetLocalFacetElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE LineH1LagFE_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                                      Error
 !----------------------------------------------------------------------------
 
