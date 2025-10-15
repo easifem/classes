@@ -1353,6 +1353,72 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                  Line_GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE Line_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE Line_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                              Triangle_GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE Triangle_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                            Quadrangle_GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE Quadrangle_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          GetGlobalElemShapeData@GetMethhods
 !----------------------------------------------------------------------------
 
