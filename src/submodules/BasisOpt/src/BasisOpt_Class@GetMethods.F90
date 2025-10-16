@@ -188,38 +188,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                     GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-#endif
-
-INTEGER(I4B) :: nns, nips, nsd, xidim
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-nns = geoelemsd%nns
-nips = geoelemsd%nips
-nsd = geoelemsd%nsd
-xidim = geoelemsd%xidim
-
-CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
-                N=geoelemsd%N(1:nns, 1:nips), &
-                dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_GetGlobalElemShapeData
-
-!----------------------------------------------------------------------------
 !                                               Line_GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 

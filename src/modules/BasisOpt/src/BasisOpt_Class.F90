@@ -319,10 +319,6 @@ CONTAINS
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
-  !! Get global element shape data
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
@@ -1227,33 +1223,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
   END SUBROUTINE obj_GetLocalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethhods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get global element shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, xij, elemsd, geoelemsd)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
