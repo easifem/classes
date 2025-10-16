@@ -321,10 +321,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
-    obj_GetLocalElemShapeData
-  !! Get local element shape data for Discontinuous Galerkin
-
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
@@ -1259,18 +1255,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
     !! See QuadratureOpt_
   END SUBROUTINE obj_GetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

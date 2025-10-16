@@ -19,9 +19,7 @@
 SUBMODULE(BasisOpt_Class) GetMethods
 USE Display_Method, ONLY: ToString, Display
 USE ReferenceElement_Method, ONLY: GetTotalNodes
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                HierarchicalElemShapeData, &
-                                Elemsd_Set => Set, &
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set, &
                                 LagrangeFacetElemShapeData, &
                                 HierarchicalFacetElemShapeData
 
@@ -139,60 +137,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
-!                                                      GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-SELECT CASE (obj%baseInterpolation)
-CASE ("LAGR")
-
-  CALL LagrangeElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-                             xidim=obj%xidim, elemType=obj%elemType, &
-                             refelemCoord=obj%refelemCoord, &
-                             domainName=obj%refelemDomain, &
-                             order=obj%order, &
-                             ipType=obj%ipType, &
-                             basisType=obj%basisType(1), &
-                             coeff=obj%coeff, firstCall=obj%firstCall, &
-                             alpha=obj%alpha(1), beta=obj%beta(1), &
-                             lambda=obj%lambda(1))
-
-CASE ("HIER", "HEIR")
-
-  CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-                                 xidim=obj%xidim, elemType=obj%elemType, &
-                                 refelemCoord=obj%refelemCoord, &
-                                 domainName=obj%refelemDomain, &
-                                 cellOrder=obj%cellOrder, &
-                                 faceOrder=obj%faceOrder, &
-                                 edgeOrder=obj%edgeOrder, &
-                                 cellOrient=obj%cellOrient, &
-                                 faceOrient=obj%faceOrient, &
-                                 edgeOrient=obj%edgeOrient)
-
-#ifdef DEBUG_VER
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-#endif
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                 GetLocalFacetElemShapeData
