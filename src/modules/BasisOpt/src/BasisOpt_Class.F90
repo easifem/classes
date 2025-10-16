@@ -369,6 +369,8 @@ CONTAINS
   !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetGlobalElemShapeData
   !! Get global element shape data for TriangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetGlobalFacetElemShapeData
+  !! Get Global element shape data for TriangleH1LagrangeFE
 
   !@ QuadrangleH1LagrangeFEMethods
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetLocalElemShapeData
@@ -379,6 +381,8 @@ CONTAINS
   !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalElemShapeData
   !! Get global element shape data for QuadrangleH1LagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalFacetElemShapeData
+  !! Get Global element shape data for QuadrangleH1LagrangeFE
 
 END TYPE BasisOpt_
 
@@ -1500,6 +1504,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                          TriangleH1LagFE_SetOrder@TriangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
+
+INTERFACE
+  MODULE SUBROUTINE TriangleH1LagFE_SetOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of Lagrange finite element
+  END SUBROUTINE TriangleH1LagFE_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !            TriangleH1LagFE_GetLocalElemShapeData@TriangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
@@ -1538,22 +1558,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                          TriangleH1LagFE_SetOrder@TriangleH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE TriangleH1LagFE_SetOrder(obj, order)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of Lagrange finite element
-  END SUBROUTINE TriangleH1LagFE_SetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !            TriangleH1LagFE_GetGlobalElemShapeData@TriangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
@@ -1579,6 +1583,47 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE TriangleH1LagFE_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                     TriangleH1LagFE_GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE TriangleH1LagFE_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE TriangleH1LagFE_GetGlobalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                      QuadrangleH1LagFE_SetOrder@QuadrangleH1LagrangeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-11
+! summary:  Set the order of Lagrange finite elements
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1LagFE_SetOrder(obj, order)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! Order of Lagrange finite element
+  END SUBROUTINE QuadrangleH1LagFE_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1616,22 +1661,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                      QuadrangleH1LagFE_SetOrder@QuadrangleH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE QuadrangleH1LagFE_SetOrder(obj, order)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of Lagrange finite element
-  END SUBROUTINE QuadrangleH1LagFE_SetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !        QuadrangleH1LagFE_GetGlobalElemShapeData@QuadrangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
@@ -1657,6 +1686,31 @@ MODULE SUBROUTINE QuadrangleH1LagFE_GetGlobalElemShapeData(obj, xij, elemsd, &
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE QuadrangleH1LagFE_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                     QuadrangleH1LagFE_GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1LagFE_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE QuadrangleH1LagFE_GetGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

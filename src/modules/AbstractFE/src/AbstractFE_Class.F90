@@ -128,6 +128,9 @@ CONTAINS
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and
   !! local face number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
+    obj_GetGlobalFacetElemShapeData
+  !! Get global element shape data for cell and facet
 
   ! GET:
   ! @QuadratureMethods
@@ -160,7 +163,7 @@ TYPE :: AbstractFEPointer_
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -274,7 +277,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -289,7 +292,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -303,7 +306,7 @@ INTERFACE AbstractFEDeallocate
 END INTERFACE AbstractFEDeallocate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -321,7 +324,7 @@ INTERFACE DEALLOCATE
 END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
-!                                                         Display@IOMethods
+!                                                             Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -338,7 +341,7 @@ INTERFACE AbstractFEDisplay
 END INTERFACE AbstractFEDisplay
 
 !----------------------------------------------------------------------------
-!                                                          MdEncode@Methods
+!                                                            MdEncode@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -368,7 +371,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        SetParam@SetMethods
+!                                                            SetParam@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -496,7 +499,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetOrder@SetMethods
+!                                                            GetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -548,7 +551,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  GetRefElemCoord@GetMethods
+!                                                     GetRefElemCoord@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -566,7 +569,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetParam@GetMethods
+!                                                            GetParam@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -662,7 +665,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                               GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -678,7 +681,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       GetLocalFacetElemShapeData@GetMethods
+!                                          GetLocalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -696,7 +699,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                              GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -723,7 +726,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      GetGlobalFacetElemShapeData@GetMethods
+!                                         GetGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -748,7 +751,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     GetQuadraturePoints@QuadratureMethods
+!                                                 GetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -767,7 +770,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  GetFacetQuadraturePoints@QuadratureMethods
+!                                            GetFacetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -785,7 +788,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        GetTotalQuadraturePoints@GetMethods
+!                                            GetTotalQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -800,7 +803,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              SetQuadratureOrder@SetMethods
+!                                                  SetQuadratureOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -837,7 +840,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetTopologyType@GetMethods
+!                                                     GetTopologyType@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -852,7 +855,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                      ImportFromToml@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -870,7 +873,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                      ImportFromToml@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -892,7 +895,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetBaseInterpolation@GetMethods
+!                                                GetBaseInterpolation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -907,7 +910,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetBaseContinuity@GetMethods
+!                                                   GetBaseContinuity@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -918,7 +921,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
+!                                         GetTotalInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -939,7 +942,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
+!                                              GetInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -965,6 +968,10 @@ INTERFACE
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetDOFValue@Methods
+!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !

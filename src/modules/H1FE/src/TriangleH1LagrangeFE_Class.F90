@@ -53,6 +53,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get Global element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
+    obj_GetGlobalFacetElemShapeData
+  !! Get global element shape data for cell and facet
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
@@ -220,6 +223,31 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-16
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
+    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

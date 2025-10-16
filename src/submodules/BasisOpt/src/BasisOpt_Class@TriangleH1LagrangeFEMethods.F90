@@ -21,12 +21,15 @@ USE Display_Method, ONLY: ToString, Display
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Set => Set, &
                                 LagrangeFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE
+                                Elemsd_Allocate => ALLOCATE, &
+                                Elemsd_SetNormal => SetNormal
 
 USE TriangleInterpolationUtility, ONLY: LagrangeDOF_Triangle, &
                                         InterpolationPoint_Triangle_, &
                                         LagrangeEvalAll_Triangle_, &
-                                        LagrangeGradientEvalAll_Triangle_
+                                        LagrangeGradientEvalAll_Triangle_, &
+                                        FacetConnectivity_Triangle
+
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
                                     LagrangeEvalAll_Line_, &
                                     LagrangeGradientEvalAll_Line_
@@ -43,6 +46,32 @@ USE ReverseUtility, ONLY: Reverse
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                    TriangleH1LagFE_SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE TriangleH1LagFE_SetOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "TriangleH1LagFE_SetOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isIsotropicOrder = .TRUE.
+CALL obj%ResetAnisotropicOrder()
+obj%order = order
+obj%tdof = LagrangeDOF_Triangle(order=obj%order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE TriangleH1LagFE_SetOrder
 
 !----------------------------------------------------------------------------
 !                                       TriangleH1LagFE_GetLocalElemShapeData
@@ -107,30 +136,71 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE TriangleH1LagFE_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                    TriangleH1LagFE_SetOrder
+!                                  TriangleH1LagFE_GetLocalFacetElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE TriangleH1LagFE_SetOrder
+MODULE PROCEDURE TriangleH1LagFE_GetLocalFacetElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "TriangleH1LagFE_SetOrder()"
+CHARACTER(*), PARAMETER :: myName = &
+                           "TriangleH1LagFE_GetLocalFacetElemShapeData()"
 #endif
+
+INTEGER(I4B) :: nips, tdof, indx(10), ii, jj, xidim
+REAL(DFP), PARAMETER :: lineCoord(1, 2) = RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isIsotropicOrder = .TRUE.
-CALL obj%ResetAnisotropicOrder()
-obj%order = order
-obj%tdof = LagrangeDOF_Triangle(order=obj%order)
+CALL obj%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+nips = GetTotalQuadraturePoints(obj=facetQuad)
+tdof = obj%order + 1
+
+xidim = obj%xidim - 1
+CALL Elemsd_Allocate(obj=facetElemsd, nsd=obj%nsd, xidim=xidim, &
+                     nns=tdof, nips=nips)
+
+CALL GetQuadratureWeights_(obj=facetQuad, weights=facetElemsd%ws, &
+                           tsize=nips)
+
+CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+
+CALL InterpolationPoint_Line_( &
+  order=obj%order, ipType=obj%ipType, layout="VEFC", &
+  xij=lineCoord, alpha=obj%alpha(1), beta=obj%beta(1), &
+  lambda=obj%lambda(1), ans=obj%xij, nrow=indx(1), ncol=indx(2))
+
+CALL LagrangeEvalAll_Line_( &
+  order=obj%order, xij=obj%xij(1:indx(1), 1:indx(2)), &
+  x=facetQuad%points(1:facetQuad%txi, 1:nips), &
+  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=.TRUE., &
+  basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
+  lambda=obj%lambda(1), ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+
+DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
+  facetElemsd%N(ii, jj) = obj%temp(jj, ii, 1)
+END DO
+
+CALL LagrangeGradientEvalAll_Line_( &
+  order=obj%order, x=facetQuad%points(1:facetQuad%txi, 1:nips), &
+  xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7), &
+  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=.FALSE., &
+  basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
+  lambda=obj%lambda(1))
+
+CALL SWAP_(a=facetElemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
+           i1=2, i2=3, i3=1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE TriangleH1LagFE_SetOrder
+END PROCEDURE TriangleH1LagFE_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                      TriangleH1LagFE_GetGlobalElemShapeData
@@ -216,71 +286,70 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE TriangleH1LagFE_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                  TriangleH1LagFE_GetLocalFacetElemShapeData
+!                                TriangleH1LagFE_GetGlobalFacetElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE TriangleH1LagFE_GetLocalFacetElemShapeData
+MODULE PROCEDURE TriangleH1LagFE_GetGlobalFacetElemShapeData
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = &
-                           "TriangleH1LagFE_GetLocalFacetElemShapeData()"
+                           "TriangleH1LagFE_GetGlobalFacetElemShapeData()"
 #endif
 
-INTEGER(I4B) :: nips, tdof, indx(10), ii, jj, xidim
-REAL(DFP), PARAMETER :: lineCoord(1, 2) = RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
+INTEGER(I4B) :: faceCon(2, 3), nns, nips, nsd, xidim, n1, n2
+REAL(DFP) :: line_xij(3, 2)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL obj%TriangleH1LagFE_GetGlobalElemShapeData( &
+  elemsd=elemsd, geoElemsd=geoElemsd, xij=xij)
 
-nips = GetTotalQuadraturePoints(obj=facetQuad)
-tdof = obj%order + 1
+faceCon = FacetConnectivity_Triangle()
 
-xidim = obj%xidim - 1
-CALL Elemsd_Allocate(obj=facetElemsd, nsd=obj%nsd, xidim=xidim, &
-                     nns=tdof, nips=nips)
+nns = geoFacetElemsd%nns
 
-CALL GetQuadratureWeights_(obj=facetQuad, weights=facetElemsd%ws, &
-                           tsize=nips)
+#ifdef DEBUG_VER
+isok = nns .EQ. 2_I4B
+CALL AssertError1(isok, myName, &
+        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+#endif
 
-CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+nips = geoFacetElemsd%nips
+nsd = geoFacetElemsd%nsd
+xidim = geoFacetElemsd%xidim
 
-CALL InterpolationPoint_Line_( &
-  order=obj%order, ipType=obj%ipType, layout="VEFC", &
-  xij=lineCoord, alpha=obj%alpha(1), beta=obj%beta(1), &
-  lambda=obj%lambda(1), ans=obj%xij, nrow=indx(1), ncol=indx(2))
+line_xij = 0.0_DFP
+line_xij(1:nsd, 1:nns) = xij(1:nsd, faceCon(1:2, localFaceNumber))
 
-CALL LagrangeEvalAll_Line_( &
-  order=obj%order, xij=obj%xij(1:indx(1), 1:indx(2)), &
-  x=facetQuad%points(1:facetQuad%txi, 1:nips), &
-  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=.TRUE., &
-  basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
-  lambda=obj%lambda(1), ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+CALL Elemsd_Set(obj=facetElemsd, val=line_xij(1:nsd, 1:nns), &
+                N=geoFacetElemsd%N(1:nns, 1:nips), &
+                dNdXi=geoFacetElemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 
-DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
-  facetElemsd%N(ii, jj) = obj%temp(jj, ii, 1)
-END DO
+CALL Elemsd_SetNormal(obj=facetElemsd)
 
-CALL LagrangeGradientEvalAll_Line_( &
-  order=obj%order, x=facetQuad%points(1:facetQuad%txi, 1:nips), &
-  xij=obj%xij(1:indx(1), 1:indx(2)), &
-  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7), &
-  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=.FALSE., &
-  basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
-  lambda=obj%lambda(1))
+isok = obj%isFaceOrient &
+       .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B)
 
-CALL SWAP_(a=facetElemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
-           i1=2, i2=3, i3=1)
+n1 = 1; n2 = nns
+IF (isok) THEN
+  CALL Reverse(ans=facetElemsd%N, r1=n1, r2=n2, c1=1, c2=facetElemsd%nips, &
+               dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXt, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%nsd, d1=1, d2=facetElemsd%nips, dim=1)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE TriangleH1LagFE_GetLocalFacetElemShapeData
+END PROCEDURE TriangleH1LagFE_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                      Error

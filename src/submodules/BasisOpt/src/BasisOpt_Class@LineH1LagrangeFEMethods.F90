@@ -34,6 +34,7 @@ USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
 USE ReallocateUtility, ONLY: Reallocate
 
 USE SwapUtility, ONLY: SWAP_, SWAP
+USE ReverseUtility, ONLY: Reverse
 
 IMPLICIT NONE
 
@@ -143,7 +144,7 @@ MODULE PROCEDURE LineH1LagFE_GetGlobalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
 
-INTEGER(I4B) :: nns, nips, nsd, xidim, tsize, ii, jj
+INTEGER(I4B) :: nns, nips, nsd, xidim, n1, n2
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -162,22 +163,18 @@ CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
 
 isok = (nns .NE. elemsd%nns) .AND. obj%isCellOrient .AND. &
        (obj%cellOrient(1) .EQ. -1_I4B) .AND. &
-       (elemsd%nns .GT. 2_I4B)
+       (elemsd%nns .GT. 3_I4B)
 
-! If notIsoparametric and isCellOrient and (cellorient .ne. 1) and
-! (nns .GT. 2)
-! then we need to reverse the order of shape functions (the internal ones)
-
+n1 = 3
+n2 = obj%order + 1
 IF (isok) THEN
-  tsize = elemsd%nns / 2
-  DO ii = 3, tsize
-    jj = elemsd%nns - ii + 1
-    CALL SWAP(elemsd%N(ii, 1:nips), elemsd%N(jj, 1:nips))
-    CALL SWAP(elemsd%dNdXi(ii, 1:xidim, 1:nips), &
-              elemsd%dNdXi(jj, 1:xidim, 1:nips))
-    CALL SWAP(elemsd%dNdXt(ii, 1:nsd, 1:nips), &
-              elemsd%dNdXi(jj, 1:nsd, 1:nips))
-  END DO
+  CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
+               d1=1, d2=elemsd%nips, dim=1)
+  CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
+               d1=1, d2=elemsd%nips, dim=1)
 END IF
 
 #ifdef DEBUG_VER

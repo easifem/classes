@@ -386,6 +386,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                                     GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFacetElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%TriangleH1LagFE_GetGlobalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
+  geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

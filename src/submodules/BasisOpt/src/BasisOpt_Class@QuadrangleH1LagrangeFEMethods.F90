@@ -20,11 +20,14 @@ USE Display_Method, ONLY: ToString, Display
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
                                 Elemsd_Set => Set, &
                                 LagrangeFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE
+                                Elemsd_Allocate => ALLOCATE, &
+                                Elemsd_SetNormal => SetNormal
+
 USE QuadrangleInterpolationUtility, ONLY: LagrangeDOF_Quadrangle, &
                                           InterpolationPoint_Quadrangle_, &
                                           LagrangeEvalAll_Quadrangle_, &
-                                          LagrangeGradientEvalAll_Quadrangle_
+                                        LagrangeGradientEvalAll_Quadrangle_, &
+                                          FacetConnectivity_Quadrangle
 
 USE LineInterpolationUtility, ONLY: LagrangeDOF_Line, &
                                     InterpolationPoint_Line_, &
@@ -294,6 +297,73 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE QuadrangleH1LagFE_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                QuadrangleH1LagFE_GetGlobalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE QuadrangleH1LagFE_GetGlobalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "QuadrangleH1LagFE_GetGlobalFacetElemShapeData()"
+#endif
+
+INTEGER(I4B) :: faceCon(2, 4), nns, nips, nsd, xidim, n1, n2
+REAL(DFP) :: line_xij(3, 2)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%QuadrangleH1LagFE_GetGlobalElemShapeData( &
+  elemsd=elemsd, geoElemsd=geoElemsd, xij=xij)
+
+faceCon = FacetConnectivity_Quadrangle()
+
+nns = geoFacetElemsd%nns
+
+#ifdef DEBUG_VER
+isok = nns .EQ. 2_I4B
+CALL AssertError1(isok, myName, &
+        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+#endif
+
+nips = geoFacetElemsd%nips
+nsd = geoFacetElemsd%nsd
+xidim = geoFacetElemsd%xidim
+
+line_xij = 0.0_DFP
+line_xij(1:nsd, 1:nns) = xij(1:nsd, faceCon(1:2, localFaceNumber))
+
+CALL Elemsd_Set(obj=facetElemsd, val=line_xij(1:nsd, 1:nns), &
+                N=geoFacetElemsd%N(1:nns, 1:nips), &
+                dNdXi=geoFacetElemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
+CALL Elemsd_SetNormal(obj=facetElemsd)
+
+isok = obj%isFaceOrient &
+       .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B)
+
+! We reverse end points too
+n1 = 1; n2 = nns
+IF (isok) THEN
+  CALL Reverse(ans=facetElemsd%N, r1=n1, r2=n2, c1=1, c2=facetElemsd%nips, &
+               dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
+  CALL Reverse(ans=facetElemsd%dNdXt, r1=n1, r2=n2, c1=1, &
+               c2=facetElemsd%nsd, d1=1, d2=facetElemsd%nips, dim=1)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE QuadrangleH1LagFE_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                      Error
