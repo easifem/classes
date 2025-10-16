@@ -692,18 +692,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%SetOrder(order=order, &
-                      anisoOrder=anisoOrder, &
-                      cellOrder=cellOrder, &
-                      faceOrder=faceOrder, &
-                      edgeOrder=edgeOrder, &
-                      cellOrient=cellOrient, &
-                      faceOrient=faceOrient, &
-                      edgeOrient=edgeOrient, &
-                      errCheck=errCheck, &
-                      tcell=tcell, &
-                      tface=tface, &
-                      tedge=tedge)
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
