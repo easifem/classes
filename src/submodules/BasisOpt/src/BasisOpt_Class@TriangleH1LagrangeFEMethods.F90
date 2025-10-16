@@ -77,8 +77,6 @@ CALL InterpolationPoint_Triangle_( &
   ncol=indx(2), layout="VEFC", xij=obj%refelemCoord(1:obj%xidim, 1:3), &
   alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
 
-! order, x, xij, refTriangle, coeff, firstCall, basisType, alpha, beta, &
-! lambda
 CALL LagrangeEvalAll_Triangle_( &
   order=obj%order, x=quad%points(1:quad%txi, 1:nips), &
   xij=obj%xij(1:indx(1), 1:indx(2)), refTriangle=obj%refelemDomain, &
@@ -251,7 +249,6 @@ CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
 
-! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
 CALL InterpolationPoint_Line_( &
   order=obj%order, ipType=obj%ipType, layout="VEFC", &
   xij=lineCoord, alpha=obj%alpha(1), beta=obj%beta(1), &
