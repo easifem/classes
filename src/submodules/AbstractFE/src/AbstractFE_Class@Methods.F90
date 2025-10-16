@@ -394,29 +394,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                    geoelemsd=geoelemsd)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetGlobalElemShapeData
-
-!----------------------------------------------------------------------------
 !                                                 GetLocalFacetElemShapeData
 !----------------------------------------------------------------------------
 
@@ -440,6 +417,55 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                    geoelemsd=geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                         GetQuadraturePoints
