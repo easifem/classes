@@ -344,10 +344,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
   !! Get quadrature points for Quadrangle element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
-    obj_GetFacetQuadraturePoints
-  !! Get quadrature points on the facet
-
   PROCEDURE, PUBLIC, PASS(obj) :: Line_GetFacetQuadraturePoints
   !! Get facet quadrature points on line
 
@@ -1301,24 +1297,6 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetFacetQuadraturePoints@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points on a local face of element
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
-                                                 localFaceNumber)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-  END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
