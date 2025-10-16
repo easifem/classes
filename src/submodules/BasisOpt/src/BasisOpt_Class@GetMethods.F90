@@ -220,28 +220,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                       GetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%quadOpt%GetQuadraturePoints(quad=quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetQuadraturePoints
-
-!----------------------------------------------------------------------------
 !                                                   GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 

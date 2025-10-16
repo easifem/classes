@@ -335,10 +335,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
-    obj_GetQuadraturePoints
-  !! Get quadrature points
-
   PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
   !! Get quadrature points for line element
 
@@ -1305,26 +1301,6 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetQuadraturePoints@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-15
-! summary:  Get the quadrature points for the basis functions
-!
-!# Introduction
-!   You get the quadrature poitns based on the current state of the object
-! You can change the state of the object by calling SetParam method
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

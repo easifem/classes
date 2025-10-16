@@ -123,10 +123,6 @@ CONTAINS
   PROCEDURE, PUBLIC :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
-    obj_GetQuadraturePoints
-  !! Get quadrature points in the cell
-
   PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
   !! Get quadrature points on line
 
@@ -419,25 +415,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(QuadratureOpt_), INTENT(inout) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetQuadraturePoint@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-15
-! summary: Get the quadrature points
-!
-!# Introduction
-!   You get the quadrature points from the current state of the object.
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
