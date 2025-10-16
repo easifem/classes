@@ -621,29 +621,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ResetAnisotropicOrder
 
 !----------------------------------------------------------------------------
-!                                                         SetQuadratureOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetQuadratureOrder
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%quadOpt%SetOrder(order=order, order1=order1, &
-                          order2=order2, order3=order3)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetQuadratureOrder
-
-!----------------------------------------------------------------------------
 !                                                    Line_SetQuadratureOrder
 !----------------------------------------------------------------------------
 
@@ -709,30 +686,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE Quadrangle_SetQuadratureOrder
-
-!----------------------------------------------------------------------------
-!                                                         SetQuadratureType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetQuadratureType
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%quadOpt%SetQuadratureType( &
-  quadratureType=quadratureType, quadratureType1=quadratureType1, &
-  quadratureType2=quadratureType2, quadratureType3=quadratureType3)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetQuadratureType
 
 !----------------------------------------------------------------------------
 !                                                     Line_SetQuadratureType

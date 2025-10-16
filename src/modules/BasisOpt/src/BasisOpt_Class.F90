@@ -285,18 +285,12 @@ CONTAINS
   !! Reset isotropic order ot factory settings
   PROCEDURE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Set the total number of degrees of freedom
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
-    obj_SetQuadratureOrder
-  !! Set order of quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
   !! Set quadrature order on line element
   PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureOrder
   !! Set quadrature order on triangle element
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_SetQuadratureOrder
   !! Set quadrature order on Quadrangle element
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
-    obj_SetQuadratureType
-  !! Set quadrature type
   PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureType
   !! Set quadrature type on line element
   PROCEDURE, PUBLIC, PASS(obj) :: Triangle_SetQuadratureType
@@ -1053,43 +1047,6 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
   !! Basis options
   END SUBROUTINE obj_SetTotalDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         SetOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary: Set the order for quadrature
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
-  END SUBROUTINE obj_SetQuadratureOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetQuadratureType@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary: Set the quadrature type
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureType( &
-    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
-  END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------
