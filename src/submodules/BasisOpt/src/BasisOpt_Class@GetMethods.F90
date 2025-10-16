@@ -139,55 +139,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalFacetElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-SELECT CASE (obj%baseInterpolation(1:1))
-CASE ("L")
-
-  CALL LagrangeFacetElemShapeData( &
-    obj=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
-    localFaceNumber=localFaceNumber, nsd=obj%nsd, xidim=obj%xidim, &
-    elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-    domainName=obj%refelemDomain, order=obj%order, ipType=obj%ipType, &
-    basisType=obj%basisType(1), coeff=obj%coeff, firstCall=obj%firstCall, &
-    alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
-
-CASE ("H")
-
-  CALL HierarchicalFacetElemShapeData( &
-    obj=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
-    localFaceNumber=localFaceNumber, nsd=obj%nsd, xidim=obj%xidim, &
-    elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-    domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
-    faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
-    cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
-    edgeOrient=obj%edgeOrient)
-
-#ifdef DEBUG_VER
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-#endif
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetLocalFacetElemShapeData
-
-!----------------------------------------------------------------------------
 !                                               Line_GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 

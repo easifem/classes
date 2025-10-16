@@ -90,28 +90,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_TriangleH1LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
-!                                                       GetLocalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
 !                                                                    SetOrder
 !----------------------------------------------------------------------------
 
@@ -338,12 +316,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
-!                                                     GetGlobalElemShapeData
+!                                                       GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetGlobalElemShapeData
+MODULE PROCEDURE obj_GetLocalElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
 #endif
 
 #ifdef DEBUG_VER
@@ -351,14 +329,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%TriangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                                    geoelemsd=geoelemsd)
+CALL obj%opt%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetGlobalElemShapeData
+END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                 GetLocalFacetElemShapeData
@@ -384,6 +361,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                     GetGlobalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%TriangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                                    geoelemsd=geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

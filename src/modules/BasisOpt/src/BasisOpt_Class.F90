@@ -315,10 +315,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
 
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
-  !! Get local element shape data for Discontinuous Galerkin
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
@@ -1200,29 +1196,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
     !! See QuadratureOpt_
   END SUBROUTINE obj_GetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-09
-! summary:  Get local facet element shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd, facetElemsd, &
-                                                   quad, facetQuad, &
-                                                   localFaceNumber)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    !! element shape data on cell
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
-    !! Quadrature points on each facet element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-  END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
