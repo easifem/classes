@@ -444,6 +444,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                              GetFacetDOFValueFromQuadrature
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans(1) = func(1)
+tsize = 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromQuadrature
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

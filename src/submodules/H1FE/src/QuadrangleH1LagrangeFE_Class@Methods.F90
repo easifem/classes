@@ -20,13 +20,17 @@ SUBMODULE(QuadrangleH1LagrangeFE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 
 USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
                                           InterpolationPoint_Quadrangle_
 
 USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
                                     InterpolationPoint_Line_
+
+USE MassMatrix_Method, ONLY: MassMatrix_
+USE ForceVector_Method, ONLY: ForceVector_
+USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
 
 IMPLICIT NONE
 CONTAINS
@@ -419,6 +423,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                              GetFacetDOFValueFromQuadrature
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
+#endif
+
+INTEGER(I4B) :: info
+INTEGER(I4B) :: nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = facetElemsd%nns
+ncol = nrow
+tsize = nrow
+
+massMat(1:nrow, 1:ncol) = 0.0_DFP
+ans(1:nrow) = 0.0_DFP
+
+CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
+                 nrow=nrow, ncol=ncol)
+
+CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=tsize)
+
+CALL GetLU(A=massMat(1:tsize, 1:tsize), IPIV=ipiv(1:tsize), info=info)
+
+CALL LUSolve(A=massMat(1:tsize, 1:tsize), B=ans(1:tsize), &
+             IPIV=ipiv(1:tsize), info=info)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

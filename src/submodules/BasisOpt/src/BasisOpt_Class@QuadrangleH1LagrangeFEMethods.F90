@@ -343,11 +343,12 @@ CALL Elemsd_Set(obj=facetElemsd, val=line_xij(1:nsd, 1:nns), &
 
 CALL Elemsd_SetNormal(obj=facetElemsd)
 
+n1 = 3; n2 = nns
 isok = obj%isFaceOrient &
-       .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B)
+       .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B) &
+       .AND. n2 .GT. n1
 
 ! We reverse end points too
-n1 = 1; n2 = nns
 IF (isok) THEN
   CALL Reverse(ans=facetElemsd%N, r1=n1, r2=n2, c1=1, c2=facetElemsd%nips, &
                dim=1)
