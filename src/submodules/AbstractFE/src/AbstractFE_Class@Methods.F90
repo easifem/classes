@@ -852,6 +852,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 
 !----------------------------------------------------------------------------
+!                                           GetFacetDOFValueFromUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromUserFunction
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
