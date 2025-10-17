@@ -137,9 +137,6 @@ IF (isok) order0 = anisoOrder(1)
 
 CALL obj%opt%SetIsotropicOrder(order=order0)
 
-CALL obj%opt%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
-                                errCheck=errCheck)
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
