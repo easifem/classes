@@ -18,7 +18,7 @@
 
 MODULE TriangleH1LagrangeFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE AbstractFE_Class, ONLY: AbstractFE_
+USE TriangleH1FE_Class, ONLY: TriangleH1FE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 
@@ -42,7 +42,7 @@ CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
 ! date: 2025-10-09
 ! summary:  Scalar H1 Lagrange Finite Element
 
-TYPE, EXTENDS(AbstractFE_) :: TriangleH1LagrangeFE_
+TYPE, EXTENDS(TriangleH1FE_) :: TriangleH1LagrangeFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
@@ -58,24 +58,6 @@ CONTAINS
   !! Get global element shape data for cell and facet
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
-    obj_GetQuadraturePoints
-  !! Get the quadrature points
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
-    obj_GetFacetQuadraturePoints
-  !! Get the quadrature points on a local face of element
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
-    obj_SetQuadratureOrder
-  !! Set the quadrature order
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
-    obj_SetQuadratureType
-  !! Set the quadrature type
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
-    obj_GetTotalInterpolationPoints
-  !! Get total number of interpolation points
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
-    obj_GetInterpolationPoints
-  !! Get the interpolation points
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
     obj_GetFacetDOFValueFromQuadrature
   !! Get the dof values of a function from its quadrature values on a facet
@@ -306,129 +288,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetQuadraturePoints@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points
-
-! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
-! alpha, beta, lambda, xij)
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-  END SUBROUTINE obj_GetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  GetFacetQuadraturePoints@QuadratureMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points on a local face of element
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
-                                                 localFaceNumber)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-  END SUBROUTINE obj_GetFacetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         SetOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary: Set the order for quadrature
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
-  END SUBROUTINE obj_SetQuadratureOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetQuadratureType@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary:  Set the quadrature type
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureType( &
-    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
-  END SUBROUTINE obj_SetQuadratureType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-05
-! summary: Get total number of interpolation points
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
-    obj, order, ipType) RESULT(ans)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation in x, y, and z directions
-    INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type in x, y, and z directions
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalInterpolationPoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetInterpolationPoints( &
-    obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
-    REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! data written in xij
-    INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation
-    INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
-    !! Jacobi and Ultraspherical parameters
-  END SUBROUTINE obj_GetInterpolationPoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                      GetFacetDOFValueFromQuadrature@Methods
 !----------------------------------------------------------------------------
 
@@ -457,9 +316,9 @@ INTERFACE
     !! nodal coordinates of interpolation points
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! data written in xij
-    REAL( DFP ), INTENT(INOUT) :: massMat(:, :)
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
     !! mass matrix
-    INTEGER( I4B ), INTENT(INOUT) :: ipiv(:)
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
   END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
 END INTERFACE
