@@ -110,31 +110,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE QuadrangleH1LagFE_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                  QuadrangleH1LagFE_SetOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE QuadrangleH1LagFE_SetOrder
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "QuadrangleH1LagFE_SetOrder()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%isIsotropicOrder = .TRUE.
-CALL obj%ResetAnisotropicOrder()
-obj%order = order
-obj%tdof = LagrangeDOF_Quadrangle(order=obj%order)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE QuadrangleH1LagFE_SetOrder
-
-!----------------------------------------------------------------------------
 !                                    QuadrangleH1LagFE_GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 

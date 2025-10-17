@@ -311,44 +311,39 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemCoord => obj_GetRefElemCoord
   !! Get the reference element coordiantes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Get the total number of degrees of freedom
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
   !! returns the topoType
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
-  !! Get quadrature points for line element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetQuadraturePoints
-  !! Get quadrature points for Triangle element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
-  !! Get quadrature points for Quadrangle element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetFacetQuadraturePoints
-  !! Get facet quadrature points on line
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetFacetQuadraturePoints
-  !! Get facet quadrature points on triangle
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetFacetQuadraturePoints
-  !! Get facet quadrature points on Quadrangle
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
+  !! Get cell order
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrder => obj_GetFaceOrder
+  !! Get face order
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrder => obj_GetEdgeOrder
+  !! Get edge order
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
+  !! Get quadrature points for line element
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetQuadraturePoints
+  !! Get quadrature points for Triangle element
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetQuadraturePoints
+  !! Get quadrature points for Quadrangle element
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_GetFacetQuadraturePoints
+  !! Get facet quadrature points on line
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetFacetQuadraturePoints
+  !! Get facet quadrature points on triangle
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_GetFacetQuadraturePoints
+  !! Get facet quadrature points on Quadrangle
 
   !@ LineH1LagrangeFEMethods
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalElemShapeData
@@ -371,8 +366,6 @@ CONTAINS
   !! Get local element shape data for TriangleH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetLocalFacetElemShapeData
   !! Get local element shape data for TriangleH1LagrangeFE
-  PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_SetOrder
-  !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetGlobalElemShapeData
   !! Get global element shape data for TriangleH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: TriangleH1LagFE_GetGlobalFacetElemShapeData
@@ -383,8 +376,6 @@ CONTAINS
   !! Get local element shape data for QuadrangleH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetLocalFacetElemShapeData
   !! Get local element shape data for QuadrangleH1LagrangeFE
-  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_SetOrder
-  !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalElemShapeData
   !! Get global element shape data for QuadrangleH1LagrangeFE
  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalFacetElemShapeData
@@ -1382,6 +1373,54 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetCellOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-17
+! summary: Get cell order
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCellOrder(obj, ans, tsize)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetCellOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetFaceOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-17
+! summary: Get face order
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceOrder(obj, ans, nrow, ncol)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+  END SUBROUTINE obj_GetFaceOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetEdgeOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-17
+! summary: Get edge order
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeOrder(obj, ans, tsize)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetEdgeOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          Line_GetQuadraturePoint@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1496,22 +1535,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                          TriangleH1LagFE_SetOrder@TriangleH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE TriangleH1LagFE_SetOrder(obj, order)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of Lagrange finite element
-  END SUBROUTINE TriangleH1LagFE_SetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !            TriangleH1LagFE_GetLocalElemShapeData@TriangleH1LagrangeMethods
 !----------------------------------------------------------------------------
 
@@ -1600,22 +1623,6 @@ INTERFACE
     !! present in the reference element in geoElemsd.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE TriangleH1LagFE_GetGlobalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                      QuadrangleH1LagFE_SetOrder@QuadrangleH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE QuadrangleH1LagFE_SetOrder(obj, order)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of Lagrange finite element
-  END SUBROUTINE QuadrangleH1LagFE_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

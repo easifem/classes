@@ -386,6 +386,79 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Quadrangle_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                                GetCellOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%tCellOrder
+ans(1:tsize) = obj%cellOrder(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetCellOrder
+
+!----------------------------------------------------------------------------
+!                                                               GetFaceOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFaceOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFaceOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = 3
+ncol = obj%tFaceOrder
+ans(1:nrow, 1:ncol) = obj%faceOrder(1:nrow, 1:ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFaceOrder
+
+!----------------------------------------------------------------------------
+!                                                                GetEdgeOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEdgeOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEdgeOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%tEdgeOrder
+ans(1:tsize) = obj%edgeOrder(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetEdgeOrder
+
+!----------------------------------------------------------------------------
 !                                                           Include error
 !----------------------------------------------------------------------------
 

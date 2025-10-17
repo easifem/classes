@@ -48,32 +48,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    TriangleH1LagFE_SetOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE TriangleH1LagFE_SetOrder
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "TriangleH1LagFE_SetOrder()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%isIsotropicOrder = .TRUE.
-CALL obj%ResetAnisotropicOrder()
-obj%order = order
-obj%tdof = LagrangeDOF_Triangle(order=obj%order)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE TriangleH1LagFE_SetOrder
-
-!----------------------------------------------------------------------------
 !                                       TriangleH1LagFE_GetLocalElemShapeData
 !----------------------------------------------------------------------------
 

@@ -62,8 +62,7 @@ tdof = obj%GetTotalDOF()
 
 #ifdef DEBUG_VER
 isok = tdof .GT. 0
-CALL AssertError1(isok, myName, &
-                  "LagrangeDOF_Line returned zero DOF")
+CALL AssertError1(isok, myName, "zero tdof found")
 #endif
 
 CALL Elemsd_Allocate(obj=elemsd, nsd=obj%nsd, xidim=obj%xidim, &
