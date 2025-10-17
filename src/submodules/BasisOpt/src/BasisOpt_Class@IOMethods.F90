@@ -124,7 +124,6 @@ CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
 CALL Display(obj%baseContinuity, msg="baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, msg="baseInterpolation: ", unitno=unitno)
 CALL Display(obj%refelemCoord, msg="refelemCoord: ", unitno=unitno)
-CALL obj%quadOpt%Display(msg="quadOpt: ", unitno=unitno)
 
 isok = ALLOCATED(obj%coeff)
 CALL Display(isok, msg="obj%coeff allocated: ", unitno=unitno)
@@ -148,6 +147,9 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
+CALL obj%quadOpt%Display(msg="quadOpt: ", unitno=unitno)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
