@@ -355,8 +355,6 @@ CONTAINS
   !! Get local element shape data for LineH1LagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetLocalFacetElemShapeData
   !! Get local element shape data for LineH1LagrangeFE
-  PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_SetOrder
-  !! Set the order of Quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: LineH1LagFE_GetGlobalElemShapeData
   !! Get global element shape data for LineH1LagrangeFE
 
@@ -1485,22 +1483,6 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE LineH1LagFE_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  LineH1LagFE_SetOrder@LineH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-11
-! summary:  Set the order of Lagrange finite elements
-
-INTERFACE
-  MODULE SUBROUTINE LineH1LagFE_SetOrder(obj, order)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of Lagrange finite element
-  END SUBROUTINE LineH1LagFE_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
