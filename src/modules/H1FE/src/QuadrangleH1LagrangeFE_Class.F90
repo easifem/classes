@@ -21,6 +21,7 @@ USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
+USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
 
@@ -78,6 +79,9 @@ CONTAINS
   !! Get the interpolation points
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
     obj_GetFacetDOFValueFromQuadrature
+  !! Get the dof values of a function from its quadrature values on a facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromUserFunction => &
+    obj_GetFacetDOFValueFromUserFunction
   !! Get the dof values of a function from its quadrature values on a facet
 END TYPE QuadrangleH1LagrangeFE_
 
@@ -466,11 +470,49 @@ INTERFACE
     !! nodal coordinates of interpolation points
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! data written in xij
-    REAL( DFP ), INTENT(INOUT) :: massMat(:, :)
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
     !! mass matrix
-    INTEGER( I4B ), INTENT(INOUT) :: ipiv(:)
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
   END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   GetFacetDOFValueFromUserFunction@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromUserFunction( &
+    obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
+    massMat, ipiv, funcValue)
+    CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions
+    !! quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points
+  END SUBROUTINE obj_GetFacetDOFValueFromUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
