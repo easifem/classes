@@ -16,8 +16,17 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+
+# Line
+target_sources(${PROJECT_NAME}
+               PRIVATE ${src_path}/LineH1/LineH1LagrangeFE_Class@Methods.F90)
+
+# Triangle
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/LineH1LagrangeFE_Class@Methods.F90
-          ${src_path}/TriangleH1LagrangeFE_Class@Methods.F90
-          ${src_path}/QuadrangleH1LagrangeFE_Class@Methods.F90)
+  PRIVATE ${src_path}/TriangleH1/TriangleH1LagrangeFE_Class@Methods.F90)
+
+# Quadrangle
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/QuadrangleH1/QuadrangleH1LagrangeFE_Class@Methods.F90)

@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LineH1LagrangeFE_Class) Methods
+SUBMODULE(LineH1HierarchicalFE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
@@ -29,12 +29,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1LagrangeFEPointer
+!                                                 LineH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1LagrangeFEPointer1
+MODULE PROCEDURE obj_LineH1HierarchicalFEPointer1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1LagrangeFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -49,15 +49,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1LagrangeFEPointer1
+END PROCEDURE obj_LineH1HierarchicalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                     LineH1LagrangeFEPointer
+!                                                     LineH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1LagrangeFEPointer2
+MODULE PROCEDURE obj_LineH1HierarchicalFEPointer2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1LagrangeFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer2()"
 #endif
 
 INTEGER(I4B) :: basisType0(1), cellOrient0(1), quadratureType0(1), &
@@ -86,7 +86,7 @@ quadratureOrder0(1) = Input(option=quadratureOrder, default=order)
 
 CALL ans%Initiate( &
   elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", ipType=ipType, basisType=basisType0, &
+  baseInterpolation="Hierarchical", ipType=ipType, basisType=basisType0, &
   alpha=alpha0, beta=beta0, lambda=lambda0, &
   fetype=TypeFEVariableOpt%scalar, order=order, cellOrient=cellOrient0, &
   tcell=1_I4B, quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
@@ -99,7 +99,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1LagrangeFEPointer2
+END PROCEDURE obj_LineH1HierarchicalFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                       GetLocalElemShapeData
@@ -379,7 +379,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ans = GetTotalDOF_Line(order=order(1), baseContinuity="H1", &
-                       baseInterpolation="Lagrange")
+                       baseInterpolation="Hierarchical")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -470,6 +470,6 @@ END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 !                                                              Include Error
 !----------------------------------------------------------------------------
 
-#include "../../include/errors.F90"
+#include "../../../include/errors.F90"
 
 END SUBMODULE Methods
