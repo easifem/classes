@@ -43,23 +43,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-SELECT CASE (obj%baseInterpolation)
-CASE ("LAGR")
-  IF (obj%isIsotropicOrder) THEN
-    obj%tdof = LagrangeDOF(order=obj%order, elemType=obj%topoType)
-  END IF
-
-  IF (obj%isAnisotropicOrder) THEN
-    obj%tdof = LagrangeDOF(p=obj%anisoOrder(1), q=obj%anisoOrder(2), &
-                           r=obj%anisoOrder(3), elemType=obj%topoType)
-  END IF
-
-CASE ("HIER", "HEIR")
-
-  obj%tdof = HierarchicalDOF(elemType=obj%topoType, cellOrder=obj%cellOrder, &
-                             faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder)
-
-END SELECT
+obj%tdof = tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
