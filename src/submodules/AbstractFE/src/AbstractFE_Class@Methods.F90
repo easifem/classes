@@ -20,7 +20,10 @@ USE Display_Method, ONLY: ToString, Display
 USE TomlUtility, ONLY: GetValue, GetValue_
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
-USE ReallocateUtility, ONLY: Reallocate
+
+USE MassMatrix_Method, ONLY: MassMatrix_
+USE ForceVector_Method, ONLY: ForceVector_
+USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
 
 IMPLICIT NONE
 CONTAINS
@@ -834,16 +837,33 @@ MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
 #endif
 
+INTEGER(I4B) :: info
+INTEGER(I4B) :: nrow, ncol
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
+                  '[WIP ERROR] :: This routine is under development')
+
+nrow = facetElemsd%nns
+ncol = nrow
+tsize = nrow
+
+massMat(1:nrow, 1:ncol) = 0.0_DFP
+ans(1:nrow) = 0.0_DFP
+
+CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
+                 nrow=nrow, ncol=ncol)
+
+CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=tsize)
+
+CALL GetLU(A=massMat(1:tsize, 1:tsize), IPIV=ipiv(1:tsize), info=info)
+
+CALL LUSolve(A=massMat(1:tsize, 1:tsize), B=ans(1:tsize), &
+             IPIV=ipiv(1:tsize), info=info)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
