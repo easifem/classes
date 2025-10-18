@@ -16,9 +16,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE TriangleH1LagrangeFE_Class
+MODULE TriangleH1HierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE AbstractFE_Class, ONLY: AbstractFE_
+USE TriangleH1FE_Class, ONLY: TriangleH1FE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 
@@ -26,23 +26,23 @@ IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: TriangleH1LagrangeFE_
-PUBLIC :: TriangleH1LagrangeFEPointer_
-PUBLIC :: TriangleH1LagrangeFEPointer
+PUBLIC :: TriangleH1HierarchicalFE_
+PUBLIC :: TriangleH1HierarchicalFEPointer_
+PUBLIC :: TriangleH1HierarchicalFEPointer
 
 PUBLIC :: FiniteElementDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
+CHARACTER(*), PARAMETER :: modName = "TriangleH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                           TriangleH1LagrangeFE_
+!                                                  TriangleH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
-! summary:  Scalar H1 Lagrange Finite Element
+! summary:  Scalar H1 Hierarchical Finite Element
 
-TYPE, EXTENDS(AbstractFE_) :: TriangleH1LagrangeFE_
+TYPE, EXTENDS(TriangleH1FE_) :: TriangleH1HierarchicalFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
@@ -58,86 +58,63 @@ CONTAINS
   !! Get global element shape data for cell and facet
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
-    obj_GetQuadraturePoints
-  !! Get the quadrature points
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
-    obj_GetFacetQuadraturePoints
-  !! Get the quadrature points on a local face of element
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
-    obj_SetQuadratureOrder
-  !! Set the quadrature order
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
-    obj_SetQuadratureType
-  !! Set the quadrature type
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
-    obj_GetTotalInterpolationPoints
-  !! Get total number of interpolation points
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
-    obj_GetInterpolationPoints
-  !! Get the interpolation points
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
-    obj_GetFacetDOFValueFromQuadrature
-  !! Get the dof values of a function from its quadrature values on a facet
-END TYPE TriangleH1LagrangeFE_
+END TYPE TriangleH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
-!                                                    TriangleH1LagrangeFEPointer_
+!                                            TriangleH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: TriangleH1LagrangeFEPointer_
-  CLASS(TriangleH1LagrangeFE_), POINTER :: ptr => NULL()
-END TYPE TriangleH1LagrangeFEPointer_
+TYPE :: TriangleH1HierarchicalFEPointer_
+  CLASS(TriangleH1HierarchicalFE_), POINTER :: ptr => NULL()
+END TYPE TriangleH1HierarchicalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                             TriangleH1LagrangeFEPointer@Methods
+!                                     TriangleH1HierarchicalFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE TriangleH1LagrangeFEPointer
-  MODULE FUNCTION obj_TriangleH1LagrangeFEPointer1() RESULT(ans)
-    TYPE(TriangleH1LagrangeFE_), POINTER :: ans
-  END FUNCTION obj_TriangleH1LagrangeFEPointer1
-END INTERFACE TriangleH1LagrangeFEPointer
+INTERFACE TriangleH1HierarchicalFEPointer
+  MODULE FUNCTION obj_TriangleH1HierarchicalFEPointer1() RESULT(ans)
+    TYPE(TriangleH1HierarchicalFE_), POINTER :: ans
+  END FUNCTION obj_TriangleH1HierarchicalFEPointer1
+END INTERFACE TriangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                       LagrangeFE@Methods
+!                                                      HierarchicalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE TriangleH1LagrangeFEPointer
-  MODULE FUNCTION obj_TriangleH1LagrangeFEPointer2( &
-    order, nsd, ipType, basisType, cellOrient, faceOrient, quadratureType, &
+INTERFACE TriangleH1HierarchicalFEPointer
+  MODULE FUNCTION obj_TriangleH1HierarchicalFEPointer2( &
+    cellOrder, faceOrder, nsd, cellOrient, faceOrient, quadratureType, &
     quadratureOrder) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Isotropic Order of finite element
+    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), INTENT(IN) :: faceOrder(:, :)
+    !! faceOrder, the row size should be 3, and column size should be
+    !! at least 3
     INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type, It can take following values:
-    !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
-    !! Basis type: Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
     !! Orientation of cell
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
     !! face orient, necessary for Hierarchical interpolation
     !! number of rows in faceorient is 3
     !! number of columns in faceorient is tfaceorient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     !! Quadrature type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
     !! Order of quadrature
-    TYPE(TriangleH1LagrangeFE_), POINTER :: ans
-    !! TriangleH1LagrangeFE_ pointer
-  END FUNCTION obj_TriangleH1LagrangeFEPointer2
-END INTERFACE TriangleH1LagrangeFEPointer
+    TYPE(TriangleH1HierarchicalFE_), POINTER :: ans
+    !! TriangleH1HierarchicalFE_ pointer
+  END FUNCTION obj_TriangleH1HierarchicalFEPointer2
+END INTERFACE TriangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
@@ -145,11 +122,11 @@ END INTERFACE TriangleH1LagrangeFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of TriangleH1LagrangeFE
+! summary:  Deallocate a vector of TriangleH1HierarchicalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TriangleH1LagrangeFE_), ALLOCATABLE :: obj(:)
+    TYPE(TriangleH1HierarchicalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -159,16 +136,16 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of TriangleH1LagrangeFEPointer_
+! summary:  Deallocate the vector of TriangleH1HierarchicalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TriangleH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(TriangleH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                           GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -177,7 +154,7 @@ END INTERFACE FiniteElementDeallocate
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
@@ -194,7 +171,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalFacetElemShapeData( &
     obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
@@ -211,7 +188,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
@@ -239,7 +216,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData( &
     obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
     !! element shape data in cell and facet
     TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
@@ -270,7 +247,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
     faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order
@@ -306,166 +283,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetQuadraturePoints@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points
-
-! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
-! alpha, beta, lambda, xij)
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-  END SUBROUTINE obj_GetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  GetFacetQuadraturePoints@QuadratureMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points on a local face of element
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
-                                                 localFaceNumber)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-  END SUBROUTINE obj_GetFacetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         SetOrder@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary: Set the order for quadrature
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
-  END SUBROUTINE obj_SetQuadratureOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetQuadratureType@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-17
-! summary:  Set the quadrature type
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadratureType( &
-    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
-  END SUBROUTINE obj_SetQuadratureType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-05
-! summary: Get total number of interpolation points
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
-    obj, order, ipType) RESULT(ans)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation in x, y, and z directions
-    INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type in x, y, and z directions
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalInterpolationPoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetInterpolationPoints( &
-    obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
-    REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! data written in xij
-    INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation
-    INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
-    !! Jacobi and Ultraspherical parameters
-  END SUBROUTINE obj_GetInterpolationPoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetFacetDOFValueFromQuadrature@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromQuadrature( &
-    obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv)
-    CLASS(TriangleH1LagrangeFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
-    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-    REAL(DFP), INTENT(INOUT) :: func(:)
-    !! user defined functions
-    !! quadrature values of function
-    REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in xij
-    REAL( DFP ), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
-    INTEGER( I4B ), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
-  END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END MODULE TriangleH1LagrangeFE_Class
+END MODULE TriangleH1HierarchicalFE_Class

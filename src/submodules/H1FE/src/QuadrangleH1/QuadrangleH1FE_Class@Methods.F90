@@ -16,26 +16,28 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LineH1HierarchicalFE_Class) Methods
+SUBMODULE(QuadrangleH1FE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
+
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
+                                          InterpolationPoint_Quadrangle_
 
 USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    LagrangeDOF_Line
+                                    InterpolationPoint_Line_
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                                         GetQuadraturePoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer1
+MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
 #endif
 
 #ifdef DEBUG_VER
@@ -43,22 +45,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ALLOCATE (ans)
+CALL obj%opt%Quadrangle_GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_LineH1HierarchicalFEPointer1
+END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                                    GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer2
+MODULE PROCEDURE obj_GetFacetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
 #endif
 
 #ifdef DEBUG_VER
@@ -66,138 +67,167 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Hierarchical", fetype=TypeFEVariableOpt%scalar, &
-  order=order, cellOrient=cellOrient, tcell=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType, &
-  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
-  quadratureLambda=quadratureLambda)
+CALL obj%opt%Quadrangle_GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_LineH1HierarchicalFEPointer2
+END PROCEDURE obj_GetFacetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                         SetQuadratureOrder
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetOrder
+MODULE PROCEDURE obj_SetQuadratureOrder
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Quadrangle_SetQuadratureOrder(order=order, order1=order1, &
+                                           order2=order2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                         SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Quadrangle_SetQuadratureType( &
+  quadratureType=quadratureType, quadratureType1=quadratureType1, &
+  quadratureType2=quadratureType2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
+#endif
+
+INTEGER(I4B) :: p, q, tsize
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: cellOrder0(1), tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
-CALL AssertError1(isok, myName, &
-    "At least one of 'order', 'anisoOrder', or 'cellOrder' must be provided.")
-#endif
+p = order(1)
+q = p
 
-cellOrder0(1) = 0
+tsize = SIZE(order)
+isok = tsize .GT. 1
+IF (isok) q = order(2)
 
-isok = PRESENT(order)
-IF (isok) cellOrder0(1) = order
+ans = GetTotalDOF_Line(order=p, baseContinuity="H1", &
+                       baseInterpolation="")
 
-isok = PRESENT(anisoOrder)
-IF (isok) cellOrder0(1) = anisoOrder(1)
+tsize = GetTotalDOF_Line(order=q, baseContinuity="H1", &
+                         baseInterpolation="")
 
-isok = PRESENT(cellOrder)
-IF (isok) cellOrder0(1) = cellOrder(1)
-
-CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=1_I4B, &
-                          errCheck=errCheck)
-
-tdof = LagrangeDOF_Line(order=cellOrder0(1))
-
-CALL obj%opt%SetTotalDOF(tdof=tdof)
+ans = ans * tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetOrder
+END PROCEDURE obj_GetTotalInterpolationPoints
 
 !----------------------------------------------------------------------------
-!                                                       GetLocalElemShapeData
+!                                                      GetInterpolationPoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetLocalElemShapeData
+MODULE PROCEDURE obj_GetInterpolationPoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
 #endif
+
+REAL(DFP) :: alpha1, beta1, lambda1, alpha2, beta2, lambda2
+INTEGER(I4B) :: ipType1, ipType2, order1, order2, tsize
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1HieFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+alpha1 = 0.0_DFP; beta1 = 0.0_DFP; lambda1 = 0.5_DFP
+alpha2 = 0.0_DFP; beta2 = 0.0_DFP; lambda2 = 0.5_DFP
+
+order1 = order(1)
+order2 = order1
+tsize = SIZE(order)
+isok = tsize .GT. 1
+IF (isok) order2 = order(2)
+
+ipType1 = ipType(1)
+ipType2 = ipType1
+tsize = SIZE(ipType)
+isok = tsize .GT. 1
+IF (isok) ipType2 = ipType(2)
+
+IF (PRESENT(alpha)) THEN
+  alpha1 = alpha(1)
+  alpha2 = alpha1
+  tsize = SIZE(alpha)
+  isok = tsize .GT. 1
+  IF (isok) alpha2 = alpha(2)
+END IF
+
+IF (PRESENT(beta)) THEN
+  beta1 = beta(1)
+  beta2 = beta1
+  tsize = SIZE(beta)
+  isok = tsize .GT. 1
+  IF (isok) beta2 = beta(2)
+END IF
+
+IF (PRESENT(lambda)) THEN
+  lambda1 = lambda(1)
+  lambda2 = lambda1
+  tsize = SIZE(lambda)
+  isok = tsize .GT. 1
+  IF (isok) lambda2 = lambda(2)
+END IF
+
+CALL InterpolationPoint_Quadrangle_( &
+  p=order1, q=order2, ipType1=ipType1, ipType2=ipType2, ans=ans, &
+  nrow=nrow, ncol=ncol, layout="VEFC", xij=xij, alpha1=alpha1, beta1=beta1, &
+  lambda1=lambda1, alpha2=alpha2, beta2=beta2, lambda2=lambda2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                      GetGlobalElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%LineH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                                geoelemsd=geoelemsd)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetGlobalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                              GetFacetDOFValueFromQuadrature
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans(1) = func(1)
-tsize = 1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromQuadrature
+END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

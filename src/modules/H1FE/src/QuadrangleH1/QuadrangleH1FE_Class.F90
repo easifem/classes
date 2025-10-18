@@ -16,58 +16,59 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE LineH1FE_Class
+MODULE QuadrangleH1FE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ExceptionHandler_Class, ONLY: e
-USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
+USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: LineH1FE_
-PUBLIC :: LineH1FEPointer_
+PUBLIC :: QuadrangleH1FE_
+PUBLIC :: QuadrangleH1FEPointer_
 
-CHARACTER(*), PARAMETER :: modName = "LineH1FE_Class"
+CHARACTER(*), PARAMETER :: modName = "QuadrangleH1FE_Class"
 
 !----------------------------------------------------------------------------
-!                                                           LineH1FE_
+!                                                     QuadrangleH1FE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
 ! summary:  Scalar H1  Finite Element
 
-TYPE, ABSTRACT, EXTENDS(AbstractFE_) :: LineH1FE_
+TYPE, ABSTRACT, EXTENDS(AbstractFE_) :: QuadrangleH1FE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get the quadrature points
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
+    obj_GetFacetQuadraturePoints
   !! Get the quadrature points on a local face of element
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
-  !! Set the order of accuracy for quadrature
+  !! Set the quadrature order
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
-  !! Set the type of quadrature points
+  !! Set the quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
+    obj_GetTotalInterpolationPoints
+  !! Get total number of interpolation points
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
-  !! Get Interpolation points in cell element
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
-  !! Get total number of Interpolation points
-END TYPE LineH1FE_
+  !! Get the interpolation points
+END TYPE QuadrangleH1FE_
 
 !----------------------------------------------------------------------------
-!                                                    LineH1FEPointer_
+!                                                     QuadrangleH1FEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: LineH1FEPointer_
-  CLASS(LineH1FE_), POINTER :: ptr => NULL()
-END TYPE LineH1FEPointer_
+TYPE :: QuadrangleH1FEPointer_
+  CLASS(QuadrangleH1FE_), POINTER :: ptr => NULL()
+END TYPE QuadrangleH1FEPointer_
 
 !----------------------------------------------------------------------------
 !                                                 GetQuadraturePoints@Methods
@@ -82,14 +83,14 @@ END TYPE LineH1FEPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  GetFacetQuadraturePoints@QuadratureMethods
+!                                            GetFacetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -99,7 +100,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
                                                  localFaceNumber)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! Quadrature points
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
@@ -116,7 +117,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
@@ -135,7 +136,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureType( &
     obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
@@ -144,7 +145,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        GetTotalInterpolationPoints@Methods
+!                           GetTotalInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -152,9 +153,9 @@ END INTERFACE
 ! summary: Get total number of interpolation points
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
-    obj, order, ipType) RESULT(ans)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+  MODULE FUNCTION obj_GetTotalInterpolationPoints(obj, order, ipType) &
+    RESULT(ans)
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     INTEGER(I4B), INTENT(IN) :: order(:)
     !! order of interpolation in x, y, and z directions
@@ -165,7 +166,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              GetInterpolationPoints@Methods
+!                                 GetInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -175,7 +176,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetInterpolationPoints( &
     obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of reference element
@@ -196,4 +197,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE LineH1FE_Class
+END MODULE QuadrangleH1FE_Class

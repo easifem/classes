@@ -16,58 +16,135 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE LineH1FE_Class
+MODULE TriangleH1FE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ExceptionHandler_Class, ONLY: e
-USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 
 IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: LineH1FE_
-PUBLIC :: LineH1FEPointer_
+PUBLIC :: TriangleH1FE_
+PUBLIC :: TriangleH1FEPointer_
 
-CHARACTER(*), PARAMETER :: modName = "LineH1FE_Class"
+CHARACTER(*), PARAMETER :: modName = "TriangleH1FE_Class"
 
 !----------------------------------------------------------------------------
-!                                                           LineH1FE_
+!                                                           TriangleH1FE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
 ! summary:  Scalar H1  Finite Element
 
-TYPE, ABSTRACT, EXTENDS(AbstractFE_) :: LineH1FE_
+TYPE, EXTENDS(AbstractFE_) :: TriangleH1FE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get the quadrature points
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
+    obj_GetFacetQuadraturePoints
   !! Get the quadrature points on a local face of element
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
-  !! Set the order of accuracy for quadrature
+  !! Set the quadrature order
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
-  !! Set the type of quadrature points
+  !! Set the quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
+    obj_GetTotalInterpolationPoints
+  !! Get total number of interpolation points
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
-  !! Get Interpolation points in cell element
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
-  !! Get total number of Interpolation points
-END TYPE LineH1FE_
+  !! Get the interpolation points
+END TYPE TriangleH1FE_
 
 !----------------------------------------------------------------------------
-!                                                    LineH1FEPointer_
+!                                                    TriangleH1FEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: LineH1FEPointer_
-  CLASS(LineH1FE_), POINTER :: ptr => NULL()
-END TYPE LineH1FEPointer_
+TYPE :: TriangleH1FEPointer_
+  CLASS(TriangleH1FE_), POINTER :: ptr => NULL()
+END TYPE TriangleH1FEPointer_
+
+!----------------------------------------------------------------------------
+!                                             TriangleH1FEPointer@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  Empty constructor
+
+!----------------------------------------------------------------------------
+!                                                       FE@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary: Constructor method
+
+!----------------------------------------------------------------------------
+!                                                         Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary:  Deallocate a vector of TriangleH1FE
+
+!----------------------------------------------------------------------------
+!                                                         Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of TriangleH1FEPointer_
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+!----------------------------------------------------------------------------
+!                                       GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+!----------------------------------------------------------------------------
+!                                      GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-16
+! summary:  Get Global element shape data shape data in cell and facet
+
+!----------------------------------------------------------------------------
+!                                                         GetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
 
 !----------------------------------------------------------------------------
 !                                                 GetQuadraturePoints@Methods
@@ -82,7 +159,7 @@ END TYPE LineH1FEPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
@@ -99,7 +176,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
                                                  localFaceNumber)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! Quadrature points
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
@@ -116,7 +193,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
@@ -135,7 +212,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureType( &
     obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
@@ -144,7 +221,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        GetTotalInterpolationPoints@Methods
+!                           GetTotalInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -154,7 +231,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetTotalInterpolationPoints( &
     obj, order, ipType) RESULT(ans)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     INTEGER(I4B), INTENT(IN) :: order(:)
     !! order of interpolation in x, y, and z directions
@@ -165,7 +242,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              GetInterpolationPoints@Methods
+!                                 GetInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -175,7 +252,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetInterpolationPoints( &
     obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
-    CLASS(LineH1FE_), INTENT(INOUT) :: obj
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of reference element
@@ -196,4 +273,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE LineH1FE_Class
+END MODULE TriangleH1FE_Class

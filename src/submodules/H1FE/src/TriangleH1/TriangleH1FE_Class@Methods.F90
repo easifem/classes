@@ -16,26 +16,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LineH1HierarchicalFE_Class) Methods
+SUBMODULE(TriangleH1FE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    LagrangeDOF_Line
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
+                                        InterpolationPoint_Triangle_
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                                         GetQuadraturePoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer1
+MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
 #endif
 
 #ifdef DEBUG_VER
@@ -43,22 +41,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ALLOCATE (ans)
+CALL obj%opt%Triangle_GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_LineH1HierarchicalFEPointer1
+END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                                    GetFacetQuadraturePoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer2
+MODULE PROCEDURE obj_GetFacetQuadraturePoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
 #endif
 
 #ifdef DEBUG_VER
@@ -66,35 +63,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Hierarchical", fetype=TypeFEVariableOpt%scalar, &
-  order=order, cellOrient=cellOrient, tcell=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType, &
-  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
-  quadratureLambda=quadratureLambda)
+CALL obj%opt%Triangle_GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_LineH1HierarchicalFEPointer2
+END PROCEDURE obj_GetFacetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                         SetQuadratureOrder
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetOrder
+MODULE PROCEDURE obj_SetQuadratureOrder
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
 #endif
 
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: cellOrder0(1), tdof
+INTEGER(I4B) :: order0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -102,42 +90,80 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
+isok = PRESENT(order) .OR. PRESENT(order1) .OR. &
+       PRESENT(order2) .OR. PRESENT(order3)
 CALL AssertError1(isok, myName, &
-    "At least one of 'order', 'anisoOrder', or 'cellOrder' must be provided.")
+                  'order, order1, order2, or order3 must be provided')
 #endif
 
-cellOrder0(1) = 0
+IF (PRESENT(order)) THEN
+  order0 = order(1)
+ELSE IF (PRESENT(order1)) THEN
+  order0 = order1
+ELSE IF (PRESENT(order2)) THEN
+  order0 = order2
+ELSE IF (PRESENT(order3)) THEN
+  order0 = order3
+END IF
 
-isok = PRESENT(order)
-IF (isok) cellOrder0(1) = order
-
-isok = PRESENT(anisoOrder)
-IF (isok) cellOrder0(1) = anisoOrder(1)
-
-isok = PRESENT(cellOrder)
-IF (isok) cellOrder0(1) = cellOrder(1)
-
-CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=1_I4B, &
-                          errCheck=errCheck)
-
-tdof = LagrangeDOF_Line(order=cellOrder0(1))
-
-CALL obj%opt%SetTotalDOF(tdof=tdof)
+CALL obj%opt%Triangle_SetQuadratureOrder(order=order0)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetOrder
+END PROCEDURE obj_SetQuadratureOrder
 
 !----------------------------------------------------------------------------
-!                                                       GetLocalElemShapeData
+!                                                         SetQuadratureType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetLocalElemShapeData
+MODULE PROCEDURE obj_SetQuadratureType
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: quadratureType0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = PRESENT(quadratureType) .OR. PRESENT(quadratureType1) .OR. &
+       PRESENT(quadratureType2) .OR. PRESENT(quadratureType3)
+CALL AssertError1(isok, myName, &
+                  'quadratureType, quadratureType1, quadratureType2, or &
+                  &quadratureType3 must be provided')
+#endif
+
+IF (PRESENT(quadratureType)) THEN
+  quadratureType0 = quadratureType(1)
+ELSE IF (PRESENT(quadratureType1)) THEN
+  quadratureType0 = quadratureType1
+ELSE IF (PRESENT(quadratureType2)) THEN
+  quadratureType0 = quadratureType2
+ELSE IF (PRESENT(quadratureType3)) THEN
+  quadratureType0 = quadratureType3
+END IF
+
+CALL obj%opt%Triangle_SetQuadratureType(quadratureType=quadratureType0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
 #endif
 
 #ifdef DEBUG_VER
@@ -145,62 +171,50 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1HieFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+ans = GetTotalDOF_Triangle(order=order(1), baseContinuity="H1", &
+                           baseInterpolation="")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetLocalElemShapeData
+END PROCEDURE obj_GetTotalInterpolationPoints
 
 !----------------------------------------------------------------------------
-!                                                      GetGlobalElemShapeData
+!                                                      GetInterpolationPoints
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetGlobalElemShapeData
+MODULE PROCEDURE obj_GetInterpolationPoints
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
 #endif
+
+REAL(DFP) :: alpha0, beta0, lambda0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                                geoelemsd=geoelemsd)
+alpha0 = 0.0_DFP; beta0 = 0.0_DFP; lambda0 = 0.5_DFP
+
+IF (PRESENT(alpha)) alpha0 = alpha(1)
+IF (PRESENT(beta)) beta0 = beta(1)
+IF (PRESENT(lambda)) lambda0 = lambda(1)
+
+! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
+CALL InterpolationPoint_Triangle_( &
+  order=order(1), ipType=ipType(1), ans=ans, nrow=nrow, ncol=ncol, &
+  layout="VEFC", xij=xij, alpha=alpha0, beta=beta0, lambda=lambda0)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetGlobalElemShapeData
+END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
-!                                              GetFacetDOFValueFromQuadrature
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans(1) = func(1)
-tsize = 1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromQuadrature
-
-!----------------------------------------------------------------------------
-!                                                              Include Error
+!                                                              include Error
 !----------------------------------------------------------------------------
 
 #include "../../../include/errors.F90"

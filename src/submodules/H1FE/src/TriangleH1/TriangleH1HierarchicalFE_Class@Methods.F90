@@ -16,26 +16,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LineH1HierarchicalFE_Class) Methods
+SUBMODULE(TriangleH1HierarchicalFE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    LagrangeDOF_Line
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
+                                        InterpolationPoint_Triangle_
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                            TriangleH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer1
+MODULE PROCEDURE obj_TriangleH1HierarchicalFEPointer1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = "obj_TriangleH1HierarchicalFEPointer1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -50,15 +48,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1HierarchicalFEPointer1
+END PROCEDURE obj_TriangleH1HierarchicalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                             TriangleH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LineH1HierarchicalFEPointer2
+MODULE PROCEDURE obj_TriangleH1HierarchicalFEPointer2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1HierarchicalFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "obj_TriangleH1HierarchicalFEPointer2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -69,20 +67,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ALLOCATE (ans)
 
 CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
+  elemType=TypeElemNameOpt%Triangle, nsd=nsd, baseContinuity="H1", &
   baseInterpolation="Hierarchical", fetype=TypeFEVariableOpt%scalar, &
-  order=order, cellOrient=cellOrient, tcell=3_I4B, &
+  cellOrder=cellOrder, faceOrder=faceOrder, cellOrient=cellOrient, &
+  faceOrient=faceOrient, tCell=3_I4B, tFace=3_I4B, &
   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType, &
-  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
-  quadratureLambda=quadratureLambda)
+  quadratureOrder=quadratureOrder, quadratureType=quadratureType)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_LineH1HierarchicalFEPointer2
+END PROCEDURE obj_TriangleH1HierarchicalFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                                    SetOrder
@@ -93,8 +90,8 @@ MODULE PROCEDURE obj_SetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: cellOrder0(1), tdof
+! LOGICAL(LGT) :: isok
+! INTEGER(I4B) :: order0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -102,33 +99,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
-CALL AssertError1(isok, myName, &
-    "At least one of 'order', 'anisoOrder', or 'cellOrder' must be provided.")
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
 #endif
 
-cellOrder0(1) = 0
-
-isok = PRESENT(order)
-IF (isok) cellOrder0(1) = order
-
-isok = PRESENT(anisoOrder)
-IF (isok) cellOrder0(1) = anisoOrder(1)
-
-isok = PRESENT(cellOrder)
-IF (isok) cellOrder0(1) = cellOrder(1)
-
-CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=1_I4B, &
-                          errCheck=errCheck)
-
-tdof = LagrangeDOF_Line(order=cellOrder0(1))
-
-CALL obj%opt%SetTotalDOF(tdof=tdof)
-
+! #ifdef DEBUG_VER
+! isok = PRESENT(order) .OR. PRESENT(anisoOrder)
+! CALL AssertError1(isok, myName, &
+!                   "either order or anisoOrder must be provided")
+! #endif
+!
+! isok = PRESENT(order)
+!
+! IF (isok) THEN
+!   order0 = order
+! ELSE
+!   order0 = anisoOrder(1)
+! END IF
+!
+! CALL obj%opt%TriangleH1LagFE_SetOrder(order=order0)
+!
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
@@ -145,7 +140,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1HieFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL obj%opt%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -154,7 +149,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                      GetGlobalElemShapeData
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%TriangleH1LagFE_GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                     GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
@@ -167,8 +187,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%LineH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                                geoelemsd=geoelemsd)
+CALL obj%opt%TriangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                                    geoelemsd=geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -177,12 +197,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                              GetFacetDOFValueFromQuadrature
+!                                                     GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
+MODULE PROCEDURE obj_GetGlobalFacetElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFacetElemShapeData()"
 #endif
 
 #ifdef DEBUG_VER
@@ -190,14 +210,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans(1) = func(1)
-tsize = 1
+CALL obj%opt%TriangleH1LagFE_GetGlobalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
+  geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromQuadrature
+END PROCEDURE obj_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

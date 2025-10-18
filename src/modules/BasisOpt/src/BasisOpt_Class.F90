@@ -381,6 +381,17 @@ CONTAINS
  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalFacetElemShapeData
   !! Get Global element shape data for QuadrangleH1LagrangeFE
 
+  !@ QuadrangleH1HierarchicalFEMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1HieFE_GetLocalElemShapeData
+  !! Get local element shape data for QuadrangleH1HierarchicalFE
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1HieFE_GetLocalFacetElemShapeData
+  !! Get local element shape data for QuadrangleH1HierarchicalFE
+  PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1HieFE_GetGlobalElemShapeData
+  !! Get global element shape data for QuadrangleH1HierarchicalFE
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    QuadrangleH1HieFE_GetGlobalFacetElemShapeData
+  !! Get Global element shape data for QuadrangleH1HierarchicalFE
+
 END TYPE BasisOpt_
 
 !----------------------------------------------------------------------------
@@ -1776,6 +1787,93 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE LineH1HieFE_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!     QuadrangleH1HieFE_GetLocalElemShapeData@QuadrangleH1HierarchicalMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1HieFE_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE QuadrangleH1HieFE_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!QuadrangleH1HieFE_GetLocalFacetElemShapeData@QuadrangleH1HierarchicalMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-09
+! summary:  Get local facet element shape data
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1HieFE_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data on cell
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad, facetQuad
+    !! Quadrature points on each facet element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+  END SUBROUTINE QuadrangleH1HieFE_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!   QuadrangleH1HieFE_GetGlobalElemShapeData@QuadrangleH1HierarchicalMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary:  Get global element shape data  for QuadrangleH1HierarchicalFE
+
+INTERFACE
+MODULE SUBROUTINE QuadrangleH1HieFE_GetGlobalElemShapeData(obj, xij, elemsd, &
+                                                             geoelemsd)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE QuadrangleH1HieFE_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                   QuadrangleH1HieFE_GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE QuadrangleH1HieFE_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE QuadrangleH1HieFE_GetGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

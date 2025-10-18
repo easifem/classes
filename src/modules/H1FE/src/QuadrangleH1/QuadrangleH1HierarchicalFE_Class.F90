@@ -16,112 +16,128 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE LineH1HierarchicalFE_Class
+MODULE QuadrangleH1HierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE LineH1FE_Class, ONLY: LineH1FE_
+USE QuadrangleH1FE_Class, ONLY: QuadrangleH1FE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
+USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: LineH1HierarchicalFE_
-PUBLIC :: LineH1HierarchicalFEPointer_
-PUBLIC :: LineH1HierarchicalFEPointer
+PUBLIC :: QuadrangleH1HierarchicalFE_
+PUBLIC :: QuadrangleH1HierarchicalFEPointer_
+PUBLIC :: QuadrangleH1HierarchicalFEPointer
 
 PUBLIC :: FiniteElementDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "LineH1HierarchicalFE_Class"
+CHARACTER(*), PARAMETER :: modName = "QuadrangleH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                       LineH1HierarchicalFE_
+!                                                     QuadrangleH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
 ! summary:  Scalar H1 Hierarchical Finite Element
 
-TYPE, EXTENDS(LineH1FE_) :: LineH1HierarchicalFE_
+TYPE, EXTENDS(QuadrangleH1FE_) :: QuadrangleH1HierarchicalFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get the Local element shape data
+  !! Get local element shape data on quadrangle
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
+    obj_GetLocalFacetElemShapeData
+  !! Get local element shape data on a facet of quadrangle
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-  !! Get the Global element shape data
+  !! Get Global element shape data on quadrangle cell
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
+    obj_GetGlobalFacetElemShapeData
+  !! Get Global element shape data on quadrangle and face
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
-    obj_GetFacetDOFValueFromQuadrature
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromUserFunction => &
+    obj_GetFacetDOFValueFromUserFunction
   !! Get the dof values of a function from its quadrature values on a facet
-END TYPE LineH1HierarchicalFE_
+END TYPE QuadrangleH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
-!                                                LineH1HierarchicalFEPointer_
+!                                              QuadrangleH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: LineH1HierarchicalFEPointer_
-  CLASS(LineH1HierarchicalFE_), POINTER :: ptr => NULL()
-END TYPE LineH1HierarchicalFEPointer_
+TYPE :: QuadrangleH1HierarchicalFEPointer_
+  CLASS(QuadrangleH1HierarchicalFE_), POINTER :: ptr => NULL()
+END TYPE QuadrangleH1HierarchicalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                         LineH1HierarchicalFEPointer@Methods
+!                                       QuadrangleH1HierarchicalFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE LineH1HierarchicalFEPointer
-  MODULE FUNCTION obj_LineH1HierarchicalFEPointer1() RESULT(ans)
-    TYPE(LineH1HierarchicalFE_), POINTER :: ans
-  END FUNCTION obj_LineH1HierarchicalFEPointer1
-END INTERFACE LineH1HierarchicalFEPointer
+INTERFACE QuadrangleH1HierarchicalFEPointer
+  MODULE FUNCTION obj_QuadrangleH1HierarchicalFEPointer1() RESULT(ans)
+    TYPE(QuadrangleH1HierarchicalFE_), POINTER :: ans
+  END FUNCTION obj_QuadrangleH1HierarchicalFEPointer1
+END INTERFACE QuadrangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                      HierarchicalFE@Methods
+!                                                          HierarchicalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE LineH1HierarchicalFEPointer
-  MODULE FUNCTION obj_LineH1HierarchicalFEPointer2( &
-    order, nsd, cellOrient, quadratureType, quadratureOrder, &
+INTERFACE QuadrangleH1HierarchicalFEPointer
+  MODULE FUNCTION obj_QuadrangleH1HierarchicalFEPointer2( &
+    cellOrder, faceOrder, nsd, cellOrient, faceOrient, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
     quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Isotropic Order of finite element
+    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
+    !! cellOrder, the size should be 3
+    INTEGER(I4B), INTENT(IN) :: faceOrder(:, :)
+    !! faceOrder, the row size should be 3, and column size should be
+    !! at least 4
     INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
     !! Orientation of cell
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! number of rows in faceorient is 3
+    !! number of columns in faceorient is 4
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
     !! Order of quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), &
-                                       quadratureBeta(:)
-    !! For jacobian polynomial
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), quadratureBeta(:)
+    !! Alpha and Beta for Jacobi quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
-    !! for ultraspherical polynomial
-    TYPE(LineH1HierarchicalFE_), POINTER :: ans
-    !! LineH1HierarchicalFE_ pointer
-  END FUNCTION obj_LineH1HierarchicalFEPointer2
-END INTERFACE LineH1HierarchicalFEPointer
+    !! Lambda for Ultraspherical quadrature
+    TYPE(QuadrangleH1HierarchicalFE_), POINTER :: ans
+    !! QuadrangleH1HierarchicalFE_ pointer
+  END FUNCTION obj_QuadrangleH1HierarchicalFEPointer2
+END INTERFACE QuadrangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
+!                                                         Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of LineH1HierarchicalFE
+! summary:  Deallocate a vector of QuadrangleH1HierarchicalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(LineH1HierarchicalFE_), ALLOCATABLE :: obj(:)
+    TYPE(QuadrangleH1HierarchicalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -131,16 +147,16 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of LineH1HierarchicalFEPointer_
+! summary:  Deallocate the vector of QuadrangleH1HierarchicalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(LineH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(QuadrangleH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
-!                                               GetLocalElemShapeData@Methods
+!                                          GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -149,10 +165,80 @@ END INTERFACE FiniteElementDeallocate
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(LineH1HierarchicalFE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetGlobalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-16
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -172,7 +258,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
     faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
-    CLASS(LineH1HierarchicalFE_), INTENT(INOUT) :: obj
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order
@@ -208,34 +294,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
-    CLASS(LineH1HierarchicalFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    GetFacetDOFValue@Methods
+!                                   GetFacetDOFValueFromUserFunction@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -243,10 +302,10 @@ END INTERFACE
 ! summary: Get Interpolation points
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromQuadrature( &
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromUserFunction( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv)
-    CLASS(LineH1HierarchicalFE_), INTENT(INOUT) :: obj
+    massMat, ipiv, funcValue)
+    CLASS(QuadrangleH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
     !! element shape function defined inside the cell
@@ -256,7 +315,7 @@ INTERFACE
     !! nodal coordinates of reference element
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
-    REAL(DFP), INTENT(INOUT) :: func(:)
+    TYPE(UserFunction_), INTENT(INOUT) :: func
     !! user defined functions
     !! quadrature values of function
     REAL(DFP), INTENT(INOUT) :: ans(:)
@@ -267,11 +326,13 @@ INTERFACE
     !! mass matrix
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
-  END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points
+  END SUBROUTINE obj_GetFacetDOFValueFromUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END MODULE LineH1HierarchicalFE_Class
+END MODULE QuadrangleH1HierarchicalFE_Class

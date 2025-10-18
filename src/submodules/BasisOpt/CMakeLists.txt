@@ -26,4 +26,6 @@ target_sources(
           ${src_path}/BasisOpt_Class@GetMethods.F90
           ${src_path}/BasisOpt_Class@LineH1LagrangeFEMethods.F90
           ${src_path}/BasisOpt_Class@TriangleH1LagrangeFEMethods.F90
-          ${src_path}/BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90)
+          ${src_path}/BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90
+          ${src_path}/BasisOpt_Class@LineH1HierarchicalFEMethods.F90
+          ${src_path}/BasisOpt_Class@QuadrangleH1HierarchicalFEMethods.F90)
