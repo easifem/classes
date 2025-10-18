@@ -28,11 +28,6 @@ USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
 USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
                                     InterpolationPoint_Line_
 
-USE MassMatrix_Method, ONLY: MassMatrix_
-USE ForceVector_Method, ONLY: ForceVector_
-USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
-USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
 CONTAINS
 
@@ -150,7 +145,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: order0
+INTEGER(I4B) :: order0, tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -171,7 +166,12 @@ ELSE
   order0 = anisoOrder(1)
 END IF
 
-CALL obj%opt%QuadrangleH1LagFE_SetOrder(order=order0)
+CALL obj%opt%SetIsotropicOrder(order=order0)
+
+tdof = GetTotalDOF_Quadrangle(order=order0, baseContinuity="H1", &
+                              baseInterpolation="Lagrange")
+
+CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -179,204 +179,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_SetOrder
-
-!----------------------------------------------------------------------------
-!                                                         GetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%Quadrangle_GetQuadraturePoints(quad=quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!                                                    GetFacetQuadraturePoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetQuadraturePoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetQuadraturePoints()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%Quadrangle_GetFacetQuadraturePoints( &
-  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!                                                         SetQuadratureOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetQuadratureOrder
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%Quadrangle_SetQuadratureOrder(order=order, order1=order1, &
-                                           order2=order2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetQuadratureOrder
-
-!----------------------------------------------------------------------------
-!                                                         SetQuadratureType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetQuadratureType
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%Quadrangle_SetQuadratureType( &
-  quadratureType=quadratureType, quadratureType1=quadratureType1, &
-  quadratureType2=quadratureType2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetQuadratureType
-
-!----------------------------------------------------------------------------
-!                                                 GetTotalInterpolationPoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalInterpolationPoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
-#endif
-
-INTEGER(I4B) :: p, q, tsize
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-p = order(1)
-q = p
-
-tsize = SIZE(order)
-isok = tsize .GT. 1
-IF (isok) q = order(2)
-
-ans = GetTotalDOF_Line(order=p, baseContinuity="H1", &
-                       baseInterpolation="Lagrange")
-
-tsize = GetTotalDOF_Line(order=q, baseContinuity="H1", &
-                         baseInterpolation="Lagrange")
-
-ans = ans * tsize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetTotalInterpolationPoints
-
-!----------------------------------------------------------------------------
-!                                                      GetInterpolationPoints
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetInterpolationPoints
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
-#endif
-
-REAL(DFP) :: alpha1, beta1, lambda1, alpha2, beta2, lambda2
-INTEGER(I4B) :: ipType1, ipType2, order1, order2, tsize
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-alpha1 = 0.0_DFP; beta1 = 0.0_DFP; lambda1 = 0.5_DFP
-alpha2 = 0.0_DFP; beta2 = 0.0_DFP; lambda2 = 0.5_DFP
-
-order1 = order(1)
-order2 = order1
-tsize = SIZE(order)
-isok = tsize .GT. 1
-IF (isok) order2 = order(2)
-
-ipType1 = ipType(1)
-ipType2 = ipType1
-tsize = SIZE(ipType)
-isok = tsize .GT. 1
-IF (isok) ipType2 = ipType(2)
-
-IF (PRESENT(alpha)) THEN
-  alpha1 = alpha(1)
-  alpha2 = alpha1
-  tsize = SIZE(alpha)
-  isok = tsize .GT. 1
-  IF (isok) alpha2 = alpha(2)
-END IF
-
-IF (PRESENT(beta)) THEN
-  beta1 = beta(1)
-  beta2 = beta1
-  tsize = SIZE(beta)
-  isok = tsize .GT. 1
-  IF (isok) beta2 = beta(2)
-END IF
-
-IF (PRESENT(lambda)) THEN
-  lambda1 = lambda(1)
-  lambda2 = lambda1
-  tsize = SIZE(lambda)
-  isok = tsize .GT. 1
-  IF (isok) lambda2 = lambda(2)
-END IF
-
-CALL InterpolationPoint_Quadrangle_( &
-  p=order1, q=order2, ipType1=ipType1, ipType2=ipType2, ans=ans, &
-  nrow=nrow, ncol=ncol, layout="VEFC", xij=xij, alpha1=alpha1, beta1=beta1, &
-  lambda1=lambda1, alpha2=alpha2, beta2=beta2, lambda2=lambda2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
 !                                                     GetGlobalElemShapeData
@@ -424,46 +226,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalFacetElemShapeData
-
-!----------------------------------------------------------------------------
-!                                              GetFacetDOFValueFromQuadrature
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
-#endif
-
-INTEGER(I4B) :: info
-INTEGER(I4B) :: nrow, ncol
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-nrow = facetElemsd%nns
-ncol = nrow
-tsize = nrow
-
-massMat(1:nrow, 1:ncol) = 0.0_DFP
-ans(1:nrow) = 0.0_DFP
-
-CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
-                 nrow=nrow, ncol=ncol)
-
-CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=tsize)
-
-CALL GetLU(A=massMat(1:tsize, 1:tsize), IPIV=ipiv(1:tsize), info=info)
-
-CALL LUSolve(A=massMat(1:tsize, 1:tsize), B=ans(1:tsize), &
-             IPIV=ipiv(1:tsize), info=info)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 
 !----------------------------------------------------------------------------
 !                                            GetFacetDOFValueFromUserFunction
