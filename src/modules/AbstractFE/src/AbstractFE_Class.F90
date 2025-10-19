@@ -991,7 +991,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromQuadrature( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv)
+    massMat, ipiv, onlyFaceBubble, tVertices)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -1013,6 +1013,13 @@ INTERFACE
     !! mass matrix
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
   END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
 END INTERFACE
 
@@ -1023,11 +1030,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-05
 ! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromUserFunction( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv, funcValue)
+    massMat, ipiv, funcValue, onlyFaceBubble, tVertices)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -1035,22 +1046,29 @@ INTERFACE
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
     !! shape function defined on the face of element
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
+    !! Nodal coordinates of reference element
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
     TYPE(UserFunction_), INTENT(INOUT) :: func
     !! user defined functions
     !! quadrature values of function
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! nodal coordinates of interpolation points
+    !! Nodal coordinates of interpolation points
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in xij
+    !! Data written in xij
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
     !! mass matrix
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
-    REAL( DFP ), INTENT(INOUT) :: funcValue(:)
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
     !! function values at quadrature points used inside
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
   END SUBROUTINE obj_GetFacetDOFValueFromUserFunction
 END INTERFACE
 

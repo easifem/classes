@@ -835,35 +835,51 @@ END PROCEDURE obj_GetRefElemCoord
 MODULE PROCEDURE obj_GetFacetDOFValueFromQuadrature
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
+LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: info
-INTEGER(I4B) :: nrow, ncol
+INTEGER(I4B) :: info, nrow, ncol, n1, n2
+LOGICAL(LGT) :: onlyFaceBubble0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+onlyFaceBubble0 = .FALSE.
+IF (PRESENT(onlyFaceBubble)) onlyFaceBubble0 = onlyFaceBubble
+
+#ifdef DEBUG_VER
+IF (onlyFaceBubble0) THEN
+  isok = PRESENT(tVertices)
+  CALL AssertError1(isok, myName, &
+                    'tVertices must be provided when onlyFaceBubble is true')
+END IF
+#endif
 
 nrow = facetElemsd%nns
 ncol = nrow
-tsize = nrow
 
-massMat(1:nrow, 1:ncol) = 0.0_DFP
+massMat(1:nrow, 1:nrow) = 0.0_DFP
 ans(1:nrow) = 0.0_DFP
+
+n1 = 1; n2 = nrow
+
+IF (onlyFaceBubble0) THEN
+  n1 = tVertices + 1; n2 = nrow
+END IF
+
+tsize = n2 - n1 + 1
 
 CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
                  nrow=nrow, ncol=ncol)
 
-CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=tsize)
+CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=nrow)
 
-CALL GetLU(A=massMat(1:tsize, 1:tsize), IPIV=ipiv(1:tsize), info=info)
+CALL GetLU(A=massMat(n1:n2, n1:n2), IPIV=ipiv(n1:n2), info=info)
 
-CALL LUSolve(A=massMat(1:tsize, 1:tsize), B=ans(1:tsize), &
-             IPIV=ipiv(1:tsize), info=info)
+CALL LUSolve(A=massMat(n1:n2, n1:n2), B=ans(n1:n2), &
+             IPIV=ipiv(n1:n2), info=info)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -872,13 +888,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 
 !----------------------------------------------------------------------------
-!                                           GetFacetDOFValueFromUserFunction
+!                                            GetFacetDOFValueFromUserFunction
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tReturns
 #endif
+
+INTEGER(I4B) :: tArgs, ii
+REAL(DFP) :: args(4)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -886,10 +907,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+tReturns = func%GetNumReturns()
+isok = tReturns .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "WIP: the user function must return a single value")
 #endif
+
+tArgs = func%GetNumArgs()
+
+args = 0.0_DFP
+
+DO ii = 1, facetElemsd%nips
+  args(1:2) = facetElemsd%coord(1:2, ii)
+  CALL func%GetScalarValue(args=args, val=funcValue(ii))
+END DO
+
+CALL obj%GetFacetDOFValueFromQuadrature( &
+  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
+  localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
+  massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
+  tVertices=tVertices)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

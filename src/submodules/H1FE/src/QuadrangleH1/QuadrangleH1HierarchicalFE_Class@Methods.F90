@@ -24,7 +24,8 @@ USE Display_Method, ONLY: ToString, Display
 
 USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
                                           InterpolationPoint_Quadrangle_, &
-                                          GetTotalInDOF_Quadrangle
+                                          GetTotalInDOF_Quadrangle, &
+                                          GetHierarchicalDOF_Quadrangle
 
 USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
                                     GetTotalInDOF_Line, &
@@ -99,7 +100,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: cellOrder0(3), faceOrder0(3, 4), ii, jj
+INTEGER(I4B) :: cellOrder0(3), faceOrder0(3, 4), ii, jj, tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -112,7 +113,9 @@ IF (isok) THEN
   faceOrder0 = order
   CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=3_I4B)
   CALL obj%opt%SetFaceOrder(faceOrder=faceOrder0, tFace=4_I4B)
-  CALL SetTotalDOF
+  tdof = GetHierarchicalDOF_Quadrangle( &
+      pb=order, qb=order, pe3=order, pe4=order, qe1=order, qe2=order, opt="A")
+  CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -141,31 +144,16 @@ END IF
 CALL obj%opt%GetCellOrder(ans=cellOrder0, tsize=ii)
 CALL obj%opt%GetFaceOrder(ans=faceOrder0, nrow=ii, ncol=jj)
 
-CALL SetTotalDOF
+tdof = GetHierarchicalDOF_Quadrangle( &
+       pb=cellOrder0(1), qb=cellOrder0(2), pe3=faceOrder0(1, 1), &
+       pe4=faceOrder0(1, 3), qe1=faceOrder0(1, 4), qe2=faceOrder0(1, 2), &
+       opt="A")
+CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-CONTAINS
-
-SUBROUTINE SetTotalDOF
-  INTEGER(I4B) :: tdof
-
-  tdof = 4
-  tdof = tdof + GetTotalInDOF_Quadrangle( &
-         p=cellOrder0(1), q=cellOrder0(2), baseContinuity="H1", &
-         baseInterpolation="HIERARCHICAL")
-
-  DO ii = 1, 4
-    jj = GetTotalInDOF_Line(order=faceOrder0(1, ii), baseContinuity="H1", &
-                            baseInterpolation="HIERARCHICAL")
-    tdof = tdof + jj
-  END DO
-
-  CALL obj%opt%SetTotalDOF(tdof=tdof)
-END SUBROUTINE SetTotalDOF
 
 END PROCEDURE obj_SetOrder
 
@@ -263,57 +251,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalFacetElemShapeData
-
-!----------------------------------------------------------------------------
-!                                            GetFacetDOFValueFromUserFunction
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
-! LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: tReturns
-#endif
-
-! INTEGER(I4B) :: tArgs, ii
-! REAL(DFP) :: args(4)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-! #ifdef DEBUG_VER
-! tReturns = func%GetNumReturns()
-! isok = tReturns .EQ. 1
-! CALL AssertError1(isok, myName, &
-!                   "WIP: the user function must return a single value")
-! #endif
-!
-! tArgs = func%GetNumArgs()
-!
-! args = 0.0_DFP
-!
-! DO ii = 1, facetElemsd%nips
-!   args(1:2) = facetElemsd%coord(1:2, ii)
-!   CALL func%GetScalarValue(args=args, val=funcValue(ii))
-! END DO
-!
-! CALL obj%GetFacetDOFValueFromQuadrature( &
-!   elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
-!   localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
-!   massMat=massMat, ipiv=ipiv)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromUserFunction
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

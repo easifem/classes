@@ -228,52 +228,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
-!                                            GetFacetDOFValueFromUserFunction
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tReturns
-#endif
-
-INTEGER(I4B) :: tArgs, ii
-REAL(DFP) :: args(4)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-tReturns = func%GetNumReturns()
-isok = tReturns .EQ. 1
-CALL AssertError1(isok, myName, &
-                  "WIP: the user function must return a single value")
-#endif
-
-tArgs = func%GetNumArgs()
-
-args = 0.0_DFP
-
-DO ii = 1, facetElemsd%nips
-  args(1:2) = facetElemsd%coord(1:2, ii)
-  CALL func%GetScalarValue(args=args, val=funcValue(ii))
-END DO
-
-CALL obj%GetFacetDOFValueFromQuadrature( &
-  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
-  localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
-  massMat=massMat, ipiv=ipiv)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromUserFunction
-
-!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

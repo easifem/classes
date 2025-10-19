@@ -52,9 +52,6 @@ CONTAINS
   !! Get the Global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
-    obj_GetFacetDOFValueFromQuadrature
-  !! Get the dof values of a function from its quadrature values on a facet
 END TYPE LineH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
@@ -232,42 +229,6 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    GetFacetDOFValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromQuadrature( &
-    obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv)
-    CLASS(LineH1HierarchicalFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
-    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-    REAL(DFP), INTENT(INOUT) :: func(:)
-    !! user defined functions
-    !! quadrature values of function
-    REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in xij
-    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
-    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
-  END SUBROUTINE obj_GetFacetDOFValueFromQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------

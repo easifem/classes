@@ -22,7 +22,8 @@ USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
 USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
-                                        InterpolationPoint_Triangle_
+                                        InterpolationPoint_Triangle_, &
+                                        GetHierarchicalDOF_Triangle
 
 IMPLICIT NONE
 CONTAINS
@@ -90,35 +91,57 @@ MODULE PROCEDURE obj_SetOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 #endif
 
-! LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: order0
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: cellOrder0(3), faceOrder0(3, 4), ii, jj, tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+isok = PRESENT(order)
+IF (isok) THEN
+  cellOrder0 = order
+  faceOrder0 = order
+  CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=3_I4B)
+  CALL obj%opt%SetFaceOrder(faceOrder=faceOrder0, tFace=4_I4B)
+  tdof = GetHierarchicalDOF_Triangle( &
+         order=order, pe1=order, pe2=order, pe3=order, opt="A")
+  CALL obj%opt%SetTotalDOF(tdof=tdof)
+
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
 
-! #ifdef DEBUG_VER
-! isok = PRESENT(order) .OR. PRESENT(anisoOrder)
-! CALL AssertError1(isok, myName, &
-!                   "either order or anisoOrder must be provided")
-! #endif
-!
-! isok = PRESENT(order)
-!
-! IF (isok) THEN
-!   order0 = order
-! ELSE
-!   order0 = anisoOrder(1)
-! END IF
-!
-! CALL obj%opt%TriangleH1LagFE_SetOrder(order=order0)
-!
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+isok = PRESENT(cellOrder) .AND. PRESENT(faceOrder)
+CALL AssertError1(isok, myName, &
+                  "cellOrder and faceOrder must be provided.")
+#endif
+
+isok = PRESENT(cellOrder)
+IF (isok) THEN
+CALL obj%opt%SetCellOrder(cellOrder=cellOrder, tCell=tCell, errCheck=errCheck)
+END IF
+
+isok = PRESENT(faceOrder)
+IF (isok) THEN
+CALL obj%opt%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, errCheck=errCheck)
+END IF
+
+CALL obj%opt%GetCellOrder(ans=cellOrder0, tsize=ii)
+CALL obj%opt%GetFaceOrder(ans=faceOrder0, nrow=ii, ncol=jj)
+
+tdof = GetHierarchicalDOF_Triangle( &
+       order=cellOrder0(1), pe1=faceOrder0(1, 1), pe2=faceOrder0(1, 2), &
+       pe3=faceOrder0(1, 3), opt="A")
+
+CALL obj%opt%SetTotalDOF(tdof)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -140,7 +163,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%TriangleH1LagFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL obj%opt%TriangleH1HieFE_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
