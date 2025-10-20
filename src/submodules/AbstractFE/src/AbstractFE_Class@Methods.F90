@@ -839,7 +839,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromQuadrature()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: info, nrow, ncol, n1, n2
+INTEGER(I4B) :: info, nrow, ncol, n1, n2, ii, nns
 LOGICAL(LGT) :: onlyFaceBubble0
 
 #ifdef DEBUG_VER
@@ -847,8 +847,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-onlyFaceBubble0 = .FALSE.
-IF (PRESENT(onlyFaceBubble)) onlyFaceBubble0 = onlyFaceBubble
+onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
 
 #ifdef DEBUG_VER
 IF (onlyFaceBubble0) THEN
@@ -858,16 +857,15 @@ IF (onlyFaceBubble0) THEN
 END IF
 #endif
 
-nrow = facetElemsd%nns
-ncol = nrow
+nns = facetElemsd%nns
 
-massMat(1:nrow, 1:nrow) = 0.0_DFP
-ans(1:nrow) = 0.0_DFP
+massMat(1:nns, 1:nns) = 0.0_DFP
+ans(1:nns) = 0.0_DFP
 
-n1 = 1; n2 = nrow
+n1 = 1; n2 = nns
 
 IF (onlyFaceBubble0) THEN
-  n1 = tVertices + 1; n2 = nrow
+  n1 = tVertices + 1; n2 = nns
 END IF
 
 tsize = n2 - n1 + 1
@@ -881,6 +879,12 @@ CALL GetLU(A=massMat(n1:n2, n1:n2), IPIV=ipiv(n1:n2), info=info)
 
 CALL LUSolve(A=massMat(n1:n2, n1:n2), B=ans(n1:n2), &
              IPIV=ipiv(n1:n2), info=info)
+
+IF (onlyFaceBubble0) THEN
+  DO ii = tVertices + 1, nns
+    ans(ii - 2) = ans(ii)
+  END DO
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
