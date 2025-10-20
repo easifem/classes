@@ -24,6 +24,7 @@ USE tomlf, ONLY: toml_get => get_value, &
 USE MassMatrix_Method, ONLY: MassMatrix_
 USE ForceVector_Method, ONLY: ForceVector_
 USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
+USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
 CONTAINS
@@ -888,38 +889,39 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromQuadrature
 
 !----------------------------------------------------------------------------
-!                                            GetFacetDOFValueFromUserFunction
+!                                                 GetFacetDOFValueFromVertex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
+MODULE PROCEDURE obj_GetFacetDOFValueFromVertex
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromVertex()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tReturns
 #endif
 
-INTEGER(I4B) :: tArgs, ii
-REAL(DFP) :: args(4)
+INTEGER(I4B) :: ii, nns, nips
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+nns = geoFacetElemsd%nns
+nips = geoFacetElemsd%nips
+
 #ifdef DEBUG_VER
-tReturns = func%GetNumReturns()
-isok = tReturns .EQ. 1
+isok = SIZE(func) .GE. nns
 CALL AssertError1(isok, myName, &
-                  "WIP: the user function must return a single value")
+                  "Size of func is less than nns in geoFacetElemsd")
+
+isok = SIZE(funcValue) .GE. nips
+CALL AssertError1(isok, myName, &
+                  "Size of funcValue is less than nips in facetElemsd")
 #endif
 
-tArgs = func%GetNumArgs()
-
-args = 0.0_DFP
-
-DO ii = 1, facetElemsd%nips
-  args(1:2) = facetElemsd%coord(1:2, ii)
-  CALL func%GetScalarValue(args=args, val=funcValue(ii))
+! Now we will perform interpolation from vertex to quadrature points
+! The result will be stored in funcValue
+DO ii = 1, nips
+  funcValue(ii) = DOT_PRODUCT(facetElemsd%N(1:nns, ii), func(1:nns))
 END DO
 
 CALL obj%GetFacetDOFValueFromQuadrature( &
@@ -927,6 +929,31 @@ CALL obj%GetFacetDOFValueFromQuadrature( &
   localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
   massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
   tVertices=tVertices)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromVertex
+
+!----------------------------------------------------------------------------
+!                                            GetFacetDOFValueFromUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

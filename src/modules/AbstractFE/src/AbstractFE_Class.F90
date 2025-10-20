@@ -1024,6 +1024,52 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromVertex( &
+    obj, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, xij, &
+    localFaceNumber, func, ans, tsize, massMat, ipiv, funcValue, &
+    onlyFaceBubble, tVertices)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, geoElemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd, geoFacetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of physical element cell
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    REAL(DFP), INTENT(INOUT) :: func(:)
+    !! nodal values of function at vertex degree of freedom
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! degree of freedom values corresponding to func
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! tota size written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix (formed and used inside the routine)
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at the quadrature points
+    !! this is formed inside the routine
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
+  END SUBROUTINE obj_GetFacetDOFValueFromVertex
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                   GetFacetDOFValueFromUserFunction@Methods
 !----------------------------------------------------------------------------
 
@@ -1038,7 +1084,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromUserFunction( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv, funcValue, onlyFaceBubble, tVertices)
+    massMat, ipiv, funcValue, onlyFaceBubble)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -1065,10 +1111,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
-    !! tVertices are needed when onlyFaceBubble is true
-    !! tVertices are total number of vertex degree of
-    !! freedom
   END SUBROUTINE obj_GetFacetDOFValueFromUserFunction
 END INTERFACE
 
