@@ -188,6 +188,7 @@ FUNCTION FEFactoryLine(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -230,6 +231,7 @@ FUNCTION FEFactoryTriangle(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -272,6 +274,7 @@ FUNCTION FEFactoryQuadrangle(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -314,6 +317,7 @@ FUNCTION FEFactoryTetrahedron(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -356,6 +360,7 @@ FUNCTION FEFactoryHexahedron(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -398,6 +403,7 @@ FUNCTION FEFactoryPrism(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
@@ -440,6 +446,7 @@ FUNCTION FEFactoryPyramid(baseContinuity, baseInterpolation) RESULT(ans)
 #endif
 
   acase = baseContinuity(1:2)//baseInterpolation(1:4)
+  acase = UpperCase(acase)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
