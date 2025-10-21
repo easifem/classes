@@ -777,8 +777,8 @@ CALL AssertError1(isok, myname, &
                   'obj%fe('//ToString(ii)//')%ptr is not associated')
 #endif
 
-CALL obj%GetCellOrder(ans=cellOrder, tsize=tsize, &
-                      globalElement=globalElement, islocal=islocal)
+CALL obj%GetCellOrder( &
+  ans=cellOrder, tsize=tsize, globalElement=globalElement, islocal=islocal)
 
 DO jj = 1, tsize
   cellOrder(jj) = cellOrder(jj) * obj%scaleForQuadOrder
@@ -910,14 +910,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
 cellOrder(1) = obj%cellOrder(iel)
 ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=.TRUE.)
 
 #ifdef DEBUG_VER
 isok = ii .NE. 0
-CALL AssertError1(isok, myname, &
-                  'Element topology index is not found')
+CALL AssertError1(isok, myname, 'Element topology index is not found')
 #endif
 
 CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), errCheck=.TRUE.)
@@ -1197,6 +1197,44 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetFacetConnectivity_
+
+!----------------------------------------------------------------------------
+!                                                               GetFEPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetFEPointer()'
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=globalElement, &
+                                  islocal=islocal)
+
+#ifdef DEBUG_VER
+isok = ii .NE. 0
+CALL AssertError1(isok, myname, &
+                  'Element topology index is not found')
+
+isok = ASSOCIATED(obj%fe(ii)%ptr)
+CALL AssertError1(isok, myname, &
+                  'obj%fe('//ToString(ii)//')%ptr is not associated')
+#endif
+
+ans => obj%fe(ii)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFEPointer
 
 !----------------------------------------------------------------------------
 !

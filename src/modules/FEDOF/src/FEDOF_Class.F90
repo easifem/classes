@@ -215,44 +215,36 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the case name of fedof, it returns baseContinuity+baseInterpolation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
-
   PROCEDURE, PASS(obj) :: GetEdgeDOF1 => obj_GetEdgeDOF1
   !! Get edge degrees of freedom
   PROCEDURE, PASS(obj) :: GetEdgeDOF2 => obj_GetEdgeDOF2
   !! Get edge degree of freedom from global element and
   !! local edge number
   GENERIC, PUBLIC :: GetEdgeDOF => GetEdgeDOF1, GetEdgeDOF2
-
   PROCEDURE, PASS(obj) :: GetTotalEdgeDOF1 => obj_GetTotalEdgeDOF1
   !! Get total edge dof
   PROCEDURE, PASS(obj) :: GetTotalEdgeDOF2 => obj_GetTotalEdgeDOF2
   !! Get total edge dof from global element and local edge number
   GENERIC, PUBLIC :: GetTotalEdgeDOF => GetTotalEdgeDOF1, GetTotalEdgeDOF2
-
   PROCEDURE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
   !! Get face degrees of freedom
   PROCEDURE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
   !! Get face degrees of freedom from globbal element and
   !! local face number
   GENERIC, PUBLIC :: GetFaceDOF => GetFaceDOF1, GetFaceDOF2
-
   PROCEDURE, PASS(obj) :: GetTotalFaceDOF1 => obj_GetTotalFaceDOF1
   !! Get total face dof
   PROCEDURE, PASS(obj) :: GetTotalFaceDOF2 => obj_GetTotalFaceDOF2
   !! Get total face dof from global element and local face number
   GENERIC, PUBLIC :: GetTotalFaceDOF => GetTotalFaceDOF1, GetTotalFaceDOF2
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Get total cell degrees of freedom
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
   !! Retuns the total number of vertex dof
-
   PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Retuns the total degrees of freedom in FEDOF
   PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
@@ -261,50 +253,37 @@ CONTAINS
   !! Retuns the total dof of an element with opt filter
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Generic mehthod for getting the total dof
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix for setting the data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
     obj_GetFacetConnectivity_
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get the mesh pointer
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomainPointer => obj_GetDomainPointer
   !! Get the domain pointer
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrder => obj_GetFaceOrder
   !! Get the face order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrder => obj_GetEdgeOrder
   !! Get the edge order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
   !! Get cell,face, and edge orders
   !! Also get orientation of face and edge
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
     obj_GetFacetQuadraturePoints
   !! Get quadrature points on a local face of global element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for cell element
@@ -312,39 +291,33 @@ CONTAINS
     obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element
   !! and on a local face of the cell element
-
   PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Lagrange => &
     obj_GetLocalElemShapeDataH1Lagrange
   !! Get local element shape data for H1 Lagrange basis
-
   PROCEDURE, PASS(obj) :: GetLocalFacetElemShapeDataH1Lagrange => &
     obj_GetLocalFacetElemShapeDataH1Lagrange
   !! Get local element shape data for H1 Lagrange basis in cell
   !! and a local face of the cell
-
   PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Hierarchical => &
     obj_GetLocalElemShapeDataH1Hierarchical
   !! Get local element shape data for H1 hierarchical basis
-
   PROCEDURE, PASS(obj) :: GetLocalFacetElemShapeDataH1Hierarchical => &
     obj_GetLocalFacetElemShapeDataH1Hierarchical
   !! Get local element shape data for H1 hierarchical basis
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data for cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
+  !! Get finite element pointer for a given element
 
   !SET:
   !@SetSparsityMethods
-
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set sparsity in the CSRMatrix by using single FEDOF
   !! This is for non block matrix
-
   PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   !! Set sparsity in the CSRMatrix by using single FEDOF
   !! This is for non block matrix
-
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
 
 END TYPE FEDOF_
@@ -1824,6 +1797,23 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then the global element is a local element
   END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetFEPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-21
+! summary:  Get the finite element pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEPointer(obj, globalElement, islocal) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
+    CLASS(AbstractFE_), POINTER :: ans
+  END FUNCTION obj_GetFEPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
