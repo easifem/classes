@@ -237,32 +237,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 # AbstractOneDimFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
 
-# ScalarFE
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
-
-# VectorFE
-include(${CMAKE_CURRENT_LIST_DIR}/VectorFE/CMakeLists.txt)
-
-# TensorFE
-include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
-
 # H1FE
 include(${CMAKE_CURRENT_LIST_DIR}/H1FE/CMakeLists.txt)
 
-# OneDimFEFactory
-include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEFactory/CMakeLists.txt)
-
 # FEFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FEFactory/CMakeLists.txt)
-
-# # FiniteElement
-# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
-#
-# # MixedFiniteElement
-# include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
-#
-# # FiniteElementFactory
-# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
 
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)

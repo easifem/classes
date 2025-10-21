@@ -20,17 +20,10 @@
 MODULE TimeFEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemshapeData_
-
+USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-
 USE TimeOpt_Class, ONLY: TimeOpt_
-
 USE TxtFile_Class, ONLY: TxtFile_
-
 USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
@@ -38,12 +31,8 @@ PRIVATE
 
 PUBLIC :: TimeFEDOF_
 PUBLIC :: TimeFEDOFPointer_
-PUBLIC :: SetTimeFEDOFParam
 
 CHARACTER(*), PARAMETER :: modName = "TimeFEDOF_Class"
-CHARACTER(*), PARAMETER :: myprefix = "TimeFEDOF"
-CHARACTER(*), PARAMETER :: essentialParam = &
-  "baseContinuity/baseInterpolation/order/ipType/basisType/alpha/beta/lambda/"
 
 !----------------------------------------------------------------------------
 !                                                              TimeFEDOF_
@@ -57,10 +46,8 @@ TYPE :: TimeFEDOF_
   PRIVATE
   LOGICAL(LGT) :: isinit = .FALSE.
   !! It is set to true when TimeFEDOF is initiated
-
   TYPE(TimeOpt_), POINTER :: opt => NULL()
   !! option related to the time domain discretization
-
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
   !! pointer to finite element object
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
@@ -71,14 +58,8 @@ CONTAINS
 
   !CONSTRUCTOR:
   !@ConstructorMethods
-  PROCEDURE, PASS(obj) :: CheckEssentialParam => obj_CheckEssentialParam
-  !! Check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate TimeFEDOF by using homogeneous order
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate TimeFEDOF by using inhomogeneous order
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-  !! Generic method for initiating TimeFEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -101,32 +82,23 @@ CONTAINS
   !GET:
   !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
-  !! Get the case name of TimeFEDOF, it returns baseContinuity+baseInterpolation
-
+  !! Get the case name of TimeFEDOF, it returns
+  !! baseContinuity+baseInterpolation
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Retuns the total degrees of freedom in TimeFEDOF
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix for setting the data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeOptPointer => obj_GetTimeOptPointer
   !! Get the pointer to timeOpt
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => obj_GetBaseInterpolation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
   !! Get the base interpolation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
-
   PROCEDURE, PASS(obj) :: GetQuadraturePoints => obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-
 END TYPE TimeFEDOF_
 
 !----------------------------------------------------------------------------
@@ -136,70 +108,6 @@ END TYPE TimeFEDOF_
 TYPE :: TimeFEDOFPointer_
   TYPE(TimeFEDOF_), POINTER :: ptr => NULL()
 END TYPE TimeFEDOFPointer_
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(TimeFEDOF_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     SetTimeFEDOFParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set the essential parameters for constructing the TimeFEDOF
-! the options are retlated to interpolation in time domain
-
-INTERFACE
-  MODULE SUBROUTINE SetTimeFEDOFParam(param, baseContinuity, &
-   baseInterpolation, order, feType, ipType, basisType, alpha, beta, lambda, &
-           quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-                                      quadratureBeta, quadratureLambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity or conformity of basis defined on reference
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Type of basis functions used for interpolation on reference
-    INTEGER(I4B), INTENT(IN) :: order
-    !! order of time fintie element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
-    !! Finite element type
-    !! Read more at OneDimBasisOpt_Class
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! interpolation type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
-    !! basis type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! ultraspherical parameter
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Quadrature type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
-    !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
-    !! Jacobi parameter for quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
-    !! Jacobi parameter for quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
-    !! Ultraspherical parameter for quadrature
-  END SUBROUTINE SetTimeFEDOFParam
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -213,10 +121,10 @@ END INTERFACE
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, order, timeOpt, baseContinuity, &
-          baseInterpolation, fetype, ipType, basisType, alpha, beta, lambda, &
-                            quadratureType, quadratureOrder, quadratureNips, &
-                            quadratureAlpha, quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, order, timeOpt, baseContinuity, baseInterpolation, fetype, ipType, &
+    basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -259,26 +167,7 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-14
-! summary: Initiate an instance of fe dof
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, param, timeOpt)
-    CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
-    !! Fintie degree of freedom object
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter list
-    TYPE(TimeOpt_), TARGET, INTENT(IN) :: timeOpt
-    !! mesh
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -412,21 +301,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Get the prefix for setting essential parameters
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(TimeFEDOF_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               GetTimeOptPointer@GetMethods
 !----------------------------------------------------------------------------
 
@@ -442,7 +316,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetBaseInterpolation@GetMethods
+!                                            GetBaseInterpolation@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -457,8 +331,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!                                                      GetCellOrder@GetMethods
+!                                                     GetCellOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -474,7 +347,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetQuadraturePoints
+!                                                         GetQuadraturePoints
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -525,8 +398,7 @@ END INTERFACE
 ! summary:  Get global element shape data
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, &
-                                               geoElemsd)
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd

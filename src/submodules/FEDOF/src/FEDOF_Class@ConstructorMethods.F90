@@ -39,7 +39,7 @@ USE BaseType, ONLY: TypeInterpolationOpt, &
                     TypePolynomialOpt
 USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo, &
                                    GetElementIndex
-USE FEFactory_Method, ONLY: FEFactory
+USE FEFactoryUtility, ONLY: FEFactory
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -155,7 +155,8 @@ DO ii = 1, totalTopo
   elemType = topoList(ii)
   jj = GetElementIndex(elemType)
 
-  obj%fe(jj)%ptr => FEFactory(baseContinuity=obj%baseContinuity, &
+  obj%fe(jj)%ptr => FEFactory(elemType=elemType, &
+                              baseContinuity=obj%baseContinuity, &
                               baseInterpolation=obj%baseInterpolation)
 
   CALL obj%fe(jj)%ptr%Initiate( &

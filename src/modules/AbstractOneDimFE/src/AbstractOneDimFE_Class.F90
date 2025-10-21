@@ -16,19 +16,11 @@
 
 MODULE AbstractOneDimFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE BaseType, ONLY: ElemShapeData_, &
-                    QuadraturePoint_
-
+USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 USE String_Class, ONLY: String
-
-USE FPL, ONLY: ParameterList_
-
 USE ExceptionHandler_Class, ONLY: e
-
 USE OneDimBasisOpt_Class, ONLY: OneDimBasisOpt_
-
 USE TxtFile_Class, ONLY: TxtFile_
-
 USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
@@ -36,17 +28,12 @@ PRIVATE
 
 PUBLIC :: AbstractOneDimFE_
 PUBLIC :: AbstractOneDimFEPointer_
-PUBLIC :: SetAbstractOneDimFEParam
 PUBLIC :: AbstractOneDimFEDeallocate
 PUBLIC :: AbstractOneDimFEDisplay
 PUBLIC :: AbstractOneDimFEInitiate
-PUBLIC :: AbstractOneDimFECheckEssentialParam
 PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractOneDimFE_Class"
-CHARACTER(*), PARAMETER :: AbstractOneDimFEEssentialParams = &
-     "/order/fetype/ipType/refElemDomain/baseContinuity/baseInterpolation"// &
-                           "/basisType/alpha/beta/lambda"
 
 !----------------------------------------------------------------------------
 !                                                        AbstractOneDimFE_
@@ -79,24 +66,12 @@ CONTAINS
 
   ! CONSTRUCTOR:
   !@ConstructorMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate method from the parameter list
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate method from the parameters
-
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
-
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! This method checks the essential parameters in the parameter list
-  !! It is called while initiating the object from the parameter list
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Deallocate the data stored in an instance
@@ -107,7 +82,8 @@ CONTAINS
   !! Display the content of a finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
   !! Display the contents
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
+    obj_ReactEncode
   !! Display the contents
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
@@ -121,41 +97,30 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractOneDimFE_
 
   !GET:
-  ! @GetMethods
-  PROCEDURE(obj_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
-  !! Get prefix
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
     obj_GetCaseName
   !! Get case name for the finite element
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
 
   ! GET:
   ! @QuadratureMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
-
 END TYPE AbstractOneDimFE_
 
 !----------------------------------------------------------------------------
@@ -167,88 +132,6 @@ TYPE :: AbstractOneDimFEPointer_
 END TYPE AbstractOneDimFEPointer_
 
 !----------------------------------------------------------------------------
-!                                    CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE AbstractOneDimFECheckEssentialParam
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE AbstractOneDimFECheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                SetAbstractOneDimFEParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-11
-! summary:  Sets the parameters for initiating abstract finite element
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractOneDimFEParam(param, prefix, baseContinuity, &
-   baseInterpolation, ipType, basisType, alpha, beta, lambda, order, fetype, &
-           quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-                                             quadratureBeta, quadratureLambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! ParameterList
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! Prefix
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Isotropic Order of finite element
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! Continuity or Conformity of basis function.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! H1* (default), HDiv, HCurl, DG
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Basis function family used for interpolation.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! LagrangeInterpolation, LagrangePolynomial
-    !! SerendipityInterpolation, SerendipityPolynomial
-    !! HierarchyInterpolation, HierarchyPolynomial
-    !! OrthogonalInterpolation, OrthogonalPolynomial
-    !! HermitInterpolation, HermitPolynomial
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! Interpolation point type, It is required when
-    !! baseInterpol is LagrangePolynomial
-    !! Default ipType is Equidistance
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
-    !! Basis type: Legendre, Lobatto, Ultraspherical,
-    !! Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameters
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Quadrature type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
-    !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
-    !! Jacobi parameter for quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
-    !! Jacobi parameter for quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
-    !! Ultraspherical parameter for quadrature
-  END SUBROUTINE SetAbstractOneDimFEParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -257,25 +140,10 @@ END INTERFACE
 ! summary: Initiates an instance of the finite element
 
 INTERFACE AbstractOneDimFEInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param)
-    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate1
-END INTERFACE AbstractOneDimFEInitiate
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE AbstractOneDimFEInitiate
-  MODULE SUBROUTINE obj_Initiate2(obj, baseContinuity, baseInterpolation, &
-                      ipType, basisType, alpha, beta, lambda, order, fetype, &
-                            quadratureType, quadratureOrder, quadratureNips, &
-                            quadratureAlpha, quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, baseContinuity, baseInterpolation, ipType, basisType, alpha, beta, &
+    lambda, order, fetype, quadratureType, quadratureOrder, quadratureNips, &
+    quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     !! Finite element object
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -325,7 +193,7 @@ INTERFACE AbstractOneDimFEInitiate
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE AbstractOneDimFEInitiate
 
 !----------------------------------------------------------------------------
@@ -431,10 +299,11 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, order, fetype, ipType, basisType, &
-      alpha, beta, lambda, refElemDomain, baseContinuity, baseInterpolation, firstCall, &
-           quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-                                 quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
+    refElemDomain, baseContinuity, baseInterpolation, firstCall, &
+    quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     !! AbstractOneDimFE object
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
@@ -492,22 +361,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-11
-! summary:  Get prefix
-
-ABSTRACT INTERFACE
-  FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    IMPORT :: AbstractOneDimFE_
-    CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -516,11 +369,11 @@ END INTERFACE
 ! summary: Get the parameters
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, order, fetype, ipType, basisType, &
-                         alpha, beta, lambda, refElemDomain, baseContinuity, &
-                                 baseInterpolation, firstCall, isInitiated, &
-                            quadratureType, quadratureOrder, quadratureNips, &
-                            quadratureAlpha, quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
+    refElemDomain, baseContinuity, baseInterpolation, firstCall, &
+    isInitiated, quadratureType, quadratureOrder, quadratureNips, &
+    quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
     !! Abstract one dimenstional finite element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order

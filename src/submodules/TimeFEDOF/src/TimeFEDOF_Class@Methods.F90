@@ -17,40 +17,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(TimeFEDOF_Class) ConstructorMethods
+SUBMODULE(TimeFEDOF_Class) Methods
 USE GlobalData, ONLY: stdout, CHAR_LF
 USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-
+USE tomlf, ONLY: toml_get => get_value, toml_serialize
 USE Display_Method, ONLY: ToString, Display
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE InputUtility, ONLY: Input
-
 USE Display_Method, ONLY: Display, ToString
-
 USE IntVector_Method, ONLY: IntegerCopy => Copy
-
 USE StringUtility, ONLY: UpperCase
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
-
-USE BaseType, ONLY: TypeInterpolationOpt, &
-                    TypePolynomialOpt
-
+USE BaseType, ONLY: TypeInterpolationOpt, TypePolynomialOpt
 USE LagrangeOneDimFE_Class, ONLY: LagrangeOneDimFEPointer
-
 USE HierarchicalOneDimFE_Class, ONLY: HierarchicalOneDimFEPointer
-
 USE OrthogonalOneDimFE_Class, ONLY: OrthogonalOneDimFEPointer
-
-USE AbstractOneDimFE_Class, ONLY: SetAbstractOneDimFEParam
-
-USE OneDimFEFactory_Method, ONLY: OneDimFEFactory
+USE OneDimFEFactoryUtility, ONLY: OneDimFEFactory
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -61,56 +44,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=myprefix, &
-                         myName=myName, modName=modName)
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                        SetTimeFEDOFParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetTimeFEDOFParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetTimeFEDOFParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! SetTimeOptParam
-CALL SetAbstractOneDimFEParam(param=param, prefix=myprefix, &
-                              baseContinuity=baseContinuity, &
-                              baseInterpolation=baseInterpolation, &
-                              order=order, feType=feType, &
-                              ipType=ipType, basisType=basisType, &
-                              alpha=alpha, beta=beta, lambda=lambda, &
-                              quadratureType=quadratureType, &
-                              quadratureOrder=quadratureOrder, &
-                              quadratureNips=quadratureNips, &
-                              quadratureAlpha=quadratureAlpha, &
-                              quadratureBeta=quadratureBeta, &
-                              quadratureLambda=quadratureLambda)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetTimeFEDOFParam
-
-!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
 INTEGER(I4B) :: tcells, ii
 LOGICAL(LGT) :: isok
 
@@ -139,33 +80,7 @@ obj%fe => OneDimFEFactory(baseContinuity=baseContinuity, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%fe => OneDimFEFactory(param=param)
-obj%isInit = .TRUE.
-obj%opt => timeOpt
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -193,7 +108,6 @@ obj%fe => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -219,7 +133,6 @@ obj%fe => obj2%fe
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
@@ -314,10 +227,12 @@ node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
               stat=stat)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
+#endif
 
 CALL obj%ImportFromToml(table=node, timeOpt=timeOpt)
 
@@ -365,14 +280,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetTotalDOF
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                           GetMeshPointer
@@ -534,4 +441,4 @@ END PROCEDURE obj_GetGlobalElemShapeData
 
 #include "../../include/errors.F90"
 
-END SUBMODULE ConstructorMethods
+END SUBMODULE Methods

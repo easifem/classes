@@ -16,9 +16,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE HexahedronH1LagrangeFE_Class
+MODULE PrismH1HierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE HexahedronH1FE_Class, ONLY: HexahedronH1FE_
+USE PrismH1FE_Class, ONLY: PrismH1FE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 
@@ -26,23 +26,23 @@ IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: HexahedronH1LagrangeFE_
-PUBLIC :: HexahedronH1LagrangeFEPointer_
-PUBLIC :: HexahedronH1LagrangeFEPointer
+PUBLIC :: PrismH1HierarchicalFE_
+PUBLIC :: PrismH1HierarchicalFEPointer_
+PUBLIC :: PrismH1HierarchicalFEPointer
 
 PUBLIC :: FiniteElementDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "HexahedronH1LagrangeFE_Class"
+CHARACTER(*), PARAMETER :: modName = "PrismH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                    HexahedronH1LagrangeFE_
+!                                                PrismH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
-! summary:  Scalar H1 Lagrange Finite Element
+! summary:  Scalar H1 Hierarchical Finite Element
 
-TYPE, EXTENDS(HexahedronH1FE_) :: HexahedronH1LagrangeFE_
+TYPE, EXTENDS(PrismH1FE_) :: PrismH1HierarchicalFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
@@ -52,70 +52,61 @@ CONTAINS
   !! Get the Global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-END TYPE HexahedronH1LagrangeFE_
+END TYPE PrismH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
-!                                             HexahedronH1LagrangeFEPointer_
+!                                         PrismH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: HexahedronH1LagrangeFEPointer_
-  CLASS(HexahedronH1LagrangeFE_), POINTER :: ptr => NULL()
-END TYPE HexahedronH1LagrangeFEPointer_
+TYPE :: PrismH1HierarchicalFEPointer_
+  CLASS(PrismH1HierarchicalFE_), POINTER :: ptr => NULL()
+END TYPE PrismH1HierarchicalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                      HexahedronH1LagrangeFEPointer@Methods
+!                                  PrismH1HierarchicalFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE HexahedronH1LagrangeFEPointer
-  MODULE FUNCTION obj_HexahedronH1LagrangeFEPointer1() RESULT(ans)
-    TYPE(HexahedronH1LagrangeFE_), POINTER :: ans
-  END FUNCTION obj_HexahedronH1LagrangeFEPointer1
-END INTERFACE HexahedronH1LagrangeFEPointer
+INTERFACE PrismH1HierarchicalFEPointer
+  MODULE FUNCTION obj_PrismH1HierarchicalFEPointer1() RESULT(ans)
+    TYPE(PrismH1HierarchicalFE_), POINTER :: ans
+  END FUNCTION obj_PrismH1HierarchicalFEPointer1
+END INTERFACE PrismH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                          LagrangeFE@Methods
+!                                                      HierarchicalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE HexahedronH1LagrangeFEPointer
-  MODULE FUNCTION obj_HexahedronH1LagrangeFEPointer2( &
-    order, nsd, ipType, basisType, alpha, beta, lambda, cellOrient, &
-    quadratureType, quadratureOrder, quadratureAlpha, quadratureBeta, &
-    quadratureLambda) RESULT(ans)
+INTERFACE PrismH1HierarchicalFEPointer
+  MODULE FUNCTION obj_PrismH1HierarchicalFEPointer2( &
+    order, nsd, cellOrient, quadratureType, quadratureOrder, &
+    quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: order
     !! Isotropic Order of finite element
     INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type, It can take following values:
-    !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type: Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
     !! Orientation of cell
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
     !! Order of quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), quadratureBeta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), &
+                                       quadratureBeta(:)
     !! For jacobian polynomial
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
     !! for ultraspherical polynomial
-    TYPE(HexahedronH1LagrangeFE_), POINTER :: ans
-    !! HexahedronH1LagrangeFE_ pointer
-  END FUNCTION obj_HexahedronH1LagrangeFEPointer2
-END INTERFACE HexahedronH1LagrangeFEPointer
+    TYPE(PrismH1HierarchicalFE_), POINTER :: ans
+    !! PrismH1HierarchicalFE_ pointer
+  END FUNCTION obj_PrismH1HierarchicalFEPointer2
+END INTERFACE PrismH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                          Deallocate@Methods
@@ -123,11 +114,11 @@ END INTERFACE HexahedronH1LagrangeFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of HexahedronH1LagrangeFE
+! summary:  Deallocate a vector of PrismH1HierarchicalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(HexahedronH1LagrangeFE_), ALLOCATABLE :: obj(:)
+    TYPE(PrismH1HierarchicalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -137,11 +128,11 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of HexahedronH1LagrangeFEPointer_
+! summary:  Deallocate the vector of PrismH1HierarchicalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(HexahedronH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(PrismH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -155,7 +146,7 @@ END INTERFACE FiniteElementDeallocate
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(HexahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(PrismH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
@@ -178,7 +169,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
     faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
-    CLASS(HexahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(PrismH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order
@@ -223,7 +214,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
-    CLASS(HexahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(PrismH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
@@ -244,4 +235,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE HexahedronH1LagrangeFE_Class
+END MODULE PrismH1HierarchicalFE_Class

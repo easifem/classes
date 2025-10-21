@@ -24,7 +24,7 @@ USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
 USE String_Class, ONLY: String
-USE FEFactory_Method, ONLY: FEFactory
+USE FEFactoryUtility, ONLY: FEFactory
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -79,7 +79,7 @@ nsd = obj%mesh%GetNSD()
 DO ii = 1, totalTopo
   elemType = topoList(ii)
   jj = GetElementIndex(elemType)
-  obj%fe(jj)%ptr => FEFactory(table=table)
+  obj%fe(jj)%ptr => FEFactory(elemType=elemType, table=table)
   CALL obj%fe(jj)%ptr%ImportFromToml(elemType=elemType, table=table, nsd=nsd)
   obj%baseInterpolation = obj%fe(jj)%ptr%GetBaseInterpolation()
   obj%baseContinuity = obj%fe(jj)%ptr%GetBaseContinuity()

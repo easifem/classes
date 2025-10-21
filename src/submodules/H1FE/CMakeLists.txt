@@ -17,6 +17,13 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 
+# OneDim
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/OneDim/LagrangeOneDimFE_Class@Methods.F90
+          ${src_path}/OneDim/HierarchicalOneDimFE_Class@Methods.F90
+          ${src_path}/OneDim/OrthogonalOneDimFE_Class@Methods.F90)
+
 # Line
 target_sources(
   ${PROJECT_NAME}
@@ -45,3 +52,24 @@ target_sources(
     ${src_path}/TetrahedronH1/TetrahedronH1FE_Class@Methods.F90
     ${src_path}/TetrahedronH1/TetrahedronH1LagrangeFE_Class@Methods.F90
     ${src_path}/TetrahedronH1/TetrahedronH1HierarchicalFE_Class@Methods.F90)
+
+# Hexahedron
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/HexahedronH1/HexahedronH1FE_Class@Methods.F90
+          ${src_path}/HexahedronH1/HexahedronH1LagrangeFE_Class@Methods.F90
+          ${src_path}/HexahedronH1/HexahedronH1HierarchicalFE_Class@Methods.F90)
+
+# Prism
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/PrismH1/PrismH1FE_Class@Methods.F90
+          ${src_path}/PrismH1/PrismH1LagrangeFE_Class@Methods.F90
+          ${src_path}/PrismH1/PrismH1HierarchicalFE_Class@Methods.F90)
+
+# Pyramid
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/PyramidH1/PyramidH1FE_Class@Methods.F90
+          ${src_path}/PyramidH1/PyramidH1LagrangeFE_Class@Methods.F90
+          ${src_path}/PyramidH1/PyramidH1HierarchicalFE_Class@Methods.F90)
