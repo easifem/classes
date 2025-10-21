@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE TetrahedronH1LagrangeFE_Class
+MODULE TetrahedronH1HierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE TetrahedronH1FE_Class, ONLY: TetrahedronH1FE_
 USE ExceptionHandler_Class, ONLY: e
@@ -26,23 +26,23 @@ IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: TetrahedronH1LagrangeFE_
-PUBLIC :: TetrahedronH1LagrangeFEPointer_
-PUBLIC :: TetrahedronH1LagrangeFEPointer
+PUBLIC :: TetrahedronH1HierarchicalFE_
+PUBLIC :: TetrahedronH1HierarchicalFEPointer_
+PUBLIC :: TetrahedronH1HierarchicalFEPointer
 
 PUBLIC :: FiniteElementDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "TetrahedronH1LagrangeFE_Class"
+CHARACTER(*), PARAMETER :: modName = "TetrahedronH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                    TetrahedronH1LagrangeFE_
+!                                                TetrahedronH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-09
-! summary:  Scalar H1 Lagrange Finite Element
+! summary:  Scalar H1 Hierarchical Finite Element
 
-TYPE, EXTENDS(TetrahedronH1FE_) :: TetrahedronH1LagrangeFE_
+TYPE, EXTENDS(TetrahedronH1FE_) :: TetrahedronH1HierarchicalFE_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
@@ -52,70 +52,61 @@ CONTAINS
   !! Get the Global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of shape functions
-END TYPE TetrahedronH1LagrangeFE_
+END TYPE TetrahedronH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
-!                                             TetrahedronH1LagrangeFEPointer_
+!                                         TetrahedronH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: TetrahedronH1LagrangeFEPointer_
-  CLASS(TetrahedronH1LagrangeFE_), POINTER :: ptr => NULL()
-END TYPE TetrahedronH1LagrangeFEPointer_
+TYPE :: TetrahedronH1HierarchicalFEPointer_
+  CLASS(TetrahedronH1HierarchicalFE_), POINTER :: ptr => NULL()
+END TYPE TetrahedronH1HierarchicalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                      TetrahedronH1LagrangeFEPointer@Methods
+!                                  TetrahedronH1HierarchicalFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE TetrahedronH1LagrangeFEPointer
-  MODULE FUNCTION obj_TetrahedronH1LagrangeFEPointer1() RESULT(ans)
-    TYPE(TetrahedronH1LagrangeFE_), POINTER :: ans
-  END FUNCTION obj_TetrahedronH1LagrangeFEPointer1
-END INTERFACE TetrahedronH1LagrangeFEPointer
+INTERFACE TetrahedronH1HierarchicalFEPointer
+  MODULE FUNCTION obj_TetrahedronH1HierarchicalFEPointer1() RESULT(ans)
+    TYPE(TetrahedronH1HierarchicalFE_), POINTER :: ans
+  END FUNCTION obj_TetrahedronH1HierarchicalFEPointer1
+END INTERFACE TetrahedronH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                          LagrangeFE@Methods
+!                                                      HierarchicalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE TetrahedronH1LagrangeFEPointer
-  MODULE FUNCTION obj_TetrahedronH1LagrangeFEPointer2( &
-    order, nsd, ipType, basisType, alpha, beta, lambda, cellOrient, &
-    quadratureType, quadratureOrder, quadratureAlpha, quadratureBeta, &
-    quadratureLambda) RESULT(ans)
+INTERFACE TetrahedronH1HierarchicalFEPointer
+  MODULE FUNCTION obj_TetrahedronH1HierarchicalFEPointer2( &
+    order, nsd, cellOrient, quadratureType, quadratureOrder, &
+    quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: order
     !! Isotropic Order of finite element
     INTEGER(I4B), INTENT(IN) :: nsd
     !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type, It can take following values:
-    !! Legendre, Chebyshev, Ultraspherical, Equidistance, Jacobi
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type: Legendre, Lobatto, Ultraspherical, Jacobi, Monomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
     !! Orientation of cell
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
     !! Order of quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), quadratureBeta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), &
+                                       quadratureBeta(:)
     !! For jacobian polynomial
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
     !! for ultraspherical polynomial
-    TYPE(TetrahedronH1LagrangeFE_), POINTER :: ans
-    !! TetrahedronH1LagrangeFE_ pointer
-  END FUNCTION obj_TetrahedronH1LagrangeFEPointer2
-END INTERFACE TetrahedronH1LagrangeFEPointer
+    TYPE(TetrahedronH1HierarchicalFE_), POINTER :: ans
+    !! TetrahedronH1HierarchicalFE_ pointer
+  END FUNCTION obj_TetrahedronH1HierarchicalFEPointer2
+END INTERFACE TetrahedronH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                          Deallocate@Methods
@@ -123,11 +114,11 @@ END INTERFACE TetrahedronH1LagrangeFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of TetrahedronH1LagrangeFE
+! summary:  Deallocate a vector of TetrahedronH1HierarchicalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TetrahedronH1LagrangeFE_), ALLOCATABLE :: obj(:)
+    TYPE(TetrahedronH1HierarchicalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -137,11 +128,11 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of TetrahedronH1LagrangeFEPointer_
+! summary:  Deallocate the vector of TetrahedronH1HierarchicalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TetrahedronH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(TetrahedronH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -155,7 +146,7 @@ END INTERFACE FiniteElementDeallocate
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(TetrahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
@@ -178,7 +169,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
     faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
-    CLASS(TetrahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order
@@ -223,7 +214,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
-    CLASS(TetrahedronH1LagrangeFE_), INTENT(INOUT) :: obj
+    CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
@@ -244,4 +235,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE TetrahedronH1LagrangeFE_Class
+END MODULE TetrahedronH1HierarchicalFE_Class

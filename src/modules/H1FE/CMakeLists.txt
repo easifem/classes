@@ -37,3 +37,10 @@ target_sources(
   PRIVATE ${src_path}/QuadrangleH1/QuadrangleH1FE_Class.F90
           ${src_path}/QuadrangleH1/QuadrangleH1LagrangeFE_Class.F90
           ${src_path}/QuadrangleH1/QuadrangleH1HierarchicalFE_Class.F90)
+
+# Tetrahedron
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/TetrahedronH1/TetrahedronH1FE_Class.F90
+          ${src_path}/TetrahedronH1/TetrahedronH1LagrangeFE_Class.F90
+          ${src_path}/TetrahedronH1/TetrahedronH1HierarchicalFE_Class.F90)
