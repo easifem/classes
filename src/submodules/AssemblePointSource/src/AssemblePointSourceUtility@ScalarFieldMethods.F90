@@ -33,7 +33,8 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssemblePointSource1()"
 
 CLASS(NeumannBC_), POINTER :: nbcptr
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tnbc, inbc, ii, tsize, jj, totalNodes
+INTEGER(I4B) :: tnbc, inbc, ii, tsize, jj, totalNodes, iNodeOnNode, &
+                iNodeOnEdge, iNodeOnFace
 REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodeNum(:)
 
@@ -64,7 +65,9 @@ DO inbc = 1, tnbc
   ! CALL nbcptr%GetParam(isSelectionByNodeNum=isok)
   ! IF (.NOT. isok) CYCLE
 
-  CALL nbcptr%Get(nodeNum=nodeNum, tsize=tsize, fedof=fedof)
+  CALL nbcptr%Get(nodeNum=nodeNum, tsize=tsize, fedof=fedof, &
+                  iNodeOnNode=iNodeOnNode, iNodeOnEdge=iNodeOnEdge, &
+                  iNodeOnFace=iNodeOnFace)
 
   CALL nbcptr%Get(fedof=fedof, nodeNum=nodeNum(1:tsize), &
                   nodalValue=nodalValue, nrow=ii, ncol=jj)
