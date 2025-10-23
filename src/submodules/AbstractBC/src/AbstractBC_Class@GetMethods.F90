@@ -202,37 +202,69 @@ END PROCEDURE obj_Get1
 
 MODULE PROCEDURE obj_Get2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
 #endif
+LOGICAL(LGT), PARAMETER :: no = .FALSE., yes = .TRUE.
 
-CHARACTER(6) :: casename
+INTEGER(I4B) :: mysize, localCellNumber, localFaceNumber, ii, &
+                localEdgeNumber, jj, indx(1)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-  CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
-CASE ("H1HIER", "H1HEIR")
-  CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
 #ifdef DEBUG_VER
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, &
-                    "No case found for fedof casename="//casename)
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myName, &
+                  'AbstractBC_::obj%dom is not associated!')
 #endif
 
-END SELECT
+! Vertex nodes
+tsize = 0
+CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=mysize)
+tsize = tsize + mysize
+
+iNodeOnNode = 1
+iNodeOnFace = tsize + 1
+
+DO ii = 1, tsize
+  CALL fedof%GetVertexDOF(globalNode=nodenum(ii), ans=indx, islocal=no, &
+                          tsize=jj)
+  nodenum(ii) = indx(1)
+END DO
+
+CALL obj%SetElemToLocalBoundary()
+
+! Face nodes
+DO ii = 1, obj%tElemToFace
+  CALL obj%GetElemToFace(indx=ii, localFaceNumber=localFaceNumber, &
+                         localCellNumber=localCellNumber)
+
+  CALL fedof%GetFaceDOF( &
+    globalElement=localCellNumber, localFaceNumber=localFaceNumber, &
+    ans=nodenum(tsize + 1:), tsize=mysize, islocal=yes)
+
+  tsize = tsize + mysize
+END DO
+
+! Edge nodes
+iNodeOnEdge = tsize + 1
+DO ii = 1, obj%tElemToEdge
+  CALL obj%GetElemToEdge(indx=ii, localEdgeNumber=localEdgeNumber, &
+                         localCellNumber=localCellNumber)
+
+  CALL fedof%GetEdgeDOF( &
+    globalElement=localCellNumber, localEdgeNumber=localEdgeNumber, &
+    ans=nodenum(tsize + 1:), tsize=mysize, islocal=yes)
+
+  tsize = tsize + mysize
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Get2
 
@@ -240,41 +272,57 @@ END PROCEDURE obj_Get2
 !                                                           GetTotalNodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalNodenum
+MODULE PROCEDURE obj_GetTotalNodeNum
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodenum()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNum()"
+LOGICAL(LGT) :: isok
 #endif
 
-CHARACTER(6) :: casename
+INTEGER(I4B) :: ii, localFaceNumber, localEdgeNumber, localCellNumber, &
+                mysize
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-  ans = obj%GetTotalNodeNumH1Lagrange(fedof=fedof)
-
-CASE ("H1HIER", "H1HEIR")
-  ans = obj%GetTotalNodeNumH1Hierarchical(fedof=fedof)
-
 #ifdef DEBUG_VER
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myName, &
+                  'AbstractBC_::obj%dom is not associated!')
 #endif
 
-END SELECT
+ans = 0
+mysize = obj%boundary%GetTotalNodeNum(dom=obj%dom)
+ans = ans + mysize
+
+CALL obj%SetElemToLocalBoundary()
+
+DO ii = 1, obj%tElemToFace
+  CALL obj%GetElemToFace(indx=ii, localCellNumber=localCellNumber, &
+                         localFaceNumber=localFaceNumber)
+
+  mysize = fedof%GetTotalFaceDOF(globalElement=localCellNumber, &
+                                 localFaceNumber=localFaceNumber, islocal=yes)
+  ans = ans + mysize
+END DO
+
+DO ii = 1, obj%tElemToEdge
+  CALL obj%GetElemToEdge(indx=ii, localCellNumber=localCellNumber, &
+                         localEdgeNumber=localEdgeNumber)
+
+  mysize = fedof%GetTotalEdgeDOF(globalElement=localCellNumber, &
+                                 localEdgeNumber=localEdgeNumber, islocal=yes)
+
+  ans = ans + mysize
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+                        '[END] ')
 #endif
-END PROCEDURE obj_GetTotalNodenum
+END PROCEDURE obj_GetTotalNodeNum
 
 !----------------------------------------------------------------------------
 !

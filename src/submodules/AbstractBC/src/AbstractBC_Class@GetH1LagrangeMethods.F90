@@ -27,64 +27,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                           GetTotalNodeNum
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalNodeNumH1Lagrange
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNumH1Lagrange()"
-LOGICAL(LGT) :: isok
-#endif
-
-INTEGER(I4B) :: ii, localFaceNumber, localEdgeNumber, localCellNumber, &
-                mysize
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%dom)
-CALL AssertError1(isok, myName, &
-                  'AbstractBC_::obj%dom is not associated!')
-#endif
-
-ans = obj%boundary%GetTotalNodeNum(dom=obj%dom)
-CALL obj%SetElemToLocalBoundary()
-
-DO ii = 1, obj%tElemToFace
-  CALL obj%GetElemToFace(indx=ii, localCellNumber=localCellNumber, &
-                         localFaceNumber=localFaceNumber)
-  mysize = fedof%GetTotalFaceDOF(globalElement=localCellNumber, &
-                                 localFaceNumber=localFaceNumber, islocal=yes)
-  ans = ans + mysize
-END DO
-
-DO ii = 1, obj%tElemToEdge
-  CALL obj%GetElemToEdge(indx=ii, localCellNumber=localCellNumber, &
-                         localEdgeNumber=localEdgeNumber)
-
-  mysize = fedof%GetTotalEdgeDOF(globalElement=localCellNumber, &
-                                 localEdgeNumber=localEdgeNumber, islocal=yes)
-
-  ans = ans + mysize
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetTotalNodeNumH1Lagrange
-
-!----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetH1Lagrange1
+MODULE PROCEDURE obj_GetH1Lagrange
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetH1Lagrange1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetH1Lagrange()"
 #endif
 
 #ifdef DEBUG_VER
@@ -168,133 +116,7 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_GetH1Lagrange1
-
-!----------------------------------------------------------------------------
-!                                                             GetH1Lagrange
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetH1Lagrange2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetH1Lagrange2()"
-#endif
-
-INTEGER(I4B) :: iNodeOnNode, iNodeOnFace, iNodeOnEdge
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-CALL CheckError(obj, myName)
-#endif
-
-CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=tsize, &
-                iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                iNodeOnEdge=iNodeOnEdge)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetH1Lagrange2
-
-!----------------------------------------------------------------------------
-!                                                                GetNodeNum
-!----------------------------------------------------------------------------
-
-SUBROUTINE GetNodeNum(obj, fedof, nodenum, nrow, iNodeOnNode, iNodeOnFace, &
-                      iNodeOnEdge)
-  CLASS(AbstractBC_), INTENT(INOUT) :: obj
-  !! Boundary condition
-  CLASS(FEDOF_), INTENT(INOUT) :: fedof
-  !! Degree of freedom
-  INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-  !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-  INTEGER(I4B), INTENT(OUT) :: nrow
-  !! the size of data written in nodalValue
-  INTEGER(I4B), INTENT(OUT) :: iNodeOnNode
-  !! starting point of nodes on nodes
-  INTEGER(I4B), INTENT(OUT) :: iNodeOnFace
-  !! starting point of nodes on face
-  INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
-  !! starting point of nodes on edge
-
-  !! internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetNodeNum()"
-#endif
-
-  INTEGER(I4B) :: mysize, nsd, localCellNumber, localFaceNumber, ii, &
-                  localEdgeNumber
-  CLASS(AbstractMesh_), POINTER :: mesh
-  LOGICAL(LGT) :: isok
-  LOGICAL(LGT), PARAMETER :: no = .FALSE., yes = .TRUE.
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(obj%dom)
-  CALL AssertError1(isok, myName, &
-                    'AbstractBC_::obj%dom is not associated!')
-#endif
-
-  nrow = 0
-
-  ! info: Lets get vertex node, if there are any
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodenum, tsize=mysize)
-  nrow = nrow + mysize
-  iNodeOnNode = 1
-  iNodeOnFace = nrow + 1
-
-  nsd = obj%dom%GetNSD()
-  mesh => obj%dom%GetMeshPointer(dim=nsd)
-  isok = nrow .NE. 0
-  IF (isok) CALL mesh%GetLocalNodeNumber_(globalNode=nodenum(1:nrow), &
-                                          ans=nodenum, islocal=no)
-
-  CALL obj%SetElemToLocalBoundary()
-  ! info: Now we have elemToFace and elemToEdge ready
-  ! - If tElemToFace is not zero then we call GetDOF from FEDOF to
-  ! get DOF on the face
-  ! - If tElemToEdge is not zero then we call GetDOF from FEDOF to get
-  ! DOF on the edge
-
-  DO ii = 1, obj%tElemToFace
-    CALL obj%GetElemToFace(indx=ii, localFaceNumber=localFaceNumber, &
-                           localCellNumber=localCellNumber)
-
-    CALL fedof%GetFaceDOF( &
-      globalElement=localCellNumber, localFaceNumber=localFaceNumber, &
-      ans=nodenum(nrow + 1:), tsize=mysize, islocal=yes)
-
-    nrow = nrow + mysize
-  END DO
-
-  iNodeOnEdge = nrow + 1
-  DO ii = 1, obj%tElemToEdge
-    CALL obj%GetElemToEdge(indx=ii, localEdgeNumber=localEdgeNumber, &
-                           localCellNumber=localCellNumber)
-
-    CALL fedof%GetEdgeDOF( &
-      globalElement=localCellNumber, localEdgeNumber=localEdgeNumber, &
-      ans=nodenum(nrow + 1:), tsize=mysize, islocal=yes)
-
-    nrow = nrow + mysize
-  END DO
-
-  mesh => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE GetNodeNum
+END PROCEDURE obj_GetH1Lagrange
 
 !----------------------------------------------------------------------------
 !                                                          GetConstantValue
@@ -336,9 +158,9 @@ SUBROUTINE GetConstantValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
 #endif
 
   nrow = 0
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
@@ -392,9 +214,9 @@ SUBROUTINE GetConstantValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
   nrow = 0; ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
 
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodenum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodenum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   DO CONCURRENT(ii=1:nrow, jj=1:ncol)
     nodalValue(ii, jj) = ans
@@ -444,9 +266,9 @@ SUBROUTINE GetSpaceValue(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
 #ifdef DEBUG_VER
   isok = obj%nrow .GE. nrow
@@ -505,16 +327,10 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                           '[START] ')
 #endif
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '1')
-
   nrow = 0
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '2')
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   meshptr => obj%dom%GetMeshPointer()
 
@@ -579,9 +395,9 @@ SUBROUTINE GetTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol)
                     'AbstractBC_::obj%nodalValue is not allocated!')
 #endif
 
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   ncol = obj%nrow
 
@@ -631,9 +447,9 @@ SUBROUTINE GetTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
 #endif
 
   nrow = 0
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   ncol = 1
   IF (PRESENT(times)) ncol = SIZE(times)
@@ -688,9 +504,9 @@ SUBROUTINE GetSpaceTimeValue(obj, fedof, nodeNum, nodalValue, nrow, ncol)
 
 #endif
 
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
 #ifdef DEBUG_VER
   isok = obj%nrow .GE. nrow
@@ -747,9 +563,9 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, nodeNum, nodalValue, nrow, ncol, &
                           '[START] ')
 #endif
 
-  CALL GetNodeNum(obj=obj, fedof=fedof, nodenum=nodeNum, nrow=nrow, &
-                  iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
-                  iNodeOnEdge=iNodeOnEdge)
+  CALL obj%Get(fedof=fedof, nodenum=nodeNum, tsize=nrow, &
+               iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+               iNodeOnEdge=iNodeOnEdge)
 
   nargs = obj%func%GetNumArgs()
   ncol = SIZE(times)

@@ -202,7 +202,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns isInit
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsElemToFaceInitiated => &
     obj_IsElemToFaceInitiated
   !! Returns isElemToFace
@@ -219,36 +218,19 @@ CONTAINS
   !! Get elemToFace
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetElemToEdge => &
     obj_GetElemToEdge
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID => &
     obj_GetMeshID
   !! Get MeshID
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshIDPointer => &
     obj_GetMeshIDPointer
   !! Get mesh id pointer
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Lagrange1 => &
-    obj_GetH1Lagrange1
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetH1Lagrange => &
+    obj_GetH1Lagrange
   !! Get nodenum and nodal value for H1 and Lagrange polynomial
   !! This is a private method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Lagrange2 => &
-    obj_GetH1Lagrange2
-  !! Get the node number for H1 and Lagrange polynomials
-  !! This is a private method
-  GENERIC, PUBLIC :: GetH1Lagrange => GetH1Lagrange1, GetH1Lagrange2
-  !! Get the node number and nodal value for H1 and Lagrange polynomials
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Hierarchical1 => &
-    obj_GetH1Hierarchical1
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetH1Hierarchical => &
+    obj_GetH1Hierarchical
   !! Get node number and nodal value for H1 Hierarchical polynomials
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetH1Hierarchical2 => &
-    obj_GetH1Hierarchical2
-  !! Get the node number for H1 and Lagrange polynomials
-  GENERIC, PUBLIC :: GetH1Hierarchical => GetH1Hierarchical1, &
-    GetH1Hierarchical2
-  !! Get the node number and nodal value for H1 Hierarchical polynomials
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
@@ -256,18 +238,9 @@ CONTAINS
   GENERIC, PUBLIC :: Get => Get1, Get2
   !! Generic method to get the node number and nodal values of the
   !! boundary conditions
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
     obj_GetTotalNodeNum
   !! Get total node number
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetTotalNodeNumH1Lagrange => obj_GetTotalNodeNumH1Lagrange
-  !! Get total node number for H1 Lagrange element
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetTotalNodeNumH1Hierarchical => obj_GetTotalNodeNumH1Hierarchical
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetDOFNo => obj_GetDOFNo
   !! Get degree of freedom number
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
@@ -681,10 +654,11 @@ END INTERFACE
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
 INTERFACE
-MODULE SUBROUTINE obj_Get1(obj, fedof, nodeNum, nodalValue, nrow, ncol, times)
+  MODULE SUBROUTINE obj_Get1(obj, fedof, geofedof, nodeNum, nodalValue, &
+                             nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
     !! Degree of freedom
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
     !! size of nodeNum can be obtained from obj%GetTotalNodeNum
@@ -713,7 +687,8 @@ END INTERFACE
 ! It calls GetH1Lagrange or GetH1Hierarchical methods
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, fedof, nodeNum, tsize)
+  MODULE SUBROUTINE obj_Get2(obj, fedof, nodeNum, tsize, iNodeOnNode, &
+                             iNodeOnFace, iNodeOnEdge)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -721,6 +696,13 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
     !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size of data written in nodeNum(:)
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnNode
+    !! starting point of nodes on nodes
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnFace
+    !! starting point of nodes on face
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
+    !! starting point of nodes on edge
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -733,8 +715,8 @@ END INTERFACE
 ! summary:  Get the nodenum and nodalvalue
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetH1Lagrange1(obj, fedof, nodeNum, &
-                                       nodalValue, nrow, ncol, times)
+  MODULE SUBROUTINE obj_GetH1Lagrange(obj, fedof, nodeNum, &
+                                      nodalValue, nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -747,27 +729,7 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_GetH1Lagrange1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetH1Lagrange@GetH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-07-26
-! summary:  Get number of nodes from abstract boundary conditions
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetH1Lagrange2(obj, fedof, nodeNum, tsize)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !! Abstract boundary condition
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! Degree of freedom object
-    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-    INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetH1Lagrange2
+  END SUBROUTINE obj_GetH1Lagrange
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -779,8 +741,8 @@ END INTERFACE
 ! summary:  Get number of node and nodal values for H1 and Hierarchical
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetH1Hierarchical1(obj, fedof, nodeNum, &
-                                           nodalValue, nrow, ncol, times)
+  MODULE SUBROUTINE obj_GetH1Hierarchical(obj, fedof, nodeNum, &
+                                          nodalValue, nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -793,71 +755,11 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_GetH1Hierarchical1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  GetH1Hierarchical@GetH1HierarchicalMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-07-26
-! summary: Get number of nodes from abstract boundary conditions
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetH1Hierarchical2(obj, fedof, nodeNum, tsize)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !!
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! degreee of freedom object
-    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-    INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetH1Hierarchical2
+  END SUBROUTINE obj_GetH1Hierarchical
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                              Get@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalNodeNum(obj, fedof) RESULT(ans)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !! Abstract boundary condition
-    CLASS(FEDOF_), INTENT(IN) :: fedof
-    !! FEDOF
-    INTEGER(I4B) :: ans
-    !! ans
-  END FUNCTION obj_GetTotalNodeNum
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       GetTotalNodeNum@GetH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-07-27
-! summary:  Get total node number
-!
-!# Introduction
-!
-! This method returns the total number of nodes for H1Lagrange element
-!
-! This routine calls GetTotalNodeNum on boundary
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalNodeNumH1Lagrange(obj, fedof) RESULT(ans)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !! Abstract boundary condition
-    CLASS(FEDOF_), INTENT(IN) :: fedof
-    !! FEDOF
-    INTEGER(I4B) :: ans
-    !! ans
-  END FUNCTION obj_GetTotalNodeNumH1Lagrange
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetTotalNodeNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -878,14 +780,14 @@ END INTERFACE
 !    elemToEdge,
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodeNumH1Hierarchical(obj, fedof) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalNodeNum(obj, fedof) RESULT(ans)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(IN) :: fedof
     !! FEDOF
     INTEGER(I4B) :: ans
     !! ans
-  END FUNCTION obj_GetTotalNodeNumH1Hierarchical
+  END FUNCTION obj_GetTotalNodeNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
