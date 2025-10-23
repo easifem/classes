@@ -195,6 +195,9 @@ CONTAINS
   !! Set the edge order, this is a private method
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFE => obj_SetFE
+  !! Set order and orientation and other things in finite element
+  !! This transfer data from FEDOF to FE.
 
   !IO:
   !@IOMethods
@@ -291,19 +294,6 @@ CONTAINS
     obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element
   !! and on a local face of the cell element
-  PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Lagrange => &
-    obj_GetLocalElemShapeDataH1Lagrange
-  !! Get local element shape data for H1 Lagrange basis
-  PROCEDURE, PASS(obj) :: GetLocalFacetElemShapeDataH1Lagrange => &
-    obj_GetLocalFacetElemShapeDataH1Lagrange
-  !! Get local element shape data for H1 Lagrange basis in cell
-  !! and a local face of the cell
-  PROCEDURE, PASS(obj) :: GetLocalElemShapeDataH1Hierarchical => &
-    obj_GetLocalElemShapeDataH1Hierarchical
-  !! Get local element shape data for H1 hierarchical basis
-  PROCEDURE, PASS(obj) :: GetLocalFacetElemShapeDataH1Hierarchical => &
-    obj_GetLocalFacetElemShapeDataH1Hierarchical
-  !! Get local element shape data for H1 hierarchical basis
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data for cell element
@@ -1340,6 +1330,32 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                            SetFE@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-22
+! summary: Set the finite element for a global element
+!
+!# Introduction
+!
+! This method sets the finite element for a given global element number.
+! This method transfer data from FEDOF to FE object. For example,
+! - It sets order of the finite element
+! - If sets orientation of the fintie element
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFE(obj, globalElement, islocal)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+  !! FEDOF object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+  !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  !! if true then global element is local element
+  END SUBROUTINE obj_SetFE
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 GetMeshPointer@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1683,88 +1699,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
   END SUBROUTINE obj_GetLocalFacetElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-09
-! summary:  Get local element shape data for H1 Lagrange element in cell
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeDataH1Lagrange( &
-    obj, globalElement, elemsd, quad, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_GetLocalElemShapeDataH1Lagrange
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-09
-! summary: Get local element shape data for H1 Lagrange element in cell
-!          ans local facet
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeDataH1Lagrange( &
-    obj, globalElement, elemsd, facetElemsd, quad, facetQuad, &
-    localFaceNumber, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_GetLocalFacetElemShapeDataH1Lagrange
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-09
-! summary:  Get local element shape data for H1 Hierarchical element in cell
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeDataH1Hierarchical( &
-    obj, globalElement, elemsd, quad, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_GetLocalElemShapeDataH1Hierarchical
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetLocalFacetElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-09
-! summary: Get local element shape data for H1 Hierarchical element in cell
-!          and local face of element
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeDataH1Hierarchical( &
-    obj, globalElement, elemsd, facetElemsd, quad, facetQuad, &
-    localFaceNumber, islocal)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_GetLocalFacetElemShapeDataH1Hierarchical
 END INTERFACE
 
 !----------------------------------------------------------------------------

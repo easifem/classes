@@ -249,6 +249,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
+!                                                                      SetFE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFE()"
+#endif
+
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+
+INTEGER(I4B) :: ii, iel, cellOrder(3), &
+                faceOrder(3, ReferenceElementInfo%maxEdges), &
+                edgeOrder(ReferenceElementInfo%maxEdges), &
+                faceOrient(3, ReferenceElementInfo%maxEdges), &
+                edgeOrient(ReferenceElementInfo%maxEdges), &
+                cellOrient(3), indx(10)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=yes)
+
+CALL obj%GetOrders( &
+  globalElement=iel, islocal=yes, cellOrder=cellOrder, &
+  faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
+  faceOrient=faceOrient, edgeOrient=edgeOrient, tCellOrder=indx(1), &
+  tFaceOrder=indx(2), tEdgeOrder=indx(3), tCellOrient=indx(4), &
+  tFaceOrient=indx(5:6), tEdgeOrient=indx(7))
+
+IF (indx(1) .EQ. 1) THEN
+  cellOrder(2:3) = cellOrder(1)
+  indx(1) = 3
+END IF
+
+CALL obj%fe(ii)%ptr%SetOrder( &
+  order=cellOrder(1), cellOrder=cellOrder, faceOrder=faceOrder, &
+  edgeOrder=edgeOrder, errCheck=.TRUE., tcell=indx(1), tface=indx(2), &
+  tedge=indx(3))
+
+CALL obj%fe(ii)%ptr%SetOrientation( &
+  cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
+  errCheck=.TRUE., tcell=indx(1), tface=indx(2), tedge=indx(3))
+
+cellOrder(1:3) = cellOrder(1:3) * obj%scaleForQuadOrder
+CALL obj%fe(ii)%ptr%SetQuadratureOrder(order=cellOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFE
+
+!----------------------------------------------------------------------------
 !                                                              Include errors
 !----------------------------------------------------------------------------
 

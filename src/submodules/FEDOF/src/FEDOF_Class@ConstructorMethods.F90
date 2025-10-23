@@ -33,8 +33,6 @@ USE ElemData_Class, ONLY: ElemData_, &
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 USE StringUtility, ONLY: UpperCase
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
-USE LagrangeFE_Class, ONLY: LagrangeFEPointer
-USE HierarchicalFE_Class, ONLY: HierarchicalFEPointer
 USE BaseType, ONLY: TypeInterpolationOpt, &
                     TypePolynomialOpt
 USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo, &
@@ -659,12 +657,23 @@ obj%maxCellOrder = obj2%maxCellOrder
 obj%maxFaceOrder = obj2%maxFaceOrder
 obj%maxEdgeOrder = obj2%maxEdgeOrder
 
-IF (ALLOCATED(obj2%cellOrder)) obj%cellOrder = obj2%cellOrder
-IF (ALLOCATED(obj2%faceOrder)) obj%faceOrder = obj2%faceOrder
-IF (ALLOCATED(obj2%edgeOrder)) obj%edgeOrder = obj2%edgeOrder
-IF (ALLOCATED(obj2%edgeIA)) obj%edgeIA = obj2%edgeIA
-IF (ALLOCATED(obj2%faceIA)) obj%faceIA = obj2%faceIA
-IF (ALLOCATED(obj2%cellIA)) obj%cellIA = obj2%cellIA
+isok = ALLOCATED(obj2%cellOrder)
+IF (isok) obj%cellOrder = obj2%cellOrder
+
+isok = ALLOCATED(obj2%faceOrder)
+IF (isok) obj%faceOrder = obj2%faceOrder
+
+isok = ALLOCATED(obj2%edgeOrder)
+IF (isok) obj%edgeOrder = obj2%edgeOrder
+
+isok = ALLOCATED(obj2%edgeIA)
+IF (isok) obj%edgeIA = obj2%edgeIA
+
+isok = ALLOCATED(obj2%faceIA)
+IF (isok) obj%faceIA = obj2%faceIA
+
+isok = ALLOCATED(obj2%cellIA)
+IF (isok) obj%cellIA = obj2%cellIA
 
 DO ii = 1, SIZE(obj2%fe)
   obj%fe(ii)%ptr => obj2%fe(ii)%ptr
