@@ -141,7 +141,6 @@ CALL obj%opt%SetIsotropicOrder(order=order0)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------

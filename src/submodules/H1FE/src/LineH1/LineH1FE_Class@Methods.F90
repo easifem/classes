@@ -273,6 +273,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
+!                                                              SetOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetOrientation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
+                                errCheck=errCheck)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetOrientation
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

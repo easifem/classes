@@ -99,17 +99,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = PRESENT(order) .OR. PRESENT(anisoOrder)
+isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
 CALL AssertError1(isok, myName, &
                   "either order or anisoOrder must be provided")
 #endif
 
-isok = PRESENT(order)
-
-IF (isok) THEN
+IF (PRESENT(order)) THEN
   order0 = order
-ELSE
+ELSEIF (PRESENT(anisoOrder)) THEN
   order0 = anisoOrder(1)
+ELSEIF (PRESENT(cellOrder)) THEN
+  order0 = cellOrder(1)
 END IF
 
 CALL obj%opt%SetIsotropicOrder(order=order0)

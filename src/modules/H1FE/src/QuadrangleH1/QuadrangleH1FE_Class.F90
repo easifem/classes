@@ -60,6 +60,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Get the interpolation points
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
 END TYPE QuadrangleH1FE_
 
 !----------------------------------------------------------------------------
@@ -191,6 +192,43 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetOrientation@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------

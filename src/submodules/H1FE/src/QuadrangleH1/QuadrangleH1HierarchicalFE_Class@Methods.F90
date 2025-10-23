@@ -108,38 +108,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-isok = PRESENT(order)
+#ifdef DEBUG_VER
+isok = (PRESENT(cellOrder) .AND. PRESENT(faceOrder)) .OR. PRESENT(order)
+CALL AssertError1(isok, myName, &
+                  "(cellOrder, faceOrder) or order must be provided.")
+#endif
+
+isok = PRESENT(cellOrder) .AND. PRESENT(faceOrder)
+
 IF (isok) THEN
+  CALL obj%opt%SetCellOrder(cellOrder=cellOrder, tCell=tCell, &
+                            errCheck=errCheck)
+  CALL obj%opt%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, &
+                            errCheck=errCheck)
+ELSE
   cellOrder0 = order
   faceOrder0 = order
   CALL obj%opt%SetCellOrder(cellOrder=cellOrder0, tCell=3_I4B)
   CALL obj%opt%SetFaceOrder(faceOrder=faceOrder0, tFace=4_I4B)
-  tdof = GetHierarchicalDOF_Quadrangle( &
-      pb=order, qb=order, pe3=order, pe4=order, qe1=order, qe2=order, opt="A")
-  CALL obj%opt%SetTotalDOF(tdof)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-#ifdef DEBUG_VER
-isok = PRESENT(cellOrder) .AND. PRESENT(faceOrder)
-CALL AssertError1(isok, myName, &
-                  "cellOrder and faceOrder must be provided.")
-#endif
-
-isok = PRESENT(cellOrder)
-IF (isok) THEN
-CALL obj%opt%SetCellOrder(cellOrder=cellOrder, tCell=tCell, errCheck=errCheck)
-END IF
-
-isok = PRESENT(faceOrder)
-IF (isok) THEN
-CALL obj%opt%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, errCheck=errCheck)
 END IF
 
 CALL obj%opt%GetCellOrder(ans=cellOrder0, tsize=ii)
@@ -149,13 +135,13 @@ tdof = GetHierarchicalDOF_Quadrangle( &
        pb=cellOrder0(1), qb=cellOrder0(2), pe3=faceOrder0(1, 1), &
        pe4=faceOrder0(1, 3), qe1=faceOrder0(1, 4), qe2=faceOrder0(1, 2), &
        opt="A")
+
 CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------

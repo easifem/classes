@@ -260,8 +260,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
-    obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, &
-    faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
+    obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, tCell, tFace, &
+    tEdge, errCheck)
     CLASS(QuadrangleH1LagrangeFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
@@ -277,14 +277,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! edge order
     !! size of edgeorder is tedgeorder
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient
-    !! number of rows in faceoriient is 3
-    !! number of columns in faceorient is tfaceorient
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! edge orient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
     !! size of cellOrder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
