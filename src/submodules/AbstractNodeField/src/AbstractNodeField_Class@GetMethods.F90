@@ -637,7 +637,8 @@ INTEGER(I4B) :: tfedofs
 #endif
 
 INTEGER(I4B), ALLOCATABLE :: globalNode(:)
-INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode, timeCompo(256)
+INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode, timeCompo(256), &
+                iNodeOnNode, iNodeOnEdge, iNodeOnFace
 LOGICAL(LGT) :: isok, isfedof, isfedofs
 CLASS(FEDOF_), POINTER :: fedof
 
@@ -684,7 +685,8 @@ IF (isfedof) fedof => obj%fedof
 
 tnode = dbc%GetTotalNodeNum(fedof)
 ALLOCATE (globalNode(tnode))
-CALL dbc%Get(nodeNum=globalNode, tsize=tnode, fedof=fedof)
+CALL dbc%Get(nodeNum=globalNode, tsize=tnode, fedof=fedof, &
+    iNodeOnNode=iNodeOnNode, iNodeOnEdge=iNodeOnEdge, iNodeOnFace=iNodeOnFace)
 
 CALL obj%GetNodeLoc_(globalNode=globalNode, ans=ans, tsize=tsize, &
                      ivar=ivar0, spaceCompo=spaceCompo, &
