@@ -234,10 +234,10 @@ END INTERFACE
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
@@ -255,10 +255,10 @@ END INTERFACE BlockMatrixFieldInitiate
 ! summary: This routine initiates the Matrix Field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE
@@ -277,12 +277,12 @@ END INTERFACE BlockMatrixFieldInitiate
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

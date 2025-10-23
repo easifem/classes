@@ -44,7 +44,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                         geofedof=geofedof)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -93,7 +94,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL MatrixFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                          copyStructure=copyStructure, usePointer=usePointer)
+                         copyStructure=copyStructure, usePointer=usePointer)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -139,7 +140,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL MatrixFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                         geofedof=geofedof)
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)

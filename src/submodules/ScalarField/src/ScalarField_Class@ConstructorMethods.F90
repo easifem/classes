@@ -95,7 +95,8 @@ CALL AbstractNodeFieldSetParam(obj=obj, &
                                dof_names_char=names, &
                                tSize=tdof)
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                               geofedof=geofedof)
 
 astr = ""
 sublist => NULL()
@@ -133,23 +134,16 @@ dof_spaceCompo(1) = 1_I4B
 dof_timeCompo(1) = 1_I4B
 dof_tPhysicalVarNames = 1_I4B
 
-CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
-                               fieldType=fieldType, comm=comm, &
-                               local_n=local_n, global_n=global_n, &
-                               fedof=fedof, timefedof=timefedof, &
-                               storageFMT=MYSTORAGEFORMAT, &
-                               spaceCompo=dof_spaceCompo, &
-                               isSpaceCompo=.TRUE., &
-                               isSpaceCompoScalar=.TRUE., &
-                               timeCompo=dof_timeCompo, &
-                               isTimeCompo=.TRUE., &
-                               isTimeCompoScalar=.TRUE., &
-                               tPhysicalVarNames=dof_tPhysicalVarNames, &
-                               physicalVarNames=dof_names, &
-                               isPhysicalVarNames=.TRUE., &
-                               isPhysicalVarNamesScalar=.TRUE., &
-                               tSize=dof_tsize, tNodes=dof_tNodes, &
-                               isTNodes=.TRUE., isTNodesScalar=.TRUE.)
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
+  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
+  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
+  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
+  isTNodesScalar=.TRUE., geofedof=geofedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -172,23 +166,6 @@ END PROCEDURE obj_Final
 MODULE PROCEDURE obj_Deallocate
 CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                                ScalarField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param, fedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                         ScalarField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%initiate(param, fedof)
-END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

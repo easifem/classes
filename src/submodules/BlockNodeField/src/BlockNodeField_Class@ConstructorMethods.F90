@@ -137,7 +137,7 @@ END PROCEDURE obj_CheckEssentialParam
 
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
 TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
 TYPE(ParameterList_), POINTER :: sublist
@@ -167,22 +167,30 @@ DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => fedof
 END DO
 
+ALLOCATE (geofedofs(tPhysicalVarNames))
+DO ii = 1, tPhysicalVarNames
+  geofedofs(ii)%ptr => geofedof
+END DO
+
 ALLOCATE (timefedofs(tPhysicalVarNames))
 isok = PRESENT(timefedof)
 IF (isok) THEN
   DO ii = 1, tPhysicalVarNames
     timefedofs(ii)%ptr => timefedof
   END DO
-  CALL obj%Initiate(param=param, fedof=fedofs, timefedof=timefedofs)
+  CALL obj%Initiate( &
+    param=param, fedof=fedofs, timefedof=timefedofs, geofedof=geofedofs)
 ELSE
-  CALL obj%Initiate(param=param, fedof=fedofs)
+  CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
 END IF
 
 DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => NULL()
+  geofedofs(ii)%ptr => NULL()
   timefedofs(ii)%ptr => NULL()
 END DO
 DEALLOCATE (fedofs)
+DEALLOCATE (geofedofs)
 DEALLOCATE (timefedofs)
 
 sublist => NULL()
@@ -291,17 +299,13 @@ DO ii = 1, tPhysicalVarNames
   tSize = tSize + tNodes(ii) * timeCompo(ii) * spaceCompo(ii)
 END DO
 
-CALL AbstractNodeFieldSetParam(obj=obj, &
-                               dof_tPhysicalVars=tPhysicalVarNames, &
-                               dof_storageFMT=storageFMT, &
-                               dof_spaceCompo=spaceCompo, &
-                               dof_timeCompo=timeCompo, &
-                               dof_tNodes=tNodes, &
-                               dof_names_char=physicalVarNames, &
-                               tSize=tSize)
+CALL AbstractNodeFieldSetParam( &
+  obj=obj, dof_tPhysicalVars=tPhysicalVarNames, dof_storageFMT=storageFMT, &
+  dof_spaceCompo=spaceCompo, dof_timeCompo=timeCompo, dof_tNodes=tNodes, &
+  dof_names_char=physicalVarNames, tSize=tSize)
 
 CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                               timefedof=timefedof)
+                               timefedof=timefedof, geofedof=geofedof)
 
 tsize = .tdof.obj%dof
 CALL Reallocate(obj%idofs, tsize)

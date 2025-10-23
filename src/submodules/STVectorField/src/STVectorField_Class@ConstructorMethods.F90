@@ -152,17 +152,14 @@ dof_spaceCompo(1) = obj%spaceCompo
 dof_timeCompo(1) = obj%timeCompo
 dof_tNodes(1) = tNodes
 
-CALL AbstractNodeFieldSetParam(obj=obj, &
-                               dof_tPhysicalVars=dof_tPhysicalVars, &
-                               dof_storageFMT=mystorageformat, &
-                               dof_spaceCompo=dof_spaceCompo, &
-                               dof_timeCompo=dof_timeCompo, &
-                               dof_tNodes=dof_tNodes, &
-                               dof_names_char=names, &
-                               tSize=tdof)
+CALL AbstractNodeFieldSetParam( &
+  obj=obj, dof_tPhysicalVars=dof_tPhysicalVars, &
+  dof_storageFMT=mystorageformat, dof_spaceCompo=dof_spaceCompo, &
+  dof_timeCompo=dof_timeCompo, dof_tNodes=dof_tNodes, &
+  dof_names_char=names, tSize=tdof)
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                               timefedof=timefedof)
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, param=param, fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 CALL Reallocate(obj%idofs, obj%spaceCompo * obj%timeCompo)
 obj%idofs = Arange(1_I4B, obj%spaceCompo * obj%timeCompo)
@@ -190,8 +187,9 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 INTEGER(I4B) :: ii, tsize
 
-CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                           copyStructure=copyStructure, usePointer=usePointer)
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (STVectorField_)
   obj%spaceCompo = obj2%spaceCompo
@@ -237,23 +235,6 @@ END PROCEDURE obj_Deallocate
 MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
-
-!----------------------------------------------------------------------------
-!                                                              STVectorField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                      STVectorField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !                                                           Deallocate

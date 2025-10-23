@@ -58,7 +58,7 @@ ALLOCATE (nodalvalue(nrow, ncol))
 ALLOCATE (nodenum(nrow))
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+             ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
 spaceCompo = dbc%GetDOFNo()
 CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
@@ -119,8 +119,9 @@ DO idof = 1, tsize
 END DO
 
 DO idof = 1, tsize
-  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                         times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+  CALL dbc(idof)%ptr%Get( &
+    nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
   spaceCompo = dbc(idof)%ptr%GetDOFNo()
 

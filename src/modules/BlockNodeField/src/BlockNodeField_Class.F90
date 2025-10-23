@@ -305,10 +305,10 @@ END INTERFACE
 !@endnote
 
 INTERFACE BlockNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE BlockNodeFieldInitiate
@@ -334,10 +334,10 @@ END INTERFACE BlockNodeFieldInitiate
 ! - `dom` contains the pointer to [[Domain_]] class.
 
 INTERFACE BlockNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
   END SUBROUTINE obj_Initiate3
 END INTERFACE BlockNodeFieldInitiate
@@ -372,12 +372,12 @@ END INTERFACE BlockNodeFieldDeallocate
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

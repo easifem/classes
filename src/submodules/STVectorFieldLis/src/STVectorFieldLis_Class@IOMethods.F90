@@ -115,7 +115,7 @@ IF (.NOT. isok) THEN
 
   obj%isInitiated = .FALSE.
 
-  CALL obj%Initiate(param=param, fedof=fedof)
+  CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
   CALL param%DEALLOCATE()
 
   CALL finishMe
@@ -183,7 +183,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                                
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

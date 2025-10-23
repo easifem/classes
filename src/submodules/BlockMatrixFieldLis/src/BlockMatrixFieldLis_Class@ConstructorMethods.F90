@@ -46,7 +46,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL BlockMatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL BlockMatrixFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                              geofedof=geofedof)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -143,7 +144,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL BlockMatrixFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL BlockMatrixFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                              geofedof=geofedof)
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)

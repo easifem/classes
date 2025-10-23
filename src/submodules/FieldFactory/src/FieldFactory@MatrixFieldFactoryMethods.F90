@@ -160,11 +160,12 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => MatrixFieldFactory(engine)
 
-  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
-                           matrixProp=matrixProps, spaceCompo=spaceCompo, &
-                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
+  CALL SetMatrixFieldParam( &
+    param=param, name=names(ii)%Chars(), matrixProp=matrixProps, &
+    spaceCompo=spaceCompo, timeCompo=timeCompo, fieldType=fieldType, &
+    engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 END DO
 
 CALL param%DEALLOCATE()
@@ -223,14 +224,13 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => MatrixFieldFactory(engine(ii)%Chars())
 
-  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
-                           matrixProp=matrixProps(ii)%Chars(), &
-                           spaceCompo=spaceCompo(ii), &
-                           timeCompo=timeCompo(ii), &
-                           fieldType=fieldType(ii), &
-                           engine=engine(ii)%Chars())
+  CALL SetMatrixFieldParam( &
+    param=param, name=names(ii)%Chars(), matrixProp=matrixProps(ii)%Chars(), &
+    spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
+    fieldType=fieldType(ii), engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+                            geofedof=geofedof(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()

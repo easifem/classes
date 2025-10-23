@@ -49,8 +49,6 @@ PUBLIC :: VectorFieldPointer_
 PUBLIC :: SetVectorFieldParam
 PUBLIC :: VectorFieldInitiate
 PUBLIC :: VectorFieldDeallocate
-PUBLIC :: VectorField
-PUBLIC :: VectorField_Pointer
 PUBLIC :: VectorFieldDisplay
 PUBLIC :: VectorFieldExport
 PUBLIC :: VectorFieldSafeAllocate
@@ -255,10 +253,10 @@ END INTERFACE VectorFieldCheckEssentialParam
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
@@ -309,7 +307,7 @@ INTERFACE
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
     isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
-    isTNodesScalar, tSize, fedof, timefedof)
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -379,7 +377,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     !! total size of node field
     !! not required
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
@@ -459,46 +457,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Vector@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorField_]]
-
-INTERFACE
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    TYPE(VectorField_) :: ans
-  END FUNCTION obj_Constructor1
-END INTERFACE
-
-INTERFACE VectorField
-  MODULE PROCEDURE obj_Constructor1
-END INTERFACE VectorField
-
-!----------------------------------------------------------------------------
-!                                           VectorField_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorField_]]
-
-INTERFACE
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    CLASS(VectorField_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
-END INTERFACE
-
-INTERFACE VectorField_Pointer
-  MODULE PROCEDURE obj_Constructor_1
-END INTERFACE VectorField_Pointer
-
-!----------------------------------------------------------------------------
 !                                                                 Display@IO
 !----------------------------------------------------------------------------
 
@@ -528,12 +486,12 @@ END INTERFACE VectorFieldDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

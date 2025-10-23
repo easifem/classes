@@ -160,7 +160,7 @@ CALL AbstractNodeFieldSetParam(obj=obj, &
                                tSize=tdof)
 
 CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                               timefedof=timefedof)
+                               timefedof=timefedof, geofedof=geofedof)
 
 CALL Reallocate(obj%idofs, obj%timeCompo)
 obj%idofs = Arange(1_I4B, obj%timeCompo)
@@ -211,23 +211,6 @@ END PROCEDURE obj_Deallocate
 MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
-
-!----------------------------------------------------------------------------
-!                                                              STScalarField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                      STScalarField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate

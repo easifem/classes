@@ -105,9 +105,9 @@ TYPE, ABSTRACT :: AbstractField_
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
-  CLASS(FEDOF_), POINTER :: fedof => NULL()
-  !! pointer to fedof
-  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+  CLASS(FEDOF_), POINTER :: fedof => NULL(), geofedof => NULL()
+  !! pointer to fedof and geometric fedof
+  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
   !! pointer to fedof
   CLASS(TimeFEDOF_), POINTER :: timefedof => NULL()
   !! pointer to time fedof
@@ -395,11 +395,13 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
     !! FEDOF object
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! Geometric Fedof object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate1
@@ -441,10 +443,10 @@ END INTERFACE AbstractFieldInitiate
 ! summary: Initiate by reading options From [[ParameterList_]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
@@ -468,15 +470,12 @@ END INTERFACE AbstractFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, &
-                                  fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -532,8 +531,8 @@ INTERFACE
     !! is tNodes scalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     !! total size of node field
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    !! FEDOF object
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object and geometric FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate4
@@ -556,15 +555,11 @@ END INTERFACE AbstractFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate5(obj, name, engine, &
-                                  fieldType, comm, local_n, &
-                                  global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, &
-                                  isTimeCompoScalar, &
-                                  tPhysicalVarNames, &
-                                  physicalVarNames, &
-                                  isPhysicalVarNames, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate5( &
+    obj, name, engine, fieldType, comm, local_n, global_n, spaceCompo, &
+    isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, fedof, geofedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -608,7 +603,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
+    !! Vector of FEDOF pointers
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
@@ -655,12 +651,12 @@ END INTERFACE AbstractFieldDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
@@ -701,16 +697,11 @@ END INTERFACE AbstractFieldExport
 ! We do not want to initiate AbstractField from param.
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadOptsFromToml(table, name, engine, &
-                                                  fieldType, &
-                                                  spaceCompo, isSpaceCompo, &
-                                                  isSpaceCompoScalar, &
-                                                  timeCompo, isTimeCompo, &
-                                                  isTimeCompoScalar, &
-                                                  tPhysicalVarNames, &
-                                                  physicalVarNames, &
-                                                  isPhysicalVarNames, &
-                                                  isPhysicalVarNamesScalar)
+  MODULE SUBROUTINE AbstractFieldReadOptsFromToml( &
+    table, name, engine, fieldType, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table
     TYPE(String), INTENT(OUT) :: name
@@ -753,11 +744,11 @@ END INTERFACE
 ! timeOpt: It is needed to initiate timefedof
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, timefedof, dom, &
-                                        timeOpt)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom, timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
@@ -794,13 +785,13 @@ END INTERFACE
 ! In this method we call obj_ImportFromToml1 method.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, fedof, timefedof, &
-                                        dom, timeOpt, afile, filename, &
-                                        printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
-    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
     !! where node is the table field called "space".
@@ -842,11 +833,11 @@ END INTERFACE
 !        fedof(ii)%ImportFromToml(node) method.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml3(obj, table, fedof, timefedof, dom, &
-                                        timeOpt)
+  MODULE SUBROUTINE obj_ImportFromToml3( &
+    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
     !! The size of fedof should be total number of physical variables.
     !! If fedof is not allocated then we will allocate it.
     !! If fedof(ii) not initiated then we will intiate it From
@@ -880,13 +871,13 @@ END INTERFACE
 ! summary:  Import data From toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, fedof, timefedof, &
-                                        dom, timeOpt, afile, filename, &
-                                        printToml)
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
     !! Read the docs of obj_ImportFromToml3
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
@@ -924,12 +915,13 @@ END INTERFACE
 ! you should call obj_ImportFromToml3 (without domain) instead of this method.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml5(obj, table, fedof, timefedof, dom, &
-                                        timeOpt)
+  MODULE SUBROUTINE obj_ImportFromToml5( &
+    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
     !! Read the docs of obj_ImportFromToml3
+    !! Geometric FEDOF object
     TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
     !! The size of domain should be total number of physical variables.
     !! Read the docs of obj_ImportFromToml3
@@ -950,11 +942,12 @@ END INTERFACE
 ! summary:  Import data From toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml6(obj, tomlName, fedof, timefedof, &
-                                     dom, timeOpt, afile, filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml6( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
     TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
@@ -974,8 +967,8 @@ END INTERFACE
 ! summary:  Make param From toml file
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParamFromToml(param, table, prefix, &
-                                                  comm, local_n, global_n)
+  MODULE SUBROUTINE SetAbstractFieldParamFromToml( &
+    param, table, prefix, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Parameter list to be set
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -1102,6 +1095,98 @@ INTERFACE AbstractFieldReadFEDOFFromToml
 END INTERFACE AbstractFieldReadFEDOFFromToml
 
 !----------------------------------------------------------------------------
+!                              AbstractFieldReadGeoFEDOFFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read fedof From toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+! calling fedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml1
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! If fedof is allocated then all its ptr should be associated
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml2
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
 !                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
 !----------------------------------------------------------------------------
 
@@ -1117,8 +1202,8 @@ END INTERFACE AbstractFieldReadFEDOFFromToml
 ! by calling timefedof%ImportFromToml(node) method.
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1(table, timefedof, &
-                                                        timeOpt)
+  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1( &
+    table, timefedof, timeOpt)
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(INOUT) :: timefedof
     !! Timefedof, read the docs above
@@ -1253,11 +1338,10 @@ END INTERFACE AbstractFieldWriteData
 ! summary:  Set field variables of abstract field
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, isInitiated, fieldType, name, &
-                                 engine, comm, myRank, numProcs, global_n, &
-                                 local_n, is, ie, lis_ptr, &
-                                 tSize, realVec, dof, isPMatInitiated, &
-                                 fedof, fedofs)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isInitiated, fieldType, name, engine, comm, myRank, numProcs, &
+    global_n, local_n, is, ie, lis_ptr, tSize, realVec, dof, &
+    isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
@@ -1378,10 +1462,10 @@ END INTERFACE
 ! summary:  Get the field variables
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, isInitiated, fieldType, name, &
-                                 engine, comm, myRank, numProcs, global_n, &
-                                 local_n, is, ie, lis_ptr, tSize, realVec, &
-                                 dof, isPMatInitiated, fedof, fedofs)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, fieldType, name, engine, comm, myRank, numProcs, &
+    global_n, local_n, is, ie, lis_ptr, tSize, realVec, dof, &
+    isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType

@@ -49,8 +49,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                             fedof=fedof, fedofs=fedofs)
+CALL AbstractNodeFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  geofedof=geofedof, geofedofs=geofedofs)
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
@@ -81,7 +82,7 @@ CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
 
 obj%isInitiated = .FALSE.
 
-CALL obj%Initiate(param=param, fedof=fedof)
+CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
 CALL param%DEALLOCATE()
 

@@ -72,7 +72,8 @@ IF (istimes) THEN
   DO ibc = 1, tsize
     nbcptr => obj%nbc_point(ibc)%ptr
     CALL nbcptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                    times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+                    times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof, &
+                    geofedof=obj%geofedof)
     DO idof = 1, ncol
       CALL obj%Set(globalNode=nodenum(1:nrow), &
                    VALUE=nodalvalue(1:nrow, idof), &
@@ -96,7 +97,7 @@ END IF
 DO ibc = 1, tsize
   nbcptr => obj%nbc_point(ibc)%ptr
   CALL nbcptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                  ncol=ncol, fedof=obj%fedof)
+                  ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
   CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
                scale=scale, addContribution=yes, islocal=yes)

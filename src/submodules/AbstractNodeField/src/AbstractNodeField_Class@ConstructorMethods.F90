@@ -120,8 +120,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 prefix = obj%GetPrefix()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                           timefedof=timefedof)
+CALL AbstractFieldInitiate( &
+  obj=obj, param=param, fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 CALL AbstractNodeFieldCheckError(obj)
 
@@ -205,8 +205,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 prefix = obj%GetPrefix()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                           timefedof=timefedof)
+CALL AbstractFieldInitiate( &
+  obj=obj, param=param, fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 CALL AbstractNodeFieldCheckError(obj)
 
@@ -250,10 +250,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
-                           storageFMT=storageFMT, fieldType=fieldType, &
-                           comm=comm, local_n=local_n, global_n=global_n, &
-                           fedof=fedof, timefedof=timefedof)
+CALL AbstractFieldInitiate( &
+  obj=obj, name=name, engine=engine, storageFMT=storageFMT, &
+  fieldType=fieldType, comm=comm, local_n=local_n, global_n=global_n, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 #ifdef DEBUG_VER
 isok = PRESENT(tPhysicalVarNames)
@@ -392,24 +392,19 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
-                           fieldType=fieldType, comm=comm, local_n=local_n, &
-                           global_n=global_n, spaceCompo=spaceCompo, &
-                           isSpaceCompo=isSpaceCompo, &
-                           isSpaceCompoScalar=isSpaceCompoScalar, &
-                           timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-                           isTimeCompoScalar=isTimeCompoScalar, &
-                           tPhysicalVarNames=tPhysicalVarNames, &
-                           physicalVarNames=physicalVarNames, &
-                           isPhysicalVarNames=isPhysicalVarNames, &
-                           fedof=fedof, timefedof=timefedof)
+CALL AbstractFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, spaceCompo=spaceCompo, &
+  isSpaceCompo=isSpaceCompo, isSpaceCompoScalar=isSpaceCompoScalar, &
+  timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+  isTimeCompoScalar=isTimeCompoScalar, tPhysicalVarNames=tPhysicalVarNames, &
+  physicalVarNames=physicalVarNames, isPhysicalVarNames=isPhysicalVarNames, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
-CALL DOF_Initiate(obj=obj%dof, &
-                  tNodes=obj%dof_tNodes, &
-                  names=obj%dof_names_char, &
-                  spaceCompo=obj%dof_spaceCompo, &
-                  timeCompo=obj%dof_timeCompo, &
-                  storageFMT=obj%dof_storageFMT)
+CALL DOF_Initiate( &
+  obj=obj%dof, tNodes=obj%dof_tNodes, names=obj%dof_names_char, &
+  spaceCompo=obj%dof_spaceCompo, timeCompo=obj%dof_timeCompo, &
+  storageFMT=obj%dof_storageFMT)
 
 CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
 

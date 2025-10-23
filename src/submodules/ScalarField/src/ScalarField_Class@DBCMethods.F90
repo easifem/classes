@@ -58,21 +58,12 @@ IF (istimes) THEN
 END IF
 #endif
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  '1')
-
 ncol = 1
 nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
 ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  '2')
-
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
-
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  '3')
+             ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
 IF (istimes) THEN
   DO idof = 1, ncol
@@ -93,9 +84,6 @@ END IF
 
 CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
              islocal=.TRUE.)
-
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  '4')
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
@@ -156,11 +144,13 @@ END DO
 
 IF (istimes) THEN
   DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+    CALL dbc(ibc)%ptr%Get( &
+      nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+      ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
     DO idof = 1, ncol
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                   islocal=.TRUE.)
+      CALL obj%Set( &
+        globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
+        islocal=.TRUE.)
     END DO
   END DO
 
@@ -176,8 +166,9 @@ IF (istimes) THEN
 END IF
 
 DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol, fedof=obj%fedof)
+  CALL dbc(ibc)%ptr%Get( &
+    nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, ncol=ncol, &
+    fedof=obj%fedof, geofedof=obj%geofedof)
 
   CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
                islocal=.TRUE.)

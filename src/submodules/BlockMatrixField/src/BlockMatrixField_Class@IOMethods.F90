@@ -141,10 +141,10 @@ IF (.NOT. ismat) THEN
                                 timeCompo=timeCompo, fieldType=fieldType)
 
   IF (PRESENT(fedof)) &
-    CALL obj%Initiate(param=param, fedof=fedof)
+    CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
   IF (PRESENT(fedofs)) &
-    CALL obj%Initiate(param=param, fedof=fedofs)
+    CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
 
   CALL param%DEALLOCATE()
 

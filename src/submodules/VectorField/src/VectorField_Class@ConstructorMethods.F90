@@ -145,7 +145,7 @@ CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
                                dof_names_char=names, tSize=tdof)
 
 CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                               timefedof=timefedof)
+                               timefedof=timefedof, geofedof=geofedof)
 
 CALL Reallocate(obj%idofs, obj%spaceCompo)
 obj%idofs = Arange(1_I4B, obj%spaceCompo)
@@ -215,23 +215,15 @@ dof_tsize = dof_tNodes(1) * dof_spaceCompo(1)
 dof_timeCompo(1) = 1_I4B
 dof_tPhysicalVarNames = 1_I4B
 
-CALL AbstractNodeFieldInitiate(obj=obj, name=name, engine=engine, &
-                               fieldType=fieldType, comm=comm, &
-                               local_n=local_n, global_n=global_n, &
-                               fedof=fedof, timefedof=timefedof, &
-                               storageFMT=MYSTORAGEFORMAT, &
-                               spaceCompo=dof_spaceCompo, &
-                               isSpaceCompo=.TRUE., &
-                               isSpaceCompoScalar=.TRUE., &
-                               timeCompo=dof_timeCompo, &
-                               isTimeCompo=.TRUE., &
-                               isTimeCompoScalar=.TRUE., &
-                               tPhysicalVarNames=dof_tPhysicalVarNames, &
-                               physicalVarNames=dof_names, &
-                               isPhysicalVarNames=.TRUE., &
-                               isPhysicalVarNamesScalar=.TRUE., &
-                               tSize=dof_tsize, tNodes=dof_tNodes, &
-                               isTNodes=.TRUE., isTNodesScalar=.TRUE.)
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, fedof=fedof, geofedof=geofedof, &
+  timefedof=timefedof, storageFMT=MYSTORAGEFORMAT, &
+  spaceCompo=dof_spaceCompo, isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., &
+  timeCompo=dof_timeCompo, isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
+  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., isTNodesScalar=.TRUE.)
 
 obj%spaceCompo = spaceCompo(1)
 CALL Reallocate(obj%idofs, obj%spaceCompo)
@@ -260,23 +252,6 @@ END PROCEDURE obj_Deallocate
 MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
-
-!----------------------------------------------------------------------------
-!                                                                 VectorField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                         VectorField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !                                                                  Deallocate

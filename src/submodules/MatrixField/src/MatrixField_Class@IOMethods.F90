@@ -200,13 +200,14 @@ LOGICAL(LGT) :: isRectangle0
 TYPE(ParameterList_) :: param
 
 ! INFO: From MatrixFieldUtility
-CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, &
-                       myName=myName, modName=modName)
+CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, myName=myName, &
+                       modName=modName)
 
 ! INFO: From MatrixFieldUtility
-CALL Import_Header(obj=obj, hdf5=hdf5, group=group, modName=modName, &
-               myName=myName, fieldType=fieldType, name=name, engine=engine, &
-                   matrixProp=matrixProp, isRectangle=isRectangle0)
+CALL Import_Header( &
+  obj=obj, hdf5=hdf5, group=group, modName=modName, myName=myName, &
+  fieldType=fieldType, name=name, engine=engine, matrixProp=matrixProp, &
+  isRectangle=isRectangle0)
 
 ! mat
 dsetname = TRIM(group)//"/mat"
@@ -241,12 +242,11 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
     obj%fedofs(2)%ptr => fedofs(2)%ptr
   ELSE
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & "For non-rectangle matrix fedof should be present, "// &
-      & "for rectangle matrix matrix fedofsshould be present")
+                      "For non-rectangle matrix fedof should be present, "// &
+                      "for rectangle matrix matrix fedofsshould be present")
   END IF
 
-  CALL ImportCSRMatrix(obj=obj%mat, &
-    & hdf5=hdf5, group=dsetname%chars())
+  CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
 
   obj%isInitiated = .TRUE.
   obj%isPmatInitiated = .FALSE.
@@ -254,10 +254,11 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
 ELSE
 
   ! Import Physical Variables
-  CALL Import_PhysicalVar(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-           modName=modName, matrixProp=matrixProp, tvar1=tvar1, tvar2=tvar2, &
-                          name1=name1, name2=name2, spaceCompo1=spaceCompo1, &
-        spaceCompo2=spaceCompo2, timeCompo1=timeCompo1, timeCompo2=timeCompo2)
+  CALL Import_PhysicalVar( &
+    obj=obj, hdf5=hdf5, group=group, myName=myName, modName=modName, &
+    matrixProp=matrixProp, tvar1=tvar1, tvar2=tvar2, name1=name1, &
+    name2=name2, spaceCompo1=spaceCompo1, spaceCompo2=spaceCompo2, &
+    timeCompo1=timeCompo1, timeCompo2=timeCompo2)
 
   varnames(1) = name1%chars()
   varnames(2) = name2%chars()
@@ -266,20 +267,22 @@ ELSE
 
   IF (matrixProp .EQ. "RECTANGLE") THEN
 
-    CALL SetRectangleMatrixFieldParam(param=param, name=name%chars(), &
-                       matrixProp=matrixProp%chars(), engine=engine%chars(), &
-           physicalVarNames=varnames, spaceCompo=[spaceCompo1, spaceCompo2], &
-                      timeCompo=[timeCompo1, timeCompo2], fieldType=fieldType)
+    CALL SetRectangleMatrixFieldParam( &
+      param=param, name=name%chars(), matrixProp=matrixProp%chars(), &
+      engine=engine%chars(), physicalVarNames=varnames, &
+      spaceCompo=[spaceCompo1, spaceCompo2], &
+      timeCompo=[timeCompo1, timeCompo2], fieldType=fieldType)
 
-    CALL obj%Initiate(param=param, fedof=fedofs)
+    CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
 
   ELSE
 
-    CALL SetMatrixFieldParam(param=param, name=name%chars(), &
-                       matrixProp=matrixProp%chars(), engine=engine%chars(), &
-            spaceCompo=spaceCompo1, timeCompo=timeCompo1, fieldType=fieldType)
+    CALL SetMatrixFieldParam( &
+      param=param, name=name%chars(), matrixProp=matrixProp%chars(), &
+      engine=engine%chars(), spaceCompo=spaceCompo1, timeCompo=timeCompo1, &
+      fieldType=fieldType)
 
-    CALL obj%Initiate(param=param, fedof=fedof)
+    CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
   END IF
 

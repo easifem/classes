@@ -85,13 +85,14 @@ END IF
 
 CALL param%initiate()
 
-CALL SetSTVectorFieldParam(param=param, name=obj%name%chars(), &
-                           fieldType=obj%fieldType, timeCompo=obj%timeCompo, &
-                         spaceCompo=obj%spaceCompo, engine=obj%engine%chars())
+CALL SetSTVectorFieldParam( &
+  param=param, name=obj%name%chars(), fieldType=obj%fieldType, &
+  timeCompo=obj%timeCompo, spaceCompo=obj%spaceCompo, &
+  engine=obj%engine%chars())
 
 obj%isInitiated = .FALSE.
 
-CALL obj%initiate(param=param, fedof=fedof)
+CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
 CALL param%DEALLOCATE()
 

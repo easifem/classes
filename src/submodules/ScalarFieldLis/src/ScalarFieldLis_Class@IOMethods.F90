@@ -129,7 +129,7 @@ IF (.NOT. isok) THEN
 
   obj%isInitiated = .FALSE.
 
-  CALL obj%Initiate(param=param, fedof=fedof)
+  CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
   CALL param%DEALLOCATE()
 

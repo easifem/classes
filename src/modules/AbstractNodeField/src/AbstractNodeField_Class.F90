@@ -275,10 +275,10 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given fdof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
@@ -333,10 +333,10 @@ END INTERFACE AbstractNodeFieldInitiate
 ! summary: Initiates AbstractNodeField_ from parameters and fedof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! vectpr fedof pointers
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
@@ -360,15 +360,12 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  timefedof)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -424,7 +421,7 @@ INTERFACE
     !! is tNodes scalar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     !! total size of node field
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
@@ -448,15 +445,11 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate5(obj, name, engine, &
-                                  fieldType, comm, local_n, &
-                                  global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, &
-                                  isTimeCompoScalar, &
-                                  tPhysicalVarNames, &
-                                  physicalVarNames, &
-                                  isPhysicalVarNames, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate5( &
+    obj, name, engine, fieldType, comm, local_n, global_n, spaceCompo, &
+    isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, fedof, geofedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -500,7 +493,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
@@ -559,12 +552,12 @@ END INTERFACE AbstractNodeFieldDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

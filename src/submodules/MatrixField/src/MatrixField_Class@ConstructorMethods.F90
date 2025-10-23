@@ -384,7 +384,8 @@ CALL obj%CheckEssentialParam(sublist)
 
 CALL obj%DEALLOCATE()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                           geofedof=geofedof)
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", &
               VALUE=spaceCompo(1))

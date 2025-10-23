@@ -160,7 +160,7 @@ END PROCEDURE obj_CheckEssentialParam
 
 MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:)
+TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
 LOGICAL(LGT) :: isok
@@ -182,18 +182,24 @@ CALL GetValue(obj=sublist, prefix=myprefix, key="tPhysicalVarNames", &
               VALUE=tPhysicalVarNames)
 
 ALLOCATE (fedofs(tPhysicalVarNames))
-
 DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => fedof
 END DO
 
-CALL obj%Initiate(param=param, fedof=fedofs)
+ALLOCATE (geofedofs(tPhysicalVarNames))
+DO ii = 1, tPhysicalVarNames
+  geofedofs(ii)%ptr => geofedof
+END DO
+
+CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
 
 DO ii = 1, tPhysicalVarNames
   fedofs(ii)%ptr => NULL()
+  geofedofs(ii)%ptr => NULL()
 END DO
 
 IF (ALLOCATED(fedofs)) DEALLOCATE (fedofs)
+IF (ALLOCATED(geofedofs)) DEALLOCATE (geofedofs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

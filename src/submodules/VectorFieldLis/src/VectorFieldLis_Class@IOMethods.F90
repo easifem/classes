@@ -75,8 +75,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
-                             fedofs=fedofs)
+CALL AbstractNodeFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  geofedof=geofedof, geofedofs=geofedofs)
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
@@ -100,12 +101,12 @@ IF (.NOT. isok) THEN
 
   CALL param%initiate()
 
-  CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
-                         fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
-                           engine=obj%engine%chars())
+  CALL SetVectorFieldParam( &
+    param=param, name=obj%name%chars(), fieldType=obj%fieldType, &
+    spaceCompo=obj%spaceCompo, engine=obj%engine%chars())
 
   obj%isInitiated = .FALSE.
-  CALL obj%Initiate(param=param, fedof=fedof)
+  CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
   CALL param%DEALLOCATE()
 
   CALL FinishMe
@@ -175,7 +176,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------

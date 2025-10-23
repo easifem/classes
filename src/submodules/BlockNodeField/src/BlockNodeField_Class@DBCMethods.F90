@@ -17,9 +17,7 @@
 
 SUBMODULE(BlockNodeField_Class) DBCMethods
 USE InputUtility, ONLY: Input
-
 USE DOF_Method, ONLY: OPERATOR(.timecomponents.)
-
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
@@ -43,16 +41,18 @@ ncol = ttimecompo
 
 nrow = dbc%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
 ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedofs(ivar0)%ptr)
+CALL dbc%Get( &
+  nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, ncol=ncol, &
+  fedof=obj%fedofs(ivar0)%ptr, geofedof=obj%geofedofs(ivar0)%ptr)
 
 aint = SIZE(nodalvalue, 2)
 case1 = aint .EQ. 1
 
 IF (case1) THEN
   DO idof = 1, ttimecompo
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
+    CALL obj%Set( &
+      globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), ivar=ivar0, &
+      spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
   END DO
 
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -68,8 +68,9 @@ IF (problem) THEN
 END IF
 
 DO idof = 1, ttimecompo
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
+  CALL obj%Set( &
+    globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), ivar=ivar0, &
+    spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -88,7 +89,7 @@ INTEGER(I4B), PARAMETER :: expandFactor = 2
 
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo, ivar0, tsize, aint, nrow, &
+INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo, ivar0, tsize, nrow, &
                 ncol
 LOGICAL(LGT) :: case1, problem
 
@@ -109,9 +110,9 @@ DO ibc = 1, tsize
 END DO
 
 DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                        times=times, nrow=nrow, ncol=ncol, &
-                        fedof=obj%fedofs(ivar0)%ptr)
+  CALL dbc(ibc)%ptr%Get( &
+    nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedofs(ivar0)%ptr, geofedof=obj%geofedofs(ivar0)%ptr)
 
   spacecompo = dbc(ibc)%ptr%GetDOFNo()
 
@@ -119,10 +120,9 @@ DO ibc = 1, tsize
 
   IF (case1) THEN
     DO idof = 1, ttimecompo
-
-      CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-            ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
-
+      CALL obj%Set( &
+        globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+        ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
     END DO
   END IF
 

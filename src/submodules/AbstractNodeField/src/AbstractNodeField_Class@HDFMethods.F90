@@ -48,8 +48,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                         fedof=fedof, fedofs=fedofs)
+CALL AbstractFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  geofedof=geofedof, geofedofs=geofedofs)
 
 dsetname = TRIM(group)//"/tSize"
 abool = hdf5%pathExists(dsetname%chars())

@@ -54,7 +54,7 @@ ncol = obj%timeCompo
 ALLOCATE (nodalvalue(nrow, ncol), nodenum(nrow))
 
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+             ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
 IF (istimes) THEN
   aint = dbc%GetDOFNo()
@@ -125,16 +125,16 @@ END DO
 
 IF (istimes) THEN
   DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+    CALL dbc(ibc)%ptr%Get( &
+      nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+      ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
     aint = dbc(ibc)%ptr%GetDOFNo()
 
     DO idof = 1, obj%timecompo
-      CALL obj%Set(globalNode=nodenum(1:nrow), &
-                   VALUE=nodalvalue(1:nrow, idof), &
-                   timecompo=idof, spacecompo=aint, &
-                   islocal=.TRUE.)
+      CALL obj%Set( &
+        globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
+        timecompo=idof, spacecompo=aint, islocal=.TRUE.)
     END DO
 
   END DO
@@ -146,7 +146,7 @@ END IF
 
 DO ibc = 1, tsize
   CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol, fedof=obj%fedof)
+                        ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
   aint = dbc(ibc)%ptr%GetDOFNo()
 

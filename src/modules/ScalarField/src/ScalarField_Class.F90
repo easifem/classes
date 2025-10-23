@@ -50,8 +50,6 @@ PUBLIC :: ScalarFieldPointer_
 PUBLIC :: SetScalarFieldParam
 PUBLIC :: ScalarFieldCheckEssentialParam
 PUBLIC :: ScalarFieldInitiate
-PUBLIC :: ScalarField
-PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
 PUBLIC :: ScalarFieldDeallocate
 PUBLIC :: ScalarFieldSafeAllocate
@@ -240,10 +238,10 @@ END INTERFACE ScalarFieldCheckEssentialParam
 ! Essential information are described below.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(in) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
@@ -265,15 +263,12 @@ END INTERFACE ScalarFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, &
-                                  fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -343,7 +338,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     !! total size of node field
     !! not required
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
@@ -419,38 +414,6 @@ INTERFACE ScalarFieldSafeAllocate
 END INTERFACE ScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
-!                                                         Vector@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary:         This function returns an instance of [[ScalarField_]]
-
-INTERFACE ScalarField
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    TYPE(ScalarField_) :: ans
-  END FUNCTION obj_Constructor1
-END INTERFACE ScalarField
-
-!----------------------------------------------------------------------------
-!                                           ScalarField_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary:         This function returns an instance of [[ScalarField_]]
-
-INTERFACE ScalarField_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    CLASS(ScalarField_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
-END INTERFACE ScalarField_Pointer
-
-!----------------------------------------------------------------------------
 !                                                                Import@IO
 !----------------------------------------------------------------------------
 
@@ -460,12 +423,12 @@ END INTERFACE ScalarField_Pointer
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

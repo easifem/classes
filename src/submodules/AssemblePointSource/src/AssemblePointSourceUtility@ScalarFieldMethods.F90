@@ -69,7 +69,7 @@ DO inbc = 1, tnbc
                   iNodeOnNode=iNodeOnNode, iNodeOnEdge=iNodeOnEdge, &
                   iNodeOnFace=iNodeOnFace)
 
-  CALL nbcptr%Get(fedof=fedof, nodeNum=nodeNum(1:tsize), &
+  CALL nbcptr%Get(fedof=fedof, geofedof=geofedof, nodeNum=nodeNum(1:tsize), &
                   nodalValue=nodalValue, nrow=ii, ncol=jj)
 
   CALL rhs%Set(globalNode=nodeNum(1:ii), VALUE=nodalValue(1:ii, 1), &

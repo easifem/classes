@@ -26,23 +26,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             STScalarField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                     STScalarField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof, timefedof=timefedof)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
@@ -58,7 +41,7 @@ MODULE PROCEDURE obj_Initiate1
 INTEGER(I4B) :: ierr
 
 CALL STScalarFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                            timefedof=timefedof)
+                           timefedof=timefedof, geofedof=geofedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

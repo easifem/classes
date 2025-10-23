@@ -26,30 +26,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                VectorField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                        VectorField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
 INTEGER(I4B) :: ierr
 
-CALL VectorFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL VectorFieldInitiate(obj=obj, param=param, fedof=fedof, &
+                         geofedof=geofedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

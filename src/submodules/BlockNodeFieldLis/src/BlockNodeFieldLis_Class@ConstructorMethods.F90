@@ -36,7 +36,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 INTEGER(I4B) :: ierr
 
 CALL BlockNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                             timefedof=timefedof)
+                            timefedof=timefedof, geofedof=geofedof)
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)

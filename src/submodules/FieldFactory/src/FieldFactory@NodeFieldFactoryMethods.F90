@@ -399,10 +399,11 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => VectorFieldFactory(engine)
 
-  CALL SetVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                    spaceCompo=spaceCompo, fieldType=fieldType, engine=engine)
+  CALL SetVectorFieldParam( &
+    param=param, name=names(ii)%Chars(), spaceCompo=spaceCompo, &
+    fieldType=fieldType, engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
 END DO
 
@@ -464,7 +465,8 @@ DO ii = 1, tsize
                            fieldType=fieldType(ii), &
                            engine=engine(ii)%chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+                            geofedof=geofedof(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
@@ -512,11 +514,11 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => STVectorFieldFactory(engine)
 
-  CALL SetSTVectorFieldParam(param=param, name=names(ii)%chars(), &
-            spaceCompo=spaceCompo, timeCompo=timeCompo, fieldType=fieldType, &
-                             engine=engine)
+  CALL SetSTVectorFieldParam( &
+    param=param, name=names(ii)%chars(), spaceCompo=spaceCompo, &
+    timeCompo=timeCompo, fieldType=fieldType, engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 END DO
 
 CALL param%DEALLOCATE()
@@ -576,7 +578,8 @@ DO ii = 1, tsize
                          spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
                            fieldType=fieldType(ii), engine=engine(ii)%chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+                            geofedof=geofedof(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()
@@ -627,7 +630,7 @@ DO ii = 1, tsize
   CALL SetScalarFieldParam(param=param, name=names(ii)%chars(), &
                            fieldType=fieldType, engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 END DO
 
 CALL param%DEALLOCATE()
@@ -686,7 +689,8 @@ DO ii = 1, tsize
   CALL SetScalarFieldParam(param=param, name=names(ii)%Chars(), &
                            fieldType=fieldType(ii), engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+                            geofedof=geofedof(ii)%ptr)
 
 END DO
 
@@ -733,10 +737,11 @@ DO ii = 1, tsize
 
   obj(ii)%ptr => STScalarFieldFactory(engine)
 
-  CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
+  CALL SetSTScalarFieldParam( &
+    param=param, name=names(ii)%Chars(), timeCompo=timeCompo, &
+    fieldType=fieldType, engine=engine)
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 END DO
 
 CALL param%DEALLOCATE()
@@ -798,7 +803,8 @@ DO ii = 1, tsize
                              fieldType=fieldType(ii), &
                              engine=engine(ii)%Chars())
 
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
+  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+                            geofedof=geofedof(ii)%ptr)
 END DO
 
 CALL param%DEALLOCATE()

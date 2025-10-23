@@ -232,6 +232,7 @@ CALL FPL_GetValue(obj=param, prefix=prefix, key="local_n", &
                   VALUE=obj%local_n)
 
 obj%fedof => fedof
+obj%geofedof => geofedof
 IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 sublist => NULL()
@@ -283,6 +284,8 @@ obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
 
 obj%fedof => obj2%fedof
+obj%geofedof => obj2%geofedof
+
 isok = ALLOCATED(obj2%fedofs)
 IF (isok) THEN
   tsize = SIZE(obj2%fedofs)
@@ -409,6 +412,17 @@ DO ii = 1, tsize
   obj%fedofs(ii)%ptr => fedof(ii)%ptr
 END DO
 
+tsize = SIZE(geofedof)
+ALLOCATE (obj%geofedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(geofedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'geofedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%geofedofs(ii)%ptr => geofedof(ii)%ptr
+END DO
+
 ! If timefedof is not preseent then exit
 isok = PRESENT(timefedof)
 IF (.NOT. isok) THEN
@@ -474,6 +488,7 @@ obj%local_n = Input(option=local_n, default=0_I4B)
 obj%global_n = Input(option=global_n, default=0_I4B)
 
 obj%fedof => fedof
+obj%geofedof => geofedof
 IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 #ifdef DEBUG_VER
@@ -526,6 +541,17 @@ DO ii = 1, tsize
                     'fedof('//ToString(ii)//') is not ASSOCIATED.')
 #endif
   obj%fedofs(ii)%ptr => fedof(ii)%ptr
+END DO
+
+tsize = SIZE(geofedof)
+ALLOCATE (obj%geofedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(geofedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'geofedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%geofedofs(ii)%ptr => geofedof(ii)%ptr
 END DO
 
 ! If timefedof is not preseent then exit
@@ -586,6 +612,7 @@ obj%is = 0
 obj%ie = 0
 obj%lis_ptr = 0
 obj%fedof => NULL()
+obj%geofedof => NULL()
 
 isok = ALLOCATED(obj%fedofs)
 IF (isok) THEN
@@ -594,6 +621,15 @@ IF (isok) THEN
     obj%fedofs(ii)%ptr => NULL()
   END DO
   DEALLOCATE (obj%fedofs)
+END IF
+
+isok = ALLOCATED(obj%geofedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%geofedofs)
+  DO ii = 1, tsize
+    obj%geofedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%geofedofs)
 END IF
 
 obj%timefedof => NULL()

@@ -41,7 +41,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                             fedof=fedof, fedofs=fedofs)
+                             fedof=fedof, fedofs=fedofs, geofedof=geofedof, &
+                             geofedofs=geofedofs)
 
 dsetname = TRIM(group)//"/tSize"
 bools(1) = hdf5%pathExists(dsetname%chars())
@@ -55,7 +56,7 @@ IF (.NOT. ALL(bools)) THEN
   CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
                            engine=obj%engine%chars(), fieldType=obj%fieldType)
   obj%isInitiated = .FALSE.
-  CALL obj%Initiate(param=param, fedof=fedof)
+  CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
   CALL param%DEALLOCATE()
 END IF
 

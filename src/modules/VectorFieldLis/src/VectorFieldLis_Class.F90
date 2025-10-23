@@ -40,8 +40,6 @@ CHARACTER(*), PARAMETER :: myprefix = "VectorField"
 
 PUBLIC :: VectorFieldLis_
 PUBLIC :: VectorFieldLisPointer_
-PUBLIC :: VectorFieldLis
-PUBLIC :: VectorFieldLis_Pointer
 
 !----------------------------------------------------------------------------
 !                                                           VectorFieldLis_
@@ -106,38 +104,6 @@ TYPE :: VectorFieldLisPointer_
 END TYPE VectorFieldLisPointer_
 
 !----------------------------------------------------------------------------
-!                                                         Vector@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorFieldLis_]]
-
-INTERFACE VectorFieldLis
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    TYPE(VectorFieldLis_) :: ans
-  END FUNCTION obj_Constructor1
-END INTERFACE VectorFieldLis
-
-!----------------------------------------------------------------------------
-!                                         VectorFieldLis_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorFieldLis_]]
-
-INTERFACE VectorFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    CLASS(VectorFieldLis_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
-END INTERFACE VectorFieldLis_Pointer
-
-!----------------------------------------------------------------------------
 !                                                    Size@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -171,10 +137,10 @@ END INTERFACE
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
 END INTERFACE
@@ -229,12 +195,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import

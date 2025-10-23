@@ -57,39 +57,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractFieldReadOptsFromToml(table=table, name=name, engine=engine, &
-                                   fieldType=fieldType, &
-                                   spaceCompo=spaceCompo, &
-                                   isSpaceCompo=isSpaceCompo, &
-                                   isSpaceCompoScalar=isSpaceCompoScalar, &
-                                   timeCompo=timeCompo, &
-                                   isTimeCompo=isTimeCompo, &
-                                   isTimeCompoScalar=isTimeCompoScalar, &
-                                   physicalVarNames=physicalVarNames, &
-                                   tPhysicalVarNames=tPhysicalVarNames, &
-                                   isPhysicalVarNames=isPhysicalVarNames, &
-                                   isPhysicalVarNamesScalar= &
-                                   isPhysicalVarNamesScalar)
+CALL AbstractFieldReadOptsFromToml( &
+  table=table, name=name, engine=engine, fieldType=fieldType, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
+  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
+  physicalVarNames=physicalVarNames, tPhysicalVarNames=tPhysicalVarNames, &
+  isPhysicalVarNames=isPhysicalVarNames, &
+  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar)
 
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
-
+CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
                                         timeOpt=timeOpt)
 
-CALL obj%Initiate(name=name%chars(), &
-                  engine=engine%chars(), &
-                  fieldType=fieldType, &
-                  spaceCompo=spaceCompo, &
-                  isSpaceCompo=isSpaceCompo, &
-                  isSpaceCompoScalar=isSpaceCompoScalar, &
-                  timeCompo=timeCompo, &
-                  isTimeCompo=isTimeCompo, &
-                  isTimeCompoScalar=isTimeCompoScalar, &
-                  physicalVarNames=physicalVarNames, &
-                  tPhysicalVarNames=tPhysicalVarNames, &
-                  isPhysicalVarNames=isPhysicalVarNames, &
-                  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
-                  fedof=fedof, timefedof=timefedof)
+CALL obj%Initiate( &
+  name=name%chars(), engine=engine%chars(), fieldType=fieldType, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
+  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
+  physicalVarNames=physicalVarNames, tPhysicalVarNames=tPhysicalVarNames, &
+  isPhysicalVarNames=isPhysicalVarNames, &
+  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
@@ -144,8 +134,8 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        dom=dom, timeOpt=timeOpt)
+CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
+                        timefedof=timefedof, dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -186,15 +176,15 @@ CALL param%Initiate()
 
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
-
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
+CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
 isok = PRESENT(timefedof)
-IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
-                                                  timefedof=timefedof, &
-                                                  timeOpt=timeOpt)
+IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml( &
+  table=table, timefedof=timefedof, timeOpt=timeOpt)
 
-CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
+CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
+                  timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
@@ -242,8 +232,8 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        dom=dom, timeOpt=timeOpt)
+CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
+                        timefedof=timefedof, dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -284,15 +274,15 @@ CALL param%Initiate()
 
 prefix = obj%GetPrefix()
 CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
-
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
+CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
 isok = PRESENT(timefedof)
-IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml(table=table, &
-                                                  timefedof=timefedof, &
-                                                  timeOpt=timeOpt)
+IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml( &
+  table=table, timefedof=timefedof, timeOpt=timeOpt)
 
-CALL obj%Initiate(param=param, fedof=fedof, timefedof=timefedof)
+CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
+                  timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
@@ -340,8 +330,8 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, fedof=fedof, timefedof=timefedof, &
-                        dom=dom, timeOpt=timeOpt)
+CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
+                        timefedof=timefedof, dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
@@ -501,7 +491,6 @@ SUBROUTINE ReadSpaceCompoFromToml(table, spaceCompo, isSpaceCompo, &
   CHARACTER(*), PARAMETER :: myName = "ReadSpaceCompoFromToml()"
 #endif
   INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1049,6 +1038,275 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE AbstractFieldReadFEDOFFromToml3
+
+!----------------------------------------------------------------------------
+!                                           AbstractFieldReadGeoFEDOFFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadGeoFEDOFFromToml1()"
+#endif
+
+CHARACTER(*), PARAMETER :: default_fedofname = "geofedof"
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String) :: fedofName
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isfedof, isok, isFound
+TYPE(toml_table), POINTER :: node
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isfedof = fedof%IsInitiated()
+
+IF (isfedof) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+! If fedof is NOT initiated then we will call
+! fedof%ImportFromToml. The following code is for that.
+
+#ifdef DEBUG_VER
+! First lets check if mesh if given or not
+isok = PRESENT(dom)
+CALL AssertError1(isok, myName, &
+                  "Mesh is not given to initiate fedof")
+#endif
+
+! Getting geofedofName which is a subtable name in
+! toml file that contains data for fedof
+key = "geofedofName"
+CALL GetValue(table=table, key=key, VALUE=fedofName, &
+              default_value=default_fedofName, origin=origin, &
+              stat=stat, isFound=isFound)
+
+! Get the node from toml table [subtable]
+CALL toml_get(table, fedofName%chars(), node, &
+              origin=origin, requested=.FALSE., stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  fedofName//" node not found")
+#endif
+
+! Now we can init fedof from toml
+CALL fedof%ImportFromToml(table=node, dom=dom)
+
+node => NULL(); key = ""; fedofName = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE AbstractFieldReadGeoFEDOFFromToml1
+
+!----------------------------------------------------------------------------
+!                                               AbstractFieldReadFEDOfromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml2
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadGeoFEDOFFromToml2()"
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String), ALLOCATABLE :: physicalVarNames(:)
+INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames
+LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
+                isPhysicalVarNamesScalar, isfedof
+TYPE(toml_table), POINTER :: node
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+key = "physicalVarNames"
+!========================
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//' ...')
+#endif
+CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
+              origin=origin, stat=stat, &
+              isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
+tPhysicalVarNames = 0
+IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
+
+isfedofalloc = ALLOCATED(fedof)
+IF (isfedofalloc) THEN
+  tsize = SIZE(fedof)
+
+#ifdef DEBUG_VER
+  isok = tsize .EQ. tPhysicalVarNames
+  CALL AssertError1(isok, myName, &
+                    "fedof size does not match physicalVarNames size")
+
+  DO ii = 1, tPhysicalVarNames
+    isok = ASSOCIATED(fedof(ii)%ptr)
+    CALL AssertError1(isok, myName, &
+                      "fedof("//ToString(ii)//")%ptr is not associated")
+  END DO
+#endif
+
+ELSE
+  tsize = tPhysicalVarNames
+  ALLOCATE (fedof(tsize))
+
+  DO ii = 1, tPhysicalVarNames
+    ALLOCATE (FEDOF_ :: fedof(ii)%ptr)
+  END DO
+END IF
+
+DO ii = 1, tPhysicalVarNames
+  isfedof = fedof(ii)%ptr%IsInitiated()
+  IF (isfedof) CYCLE
+
+  ! Get the node (subtable) from toml table for each physical variable
+  CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
+                origin=origin, requested=.FALSE., stat=stat)
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    physicalVarNames(ii)//" node not found")
+#endif
+
+  ! Now we can init fedof from toml
+  CALL AbstractFieldReadGeoFEDOFFromToml( &
+    table=node, fedof=fedof(ii)%ptr, dom=dom)
+
+END DO
+
+key = ""
+DO ii = 1, tPhysicalVarNames
+  physicalVarNames(ii) = ""
+END DO
+DEALLOCATE (physicalVarNames)
+node => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadGeoFEDOFFromToml2
+
+!----------------------------------------------------------------------------
+!                                         AbstractFieldReadGeoFEDOFFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadGeoFEDOFFromToml3()"
+#endif
+
+CHARACTER(:), ALLOCATABLE :: key
+TYPE(String), ALLOCATABLE :: physicalVarNames(:)
+INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames, tmesh
+LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
+                isPhysicalVarNamesScalar, isfedof
+TYPE(toml_table), POINTER :: node
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+key = "physicalVarNames"
+!========================
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading '//key//' ...')
+#endif
+
+CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
+              origin=origin, stat=stat, &
+              isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
+tPhysicalVarNames = 0
+IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
+
+isfedofalloc = ALLOCATED(fedof)
+IF (isfedofalloc) THEN
+  tsize = SIZE(fedof)
+
+#ifdef DEBUG_VER
+  isok = tsize .EQ. tPhysicalVarNames
+  CALL AssertError1(isok, myName, &
+                    "fedof size does not match physicalVarNames size")
+
+  DO ii = 1, tsize
+    isok = ASSOCIATED(fedof(ii)%ptr)
+    CALL AssertError1(isok, myName, &
+                      "fedof("//ToString(ii)//")%ptr is not associated")
+  END DO
+#endif
+
+ELSE
+  tsize = tPhysicalVarNames
+  ALLOCATE (fedof(tsize))
+
+  DO ii = 1, tsize
+    ALLOCATE (FEDOF_ :: fedof(ii)%ptr)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+tmesh = SIZE(dom)
+isok = tmesh .EQ. tsize
+CALL AssertError1(isok, myName, &
+                  "mesh size does not match physicalVarNames size")
+
+DO ii = 1, tsize
+  isok = ASSOCIATED(dom(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    "mesh("//ToString(ii)//")%ptr is not associated")
+END DO
+#endif
+
+DO ii = 1, tPhysicalVarNames
+  isfedof = fedof(ii)%ptr%IsInitiated()
+  IF (isfedof) CYCLE
+
+  ! Get the node (subtable) from toml table for each physical variable
+  CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
+                origin=origin, requested=.FALSE., stat=stat)
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    physicalVarNames(ii)//" node not found")
+#endif
+
+  ! Now we can init fedof from toml
+  CALL AbstractFieldReadGeoFEDOFFromToml(table=node, &
+                                         fedof=fedof(ii)%ptr, dom=dom(ii)%ptr)
+
+END DO
+
+key = ""
+DO ii = 1, tPhysicalVarNames
+  physicalVarNames(ii) = ""
+END DO
+DEALLOCATE (physicalVarNames)
+
+node => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
 
 !----------------------------------------------------------------------------
 !                                         AbstractFieldReadTimeFEDOFFromToml1

@@ -78,7 +78,7 @@ CALL SetSTScalarFieldParam(param=param, name=obj%name%chars(), &
 
 obj%isInitiated = .FALSE.
 
-CALL obj%Initiate(param=param, fedof=fedof)
+CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 
 CALL param%DEALLOCATE()
 

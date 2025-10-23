@@ -261,6 +261,18 @@ IF (isok) THEN
   RETURN
 END IF
 
+isok = PRESENT(geofedof)
+IF (isok) THEN
+  obj%geofedof => geofedof
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
 isok = PRESENT(fedofs)
 IF (isok) THEN
   tsize = SIZE(fedofs)
@@ -268,6 +280,23 @@ IF (isok) THEN
 
   DO ii = 1, tsize
     obj%fedofs(ii)%ptr => fedofs(ii)%ptr
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+isok = PRESENT(geofedofs)
+IF (isok) THEN
+  tsize = SIZE(geofedofs)
+  ALLOCATE (obj%geofedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%geofedofs(ii)%ptr => geofedofs(ii)%ptr
   END DO
 
 #ifdef DEBUG_VER
