@@ -95,6 +95,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractFE_
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
+  !! Set the orientation
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set order of quadrature
@@ -524,8 +526,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
-    obj, order, anisoorder, cellOrder, faceOrder, edgeOrder, cellOrient, &
-    faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
+    obj, order, anisoorder, cellOrder, faceOrder, edgeOrder, tcell, tface, &
+    tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
@@ -535,12 +537,40 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! cell order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order
-    !! number of rows in faceOrder is 3
+    !! face order, number of rows in faceOrder is 3
     !! number of columns in faceOrder is tfaceorder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order
-    !! size of edgeorder is tedgeorder
+    !! edge order, size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            GetOrder@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
     !! cell orient
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
@@ -558,7 +588,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
-  END SUBROUTINE obj_SetOrder
+  END SUBROUTINE obj_SetOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1092,7 +1122,7 @@ INTERFACE
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
     !! shape function defined on the face of element
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! Nodal coordinates of reference element
+    !! Nodal coordinates of element
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
     TYPE(UserFunction_), INTENT(INOUT) :: func
