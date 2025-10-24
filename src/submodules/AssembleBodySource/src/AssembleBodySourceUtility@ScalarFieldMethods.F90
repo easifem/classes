@@ -18,18 +18,17 @@
 SUBMODULE(AssembleBodySourceUtility) ScalarFieldMethods
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: ToString
+USE ReallocateUtility, ONLY: Reallocate
+USE ForceVector_Method, ONLY: ForceVector_, ForceVector
+USE FEVariable_Method, ONLY: NodalVariable, QuadratureVariable, &
+                             FEVariable_Set => Set
+USE AbstractFE_Class, ONLY: AbstractFE_
 
 USE BaseType, ONLY: QuadraturePoint_, &
                     ElemshapeData_, &
                     FEVariable_, &
                     TypeFEVariableScalar, &
                     TypeFEVariableSpace
-
-USE ReallocateUtility, ONLY: Reallocate
-
-USE ForceVector_Method, ONLY: ForceVector_, ForceVector
-
-USE FEVariable_Method, ONLY: NodalVariable, QuadratureVariable
 
 #ifdef DEBUG_VER
 USE FEVariable_Method, ONLY: Fevar_Display => Display
@@ -47,11 +46,12 @@ MODULE PROCEDURE ScalarFieldAssembleBodySource1
 CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleBodySource1()"
 #endif
 
+INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
+                tcellCon, tgeoCellCon, tforceVec, xij_i, xij_j
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
-INTEGER(I4B) :: nrow, ncol, iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, tgeoCellCon, tforceVec
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:)
 
@@ -75,48 +75,47 @@ forceVar = QuadratureVariable(val=forceVec, rank=TypeFEVariableScalar, &
 
 DO iel = 1, tElements
 
-  CALL fedof%GetQuadraturePoints(quad=quad, globalElement=iel, &
-                                 islocal=defaultOpt%yes)
+  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
 
-  CALL fedof%GetLocalElemShapeData(globalElement=iel, elemsd=elemsd, &
-                                   islocal=defaultOpt%yes, quad=quad)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
 
-  CALL geofedof%GetLocalElemShapeData(globalElement=iel, &
-                                      elemsd=geoelemsd, &
-                                      islocal=defaultOpt%yes, &
-                                      quad=quad)
+  CALL feptr%GetQuadraturePoints(quad=quad)
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
-  CALL geofedof%GetConnectivity_(globalElement=iel, &
-                                 islocal=defaultOpt%yes, &
-                                 ans=geoCellCon, &
-                                 tsize=tgeoCellCon, opt="A")
+  CALL geofedof%GetConnectivity_( &
+    globalElement=iel, islocal=defaultOpt%yes, ans=geoCellCon, &
+    tsize=tgeoCellCon, opt="A")
 
-  CALL nodeCoord%Get(VALUE=xij, nrow=nrow, ncol=ncol, &
-                     storageFMT=defaultOpt%storageFormatNodes, &
-                     globalNode=geoCellCon(1:tgeoCellCon), &
-                     islocal=defaultOpt%yes)
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    globalElement=iel)
 
-  CALL fedof%GetGlobalElemShapeData(globalElement=iel, &
-                                    elemsd=elemsd, &
-                                    xij=xij(1:nrow, 1:ncol), &
-                                    geoelemsd=geoelemsd, &
-                                    islocal=defaultOpt%yes)
+  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                    geoelemsd=geoelemsd)
 
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
 
-  ! TODO:
-  ! Here we should use the barycentric coordinates
-  CALL bodySource%Get_(fevar=forceVar, xij=xij(1:nrow, 1:ncol))
+  CALL bodySource%Get_(fevar=forceVar, &
+                       xij=elemsd%coord(1:xij_i, 1:elemsd%nips))
 
-  ! fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
                     ans=forceVec, tsize=tforceVec)
 
-  CALL rhs%Set(globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
-     scale=scale, addContribution=defaultOpt%yes, VALUE=forceVec(1:tforceVec))
+  CALL rhs%Set( &
+    globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, scale=scale, &
+    addContribution=defaultOpt%yes, VALUE=forceVec(1:tforceVec))
 
 END DO
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
+IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
+IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
+NULLIFY (feptr, geofeptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -161,10 +160,12 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleBodySource3()"
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
-INTEGER(I4B) :: nrow, ncol, iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, tgeoCellCon, tforceVec
+INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
+                tcellCon, tgeoCellCon, tforceVec, xij_i, xij_j, &
+                tfevec
 INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), fevec(:), forceVec(:)
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -180,52 +181,53 @@ CALL Reallocate(xij, 3, maxNNEGeo)
 maxNNE = fedof%GetMaxTotalConnectivity()
 CALL Reallocate(cellcon, maxNNE)
 CALL Reallocate(fevec, maxNNE)
-CALL Reallocate(forcevec, maxNNE)
+CALL Reallocate(forceVec, maxNNE)
+
+forceVar = NodalVariable(val=forceVec, rank=TypeFEVariableScalar, &
+                         vartype=TypeFEVariableSpace)
 
 DO iel = 1, tElements
 
-  CALL fedof%GetQuadraturePoints(quad=quad, globalElement=iel, &
-                                 islocal=defaultOpt%yes)
-
-  CALL fedof%GetLocalElemShapeData(globalElement=iel, elemsd=elemsd, &
-                                   islocal=defaultOpt%yes, quad=quad)
-
-  CALL geofedof%GetLocalElemShapeData(globalElement=iel, &
-                                      elemsd=geoelemsd, &
-                                      islocal=defaultOpt%yes, &
-                                      quad=quad)
-
-  CALL geofedof%GetConnectivity_(globalElement=iel, &
-                                 islocal=defaultOpt%yes, &
-                                 ans=geoCellCon, &
-                                 tsize=tgeoCellCon, opt="A")
-
-  CALL nodeCoord%Get(VALUE=xij, nrow=nrow, ncol=ncol, &
-                     storageFMT=defaultOpt%storageFormatNodes, &
-                     globalNode=geoCellCon(1:tgeoCellCon), &
-                     islocal=defaultOpt%yes)
-
-  CALL fedof%GetGlobalElemShapeData(globalElement=iel, &
-                                    elemsd=elemsd, &
-                                    xij=xij(1:nrow, 1:ncol), &
-                                    geoelemsd=geoelemsd, &
-                                    islocal=defaultOpt%yes)
-
+  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
+                                 ans=geoCellCon, tsize=tgeoCellCon, opt="A")
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
+  CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
+                         islocal=defaultOpt%yes, globalElement=iel)
+
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+
+  CALL feptr%GetQuadraturePoints(quad=quad)
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                    geoelemsd=geoelemsd)
 
   CALL bodySource%Get(VALUE=forceVec, globalNode=cellcon(1:tcellCon), &
                       tsize=tforceVec, islocal=defaultOpt%yes)
-  ! TODO:
-  forceVar = NodalVariable(val=forceVec(1:tforceVec), &
-                           rank=TypeFEVariableScalar, &
-                           vartype=TypeFEVariableSpace)
-  fevec = ForceVector(test=elemsd, c=forceVar, crank=TypeFEVariableScalar)
+
+  CALL FEVariable_Set( &
+    obj=forceVar, val=forceVec(1:tforceVec), rank=TypeFEVariableScalar, &
+    vartype=TypeFEVariableSpace, scale=1.0_DFP, addContribution=defaultOpt%no)
+
+  CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
+                    ans=fevec, tsize=tfevec)
 
   CALL rhs%Set(globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
-               scale=scale, addContribution=defaultOpt%yes, VALUE=fevec)
+               scale=scale, addContribution=defaultOpt%yes, &
+               VALUE=fevec(1:tfevec))
 
 END DO
+
+IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
+IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
+IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
+NULLIFY (feptr, geofeptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
