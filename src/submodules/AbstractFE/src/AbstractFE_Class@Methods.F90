@@ -886,8 +886,15 @@ END IF
 
 nns = facetElemsd%nns
 
+#ifdef DEBUG_VER
+n1 = SIZE(func)
+isok = n1 .GE. facetElemsd%nns
+CALL AssertError1(isok, myName, &
+         'Size of func='//ToString(n1)//' is lesser than facetElemsd%nns='// &
+                  ToString(facetElemsd%nns))
+#endif
+
 massMat(1:nns, 1:nns) = 0.0_DFP
-ans(1:nns) = 0.0_DFP
 
 n1 = 1; n2 = nns
 
@@ -897,10 +904,91 @@ END IF
 
 tsize = n2 - n1 + 1
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling MassMatrix_')
+#endif
+
 CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
                  nrow=nrow, ncol=ncol)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling ForceVector_')
+#endif
+
 CALL ForceVector_(test=facetElemsd, c=func, ans=ans, tsize=nrow)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling GetLU')
+#endif
+
+CALL GetLU(A=massMat(n1:n2, n1:n2), IPIV=ipiv(n1:n2), info=info)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling LUSolve')
+#endif
+
+CALL LUSolve(A=massMat(n1:n2, n1:n2), B=ans(n1:n2), &
+             IPIV=ipiv(n1:n2), info=info)
+
+IF (onlyFaceBubble0) THEN
+  DO ii = tVertices + 1, nns
+    ans(ii - 2) = ans(ii)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromQuadrature
+
+!----------------------------------------------------------------------------
+!                                                GetFacetDOFValueFromConstant
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromConstant()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: info, nrow, ncol, n1, n2, ii, nns
+LOGICAL(LGT) :: onlyFaceBubble0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
+
+#ifdef DEBUG_VER
+IF (onlyFaceBubble0) THEN
+  isok = PRESENT(tVertices)
+  CALL AssertError1(isok, myName, &
+                    'tVertices must be provided when onlyFaceBubble is true')
+END IF
+#endif
+
+nns = facetElemsd%nns
+massMat(1:nns, 1:nns) = 0.0_DFP
+ans(1:nns) = 0.0_DFP
+
+n1 = 1; n2 = nns
+IF (onlyFaceBubble0) THEN
+  n1 = tVertices + 1; n2 = nns
+END IF
+
+tsize = n2 - n1 + 1
+
+CALL MassMatrix_(test=facetElemsd, trial=facetElemsd, ans=massMat, &
+                 nrow=nrow, ncol=ncol)
+
+CALL ForceVector_(test=facetElemsd, ans=ans, tsize=nrow)
 
 CALL GetLU(A=massMat(n1:n2, n1:n2), IPIV=ipiv(n1:n2), info=info)
 
@@ -917,7 +1005,7 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromQuadrature
+END PROCEDURE obj_GetFacetDOFValueFromConstant
 
 !----------------------------------------------------------------------------
 !                                                 GetFacetDOFValueFromVertex
@@ -968,12 +1056,37 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromVertex
 
 !----------------------------------------------------------------------------
+!                                      GetFacetDOFValueFromSpaceUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetFacetDOFValueFromSpaceUserFunction()"
+#endif
+
+REAL(DFP), PARAMETER :: times = 0.0_DFP
+
+CALL obj%GetFacetDOFValue( &
+  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, times=times, &
+  localFaceNumber=localFaceNumber, func=func, ans=ans, tsize=tsize, &
+  massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
+  onlyFaceBubble=onlyFaceBubble)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromSpaceUserFunction
+
+!----------------------------------------------------------------------------
 !                                            GetFacetDOFValueFromUserFunction
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
+MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetFacetDOFValueFromSpaceTimeUserFunction()"
 #endif
 
 #ifdef DEBUG_VER
@@ -990,7 +1103,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromUserFunction
+END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
 !

@@ -19,11 +19,11 @@
 SUBMODULE(TriangleH1FE_Class) Methods
 USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString
 USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
                                         InterpolationPoint_Triangle_, &
                                         FacetConnectivity_Triangle
+USE InputUtility, ONLY: Input
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -215,12 +215,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInterpolationPoints
 
 !----------------------------------------------------------------------------
-!                                            GetFacetDOFValueFromUserFunction
+!                                                             SetOrientation
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromUserFunction
+MODULE PROCEDURE obj_SetOrientation
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromUserFunction()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetOrientation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
+                                errCheck=errCheck)
+
+CALL obj%opt%SetFaceOrientation(faceOrient=faceOrient, tFace=tFace, &
+                                errCheck=errCheck)
+
+CALL obj%opt%SetEdgeOrientation(edgeOrient=edgeOrient, tEdge=tEdge, &
+                                errCheck=.FALSE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetOrientation
+
+!----------------------------------------------------------------------------
+!                                   GetFacetDOFValueFromSpaceTimeUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetFacetDOFValueFromSpaceTimeUserFunction()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tReturns
 #endif
@@ -265,7 +295,7 @@ IF (onlyFaceBubble0) THEN
   scale = 1.0_DFP
 END IF
 
-args = 0.0_DFP
+args = times
 DO ii = 1, nips
   args(1:nsd) = facetElemsd%coord(1:nsd, ii)
   CALL func%GetScalarValue(args=args, val=funcValue(ii))
@@ -286,36 +316,7 @@ CALL obj%GetFacetDOFValueFromQuadrature( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromUserFunction
-
-!----------------------------------------------------------------------------
-!                                                             SetOrientation
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetOrientation
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetOrientation()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
-                                errCheck=errCheck)
-
-CALL obj%opt%SetFaceOrientation(faceOrient=faceOrient, tFace=tFace, &
-                                errCheck=errCheck)
-
-CALL obj%opt%SetEdgeOrientation(edgeOrient=edgeOrient, tEdge=tEdge, &
-                                errCheck=.FALSE.)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetOrientation
+END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
 !                                                              include Error

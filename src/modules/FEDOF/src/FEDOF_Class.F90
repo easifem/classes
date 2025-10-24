@@ -281,6 +281,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalQuadraturePoints => &
+    obj_GetMaxTotalQuadraturePoints
+  !! Get the maximum number of quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order

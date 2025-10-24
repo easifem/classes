@@ -224,13 +224,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshIDPointer => &
     obj_GetMeshIDPointer
   !! Get mesh id pointer
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetH1Lagrange => &
-    obj_GetH1Lagrange
-  !! Get nodenum and nodal value for H1 and Lagrange polynomial
-  !! This is a private method
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetH1Hierarchical => &
-    obj_GetH1Hierarchical
-  !! Get node number and nodal value for H1 Hierarchical polynomials
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
@@ -659,7 +652,7 @@ INTERFACE
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
-    !! Degree of freedom
+    !! Degree of freedom for variable and geometry
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
     !! size of nodeNum can be obtained from obj%GetTotalNodeNum
     REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
@@ -704,58 +697,6 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
     !! starting point of nodes on edge
   END SUBROUTINE obj_Get2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    Get@GetH1LagrangeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-02-12
-! summary:  Get the nodenum and nodalvalue
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetH1Lagrange(obj, fedof, nodeNum, &
-                                      nodalValue, nrow, ncol, times)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !! Boundary condition
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! Degree of freedom
-    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
-    !! nrow = Size of nodeNum
-    !! ncol = 1 or Size of times
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_GetH1Lagrange
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  GetH1Hierarchical@GetH1HierarchicalMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-07-26
-! summary:  Get number of node and nodal values for H1 and Hierarchical
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetH1Hierarchical(obj, fedof, nodeNum, &
-                                          nodalValue, nrow, ncol, times)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    !! Boundary condition
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! Degree of freedom
-    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! Size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
-    !! nrow = Size of nodeNum
-    !! ncol = 1 or Size of times
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_GetH1Hierarchical
 END INTERFACE
 
 !----------------------------------------------------------------------------
