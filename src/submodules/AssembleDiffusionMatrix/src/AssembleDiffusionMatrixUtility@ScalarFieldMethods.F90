@@ -15,14 +15,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AssembleDiffusionMatrixUtility) Methods
+SUBMODULE(AssembleDiffusionMatrixUtility) ScalarFieldMethods
 USE Display_Method, ONLY: ToString, Display
 USE ExceptionHandler_Class, ONLY: e
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
-                    TypeFEVariableScalar
 USE MassMatrix_Method, ONLY: MassMatrix_
 USE DiffusionMatrix_Method, ONLY: DiffusionMatrix_
+USE AbstractFE_Class, ONLY: AbstractFE_
+
+USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
+                    TypeFEVariableScalar
 
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
@@ -41,12 +43,14 @@ MODULE PROCEDURE ScalarFieldAssembleDiffusionMatrix1
 CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleDiffusionMatrix1()"
 #endif
 
-INTEGER(I4B) :: nrow, ncol, tsize, iel, tElements, maxNNE, maxNNEGeo
+INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
+                tgeoCellCon, tcellCon, ks_i, ks_j, xij_i, xij_j
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
 INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
 TYPE(FEVariable_) :: diffCoeffVar
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -68,55 +72,57 @@ CALL Reallocate(ks, maxNNE, maxNNE)
 
 DO iel = 1, tElements
 
+  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+
+  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+
   ! TODO: No allocation GetQuadraturePoints_ necessary
-  CALL fedof%GetQuadraturePoints(quad=quad, globalElement=iel, &
-                                 islocal=defaultOpt%yes)
+  CALL feptr%GetQuadraturePoints(quad=quad)
 
   ! TODO: No allocation GetLocalElemShapeData_ needed
-  CALL fedof%GetLocalElemShapeData(globalElement=iel, elemsd=elemsd, &
-                                   islocal=defaultOpt%yes, quad=quad)
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
   ! TODO:: No allocation GetLocalElemShapeData_ needed
-  CALL geofedof%GetLocalElemShapeData(globalElement=iel, &
-                                      elemsd=geoelemsd, &
-                                      islocal=defaultOpt%yes, &
-                                      quad=quad)
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
-  CALL geofedof%GetConnectivity_(globalElement=iel, &
-                                 islocal=defaultOpt%yes, &
-                                 ans=geoCellCon, &
-                                 tsize=tsize, opt="A")
+  CALL geofedof%GetConnectivity_( &
+    globalElement=iel, islocal=defaultOpt%yes, ans=geoCellCon, &
+    tsize=tgeoCellCon, opt="A")
 
-  CALL nodeCoord%Get(VALUE=xij, nrow=nrow, ncol=ncol, &
-                     storageFMT=defaultOpt%storageFormatNodes, &
-                     globalNode=geoCellCon(1:tsize), &
-                     islocal=defaultOpt%yes)
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    globalElement=iel)
 
-  CALL fedof%GetGlobalElemShapeData(globalElement=iel, &
-                                    elemsd=elemsd, &
-                                    xij=xij(1:elemsd%nsd, 1:geoelemsd%nns), &
-                                    geoelemsd=geoelemsd, &
-                                    islocal=defaultOpt%yes)
+  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                    geoelemsd=geoelemsd)
 
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
-                              ans=cellcon, tsize=tsize, opt="A")
+                              ans=cellcon, tsize=tcellCon, opt="A")
 
+  ! TODO: No allocatation in diffCoeffVar
   CALL diffCoeffField%Get(globalElement=iel, islocal=defaultOpt%yes, &
                           fevar=diffCoeffVar)
 
   ks = defaultOpt%zero
-  CALL DiffusionMatrix_(test=elemsd, trial=elemsd, k=diffCoeffVar, &
-                        krank=TypeFEVariableScalar, ans=ks, &
-                        nrow=nrow, ncol=ncol)
+  CALL DiffusionMatrix_( &
+    test=elemsd, trial=elemsd, k=diffCoeffVar, krank=TypeFEVariableScalar, &
+    ans=ks, nrow=ks_i, ncol=ks_j)
 
-  CALL tanmat%Set(globalNode=cellcon(1:tsize), &
-                  islocal=defaultOpt%yes, &
-                  VALUE=ks(1:nrow, 1:ncol), &
-                  storageFMT=defaultOpt%storageFormatDOF, &
-                  scale=scale, &
-                  addContribution=defaultOpt%yes)
+  CALL tanmat%Set( &
+    globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
+    VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
+    scale=scale, addContribution=defaultOpt%yes)
 
 END DO
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(ks)) DEALLOCATE (ks)
+IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
+IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
+feptr => NULL()
+geofeptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -130,4 +136,4 @@ END PROCEDURE ScalarFieldAssembleDiffusionMatrix1
 
 #include "../../include/errors.F90"
 
-END SUBMODULE Methods
+END SUBMODULE ScalarFieldMethods

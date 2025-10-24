@@ -19,7 +19,6 @@ MODULE AssembleDiffusionMatrixUtility
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE GlobalData, ONLY: DFP, LGT, I4B
 USE MatrixField_Class, ONLY: MatrixField_
-USE VectorField_Class, ONLY: VectorField_
 USE FEDOF_Class, ONLY: FEDOF_
 USE MeshField_Class, ONLY: MeshField_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
@@ -46,21 +45,20 @@ END TYPE DefaultOpt_
 TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 
 !----------------------------------------------------------------------------
-!                                          ScalarFieldAssembleDiffusionMatrix
+!                       ScalarFieldAssembleDiffusionMatrix@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldAssembleDiffusionMatrix
-  MODULE SUBROUTINE ScalarFieldAssembleDiffusionMatrix1(tanmat, mesh, &
-                                                        geofedof, fedof, &
-                                                        nodeCoord, &
-                                                        diffCoeffField, &
-                                                        reset, scale)
+  MODULE SUBROUTINE ScalarFieldAssembleDiffusionMatrix1( &
+    tanmat, mesh, geofedof, fedof, diffCoeffField, reset, scale)
     CLASS(MatrixField_), INTENT(INOUT) :: tanmat
     CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    !! geofedof
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    !! fedof
     CLASS(MeshField_), INTENT(INOUT) :: diffCoeffField
+    !! diffusiob coefficient field
     LOGICAL(LGT), INTENT(IN) :: reset
     !! if reset is true, then tanmat is set to zero before assembly
     REAL(DFP), INTENT(IN) :: scale
