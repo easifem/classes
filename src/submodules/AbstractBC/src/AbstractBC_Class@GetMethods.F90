@@ -519,7 +519,6 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
       elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, &
       facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
-    ! DEBUG: we need geoFacetElemsd
     CALL geofeptr%GetLocalFacetElemShapeData( &
       elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
       facetQuad=facetQuad, localFaceNumber=localFaceNumber)
