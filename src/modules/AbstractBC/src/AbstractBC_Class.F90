@@ -16,11 +16,10 @@
 
 MODULE AbstractBC_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE BaseType, ONLY: TypeFEVariableOpt, &
-                    FEVariable_
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE UserFunction_Class, ONLY: UserFunction_
@@ -28,6 +27,10 @@ USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE FEDOF_Class, ONLY: FEDOF_
+USE BaseType, ONLY: TypeFEVariableOpt, &
+                    FEVariable_, &
+                    QuadraturePoint_, &
+                    ElemShapeData_
 
 IMPLICIT NONE
 PRIVATE
@@ -244,6 +247,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix of boundary condition, it should be
   !! overridden in the derived class
+
+  !! @NBCMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNBCValue => obj_GetNBCValue
+  !! Get the Neumann boundary condition value at a given nodes
+
 END TYPE AbstractBC_
 
 !----------------------------------------------------------------------------
@@ -857,6 +865,107 @@ INTERFACE
   MODULE SUBROUTINE obj_SetElemToLocalBoundary(obj)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetElemToLocalBoundary
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetNBCValue@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary: Get the nodenum and nodalValue
+!
+!# Introduction
+!
+! This method calls GetH1Lagrange or GetH1Hierarchical methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNBCValue( &
+    obj, mesh, fedof, geofedof, indx, nodeNum, nodalValue, nrow, ncol, &
+    cellCon, tCellCon, geoCellCon, tGeoCellCon, geoFacetCon, tGeoFacetCon, &
+    quad, facetQuad, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
+    xij, xij_i, xij_j, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
+    !! Mesh
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    !! Degree of freedom for variable and geometry
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! Index of elemT
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! Nodal values of boundary value
+    !! nrow = size of nodeNum
+    !! ncol = 1 or size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and cols written in nodalValue
+    INTEGER(I4B), INTENT(INOUT) :: cellCon(:), geoCellCon(:), geoFacetCon(:)
+    !! cell connectivity for variable and geometry
+    INTEGER(I4B), INTENT(OUT) :: tCellCon, tGeoCellCon, tGeoFacetCon
+    !! total data written in cellCon and geoCellCon
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! quadrature for element and facet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
+                                           geoFacetElemsd
+    !! Element shape data on cell and facet
+    REAL(DFP), INTENT(INOUT) :: xij(:, :)
+    !! xij for element
+    INTEGER(I4B), INTENT(OUT) :: xij_i, xij_j
+    !! size of data written in xij
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! times vector is only used when usefunction is true in obj
+  END SUBROUTINE obj_GetNBCValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Get the nodenum and nodalValue
+!
+!# Introduction
+!
+! This method calls GetH1Lagrange or GetH1Hierarchical methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get3( &
+    obj, indx, mesh, fedof, geofedof, nodeNum, nodalValue, nrow, ncol, &
+    massMat, funcValue, ipiv, elemsd, facetElemsd, geoElemsd, &
+    geoFacetElemsd, quad, facetQuad, times)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! Index of boundary element
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
+    !! mesh pointer
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    !! fedof for variable and geometry
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! node number should be allocated
+    !! size of nodeNum is nrow
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! nodal values
+    INTEGER(I4B) :: nrow, ncol
+    !! nrow is size of nodeNum and size of number of rows in nodalvalue
+    !! ncol is colsize of nodalvalue
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time values for time-dependent BCs
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass Matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function value
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, &
+                                           geoElemsd, geoFacetElemsd
+     !! Element shape data on cell and facet
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature for element and facet
+  END SUBROUTINE obj_Get3
 END INTERFACE
 
 END MODULE AbstractBC_Class
