@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(ScalarField_Class) DBCMethods
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 CONTAINS
@@ -28,7 +28,7 @@ CONTAINS
 MODULE PROCEDURE obj_ApplyDirichletBC1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
-LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: aint
 #endif
 
@@ -45,16 +45,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 istimes = PRESENT(times)
 
 #ifdef DEBUG_VER
-aint = 0
 IF (istimes) THEN
   aint = SIZE(times)
-  problem = aint .NE. 1
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
-    RETURN
-  END IF
+  isok = aint .EQ. 1
+  CALL AssertError1(isok, myName, &
+             'SIZE( times ) is '//ToString(aint)//' which is not equal to 1 ')
 END IF
 #endif
 
@@ -110,7 +105,7 @@ LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
 
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, tsize, idof, nrow, ncol
+INTEGER(I4B) :: ibc, ttimes, idof, nrow, ncol, tbc
 LOGICAL(LGT) :: istimes
 
 #ifdef DEBUG_VER
@@ -119,22 +114,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 istimes = PRESENT(times)
-tsize = 0
+ttimes = 1
 
 #ifdef DEBUG_VER
 IF (istimes) THEN
-  tsize = SIZE(times)
-  isok = tsize .EQ. 1
+  ttimes = SIZE(times)
+  isok = ttimes .EQ. 1
   CALL AssertError1(isok, myName, &
-                    '[INERNAL ERROR] :: SIZE( times ) is '// &
-                    ToString(tsize)//' which is not equal to 1 ')
+           'SIZE( times ) is '//ToString(ttimes)//' which is not equal to 1 ')
 END IF
 #endif
 
-tsize = SIZE(dbc)
+tbc = SIZE(dbc)
 
 ncol = 1
-DO ibc = 1, tsize
+DO ibc = 1, tbc
   nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
   CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
                   expandFactor=expandFactor)
@@ -143,7 +137,7 @@ DO ibc = 1, tsize
 END DO
 
 IF (istimes) THEN
-  DO ibc = 1, tsize
+  DO ibc = 1, tbc
     CALL dbc(ibc)%ptr%Get( &
       nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
       ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
@@ -165,7 +159,7 @@ IF (istimes) THEN
   RETURN
 END IF
 
-DO ibc = 1, tsize
+DO ibc = 1, tbc
   CALL dbc(ibc)%ptr%Get( &
     nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, ncol=ncol, &
     fedof=obj%fedof, geofedof=obj%geofedof)
