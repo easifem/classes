@@ -24,4 +24,5 @@ target_sources(
           ${src_path}/ScalarField_Class@SetMethods.F90
           ${src_path}/ScalarField_Class@GetMethods.F90
           ${src_path}/ScalarField_Class@DBCMethods.F90
-          ${src_path}/ScalarField_Class@PointNBCMethods.F90)
+          ${src_path}/ScalarField_Class@PointNBCMethods.F90
+          ${src_path}/ScalarField_Class@SurfaceNBCMethods.F90)
