@@ -180,6 +180,9 @@ CALL obj%quadOpt%Copy(obj2%quadOpt)
 isok = ALLOCATED(obj2%coeff)
 IF (isok) obj%coeff = obj2%coeff
 
+isok = ALLOCATED(obj2%xx)
+IF (isok) obj%xx = obj2%xx
+
 isok = ALLOCATED(obj2%xij)
 IF (isok) obj%xij = obj2%xij
 
@@ -209,6 +212,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%Copy(TypeBasisOpt)
 IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
+IF (ALLOCATED(obj%xx)) DEALLOCATE (obj%xx)
+IF (ALLOCATED(obj%xij)) DEALLOCATE (obj%xij)
+IF (ALLOCATED(obj%temp)) DEALLOCATE (obj%temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

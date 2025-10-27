@@ -137,6 +137,12 @@ IF (isok) THEN
   CALL Display(SHAPE(obj%xij), msg="obj%xij shape: ", unitno=unitno)
 END IF
 
+isok = ALLOCATED(obj%xx)
+CALL Display(isok, msg="obj%xx allocated: ", unitno=unitno)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%xx), msg="obj%xx shape: ", unitno=unitno)
+END IF
+
 isok = ALLOCATED(obj%temp)
 CALL Display(isok, msg="obj%temp allocated: ", unitno=unitno)
 IF (isok) THEN

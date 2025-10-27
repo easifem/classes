@@ -192,7 +192,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE QuadrangleH1HieFE_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
-!                                QuadrangleH1HieFE_GetGlobalFacetElemShapeData
+!                               QuadrangleH1HieFE_GetGlobalFacetElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE QuadrangleH1HieFE_GetGlobalFacetElemShapeData

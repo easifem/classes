@@ -212,10 +212,11 @@ TYPE :: BasisOpt_
   TYPE(QuadratureOpt_) :: quadOpt
   !! Quadrature options
 
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
+  REAL(DFP), ALLOCATABLE :: coeff(:, :), xx(:, :)
   !! coefficient necessary for lagrange Interpolation
   !! coefficient matrix needed for Lagrange interpolation
   !! Coeff helps us in reducing the computation time for Lagrange polynomials
+  !! xx is evaluation of basis points
 
   REAL(DFP), ALLOCATABLE :: xij(:, :)
   !! Interpolation points used for Lagrange interpolation

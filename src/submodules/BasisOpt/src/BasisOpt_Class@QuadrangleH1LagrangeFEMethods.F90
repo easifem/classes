@@ -70,6 +70,7 @@ CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 
 CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
 
 ! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
@@ -78,14 +79,19 @@ CALL InterpolationPoint_Quadrangle_( &
   ncol=indx(2), layout="VEFC", xij=obj%refelemCoord(1:obj%xidim, 1:4), &
   alpha=obj%alpha(1), beta=obj%beta(1), lambda=obj%lambda(1))
 
-! order, x, xij, ans, nrow, ncol, coeff, firstCall, basisType, alpha, &
-! beta, lambda
+! order, x, xij, ans, nrow, ncol, coeff, xx, firstCall, basisType, alpha, &
+! beta, lambda)
 CALL LagrangeEvalAll_Quadrangle_( &
   order=obj%order, x=quad%points(1:quad%txi, 1:nips), &
-  xij=obj%xij(1:indx(1), 1:indx(2)), ans=obj%temp(:, :, 1), nrow=indx(3), &
-  ncol=indx(4), coeff=obj%coeff(1:tdof, 1:tdof), firstCall=obj%firstCall, &
+  xx=obj%xx(1:nips, 1:tdof), xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4), &
+  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=obj%firstCall, &
   basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
   lambda=obj%lambda(1))
+
+! LagrangeEvalAll_Line3_( &
+!   order, x, xij, ans, nrow, ncol, coeff, xx, firstCall, basisType, alpha, &
+!   beta, lambda)
 
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
@@ -238,6 +244,7 @@ CALL GetQuadratureWeights_(obj=facetQuad, weights=facetElemsd%ws, &
 CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 
 ! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
 CALL InterpolationPoint_Line_( &
@@ -248,7 +255,7 @@ CALL InterpolationPoint_Line_( &
 CALL LagrangeEvalAll_Line_( &
   order=obj%order, xij=obj%xij(1:indx(1), 1:indx(2)), &
   x=facetQuad%points(1:facetQuad%txi, 1:nips), &
-  coeff=obj%coeff(1:tdof, 1:tdof), firstCall=.TRUE., &
+  coeff=obj%coeff(1:tdof, 1:tdof), xx=obj%xx, firstCall=.TRUE., &
   basisType=obj%basisType(1), alpha=obj%alpha(1), beta=obj%beta(1), &
   lambda=obj%lambda(1), ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
 
