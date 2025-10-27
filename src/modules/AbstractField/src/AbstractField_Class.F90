@@ -271,6 +271,8 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all the values to a constant scalar value
 
   ! SET:
   ! @DirichletBCMethods
@@ -1377,6 +1379,26 @@ INTERFACE
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetAll@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-27
+! summary: Set all the values
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be set or add
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetAll
 END INTERFACE
 
 !----------------------------------------------------------------------------
