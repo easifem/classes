@@ -26,6 +26,7 @@ USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE FEDOF_Class, ONLY: FEDOF_
 USE UserFunction_Class, ONLY: UserFunction_
 USE BaseType, ONLY: FEVariable_, QuadraturePoint_, ElemShapeData_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
 PRIVATE
@@ -47,8 +48,6 @@ TYPE :: DefaultOpt_
   INTEGER(I4B) :: storageFormatNodes = TypeFieldOpt%storageFormatNodes
 END TYPE DefaultOpt_
 
-TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
-
 !----------------------------------------------------------------------------
 !                        ScalarFieldAssembleSurfaceSource@ScalarFieldMethods
 !----------------------------------------------------------------------------
@@ -64,14 +63,14 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 
 INTERFACE ScalarFieldAssembleSurfaceSource
   MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource1( &
-    obj, nbc, fedof, geofedof, nodeCoord, nbcField, scale, geoCellCon, &
+    obj, nbc, fedof, geofedof, mesh, nbcField, scale, geoCellCon, &
     geoFacetCon, cellCon, xij, facetXij, forceVec, nbcValue, forceVar, &
     quad, facetQuad, elemsd, facetElemsd, geoElemsd, geoFacetElemsd)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(NeumannBC_), INTENT(INOUT) :: nbc
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
     REAL(DFP), INTENT(IN) :: scale
     INTEGER(I4B), INTENT(INOUT) :: geoCellCon(:), geoFacetCon(:), &
@@ -100,10 +99,10 @@ END INTERFACE ScalarFieldAssembleSurfaceSource
 
 INTERFACE ScalarFieldAssembleSurfaceSource
   MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource2( &
-    obj, geofedof, nodeCoord, nbcField, scale)
+    obj, geofedof, mesh, nbcField, scale)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE ScalarFieldAssembleSurfaceSource2
@@ -124,14 +123,14 @@ END INTERFACE ScalarFieldAssembleSurfaceSource
 
 INTERFACE ScalarFieldAssembleSurfaceSource
   MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource3( &
-    obj, nbc, fedof, geofedof, nodeCoord, func, scale, geoCellCon, &
+    obj, nbc, fedof, geofedof, mesh, func, scale, geoCellCon, &
     geoFacetCon, cellCon, xij, facetXij, forceVec, nbcValue, forceVar, &
     quad, facetQuad, elemsd, facetElemsd, geoElemsd, geoFacetElemsd)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(NeumannBC_), INTENT(INOUT) :: nbc
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     CLASS(UserFunction_), INTENT(INOUT) :: func
     REAL(DFP), INTENT(IN) :: scale
     INTEGER(I4B), INTENT(INOUT) :: geoCellCon(:), geoFacetCon(:), &
@@ -160,10 +159,10 @@ END INTERFACE ScalarFieldAssembleSurfaceSource
 
 INTERFACE ScalarFieldAssembleSurfaceSource
   MODULE SUBROUTINE ScalarFieldAssembleSurfaceSource4( &
-    obj, geofedof, nodeCoord, func, scale)
+    obj, geofedof, mesh, func, scale)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-    CLASS(VectorField_), INTENT(INOUT) :: nodeCoord
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     CLASS(UserFunction_), INTENT(INOUT) :: func
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE ScalarFieldAssembleSurfaceSource4

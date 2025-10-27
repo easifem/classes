@@ -24,10 +24,13 @@ USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_, &
                     TypeFEVariableSpace
 USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
 
-USE FEVariable_Method, ONLY: NodalVariable, Fevar_Set => Set, &
+USE FEVariable_Method, ONLY: NodalVariable, &
+                             FEVariable_Set => Set, &
                              QuadratureVariable
 
-USE forceVector_Method, ONLY: forceVector_
+USE ForceVector_Method, ONLY: ForceVector_
+
+USE AbstractFE_Class, ONLY: AbstractFE_
 
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QP_Display => Display
@@ -36,6 +39,9 @@ USE FEVariable_Method, ONLY: Fevar_Display => Display
 #endif
 
 IMPLICIT NONE
+
+TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -50,8 +56,9 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleSurfaceSource1()"
 LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
 INTEGER(I4B) :: tElemToFace, indx, localCellNumber, &
                 localFaceNumber, maxNNEGeo, maxNNE, tgeoCellCon, &
-                tgeoFacetCon, nrow, ncol, tcellCon, tnbcValue, &
-                tforceVec
+                tgeoFacetCon, tcellCon, tnbcValue, &
+                tforceVec, xij_i, xij_j
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -82,117 +89,65 @@ DO indx = 1, tElemToFace
   CALL nbc%GetElemToFace(indx=indx, localCellNumber=localCellNumber, &
                          localFaceNumber=localFaceNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '1')
+  CALL fedof%SetFE(globalElement=localCellNumber, islocal=defaultOpt%yes)
 
-  CALL fedof%GetfacetQuadraturePoints( &
-    quad=quad, facetQuad=facetQuad, globalElement=localCellNumber, &
-    localFaceNumber=localFaceNumber, islocal=defaultOpt%yes)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '2')
-
-  CALL fedof%GetLocalFacetElemShapeData( &
-    globalElement=localCellNumber, elemsd=elemsd, facetElemsd=facetElemsd, &
-    islocal=defaultOpt%yes, quad=quad, facetQuad=facetQuad, &
-    localFaceNumber=localFaceNumber)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '3')
+  CALL geofedof%SetFE(globalElement=localCellNumber, islocal=defaultOpt%yes)
 
   CALL fedof%GetConnectivity_( &
     globalElement=localCellNumber, islocal=defaultOpt%yes, ans=cellCon, &
     tsize=tcellCon, opt="A")
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '4')
-
-  CALL geofedof%GetLocalFacetElemShapeData( &
-    globalElement=localCellNumber, elemsd=geoElemsd, &
-    facetElemsd=geoFacetElemsd, islocal=defaultOpt%yes, quad=quad, &
-    facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '5')
-
   CALL geofedof%GetConnectivity_( &
     globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoCellCon, &
     tsize=tgeoCellCon, opt="A")
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '6')
 
   CALL geofedof%GetFacetConnectivity_( &
     globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoFacetCon, &
     tsize=tgeoFacetCon, localFaceNumber=localFaceNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '7')
+  feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
+                              islocal=defaultOpt%yes)
 
-  CALL nodeCoord%Get( &
-    VALUE=xij, nrow=nrow, ncol=ncol, &
-    storageFMT=defaultOpt%storageFormatNodes, &
-    globalNode=geoCellCon(1:tgeoCellCon), islocal=defaultOpt%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
+                                    islocal=defaultOpt%yes)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '8')
+  CALL feptr%GetFacetQuadraturePoints( &
+    quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
-  CALL nodeCoord%Get( &
-    VALUE=facetXij, nrow=nrow, ncol=ncol, &
-    storageFMT=TypeFieldOpt%storageFormatNodes, &
-    globalNode=geoFacetCon(1:tgeoFacetCon), islocal=defaultOpt%yes)
+  CALL feptr%GetLocalFacetElemShapeData( &
+    elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+    localFaceNumber=localFaceNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '9')
+  CALL geofeptr%GetLocalFacetElemShapeData( &
+    elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
+    facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
-  CALL Elemsd_Set( &
-    facetobj=facetElemsd, &
-    cellobj=elemsd, &
-    cellval=xij(1:geoElemsd%nsd, 1:tgeoCellCon), &
-    facetval=facetXij(1:geoFacetElemsd%nsd, 1:tgeoFacetCon), &
-    cellN=geoElemsd%N(1:geoElemsd%nns, 1:geoElemsd%nips), &
-    celldNdXi=geoElemsd%dNdXi(1:geoElemsd%nns, 1:geoElemsd%xidim, &
-                              1:geoElemsd%nips), &
-    facetN=geoFacetElemsd%N(1:geoFacetElemsd%nns, 1:geoFacetElemsd%nips), &
-    facetdNdXi=geoFacetElemsd%dNdXi(1:geoFacetElemsd%nns, &
-                                    1:geoFacetElemsd%xidim, &
-                                    1:geoFacetElemsd%nips))
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    globalElement=localCellNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '10')
+  CALL feptr%GetGlobalFacetElemShapeData( &
+    elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
+    geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
 
   CALL nbcField%Get(VALUE=nbcValue, globalNode=cellCon(1:tcellCon), &
                     tsize=tnbcValue, islocal=defaultOpt%yes)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '11')
-
-  ! forceVar = NodalVariable(val=nbcValue, rank=TypeFEVariableScalar, &
-  !                          vartype=TypeFEVariableSpace)
-
-  CALL Fevar_Set(obj=forceVar, val=nbcValue(1:tnbcValue), &
-                 rank=TypeFEVariableScalar, &
-                 vartype=TypeFEVariableSpace, &
-                 scale=defaultOpt%one, &
-                 addContribution=defaultOpt%no)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '12')
+  CALL FEVariable_Set( &
+    obj=forceVar, val=nbcValue(1:tnbcValue), rank=TypeFEVariableScalar, &
+    vartype=TypeFEVariableSpace, scale=defaultOpt%one, &
+    addContribution=defaultOpt%no)
 
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
                     ans=forceVec, tsize=tforceVec)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '13')
 
   CALL obj%Set(globalNode=cellCon(1:tcellCon), VALUE=forceVec(1:tforceVec), &
                scale=scale, addContribution=defaultOpt%yes, &
                islocal=defaultOpt%yes)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '14')
-
 END DO
+
+NULLIFY (feptr, geofeptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -250,7 +205,7 @@ DO ibc = 1, tbc
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=geofedof, &
-    nodeCoord=nodeCoord, nbcField=nbcField, scale=scale, &
+    mesh=mesh, nbcField=nbcField, scale=scale, &
     geoCellCon=geoCellCon, geoFacetCon=geoFacetCon, cellCon=cellCon, &
     xij=xij, facetXij=facetXij, forceVec=forceVec, nbcValue=nbcValue, &
     forceVar=forceVar, quad=quad, facetQuad=facetQuad, elemsd=elemsd, &
@@ -286,8 +241,8 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleSurfaceSource3()"
 LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
 INTEGER(I4B) :: tElemToFace, indx, localCellNumber, &
                 localFaceNumber, maxNNEGeo, maxNNE, tgeoCellCon, &
-                tgeoFacetCon, nrow, ncol, tcellCon, tnbcValue, &
-                tforceVec
+                tgeoFacetCon, tcellCon, tforceVec, xij_i, xij_j
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -318,109 +273,60 @@ DO indx = 1, tElemToFace
   CALL nbc%GetElemToFace(indx=indx, localCellNumber=localCellNumber, &
                          localFaceNumber=localFaceNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '1')
+  CALL fedof%SetFE(globalElement=localCellNumber, islocal=defaultOpt%yes)
 
-  CALL fedof%GetfacetQuadraturePoints( &
-    quad=quad, facetQuad=facetQuad, globalElement=localCellNumber, &
-    localFaceNumber=localFaceNumber, islocal=defaultOpt%yes)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '2')
-
-  CALL fedof%GetLocalFacetElemShapeData( &
-    globalElement=localCellNumber, elemsd=elemsd, facetElemsd=facetElemsd, &
-    islocal=defaultOpt%yes, quad=quad, facetQuad=facetQuad, &
-    localFaceNumber=localFaceNumber)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '3')
+  CALL geofedof%SetFE(globalElement=localCellNumber, islocal=defaultOpt%yes)
 
   CALL fedof%GetConnectivity_( &
     globalElement=localCellNumber, islocal=defaultOpt%yes, ans=cellCon, &
     tsize=tcellCon, opt="A")
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '4')
+  CALL geofedof%GetConnectivity_( &
+    globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoCellCon, &
+    tsize=tgeoCellCon, opt="A")
+
+  CALL geofedof%GetFacetConnectivity_( &
+    globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoFacetCon, &
+    tsize=tgeoFacetCon, localFaceNumber=localFaceNumber)
+
+  feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
+                              islocal=defaultOpt%yes)
+
+  geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
+                                    islocal=defaultOpt%yes)
+
+  CALL feptr%GetFacetQuadraturePoints( &
+    quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+  CALL feptr%GetLocalFacetElemShapeData( &
+    elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+    localFaceNumber=localFaceNumber)
 
   CALL geofedof%GetLocalFacetElemShapeData( &
     globalElement=localCellNumber, elemsd=geoElemsd, &
     facetElemsd=geoFacetElemsd, islocal=defaultOpt%yes, quad=quad, &
     facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '5')
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    globalElement=localCellNumber)
 
-  CALL geofedof%GetConnectivity_( &
-    globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoCellCon, &
-    tsize=tgeoCellCon, opt="A")
+  CALL feptr%GetGlobalFacetElemShapeData( &
+    elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
+    geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '6')
-
-  CALL geofedof%GetFacetConnectivity_( &
-    globalElement=localCellNumber, islocal=defaultOpt%yes, ans=geoFacetCon, &
-    tsize=tgeoFacetCon, localFaceNumber=localFaceNumber)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '7')
-
-  CALL nodeCoord%Get( &
-    VALUE=xij, nrow=nrow, ncol=ncol, &
-    storageFMT=defaultOpt%storageFormatNodes, &
-    globalNode=geoCellCon(1:tgeoCellCon), islocal=defaultOpt%yes)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '8')
-
-  CALL nodeCoord%Get( &
-    VALUE=facetXij, nrow=nrow, ncol=ncol, &
-    storageFMT=TypeFieldOpt%storageFormatNodes, &
-    globalNode=geoFacetCon(1:tgeoFacetCon), islocal=defaultOpt%yes)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '9')
-
-  CALL Elemsd_Set( &
-    facetobj=facetElemsd, &
-    cellobj=elemsd, &
-    cellval=xij(1:geoElemsd%nsd, 1:tgeoCellCon), &
-    facetval=facetXij(1:geoFacetElemsd%nsd, 1:tgeoFacetCon), &
-    cellN=geoElemsd%N(1:geoElemsd%nns, 1:geoElemsd%nips), &
-    celldNdXi=geoElemsd%dNdXi(1:geoElemsd%nns, 1:geoElemsd%xidim, &
-                              1:geoElemsd%nips), &
-    facetN=geoFacetElemsd%N(1:geoFacetElemsd%nns, 1:geoFacetElemsd%nips), &
-    facetdNdXi=geoFacetElemsd%dNdXi(1:geoFacetElemsd%nns, &
-                                    1:geoFacetElemsd%xidim, &
-                                    1:geoFacetElemsd%nips))
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '10')
-
-  ! TODO:
-  ! Here we should use Barycentric coordiantes
   CALL func%Get_(fevar=forceVar, &
-                 xij=facetXij(1:geoFacetElemsd%nsd, 1:tgeoFacetCon))
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '11')
+                 xij=facetElemsd%coord(1:xij_i, 1:facetElemsd%nips))
 
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
                     ans=forceVec, tsize=tforceVec)
 
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '12')
-
   CALL obj%Set(globalNode=cellCon(1:tcellCon), VALUE=forceVec(1:tforceVec), &
                scale=scale, addContribution=defaultOpt%yes, &
                islocal=defaultOpt%yes)
-
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    'Stop')
-
-  STOP
-
 END DO
+
+NULLIFY (feptr, geofeptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -478,7 +384,7 @@ DO ibc = 1, tbc
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=geofedof, &
-    nodeCoord=nodeCoord, func=func, scale=scale, &
+    mesh=mesh, func=func, scale=scale, &
     geoCellCon=geoCellCon, geoFacetCon=geoFacetCon, cellCon=cellCon, &
     xij=xij, facetXij=facetXij, forceVec=forceVec, nbcValue=nbcValue, &
     forceVar=forceVar, quad=quad, facetQuad=facetQuad, elemsd=elemsd, &
