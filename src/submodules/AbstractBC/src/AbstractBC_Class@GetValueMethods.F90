@@ -68,6 +68,7 @@ END IF
 ! If isUserFunction is true and times is not present
 isok = obj%isUserFunction .AND. (.NOT. istimes)
 IF (isok) THEN
+
   CALL GetSpaceValue_uf( &
     obj=obj, fedof=fedof, geofedof=geofedof, nodenum=nodenum, &
     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol)
@@ -82,6 +83,7 @@ END IF
 SELECT CASE (obj%nodalValueType)
 
 CASE (TypeFEVariableOpt%constant)
+
   CALL GetConstantValue( &
     obj=obj, fedof=fedof, geofedof=geofedof, nodenum=nodenum, &
     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
@@ -243,7 +245,7 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
   nrow = 0; ncol = 1
 
   ! Vertex nodes and values
-  CALL obj%boundary%GetnodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
+  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
   nrow = nrow + mysize
   iNodeOnNode = 1
   iNodeOnFace = nrow + 1
@@ -389,8 +391,8 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
                   localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
                   max_fedof_quad, itimes
 
-  REAL(DFP) :: xij(4), ans, elemCoord(3, 8)
-  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:)
+  REAL(DFP) :: xij(4), elemCoord(3, 8)
+  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:)
   INTEGER(I4B), ALLOCATABLE :: ipiv(:)
 
   LOGICAL(LGT) :: isok
@@ -404,8 +406,14 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
                           '[START] ')
 #endif
 
-  nrow = 0
-  ncol = SIZE(times)
+  max_fedof_con = fedof%GetMaxTotalConnectivity()
+  max_fedof_quad = fedof%GetMaxTotalQuadraturePoints()
+  CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
+  CALL Reallocate(funcValue, max_fedof_quad)
+  CALL Reallocate(ipiv, max_fedof_con)
+  CALL Reallocate(ans, max_fedof_con)
+
+  nrow = 0; ncol = SIZE(times)
 
   ! Vertex nodes and values
   CALL obj%boundary%GetnodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
@@ -433,19 +441,13 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
                                globalNode=nodeNum(ii), islocal=yes)
     DO itimes = 1, ncol
       xij(nargs) = times(itimes)
-      CALL obj%func%Get(val=ans, args=xij(1:nargs))
-      nodalValue(ii, itimes) = ans
+      CALL obj%func%Get(val=ans(1), args=xij(1:nargs))
+      nodalValue(ii, itimes) = ans(1)
     END DO
+
   END DO
 
   CALL obj%SetElemToLocalBoundary()
-
-  max_fedof_con = fedof%GetMaxTotalConnectivity()
-  max_fedof_quad = fedof%GetMaxTotalQuadraturePoints()
-
-  CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
-  CALL Reallocate(funcValue, max_fedof_quad)
-  CALL Reallocate(ipiv, max_fedof_con)
 
   ! Face nodes and values
   DO iel = 1, obj%tElemToFace
@@ -484,9 +486,10 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
       CALL feptr%GetFacetDOFValue( &
         elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
         times=times(itimes), localFaceNumber=localFaceNumber, &
-        func=obj%func, ans=nodalValue(nrow + 1:, itimes), tsize=jj, &
+        func=obj%func, ans=ans, tsize=jj, &
         massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
         onlyFaceBubble=yes)
+      nodalValue(nrow + 1:nrow + jj, itimes) = ans(1:jj)
     END DO
 
     CALL fedof%GetFaceDOF( &
@@ -549,7 +552,7 @@ SUBROUTINE GetConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
   !! time values when nodalValueType is space-time or time
 
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetSpaceValue_uf()"
+  CHARACTER(*), PARAMETER :: myName = "GetConstantValue()"
 #endif
 
   LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
@@ -559,8 +562,8 @@ SUBROUTINE GetConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
                   localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
                   itimes
 
-  REAL(DFP) :: ans, elemCoord(3, 8)
-  REAL(DFP), ALLOCATABLE :: massMat(:, :)
+  REAL(DFP) :: elemCoord(3, 8), scalarAns
+  REAL(DFP), ALLOCATABLE :: massMat(:, :), ans(:)
   INTEGER(I4B), ALLOCATABLE :: ipiv(:)
 
   LOGICAL(LGT) :: isok, istimes
@@ -574,36 +577,39 @@ SUBROUTINE GetConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
                           '[START] ')
 #endif
 
+  max_fedof_con = fedof%GetMaxTotalConnectivity()
+  CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
+  CALL Reallocate(ipiv, max_fedof_con)
+  CALL Reallocate(ans, max_fedof_con)
+
   nrow = 0
   ncol = 1
   istimes = PRESENT(times)
   IF (istimes) ncol = SIZE(times)
 
-  ans = obj%nodalValue(1, 1)
+  scalarAns = obj%nodalValue(1, 1)
 
   ! Vertex nodes and values
-  CALL obj%boundary%GetnodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
+  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
   nrow = nrow + mysize
   iNodeOnNode = 1
   iNodeOnFace = nrow + 1
 
   DO ii = 1, nrow
+
     CALL fedof%GetVertexDOF(globalNode=nodeNum(ii), ans=indx, islocal=no, &
                             tsize=jj)
     nodeNum(ii) = indx(1)
 
     DO itimes = 1, ncol
-      nodalValue(ii, itimes) = ans
+      nodalValue(ii, itimes) = scalarAns
     END DO
+
   END DO
 
   cellMesh => obj%dom%GetMeshPointer()
 
   CALL obj%SetElemToLocalBoundary()
-
-  max_fedof_con = fedof%GetMaxTotalConnectivity()
-  CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
-  CALL Reallocate(ipiv, max_fedof_con)
 
   ! Face nodes and values
   DO iel = 1, obj%tElemToFace
@@ -640,17 +646,13 @@ SUBROUTINE GetConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
 
     CALL feptr%GetFacetDOFValue( &
       elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
-      localFaceNumber=localFaceNumber, ans=nodalValue(nrow + 1:, 1), &
+      localFaceNumber=localFaceNumber, ans=ans, &
       tsize=jj, massMat=massMat, ipiv=ipiv, onlyFaceBubble=yes, &
       tVertices=geoFacetElemsd%nns)
 
-    DO itimes = 2, ncol
-      nodalValue(nrow + 1:nrow + jj, itimes) = &
-        ans * nodalValue(nrow + 1:nrow + jj, 1)
+    DO itimes = 1, ncol
+      nodalValue(nrow + 1:nrow + jj, itimes) = scalarAns * ans(1:jj)
     END DO
-
-    nodalValue(nrow + 1:nrow + jj, 1) = &
-      ans * nodalValue(nrow + 1:nrow + jj, 1)
 
     CALL fedof%GetFaceDOF( &
       globalElement=localCellNumber, localFaceNumber=localFaceNumber, &
