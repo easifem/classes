@@ -1074,13 +1074,46 @@ END INTERFACE
 !
 !# Introduction
 !
-! - If `filename` is present then call [[VTKFile_:InitiateVTKFile]] method
-! - If `nodeCoord` is present then write Points by calling
-! [[VTKFile_:WritePoints]] method
-! - If `content` is present then write cell data by calling
-! [[VTKFile_:WriteCells]] methods
-! - If openTag is true then write piece info
-! - If cloSetag is true then close the piece
+! - If `filename` is present then call vtk%InitiateVTKFile method
+! - If `nodeCoord` is present then write Points by calling obj%WritePoints
+! - If nodeCoord is not present then call obj%GetNodeCoord and write Points
+! - If `content` is true then write cell data by calling vtk%WriteCells
+! - If openTag is true then write piece info by calling vtk%WritePiece
+! - If closeTag is true then close the piece
+!
+! Note:
+! - If openTag is true then <Piece> info is written
+! - <Points> always written
+! - If content is trye then <Cell> data is written by calling vtk%WriteCells
+! - If closeTag is true then </Piece> info is written
+!
+! Example of VTK file is given below
+! <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian">
+!       <PolyData>
+!         <Piece NumberOfPoints="8" NumberOfVerts="0" NumberOfLines="0"
+!                NumberOfStrips="0" NumberOfPolys="6">
+!         <Points>
+!           <DataArray type="Float32" NumberOfComponents="3" format="ascii">
+!             0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1
+!           </DataArray>
+!         </Points>
+!        <Cells>
+!         <DataArray type="Int32" Name="connectivity" format="ascii">
+!           0 1 4 3
+!           1 2 5 4
+!           3 4 7 6
+!           4 5 8 7
+!         </DataArray>
+!         <DataArray type="Int32" Name="offsets" format="ascii">
+!           4 8 12 16
+!         </DataArray>
+!         <DataArray type="UInt8" Name="types" format="ascii">
+!           9 9 9 9
+!         </DataArray>
+!       </Cells>
+!       </Piece>
+!     </PolyData>
+!    </VTKFile>
 
 INTERFACE
   MODULE SUBROUTINE obj_ExportToVTK(obj, vtk, nodeCoord, filename, &
@@ -2132,7 +2165,8 @@ END INTERFACE
 ! summary:  Get total vertex nodes in a collection of elements
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalVertexNodes3(obj, globalElement, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalVertexNodes3(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! abstrract mesh
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
@@ -2152,7 +2186,8 @@ END INTERFACE
 ! summary:  Get total vertex nodes in an element
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalVertexNodes4(obj, globalElement, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalVertexNodes4(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! abstrract mesh
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -2367,8 +2402,9 @@ END INTERFACE
 ! summary:  Get connectivity
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-      nodeCon, tCellCon, tFaceCon, tEdgeCon, tNodeCon, globalElement, islocal)
+  MODULE SUBROUTINE obj_GetConnectivity2_( &
+    obj, cellCon, faceCon, edgeCon, nodeCon, tCellCon, tFaceCon, tEdgeCon, &
+    tNodeCon, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
     !! cell connectivity of element
@@ -3340,8 +3376,8 @@ END INTERFACE
 ! summary:  Get global face number from globalElement and local face number
 
 INTERFACE
-MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
-                                          islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalFaceNumber( &
+    obj, globalElement, localFaceNumber, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! local or global element number
@@ -3359,8 +3395,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
-                                          islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalEdgeNumber( &
+    obj, globalElement, localEdgeNumber, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! local or global element number
@@ -3569,25 +3605,27 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMeshGetParam
-  MODULE SUBROUTINE obj_GetParam(obj, &
-             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
-                                 maxElemNum, minElemNum, tNodes, tElements, &
-                                 minX, minY, minZ, maxX, maxY, maxZ, &
-            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+    isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+    isBoundaryDataInitiated, isFacetDataInitiated, uid, xidim, elemType, &
+    nsd, maxNptrs, minNptrs, maxElemNum, minElemNum, tNodes, tElements, &
+    minX, minY, minZ, maxX, maxY, maxZ, x, y, z, tElements_topology_wise, &
+    tElemTopologies, elemTopologies)
 
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated, &
-                          isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                                 isBoundaryDataInitiated, isFacetDataInitiated
-
+                                           isNodeToElementsInitiated, &
+                                           isNodeToNodesInitiated, &
+                                           isExtraNodeToNodesInitiated, &
+                                           isElementToElementsInitiated, &
+                                           isBoundaryDataInitiated, &
+                                           isFacetDataInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, xidim, elemType, nsd, &
-                         maxNptrs, minNptrs, maxElemNum, minElemNum, tNodes, &
-     tElements, tElements_topology_wise(8), tElemTopologies, elemTopologies(8)
-
+                                           maxNptrs, minNptrs, maxElemNum, &
+                                           minElemNum, tNodes, tElements, &
+                                           tElements_topology_wise(8), &
+                                           tElemTopologies, elemTopologies(8)
     REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, minY, minZ, maxX, maxY, maxZ, &
                                         x, y, z
   END SUBROUTINE obj_GetParam
@@ -4220,9 +4258,9 @@ END INTERFACE
 ! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
-     rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
-                                     colLBOUND, colUBOUND, ivar, jvar)
+  MODULE SUBROUTINE obj_SetSparsity4( &
+    obj, colMesh, nodeToNode, mat, rowGlobalToLocalNodeNum, rowLBOUND, &
+    rowUBOUND, colGlobalToLocalNodeNum, colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[AbstractMesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
@@ -4375,7 +4413,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    & min_measures, nodeCoord, local_nptrs)
+                                   min_measures, nodeCoord, local_nptrs)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: measures(:)
     REAL(DFP), INTENT(OUT) :: max_measures(:)
@@ -4394,29 +4432,29 @@ END INTERFACE
 ! summary: Set param
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, &
-             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
-                                 maxElemNum, minElemNum, tNodes, tElements, &
-                                 minX, minY, minZ, maxX, maxY, maxZ, &
-            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+    isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+    isBoundaryDataInitiated, isFacetDataInitiated, uid, &
+    xidim, elemType, nsd, maxNptrs, minNptrs, maxElemNum, minElemNum, &
+    tNodes, tElements, minX, minY, minZ, maxX, maxY, maxZ, &
+    x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated, &
-      & isNodeToElementsInitiated, isNodeToNodesInitiated, &
-      & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-      & isBoundaryDataInitiated, isFacetDataInitiated
-
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: uid, &
-      & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, &
-      & tElements, tElements_topology_wise(8), tElemTopologies,  &
-      & elemTopologies(8)
-
-    REAL(DFP), OPTIONAL, INTENT(IN) :: minX, &
-      & minY, minZ, maxX, maxY, maxZ, &
-      & x, y, z
+                                          isNodeToElementsInitiated, &
+                                          isNodeToNodesInitiated, &
+                                          isExtraNodeToNodesInitiated, &
+                                          isElementToElementsInitiated, &
+                                          isBoundaryDataInitiated, &
+                                          isFacetDataInitiated
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: uid, xidim, elemType, nsd, &
+                                          maxNptrs, minNptrs, maxElemNum, &
+                                          minElemNum, tNodes, tElements, &
+                                          tElements_topology_wise(8), &
+                                          tElemTopologies, elemTopologies(8)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: minX, minY, minZ, maxX, maxY, maxZ, &
+                                       x, y, z
   END SUBROUTINE obj_SetParam
 END INTERFACE
 

@@ -21,7 +21,8 @@ target_sources(
   PRIVATE ${src_path}/AbstractMeshUtility.F90
           ${src_path}/AbstractMesh_Class@ConstructorMethods.F90
           ${src_path}/AbstractMesh_Class@IOMethods.F90
-          ${src_path}/AbstractMesh_Class@ImportMethods.F90
+          ${src_path}/AbstractMesh_Class@HDFMethods.F90
+          ${src_path}/AbstractMesh_Class@VTKMethods.F90
           ${src_path}/AbstractMesh_Class@GetMethods.F90
           ${src_path}/AbstractMesh_Class@NodeDataMethods.F90
           ${src_path}/AbstractMesh_Class@ElementDataMethods.F90
