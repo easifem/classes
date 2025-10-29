@@ -182,7 +182,7 @@ MODULE PROCEDURE VTKFile_WriteToScratch1
   CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch1"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE(x, dim=1)
-#include "./VTKFile_WriteToScratch1_4.inc"
+#include "./include/VTKFile_WriteToScratch1_4.F90"
 END PROCEDURE VTKFile_WriteToScratch1
 
 !----------------------------------------------------------------------------
@@ -193,7 +193,7 @@ MODULE PROCEDURE VTKFile_WriteToScratch2
   CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch2"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE( x, dim=1 ) * SIZE( x, dim=2 )
-#include "./VTKFile_WriteToScratch1_4.inc"
+#include "./include/VTKFile_WriteToScratch1_4.F90"
 END PROCEDURE VTKFile_WriteToScratch2
 !----------------------------------------------------------------------------
 !
@@ -203,7 +203,7 @@ MODULE PROCEDURE VTKFile_WriteToScratch3
   CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch3"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE(x, dim=1)*SIZE(x, dim=2)*SIZE(x, dim=3)
-#include "./VTKFile_WriteToScratch1_4.inc"
+#include "./include/VTKFile_WriteToScratch1_4.F90"
 END PROCEDURE VTKFile_WriteToScratch3
 
 !----------------------------------------------------------------------------
@@ -214,7 +214,7 @@ MODULE PROCEDURE VTKFile_WriteToScratch4
   CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch4"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE(x, dim=1)*SIZE(x, dim=2)*SIZE(x, dim=3)*SIZE(x, dim=4)
-#include "./VTKFile_WriteToScratch1_4.inc"
+#include "./include/VTKFile_WriteToScratch1_4.F90"
 END PROCEDURE VTKFile_WriteToScratch4
 
 !----------------------------------------------------------------------------
