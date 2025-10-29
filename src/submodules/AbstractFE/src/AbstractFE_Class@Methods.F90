@@ -1106,6 +1106,53 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
+!                                      GetVertexDOFValueFromSpaceUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVertexDOFValueFromSpaceUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetVertexDOFValueFromSpaceUserFunction()"
+#endif
+
+REAL(DFP), PARAMETER :: times = 0.0_DFP
+
+CALL obj%GetVertexDOFValue(xij=xij, times=times, func=func, ans=ans, &
+                           tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVertexDOFValueFromSpaceUserFunction
+
+!----------------------------------------------------------------------------
+!                                            GetVertexDOFValueFromUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetVertexDOFValueFromSpaceTimeUserFunction()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

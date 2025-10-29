@@ -66,6 +66,10 @@ CONTAINS
     GetFacetDOFValueFromSpaceTimeUserFunction => &
     obj_GetFacetDOFValueFromSpaceTimeUserFunction
   !! Get facet dof value from space-time user function
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetVertexDOFValueFromSpaceTimeUserFunction => &
+    obj_GetVertexDOFValueFromSpaceTimeUserFunction
+  !! Get Vertex dof value from space-time user function
 END TYPE QuadrangleH1FE_
 
 !----------------------------------------------------------------------------
@@ -280,6 +284,29 @@ INTERFACE
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
   END SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetVertexDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-30
+! summary: Get the vertex dof values from space-time user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction( &
+    obj, xij, times, func, ans, tsize)
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite element method
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinats of elements
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! User defined function value at vertex DOF
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Vertex degree of freedom values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------

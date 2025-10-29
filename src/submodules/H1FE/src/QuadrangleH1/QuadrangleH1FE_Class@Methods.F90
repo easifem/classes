@@ -292,11 +292,19 @@ nns = facetElemsd%nns
 nsd = facetElemsd%nsd
 
 tArgs = func%GetNumArgs()
+#ifdef DEBUG_VER
+isok = tArgs .GE. 4_I4B
+CALL AssertError1(isok, myName, &
+           "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
+#endif
+
 scale = 0.0_DFP
 vertexVal = 0.0_DFP
 
 onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
 
+args(1:3) = 0.0_DFP
+args(4) = times
 IF (onlyFaceBubble0) THEN
   faceCon = FacetConnectivity_Quadrangle()
   xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
@@ -309,7 +317,8 @@ IF (onlyFaceBubble0) THEN
   scale = 1.0_DFP
 END IF
 
-args = times
+args(1:3) = 0.0_DFP
+args(4) = times
 DO ii = 1, nips
   args(1:nsd) = facetElemsd%coord(1:nsd, ii)
   CALL func%GetScalarValue(args=args, val=funcValue(ii))
@@ -331,6 +340,57 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+
+!----------------------------------------------------------------------------
+!                                   GetVertexDOFValueFromSpaceTimeUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_GetVertexDOFValueFromSpaceTimeUserFunction()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tReturns, tArgs
+#endif
+
+INTEGER(I4B), PARAMETER :: tVertices = 4
+INTEGER(I4B) :: ii, nsd
+REAL(DFP) :: args(4)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+tReturns = func%GetNumReturns()
+isok = tReturns .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "WIP: the user function must return a single value")
+#endif
+
+tsize = tVertices
+
+#ifdef DEBUG_VER
+tArgs = func%GetNumArgs()
+isok = tArgs .GE. 4_I4B
+CALL AssertError1(isok, myName, &
+           "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
+#endif
+
+nsd = obj%opt%GetNSD()
+args(1:3) = 0.0_DFP
+args(4) = times
+DO ii = 1, tsize
+  args(1:nsd) = xij(1:nsd, ii)
+  CALL func%GetScalarValue(args=args, val=ans(ii))
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

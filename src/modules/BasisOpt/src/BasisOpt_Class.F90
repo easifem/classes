@@ -310,6 +310,8 @@ CONTAINS
   !GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
+  !! Get the number of spatial dimensions
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemCoord => obj_GetRefElemCoord
   !! Get the reference element coordiantes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
@@ -1112,6 +1114,21 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
   END SUBROUTINE Quadrangle_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           GetNSD@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-30
+! summary: Get the number of spatial dimensions
+
+INTERFACE
+  MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------

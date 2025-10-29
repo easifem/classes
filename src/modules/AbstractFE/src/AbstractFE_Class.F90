@@ -163,19 +163,34 @@ CONTAINS
   !! Get the dof values of a function from its quadrature values on a facet
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromConstant => &
     obj_GetFacetDOFValueFromConstant
-  !! Get the dof values of a constant values
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSpaceUserFunction => &
+  !! Get the dof values corresponding to a constant function
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromSpaceUserFunction => &
     obj_GetFacetDOFValueFromSpaceUserFunction
-  !! Get the dof values of a function from its quadrature values on a facet
+  !! Get the dof values of a space user function on a facet
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromSpaceTimeUserFunction => &
     obj_GetFacetDOFValueFromSpaceTimeUserFunction
-  !! Get the dof values of a function from its quadrature values on a facet
+  !! Get the dof values of a space-time user function on a facet
   GENERIC, PUBLIC :: GetFacetDOFValue => &
     GetFacetDOFValueFromQuadrature, &
     GetFacetDOFValueFromSpaceUserFunction, &
     GetFacetDOFValueFromSpaceTimeUserFunction, &
     GetFacetDOFValueFromConstant
+
+  ! GET:
+  ! @GetDOFMethods
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetVertexDOFValueFromSpaceUserFunction => &
+    obj_GetVertexDOFValueFromSpaceUserFunction
+  !! Get the dof values at vertices
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetVertexDOFValueFromSpaceTimeUserFunction => &
+    obj_GetVertexDOFValueFromSpaceTimeUserFunction
+  !! Get the dof values at vertices
+  GENERIC, PUBLIC :: GetVertexDOFValue => &
+    GetVertexDOFValueFromSpaceUserFunction, &
+    GetVertexDOFValueFromSpaceTimeUserFunction
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -1236,6 +1251,44 @@ INTERFACE
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
   END SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetVertexDOFValue@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVertexDOFValueFromSpaceUserFunction( &
+    obj, xij, func, ans, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element method
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Nodal coordinats of elements
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! User defined function value at vertex DOF
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Vertex degree of freedom values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetVertexDOFValueFromSpaceUserFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetVertexDOFValue@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction( &
+    obj, xij, times, func, ans, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element method
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinats of elements
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! User defined function value at vertex DOF
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Vertex degree of freedom values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
