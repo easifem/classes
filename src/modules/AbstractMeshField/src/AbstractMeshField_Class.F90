@@ -20,14 +20,10 @@ USE BaseType, ONLY: FEVariable_
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class, ONLY: AbstractField_
 USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
 USE HDF5File_Class, ONLY: HDF5File_
-USE VTKFile_Class, ONLY: VTKFile_
 USE UserFunction_Class, ONLY: UserFunction_, UserFunctionPointer_
-USE FEDOF_Class, ONLY: FEDOF_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_, &
                                   AbstractMaterialPointer_
 

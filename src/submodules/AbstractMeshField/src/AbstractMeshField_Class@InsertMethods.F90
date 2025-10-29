@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) InsertMethods
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_SIZE => Size, &
                              FEVariable_GetShape => GetShape

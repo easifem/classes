@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) VTKMethods
-USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED, VTK_POLYDATA
+USE VTKFile_Class, ONLY: VTKFile_, VTK_BINARY_APPENDED, VTK_POLYDATA
 USE BaseType, ONLY: TypeFEVariableOpt
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: Display, ToString
