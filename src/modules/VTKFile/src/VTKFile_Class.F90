@@ -61,12 +61,8 @@ INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_APPENDED = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
-CHARACTER(*), PARAMETER, DIMENSION(3) :: DataFormatName = &
-  & [ &
-  & "ascii   ", &
-  & "binary  ", &
-  & "appended" &
-  & ]
+CHARACTER(*), PARAMETER, DIMENSION(3) :: &
+  dataFormatName = ["ascii   ", "binary  ", "appended"]
 PUBLIC :: VTKFile_
 PUBLIC :: VTKFilePointer_
 
