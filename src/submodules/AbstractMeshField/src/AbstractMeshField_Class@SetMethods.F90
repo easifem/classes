@@ -45,11 +45,29 @@ SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "MasterSet()"
+  INTEGER(I4B) :: myint1
+  LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  myint1 = indxVal(indx + 1) - indxVal(indx)
+  isok = myint1 .EQ. tsize
+  CALL AssertError1(isok, myName, &
+                 "Size mismatch in val array assignment: Expected size = "// &
+                    ToString(tsize)//", Actual size = "//ToString(myint1))
+#endif
+
+#ifdef DEBUG_VER
+  myint1 = indxShape(indx + 1) - indxShape(indx)
+  isok = myint1 .EQ. tshape
+  CALL AssertError1(isok, myName, &
+                  "Size mismatch in ss array assignment: Expected size = "// &
+                    ToString(tshape)//", Actual size = "//ToString(myint1))
 #endif
 
   val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
@@ -69,9 +87,9 @@ END SUBROUTINE MasterSet
 MODULE PROCEDURE obj_Set1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
-LOGICAL( LGT ) :: isok
 #endif
 
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: iel, tsize, tshape, s(fevaropt%maxRank)
 
 #ifdef DEBUG_VER
@@ -79,12 +97,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%fieldType .EQ. typefield%Constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
-END IF
+iel = 1
+isok = obj%fieldType .EQ. typefield%Constant
+IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                            islocal=islocal)
 
 tsize = FEVariable_SIZE(fevar)
 tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)

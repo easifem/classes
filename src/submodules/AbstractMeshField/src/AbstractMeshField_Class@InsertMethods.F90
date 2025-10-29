@@ -16,13 +16,10 @@
 
 SUBMODULE(AbstractMeshField_Class) InsertMethods
 USE Display_Method, ONLY: ToString
-
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
                              FEVariable_SIZE => Size, &
-                             FEVariable_Shape => Shape
-
+                             FEVariable_GetShape => GetShape
 USE ReallocateUtility, ONLY: Reallocate
-
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
@@ -63,24 +60,20 @@ CHARACTER(*), PARAMETER :: myName = "obj_Insert1()"
 #endif
 
 INTEGER(I4B) :: iel, tsize, tshape, s(fevaropt%maxRank)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
-END IF
+iel = 1
+isok = obj%fieldType .EQ. TypeField%Constant
+IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber( &
+                      globalElement=globalElement, islocal=islocal)
 
 tsize = FEVariable_SIZE(fevar)
-
-tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
-
-s(1:tshape) = FEVariable_Shape(fevar)
+CALL FEVariable_GetShape(obj=fevar, ans=s, tsize=tshape)
 
 CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
                   indx=iel, tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
@@ -419,6 +412,5 @@ END PROCEDURE obj_Insert7
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
-#include "./include/GetTotalRow.F90"
 
 END SUBMODULE InsertMethods

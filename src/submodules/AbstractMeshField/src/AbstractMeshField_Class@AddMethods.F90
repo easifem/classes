@@ -51,18 +51,17 @@ CHARACTER(*), PARAMETER :: myName = "obj_Add1()"
 #endif
 
 INTEGER(I4B) :: iel, tsize
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%fieldType .EQ. typefield%constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
-END IF
+iel = 1
+isok = obj%fieldType .EQ. typefield%constant
+IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                                  islocal=islocal)
 
 tsize = FEVariable_Size(fevar)
 

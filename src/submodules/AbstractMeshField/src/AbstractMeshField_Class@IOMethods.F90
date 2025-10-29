@@ -86,159 +86,34 @@ IF (bool1) THEN
 END IF
 #endif
 
+CALL Display(obj%totalShape, 'totalShape: ', unitno=unitno)
+
+bool1 = ALLOCATED(obj%ss)
+CALL Display(bool1, 'ss ALLOCATED: ', unitno=unitno)
+CALL Display(SafeSize(obj%ss), "Size of ss:", unitno=unitno)
+#ifdef DEBUG_VER
+IF (bool1) THEN
+  CALL Display(obj%ss, 'ss: ', unitno=unitno)
+END IF
+#endif
+
+bool1 = ALLOCATED(obj%indxShape)
+CALL Display(bool1, 'indxShape ALLOCATED: ', unitno=unitno)
+CALL Display(SafeSize(obj%indxShape), "Size of indxShape:", unitno=unitno)
+#ifdef DEBUG_VER
+IF (bool1) THEN
+  CALL Display(obj%indxShape, 'indxShape: ', unitno=unitno)
+END IF
+#endif
+
 bool1 = ASSOCIATED(obj%mesh)
 CALL Display(bool1, 'mesh ASSOCIATED: ', unitno=unitno)
-
-CALL Display(obj%totalShape, 'totalShape: ', unitno=unitno)
-CALL Display(obj%ss, 'ss:', unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                                     Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                     Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-#endif
-
-TYPE(String) :: strval, dsetname
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%isInit
-CALL AssertError1(isok, myName, &
-                  'MeshField object is not initiated')
-#endif
-
-#ifdef DEBUG_VER
-isok = hdf5%IsOpen()
-CALL AssertError1(isok, myName, &
-                  'HDF5 file is not opened')
-#endif
-
-#ifdef DEBUG_VER
-isok = hdf5%IsWrite()
-CALL AssertError1(isok, myName, &
-                  'HDF5 file does not have write permission')
-#endif
-
-dsetname = TRIM(group)//"/fieldType"
-strval = typefield%ToString(obj%fieldType)
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
-
-dsetname = TRIM(group)//"/name"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
-
-dsetname = TRIM(group)//"/engine"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%engine)
-
-dsetname = TRIM(group)//"/tSize"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tSize)
-
-dsetname = TRIM(group)//"/defineOn"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%defineOn)
-
-dsetname = TRIM(group)//"/rank"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%rank)
-
-dsetname = TRIM(group)//"/varType"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%varType)
-
-isok = ALLOCATED(obj%val)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/val"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
-END IF
-
-isok = ALLOCATED(obj%indxVal)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/indxVal"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
-END IF
-
-dsetname = TRIM(group)//"/totalShape"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%totalShape)
-
-isok = ALLOCATED(obj%ss)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/shape"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ss)
-END IF
-
-isok = ALLOCATED(obj%indxShape)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/indxShape"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxShape)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Export
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ExportInVTK
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ExportInVTK
 
 !----------------------------------------------------------------------------
 !                                                               Include Error

@@ -16,9 +16,7 @@
 
 MODULE AbstractMeshField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-
 USE BaseType, ONLY: FEVariable_
-
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
@@ -28,9 +26,10 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
+USE UserFunction_Class, ONLY: UserFunction_, UserFunctionPointer_
+USE FEDOF_Class, ONLY: FEDOF_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_, &
                                   AbstractMaterialPointer_
-USE UserFunction_Class, ONLY: UserFunction_, UserFunctionPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -95,8 +94,7 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Index for shape
 
   INTEGER(I4B), ALLOCATABLE :: indxVal(:)
-  !! Index for value
-  !! The size of indxVal is equal to tElements+1
+  !! Index for value, The size of indxVal is equal to tElements+1
   !! indxVal(iel) gives the starting index of the element iel
   !! indxVal(iel+1)-indxVal(iel) gives the total number of values in element
   !! iel
@@ -119,28 +117,21 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and a given mesh
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from Abstract materials
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate5 => obj_Initiate5
   !! Initiate from user function
   !! This routine should be implemened by the child class
-
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
   !! This routine should be implemened by the child class
-
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
     Initiate4, Initiate5
   !! Generic initiate
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Deallocate the field
@@ -150,37 +141,35 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from hdf5 file
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ExportInVTK => &
-    obj_ExportInVTK
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: WriteData_vtk => &
+    obj_WriteData_vtk
   !! Export data in vtkFile
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk
+  !! Write data in VTK file
 
   ! GET:
   ! @GetMethods
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get => obj_Get
   !! Getting the value
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns true if the object is initiated
 
   ! SET:
   ! @AddMethods
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add1 => obj_Add1
   !! Adding a value to an element
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add2 => obj_Add2
   !! Add a value to all the elements
-
   GENERIC, PUBLIC :: Add => Add1, Add2
 
   ! SET:
@@ -223,7 +212,6 @@ CONTAINS
 
   GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4, &
     Insert5, Insert6, Insert7
-
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
@@ -235,9 +223,8 @@ END TYPE AbstractMeshField_
 ! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractMeshFieldParam(param, prefix, name, &
-                                              fieldType, engine, defineOn, &
-                                              varType, rank, s)
+  MODULE SUBROUTINE SetAbstractMeshFieldParam( &
+    param, prefix, name, fieldType, engine, defineOn, varType, rank, s)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -324,6 +311,38 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
+! summary: Initiate from abstractMaterials
+!
+!# Introduction
+!
+! We first search the name in material
+! If the name is found in the material  then we get the pointer to
+! user function corresponding to the material name.
+! Then we call Initiate4 method
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the material
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
 ! summary: Initiate from UserFunction_
 
 INTERFACE
@@ -357,8 +376,8 @@ END INTERFACE
 !   It is like Initiate1, but it does not use ParameterList_
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate5(obj, name, fieldType, engine, defineOn, &
-                                  varType, rank, s, mesh)
+  MODULE SUBROUTINE obj_Initiate5( &
+    obj, name, fieldType, engine, defineOn, varType, rank, s, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CHARACTER(*), INTENT(IN) :: name
@@ -384,38 +403,6 @@ END INTERFACE
 INTERFACE AbstractMeshFieldInitiate
   MODULE PROCEDURE obj_Initiate5
 END INTERFACE AbstractMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate from abstractMaterials
-!
-!# Introduction
-!
-! We first search the name in material
-! If the name is found in the material  then we get the pointer to
-! user function corresponding to the material name.
-! Then we call Initiate4 method
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    !! AbstractMeshField
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-    !! mesh
-    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
-    !! Abstract material
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the material
-    CHARACTER(*), INTENT(IN) :: engine
-    !! engine of the AbstractMeshField
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
-    !! number of nodes in time
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -501,6 +488,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary:  Returns obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                  ScalarMeshFieldGetShapeAndSize@GetMethods
 !----------------------------------------------------------------------------
 
@@ -532,8 +534,8 @@ END INTERFACE
 ! summary:  Get shape and size of scalar and stscalar within the element
 
 INTERFACE
-  MODULE SUBROUTINE VectorMeshFieldGetShapeAndSize(varType, s, tsize, &
-                                                   spaceCompo, nns, nnt)
+  MODULE SUBROUTINE VectorMeshFieldGetShapeAndSize( &
+    varType, s, tsize, spaceCompo, nns, nnt)
     INTEGER(I4B), INTENT(IN) :: varType
     INTEGER(I4B), INTENT(INOUT) :: s(4)
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -558,8 +560,8 @@ END INTERFACE
 ! summary:  Get shape and size of tensor and sttensor within the element
 
 INTERFACE
-  MODULE SUBROUTINE TensorMeshFieldGetShapeAndSize(varType, s, tsize, &
-                                                   dim1, dim2, nns, nnt)
+  MODULE SUBROUTINE TensorMeshFieldGetShapeAndSize( &
+    varType, s, tsize, dim1, dim2, nns, nnt)
     INTEGER(I4B), INTENT(IN) :: varType
     INTEGER(I4B), INTENT(INOUT) :: s(4)
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -581,8 +583,8 @@ END INTERFACE
 ! summary:  Get shape and size of data within the element
 
 INTERFACE
- MODULE SUBROUTINE AbstractMeshFieldGetShapeAndSize(rank, varType, s, tsize, &
-                                             spaceCompo, dim1, dim2, nns, nnt)
+  MODULE SUBROUTINE AbstractMeshFieldGetShapeAndSize( &
+    rank, varType, s, tsize, spaceCompo, dim1, dim2, nns, nnt)
     INTEGER(I4B), INTENT(IN) :: rank
     INTEGER(I4B), INTENT(IN) :: varType
     INTEGER(I4B), INTENT(INOUT) :: s(4)
@@ -650,14 +652,14 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Export to hdf5file
+! summary: Export to vtk file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ExportInVTK(obj, vtk, group)
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, nodeCoordField, filename)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_ExportInVTK
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: nodeCoordField
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -508,6 +508,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractMeshFieldGetShapeAndSize
 
 !----------------------------------------------------------------------------
+!                                                               IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
