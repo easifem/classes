@@ -538,8 +538,8 @@ END INTERFACE
 ! after initiation of domain
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -613,7 +613,7 @@ END INTERFACE
 
 ABSTRACT INTERFACE
   FUNCTION obj_GetMeshPointer(obj, dim, entityNum, &
-                               globalElement, isLocal) RESULT(ans)
+                              globalElement, isLocal) RESULT(ans)
     IMPORT :: AbstractDomain_, I4B, LGT, AbstractMesh_
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
