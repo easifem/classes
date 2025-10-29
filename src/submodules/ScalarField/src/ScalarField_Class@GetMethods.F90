@@ -17,39 +17,37 @@
 
 SUBMODULE(ScalarField_Class) GetMethods
 USE RealVector_Method, ONLY: GetValue_, Get, GetValue
-
 USE ScalarField_Class, ONLY: ScalarField_
-
 USE STScalarField_Class, ONLY: STScalarField_
-
 USE VectorField_Class, ONLY: VectorField_
-
-! USE STVectorField_Class, only: STVectorField_
-
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-
-! USE STVectorFieldLis_Class, only: STVectorFieldLis_
-
 USE ArangeUtility, ONLY: Arange
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE ReallocateUtility, ONLY: Reallocate
+USE Display_Method, ONLY: ToString, Display
+USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractFE_Class, ONLY: AbstractFE_
 
-USE FEVariable_Method, ONLY: NodalVariable
-
+USE FEVariable_Method, ONLY: NodalVariable, &
+                             QuadratureVariable, &
+                             FEVariable_Set => Set
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate, &
+                                  QuadraturePoint_Set => Set
 USE BaseType, ONLY: TypeFEVariableScalar, &
-                    TypeFEVariableSpace
-
+                    TypeFEVariableSpace, &
+                    QuadraturePoint_, ElemShapeData_
 USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.), &
                       GetIDOF
+USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
+                                GetInterpolation
 
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
-USE ReallocateUtility, ONLY: Reallocate
-
-USE Display_Method, ONLY: ToString
+#ifdef DEBUG_VER
+USE FEVariable_Method, ONLY: FEVariable_Display => Display
+#endif
 
 IMPLICIT NONE
 CONTAINS
@@ -94,12 +92,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 #include "./localNodeError.F90"
 
 VALUE = NodalVariable( &
-        Get( &
-        obj=obj%realVec, &
-        nodenum=globalNode, &
-        dataType=1.0_DFP), &
-        TypeFEVariableScalar, &
-        TypeFEVariableSpace)
+        Get(obj=obj%realVec, nodenum=globalNode, dataType=1.0_DFP), &
+        TypeFEVariableScalar, TypeFEVariableSpace)
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -237,6 +231,121 @@ END PROCEDURE obj_Size
 MODULE PROCEDURE obj_GetStorageFMT
 ans = MYSTORAGEFORMAT
 END PROCEDURE obj_GetStorageFMT
+
+!----------------------------------------------------------------------------
+!                                                                  MeshField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshField()"
+#endif
+
+LOGICAL(LGT) :: isMeshFieldInit
+CHARACTER(:), ALLOCATABLE :: name, engine
+INTEGER(I4B) :: spaceCompo, maxCon, tElements, iel, ii, maxNNE, &
+                xij_i, xij_j, elemCoord_i, elemCoord_j, tsol, tSolCon, &
+                refElemCoord_i, refElemCoord_j, maxFedofCon
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+TYPE(FEVariable_) :: fevar, sol_fevar
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: elemsd, geoelemsd
+REAL(DFP), ALLOCATABLE :: xij(:, :), elemCoord(:, :), sol(:), &
+                          refElemCoord(:, :)
+INTEGER(I4B), ALLOCATABLE :: solCon(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isMeshFieldInit = meshField%IsInitiated()
+name = obj%GetName()
+engine = obj%GetEngineName()
+spaceCompo = 1
+
+mesh => obj%fedof%GetMeshPointer()
+maxNNE = mesh%GetMaxNNE()
+tElements = mesh%GetTotalElements()
+maxFedofCon = obj%fedof%GetMaxTotalConnectivity()
+
+maxCon = 0
+DO iel = 1, tElements
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
+  maxCon = MAX(maxCon, ii)
+END DO
+
+IF (.NOT. isMeshFieldInit) THEN
+  CALL ScalarMeshFieldInitiate( &
+    obj=meshField, name=name, fieldType=TypeFieldOpt%normal, &
+    varType=TypeFieldOpt%space, engine=engine, defineOn=TypeFieldOpt%nodal, &
+    nns=maxCon, mesh=mesh)
+END IF
+
+CALL Reallocate(elemCoord, 3, maxNNE)
+CALL Reallocate(refElemCoord, 3, maxNNE)
+CALL Reallocate(xij, 4, maxCon)
+CALL Reallocate(sol, maxFedofCon)
+CALL Reallocate(solCon, maxFedofCon)
+CALL QuadraturePoint_Initiate(obj=quad, txi=3, tpoints=maxCon)
+
+fevar = QuadratureVariable( &
+        val=sol, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
+
+sol_fevar = NodalVariable( &
+            val=sol, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
+
+DO iel = 1, tElements
+
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=.TRUE.)
+
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+
+  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_i, &
+                             ncol=refElemCoord_j)
+
+  CALL feptr%GetInterpolationPoints( &
+    xij=refElemCoord, ans=xij, nrow=xij_i, ncol=xij_j, order=order, &
+    ipType=ipType)
+
+  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_j))
+
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+  CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
+                         nrow=elemCoord_i, ncol=elemCoord_j, islocal=.TRUE.)
+
+  ! This step is necessary to fix the orientation in Lagrange elements
+  CALL feptr%GetGlobalElemShapeData( &
+    elemsd=elemsd, geoelemsd=geoelemsd, &
+    xij=elemCoord(1:elemCoord_i, 1:elemCoord_j))
+
+  CALL obj%fedof%GetConnectivity_( &
+    ans=solCon, tsize=tSolCon, globalElement=iel, islocal=.TRUE., opt='A')
+
+  CALL obj%Get(VALUE=sol, tsize=tSol, globalNode=solCon(1:tSolCon), &
+               islocal=.TRUE.)
+
+  CALL FEVariable_Set( &
+    obj=sol_fevar, val=sol(1:tSol), rank=TypeFEVariableScalar, &
+    varType=TypeFEVariableSpace, scale=1.0_DFP, addContribution=.FALSE.)
+
+  CALL ElemshapeData_GetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
+
+  CALL meshField%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshField
 
 !----------------------------------------------------------------------------
 !

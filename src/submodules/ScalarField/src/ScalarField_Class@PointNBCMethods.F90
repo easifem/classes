@@ -18,6 +18,7 @@
 SUBMODULE(ScalarField_Class) PointNBCMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
+USE NeumannBC_Class, ONLY: NeumannBC_
 IMPLICIT NONE
 CONTAINS
 

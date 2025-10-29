@@ -51,6 +51,7 @@ USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 USE NeumannBC_Class, ONLY: NeumannBCPointer_, NeumannBC_
+USE MeshField_Class, ONLY: MeshField_
 
 IMPLICIT NONE
 PRIVATE
@@ -266,6 +267,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetPointNBCPointer => &
     obj_GetPointNBCPointer
   !! Get the pointer to nbc_point
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
+  !! Get the mesh field corresponding to abstract field
 
   ! SET:
   ! @SetMethods
@@ -1823,6 +1826,22 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetEngineName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetMeshField@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-29
+! summary: Get mesh field
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(MeshField_), INTENT(INOUT) :: meshField
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+  END SUBROUTINE obj_GetMeshField
 END INTERFACE
 
 !----------------------------------------------------------------------------

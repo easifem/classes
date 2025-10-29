@@ -24,6 +24,8 @@ USE FEVariable_Method, ONLY: NodalVariable, &
                              FEVariable_Set => Set
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ForceVector_Method, ONLY: ForceVector_
+USE NeumannBC_Class, ONLY: NeumannBC_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
 CONTAINS

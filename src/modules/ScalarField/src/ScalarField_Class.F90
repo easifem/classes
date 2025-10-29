@@ -29,14 +29,13 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE NeumannBC_Class, ONLY: NeumannBC_, NeumannBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE Tomlf, ONLY: toml_table
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE MeshField_Class, ONLY: MeshField_
 
 IMPLICIT NONE
 PRIVATE
@@ -139,6 +138,8 @@ CONTAINS
   !! Get the size of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Get the storage format of the scalar field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
+  !! Get the mesh field corresponding to abstract field
 
   ! SET:
   ! @DBCMethods
@@ -885,6 +886,22 @@ INTERFACE
     CLASS(ScalarField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetStorageFMT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetMeshField@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-29
+! summary: Get mesh field
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(MeshField_), INTENT(INOUT) :: meshField
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+  END SUBROUTINE obj_GetMeshField
 END INTERFACE
 
 !----------------------------------------------------------------------------

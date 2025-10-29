@@ -604,6 +604,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPointNBCPointer
 
 !----------------------------------------------------------------------------
+!                                                               GetMeshField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshField()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshField
+
+!----------------------------------------------------------------------------
 !                                                             Include error
 !----------------------------------------------------------------------------
 
