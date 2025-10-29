@@ -22,6 +22,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE UserFunction_Class, ONLY: UserFunction_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractMeshField_Class, ONLY: AbstractMeshField_
+USE FEDOF_Class, ONLY: FEDOF_
 
 IMPLICIT NONE
 
@@ -33,6 +34,14 @@ CHARACTER(*), PARAMETER :: myprefix = "MeshField"
 PUBLIC :: MeshField_
 PUBLIC :: MeshFieldPointer_
 PUBLIC :: MeshFieldDeallocate
+PUBLIC :: ScalarMeshFieldInitiate
+PUBLIC :: STScalarMeshFieldInitiate
+PUBLIC :: VectorMeshFieldInitiate
+PUBLIC :: STVectorMeshFieldInitiate
+PUBLIC :: TensorMeshFieldInitiate
+PUBLIC :: STTensorMeshFieldInitiate
+PUBLIC :: InitiateInterpolationPoints
+PUBLIC :: SetInterpolationPoints
 
 !----------------------------------------------------------------------------
 !                                                            MeshField_Class
@@ -101,8 +110,8 @@ END INTERFACE MeshFieldDeallocate
 ! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, fieldType, varType, &
-                                            engine, defineOn, nns)
+  MODULE SUBROUTINE SetScalarMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -124,8 +133,8 @@ END INTERFACE
 ! summary: Initiate ScalarMeshField
 
 INTERFACE
-  MODULE SUBROUTINE ScalarMeshFieldInitiate(obj, name, fieldType, varType, &
-                                            engine, defineOn, nns, mesh)
+  MODULE SUBROUTINE ScalarMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, nns, mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! Mesh field object
     CHARACTER(*), INTENT(IN) :: name
@@ -149,9 +158,8 @@ END INTERFACE
 ! summary: Set parameters for space-time scalar mesh field
 
 INTERFACE
-  MODULE SUBROUTINE SetSTScalarMeshFieldParam(param, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              nns, nnt)
+  MODULE SUBROUTINE SetSTScalarMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -175,9 +183,8 @@ END INTERFACE
 ! summary: Set space-time scalar mesh field
 
 INTERFACE
-  MODULE SUBROUTINE STScalarMeshFieldInitiate(obj, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              nns, nnt, mesh)
+  MODULE SUBROUTINE STScalarMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, nns, nnt, mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! Mesh field object
     CHARACTER(*), INTENT(IN) :: name
@@ -203,8 +210,8 @@ END INTERFACE
 ! summary:  Set parameters for vector mesh field
 
 INTERFACE
-  MODULE SUBROUTINE SetVectorMeshFieldParam(param, name, fieldType, varType, &
-                                            engine, defineOn, spaceCompo, nns)
+  MODULE SUBROUTINE SetVectorMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, spaceCompo, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -228,22 +235,26 @@ END INTERFACE
 ! summary:  Initiate vector mesh field
 
 INTERFACE
-  MODULE SUBROUTINE VectorMeshFieldInitiate(obj, name, fieldType, varType, &
-                                            engine, defineOn, spaceCompo, &
-                                            nns, mesh)
+  MODULE SUBROUTINE VectorMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, spaceCompo, nns, mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! Mesh field object
     CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
     INTEGER(I4B), INTENT(IN) :: fieldType
+    !! field type, normal, constant
     INTEGER(I4B), INTENT(IN) :: varType
+    !! variable type: constant, space, spaceTime, time, etc
     CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the field
     INTEGER(I4B), INTENT(IN) :: defineOn
     !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space compo
     INTEGER(I4B), INTENT(IN) :: nns
-    !! Number of node in space
+    !! Number of node in space with in the element
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
   END SUBROUTINE VectorMeshFieldInitiate
 END INTERFACE
 
@@ -256,9 +267,8 @@ END INTERFACE
 ! summary:  Set parameters for space-time vector mesh field
 
 INTERFACE
-  MODULE SUBROUTINE SetSTVectorMeshFieldParam(param, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              spaceCompo, nns, nnt)
+  MODULE SUBROUTINE SetSTVectorMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, spaceCompo, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -282,9 +292,9 @@ END INTERFACE
 ! summary: Initiate space-time vector mesh field
 
 INTERFACE
-  MODULE SUBROUTINE STVectorMeshFieldInitiate(obj, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              spaceCompo, nns, nnt, mesh)
+  MODULE SUBROUTINE STVectorMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, spaceCompo, nns, &
+    nnt, mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -309,9 +319,8 @@ END INTERFACE
 ! summary: Set parameters for tensor mesh field
 
 INTERFACE
-  MODULE SUBROUTINE SetTensorMeshFieldParam(param, name, fieldType, &
-                                            varType, engine, defineOn, &
-                                            dim1, dim2, nns)
+  MODULE SUBROUTINE SetTensorMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, dim1, dim2, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -335,9 +344,9 @@ END INTERFACE
 ! summary: Initiate tensor mesh field
 
 INTERFACE
-  MODULE SUBROUTINE TensorMeshFieldInitiate(obj, name, fieldType, &
-                                            varType, engine, defineOn, &
-                                            dim1, dim2, nns, mesh)
+  MODULE SUBROUTINE TensorMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, dim1, dim2, &
+    nns, mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -362,9 +371,8 @@ END INTERFACE
 ! summary:  Set param for space-time tensor mesh field
 
 INTERFACE
-  MODULE SUBROUTINE SetSTTensorMeshFieldParam(param, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              dim1, dim2, nns, nnt)
+  MODULE SUBROUTINE SetSTTensorMeshFieldParam( &
+    param, name, fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -387,10 +395,14 @@ END INTERFACE
 !                                STTensorMeshFieldInitiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary: Space-Time tensor mesh field
+
 INTERFACE
-  MODULE SUBROUTINE STTensorMeshFieldInitiate(obj, name, fieldType, &
-                                              varType, engine, defineOn, &
-                                              dim1, dim2, nns, nnt, mesh)
+  MODULE SUBROUTINE STTensorMeshFieldInitiate( &
+    obj, name, fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt, &
+    mesh)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
@@ -414,9 +426,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary: Scalar Mesh Field Constructor
+
 INTERFACE
-  MODULE SUBROUTINE ScalarMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                             nnt)
+  MODULE SUBROUTINE ScalarMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -436,9 +452,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary:  Space time mesh field constructor
+
 INTERFACE
- MODULE SUBROUTINE STScalarMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                               nnt)
+  MODULE SUBROUTINE STScalarMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -458,9 +478,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary:  Vector mesh field constructor
+
 INTERFACE
-  MODULE SUBROUTINE VectorMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                             nnt)
+  MODULE SUBROUTINE VectorMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -480,9 +504,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary:  Space-time vector mesh field constructor
+
 INTERFACE
- MODULE SUBROUTINE STVectorMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                               nnt)
+  MODULE SUBROUTINE STVectorMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -502,9 +530,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary: Tensor mesh field constructor
+
 INTERFACE
-  MODULE SUBROUTINE TensorMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                             nnt)
+  MODULE SUBROUTINE TensorMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -524,9 +556,13 @@ END INTERFACE
 !                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-28
+! summary: Space-time tensor mesh field constructor
+
 INTERFACE
- MODULE SUBROUTINE STTensorMeshFieldInitiate4(obj, mesh, func, name, engine, &
-                                               nnt)
+  MODULE SUBROUTINE STTensorMeshFieldInitiate4( &
+    obj, mesh, func, name, engine, nnt)
     CLASS(MeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -555,6 +591,42 @@ INTERFACE
     CLASS(MeshField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                            GenerateInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-27
+! summary:  Generate interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE InitiateInterpolationPoints( &
+    obj, order, ipType, fedof, mesh, engine)
+    CLASS(MeshField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+    TYPE(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: engine
+  END SUBROUTINE InitiateInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                             UpdateInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-27
+! summary: Generate interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE SetInterpolationPoints(obj, order, ipType, fedof, mesh)
+    CLASS(MeshField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+    TYPE(FEDOF_), INTENT(INOUT) :: fedof
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE SetInterpolationPoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
