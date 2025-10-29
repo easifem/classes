@@ -17,7 +17,6 @@
 
 SUBMODULE(VTKFile_Class) ConstructorMethods
 USE InputUtility, ONLY: Input
-USE GlobalData, ONLY: BYInt32, endianL
 USE XMLFile_Class, ONLY: xmlFile_Deallocate, xmlFile_Close
 
 IMPLICIT NONE
