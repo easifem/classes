@@ -15,14 +15,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
+SELECT CASE (fmt(1:1))
+CASE ("A", "a")
   DO i = 1, ii
-    ans=ans // str(n=x( i )) // ' ' // str(n=y( i )) // ' ' // str(n=z( i ))
+    ans = ans//str(n=x(i))//' '//str(n=y(i))//' '//str(n=z(i))
   END DO
-  CASE( "BINARY" )
-    CALL PACK_DATA( &
-      & a1=[INT(nbyte, I4B)], &
-      & a2=[(x( i ), y( i ), z( i ), i=1, ii)], packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
+CASE ("B", "b")
+  CALL PACK_DATA( &
+    a1=[INT(nbyte, I4B)], a2=[(x(i), y(i), z(i), i=1, ii)], packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
 END SELECT
+

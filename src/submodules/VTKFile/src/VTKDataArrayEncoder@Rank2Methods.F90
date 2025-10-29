@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(VTKDataArrayEncoder) Rank2Methods
-USE BaseMethod
+USE befor64, ONLY: B64_ENCODE, PACK_DATA
+USE penf, ONLY: str
 IMPLICIT NONE
 CONTAINS
 
@@ -25,26 +26,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Real32
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    CALL PACK_DATA( &
-      & a1=[INT(nn*BYReal32, I4B)], &
-      & a2=RESHAPE( x, [nn] ), packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  CALL PACK_DATA( &
+    & a1=[INT(nn * BYReal32, I4B)], &
+    & a2=RESHAPE(x, [nn]), packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Real32
 
 !----------------------------------------------------------------------------
@@ -52,26 +53,26 @@ END PROCEDURE encode_rank2_Real32
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Real64
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    CALL PACK_DATA( &
-      & a1=[INT(nn*BYReal64, I4B)], &
-      & a2=RESHAPE( x, [nn] ), packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  CALL PACK_DATA( &
+    & a1=[INT(nn * BYReal64, I4B)], &
+    & a2=RESHAPE(x, [nn]), packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Real64
 
 !----------------------------------------------------------------------------
@@ -79,26 +80,26 @@ END PROCEDURE encode_rank2_Real64
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Int64
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    CALL PACK_DATA( &
-      & a1=[INT(nn*BYInt64, I4B)], &
-      & a2=RESHAPE( x, [nn] ), packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  CALL PACK_DATA( &
+    & a1=[INT(nn * BYInt64, I4B)], &
+    & a2=RESHAPE(x, [nn]), packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Int64
 
 !----------------------------------------------------------------------------
@@ -106,24 +107,24 @@ END PROCEDURE encode_rank2_Int64
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Int32
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    xp = TRANSFER([INT(nn*BYInt32, I4B), reshape(x, [nn])], xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  xp = TRANSFER([INT(nn * BYInt32, I4B), RESHAPE(x, [nn])], xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Int32
 
 !----------------------------------------------------------------------------
@@ -131,26 +132,26 @@ END PROCEDURE encode_rank2_Int32
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Int16
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    CALL PACK_DATA( &
-      & a1=[INT(nn*BYInt16, I4B)], &
-      & a2=RESHAPE( x, [nn] ), packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  CALL PACK_DATA( &
+    & a1=[INT(nn * BYInt16, I4B)], &
+    & a2=RESHAPE(x, [nn]), packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Int16
 
 !----------------------------------------------------------------------------
@@ -158,26 +159,27 @@ END PROCEDURE encode_rank2_Int16
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_rank2_Int8
-  INTEGER( I4B ) :: ii, jj, nn, mm
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; mm = SIZE( x, 1 ); nn = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO jj=1, nn
-    DO ii=1, mm-1
-      ans = ans // str(n=x(ii, jj)) // ' '
+INTEGER(I4B) :: ii, jj, nn, mm
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+!> main
+ans = ''; mm = SIZE(x, 1); nn = SIZE(x, 2)
+SELECT CASE (TRIM(fmt))
+CASE ("ASCII")
+  DO jj = 1, nn
+    DO ii = 1, mm - 1
+      ans = ans//str(n=x(ii, jj))//' '
     END DO
-    ans = ans // ' ' // str( n=x(mm, jj) )
+    ans = ans//' '//str(n=x(mm, jj))
   END DO
   !>
-  CASE( "BINARY" )
-    nn = nn * mm
-    CALL PACK_DATA( &
-      & a1=[INT(nn*BYInt8, I4B)], &
-      & a2=RESHAPE( x, [nn] ), packed=xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
+CASE ("BINARY")
+  nn = nn * mm
+  CALL PACK_DATA( &
+    & a1=[INT(nn * BYInt8, I4B)], &
+    & a2=RESHAPE(x, [nn]), packed=xp)
+  CALL B64_ENCODE(n=xp, code=ans)
+END SELECT
 END PROCEDURE encode_rank2_Int8
 
 END SUBMODULE Rank2Methods
+

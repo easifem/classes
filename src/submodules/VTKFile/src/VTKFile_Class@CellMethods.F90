@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(VTKFile_Class) CellMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -25,11 +24,38 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteCells
-  CALL obj%WriteStartTag(name=String('Cells'))
-  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
-  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
-  CALL obj%WriteDataArray( name=String('types'), x=types )
-  CALL obj%WriteEndTag(name=String('Cells'))
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "VTKFile_WriteCells()"
+#endif
+TYPE(String) :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+astr = "Cells"
+CALL obj%WriteStartTag(name=astr)
+
+astr = "connectivity"
+CALL obj%WriteDataArray(name=astr, x=connectivity)
+
+astr = "offsets"
+CALL obj%WriteDataArray(name=astr, x=offsets)
+
+astr = "types"
+CALL obj%WriteDataArray(name=astr, x=types)
+
+astr = "Cells"
+CALL obj%WriteEndTag(name=astr)
+
+astr = ''
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE VTKFile_WriteCells
 
 END SUBMODULE CellMethods
+

@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(VTKFile_Class) VertMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -25,10 +24,35 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteVerts
-CALL obj%WriteStartTag(name=String('Verts'))
-CALL obj%WriteDataArray(name=String('connectivity'), x=connectivity)
-CALL obj%WriteDataArray(name=String('offsets'), x=offsets)
-CALL obj%WriteEndTag(name=String('Verts'))
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "VTKFile_WriteVerts()"
+#endif
+
+TYPE(String) :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+astr = "Verts"
+CALL obj%WriteStartTag(name=astr)
+
+astr = "connectivity"
+CALL obj%WriteDataArray(name=astr, x=connectivity)
+
+astr = "offsets"
+CALL obj%WriteDataArray(name=astr, x=offsets)
+
+astr = 'Verts'
+CALL obj%WriteEndTag(name=astr)
+
+astr = ''
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE VTKFile_WriteVerts
 
 END SUBMODULE VertMethods

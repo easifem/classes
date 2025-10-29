@@ -16,16 +16,20 @@
 !
 
 MODULE VTKFile_Class
-USE Globaldata
-USE BaseType
+USE Globaldata, ONLY: I4B, LGT, DFP, INT8, INT16, INT32, INT64, &
+                      REAL32, REAL64, endianL, CHAR_LF, &
+                      CHAR_SPACE, endian, BYInt16, BYInt8, &
+                      ByReal32, ByReal64, BYInt32, BYInt64
 USE String_Class, ONLY: String
-USE VTKdataArrayEncoder
-USE XMLFile_Class
+USE XMLFile_Class, ONLY: XMLFile_, XMLTag_
 USE ExceptionHandler_Class, ONLY: e
+USE VTKDataArrayEncoder, ONLY: EncodeVTKDataArray
+
 IMPLICIT NONE
+
 PRIVATE
 
-PUBLIC :: encodeVTKdataArray
+PUBLIC :: EncodeVTKdataArray
 
 CHARACTER(*), PARAMETER :: modName = "VTKFile_Class"
 INTEGER(I4B), PARAMETER :: MAX_LEN_DATA_STRUCTURENAME = 256

@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(VTKDataArrayEncoder) XYZRank1Methods
-USE BaseMethod
+USE befor64, ONLY: B64_ENCODE, PACK_DATA
+USE penf, ONLY: str
 IMPLICIT NONE
 CONTAINS
 
