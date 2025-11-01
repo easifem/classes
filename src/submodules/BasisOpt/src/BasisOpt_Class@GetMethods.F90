@@ -18,13 +18,29 @@
 
 SUBMODULE(BasisOpt_Class) GetMethods
 USE Display_Method, ONLY: ToString, Display
-USE ReferenceElement_Method, ONLY: GetTotalNodes
+USE ReferenceElement_Method, ONLY: GetTotalNodes, GetTotalFaces
 USE ElemshapeData_Method, ONLY: Elemsd_Set => Set, &
                                 LagrangeFacetElemShapeData, &
                                 HierarchicalFacetElemShapeData
 
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   GetVertex
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertex
+ans = GetTotalNodes(obj%topoType)
+END PROCEDURE obj_GetTotalVertex
+
+!----------------------------------------------------------------------------
+!                                                                    GetFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalFace
+ans = GetTotalFaces(obj%topoType)
+END PROCEDURE obj_GetTotalFace
 
 !----------------------------------------------------------------------------
 !                                                                      GetNSD

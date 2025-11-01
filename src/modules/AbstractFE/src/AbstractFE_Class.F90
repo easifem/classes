@@ -131,8 +131,15 @@ CONTAINS
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and
   !! local face number
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetAllLocalFacetElemShapeData => obj_GetAllLocalFacetElemShapeData
+  !! Get local element shape data for cell element and
+  !! all faces
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
     obj_GetGlobalFacetElemShapeData
+  !! Get global element shape data for cell and facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetAllGlobalFacetElemShapeData => &
+    obj_GetAllGlobalFacetElemShapeData
   !! Get global element shape data for cell and facet
 
   ! GET:
@@ -143,6 +150,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Get quadrature points on the face of cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetAllFacetQuadraturePoints => obj_GetAllFacetQuadraturePoints
+  !! Get quadrature points on all faces
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
   !! Get total number of quadrature points
@@ -179,18 +189,32 @@ CONTAINS
     GetFacetDOFValueFromConstant
 
   ! GET:
+  ! @GetVertexDOFValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOFValueFromSTUserFunc => &
+    obj_GetVertexDOFValueFromSTFunc
+  !! Get the vertex dof values from space-time user functions
+  GENERIC, PUBLIC :: GetVertexDOFValue => GetVertexDOFValueFromSTUserFunc
+  !! Get the vertex dof values
+
+  ! GET:
+  ! @GetInCellDOFValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInCellDOFValueFromSTUserFunc => &
+    obj_GetInCellDOFValueFromSTFunc
+  !! Get the vertex dof values from space-time user functions
+  GENERIC, PUBLIC :: GetInCellDOFValue => GetInCellDOFValueFromSTUserFunc
+  !! Get the vertex dof values
+
+  ! GET:
   ! @GetDOFMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetVertexDOFValueFromSpaceUserFunction => &
-    obj_GetVertexDOFValueFromSpaceUserFunction
-  !! Get the dof values at vertices
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetVertexDOFValueFromSpaceTimeUserFunction => &
-    obj_GetVertexDOFValueFromSpaceTimeUserFunction
-  !! Get the dof values at vertices
-  GENERIC, PUBLIC :: GetVertexDOFValue => &
-    GetVertexDOFValueFromSpaceUserFunction, &
-    GetVertexDOFValueFromSpaceTimeUserFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSpaceTimeUserFunction => &
+    obj_GetDOFValueFromSpaceTimeUserFunction
+  !! Get the dof values of a space-time user function on a facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
+    obj_GetDOFValueFromQuadrature
+  GENERIC, PUBLIC :: GetDOFValue => &
+    GetDOFValueFromSpaceTimeUserFunction, &
+    GetDOFValueFromQuadrature
+  !! Get the degree of freedom values
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -766,6 +790,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                       GetAllLocalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAllLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                              GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
@@ -818,6 +860,31 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                     GetAllGlobalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAllGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, tsize, geoElemsd, geoFacetElemsd, xij)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd(:), geoFacetElemsd(:)
+    !! element shape data for geometry in cell and facet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllGlobalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 GetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
@@ -845,13 +912,31 @@ END INTERFACE
 ! summary: Get quadrature points on a local face of element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetQuadraturePoints(obj, quad, facetQuad, &
-                                                 localFaceNumber)
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints( &
+    obj, quad, facetQuad, localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! Quadrature points
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE obj_GetFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetAllFacetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points on a local face of element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAllFacetQuadraturePoints( &
+    obj, quad, facetQuad, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
+    !! Quadrature points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllFacetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1254,41 +1339,146 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetVertexDOFValue@Methods
+!                                         GetDOFValueFromUserFunction@Methods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get all dof values from a user functions
+!
+!# Introduction
+!
+! The user function should be scalar.
+
 INTERFACE
-  MODULE SUBROUTINE obj_GetVertexDOFValueFromSpaceUserFunction( &
-    obj, xij, func, ans, tsize)
+  MODULE SUBROUTINE obj_GetDOFValueFromSpaceTimeUserFunction( &
+    obj, elemsd, facetElemsd, cellElemsd, xij, times, func, ans, tsize, &
+    massMat, ipiv, funcValue, temp)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element method
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! Nodal coordinats of elements
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:)
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:)
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
+    !! shape function defined for computing the inside cell DOF
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinates of element
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! User defined function value at vertex DOF
+    !! user defined functions quadrature values of function
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Vertex degree of freedom values
+    !! Nodal coordinates of interpolation points
     INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetVertexDOFValueFromSpaceUserFunction
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary array used for getting the degrees of freedom
+    !! The size of temp should be at least equal to maximum number
+    !! of degree of freedom in the element
+  END SUBROUTINE obj_GetDOFValueFromSpaceTimeUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetVertexDOFValue@Methods
+!                                         GetVertexDOFValueFromSTFunc@Methods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get all the vertex DOF from space-time user function
+
 INTERFACE
-  MODULE SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction( &
-    obj, xij, times, func, ans, tsize)
+  MODULE SUBROUTINE obj_GetVertexDOFValueFromSTFunc( &
+    obj, ans, tsize, func, xij, times)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element method
-    REAL(DFP), INTENT(IN) :: xij(:, :), times
-    !! Nodal coordinats of elements
-    TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! User defined function value at vertex DOF
+    !! Abstract finite element
     REAL(DFP), INTENT(INOUT) :: ans(:)
     !! Vertex degree of freedom values
     INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+    !! data written in ans
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Nodal coordinates of the elements
+    REAL(DFP), INTENT(IN) :: times
+  END SUBROUTINE obj_GetVertexDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetInCellDOFValue@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInCellDOFValueFromSTFunc( &
+    obj, cellElemsd, func, times, ans, temp, tsize, massMat, ipiv, &
+    funcValue, offset)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
+    !! cell element shape data
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(IN) :: times
+    !! times
+    REAL(DFP), INTENT(INOUT) :: ans(:), temp(:)
+    !! Nodal coordinates of interpolation points
+    !! Size of temp and ans should be atleast cellElemsd%nns
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    INTEGER(I4B), INTENT(IN) :: offset
+    !! Starting and ending indices for vertex and face DOFs
+  END SUBROUTINE obj_GetInCellDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetFacetDOFValueFromQuadrature
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get all DOF from quadrature values
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDOFValueFromQuadrature( &
+    obj, elemsd, func, ans, tsize, massMat, ipiv, onlyInside, tVertices)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(INOUT) :: func(:)
+    !! quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    !! The size of nns should be atleast elemsd%nns
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix, the size should be atleast elemsd%nns
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    !! The size should be atleast elemsd%nns
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyInside
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    !! if onlyInside is true, then we will not use 1:Vertices
+    !! and use tVertices + 1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
+  END SUBROUTINE obj_GetDOFValueFromQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------

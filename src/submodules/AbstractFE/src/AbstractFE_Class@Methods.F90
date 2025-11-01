@@ -429,6 +429,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
+!                                              GetAllLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetAllLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetAllLocalFacetElemShapeData()"
+#endif
+
+INTEGER(I4B) :: iface
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%opt%GetTotalFace()
+DO iface = 1, tsize
+  CALL obj%GetLocalFacetElemShapeData( &
+    elemsd=elemsd(iface), facetElemsd=facetElemsd(iface), quad=quad(iface), &
+    facetQuad=facetQuad(iface), localFaceNumber=iface)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetAllLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -481,6 +510,37 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
+!                                             GetAllGlobalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetAllGlobalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetAllGlobalFacetElemShapeData()"
+#endif
+
+INTEGER(I4B) :: iface
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%opt%GetTotalFace()
+DO iface = 1, tsize
+  CALL obj%GetGlobalFacetElemShapeData( &
+    elemsd=elemsd(iface), facetElemsd=facetElemsd(iface), &
+    localFaceNumber=iface, geoElemsd=geoElemsd(iface), &
+    geoFacetElemsd=geoFacetElemsd(iface), xij=xij)
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetAllGlobalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                         GetQuadraturePoints
 !----------------------------------------------------------------------------
 
@@ -530,6 +590,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetFacetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                GetAllFacetQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetAllFacetQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetAllFacetQuadraturePoints()"
+#endif
+
+INTEGER(I4B) :: iface
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%opt%GetTotalFace()
+DO iface = 1, tsize
+  CALL obj%GetFacetQuadraturePoints( &
+    quad=quad(iface), facetQuad=facetQuad(iface), localFaceNumber=iface)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetAllFacetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                    GetTotalQuadraturePoints
@@ -1106,35 +1194,195 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
-!                                      GetVertexDOFValueFromSpaceUserFunction
+!                                                 GetDOFValueFromUserFunction
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetVertexDOFValueFromSpaceUserFunction
+MODULE PROCEDURE obj_GetDOFValueFromSpaceTimeUserFunction
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetVertexDOFValueFromSpaceUserFunction()"
+                           "obj_GetDOFValueFromSpaceTimeUserFunction()"
 #endif
 
-REAL(DFP), PARAMETER :: times = 0.0_DFP
+INTEGER(I4B) :: tVertex, nsd, tFace, tFaceDOF, iface, tCellDOF
 
-CALL obj%GetVertexDOFValue(xij=xij, times=times, func=func, ans=ans, &
-                           tsize=tsize)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = 0
+
+nsd = obj%opt%GetNSD()
+
+CALL obj%GetVertexDOFValue(ans=ans, tsize=tVertex, func=func, xij=xij, &
+                           times=times)
+
+tsize = tsize + tVertex
+
+tFace = obj%opt%GetTotalFace()
+
+DO iface = 1, tFace
+  CALL obj%GetFacetDOFValue( &
+    elemsd=elemsd(iface), facetElemsd=facetElemsd(iface), xij=xij, &
+    times=times, localFaceNumber=iface, func=func, ans=temp, &
+    tsize=tFaceDOF, massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
+    onlyFaceBubble=.TRUE.)
+  ans(tsize + 1:tsize + tFaceDOF) = temp(1:tFaceDOF)
+  tsize = tsize + tFaceDOF
+END DO
+
+CALL obj%GetInCellDOFValue( &
+  cellElemsd=cellElemsd, func=func, times=times, ans=ans, &
+  temp=temp, tsize=tCellDOF, massMat=massMat, ipiv=ipiv, &
+  funcValue=funcValue, offset=tsize)
+! 1:offset are vertex, edge and face dofs
+! from offset+1 inside cell dof values start
+
+tsize = tsize + tCellDOF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetVertexDOFValueFromSpaceUserFunction
+END PROCEDURE obj_GetDOFValueFromSpaceTimeUserFunction
 
 !----------------------------------------------------------------------------
-!                                            GetVertexDOFValueFromUserFunction
+!                                              GetFacetDOFValueFromQuadrature
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+MODULE PROCEDURE obj_GetDOFValueFromQuadrature
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetVertexDOFValueFromSpaceTimeUserFunction()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDOFValueFromQuadrature()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: info, nrow, ncol, n1, n2, ii, nns
+LOGICAL(LGT) :: onlyInside0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = 0
+
+onlyInside0 = Input(option=onlyInside, default=.FALSE.)
+
+#ifdef DEBUG_VER
+IF (onlyInside0) THEN
+  isok = PRESENT(tVertices)
+  CALL AssertError1(isok, myName, &
+                    'tVertices must be provided when onlyInside is true')
+END IF
+#endif
+
+nns = elemsd%nns
+
+#ifdef DEBUG_VER
+n1 = SIZE(func)
+isok = n1 .GE. elemsd%nips
+CALL AssertError1(isok, myName, &
+             'Size of func='//ToString(n1)//' is lesser than elemsd%nips='// &
+                  ToString(elemsd%nips))
+#endif
+
+#ifdef DEBUG_VER
+n1 = SIZE(ans)
+isok = n1 .GE. elemsd%nns
+CALL AssertError1(isok, myName, &
+               'Size of ans='//ToString(n1)//' is lesser than elemsd%nns='// &
+                  ToString(elemsd%nns))
+#endif
+
+#ifdef DEBUG_VER
+n1 = SIZE(ipiv)
+isok = n1 .GE. elemsd%nns
+CALL AssertError1(isok, myName, &
+              'Size of ipiv='//ToString(n1)//' is lesser than elemsd%nns='// &
+                  ToString(elemsd%nns))
+#endif
+
+#ifdef DEBUG_VER
+n1 = SIZE(massMat, 1)
+isok = n1 .GE. elemsd%nns
+CALL AssertError1(isok, myName, &
+                  'Number of rows in massMat='//ToString(n1)// &
+                  ' is lesser than elemsd%nns='// &
+                  ToString(elemsd%nns))
+
+n1 = SIZE(massMat, 2)
+isok = n1 .GE. elemsd%nns
+CALL AssertError1(isok, myName, &
+                  'Number of cols in massMat='//ToString(n1)// &
+                  ' is lesser than elemsd%nns='// &
+                  ToString(elemsd%nns))
+#endif
+
+massMat(1:nns, 1:nns) = 0.0_DFP
+
+n1 = 1; n2 = nns
+
+IF (onlyInside0) THEN
+  n1 = tVertices + 1; n2 = nns
+END IF
+
+tsize = n2 - n1 + 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling MassMatrix_...')
+#endif
+
+CALL MassMatrix_(test=elemsd, trial=elemsd, ans=massMat, &
+                 nrow=nrow, ncol=ncol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling ForceVector_...')
+#endif
+
+CALL ForceVector_(test=elemsd, c=func, ans=ans, tsize=nrow)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling GetLU...')
+#endif
+
+CALL GetLU(A=massMat(n1:n2, n1:n2), IPIV=ipiv(n1:n2), info=info)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'calling LUSolve')
+#endif
+
+CALL LUSolve(A=massMat(n1:n2, n1:n2), B=ans(n1:n2), &
+             IPIV=ipiv(n1:n2), info=info)
+
+IF (onlyInside0) THEN
+  DO ii = tVertices + 1, nns
+    ans(ii - tVertices) = ans(ii)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDOFValueFromQuadrature
+
+!----------------------------------------------------------------------------
+!                                                 GetVertexDOFValueFromSTFunc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVertexDOFValueFromSTFunc
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVertexDOFValueFromSTFunc()"
+INTEGER(I4B) :: tReturns, tArgs
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, nsd
+REAL(DFP) :: args(4)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1142,15 +1390,105 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+tReturns = func%GetNumReturns()
+isok = tReturns .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "WIP: the user function must return a single value")
 #endif
+
+nsd = obj%opt%GetNSD()
+tsize = obj%opt%GetTotalVertex()
+
+#ifdef DEBUG_VER
+tArgs = func%GetNumArgs()
+isok = tArgs .GE. 4_I4B
+CALL AssertError1(isok, myName, &
+           "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
+#endif
+
+args(1:3) = 0.0_DFP
+args(4) = times
+DO ii = 1, tsize
+  args(1:nsd) = xij(1:nsd, ii)
+  CALL func%GetScalarValue(args=args, val=ans(ii))
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetVertexDOFValueFromSpaceTimeUserFunction
+END PROCEDURE obj_GetVertexDOFValueFromSTFunc
+
+!----------------------------------------------------------------------------
+!                                                 GetInCellDOFValueFromSTFunc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInCellDOFValueFromSTFunc
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInCellDOFValueFromSTFunc()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: mysize
+#endif
+
+INTEGER(I4B) :: ii, nips, nsd
+REAL(DFP) :: args(4), ainterpol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+ii = SIZE(funcValue)
+isok = ii .GE. cellElemsd%nips
+CALL AssertError1(isok, myName, &
+    'Size of funcValue='//ToString(ii)//' is lesser than cellElemsd%nips='// &
+                  ToString(cellElemsd%nips))
+#endif
+
+tsize = 0
+
+nips = cellElemsd%nips
+nsd = cellElemsd%nsd
+
+args(1:3) = 0.0_DFP
+args(4) = times
+DO ii = 1, nips
+  args(1:nsd) = cellElemsd%coord(1:nsd, ii)
+  CALL func%GetScalarValue(args=args, val=funcValue(ii))
+
+  ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
+
+  funcValue(ii) = funcValue(ii) - ainterpol
+END DO
+
+#ifdef DEBUG_VER
+mysize = SIZE(temp)
+isok = mysize .GE. cellElemsd%nns
+CALL AssertError1(isok, myName, &
+      'Size of temp='//ToString(mysize)//' is lesser than cellElemsd%nns='// &
+                  ToString(cellElemsd%nns))
+#endif
+
+CALL obj%GetDOFValueFromQuadrature( &
+  elemsd=cellElemsd, func=funcValue, ans=temp, tsize=tsize, &
+  massMat=massMat, ipiv=ipiv, onlyInside=.TRUE., tVertices=offset)
+
+#ifdef DEBUG_VER
+mysize = SIZE(ans)
+isok = mysize .GE. offset + tsize
+CALL AssertError1(isok, myName, &
+         'Size of ans='//ToString(mysize)//' is lesser than offset+tsize='// &
+                  ToString(offset + tsize))
+#endif
+
+ans(offset + 1:offset + tsize) = temp(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInCellDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
 !

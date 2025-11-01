@@ -310,6 +310,10 @@ CONTAINS
   !GET:
   ! @GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFace => obj_GetTotalFace
+  !! Get total number of faces
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertex => obj_GetTotalVertex
+  !! Get total number of vertices in the element
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Get the number of spatial dimensions
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemCoord => obj_GetRefElemCoord
@@ -1114,6 +1118,36 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
   END SUBROUTINE Quadrangle_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetTotalFace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-30
+! summary: Get the number of spatial dimensions
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFace(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalVertex@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-30
+! summary: Get the number of spatial dimensions
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertex(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertex
 END INTERFACE
 
 !----------------------------------------------------------------------------
