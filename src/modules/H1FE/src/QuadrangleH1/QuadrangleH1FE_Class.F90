@@ -63,8 +63,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set the orientation of element
   PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetFacetDOFValueFromSpaceTimeUserFunction => &
-    obj_GetFacetDOFValueFromSpaceTimeUserFunction
+    GetFacetDOFValueFromSTFunc => obj_GetFacetDOFValueFromSTFunc
   !! Get facet dof value from space-time user function
 
 END TYPE QuadrangleH1FE_
@@ -238,7 +237,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                           GetFacetDOFValueFromSpaceTimeUserFunction@Methods
+!                                                    GetFacetDOFValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -251,7 +250,7 @@ END INTERFACE
 ! It is a function of space and time.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction( &
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
     massMat, ipiv, funcValue, onlyFaceBubble)
     CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
@@ -280,7 +279,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
-  END SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+  END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------

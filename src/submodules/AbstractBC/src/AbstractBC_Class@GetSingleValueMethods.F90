@@ -158,10 +158,10 @@ SUBROUTINE GetSpaceValue_uf( &
   ELSE
 
     CALL feptr%GetFacetDOFValue( &
-      elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
-      localFaceNumber=localFaceNumber, func=obj%func, &
-      ans=nodalValue(:, 1), tsize=mysize, massMat=massMat, &
-      ipiv=ipiv, funcValue=funcValue, onlyFaceBubble=no)
+      elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, times=0.0_DFP, &
+      localFaceNumber=localFaceNumber, func=obj%func, ans=nodalValue(:, 1), &
+      tsize=mysize, massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
+      onlyFaceBubble=no)
 
     DO itime = 2, ncol
       nodalValue(1:mysize, itime) = nodalValue(1:mysize, 1)

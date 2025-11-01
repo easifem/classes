@@ -174,18 +174,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromConstant => &
     obj_GetFacetDOFValueFromConstant
   !! Get the dof values corresponding to a constant function
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetFacetDOFValueFromSpaceUserFunction => &
-    obj_GetFacetDOFValueFromSpaceUserFunction
-  !! Get the dof values of a space user function on a facet
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetFacetDOFValueFromSpaceTimeUserFunction => &
-    obj_GetFacetDOFValueFromSpaceTimeUserFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSTFunc => &
+    obj_GetFacetDOFValueFromSTFunc
   !! Get the dof values of a space-time user function on a facet
-  GENERIC, PUBLIC :: GetFacetDOFValue => &
-    GetFacetDOFValueFromQuadrature, &
-    GetFacetDOFValueFromSpaceUserFunction, &
-    GetFacetDOFValueFromSpaceTimeUserFunction, &
+  GENERIC, PUBLIC :: GetFacetDOFValue => GetFacetDOFValueFromQuadrature, &
+    GetFacetDOFValueFromSTFunc, &
     GetFacetDOFValueFromConstant
 
   ! GET:
@@ -206,13 +199,13 @@ CONTAINS
 
   ! GET:
   ! @GetDOFMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSpaceTimeUserFunction => &
-    obj_GetDOFValueFromSpaceTimeUserFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
+    obj_GetDOFValueFromSTFunc
   !! Get the dof values of a space-time user function on a facet
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
     obj_GetDOFValueFromQuadrature
   GENERIC, PUBLIC :: GetDOFValue => &
-    GetDOFValueFromSpaceTimeUserFunction, &
+    GetDOFValueFromSTFunc, &
     GetDOFValueFromQuadrature
   !! Get the degree of freedom values
 END TYPE AbstractFE_
@@ -1251,7 +1244,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   GetFacetDOFValueFromUserFunction@Methods
+!                                                    GetFacetDOFValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1263,51 +1256,7 @@ END INTERFACE
 ! The user function should be scalar.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromSpaceUserFunction( &
-    obj, elemsd, facetElemsd, xij, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv, funcValue, onlyFaceBubble)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
-    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! Nodal coordinates of element
-    INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-    TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
-    REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
-    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
-    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
-    REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at quadrature points used inside
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
-  END SUBROUTINE obj_GetFacetDOFValueFromSpaceUserFunction
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   GetFacetDOFValueFromUserFunction@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
-!
-!# Introduction
-!
-! The user function should be scalar.
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction( &
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
     massMat, ipiv, funcValue, onlyFaceBubble)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
@@ -1335,7 +1284,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
-  END SUBROUTINE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+  END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1351,7 +1300,7 @@ END INTERFACE
 ! The user function should be scalar.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetDOFValueFromSpaceTimeUserFunction( &
+  MODULE SUBROUTINE obj_GetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, cellElemsd, xij, times, func, ans, tsize, &
     massMat, ipiv, funcValue, temp)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
@@ -1381,7 +1330,7 @@ INTERFACE
     !! temporary array used for getting the degrees of freedom
     !! The size of temp should be at least equal to maximum number
     !! of degree of freedom in the element
-  END SUBROUTINE obj_GetDOFValueFromSpaceTimeUserFunction
+  END SUBROUTINE obj_GetDOFValueFromSTFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -1144,37 +1144,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetFacetDOFValueFromVertex
 
 !----------------------------------------------------------------------------
-!                                      GetFacetDOFValueFromSpaceUserFunction
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceUserFunction
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetFacetDOFValueFromSpaceUserFunction()"
-#endif
-
-REAL(DFP), PARAMETER :: times = 0.0_DFP
-
-CALL obj%GetFacetDOFValue( &
-  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, times=times, &
-  localFaceNumber=localFaceNumber, func=func, ans=ans, tsize=tsize, &
-  massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
-  onlyFaceBubble=onlyFaceBubble)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetFacetDOFValueFromSpaceUserFunction
-
-!----------------------------------------------------------------------------
 !                                            GetFacetDOFValueFromUserFunction
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetFacetDOFValueFromSpaceTimeUserFunction()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromSTFunc()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1191,16 +1166,15 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+END PROCEDURE obj_GetFacetDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
 !                                                 GetDOFValueFromUserFunction
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetDOFValueFromSpaceTimeUserFunction
+MODULE PROCEDURE obj_GetDOFValueFromSTFunc
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetDOFValueFromSpaceTimeUserFunction()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDOFValueFromSTFunc()"
 #endif
 
 INTEGER(I4B) :: tVertex, nsd, tFace, tFaceDOF, iface, tCellDOF
@@ -1244,7 +1218,7 @@ tsize = tsize + tCellDOF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetDOFValueFromSpaceTimeUserFunction
+END PROCEDURE obj_GetDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
 !                                              GetFacetDOFValueFromQuadrature

@@ -213,6 +213,7 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
 #endif
 
   LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
+  REAL(DFP), PARAMETER :: times = 0.0_DFP
 
   INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, nargs, &
                   iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(1), &
@@ -311,10 +312,9 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
       geoFacetElemsd=geoFacetElemsd, xij=elemCoord)
 
     CALL feptr%GetFacetDOFValue( &
-      elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
-      localFaceNumber=localFaceNumber, func=obj%func, &
-      ans=ans, tsize=jj, massMat=massMat, &
-      ipiv=ipiv, funcValue=funcValue, onlyFaceBubble=yes)
+      elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, times=times, &
+      localFaceNumber=localFaceNumber, func=obj%func, ans=ans, tsize=jj, &
+      massMat=massMat, ipiv=ipiv, funcValue=funcValue, onlyFaceBubble=yes)
 
     nodalValue(nrow + 1:nrow + jj, 1) = ans(1:jj)
 

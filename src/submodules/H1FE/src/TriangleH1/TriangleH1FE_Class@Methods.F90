@@ -244,13 +244,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrientation
 
 !----------------------------------------------------------------------------
-!                                   GetFacetDOFValueFromSpaceTimeUserFunction
+!                                                            GetFacetDOFValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = &
-                           "obj_GetFacetDOFValueFromSpaceTimeUserFunction()"
+                           "obj_GetFacetDOFValueFromSTFunc()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tReturns
 #endif
@@ -316,7 +316,7 @@ CALL obj%GetFacetDOFValueFromQuadrature( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetFacetDOFValueFromSpaceTimeUserFunction
+END PROCEDURE obj_GetFacetDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
 !                                                              include Error
