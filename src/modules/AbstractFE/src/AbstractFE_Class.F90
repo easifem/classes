@@ -167,7 +167,7 @@ CONTAINS
   !! Get total number of Interpolation points
 
   ! GET:
-  ! @GetFacetDOFMethods
+  ! @GetFacetDOFValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromQuadrature => &
     obj_GetFacetDOFValueFromQuadrature
   !! Get the dof values of a function from its quadrature values on a facet
@@ -176,6 +176,7 @@ CONTAINS
   !! Get the dof values corresponding to a constant function
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSTFunc => &
     obj_GetFacetDOFValueFromSTFunc
+  !! Get the dof values of a space-time user function on a facet
   !! Get the dof values of a space-time user function on a facet
   GENERIC, PUBLIC :: GetFacetDOFValue => GetFacetDOFValueFromQuadrature, &
     GetFacetDOFValueFromSTFunc, &
@@ -202,10 +203,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
     obj_GetDOFValueFromSTFunc
   !! Get the dof values of a space-time user function on a facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc2 => &
+    obj_GetDOFValueFromSTFunc2
+  !! Get the dof values of a space-time user function on a facet
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
     obj_GetDOFValueFromQuadrature
   GENERIC, PUBLIC :: GetDOFValue => &
     GetDOFValueFromSTFunc, &
+    GetDOFValueFromSTFunc2, &
     GetDOFValueFromQuadrature
   !! Get the degree of freedom values
 END TYPE AbstractFE_
@@ -1285,6 +1290,59 @@ INTERFACE
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
   END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetDOFValueFromQuadrature2
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get degree of freedom values from space-time user function
+! It is a very high level routine which initiates most of its arguments
+! and call GetDOFValueFromSTFunc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDOFValueFromSTFunc2( &
+    obj, geofeptr, elemsd, geoelemsd, facetElemsd, geoFacetElemsd, &
+    cellElemsd, geoCellElemsd, quad, facetQuad, cellQuad, xij, times, &
+    func, ans, tsize, massMat, ipiv, funcValue, temp)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:), geoelemsd(:)
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:), geoFacetElemsd(:)
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd, geoCellElemsd
+    !! shape function defined for computing the inside cell DOF
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:)
+    !! Quadrture data corresponding to each facet
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad(:)
+  !! Quadrature data for all facet elements for in face dof
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: cellQuad
+  !! Quadrature data for in cell dof
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinates of element
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary array used for getting the degrees of freedom
+    !! The size of temp should be at least equal to maximum number
+    !! of degree of freedom in the element
+  END SUBROUTINE obj_GetDOFValueFromSTFunc2
 END INTERFACE
 
 !----------------------------------------------------------------------------

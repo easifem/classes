@@ -288,7 +288,7 @@ CALL AssertError1(isok, myName, &
 
 nips = facetElemsd%nips
 nns = facetElemsd%nns
-nsd = facetElemsd%nsd
+nsd = obj%opt%GetNSD()
 
 #ifdef DEBUG_VER
 tArgs = func%GetNumArgs()

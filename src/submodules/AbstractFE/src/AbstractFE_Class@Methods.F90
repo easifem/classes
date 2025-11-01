@@ -1465,6 +1465,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetInCellDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
+!                                                  GetDOFValueFromQuadrature2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDOFValueFromSTFunc2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDOFValueFromSTFunc2()"
+#endif
+INTEGER(I4B) :: tFace
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+!  Getting quadrature for all facets and edges
+CALL obj%GetAllFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, tsize=tFace)
+
+! Getting quadrature value for internal cell dof
+CALL obj%GetQuadraturePoints(quad=cellQuad)
+
+! geofeptr: Get local element shape data for in facet dof
+CALL geofeptr%GetAllLocalFacetElemShapeData( &
+  elemsd=geoElemsd, quad=quad, facetElemsd=geoFacetElemsd, &
+  facetQuad=facetQuad, tsize=tFace)
+
+! geofeptr: Get local element shape data for in cell dof
+CALL geofeptr%GetLocalElemShapeData(elemsd=geoCellElemsd, quad=cellQuad)
+
+! feptr: Get local element shape data for in facet dof
+CALL obj%GetAllLocalFacetElemShapeData( &
+  elemsd=elemsd, quad=quad, facetElemsd=facetElemsd, &
+  facetQuad=facetQuad, tsize=tFace)
+
+! feptr: Get local element shape data for in cell dof
+CALL obj%GetLocalElemShapeData(elemsd=cellElemsd, quad=cellQuad)
+
+! feptr: Get global element shape data for in facet dof
+CALL obj%GetAllGlobalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, tsize=tFace, &
+  geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
+
+! feptr: Get global element shape data for in cell dof
+CALL obj%GetGlobalElemShapeData( &
+  elemsd=cellElemsd, xij=xij, geoElemsd=geoCellElemsd)
+
+CALL obj%GetDOFValue( &
+  cellElemsd=cellElemsd, elemsd=elemsd, facetElemsd=facetElemsd, &
+  xij=xij, times=times, func=func, ans=ans, tsize=tsize, &
+  massMat=massMat, ipiv=ipiv, funcValue=funcValue, temp=temp)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDOFValueFromSTFunc2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
