@@ -89,11 +89,10 @@ END DO
 CALL HeirarchicalBasisGradient_Quadrangle_( &
   pb=obj%cellOrder(1), qb=obj%cellOrder(2), pe3=obj%faceOrder(1, 1), &
   pe4=obj%faceOrder(1, 3), qe1=obj%faceOrder(1, 4), qe2=obj%faceOrder(1, 2), &
-  xij=quad%points(1:quad%txi, 1:nips), &
-  pe3Orient=obj%faceOrient(1, 1), pe4Orient=obj%faceOrient(1, 3), &
-  qe1Orient=obj%faceOrient(1, 4), qe2Orient=obj%faceOrient(1, 2), &
-  faceOrient=obj%cellOrient, ans=obj%temp, dim1=indx(5), &
-  dim2=indx(6), dim3=indx(7))
+  xij=quad%points(1:quad%txi, 1:nips), pe3Orient=obj%faceOrient(1, 1), &
+  pe4Orient=obj%faceOrient(1, 3), qe1Orient=obj%faceOrient(1, 4), &
+  qe2Orient=obj%faceOrient(1, 2), faceOrient=obj%cellOrient, &
+  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7))
 
 CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
            i1=2, i2=3, i3=1)
