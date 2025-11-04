@@ -34,6 +34,8 @@ USE tomlf, ONLY: toml_error, &
 
 USE CSVFile_Class, ONLY: CSVFile_
 
+USE String_Class, ONLY: reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -59,6 +61,68 @@ END IF
 
 IF (PRESENT(isFound)) isFound = .FALSE.
 END PROCEDURE GetValue_string
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetValue_string_r1
+CHARACTER(:), ALLOCATABLE :: temp_char
+LOGICAL(LGT) :: isok
+
+TYPE(toml_array), POINTER :: array
+INTEGER(I4B) :: tsize, ii, stat0
+LOGICAL(LGT) :: isFound0, isok
+
+isFound0 = .FALSE.
+
+!----------------------------------------------------------------------------
+! READ from TOML array
+! try to read from the toml array
+! the data is given in toml file itself as toml array
+!----------------------------------------------------------------------------
+array => NULL()
+CALL toml_get(table, key, array, origin=origin, stat=stat0, &
+              requested=.FALSE.)
+
+isok = ASSOCIATED(array)
+
+IF (isok) THEN
+  tsize = toml_len(array)
+  CALL Reallocate(VALUE, tsize)
+  isFound0 = .TRUE.
+  DO ii = 1, tsize
+    CALL toml_get(array, ii, temp_char)
+    VALUE(ii) = temp_char
+  END DO
+
+  IF (PRESENT(stat)) stat = stat0
+  IF (PRESENT(isFound)) isFound = isFound0
+  NULLIFY (array)
+  RETURN
+END IF
+
+!----------------------------------------------------------------------------
+! READ a single value from toml
+! In this case length of the vector is 1, this value is given in toml file
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, key, temp_char, origin=origin, stat=stat0)
+
+IF (stat0 .EQ. toml_stat%success) THEN
+  CALL Reallocate(VALUE, 1)
+  VALUE(1) = temp_char
+  isFound0 = .TRUE.
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  RETURN
+END IF
+
+isFound0 = .FALSE.
+IF (PRESENT(isFound)) isFound = isFound0
+IF (PRESENT(stat)) stat = stat0
+
+END PROCEDURE GetValue_string_r1
 
 !----------------------------------------------------------------------------
 !                                                                      Get

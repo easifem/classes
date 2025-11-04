@@ -245,7 +245,8 @@ TYPE(toml_table), POINTER :: child, node
 CHARACTER(:), ALLOCATABLE :: prefix
 
 TYPE(String) :: engine, solverName, preconditionOption, &
-                p_name, convergenceIn, convergenceType, scale, p_hybrid_i
+                p_name, convergenceIn, convergenceType, scale, p_hybrid_i, &
+                astr
 
 INTEGER(I4B) :: maxIter, krylovSubspaceSize, bicgstab_ell, &
                 p_ilu_lfil, p_ilu_mbloc, p_ilu_fill, p_hybrid_maxiter, &
@@ -387,25 +388,26 @@ IF (ASSOCIATED(node)) THEN
   CALL toml_get(node, LowerCase(p_name%chars()), child, origin=origin, &
                 stat=stat, requested=.FALSE.)
   IF (ASSOCIATED(child)) THEN
-    SELECT CASE (p_name%chars())
-    CASE ("none", "NONE")
+    astr = p_name%upper()
+    SELECT CASE (astr%chars())
+    CASE ("NONE")
       ! do nothing
-    CASE ("ilu", "ILU")
+    CASE ("ILU", "ILU0", "ILUT", "ILUTP", "ILUK", "ILUD", "ILUDP")
       CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("hybrid", "HYBRID")
+    CASE ("HYBRID")
       CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix, &
                                    table=child)
-    CASE ("is", "IS")
+    CASE ("IS")
       CALL is_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("adds", "ADDS")
+    CASE ("ADDS")
       CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("ssor", "SSOR")
+    CASE ("SSOR")
       CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("sainv", "SAINV")
+    CASE ("SAINV")
       CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("saamg", "SAAMG")
+    CASE ("SAAMG")
       CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
-    CASE ("iluc", "ILUC")
+    CASE ("ILUC")
       CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
     END SELECT
     child => NULL()

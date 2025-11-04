@@ -142,7 +142,7 @@ SUBROUTINE obj_NewmarkBeta(obj, beta, gamma)
   ! internal varibales
   REAL(DFP) :: beta_inv, gamma_inv, beta0, gamma0
 
-  CALL obj%DEALLOCATE()
+  ! CALL obj%DEALLOCATE()
 
   beta0 = Input(default=0.25_DFP, option=beta)
   gamma0 = Input(default=0.5_DFP, option=gamma)
@@ -197,7 +197,7 @@ SUBROUTINE obj_HHTAlpha(obj, alpha, beta, gamma)
   ! internal varibales
   REAL(DFP) :: alpha0, beta0, gamma0, areal
 
-  CALL obj%DEALLOCATE()
+  ! CALL obj%DEALLOCATE()
 
   alpha0 = Input(default=-0.30_DFP, option=alpha)
   areal = (1.0_DFP - alpha0)**2 * 0.25_DFP
@@ -240,7 +240,7 @@ SUBROUTINE obj_Collocation(obj, beta, gamma, theta)
   ! internal varibales
   REAL(DFP) :: theta0, beta0, gamma0, areal
 
-  CALL obj%DEALLOCATE()
+  ! CALL obj%DEALLOCATE()
 
   beta0 = Input(default=1.0_DFP / 6.0_DFP, option=beta)
   gamma0 = Input(default=0.50_DFP, option=gamma)
@@ -459,7 +459,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE ("HHTA")
 
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+                                              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       alpha = -0.30_DFP
@@ -481,7 +481,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE ("COLL")
 
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+                                              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       beta = 1.0_DFP / 6.0_DFP
@@ -501,7 +501,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE DEFAULT
     node => NULL()
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+                                              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &

@@ -316,6 +316,7 @@ obj%tpzlabel%hasLabel = .FALSE.
 
 obj%commandline = defaultCommandLine
 obj%execute = .TRUE.
+obj%PAUSE = .FALSE.
 
 END PROCEDURE reset_to_defaults
 

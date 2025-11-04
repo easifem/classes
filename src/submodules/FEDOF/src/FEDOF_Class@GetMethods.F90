@@ -29,6 +29,8 @@ USE ReferenceElement_Method, ONLY: ReferenceElementInfo
 
 USE Display_Method, ONLY: ToString
 
+USE StringUtility, ONLY: UpperCase
+
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
@@ -223,20 +225,27 @@ MODULE PROCEDURE obj_GetConnectivity_
 INTEGER(I4B) :: ent(4)
 INTEGER(I4B) :: ii, jj, kk, a, b
 INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+LOGICAL(LGT) :: isok
+CHARACTER(1) :: opt0
 
 ent = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
 
 CALL obj%mesh%GetConnectivity_(globalElement=globalElement, islocal=islocal, &
-                               opt=opt, tsize=jj, ans=temp)
+                               opt="A", tsize=jj, ans=temp)
+
+opt0 = Uppercase(opt(1:1))
 
 ! points
 a = 1; b = ent(1)
 jj = 1
-DO ii = a, b
-  CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
-                        islocal=.FALSE.)
-  jj = jj + kk
-END DO
+isok = opt0 .EQ. "V" .OR. opt0 .EQ. "A"
+IF (isok) THEN
+  DO ii = a, b
+    CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
+                          islocal=.FALSE.)
+    jj = jj + kk
+  END DO
+END IF
 
 IF (obj%isLagrange) THEN
   tsize = jj - 1
@@ -245,25 +254,34 @@ END IF
 
 ! edges
 a = b + 1; b = b + ent(2)
-DO ii = a, b
-  CALL obj%GetEdgeDOF(globalEdge=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
+isok = opt0 .EQ. "E" .OR. opt0 .EQ. "A"
+IF (isok) THEN
+  DO ii = a, b
+    CALL obj%GetEdgeDOF(globalEdge=temp(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+END IF
 
 ! faces
 a = b + 1; b = b + ent(3)
-DO ii = a, b
-  CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
-  jj = jj + kk
-END DO
+isok = opt0 .EQ. "F" .OR. opt0 .EQ. "A"
+IF (isok) THEN
+  DO ii = a, b
+    CALL obj%GetFaceDOF(globalFace=temp(ii), ans=ans(jj:), tsize=kk)
+    jj = jj + kk
+  END DO
+END IF
 
 ! cell
 a = b + 1; b = b + ent(4)
-DO ii = a, b
-  CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
-                      islocal=.FALSE.)
-  jj = jj + kk
-END DO
+isok = opt0 .EQ. "C" .OR. opt0 .EQ. "A"
+IF (isok) THEN
+  DO ii = a, b
+    CALL obj%GetCellDOF(globalCell=temp(ii), ans=ans(jj:), tsize=kk, &
+                        islocal=.FALSE.)
+    jj = jj + kk
+  END DO
+END IF
 
 tsize = jj - 1
 

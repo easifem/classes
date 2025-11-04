@@ -122,13 +122,13 @@ IF (.NOT. ASSOCIATED(sublist)) THEN
   RETURN
 END IF
 
-CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="name", VALUE=name)
-CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", VALUE=engine)
-CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="comm", &
+CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="name", VALUE=name)
+CALL Set(obj=param, datatype="Char", prefix=prefix, key="engine", VALUE=engine)
+CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="comm", &
          VALUE=INPUT(option=comm, default=0_I4B))
-CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="local_n", &
+CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="local_n", &
          VALUE=INPUT(option=local_n, default=0_I4B))
-CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="global_n", &
+CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="global_n", &
          VALUE=INPUT(option=global_n, default=0_I4B))
 
 SELECT CASE (name)
@@ -143,10 +143,10 @@ CASE (PRECOND_ILUT)
     RETURN
   END IF
 
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="droptol", &
            VALUE=droptol)
 
-  CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
+  CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="lfil", &
            VALUE=lfil)
 
 CASE (PRECOND_ILUTP)
@@ -163,16 +163,16 @@ CASE (PRECOND_ILUTP)
     RETURN
   END IF
 
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="droptol", &
            VALUE=droptol)
 
-  CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
+  CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="lfil", &
            VALUE=lfil)
 
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="permtol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="permtol", &
            VALUE=permtol)
 
-  CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="mbloc", &
+  CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="mbloc", &
            VALUE=mbloc)
 
 CASE (PRECOND_ILUD)
@@ -186,9 +186,9 @@ CASE (PRECOND_ILUD)
     RETURN
   END IF
 
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="droptol", &
            VALUE=droptol)
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="alpha", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="alpha", &
            VALUE=alpha)
 
 CASE (PRECOND_ILUDP)
@@ -205,13 +205,13 @@ CASE (PRECOND_ILUDP)
     RETURN
   END IF
 
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="droptol", &
            VALUE=droptol)
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="alpha", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="alpha", &
            VALUE=alpha)
-  CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="permtol", &
+  CALL Set(obj=param, datatype=1.0_DFP, prefix=prefix, key="permtol", &
            VALUE=permtol)
-  CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="mbloc", &
+  CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="mbloc", &
            VALUE=mbloc)
 
 CASE (PRECOND_ILUK)
@@ -223,7 +223,7 @@ CASE (PRECOND_ILUK)
     RETURN
   END IF
 
-  CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
+  CALL Set(obj=param, datatype=1_I4B, prefix=prefix, key="lfil", &
            VALUE=lfil)
 
 CASE DEFAULT

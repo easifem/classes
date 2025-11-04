@@ -51,7 +51,7 @@ ELSE
   isSkipRows = .FALSE.
 END IF
 
-nrows = trecords - skippedRows - obj%headerIndx
+nrows = trecords - skippedRows - MIN(1_I4B, obj%headerIndx)
 obj%nrows = nrows
 
 trecords = obj%getTotalRecords()

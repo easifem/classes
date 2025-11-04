@@ -50,8 +50,8 @@ INTERFACE GetValue
                                   origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    LOGICAL( LGT ), INTENT(INOUT) :: VALUE
-    LOGICAL( LGT ), INTENT(IN) :: default_value
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE
+    LOGICAL(LGT), INTENT(IN) :: default_value
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
@@ -84,6 +84,32 @@ INTERFACE GetValue
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     !! If key is found then isFound is set to true
   END SUBROUTINE GetValue_string
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-08-03
+! summary:  GetValue of vector of String
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_string_r1(table, key, VALUE, &
+                                       origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table
+    CHARACTER(*), INTENT(IN) :: key
+    !! key
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    !! value in string
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    !! origin, necessary for debugging
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    !! To check the status of getting the value
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    !! If key is found then isFound is set to true
+  END SUBROUTINE GetValue_string_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------

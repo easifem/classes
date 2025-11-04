@@ -21,7 +21,7 @@ USE MatrixField_Class, ONLY: MatrixField_
 
 USE BaseType, ONLY: TypeSolverNameOpt
 
-USE CSRMatrix_Method, ONLY: LinSolve
+USE CSRMatrix_Method, ONLY: LinSolve, MatVec
 
 USE SuperLU_Types, ONLY: yes_no_t
 
@@ -81,6 +81,59 @@ SUBROUTINE PERFORM_TASK(amat, y, x, ierr)
 #endif
 
 END SUBROUTINE PERFORM_TASK
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE PERFORM_TASK_PRECOND(amat, y, x, precond, ierr)
+
+  ! intent of dummy variables
+  CLASS(AbstractMatrixField_), INTENT(INOUT) :: amat
+  TYPE(CSRMatrix_), INTENT(IN) :: precond
+  REAL(DFP), INTENT(INOUT) :: y(:)
+  REAL(DFP), INTENT(IN) :: x(:)
+  INTEGER(I4B), INTENT(IN) :: ierr
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "PERFORM_TASK()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  SELECT CASE (ierr)
+
+  CASE (1)
+
+    CALL amat%Matvec(y=y, x=x, isTranspose=.FALSE.)
+
+  CASE (2)
+
+    CALL amat%Matvec(y=y, x=x, isTranspose=.TRUE.)
+
+  CASE (3, 5)
+
+    ! LEFT/RIGHT PRECONDITIONER SOLVER
+    ! The preconditioners are given precond
+    CALL Matvec(obj=precond, x=x, y=y, isTranspose=.FALSE.)
+
+  CASE (4, 6)
+
+    ! LEFT/RIGHT PRECONDITIONER SOLVER
+    ! The preconditioners are given precond
+    CALL Matvec(obj=precond, x=x, y=y, isTranspose=.TRUE.)
+
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE PERFORM_TASK_PRECOND
 
 !----------------------------------------------------------------------------
 !                                                                  CHECKERR
@@ -333,6 +386,43 @@ END SELECT
 END PROCEDURE obj_Solve
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Solve_precond
+CHARACTER(*), PARAMETER :: myName = "obj_Solve()"
+REAL(DFP), POINTER :: rhsvar(:), solvar(:)
+INTEGER(I4B) :: info
+INTEGER(I4B) :: solverName
+LOGICAL(LGT) :: isok
+CLASS(AbstractMatrixField_), POINTER :: amat
+
+CALL obj%GetParam(isInitiated=isok, solverName=solverName, amat=amat)
+
+CALL AssertError1(isok, myname, 'Linear solver is not initiated!')
+
+isok = ASSOCIATED(amat)
+CALL AssertError1(isok, myname, 'Amat is not associated')
+
+SELECT CASE (solverName)
+
+CASE (TypeSolverNameOpt%GMRES)
+
+  rhsvar => rhs%GetPointer()
+  solvar => sol%GetPointer()
+  CALL LS_SOLVE_GMRES_precond(obj=obj, sol=solvar, rhs=rhsvar, &
+                              precond=precond)
+  NULLIFY (rhsvar, solvar)
+
+CASE DEFAULT
+
+  CALL AssertError1(.FALSE., myName, 'No case found for linear solver')
+  RETURN
+END SELECT
+
+END PROCEDURE obj_Solve_precond
+
+!----------------------------------------------------------------------------
 !                                                               LS_SOLVE_CG
 !----------------------------------------------------------------------------
 
@@ -404,6 +494,16 @@ END PROCEDURE obj_Solve
 #define _MY_NAME "LS_SOLVE_GMRES"
 
 #include "./LIS_SOLVE.F90"
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_GMRES_PRECOND
+#define _LIS_NAME GMRES
+#define _MY_NAME "LS_SOLVE_GMRES_PRECOND"
+
+#include "./LIS_SOLVE_PRECOND.F90"
 
 !----------------------------------------------------------------------------
 !                                                           LS_SOLVE_FGMRES
