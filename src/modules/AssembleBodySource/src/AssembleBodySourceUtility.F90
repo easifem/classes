@@ -49,7 +49,7 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 !                            ScalarFieldAssembleBodySource@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
-INTERFACE ScalarFieldAssembleBodySource
+INTERFACE
   MODULE SUBROUTINE ScalarFieldAssembleBodySource1( &
     rhs, mesh, bodySource, geofedof, fedof, scale)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
@@ -59,6 +59,10 @@ INTERFACE ScalarFieldAssembleBodySource
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE ScalarFieldAssembleBodySource1
+END INTERFACE
+
+INTERFACE ScalarFieldAssembleBodySource
+  MODULE PROCEDURE ScalarFieldAssembleBodySource1
 END INTERFACE ScalarFieldAssembleBodySource
 
 !----------------------------------------------------------------------------
@@ -69,7 +73,7 @@ END INTERFACE ScalarFieldAssembleBodySource
 ! date: 2025-09-28
 ! summary: This routine is under development.
 
-INTERFACE ScalarFieldAssembleBodySource
+INTERFACE
   MODULE SUBROUTINE ScalarFieldAssembleBodySource2( &
     rhs, mesh, bodySource, geofedof, fedof, scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
@@ -80,13 +84,17 @@ INTERFACE ScalarFieldAssembleBodySource
     REAL(DFP), INTENT(IN) :: scale
     REAL(DFP), INTENT(IN) :: times(:)
   END SUBROUTINE ScalarFieldAssembleBodySource2
+END INTERFACE
+
+INTERFACE ScalarFieldAssembleBodySource
+  MODULE PROCEDURE ScalarFieldAssembleBodySource2
 END INTERFACE ScalarFieldAssembleBodySource
 
 !----------------------------------------------------------------------------
 !                            ScalarFieldAssembleBodySource@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
-INTERFACE ScalarFieldAssembleBodySource
+INTERFACE
   MODULE SUBROUTINE ScalarFieldAssembleBodySource3( &
     rhs, mesh, bodySource, geofedof, fedof, scale)
     CLASS(ScalarField_), INTENT(INOUT) :: rhs
@@ -96,6 +104,10 @@ INTERFACE ScalarFieldAssembleBodySource
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE ScalarFieldAssembleBodySource3
+END INTERFACE
+
+INTERFACE ScalarFieldAssembleBodySource
+  MODULE PROCEDURE ScalarFieldAssembleBodySource3
 END INTERFACE ScalarFieldAssembleBodySource
 
 !----------------------------------------------------------------------------
