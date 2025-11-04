@@ -78,18 +78,19 @@ REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 abool = Input(option=AddContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
 
 ! NATIVE_SERIAL engine
 
 IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 
   IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
     CALL Add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
     RETURN
   END IF
 
-  CALL Set(obj%realVec, nodenum=indx, VALUE=VALUE)
+  areal = areal * VALUE
+  CALL Set(obj%realVec, nodenum=indx, VALUE=areal)
 
   RETURN
 END IF
@@ -302,16 +303,17 @@ REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 abool = Input(option=AddContribution, default=.FALSE.)
+areal = Input(option=scale, default=1.0_DFP)
 
 ! NATIVE_SERIAL engine
 IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
     CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
     RETURN
   END IF
 
-  CALL Set(obj%realVec, VALUE=VALUE)
+  areal = areal * VALUE
+  CALL Set(obj%realVec, VALUE=areal)
 
   RETURN
 
