@@ -127,6 +127,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData2 => &
+    obj_GetGlobalElemShapeData2
+  !! Get global element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and
@@ -830,6 +833,46 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetGlobalElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+!
+!# Introduction
+!
+! This is a high level routine for getting global shape data of element
+! It needs AbstractFE object for solution, and geometry
+!
+! It will first make quadrature points
+! Then it will make local element shape data for solution and geometry
+! Then it will make global element shape data for solution
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData2( &
+    obj, geofeptr, elemsd, geoelemsd, xij, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
+    !! Abstract finite element
+    !! Abstract finite element for geometry
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature point
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+  END SUBROUTINE obj_GetGlobalElemShapeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------

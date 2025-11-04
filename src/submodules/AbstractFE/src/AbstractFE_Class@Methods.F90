@@ -487,6 +487,32 @@ END PROCEDURE obj_GetGlobalElemShapeData
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetGlobalElemShapeData2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetQuadraturePoints(quad=quad)
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+CALL obj%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
+                                  geoelemsd=geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalElemShapeData2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetGlobalFacetElemShapeData
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
