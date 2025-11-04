@@ -802,9 +802,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export mesh to an hdf5 file
 
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Export mesh to a VTKfile
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
   !! Display the mesh
 
@@ -835,6 +832,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
     obj_DisplayMeshInfo
   !! Display mesh statistics
+
+  ! IO:
+  ! @VTKMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export mesh to a VTKfile
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  !! Write mesh into vtk file
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk
 
 END TYPE AbstractMesh_
 
@@ -1129,6 +1134,21 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: content
     !! Default is true
   END SUBROUTINE obj_ExportToVTK
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       WriteData@VTKMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-04
+! summary:  Write mesh into vtk, the format will be .vtu
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, filename)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
 
 !----------------------------------------------------------------------------

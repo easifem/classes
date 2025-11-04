@@ -159,6 +159,36 @@ IF (ALLOCATED(xij)) DEALLOCATE (xij)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
+!                                                                  WriteData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteData_vtk
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
+#endif
+
+TYPE(VTKFile_) :: vtk
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL vtk%InitiateVTKFile( &
+  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+  DataStructureType=VTK_UNSTRUCTUREDGRID)
+
+CALL obj%ExportToVTK(vtk=vtk)
+
+CALL vtk%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_WriteData_vtk
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
