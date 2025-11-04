@@ -500,8 +500,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%GetQuadraturePoints(quad=quad)
 CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-CALL obj%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                  geoelemsd=geoelemsd)
+CALL obj%GetGlobalElemShapeData( &
+  elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
