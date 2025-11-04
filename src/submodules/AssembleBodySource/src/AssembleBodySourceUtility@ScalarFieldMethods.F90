@@ -47,12 +47,12 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleBodySource1()"
 #endif
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, tgeoCellCon, tforceVec, xij_i, xij_j, maxNips, ips
+                tcellCon, tforceVec, xij_i, xij_j, maxNips, ips
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
-INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
+INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:), forceVecQuad(:)
 REAL(DFP) :: args(4)
 
@@ -67,7 +67,6 @@ maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
 maxNips = fedof%GetMaxTotalQuadraturePoints()
 
-CALL Reallocate(geoCellCon, maxNNEGeo)
 CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellcon, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
@@ -85,10 +84,6 @@ DO iel = 1, tElements
 
   feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
-
-  CALL geofedof%GetConnectivity_( &
-    globalElement=iel, islocal=defaultOpt%yes, ans=geoCellCon, &
-    tsize=tgeoCellCon, opt="A")
 
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
@@ -121,7 +116,6 @@ END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
-IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
 IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
 IF (ALLOCATED(forceVecQuad)) DEALLOCATE (forceVecQuad)
 NULLIFY (feptr, geofeptr)
@@ -170,9 +164,9 @@ TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, tgeoCellCon, tforceVec, xij_i, xij_j, &
+                tcellCon, tforceVec, xij_i, xij_j, &
                 tfevec
-INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
+INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), fevec(:), forceVec(:)
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
@@ -182,9 +176,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 tElements = mesh%GetTotalElements()
-
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
-CALL Reallocate(geoCellCon, maxNNEGeo)
+
 CALL Reallocate(xij, 3, maxNNEGeo)
 
 maxNNE = fedof%GetMaxTotalConnectivity()
@@ -192,28 +185,26 @@ CALL Reallocate(cellcon, maxNNE)
 CALL Reallocate(fevec, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
 
-forceVar = NodalVariable(val=forceVec, rank=TypeFEVariableScalar, &
+forceVar = NodalVariable(tsize=maxNNE, rank=TypeFEVariableScalar, &
                          vartype=TypeFEVariableSpace)
 
 DO iel = 1, tElements
 
   CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
   CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  CALL geofedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
-                                 ans=geoCellCon, tsize=tgeoCellCon, opt="A")
-  CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
-                              ans=cellcon, tsize=tcellCon, opt="A")
-  CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
-                         islocal=defaultOpt%yes, globalElement=iel)
 
   feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
 
-  CALL feptr%GetQuadraturePoints(quad=quad)
-  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                    geoelemsd=geoelemsd)
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
+                              ans=cellcon, tsize=tcellCon, opt="A")
+
+  CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
+                         islocal=defaultOpt%yes, globalElement=iel)
+
+  CALL feptr%GetGlobalElemShapeData2( &
+    geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
+    quad=quad)
 
   CALL bodySource%Get(VALUE=forceVec, globalNode=cellcon(1:tcellCon), &
                       tsize=tforceVec, islocal=defaultOpt%yes)
@@ -232,7 +223,6 @@ DO iel = 1, tElements
 END DO
 
 IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
-IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
 IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
