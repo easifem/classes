@@ -267,8 +267,13 @@ spaceCompo = 1
 
 mesh => obj%fedof%GetMeshPointer()
 maxNNE = mesh%GetMaxNNE()
+! maxNNE is the maximum number of nodes in an element of a mesh
+! It will be used for allocating geocon, refElemCoord, and elemCoord
 tElements = mesh%GetTotalElements()
+! tElements is the total number of elements in the mesh
 maxFedofCon = obj%fedof%GetMaxTotalConnectivity()
+! maxFedofCon is the maximum number of connectivity in the fedof
+! It will be used to allocate sol and solCon
 
 maxCon = 0
 DO iel = 1, tElements
@@ -276,6 +281,8 @@ DO iel = 1, tElements
   ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
   maxCon = MAX(maxCon, ii)
 END DO
+! maxCon is the maximum number of interpolation points in
+! in the fedof, it will be used to allocate xij, quad, fevar
 
 IF (.NOT. isMeshFieldInit) THEN
   CALL ScalarMeshFieldInitiate( &
@@ -286,16 +293,16 @@ END IF
 
 CALL Reallocate(elemCoord, 3, maxNNE)
 CALL Reallocate(refElemCoord, 3, maxNNE)
-CALL Reallocate(xij, 4, maxCon)
 CALL Reallocate(sol, maxFedofCon)
 CALL Reallocate(solCon, maxFedofCon)
+CALL Reallocate(xij, 4, maxCon)
 CALL QuadraturePoint_Initiate(obj=quad, txi=3, tpoints=maxCon)
 
 fevar = QuadratureVariable( &
-        val=sol, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
+        tsize=maxCon, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
 
-sol_fevar = NodalVariable( &
-            val=sol, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
+sol_fevar = NodalVariable(tsize=maxFedofCon, rank=TypeFEVariableScalar, &
+                          varType=TypeFEVariableSpace)
 
 DO iel = 1, tElements
 
@@ -339,6 +346,7 @@ DO iel = 1, tElements
   CALL ElemshapeData_GetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
 
   CALL meshField%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+
 END DO
 
 #ifdef DEBUG_VER

@@ -18,49 +18,35 @@
 SUBMODULE(ScalarField_Class) SetMethods
 USE GlobalData, ONLY: Constant, Space, Scalar
 USE InputUtility, ONLY: Input
-
+USE AbstractFE_Class, ONLY: AbstractFE_
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
 USE STScalarField_Class, ONLY: STScalarField_
-
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
 USE VectorField_Class, ONLY: VectorField_
-
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-
 USE BlockNodeField_Class, ONLY: BlockNodeField_
-
 USE RealVector_Method, ONLY: Set, Add
-
 USE Display_Method, ONLY: ToString
-
 USE ArangeUtility, ONLY: Arange
-
 USE DOF_Method, ONLY: GetNodeLoc, &
                       OPERATOR(.tNodes.), &
                       GetIDOF
-
 USE BaseType, ONLY: TypeFEVariableScalar, &
                     TypeFEVariableConstant, &
-                    TypeFEVariableSpace
-
+                    TypeFEVariableSpace, &
+                    QuadraturePoint_, &
+                    ElemShapeData_
 USE FEVariable_Method, ONLY: GET
-
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE StringUtility, ONLY: UpperCase
+USE ReferenceElement_Method, ONLY: ReferenceElementInfo
 
 IMPLICIT NONE
 
 #ifdef USE_LIS
-
 #include "lisf.h"
-
 #endif
 
 CONTAINS
@@ -106,7 +92,6 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
-
 CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
 
 isok = obj%fieldType .NE. TypeFieldOpt%constant
@@ -114,13 +99,13 @@ CALL AssertError1(isok, myName, "Not callable for Constant field")
 
 isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
 CALL AssertError1(isok, myName, "Size of value is not enought")
-
 #endif
 
 s = GetNodeLoc(obj=obj%dof, idof=1_I4B)
 
-CALL obj%SetMultiple(value=value, scale=scale, addContribution=addContribution, &
-                     istart=s(1), iend=s(2), stride=s(3))
+CALL obj%SetMultiple( &
+  VALUE=VALUE, scale=scale, addContribution=addContribution, &
+  istart=s(1), iend=s(2), stride=s(3))
 
 END PROCEDURE obj_Set3
 
@@ -345,71 +330,86 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetByFunction
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
-LOGICAL(LGT) :: istimes, problem
-INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, nrow, ncol
-REAL(DFP) :: xij(3, 1)
-REAL(DFP) :: args(4), VALUE
-INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
+LOGICAL(LGT) :: isok
+#endif
+
 CLASS(AbstractMesh_), POINTER :: meshptr
-CHARACTER(:), ALLOCATABLE :: baseInterpolation
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+INTEGER(I4B) :: telements, iel, maxNNS, maxGeoNNS, maxNips, tans, &
+                xij_i, xij_j, tcon
+TYPE(QuadraturePoint_) :: quad(8), facetQuad(8), cellQuad
+TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd, geoElemsd(8), &
+                        geoFacetElemsd(8), elemsd(8), facetElemsd(8)
+REAL(DFP) :: args(4), times0
+REAL(DFP), ALLOCATABLE :: xij(:, :), ans(:), massMat(:, :), &
+                          funcValue(:), temp(:)
+INTEGER(I4B), ALLOCATABLE :: ipiv(:), con(:)
 
-baseInterpolation = obj%fedof%GetBaseInterpolation()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (UpperCase(baseInterpolation(1:3)) .NE. "LAG") THEN
-
-  baseInterpolation = ""
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine is only valid for Lagrange interpolation.')
-  RETURN
-
-END IF
-
-istimes = PRESENT(times)
-problem = .FALSE.
-
-IF (istimes) THEN
-  ttime = SIZE(times)
-  args(4) = times(1)
-  problem = ttime .NE. 1_I4B
-END IF
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: times size should be 1.')
-  RETURN
-END IF
-
-returnType = func%GetReturnType()
-problem = returnType .NE. needed_returnType
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[INTERNAL ERROR] :: Return type of function is not correct.')
-  RETURN
-END IF
-
-meshptr => NULL()
 meshptr => obj%fedof%GetMeshPointer()
-problem = .NOT. ASSOCIATED(meshptr)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] ::  mesh in fedof is not ASSOCIATED.')
-  RETURN
-END IF
 
-nsd = meshptr%GetNSD()
-tnodes = meshptr%GetTotalNodes()
+#ifdef DEBUG_VER
+isok = ASSOCIATED(meshptr)
+CALL AssertError1(isok, myName, &
+                  "mesh pointer obtained from fedof is not associated...")
+#endif
 
-DO ii = 1, tnodes
-  CALL meshptr%GetNodeCoord(globalNode=[ii], nodeCoord=xij, islocal=.TRUE., &
-                            nrow=nrow, ncol=ncol)
-  args(1:nsd) = xij(1:nsd, 1)
-  CALL func%Get(val=VALUE, args=args)
-  CALL obj%Set(globalNode=ii, VALUE=VALUE, islocal=.TRUE.)
+times0 = 0.0_DFP
+IF (PRESENT(times)) times0 = times(1)
+
+maxNNS = obj%fedof%GetMaxTotalConnectivity()
+maxGeoNNS = obj%geofedof%GetMaxTotalConnectivity()
+maxNips = obj%fedof%GetMaxTotalQuadraturePoints()
+
+CALL Reallocate(massMat, maxNNS, maxNNS)
+CALL Reallocate(ipiv, maxNNS)
+CALL Reallocate(xij, 3, maxGeoNNS)
+CALL Reallocate(ans, maxNNS)
+CALL Reallocate(temp, maxNNS)
+CALL Reallocate(con, maxNNS)
+CALL Reallocate(funcValue, maxNips)
+
+telements = meshptr%GetTotalElements()
+
+DO iel = 1, telements
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+
+  CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=xij_i, &
+                            ncol=xij_j, globalElement=iel, islocal=.TRUE.)
+
+  CALL feptr%GetDOFValue( &
+    geofeptr=geofeptr, elemsd=elemsd, geoElemsd=geoElemsd, &
+    facetElemsd=facetElemsd, geoFacetElemsd=geoFacetElemsd, &
+    cellElemsd=cellElemsd, geoCellElemsd=geoCellElemsd, &
+    quad=quad, facetQuad=facetQuad, cellQuad=cellQuad, xij=xij, &
+    times=times0, func=func, ans=ans, tsize=tans, massMat=massMat, &
+    ipiv=ipiv, funcValue=funcValue, temp=temp)
+
+  ! obj, geofeptr, elemsd, geoelemsd, facetElemsd, geoFacetElemsd, &
+  ! cellElemsd, geoCellElemsd, quad, facetQuad, cellQuad, xij, times, &
+  ! func, ans, tsize, massMat, ipiv, funcValue, temp)
+  CALL obj%fedof%GetConnectivity_(ans=con, tsize=tcon, opt="A", &
+                                  globalElement=iel, islocal=.TRUE.)
+
+  ! (obj, ans, tsize, opt, globalElement, islocal)
+  CALL obj%Set(VALUE=ans(1:tans), globalNode=con(1:tcon), &
+               islocal=.TRUE.)
 END DO
 
-baseInterpolation = ""
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_SetByFunction
 
