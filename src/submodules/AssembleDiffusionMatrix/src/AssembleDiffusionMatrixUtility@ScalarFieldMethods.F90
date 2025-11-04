@@ -29,6 +29,7 @@ USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
+USE Display_Method, ONLY: Display
 #endif
 
 IMPLICIT NONE
@@ -67,7 +68,6 @@ CALL Reallocate(xij, 3, maxNNEGeo)
 
 maxNNE = fedof%GetMaxTotalConnectivity()
 CALL Reallocate(cellcon, maxNNE)
-
 CALL Reallocate(ks, maxNNE, maxNNE)
 
 DO iel = 1, tElements
@@ -78,15 +78,6 @@ DO iel = 1, tElements
   CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
 
-  ! TODO: No allocation GetQuadraturePoints_ necessary
-  CALL feptr%GetQuadraturePoints(quad=quad)
-
-  ! TODO: No allocation GetLocalElemShapeData_ needed
-  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-
-  ! TODO:: No allocation GetLocalElemShapeData_ needed
-  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-
   CALL geofedof%GetConnectivity_( &
     globalElement=iel, islocal=defaultOpt%yes, ans=geoCellCon, &
     tsize=tgeoCellCon, opt="A")
@@ -95,11 +86,12 @@ DO iel = 1, tElements
     nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
     globalElement=iel)
 
-  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                    geoelemsd=geoelemsd)
-
   CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
+
+  CALL feptr%GetGlobalElemShapeData2( &
+    geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
+    quad=quad)
 
   ! TODO: No allocatation in diffCoeffVar
   CALL diffCoeffField%Get(globalElement=iel, islocal=defaultOpt%yes, &
