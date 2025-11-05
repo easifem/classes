@@ -325,7 +325,7 @@ CALL Elemsd_Set(obj=facetElemsd, val=line_xij(1:nsd, 1:nns), &
 
 CALL Elemsd_SetNormal(obj=facetElemsd)
 
-n1 = 3; n2 = nns
+n1 = 3; n2 = facetElemsd%nns
 isok = obj%isFaceOrient &
        .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B) &
        .AND. n2 .GT. n1

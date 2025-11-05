@@ -170,7 +170,8 @@ CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
 CALL HeirarchicalBasis_Line_( &
   order=obj%faceOrder(1, localFaceNumber), &
   xij=facetQuad%points(1:facetQuad%txi, 1:nips), refLine=obj%refelemDomain, &
-  ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+  ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4), &
+  orient=obj%faceOrient(1, localFaceNumber))
 
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   facetElemsd%N(ii, jj) = obj%temp(jj, ii, 1)
@@ -179,7 +180,8 @@ END DO
 CALL HeirarchicalBasisGradient_Line_( &
   order=obj%faceOrder(1, localFaceNumber), &
   xij=facetQuad%points(1:facetQuad%txi, 1:nips), refLine=obj%refelemDomain, &
-  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7))
+  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7), &
+  orient=obj%faceOrient(1, localFaceNumber))
 
 CALL SWAP_(a=facetElemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
            i1=2, i2=3, i3=1)
