@@ -68,6 +68,19 @@ END IF
 
 obj%plotEngine = PLOT_ENGINE_PLPLOT
 
+IF (obj%PAUSE) THEN
+  CALL obj%pltfile%WRITE("pause mouse keypress")
+  CALL obj%pltfile%WRITE("if (exists('MOUSE_CHAR') && MOUSE_CHAR eq 'c' || MOUSE_KEY == -1) {")
+  CALL obj%pltfile%WRITE("    print 'Exiting...'")
+  CALL obj%pltfile%WRITE("    quit")
+  CALL obj%pltfile%WRITE("   } else {")
+  call obj%pltfile%WRITE("    print 'Press c or q to quit, any other key to refresh'")
+  CALL obj%pltfile%WRITE("   replot")
+  CALL obj%pltfile%WRITE("   load '"//obj%txtfilename//"'")
+  CALL obj%pltfile%WRITE("  }")
+  obj%commandline = "gnuplot "
+END IF
+
 IF (obj%pltfile%IsOpen()) THEN
   CALL obj%pltfile%DEALLOCATE()
   obj%hasfileopen = .FALSE.

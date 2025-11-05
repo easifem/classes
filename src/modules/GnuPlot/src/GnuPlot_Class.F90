@@ -62,6 +62,7 @@ END TYPE Label_
 TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
   TYPE(TxtFile_) :: pltfile
   LOGICAL(LGT) :: execute = .TRUE.
+  LOGICAL(LGT) :: PAUSE = .FALSE.
   CHARACTER(:), ALLOCATABLE :: commandline
   TYPE(Label_) :: tpplottitle
   TYPE(Label_) :: tpxlabel
