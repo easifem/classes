@@ -440,9 +440,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 # Kernel level utilities
 # ----------------------------------------------------------------------------
 
-# AssembleBodySource
-include(${CMAKE_CURRENT_LIST_DIR}/AssembleBodySource/CMakeLists.txt)
-
 # AssembleSurfaceSource
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleSurfaceSource/CMakeLists.txt)
 
