@@ -45,11 +45,11 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleDiffusionMatrix1()"
 #endif
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
-                tgeoCellCon, tcellCon, ks_i, ks_j, xij_i, xij_j
+                tcellCon, ks_i, ks_j, xij_i, xij_j
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
-INTEGER(I4B), ALLOCATABLE :: cellcon(:), geoCellCon(:)
+INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 TYPE(FEVariable_) :: diffCoeffVar
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
@@ -63,7 +63,6 @@ IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
 tElements = mesh%GetTotalElements()
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
-CALL Reallocate(geoCellCon, maxNNEGeo)
 CALL Reallocate(xij, 3, maxNNEGeo)
 
 maxNNE = fedof%GetMaxTotalConnectivity()
@@ -77,10 +76,6 @@ DO iel = 1, tElements
 
   CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
-
-  CALL geofedof%GetConnectivity_( &
-    globalElement=iel, islocal=defaultOpt%yes, ans=geoCellCon, &
-    tsize=tgeoCellCon, opt="A")
 
   CALL mesh%GetNodeCoord( &
     nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
@@ -112,7 +107,6 @@ END DO
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(ks)) DEALLOCATE (ks)
 IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
-IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
 feptr => NULL()
 geofeptr => NULL()
 
