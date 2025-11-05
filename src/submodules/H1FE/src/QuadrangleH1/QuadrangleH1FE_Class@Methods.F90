@@ -286,16 +286,16 @@ CALL AssertError1(isok, myName, &
                   "WIP: the user function must return a single value")
 #endif
 
-nips = facetElemsd%nips
-nns = facetElemsd%nns
-nsd = obj%opt%GetNSD()
-
 #ifdef DEBUG_VER
 tArgs = func%GetNumArgs()
 isok = tArgs .GE. 4_I4B
 CALL AssertError1(isok, myName, &
            "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
 #endif
+
+nips = facetElemsd%nips
+nns = facetElemsd%nns
+nsd = obj%opt%GetNSD()
 
 scale = 0.0_DFP
 vertexVal = 0.0_DFP
