@@ -27,6 +27,10 @@ USE ForceVector_Method, ONLY: ForceVector_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 IMPLICIT NONE
 CONTAINS
 
@@ -47,7 +51,7 @@ CLASS(AbstractMesh_), POINTER :: mesh
 LOGICAL(LGT) :: isok
 
 INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE
-INTEGER(I4B), ALLOCATABLE :: cellCon(:), geoCellCon(:), geoFacetCon(:)
+INTEGER(I4B), ALLOCATABLE :: cellCon(:), facetCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:), forceVec(:)
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad
@@ -72,10 +76,9 @@ nbc => NULL()
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 
-CALL Reallocate(geoCellCon, maxNNEGeo)
-CALL Reallocate(geoFacetCon, maxNNEGeo)
 CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellCon, maxNNE)
+CALL Reallocate(facetCon, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
 CALL Reallocate(nbcValue, maxNNE)
 
@@ -92,15 +95,13 @@ DO ibc = 1, tbc
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
-    mesh=mesh, nbcField=nbcField, scale=scale, geoCellCon=geoCellCon, &
-    geoFacetCon=geoFacetCon, cellCon=cellCon, xij=xij, &
+    mesh=mesh, nbcField=nbcField, scale=scale, cellCon=cellCon, xij=xij, &
     forceVec=forceVec, nbcValue=nbcValue, forceVar=forceVar, quad=quad, &
     facetQuad=facetQuad, elemsd=elemsd, facetElemsd=facetElemsd, &
-    geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd)
+    geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
+    facetCon=facetCon)
 END DO
 
-IF (ALLOCATED(geoCellCon)) DEALLOCATE (geoCellCon)
-IF (ALLOCATED(geoFacetCon)) DEALLOCATE (geoFacetCon)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(cellCon)) DEALLOCATE (cellCon)
 IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
@@ -127,9 +128,9 @@ END PROCEDURE obj_ApplySurfaceNeumannBC
 ! into the right-hand side (RHS) vector of a scalar field.
 
 SUBROUTINE ScalarFieldAssembleSurfaceSource( &
-  obj, nbc, fedof, geofedof, mesh, nbcField, scale, geoCellCon, &
-  geoFacetCon, cellCon, xij, forceVec, nbcValue, forceVar, &
-  quad, facetQuad, elemsd, facetElemsd, geoElemsd, geoFacetElemsd)
+  obj, nbc, fedof, geofedof, mesh, nbcField, scale, cellCon, xij, forceVec, &
+  nbcValue, forceVar, quad, facetQuad, elemsd, facetElemsd, geoElemsd, &
+  geoFacetElemsd, facetCon)
   CLASS(ScalarField_), INTENT(INOUT) :: obj
   CLASS(NeumannBC_), INTENT(INOUT) :: nbc
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -137,14 +138,12 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
   CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
   CLASS(ScalarField_), INTENT(INOUT) :: nbcField
   REAL(DFP), INTENT(IN) :: scale
-  INTEGER(I4B), INTENT(INOUT) :: geoCellCon(:), geoFacetCon(:), &
-                                 cellCon(:)
+  INTEGER(I4B), INTENT(INOUT) :: cellCon(:), facetCon(:)
   !! Working arrays for connectivity
   !! geoCellCon: connectivity of the geometry
   !! geoFacetCon: connectivity of the geometry facet element
   !! cellCon: connectivity of the call
-  REAL(DFP), INTENT(INOUT) :: xij(:, :), forceVec(:), &
-                              nbcValue(:)
+  REAL(DFP), INTENT(INOUT) :: xij(:, :), forceVec(:), nbcValue(:)
   !! Working arrays for element vectors and matrix
   TYPE(FEVariable_), INTENT(INOUT) :: forceVar
   !! Working variables
@@ -162,10 +161,9 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
   REAL(DFP), PARAMETER :: one = 1.0_DFP
 
   LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
-  INTEGER(I4B) :: tElemToFace, indx, localCellNumber, &
-                  localFaceNumber, maxNNEGeo, maxNNE, tgeoCellCon, &
-                  tgeoFacetCon, tcellCon, tnbcValue, &
-                  tforceVec, xij_i, xij_j
+  INTEGER(I4B) :: tElemToFace, indx, localCellNumber, localFaceNumber, &
+                  maxNNEGeo, maxNNE, tcellCon, tnbcValue, tforceVec, &
+                  xij_i, xij_j, tFacetCon
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
 #ifdef DEBUG_VER
@@ -198,60 +196,45 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
                            localFaceNumber=localFaceNumber)
 
     CALL fedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
+                                islocal=yes)
 
     CALL geofedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
+                                      islocal=yes)
 
     CALL fedof%GetConnectivity_( &
       globalElement=localCellNumber, islocal=yes, ans=cellCon, &
       tsize=tcellCon, opt="A")
 
-    CALL geofedof%GetConnectivity_( &
-      globalElement=localCellNumber, islocal=yes, ans=geoCellCon, &
-      tsize=tgeoCellCon, opt="A")
-
-    CALL geofedof%GetFacetConnectivity_( &
-      globalElement=localCellNumber, islocal=yes, ans=geoFacetCon, &
-      tsize=tgeoFacetCon, localFaceNumber=localFaceNumber)
-
-    feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
-                                islocal=yes)
-
-    geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
-                                      islocal=yes)
-
-    CALL feptr%GetFacetQuadraturePoints( &
-      quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-    CALL feptr%GetLocalFacetElemShapeData( &
-     elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
-      localFaceNumber=localFaceNumber)
-
-    CALL geofeptr%GetLocalFacetElemShapeData( &
-      elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
-      facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+    CALL fedof%GetFacetConnectivity_( &
+      globalElement=localCellNumber, islocal=yes, ans=facetCon, &
+      tsize=tFacetCon, localFaceNumber=localFaceNumber)
 
     CALL mesh%GetNodeCoord( &
       nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, &
       globalElement=localCellNumber)
 
-    CALL feptr%GetGlobalFacetElemShapeData( &
-    elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
-      geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
+    CALL feptr%GetGlobalFacetElemShapeData2( &
+      geofeptr=geofeptr, elemsd=elemsd, facetElemsd=facetElemsd, &
+      geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
+      localFaceNumber=localFaceNumber, quad=quad, facetQuad=facetQuad, &
+      xij=xij)
 
-    CALL nbcField%Get(VALUE=nbcValue, globalNode=cellCon(1:tcellCon), &
+    CALL nbcField%Get(VALUE=nbcValue, globalNode=facetCon(1:tFacetCon), &
                       tsize=tnbcValue, islocal=yes)
 
     CALL FEVariable_Set( &
       obj=forceVar, val=nbcValue(1:tnbcValue), rank=TypeFEVariableScalar, &
       vartype=TypeFEVariableSpace, scale=one, addContribution=no)
 
-    CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
-                      ans=forceVec, tsize=tforceVec)
+    CALL ForceVector_( &
+      test=facetElemsd, c=forceVar, crank=TypeFEVariableScalar, &
+      ans=forceVec, tsize=tforceVec)
 
-    CALL obj%Set(globalNode=cellCon(1:tcellCon), &
+    CALL obj%Set(globalNode=facetCon(1:tFacetCon), &
                  VALUE=forceVec(1:tforceVec), scale=scale, &
                  addContribution=yes, islocal=yes)
-
   END DO
 
   NULLIFY (feptr, geofeptr)
