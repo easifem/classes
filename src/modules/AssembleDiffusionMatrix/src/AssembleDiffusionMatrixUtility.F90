@@ -16,11 +16,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AssembleDiffusionMatrixUtility
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE GlobalData, ONLY: DFP, LGT, I4B
 USE MatrixField_Class, ONLY: MatrixField_
-USE FEDOF_Class, ONLY: FEDOF_
 USE MeshField_Class, ONLY: MeshField_
+USE ScalarField_Class, ONLY: ScalarField_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 IMPLICIT NONE
 
@@ -42,23 +41,19 @@ TYPE :: DefaultOpt_
   INTEGER(I4B) :: storageFormatNodes = TypeFieldOpt%storageFormatNodes
 END TYPE DefaultOpt_
 
-TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
-
 !----------------------------------------------------------------------------
 !                       ScalarFieldAssembleDiffusionMatrix@ScalarFieldMethods
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldAssembleDiffusionMatrix
   MODULE SUBROUTINE ScalarFieldAssembleDiffusionMatrix1( &
-    tanmat, mesh, geofedof, fedof, diffCoeffField, reset, scale)
+    tanmat, nodeField, diffCoeffField, reset, scale)
     CLASS(MatrixField_), INTENT(INOUT) :: tanmat
-    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
-    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-    !! geofedof
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! fedof
+    !! Matrix field to assemble
+    CLASS(ScalarField_), INTENT(INOUT) :: nodeField
+    !! Scalar field to get the fedof, mesh, and geofedof
     CLASS(MeshField_), INTENT(INOUT) :: diffCoeffField
-    !! diffusiob coefficient field
+    !! diffusion coefficient field
     LOGICAL(LGT), INTENT(IN) :: reset
     !! if reset is true, then tanmat is set to zero before assembly
     REAL(DFP), INTENT(IN) :: scale

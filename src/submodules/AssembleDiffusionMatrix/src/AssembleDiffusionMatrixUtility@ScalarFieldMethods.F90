@@ -16,13 +16,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AssembleDiffusionMatrixUtility) ScalarFieldMethods
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
 USE ExceptionHandler_Class, ONLY: e
 USE ReallocateUtility, ONLY: Reallocate
 USE MassMatrix_Method, ONLY: MassMatrix_
 USE DiffusionMatrix_Method, ONLY: DiffusionMatrix_
 USE AbstractFE_Class, ONLY: AbstractFE_
-
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE FEDOF_Class, ONLY: FEDOF_
 USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
                     TypeFEVariableScalar
 
@@ -33,6 +34,9 @@ USE Display_Method, ONLY: Display
 #endif
 
 IMPLICIT NONE
+
+TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -49,24 +53,29 @@ INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
-INTEGER(I4B), ALLOCATABLE :: cellcon(:)
+INTEGER(I4B), ALLOCATABLE :: cellCon(:)
 TYPE(FEVariable_) :: diffCoeffVar
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(FEDOF_), POINTER :: fedof, geofedof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
-
+fedof => nodeField%fedof
+mesh => fedof%GetMeshPointer()
+geofedof => nodeField%geofedof
 tElements = mesh%GetTotalElements()
 
-maxNNEGeo = geofedof%GetMaxTotalConnectivity()
-CALL Reallocate(xij, 3, maxNNEGeo)
+IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
 
+maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
-CALL Reallocate(cellcon, maxNNE)
+
+CALL Reallocate(xij, 3, maxNNEGeo)
+CALL Reallocate(cellCon, maxNNE)
 CALL Reallocate(ks, maxNNE, maxNNE)
 
 DO iel = 1, tElements
@@ -75,7 +84,8 @@ DO iel = 1, tElements
   feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
 
   CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, &
+                                    islocal=defaultOpt%yes)
 
   CALL mesh%GetNodeCoord( &
     nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
@@ -101,14 +111,12 @@ DO iel = 1, tElements
     globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
     VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
     scale=scale, addContribution=defaultOpt%yes)
-
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(ks)) DEALLOCATE (ks)
-IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
-feptr => NULL()
-geofeptr => NULL()
+IF (ALLOCATED(cellCon)) DEALLOCATE (cellCon)
+NULLIFY (feptr, geofeptr, mesh, fedof, geofedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
