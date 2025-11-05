@@ -674,6 +674,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isMaxConSet) THEN
+  ans = obj%maxCon
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+obj%isMaxConSet = .TRUE.
+
 ans = 0
 telems = obj%mesh%GetTotalElements()
 
@@ -681,6 +694,8 @@ DO ii = 1, telems
   tdof = obj%GetTotalDOF(globalElement=ii, isLocal=.TRUE.)
   ans = MAX(ans, tdof)
 END DO
+
+obj%maxCon = ans
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -710,6 +725,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isMaxQuadPointSet) THEN
+  ans = obj%maxQuadPoint
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+obj%isMaxQuadPointSet = .TRUE.
+
 telements = obj%mesh%GetTotalElements()
 
 DO iel = 1, telements
@@ -738,6 +766,8 @@ DO iel = 1, telements
   feptr => NULL()
 
 END DO
+
+obj%maxQuadPoint = ans
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

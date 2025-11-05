@@ -555,8 +555,6 @@ END DO
 
 obj%tdof = tdof
 
-obj%maxTotalConnectivity = obj%GetMaxTotalConnectivity()
-
 IF (ALLOCATED(foundEdges)) DEALLOCATE (foundEdges)
 IF (ALLOCATED(foundFaces)) DEALLOCATE (foundFaces)
 IF (ALLOCATED(foundCells)) DEALLOCATE (foundCells)
@@ -586,12 +584,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 obj%isInit = .FALSE.
 obj%isLagrange = .FALSE.
+obj%isMaxConSet = .FALSE.
+obj%isMaxQuadPointSet = .FALSE.
+
 obj%tdof = 0
 obj%tNodes = 0
 obj%tEdges = 0
 obj%tFaces = 0
 obj%tCells = 0
-obj%maxTotalConnectivity = 0
+obj%maxCon = 0
+obj%maxQuadPoint = 0
 
 obj%baseContinuity = "H1"
 obj%baseInterpolation = "LAGR"
@@ -612,12 +614,10 @@ IF (ALLOCATED(obj%cellIA)) DEALLOCATE (obj%cellIA)
 
 DO ii = 1, SIZE(obj%fe)
   abool = ASSOCIATED(obj%fe(ii)%ptr)
-
   IF (abool) THEN
     CALL obj%fe(ii)%ptr%DEALLOCATE()
     obj%fe(ii)%ptr => NULL()
   END IF
-
 END DO
 
 #ifdef DEBUG_VER
@@ -644,12 +644,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isLagrange = obj2%isLagrange
+obj%isInit = obj2%isInit
+obj%isMaxConSet = obj2%isMaxConSet
+obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
+
 obj%tdof = obj2%tdof
 obj%tNodes = obj2%tNodes
 obj%tEdges = obj2%tEdges
 obj%tFaces = obj2%tFaces
 obj%tCells = obj2%tCells
-obj%maxTotalConnectivity = obj2%maxTotalConnectivity
+obj%maxCon = obj2%maxCon
+obj%maxQuadPoint = obj2%maxQuadPoint
+
 obj%baseContinuity = obj2%baseContinuity
 obj%baseInterpolation = obj2%baseInterpolation
 obj%scaleForQuadOrder = obj2%scaleForQuadOrder

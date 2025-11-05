@@ -46,13 +46,16 @@ CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
 CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
+CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
 CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
 CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 CALL Display(obj%tCells, "tCells: ", unitno=unitno)
-CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", &
-             unitno=unitno)
+CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
 CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
 CALL Display(obj%scaleForQuadOrder, "scaleForQuadOrder: ", unitno=unitno)

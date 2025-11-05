@@ -1,4 +1,4 @@
-! This program is a part of EASIFEM library
+
 ! Expandable And Scalable Infrastructure for Finite Element Methods
 ! htttps://www.easifem.com
 ! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
@@ -62,6 +62,12 @@ TYPE :: FEDOF_
   !! It is true when baseInterpolation is Lagrange
   LOGICAL(LGT) :: isinit = .FALSE.
   !! It is set to true when FEDOF is initiated
+  LOGICAL(LGT) :: isMaxConSet = .FALSE.
+  !! It is set to true when maxCon is set in GetMaxTotalConnectivity
+  LOGICAL(LGT) :: isMaxQuadPointSet = .FALSE.
+  !! It is set to true when maxQuadPoint is set in
+  !! GetMaxTotalQuadraturePoints
+
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -72,8 +78,10 @@ TYPE :: FEDOF_
   !! Total number of faces
   INTEGER(I4B) :: tCells = 0
   !! Total number of cells
-  INTEGER(I4B) :: maxTotalConnectivity = 0
+  INTEGER(I4B) :: maxCon = 0
   !! maximum number of connectivity
+  INTEGER(I4B) :: maxQuadPoint = 0
+  !! maximum number of quadrature points
 
   CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
@@ -1537,7 +1545,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxTotalConnectivity(obj) RESULT(ans)
-    CLASS(FEDOF_), INTENT(IN) :: obj
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalConnectivity
 END INTERFACE
@@ -1552,7 +1560,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxTotalQuadraturePoints(obj) RESULT(ans)
-    CLASS(FEDOF_), INTENT(IN) :: obj
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalQuadraturePoints
 END INTERFACE
