@@ -1,5 +1,4 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -16,19 +15,35 @@
 !
 
 MODULE CSDAlgorithms
-USE BaseMethod
-USE BaseType
-USE AbstractKernel_Class, ONLY: AbstractAlgoParam_
-USE SDAlgorithms
-USE TxtFile_Class
+USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
+
+USE Display_Method, ONLY: Display, &
+                          EqualLine, &
+                          BlankLines, &
+                          tostring
+
 USE ExceptionHandler_Class, ONLY: e
-USE TomlUtility
+
+USE GlobalData, ONLY: DFP, I4B, LGT, &
+                      CHAR_LF, stdout
+
+USE InputUtility, ONLY: Input
+
+USE SDAlgorithms, ONLY: SDAlgoParam_
+
+USE StringUtility, ONLY: UpperCase
+
+USE TomlUtility, ONLY: GetValue
+
+USE TxtFile_Class, ONLY: TxtFile_
+
 USE tomlf, ONLY: toml_table, &
   & toml_serialize,  &
   & toml_get => get_value, &
   & toml_len => len, &
   & toml_array,  &
   & toml_stat
+
 IMPLICIT NONE
 
 PRIVATE
@@ -43,10 +58,13 @@ CHARACTER(*), PARAMETER :: modName = "CSDAcousticAlgorithms()"
 ! date:   2024-01-19
 ! summary:  declare of composite type sd algorithm
 
-TYPE, EXTENDS(AbstractAlgoParam_) :: CSDAlgoParam_
+TYPE :: CSDAlgoParam_
   TYPE(SDAlgoParam_) :: subAlgoParams(2)
 
   REAL(DFP) :: splitRatio = 0.5_DFP
+  ! split ratio for a time interval
+  ! for example, in bathe method,
+  ! this value corresponds to gamma
 
   REAL(DFP) :: rhs_subsol(3, 2) = 0.0_DFP
   LOGICAL(LGT) :: rhs_subsol_zero(3, 2) = .TRUE.
@@ -62,6 +80,8 @@ TYPE, EXTENDS(AbstractAlgoParam_) :: CSDAlgoParam_
 
   REAL(DFP) :: acc_subsol = 0.0_DFP
   LOGICAL(LGT) :: acc_subsol_zero = .TRUE.
+
+  LOGICAL(LGT) :: singleStep = .FALSE.
 
 CONTAINS
   PRIVATE
@@ -118,7 +138,7 @@ SUBROUTINE GetBParams_betaBathe(bParams, gamma, beta1, beta2)
   REAL(DFP), OPTIONAL, INTENT(in) :: beta2
 
   CHARACTER(*), PARAMETER :: myName = "GetBParams_betaBathe"
-  REAL(DFP) :: gamma0, beta1_0, beta2_0, areal
+  REAL(DFP) :: gamma0, beta1_0, beta2_0
 
   gamma0 = Input(default=0.50_DFP, option=gamma)
   beta1_0 = Input(default=1.0_DFP / 3.0_DFP, option=beta1)
@@ -390,6 +410,8 @@ SUBROUTINE obj_Deallocate(obj)
   obj%vel_subsol_zero = .TRUE.
   obj%acc_subsol_zero = .TRUE.
 
+  obj%singleStep = .FALSE.
+
 END SUBROUTINE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -401,9 +423,9 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-  TYPE(toml_table), POINTER :: node, node2
+  TYPE(toml_table), POINTER :: node
   INTEGER(I4B) :: origin, stat
-  REAL(DFP) :: gamma, rhoInf, beta1, beta2
+  REAL(DFP) :: beta, gamma, rhoInf, beta1, beta2
   CHARACTER(:), ALLOCATABLE :: str1, algorithm
   LOGICAL(LGT) :: problem
 
@@ -475,6 +497,24 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
         & origin=origin, stat=stat)
     END IF
     CALL obj%Bathe(gamma=gamma, rhoInf=rhoInf)
+
+  CASE ("NEWMARK", "NEWMARKBETA")
+
+    CALL toml_get(table, algorithm, node, origin=origin, &
+                  requested=.FALSE., stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      beta = 0.25_DFP; gamma = 0.5_DFP
+    ELSE
+      CALL toml_get(node, "beta", beta, 0.25_DFP,   &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "gamma", gamma, 0.5_DFP,   &
+        & origin=origin, stat=stat)
+    END IF
+
+    CALL obj%subAlgoParams(1)%NewmarkBeta(beta=beta, gamma=gamma)
+    obj%splitRatio = 1.0_DFP
+    obj%singleStep = .TRUE.
 
   CASE DEFAULT
 
