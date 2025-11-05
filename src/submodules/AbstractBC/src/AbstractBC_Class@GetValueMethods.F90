@@ -21,6 +21,9 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 
+USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+
 IMPLICIT NONE
 
 CONTAINS
@@ -204,11 +207,12 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
 
   INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, &
                   iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(1), &
-                  localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
-                  max_fedof_quad, itimes
+                  localEdgeNumber, xij_i, xij_j, max_fedof_con, &
+                  max_fedof_quad, itimes, max_geofedof_con
 
-  REAL(DFP) :: args(4), elemCoord(3, 8)
-  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:), times0(:)
+  REAL(DFP) :: args(4)
+  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:), times0(:), &
+                            xij(:, :)
   INTEGER(I4B), ALLOCATABLE :: ipiv(:)
 
   LOGICAL(LGT) :: isok, istimes
@@ -222,8 +226,9 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
                           '[START] ')
 #endif
 
-  nrow = 0; 
+  nrow = 0
   ncol = 1
+  max_geofedof_con = geofedof%GetMaxTotalConnectivity()
   max_fedof_con = fedof%GetMaxTotalConnectivity()
   max_fedof_quad = fedof%GetMaxTotalQuadraturePoints()
 
@@ -240,6 +245,7 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   CALL Reallocate(funcValue, max_fedof_quad)
   CALL Reallocate(ipiv, max_fedof_con)
   CALL Reallocate(ans, max_fedof_con)
+  CALL Reallocate(xij, 3, max_geofedof_con)
 
   ! Vertex nodes and values
   CALL obj%boundary%GetnodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
@@ -248,8 +254,8 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   iNodeOnFace = nrow + 1
 
   DO ii = 1, nrow
-    CALL fedof%GetVertexDOF(globalNode=nodeNum(ii), ans=indx, islocal=no, &
-                            tsize=jj)
+    CALL fedof%GetVertexDOF( &
+      globalNode=nodeNum(ii), ans=indx, islocal=no, tsize=jj)
     nodeNum(ii) = indx(1)
   END DO
 
@@ -257,8 +263,9 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
 
   args = 0.0_DFP
   DO ii = 1, nrow
-    CALL cellMesh%GetNodeCoord(nodeCoord=args, tsize=jj, &
-                               globalNode=nodeNum(ii), islocal=yes)
+    CALL cellMesh%GetNodeCoord( &
+      nodeCoord=args, tsize=jj, globalNode=nodeNum(ii), islocal=yes)
+
     DO itimes = 1, ncol
       args(4) = times0(itimes)
       CALL obj%func%Get(val=ans(1), args=args)
@@ -282,29 +289,19 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
     geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
                                       islocal=yes)
 
-    CALL feptr%GetFacetQuadraturePoints(quad=quad, facetQuad=facetQuad, &
-                                        localFaceNumber=localFaceNumber)
-
-    CALL feptr%GetLocalFacetElemShapeData( &
-      elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, &
-      facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-    CALL geofeptr%GetLocalFacetElemShapeData( &
-      elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
-      facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
     CALL cellMesh%GetNodeCoord( &
-      nodeCoord=elemCoord, nrow=elemCoord_i, ncol=elemCoord_j, islocal=yes, &
-      globalElement=localCellNumber)
+      nodeCoord=xij, nrow=xij_i, ncol=xij_j, globalElement=localCellNumber, &
+      islocal=yes)
 
-    CALL feptr%GetGlobalFacetElemShapeData( &
-      elemsd=elemsd, facetElemsd=facetElemsd, &
-      localFaceNumber=localFaceNumber, geoElemsd=geoElemsd, &
-      geoFacetElemsd=geoFacetElemsd, xij=elemCoord)
+    CALL feptr%GetGlobalFacetElemShapeData2( &
+      geofeptr=geofeptr, elemsd=elemsd, facetElemsd=facetElemsd, &
+      geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
+      localFaceNumber=localFaceNumber, quad=quad, facetQuad=facetQuad, &
+      xij=xij)
 
     DO itimes = 1, ncol
       CALL feptr%GetFacetDOFValue( &
-        elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
+        elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
         times=times0(itimes), localFaceNumber=localFaceNumber, &
         func=obj%func, ans=ans, tsize=jj, &
         massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
@@ -344,6 +341,22 @@ SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   CALL AssertError1(isok, myName, &
                    "Edge DOF extraction is not implemented for userfunction.")
 #endif
+
+  IF (ALLOCATED(massMat)) DEALLOCATE (massMat)
+  IF (ALLOCATED(funcValue)) DEALLOCATE (funcValue)
+  IF (ALLOCATED(ans)) DEALLOCATE (ans)
+  IF (ALLOCATED(times0)) DEALLOCATE (times0)
+  IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  IF (ALLOCATED(ipiv)) DEALLOCATE (ipiv)
+
+  CALL ElemShapeData_Deallocate(elemsd)
+  CALL ElemShapeData_Deallocate(geoElemsd)
+  CALL ElemShapeData_Deallocate(facetElemsd)
+  CALL ElemShapeData_Deallocate(geoFacetElemsd)
+  CALL QuadraturePoint_Deallocate(quad)
+  CALL QuadraturePoint_Deallocate(facetQuad)
+
+  NULLIFY (feptr, geofeptr, cellMesh)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
