@@ -42,10 +42,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL Checkerror(obj, myName)
+CALL CheckError(obj, myName)
 
 IF (obj%isUserFunction) THEN
-  CALL Checkerror_uf(obj, myName, times)
+  CALL CheckError_uf(obj, myName, times)
 END IF
 #endif
 
@@ -1058,6 +1058,14 @@ SUBROUTINE CheckError_uf(obj, myName, times)
   CALL AssertError1(isok, myName, &
        "When `nodalValueType` is spaceTime `IsUserFunction` is TRUE, then &
        &`times` is needed in the passing argument, but it is not present")
+#endif
+
+#ifdef DEBUG_VER
+  aint = obj%func%GetNumArgs()
+  isok = aint .EQ. 4_I4B
+  CALL AssertError1(isok, myName, &
+                    "numArgs in userFunction ="//ToString(aint)// &
+                    " should be 4 (x, y, z, t)")
 #endif
 
 #ifdef DEBUG_VER
