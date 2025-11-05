@@ -52,26 +52,11 @@ END IF
 istimes = PRESENT(times)
 
 ! If isUserFunction is true and times is present
-isok = obj%isUserFunction .AND. istimes
+isok = obj%isUserFunction
 IF (isok) THEN
-  CALL GetSpaceTimeValue_uf( &
+  CALL GetValue_uf( &
     obj=obj, fedof=fedof, geofedof=geofedof, nodenum=nodenum, &
     nodalvalue=nodalvalue, nrow=nrow, ncol=ncol, times=times)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-! If isUserFunction is true and times is not present
-isok = obj%isUserFunction .AND. (.NOT. istimes)
-IF (isok) THEN
-
-  CALL GetSpaceValue_uf( &
-    obj=obj, fedof=fedof, geofedof=geofedof, nodenum=nodenum, &
-    nodalvalue=nodalvalue, nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -190,11 +175,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
-!                                                          GetSpaceValue_uf
+!                                                                 GetValue_uf
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
-                            ncol)
+SUBROUTINE GetValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
+                       nrow, ncol, times)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   !! Abstract boundary condition
   CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -204,176 +189,7 @@ SUBROUTINE GetSpaceValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, nrow, &
   !! size of nodeNum is nrow
   REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
   !! nodal values
-  INTEGER(I4B) :: nrow, ncol
-  !! nrow is size of nodeNum and size of number of rows in nodalvalue
-  !! ncol is colsize of nodalvalue
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetSpaceValue_uf()"
-#endif
-
-  LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
-  REAL(DFP), PARAMETER :: times = 0.0_DFP
-
-  INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, nargs, &
-                  iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(1), &
-                  localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
-                  max_fedof_quad
-
-  REAL(DFP) :: xij(4), elemCoord(3, 8)
-  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:)
-  INTEGER(I4B), ALLOCATABLE :: ipiv(:)
-
-  LOGICAL(LGT) :: isok
-  CLASS(AbstractMesh_), POINTER :: cellMesh
-  CLASS(AbstractFE_), POINTER :: feptr, geofeptr
-  TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd
-  TYPE(QuadraturePoint_) :: quad, facetQuad
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  max_fedof_con = fedof%GetMaxTotalConnectivity()
-  max_fedof_quad = fedof%GetMaxTotalQuadraturePoints()
-
-  CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
-  CALL Reallocate(funcValue, max_fedof_quad)
-  CALL Reallocate(ipiv, max_fedof_con)
-  CALL Reallocate(ans, max_fedof_con)
-
-  nrow = 0; ncol = 1
-
-  ! Vertex nodes and values
-  CALL obj%boundary%GetNodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
-  nrow = nrow + mysize
-  iNodeOnNode = 1
-  iNodeOnFace = nrow + 1
-
-  DO ii = 1, nrow
-    CALL fedof%GetVertexDOF(globalNode=nodeNum(ii), ans=indx, islocal=no, &
-                            tsize=jj)
-    nodeNum(ii) = indx(1)
-  END DO
-
-  cellMesh => obj%dom%GetMeshPointer()
-  nargs = obj%func%GetNumArgs()
-
-#ifdef DEBUG_VER
-  isok = (nargs .LE. 4)
-  CALL AssertError1(isok, myName, &
-    "Number of arguments in user function should be less than or equal to 4.")
-#endif
-
-  xij = 0.0_DFP
-
-  DO ii = 1, nrow
-    CALL cellMesh%GetNodeCoord(nodeCoord=xij, tsize=jj, &
-                               globalNode=nodeNum(ii), islocal=yes)
-    CALL obj%func%Get(val=ans(1), args=xij(1:nargs))
-    nodalValue(ii, 1) = ans(1)
-  END DO
-
-  CALL obj%SetElemToLocalBoundary()
-
-  ! Face nodes and values
-  DO iel = 1, obj%tElemToFace
-
-    CALL obj%GetElemToFace( &
-      indx=iel, localFaceNumber=localFaceNumber, &
-      localCellNumber=localCellNumber)
-
-    CALL fedof%SetFE(globalElement=localCellNumber, islocal=yes)
-    feptr => fedof%GetFEPointer(globalElement=localCellNumber, islocal=yes)
-
-    CALL geofedof%SetFE(globalElement=localCellNumber, islocal=yes)
-    geofeptr => geofedof%GetFEPointer( &
-                globalElement=localCellNumber, islocal=yes)
-
-    CALL feptr%GetFacetQuadraturePoints( &
-      quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-    CALL feptr%GetLocalFacetElemShapeData( &
-      elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, &
-      facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-    CALL geofeptr%GetLocalFacetElemShapeData( &
-      elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
-      facetQuad=facetQuad, localFaceNumber=localFaceNumber)
-
-    CALL cellMesh%GetNodeCoord( &
-      nodeCoord=elemCoord, nrow=elemCoord_i, ncol=elemCoord_j, islocal=yes, &
-      globalElement=localCellNumber)
-
-    CALL feptr%GetGlobalFacetElemShapeData( &
-      elemsd=elemsd, facetElemsd=facetElemsd, &
-      localFaceNumber=localFaceNumber, geoElemsd=geoElemsd, &
-      geoFacetElemsd=geoFacetElemsd, xij=elemCoord)
-
-    CALL feptr%GetFacetDOFValue( &
-      elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, times=times, &
-      localFaceNumber=localFaceNumber, func=obj%func, ans=ans, tsize=jj, &
-      massMat=massMat, ipiv=ipiv, funcValue=funcValue, onlyFaceBubble=yes)
-
-    nodalValue(nrow + 1:nrow + jj, 1) = ans(1:jj)
-
-    CALL fedof%GetFaceDOF( &
-      globalElement=localCellNumber, localFaceNumber=localFaceNumber, &
-      ans=nodeNum(nrow + 1:), tsize=mysize, islocal=yes)
-
-#ifdef DEBUG_VER
-    isok = mysize .EQ. jj
-    CALL AssertError1(isok, myName, &
-            "Size mismatch in nodalValue which is equal to "//ToString(jj)// &
-                      ", and nodeNum which is equal to "//ToString(mysize))
-#endif
-
-    nrow = nrow + mysize
-
-  END DO
-
-  ! Edge nodes
-  iNodeOnEdge = nrow + 1
-  DO ii = 1, obj%tElemToEdge
-    CALL obj%GetElemToEdge(indx=ii, localEdgeNumber=localEdgeNumber, &
-                           localCellNumber=localCellNumber)
-
-    CALL fedof%GetEdgeDOF( &
-      globalElement=localCellNumber, localEdgeNumber=localEdgeNumber, &
-      ans=nodenum(nrow + 1:), tsize=mysize, islocal=yes)
-
-    nrow = nrow + mysize
-  END DO
-
-#ifdef DEBUG_VER
-  isok = obj%tElemToEdge .EQ. 0
-  CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for userfunction.")
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE GetSpaceValue_uf
-
-!----------------------------------------------------------------------------
-!                                                       GetSpaceTimeValue_uf
-!----------------------------------------------------------------------------
-
-SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
-                                nrow, ncol, times)
-  CLASS(AbstractBC_), INTENT(INOUT) :: obj
-  !! Abstract boundary condition
-  CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
-  !! fedof
-  INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-  !! node number should be allocated
-  !! size of nodeNum is nrow
-  REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
-  !! nodal values
-  REAL(DFP), INTENT(IN) :: times(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   !! time value
   !! time values are needed when userfunction is time or space-time
   INTEGER(I4B) :: nrow, ncol
@@ -381,21 +197,21 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   !! ncol is colsize of nodalvalue
 
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetSpaceValue_uf()"
+  CHARACTER(*), PARAMETER :: myName = "GetValue_uf()"
 #endif
 
   LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
-  INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, nargs, &
+  INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, &
                   iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(1), &
                   localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
                   max_fedof_quad, itimes
 
-  REAL(DFP) :: xij(4), elemCoord(3, 8)
-  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:)
+  REAL(DFP) :: args(4), elemCoord(3, 8)
+  REAL(DFP), ALLOCATABLE :: massMat(:, :), funcValue(:), ans(:), times0(:)
   INTEGER(I4B), ALLOCATABLE :: ipiv(:)
 
-  LOGICAL(LGT) :: isok
+  LOGICAL(LGT) :: isok, istimes
   CLASS(AbstractMesh_), POINTER :: cellMesh
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr
   TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd
@@ -406,14 +222,24 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
                           '[START] ')
 #endif
 
+  nrow = 0; 
+  ncol = 1
   max_fedof_con = fedof%GetMaxTotalConnectivity()
   max_fedof_quad = fedof%GetMaxTotalQuadraturePoints()
+
+  istimes = PRESENT(times)
+  IF (istimes) THEN
+    ncol = SIZE(times)
+    CALL Reallocate(times0, ncol)
+    times0(1:ncol) = times(1:ncol)
+  ELSE
+    CALL Reallocate(times0, ncol)
+  END IF
+
   CALL Reallocate(massMat, max_fedof_con, max_fedof_con)
   CALL Reallocate(funcValue, max_fedof_quad)
   CALL Reallocate(ipiv, max_fedof_con)
   CALL Reallocate(ans, max_fedof_con)
-
-  nrow = 0; ncol = SIZE(times)
 
   ! Vertex nodes and values
   CALL obj%boundary%GetnodeNum(dom=obj%dom, ans=nodeNum, tsize=mysize)
@@ -428,20 +254,14 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   END DO
 
   cellMesh => obj%dom%GetMeshPointer()
-  nargs = obj%func%GetNumArgs()
 
-#ifdef DEBUG_VER
-  isok = (nargs .LE. 4)
-  CALL AssertError1(isok, myName, &
-    "Number of arguments in user function should be less than or equal to 4.")
-#endif
-
+  args = 0.0_DFP
   DO ii = 1, nrow
-    CALL cellMesh%GetNodeCoord(nodeCoord=xij, tsize=jj, &
+    CALL cellMesh%GetNodeCoord(nodeCoord=args, tsize=jj, &
                                globalNode=nodeNum(ii), islocal=yes)
     DO itimes = 1, ncol
-      xij(nargs) = times(itimes)
-      CALL obj%func%Get(val=ans(1), args=xij(1:nargs))
+      args(4) = times0(itimes)
+      CALL obj%func%Get(val=ans(1), args=args)
       nodalValue(ii, itimes) = ans(1)
     END DO
 
@@ -485,7 +305,7 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
     DO itimes = 1, ncol
       CALL feptr%GetFacetDOFValue( &
         elemsd=elemsd, facetElemsd=facetElemsd, xij=elemCoord, &
-        times=times(itimes), localFaceNumber=localFaceNumber, &
+        times=times0(itimes), localFaceNumber=localFaceNumber, &
         func=obj%func, ans=ans, tsize=jj, &
         massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
         onlyFaceBubble=yes)
@@ -529,7 +349,7 @@ SUBROUTINE GetSpaceTimeValue_uf(obj, fedof, geofedof, nodeNum, nodalValue, &
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE GetSpaceTimeValue_uf
+END SUBROUTINE GetValue_uf
 
 !----------------------------------------------------------------------------
 !                                                          GetConstantValue
