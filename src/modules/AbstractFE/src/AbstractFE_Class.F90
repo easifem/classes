@@ -141,6 +141,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
     obj_GetGlobalFacetElemShapeData
   !! Get global element shape data for cell and facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData2 => &
+    obj_GetGlobalFacetElemShapeData2
+  !! Get global element shape data for cell and facet
+  !! This is a higher level method
   PROCEDURE, PUBLIC, PASS(obj) :: GetAllGlobalFacetElemShapeData => &
     obj_GetAllGlobalFacetElemShapeData
   !! Get global element shape data for cell and facet
@@ -898,6 +902,36 @@ INTERFACE
     !! present in the reference element in geoElemsd.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE obj_GetGlobalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        GetGlobalFacetElemShapeData2@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData2( &
+    obj, geofeptr, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
+    localFaceNumber, quad, facetQuad, xij)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
+    !! Abstract FE for solution and geometry
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
+                                           geoFacetElemsd
+    !! element shape data in cell and facet
+    !! element shape data for geometry in cell and facet
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! quadrature points for cell and facetQuad
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of cell element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+  END SUBROUTINE obj_GetGlobalFacetElemShapeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------

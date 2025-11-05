@@ -536,6 +536,45 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetGlobalFacetElemShapeData
 
 !----------------------------------------------------------------------------
+!                                         GetGlobalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data in cell and facet
+
+MODULE PROCEDURE obj_GetGlobalFacetElemShapeData2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFacetElemShapeData2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetFacetQuadraturePoints( &
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+CALL obj%GetLocalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
+
+CALL geofeptr%GetLocalFacetElemShapeData( &
+  elemsd=geoElemsd, facetElemsd=geoFacetElemsd, quad=quad, &
+  facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+
+CALL obj%GetGlobalFacetElemShapeData( &
+  elemsd=elemsd, facetElemsd=facetElemsd, localFaceNumber=localFaceNumber, &
+  geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, xij=xij)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFacetElemShapeData2
+
+!----------------------------------------------------------------------------
 !                                             GetAllGlobalFacetElemShapeData
 !----------------------------------------------------------------------------
 
