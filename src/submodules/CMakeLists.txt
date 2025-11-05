@@ -347,8 +347,5 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 # Kernel level utilities
 # ----------------------------------------------------------------------------
 
-# AssemblePointSource
-include(${CMAKE_CURRENT_LIST_DIR}/AssemblePointSource/CMakeLists.txt)
-
 # AssembleDiffusionMatrix
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
