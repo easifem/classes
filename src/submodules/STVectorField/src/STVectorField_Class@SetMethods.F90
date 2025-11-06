@@ -82,7 +82,7 @@ INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
@@ -116,7 +116,7 @@ INTEGER(I4B) :: ii, jj, s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
@@ -152,7 +152,7 @@ INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 #endif
@@ -179,7 +179,7 @@ INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
@@ -219,7 +219,7 @@ INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 #endif
@@ -246,7 +246,7 @@ INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
@@ -278,7 +278,7 @@ INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
@@ -315,7 +315,7 @@ INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 isok = spaceCompo .LE. obj%spaceCompo
@@ -368,7 +368,7 @@ INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 isok = spaceCompo .LE. obj%spaceCompo
@@ -436,7 +436,7 @@ INTEGER(I4B) :: indx, ii, s(3), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 isok = timeCompo .LE. obj%timeCompo
@@ -513,7 +513,7 @@ INTEGER(I4B) :: indx, ii, s(3), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
 isok = spaceCompo .LE. obj%spaceCompo
@@ -639,10 +639,10 @@ INTEGER(I4B) :: s(3), p(3), tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 

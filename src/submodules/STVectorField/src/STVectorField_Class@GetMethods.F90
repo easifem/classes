@@ -16,8 +16,7 @@
 !
 
 SUBMODULE(STVectorField_Class) GetMethods
-use FieldOpt_Class, only: TypeField => TypeFieldOpt
-
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ScalarField_Class, ONLY: ScalarField_
 ! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
@@ -298,10 +297,12 @@ INTEGER(I4B) :: idof, idof_value, ii
 CHARACTER(2) :: mycase
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "STVectorField_:: obj is not initiated")
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "AbstractNodeField_:: value is not initiated")
 
 CALL AssertError2(obj%dof.tNodes.1, VALUE%dof.tNodes.1, myName, &
@@ -316,7 +317,6 @@ IF (PRESENT(timeCompo)) THEN
   isok = timeCompo .LE. obj%timeCompo
   CALL AssertError1(isok, myName, "timeCompo is greater than obj%timeCompo")
 END IF
-
 #endif
 
 mycase = "NN"
@@ -444,16 +444,24 @@ END PROCEDURE obj_Get8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get9
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
+#endif
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(obj%isInitiated, myName, &
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "STVectorField_:: obj is not initiated")
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "STVectorField_:: value is not initiated")
-
 #endif
 
 SELECT TYPE (VALUE)
@@ -473,13 +481,18 @@ CLASS IS (STVectorField_)
   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
                  idof_value=idof)
 
+#ifdef DEBUG_VER
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTENRAL ERROR] :: No case found for the type of value')
-  RETURN
+#endif
 
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------

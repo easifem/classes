@@ -21,6 +21,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -32,7 +40,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(fieldType)) fieldType = obj%fieldType
 IF (PRESENT(name)) name = obj%name%chars()
 IF (PRESENT(engine)) engine = obj%engine%chars()

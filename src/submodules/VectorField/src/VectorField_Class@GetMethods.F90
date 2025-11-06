@@ -120,7 +120,7 @@ INTEGER(I4B) :: s(3), jj, mynrow
 INTEGER(I4B) :: indx(obj%spaceCompo)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
@@ -191,7 +191,7 @@ INTEGER(I4B) :: jj, mynrow
 #include "./localNodeError.F90"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
@@ -285,7 +285,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
 CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
@@ -325,10 +325,10 @@ MODULE PROCEDURE obj_Get8
 
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'VectorField_::value is not initiated')
 #endif
 
@@ -347,10 +347,10 @@ REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   "STScalarField_:: value is not initiated")
 
 #endif

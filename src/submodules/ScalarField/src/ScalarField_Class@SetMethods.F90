@@ -60,7 +60,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(obj%isInitiated(), myName, &
+                  "ScalarField_::obj not initiated")
 #endif
 
 #include "./localNodeError.F90"
@@ -92,7 +93,7 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(obj%isInitiated(), myName, "ScalarField_::obj not initiated")
 
 isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
@@ -122,7 +123,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 REAL(DFP) :: value0(SIZE(globalNode))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(obj%isInitiated(), myName, "ScalarField_::obj not initiated")
 isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
 #endif
@@ -149,7 +150,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
+CALL AssertError1(obj%isInitiated(), myName, "ScalarField_::obj not initiated")
 
 isok = obj%fieldType .NE. TypeFieldOpt%constant
 CALL AssertError1(isok, myName, "Not callable for Constant field")
@@ -226,8 +227,8 @@ INTEGER(I4B) :: s(3), p(3), ierr, tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, "ScalarField_::obj not initiated")
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   "AbstractNodeField_::value not initiated")
 #endif
 

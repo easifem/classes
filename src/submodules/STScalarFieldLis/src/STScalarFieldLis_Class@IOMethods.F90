@@ -134,7 +134,7 @@ IF (.NOT. isok) THEN
     param=param, name=obj%name%chars(), fieldType=obj%fieldType, &
     timeCompo=obj%timeCompo, engine=obj%engine%chars())
 
-  obj%isInitiated = .FALSE.
+  obj%isInit = .FALSE.
 
   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 

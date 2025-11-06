@@ -40,8 +40,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Display(msg, unitNo=unitNo)
 
-CALL Display(obj%isInitiated, msg="isInitiated: ", unitNo=unitNo)
-IF (.NOT. obj%isInitiated) RETURN
+isok = obj%IsInitiated()
+CALL Display(isok, msg="isInitiated: ", unitNo=unitNo)
+IF (.NOT. isok) RETURN
 
 CALL Display(obj%name%chars(), msg="name : ", unitNo=unitNo)
 

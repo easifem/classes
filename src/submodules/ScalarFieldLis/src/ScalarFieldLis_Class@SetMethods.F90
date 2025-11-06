@@ -62,8 +62,11 @@ LOGICAL(LGT) :: abool
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, "ScalarField_::obj not initiated")
-CALL AssertError1(VALUE%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, "ScalarField_::obj not initiated")
+
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "AbstractNodeField_::value not initiated")
 #endif
 

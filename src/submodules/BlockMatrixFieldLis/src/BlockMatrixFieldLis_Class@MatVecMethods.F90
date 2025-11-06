@@ -47,7 +47,7 @@ INTEGER(INT64) :: temp_lis_ptr
 CALL lis_vector_is_null(x%lis_ptr, ierr)
 CALL CHKERR(ierr)
 
-IF (.NOT. x%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
+IF (.NOT. x%isInitiated() .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
        '[INTERNAL ERROR] :: Either AbstractNodeField_::x is not initiated'// &
                     " or, x%lis_ptr is not available")
@@ -56,7 +56,7 @@ END IF
 CALL lis_vector_is_null(y%lis_ptr, ierr)
 CALL CHKERR(ierr)
 
-IF (.NOT. y%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
+IF (.NOT. y%isInitiated() .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
        '[INTERNAL ERROR] :: Either AbstractNodeField_::y is not initiated'// &
                     " or, y%lis_ptr is not available")

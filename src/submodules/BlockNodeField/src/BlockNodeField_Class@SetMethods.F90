@@ -86,7 +86,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize = obj%SIZE()
@@ -111,7 +111,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -133,7 +133,7 @@ INTEGER(I4B) :: indx(128), ii, tsize, idof(128)
 REAL(DFP) :: areal(128)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -167,7 +167,7 @@ INTEGER(I4B) :: tsize1, tsize2
 INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -212,7 +212,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
@@ -241,7 +241,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
@@ -285,7 +285,7 @@ INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -331,7 +331,7 @@ INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -375,7 +375,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set14"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 #endif
@@ -402,7 +402,7 @@ INTEGER(I4B) :: indx(SIZE(timeCompo)), tsize
 REAL(DFP) :: value0(SIZE(timeCompo))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -431,7 +431,7 @@ INTEGER(I4B) :: indx(SIZE(spaceCompo)), tsize
 REAL(DFP) :: value0(SIZE(spaceCompo))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -461,10 +461,10 @@ REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'BlockNodeField_::value is not initiated')
 
 #endif
@@ -491,10 +491,10 @@ INTEGER(I4B) :: s(3), p(3), tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_ ::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 

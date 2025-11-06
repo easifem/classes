@@ -90,7 +90,7 @@ CALL SetSTVectorFieldParam( &
   timeCompo=obj%timeCompo, spaceCompo=obj%spaceCompo, &
   engine=obj%engine%chars())
 
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 
 CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 

@@ -127,7 +127,7 @@ IF (.NOT. isok) THEN
   CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
                            engine=obj%engine%chars(), fieldType=obj%fieldType)
 
-  obj%isInitiated = .FALSE.
+  obj%isInit = .FALSE.
 
   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
 

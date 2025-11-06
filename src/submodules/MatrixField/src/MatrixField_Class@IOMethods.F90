@@ -248,7 +248,7 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
 
   CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
 
-  obj%isInitiated = .TRUE.
+  obj%isInit = .TRUE.
   obj%isPmatInitiated = .FALSE.
 
 ELSE

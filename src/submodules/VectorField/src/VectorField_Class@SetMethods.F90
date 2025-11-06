@@ -84,7 +84,7 @@ INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, "STScalarField_::obj not initiated")
+CALL AssertError1(obj%isInitiated(), myName, "STScalarField_::obj not initiated")
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   "Not callable for constant STScalar field")
@@ -118,7 +118,7 @@ INTEGER(I4B) :: idof, s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 CALL AssertError1(obj%fieldType .EQ. TypeFieldOpt%constant, myName, &
                   'Not callable for constant STScalar field')
@@ -149,7 +149,7 @@ INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
 CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
@@ -180,7 +180,7 @@ INTEGER(I4B) :: jj, ncol
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField::obj is not initiated')
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
@@ -232,7 +232,7 @@ INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
 isok = spaceCompo .LE. obj%spaceCompo
@@ -285,7 +285,7 @@ INTEGER(I4B) :: ii
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
@@ -347,7 +347,7 @@ INTEGER(I4B) :: tsize
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_::obj not initiated")
 
 isok = spaceCompo .LE. obj%spaceCompo
@@ -400,7 +400,7 @@ INTEGER(I4B) :: indx
 
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
 CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
@@ -429,7 +429,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
@@ -477,10 +477,10 @@ INTEGER(I4B) :: s(3), p(3)
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 
@@ -559,7 +559,7 @@ INTEGER(I4B) :: tsize
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarFieldLis_::obj is not initiated")
 #endif
 
@@ -596,10 +596,10 @@ MODULE PROCEDURE obj_SetFromSTVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTVectorField()"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'VectorField_::value is not initiated')
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &

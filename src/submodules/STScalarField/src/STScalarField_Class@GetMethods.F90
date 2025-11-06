@@ -133,7 +133,7 @@ INTEGER(I4B) :: s(3), jj, mynrow
 INTEGER(I4B) :: indx(obj%timeCompo)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. DOF_FMT) THEN
@@ -204,7 +204,7 @@ INTEGER(I4B) :: jj, mynrow
 #include "./localNodeError.inc"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. DOF_FMT) THEN
@@ -348,10 +348,10 @@ REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   "STScalarField_:: value is not initiated")
 
 #endif

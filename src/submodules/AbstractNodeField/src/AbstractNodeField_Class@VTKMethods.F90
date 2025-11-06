@@ -163,7 +163,7 @@ DO iobj = 1, tfield
   isok = ASSOCIATED(obj0)
   IF (.NOT. isok) CYCLE
 
-  isok = obj0%isInitiated
+  isok = obj0%IsInitiated()
   CALL AssertError1(isok, myName, &
             'AbstractNodeField_::obj('//ToString(iobj)//') is not Initiated.')
 
@@ -389,7 +389,7 @@ SUBROUTINE Writedata_vtk1_checkerror(obj, vtk)
 #endif
 
 #ifdef DEBUG_VER
-  isok = obj%isInitiated
+  isok = obj%IsInitiated()
   CALL AssertError1(isok, myName, &
                     'AbstractNodeField_::obj is not isInitiated.')
 #endif

@@ -413,7 +413,7 @@ ncol = nrow
 CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
                         jdof=dofobj, matrixProp=astr%chars())
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%isPmatInitiated = .FALSE.
 obj%isRectangle = .FALSE.
 
@@ -458,7 +458,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 #ifdef DEBUG_VER
-isok = obj2%isInitiated
+isok = obj2%IsInitiated()
 CALL AssertError1(isok, myName, "obj2 is not initiated")
 #endif
 
@@ -708,7 +708,7 @@ CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=idofobj, &
 
 matrixProp = ""
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%isPmatInitiated = .FALSE.
 obj%isRectangle = .TRUE.
 

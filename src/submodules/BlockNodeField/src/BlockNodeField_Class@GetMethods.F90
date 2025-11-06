@@ -65,12 +65,14 @@ CONTAINS
 MODULE PROCEDURE obj_Get1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -98,15 +100,20 @@ END PROCEDURE obj_Get2
 MODULE PROCEDURE obj_Get3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: myint1, myint2
 #endif
 
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'BlockNodeField_::obj is not initiated')
 
-CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
+myint1 = SIZE(VALUE)
+myint2 = SIZE(globalNode)
+CALL AssertError2(myint1, myint2, myName, &
                   "a=SIZE(VALUE) b = SIZE(globalNode)")
 #endif
 
@@ -220,15 +227,20 @@ END PROCEDURE obj_Get5
 MODULE PROCEDURE obj_Get6
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: myint1, myint2
 #endif
 
 INTEGER(I4B) :: indx(SIZE(globalNode)), idof
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'BlockNodeField_::obj is not initiated')
 
-CALL AssertError2(SIZE(globalNode), SIZE(VALUE), myName, &
+myint1 = SIZE(globalNode)
+myint2 = SIZE(VALUE)
+CALL AssertError2(myint1, myint2, myName, &
                   "a=size(globalNode), b=Size(value)")
 #endif
 
@@ -263,16 +275,24 @@ END PROCEDURE obj_Get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get8
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
+LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(obj%isInitiated, myName, &
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "BlockNodeField_:: obj is not initiated")
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   "BlockNodeField_:: value is not initiated")
-
 #endif
 
 SELECT TYPE (VALUE)
@@ -296,12 +316,17 @@ CLASS IS (BlockNodeField_)
 CALL VALUE%Set(ivar=ivar_value, idof=idof_value, VALUE=obj, ivar_value=ivar, &
                  idof_value=idof)
 
+#ifdef DEBUG_VER
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTENRAL ERROR] :: No case found for the type of value')
-  RETURN
-
+#endif
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Get8
 

@@ -80,7 +80,7 @@ PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 ! summary: Abstract field is designed to handle fields in FEM
 
 TYPE, ABSTRACT :: AbstractField_
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
@@ -190,6 +190,9 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: IsInitiated => &
+    obj_IsInitiated
+  !! Returns isInit
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam => obj_GetParam
   !! Get the parameters of AbstractField
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
@@ -1402,6 +1405,21 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
   END SUBROUTINE obj_SetAll
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Get obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------

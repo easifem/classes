@@ -48,21 +48,39 @@ SUBROUTINE AXPY1(a1, v1, a2, v2)
   REAL(DFP), INTENT(IN) :: a2
   CLASS(AbstractNodeField_), INTENT(IN) :: v2
 
-  CHARACTER(*), PARAMETER :: myName = "AXPY1"
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AXPY1()"
+  LOGICAL(LGT) :: isok
+#endif
 
-  IF (.NOT. v1%isInitiated) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  isok = v1%IsInitiated()
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'AbstractNodeField_::v1 is not initiated')
   END IF
+#endif
 
-  IF (.NOT. v2%isInitiated) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'AbstractNodeField_::v2 is not initiated')
+#ifdef DEBUG_VER
+  isok = v2%IsInitiated()
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'AbstractNodeField_::v2 is not initiated')
   END IF
-  !
+#endif
+
   CALL SCAL(X=v1%realVec, A=a1)
   CALL AXPY(Y=v1%realVec, A=a2, X=v2%realVec)
-  !
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE AXPY1
 
 !----------------------------------------------------------------------------
@@ -80,25 +98,37 @@ SUBROUTINE AXPY2(a1, v1, a2, m2, v2, isTranspose2)
   CLASS(AbstractMatrixField_), INTENT(IN) :: m2
   CLASS(AbstractNodeField_), INTENT(IN) :: v2
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose2
-  !
+
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "AXPY2"
-  !
-  IF ( &
-    &      .NOT. v1%isInitiated &
-    & .OR. .NOT. v2%isInitiated &
-    & .OR. .NOT. m2%isInitiated) THEN
+  LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  isok = v1%IsInitiated() .AND. v2%IsInitiated() .AND. m2%IsInitiated()
+  IF (.NOT. isok) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'AbstractNodeField_::v1, v2 or AbstractMatrixField_:: m2 &
+      'AbstractNodeField_::v1, v2 or AbstractMatrixField_:: m2 &
       & is not initiated')
   END IF
-  !
+#endif
+
   ! v1=v1 * a1
   CALL SCAL(X=v1%realVec, A=a1)
   ! v1=v1+a2*Matvec(m2, v2)
-  !
-  CALL m2%MatVec(x=v2, y=v1, isTranspose=isTranspose2, &
-    & addContribution=.TRUE., scale=a2)
-  !
+
+  CALL m2%MatVec( &
+    x=v2, y=v1, isTranspose=isTranspose2, addContribution=.TRUE., scale=a2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE AXPY2
 
 END MODULE Field_AXPY

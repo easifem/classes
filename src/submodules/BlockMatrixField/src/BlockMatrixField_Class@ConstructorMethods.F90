@@ -317,7 +317,7 @@ ncol = nrow
 CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
                         jdof=dofobj, matrixProp=matrixProp%chars())
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%isPmatInitiated = .FALSE.
 
 ! Setting the sparsity

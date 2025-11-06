@@ -22,7 +22,7 @@ USE SafeSizeUtility, ONLY: SafeSize
 
 USE Display_Method, ONLY: ToString
 
-USE FieldOpt_Class , ONLY: TypeField => TypeFieldOpt
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE ScalarField_Class, ONLY: ScalarField_
 
@@ -63,13 +63,15 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: ierr, tsize, s(3), p(3), code
 REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
+LOGICAL(LGT) :: abool, isok
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 

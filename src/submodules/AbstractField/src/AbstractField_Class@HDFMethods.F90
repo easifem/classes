@@ -39,7 +39,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%isInitiated
+isok = obj%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'AbstractField_::obj%isInitiated is not initiated')
 #endif
@@ -124,7 +124,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! main program
 #ifdef DEBUG_VER
-isok = .NOT. obj%isInitiated
+isok = .NOT. obj%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'The instance of AbstractField_ is already initiated')
 #endif
@@ -247,7 +247,7 @@ CALL AssertError1(isok, myName, &
                   'AbstractField_::obj%fedofs is already allocated')
 #endif
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 
 isok = PRESENT(fedof)
 IF (isok) THEN

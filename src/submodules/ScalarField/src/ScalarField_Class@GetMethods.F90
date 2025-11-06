@@ -116,10 +116,10 @@ REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'ScalarFieldLis_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField::value is not initiated')
 #endif
 

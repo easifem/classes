@@ -219,7 +219,7 @@ CALL AssertError1(isok, myName, &
                   'Error occured in getting sublist(2)')
 #endif
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 CALL FPL_GetValue(obj=param, prefix=prefix, key="fieldType", &
                   VALUE=obj%fieldType)
 CALL FPL_GetValue(obj=param, prefix=prefix, key="name", &
@@ -259,18 +259,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = obj2%isInitiated
+isok = obj2%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'obj2 is not initiated.')
 #endif
 
 #ifdef DEBUG_VER
-isok = .NOT. obj%isInitiated
+isok = .NOT. obj%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'obj is already initiated.')
 #endif
 
-obj%isInitiated = obj2%isInitiated
+obj%isInit = obj2%isInit
 obj%fieldType = obj2%fieldType
 obj%name = obj2%name
 obj%engine = obj2%engine
@@ -389,7 +389,7 @@ CALL AssertError1(isok, myName, &
                   'Error occured in getting sublist(2)')
 #endif
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 CALL FPL_GetValue(obj=param, prefix=prefix, key="fieldType", &
                   VALUE=obj%fieldType)
 CALL FPL_GetValue(obj=param, prefix=prefix, key="name", &
@@ -479,7 +479,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! here.
 ! CALL obj%DEALLOCATE()
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%name = name
 obj%engine = engine
 obj%fieldType = Input(option=fieldType, default=TypeField%normal)
@@ -524,7 +524,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! here.
 ! CALL obj%DEALLOCATE()
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 obj%name = name
 obj%engine = engine
 obj%fieldType = Input(option=fieldType, default=TypeField%normal)
@@ -599,7 +599,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""

@@ -71,6 +71,7 @@ CONTAINS
 MODULE PROCEDURE obj_Set1
 #ifdef DEBUG_VER
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: myint1, myint2
 #endif
 
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
@@ -78,12 +79,16 @@ INTEGER(I4B) :: ierr, tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, "STScalarField_::obj not initiated")
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, "STScalarField_::obj not initiated")
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
                   "Not callable for constant STScalar field")
 
-CALL AssertError2(SIZE(VALUE), obj%timeCompo, myName, &
+myint1 = SIZE(VALUE)
+myint2 = obj%timeCompo
+CALL AssertError2(myint1, myint2, myName, &
                   "a=SIZE(VALUE), b=obj%timeCompo")
 
 isok = obj%timeCompo .LE. TEMP_INTVEC_LEN
@@ -106,17 +111,19 @@ END PROCEDURE obj_Set1
 MODULE PROCEDURE obj_Set2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: idof, s(3)
 
 #ifdef DEBUG_VER
-
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'STScalarField_::obj is not initiated')
-CALL AssertError1(obj%fieldType .EQ. TypeField%constant, myName, &
-                  'Not callable for constant STScalar field')
 
+isok = obj%fieldType .EQ. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
 #endif
 
 DO idof = 1, obj%timeCompo
@@ -133,20 +140,24 @@ END PROCEDURE obj_Set2
 
 MODULE PROCEDURE obj_Set3
 #ifdef DEBUG_VER
-
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 LOGICAL(LGT) :: isok
-
 #endif
 
 INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(obj%isInitiated, myName, &
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'STScalarField_::obj is not initiated')
 
-CALL AssertError1(timeCompo .LE. obj%timeCompo, myName, &
+isok = timeCompo .LE. obj%timeCompo
+CALL AssertError1(isok, myName, &
                   'timeCompo should be less or equal to obj%timeCompo')
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -158,6 +169,10 @@ s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 CALL obj%SetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
                      scale=scale, addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -168,17 +183,18 @@ MODULE PROCEDURE obj_Set4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: nrow
+INTEGER(I4B) :: nrow, myint1, myint2
 #endif
 
 INTEGER(I4B) :: jj, ncol
 
 #ifdef DEBUG_VER
-
-CALL AssertError1(obj%isInitiated, myName, &
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'STScalarField::obj is not initiated')
 
-CALL AssertError1(obj%fieldType .NE. TypeField%constant, myName, &
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 
 IF (storageFMT .EQ. NODES_FMT) THEN
@@ -189,9 +205,11 @@ ELSE
   ncol = obj%timeCompo
 END IF
 
-CALL AssertError2(SIZE(VALUE, 1), nrow, myName, 'a=SIZE(VALUE, 1), b=nrow')
-CALL AssertError2(SIZE(VALUE, 2), ncol, myName, 'a=SIZE(VALUE, 2), b=ncol')
+myint1 = SIZE(VALUE, 1)
+myint2 = SIZE(VALUE, 2)
 
+CALL AssertError2(myint1, nrow, myName, 'a=SIZE(VALUE, 1), b=nrow')
+CALL AssertError2(myint2, ncol, myName, 'a=SIZE(VALUE, 2), b=ncol')
 #endif
 
 IF (storageFMT .EQ. DOF_FMT) THEN
@@ -227,7 +245,7 @@ INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
 isok = timeCompo .LE. obj%timeCompo
@@ -287,7 +305,7 @@ INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STSCalarField_::obj is not initiated')
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -339,7 +357,7 @@ INTEGER(I4B) :: tsize
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_::obj not initiated")
 
 isok = timeCompo .LE. obj%timeCompo
@@ -394,7 +412,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
 isok = timeCompo .LE. obj%timeCompo
@@ -425,7 +443,7 @@ LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -469,10 +487,10 @@ INTEGER(I4B) :: s(3), p(3)
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'ScalarField_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 
@@ -541,7 +559,7 @@ INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarFieldLis_::obj is not initiated")
 #endif
 

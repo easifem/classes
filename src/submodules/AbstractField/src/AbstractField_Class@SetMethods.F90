@@ -37,7 +37,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
+IF (PRESENT(isInitiated)) obj%isInit = isInitiated
 IF (PRESENT(fieldType)) obj%fieldType = fieldType
 IF (PRESENT(name)) obj%name = TRIM(name)
 IF (PRESENT(engine)) obj%engine = TRIM(engine)

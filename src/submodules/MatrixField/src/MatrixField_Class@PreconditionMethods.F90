@@ -34,19 +34,25 @@ CONTAINS
 
 MODULE PROCEDURE obj_SetPrecondition
 CHARACTER(*), PARAMETER :: myName = "obj_SetPrecondition()"
+LOGICAL(LGT) :: isok
+
 INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: MatrixField_ is not initiated')
-END IF
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: This routine is avaiable for NATIVE_SERIAL')
-END IF
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'MatrixField_ is not initiated')
+#endif
 
+#ifdef DEBUG_VER
+isok = obj%engine%chars() .EQ. "NATIVE_SERIAL"
+CALL AssertError1(isok, myName, &
+                  'This routine is avaiable for NATIVE_SERIAL')
 #endif
 
 IF (PRESENT(param)) THEN
@@ -54,13 +60,13 @@ IF (PRESENT(param)) THEN
   obj%Pmat%nrow = CSRMatrix_SIZE(obj%mat, 1)
   obj%Pmat%ncol = CSRMatrix_SIZE(obj%mat, 2)
 
-  IF (param%isPresent(key="Precond/name")) THEN
-    ierr = param%Get(key="Precond/name", &
-                     VALUE=obj%Pmat%PmatName)
-  ELSE
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'Precond/name should be present in param')
-  END IF
+#ifdef DEBUG_VER
+  isok = param%isPresent(key="Precond/name")
+  CALL AssertError1(isok, myName, &
+                    'Precond/name should be present in param')
+#endif
+
+  ierr = param%Get(key="Precond/name", VALUE=obj%Pmat%PmatName)
 
   SELECT CASE (obj%Pmat%PmatName)
 
@@ -68,19 +74,21 @@ IF (PRESENT(param)) THEN
     ! droptol, lfil
   CASE (PRECOND_ILUT)
 
-    IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
-    ELSE
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-                        'Precond/droptol should be present in param')
-    END IF
+#ifdef DEBUG_VER
+    isok = param%isPresent(key="Precond/droptol")
+    CALL AssertError1(isok, myName, &
+                      'Precond/droptol should be present in param')
+#endif
 
-    IF (param%isPresent(key="Precond/lfil")) THEN
-      ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
-    ELSE
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-                        'Precond/lfil should be present in param')
-    END IF
+    ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+
+#ifdef DEBUG_VER
+    isok = param%isPresent(key="Precond/lfil")
+    CALL AssertError1(isok, myName, &
+                      'Precond/lfil should be present in param')
+#endif
+
+    ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
 
     RETURN
 
@@ -88,19 +96,21 @@ IF (PRESENT(param)) THEN
     ! droptol, lfil, permtol, mbloc
   CASE (PRECOND_ILUTP)
 
-    IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
-    ELSE
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-                        'Precond/droptol should be present in param')
-    END IF
+#ifdef DEBUG_VER
+    isok = param%isPresent(key="Precond/droptol")
+    CALL AssertError1(isok, myName, &
+                      'Precond/droptol should be present in param')
+#endif
 
-    IF (param%isPresent(key="Precond/lfil")) THEN
-      ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
-    ELSE
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-                        'Precond/lfil should be present in param')
-    END IF
+    ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+
+#ifdef DEBUG_VER
+    isok = param%isPresent(key="Precond/lfil")
+    CALL AssertError1(isok, myName, &
+                      'Precond/lfil should be present in param')
+#endif
+
+    ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
 
     IF (param%isPresent(key="Precond/permtol")) THEN
       ierr = param%Get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
@@ -293,5 +303,11 @@ SUBROUTINE ApplyDBCtoPrecond(obj, dbcPtrs)
   END ASSOCIATE
 
 END SUBROUTINE ApplyDBCtoPrecond
+
+!----------------------------------------------------------------------------
+!                                                              Include errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE PreconditionMethods
