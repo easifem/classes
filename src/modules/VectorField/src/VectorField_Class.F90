@@ -34,6 +34,7 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE MeshField_Class, ONLY: MeshField_
 
 IMPLICIT NONE
 
@@ -167,6 +168,8 @@ CONTAINS
   !! Get the prefix name
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Get the storage format of the scalar field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
+  !! Get the mesh field corresponding to abstract field
 
   ! SET:
   ! @DirichletBCMethods
@@ -1323,6 +1326,22 @@ INTERFACE
     CLASS(VectorField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetStorageFMT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetMeshField@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-04
+! summary:  Get Mesh Field
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(MeshField_), INTENT(INOUT) :: meshField
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+  END SUBROUTINE obj_GetMeshField
 END INTERFACE
 
 !----------------------------------------------------------------------------
