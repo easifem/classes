@@ -240,7 +240,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Insert5()"
 
 LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
-INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
+INTEGER(I4B) :: iel, xij_i, xij_j, tnptrs
 
 LOGICAL(LGT) :: isok
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -268,20 +268,21 @@ END IF
 
 mesh => obj%mesh
 
-nns = mesh%GetMaxNNE()
-nsd = mesh%GetNSD()
+xij_j = mesh%GetMaxNNE()
 
-ALLOCATE (nptrs(nns), xij(nsd, nns))
+ALLOCATE (nptrs(xij_j), xij(3, xij_j))
+nptrs = 0
+xij = 0.0_DFP
 
 iel = mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
 CALL mesh%GetConnectivity_(globalElement=iel, islocal=yes, ans=nptrs, &
-                           tsize=tsize)
+                           tsize=tnptrs)
 
-CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=no)
+CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
+                       globalNode=nptrs(1:tnptrs), islocal=no)
 
-CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
+CALL func%Get(fevar=fevar, xij=xij(1:3, 1:xij_j), times=times)
 
 CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=yes)
 
