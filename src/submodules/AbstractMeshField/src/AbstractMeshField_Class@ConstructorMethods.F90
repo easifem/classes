@@ -293,7 +293,9 @@ spaceCompo = func%GetNumReturns()
 dims = func%GetReturnShape()
 
 fieldType = typefield%normal
-IF (varType .EQ. typefield%constant) fieldType = varType
+! IF (varType .EQ. typefield%constant) fieldType = varType
+! I have commented above line as it causes issue when we have multiple
+! domains with constant varType
 
 CALL AbstractMeshFieldGetShapeAndSize( &
   rank=rank, varType=varType, s=s, tsize=tsize, nns=nns, &
