@@ -352,3 +352,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
 
 # AssembleStiffnessMatrix
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleStiffnessMatrix/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# time integration algorithms
+# ----------------------------------------------------------------------------
+
+# semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)

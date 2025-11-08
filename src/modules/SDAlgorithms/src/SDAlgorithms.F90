@@ -96,10 +96,10 @@ TYPE :: SDAlgoParam_
   LOGICAL(LGT) :: vel_zero(4) = .TRUE.
 
   REAL(DFP) :: acc(4) = 0.0_DFP
-  !! acc coefficient for accocity update
+  !! acc coefficient for acc update
   !! acc = acc(1)*u / dt/dt + acc(2) * v /dt + acc(3) * a + acc(4)*sol/dt/dt
   !! acc(1) coefficient of displacement
-  !! acc(2) coefficient of accocity
+  !! acc(2) coefficient of velocity
   !! acc(3) coefficient of acceleration
   !! acc(4) coefficient of solution
   LOGICAL(LGT) :: acc_zero(4) = .TRUE.
@@ -459,7 +459,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE ("HHTA")
 
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       alpha = -0.30_DFP
@@ -481,7 +481,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE ("COLL")
 
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       beta = 1.0_DFP / 6.0_DFP
@@ -501,7 +501,7 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
   CASE DEFAULT
     node => NULL()
   CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-            & stat=stat)
+              & stat=stat)
 
     IF (.NOT. ASSOCIATED(node)) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
