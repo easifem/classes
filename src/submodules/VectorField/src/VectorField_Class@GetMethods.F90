@@ -15,6 +15,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(VectorField_Class) GetMethods
+USE GlobalData, ONLY: NODES_FMT
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
+                                GetInterpolation
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate, &
+                                  QuadraturePoint_Set => Set
+USE MeshField_Class, ONLY: VectorMeshFieldInitiate
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 
@@ -28,16 +36,21 @@ USE RealVector_Method, ONLY: GetValue_
 
 USE ArangeUtility, ONLY: Arange
 
-USE BaseType, ONLY: TypeFEVariableVector, TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableVector, TypeFEVariableSpace, &
+                    QuadraturePoint_, ElemShapeData_
 
-USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: NodalVariable, &
+                             QuadratureVariable, &
+                             FEVariable_Set => Set
 
 USE DOF_Method, ONLY: GetIDOF, &
                       OPERATOR(.tnodes.), &
                       GetNodeLoc, &
                       GetNodeLoc_
 
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
+
+USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
 CONTAINS
@@ -447,6 +460,136 @@ END PROCEDURE obj_GetPrefix
 MODULE PROCEDURE obj_GetStorageFMT
 ans = MYSTORAGEFORMAT
 END PROCEDURE obj_GetStorageFMT
+
+!----------------------------------------------------------------------------
+!                                                                  MeshField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshField()"
+#endif
+
+LOGICAL(LGT) :: isMeshFieldInit
+CHARACTER(:), ALLOCATABLE :: name, engine
+INTEGER(I4B) :: spaceCompo(1), maxCon, tElements, iel, ii, maxNNE, &
+                xij_i, xij_j, elemCoord_i, elemCoord_j, tsol, tSolCon, &
+                refElemCoord_i, refElemCoord_j, maxFedofCon, nrow, &
+                ncol
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+TYPE(FEVariable_) :: fevar, sol_fevar
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: elemsd, geoelemsd
+REAL(DFP), ALLOCATABLE :: xij(:, :), elemCoord(:, :), sol(:, :), &
+                          refElemCoord(:, :)
+INTEGER(I4B), ALLOCATABLE :: solCon(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isMeshFieldInit = meshField%IsInitiated()
+name = obj%GetName()
+engine = obj%GetEngineName()
+
+spaceCompo = obj%GetSpaceCompo(1)
+IF (spaceCompo(1) .LT. 3) spaceCompo = 3
+
+mesh => obj%fedof%GetMeshPointer()
+maxNNE = mesh%GetMaxNNE()
+! maxNNE is the maximum number of nodes in an element of a mesh
+! It will be used for allocating geocon, refElemCoord, and elemCoord
+tElements = mesh%GetTotalElements()
+! tElements is the total number of elements in the mesh
+maxFedofCon = obj%fedof%GetMaxTotalConnectivity()
+! maxFedofCon is the maximum number of connectivity in the fedof
+! It will be used to allocate sol and solCon
+
+maxCon = 0
+DO iel = 1, tElements
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
+  maxCon = MAX(maxCon, ii)
+END DO
+! maxCon is the maximum number of interpolation points in
+! in the fedof, it will be used to allocate xij, quad, fevar
+
+IF (.NOT. isMeshFieldInit) THEN
+  CALL VectorMeshFieldInitiate( &
+    obj=meshField, name=name, fieldType=TypeFieldOpt%normal, &
+    varType=TypeFieldOpt%space, engine=engine, defineOn=TypeFieldOpt%nodal, &
+    nns=maxCon, mesh=mesh, spaceCompo=spaceCompo(1))
+END IF
+
+CALL Reallocate(elemCoord, 3, maxNNE)
+CALL Reallocate(refElemCoord, 3, maxNNE)
+CALL Reallocate(sol, spaceCompo(1), maxFedofCon)
+CALL Reallocate(solCon, maxFedofCon)
+CALL Reallocate(xij, 4, maxCon)
+CALL QuadraturePoint_Initiate(obj=quad, txi=3, tpoints=maxCon)
+
+fevar = QuadratureVariable(nrow=spaceCompo(1), ncol=maxCon, &
+                       rank=TypeFEVariableVector, varType=TypeFEVariableSpace)
+
+sol_fevar = NodalVariable(nrow=spaceCompo(1), ncol=maxFedofCon, &
+                          rank=TypeFEVariableVector, &
+                          varType=TypeFEVariableSpace)
+
+DO iel = 1, tElements
+
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=.TRUE.)
+
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+
+  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_i, &
+                             ncol=refElemCoord_j)
+
+  CALL feptr%GetInterpolationPoints( &
+    xij=refElemCoord, ans=xij, nrow=xij_i, ncol=xij_j, order=order, &
+    ipType=ipType)
+
+  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_j))
+
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+  CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
+                         nrow=elemCoord_i, ncol=elemCoord_j, islocal=.TRUE.)
+
+  ! This step is necessary to fix the orientation in Lagrange elements
+  CALL feptr%GetGlobalElemShapeData( &
+    elemsd=elemsd, geoelemsd=geoelemsd, &
+    xij=elemCoord(1:elemCoord_i, 1:elemCoord_j))
+
+  CALL obj%fedof%GetConnectivity_( &
+    ans=solCon, tsize=tSolCon, globalElement=iel, islocal=.TRUE., opt='A')
+
+  ! WARN: even when force3D is true, nrow can be smaller than 3
+  CALL obj%Get(VALUE=sol, nrow=nrow, ncol=ncol, &
+               globalNode=solCon(1:tSolCon), storageFMT=NODES_FMT, &
+               islocal=.TRUE., force3D=.TRUE.)
+
+  ! Due to the above WARN, spaceCompo is used instead of nrow here
+  CALL FEVariable_Set(obj=sol_fevar, val=sol(1:spaceCompo(1), 1:ncol), &
+                     rank=TypeFEVariableVector, varType=TypeFEVariableSpace, &
+                      scale=1.0_DFP, addContribution=.FALSE.)
+
+  CALL ElemshapeData_GetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
+
+  CALL meshField%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshField
 
 !----------------------------------------------------------------------------
 !
