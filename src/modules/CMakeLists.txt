@@ -440,6 +440,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 # Kernel level utilities
 # ----------------------------------------------------------------------------
 
+# AssembleMassMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleMassMatrix/CMakeLists.txt)
+
 # AssembleDiffusionMatrix
 include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
 

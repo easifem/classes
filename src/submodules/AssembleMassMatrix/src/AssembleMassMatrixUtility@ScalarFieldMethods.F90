@@ -15,22 +15,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AssembleDiffusionMatrixUtility) ScalarFieldMethods
-USE Display_Method, ONLY: ToString
-USE ExceptionHandler_Class, ONLY: e
+SUBMODULE(AssembleMassMatrixUtility) ScalarFieldMethods
 USE ReallocateUtility, ONLY: Reallocate
-USE DiffusionMatrix_Method, ONLY: DiffusionMatrix_
+USE MassMatrix_Method, ONLY: MassMatrix_
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE FEDOF_Class, ONLY: FEDOF_
+USE FEVariable_Method, ONLY: QuadratureVariable
 USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
-                    TypeFEVariableScalar
-
-#ifdef DEBUG_VER
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
-USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
-USE Display_Method, ONLY: Display
-#endif
+                    TypeFEVariableScalar, TypeFEVariableSpace
 
 IMPLICIT NONE
 
@@ -39,21 +32,21 @@ TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                         ScalarFieldAssembleDiffusionMatrix
+!                                         ScalarFieldAssembleMassMatrix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ScalarFieldAssembleDiffusionMatrix1
+MODULE PROCEDURE ScalarFieldAssembleMassMatrix1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleDiffusionMatrix1()"
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleMassMatrix1()"
 #endif
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, ks_i, ks_j, xij_i, xij_j
+                tcellCon, ks_i, ks_j, xij_i, xij_j, maxQuadPoints
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
 INTEGER(I4B), ALLOCATABLE :: cellCon(:)
-TYPE(FEVariable_) :: diffCoeffVar
+TYPE(FEVariable_) :: rhoVar
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 CLASS(AbstractMesh_), POINTER :: mesh
 CLASS(FEDOF_), POINTER :: fedof, geofedof
@@ -72,10 +65,15 @@ IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
+maxQuadPoints = fedof%GetMaxTotalQuadraturePoints()
 
 CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellCon, maxNNE)
 CALL Reallocate(ks, maxNNE, maxNNE)
+
+rhoVar = QuadratureVariable(tsize=maxQuadPoints, &
+                            varType=TypeFEVariableSpace, &
+                            rank=TypeFEVariableScalar)
 
 DO iel = 1, tElements
 
@@ -97,13 +95,12 @@ DO iel = 1, tElements
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
     quad=quad)
 
-  ! TODO: No allocatation in diffCoeffVar
-  CALL diffCoeffField%Get(globalElement=iel, islocal=defaultOpt%yes, &
-                          fevar=diffCoeffVar)
+  CALL massDensityField%Get(globalElement=iel, islocal=defaultOpt%yes, &
+                            fevar=rhoVar)
 
   ks = defaultOpt%zero
-  CALL DiffusionMatrix_( &
-    test=elemsd, trial=elemsd, k=diffCoeffVar, krank=TypeFEVariableScalar, &
+  CALL MassMatrix_( &
+    test=elemsd, trial=elemsd, rho=rhoVar, rhoRank=TypeFEVariableScalar, &
     ans=ks, nrow=ks_i, ncol=ks_j)
 
   CALL tanmat%Set( &
@@ -121,7 +118,7 @@ NULLIFY (feptr, geofeptr, mesh, fedof, geofedof)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE ScalarFieldAssembleDiffusionMatrix1
+END PROCEDURE ScalarFieldAssembleMassMatrix1
 
 !----------------------------------------------------------------------------
 !                                                          Include error
