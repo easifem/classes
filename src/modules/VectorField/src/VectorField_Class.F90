@@ -189,6 +189,19 @@ CONTAINS
     obj_ApplySurfaceNeumannBC
   !! Apply Surface neumann boundary condition
 
+  ! SET:
+  ! @BodySourceMethods
+  PROCEDURE, PASS(obj) :: ApplyBodySource1 => &
+    obj_ApplyBodySource1
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  PROCEDURE, PASS(obj) :: ApplyBodySource2 => &
+    obj_ApplyBodySource2
+  !! Add contribution of body source to the scalar field
+  !! body source is given external scalar field
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
+  !! Generic method for setting body source
+
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -1440,5 +1453,53 @@ INTERFACE
     !! external field
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary: Add Contribution of body source to vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    !! time, which will be passed to the body source function
+  END SUBROUTINE obj_ApplyBodySource1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary:  Add Contribution of body source to vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    !! The test function will be corresponding to the obj
+    CLASS(VectorField_), INTENT(INOUT) :: bodySource
+    !! Body source in terms of vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+  END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE VectorField_Class
