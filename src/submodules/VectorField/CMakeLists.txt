@@ -22,4 +22,5 @@ target_sources(
           ${src_path}/VectorField_Class@SetMethods.F90
           ${src_path}/VectorField_Class@GetMethods.F90
           ${src_path}/VectorField_Class@IOMethods.F90
+          ${src_path}/VectorField_Class@PointNBCMethods.F90
           ${src_path}/VectorField_Class@DBCMethods.F90)

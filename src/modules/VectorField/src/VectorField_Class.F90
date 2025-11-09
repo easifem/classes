@@ -176,6 +176,13 @@ CONTAINS
 
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC1 => &
+    obj_ApplyPointNeumannBC1
+  !! Apply point neumann boundary condition
+
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -1383,5 +1390,22 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary: Add Contribution of point neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, scale, times, ivar, &
+                                             extField)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyPointNeumannBC1
+END INTERFACE
 
 END MODULE VectorField_Class
