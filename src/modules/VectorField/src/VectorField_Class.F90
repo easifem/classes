@@ -183,6 +183,12 @@ CONTAINS
     obj_ApplyPointNeumannBC1
   !! Apply point neumann boundary condition
 
+  ! SET:
+  ! @SurfaceNBCMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
+    obj_ApplySurfaceNeumannBC
+  !! Apply Surface neumann boundary condition
+
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -1406,6 +1412,33 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyPointNeumannBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary:  Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC( &
+    obj, nbcField, scale, times, ivar, extField)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    CLASS(VectorField_), INTENT(INOUT) :: nbcField
+    !! Vector field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! times
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    !! external field
+  END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
 
 END MODULE VectorField_Class
