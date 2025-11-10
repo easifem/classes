@@ -253,6 +253,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
+!                                                             GetTimeStepSize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeStepSize
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeStepSize()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%dt
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeStepSize
+
+!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 

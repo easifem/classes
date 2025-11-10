@@ -95,6 +95,9 @@ CONTAINS
   !! import timeOpt from toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
+  !! Import from toml
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeStepSize => obj_GetTimeStepSize
+  !! Get time step size
 
 END TYPE TimeOpt_
 
@@ -211,6 +214,21 @@ INTERFACE
     REAL(DFP), INTENT(IN), OPTIONAL :: startTime
     REAL(DFP), INTENT(IN), OPTIONAL :: endTime
   END SUBROUTINE obj_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 GetTimeStep
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get time steo size
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeStepSize(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetTimeStepSize
 END INTERFACE
 
 END MODULE TimeOpt_Class
