@@ -98,7 +98,8 @@ CONTAINS
   !! Import from toml
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeStepSize => obj_GetTimeStepSize
   !! Get time step size
-
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCurrentTime => obj_GetCurrentTime
+  !! Get current time
 END TYPE TimeOpt_
 
 !----------------------------------------------------------------------------
@@ -229,6 +230,21 @@ INTERFACE
     CLASS(TimeOpt_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetTimeStepSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetCurrentTime
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get current time
+
+INTERFACE
+  MODULE FUNCTION obj_GetCurrentTime(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetCurrentTime
 END INTERFACE
 
 END MODULE TimeOpt_Class

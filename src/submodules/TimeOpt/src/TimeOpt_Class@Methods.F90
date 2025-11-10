@@ -275,6 +275,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTimeStepSize
 
 !----------------------------------------------------------------------------
+!                                                             GetCurrentTime
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCurrentTime
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurrentTime()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%currentTime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetCurrentTime
+
+!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 
