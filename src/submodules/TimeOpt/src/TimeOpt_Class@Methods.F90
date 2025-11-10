@@ -297,6 +297,72 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetCurrentTime
 
 !----------------------------------------------------------------------------
+!                                                          GetTotalTimeSteps
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalTimeSteps
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalTimeSteps()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%totalTimeSteps
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalTimeSteps
+
+!----------------------------------------------------------------------------
+!                                                              UpdateTimeStep
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_UpdateTimeStep
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateTimeStep()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%currentTimeStep = obj%currentTimeStep + 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_UpdateTimeStep
+
+!----------------------------------------------------------------------------
+!                                                          UpdateCurrentTime
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_UpdateCurrentTime
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateCurrentTime()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%currentTime = obj%currentTime + obj%dt
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_UpdateCurrentTime
+
+!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 

@@ -100,6 +100,12 @@ CONTAINS
   !! Get time step size
   PROCEDURE, PUBLIC, PASS(obj) :: GetCurrentTime => obj_GetCurrentTime
   !! Get current time
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalTimeSteps => obj_GetTotalTimeSteps
+  !! Get current time
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateTimeStep => obj_UpdateTimeStep
+  !! Update time step
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateCurrentTime => obj_UpdateCurrentTime
+  !! Update current time
 END TYPE TimeOpt_
 
 !----------------------------------------------------------------------------
@@ -245,6 +251,49 @@ INTERFACE
     CLASS(TimeOpt_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetCurrentTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetCurrentTime
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get current time
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalTimeSteps(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalTimeSteps
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              UpdateTimeStep
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Update time step
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateTimeStep(obj)
+    CLASS(TimeOpt_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_UpdateTimeStep
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              UpdateTimeStep
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Update time step
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateCurrentTime(obj)
+    CLASS(TimeOpt_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_UpdateCurrentTime
 END INTERFACE
 
 END MODULE TimeOpt_Class
