@@ -18,7 +18,7 @@
 SUBMODULE(UserFunction_Class) GetVectorValueMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE ISO_C_BINDING, ONLY: C_PTR
 USE LuaInterface
 USE ReallocateUtility, ONLY: Reallocate
@@ -214,8 +214,8 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
     RETURN
   END IF
 
-  DO iarg = nresults, 1, -1
-    val(iarg) = REAL(lua_tonumber(l, nresults + iarg - 1), kind=DFP)
+  DO iarg = 1, nresults
+    val(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
   END DO
 
   CALL lua_pop(l, nresults)
