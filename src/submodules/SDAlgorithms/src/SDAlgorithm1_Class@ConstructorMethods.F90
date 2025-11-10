@@ -59,9 +59,9 @@ obj%rhs_f2 = alpha0
 obj%dis(1:2) = 0.0_DFP
 obj%dis(3) = 1.0_DFP
 
-obj%vel(1) = -alpha_inv
-obj%vel(2) = -(1.0_DFP - alpha0) * alpha_inv
-obj%vel(3) = alpha_inv
+obj%vel(1) = -alpha_inv ! coeff of U_n
+obj%vel(2) = -(1.0_DFP - alpha0) * alpha_inv ! coeff of V_n
+obj%vel(3) = alpha_inv ! coeff of U_n+1
 
 CALL obj%MakeZeros()
 

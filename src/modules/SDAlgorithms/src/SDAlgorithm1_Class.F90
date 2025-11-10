@@ -75,9 +75,9 @@ TYPE :: SDAlgorithm1_
   REAL(DFP) :: vel(3) = 0.0_DFP
   !! vel coefficient for velocity update
   !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*sol/dt
-  !! vel(1) coefficient of displacement
-  !! vel(2) coefficient of velocity
-  !! vel(3) coefficient of solution
+  !! vel(1) coefficient of displacement at tn
+  !! vel(2) coefficient of velocity at tn
+  !! vel(3) coefficient of solution at tn+1
   LOGICAL(LGT) :: vel_zero(3) = .TRUE.
 
 CONTAINS
