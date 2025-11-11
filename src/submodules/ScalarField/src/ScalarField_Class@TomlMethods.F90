@@ -212,12 +212,12 @@ SUBROUTINE ImportUserFunctionValueFromToml(obj, table)
 END SUBROUTINE ImportUserFunctionValueFromToml
 
 !----------------------------------------------------------------------------
-!                                                           InitiateFromToml
+!                                                           SetFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_InitiateFromToml
+MODULE PROCEDURE obj_SetFromToml
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateFromToml()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromToml()"
 #endif
 
 INTEGER(I4B) :: nodalValueType
@@ -264,7 +264,7 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_InitiateFromToml
+END PROCEDURE obj_SetFromToml
 
 !----------------------------------------------------------------------------
 !                                                             Include error

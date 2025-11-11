@@ -185,7 +185,7 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFromToml => obj_InitiateFromToml
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Initiate from toml
 
 END TYPE ScalarField_
@@ -1051,18 +1051,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                InitiateFromToml@TomlMethods
+!                                                SetFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-10
-! summary: Initiate from toml
+! summary: Set from toml
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateFromToml(obj, table)
+  MODULE SUBROUTINE obj_SetFromToml(obj, table)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_InitiateFromToml
+  END SUBROUTINE obj_SetFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
