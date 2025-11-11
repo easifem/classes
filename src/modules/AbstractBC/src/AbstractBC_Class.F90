@@ -55,6 +55,25 @@ PUBLIC :: AbstractBCImportFromToml
 PUBLIC :: AbstractBCImportParamFromToml
 
 !----------------------------------------------------------------------------
+!                                                              AbstractBCOpt_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-11
+! summary: Options for AbstractBC
+
+TYPE :: AbstractBCOpt_
+  CHARACTER(10) :: name = "AbstractBC"
+  INTEGER(I4B) :: idof = 1_I4B
+  INTEGER(I4B) :: nodalValueType = TypeFEVariableOpt%constant
+  CHARACTER(4) :: nodalValueType_char = "NONE"
+  LOGICAL(LGT) :: isUserFunction = .FALSE.
+  LOGICAL(LGT) :: isNormal = .FALSE.
+  LOGICAL(LGT) :: isTangent = .FALSE.
+  LOGICAL(LGT) :: useExternal = .FALSE.
+END TYPE ABstractBCOpt_
+
+!----------------------------------------------------------------------------
 !                                                                AbstractBC_
 !----------------------------------------------------------------------------
 

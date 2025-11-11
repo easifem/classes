@@ -69,6 +69,7 @@ TYPE :: FieldOpt_
   CHARACTER(9) :: spaceTime_char = "SPACETIME"
   CHARACTER(13) :: constantSpace_char = "CONSTANTSPACE"
   CHARACTER(12) :: constantTime_char = "CONSTANTTIME"
+  CHARACTER(5) :: default_nodalValueType_char = "SPACE"
   INTEGER(I4B) :: storageFormatDOF = DOF_FMT
   INTEGER(I4B) :: storageFormatNodes = NODES_FMT
   INTEGER(I4B) :: conversionNodesToDOF = NodesToDOF

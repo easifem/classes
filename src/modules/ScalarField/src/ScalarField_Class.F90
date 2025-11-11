@@ -183,6 +183,11 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFromToml => obj_InitiateFromToml
+  !! Initiate from toml
+
 END TYPE ScalarField_
 
 !----------------------------------------------------------------------------
@@ -1043,6 +1048,21 @@ INTERFACE
     !! scale for body source
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                InitiateFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-10
+! summary: Initiate from toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFromToml(obj, table)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_InitiateFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
