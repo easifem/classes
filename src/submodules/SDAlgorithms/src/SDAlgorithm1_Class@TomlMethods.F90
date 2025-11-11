@@ -190,6 +190,20 @@ SUBROUTINE UserDefinedMethodImportFromToml(obj, table, astr, origin, stat)
                   default_value=0.0_DFP, origin=origin, stat=stat)
   END IF
 
+  node2 => NULL()
+  CALL toml_get(node, "initialGuess", node2, origin=origin, &
+                requested=.FALSE., stat=stat)
+  obj%initialGuess = 0.0_DFP
+  isok = ASSOCIATED(node2)
+
+  IF (isok) THEN
+    CALL GetValue(table=node2, key="U1", VALUE=obj%initialGuess(1), &
+                  default_value=0.0_DFP, origin=origin, stat=stat)
+
+    CALL GetValue(table=node2, key="V1", VALUE=obj%initialGuess(2), &
+                  default_value=0.0_DFP, origin=origin, stat=stat)
+  END IF
+
   CALL obj%MakeZeros()
 
   NULLIFY (node, node2)

@@ -63,6 +63,9 @@ obj%vel(1) = -alpha_inv ! coeff of U_n
 obj%vel(2) = -(1.0_DFP - alpha0) * alpha_inv ! coeff of V_n
 obj%vel(3) = alpha_inv ! coeff of U_n+1
 
+obj%initialGuess(1) = 1.0_DFP
+obj%initialGuess(2) = 1.0_DFP - alpha0
+
 CALL obj%MakeZeros()
 
 #ifdef DEBUG_VER
@@ -94,6 +97,7 @@ obj%rhs_f1_zero = obj%rhs_f1.approxeq.myzero
 obj%rhs_f2_zero = obj%rhs_f2.approxeq.myzero
 obj%dis_zero = obj%dis.approxeq.myzero
 obj%vel_zero = obj%vel.approxeq.myzero
+obj%initialGuess_zero = obj%initialGuess.approxeq.myzero
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -135,6 +139,9 @@ obj%vel = 0.0_DFP
 
 obj%dis_zero = .TRUE.
 obj%vel_zero = .TRUE.
+
+obj%initialGuess = 0.0_DFP
+obj%initialGuess_zero = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -80,6 +80,13 @@ TYPE :: SDAlgorithm1_
   !! vel(3) coefficient of solution at tn+1
   LOGICAL(LGT) :: vel_zero(3) = .TRUE.
 
+  REAL(DFP) :: initialGuess(2) = 0.0_DFP
+  !! coefficient for initial guess of solution
+  !! u = coeff(1)*Un + coeff(2) * Vn
+  !! coeff(1) coefficient of displacement at tn
+  !! coeff(2) coefficient of velocity at tn
+  LOGICAL(LGT) :: initialGuess_zero(2) = .TRUE.
+
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate

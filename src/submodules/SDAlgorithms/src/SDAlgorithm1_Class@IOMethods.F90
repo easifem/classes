@@ -51,6 +51,10 @@ CALL Display(obj%dis, "dis: ", unitno=unitno, advance="NO")
 CALL Display(obj%dis_zero, "dis_zero: ", unitno=unitno)
 CALL Display(obj%vel, "vel: ", unitno=unitno, advance="NO")
 CALL Display(obj%vel_zero, "vel_zero: ", unitno=unitno)
+CALL Display(obj%initialGuess, "initialGuess: ", unitno=unitno, &
+             advance="NO")
+CALL Display(obj%initialGuess_zero, "initialGuess_zero: ", unitno=unitno)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
