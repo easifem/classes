@@ -18,7 +18,7 @@
 SUBMODULE(UserFunction_Class) GetVectorValueMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
 USE ISO_C_BINDING, ONLY: C_PTR
 USE LuaInterface
 USE ReallocateUtility, ONLY: Reallocate
