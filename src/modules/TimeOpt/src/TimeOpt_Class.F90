@@ -100,6 +100,9 @@ CONTAINS
   !! Get time step size
   PROCEDURE, PUBLIC, PASS(obj) :: GetCurrentTime => obj_GetCurrentTime
   !! Get current time
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCurrentTimeStep => &
+    obj_GetCurrentTimeStep
+  !! Get current time step
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalTimeSteps => obj_GetTotalTimeSteps
   !! Get current time
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateTimeStep => obj_UpdateTimeStep
@@ -251,6 +254,21 @@ INTERFACE
     CLASS(TimeOpt_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetCurrentTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetCurrentTime
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get current time
+
+INTERFACE
+  MODULE FUNCTION obj_GetCurrentTimeStep(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetCurrentTimeStep
 END INTERFACE
 
 !----------------------------------------------------------------------------

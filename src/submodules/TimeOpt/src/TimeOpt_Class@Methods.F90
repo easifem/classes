@@ -297,6 +297,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetCurrentTime
 
 !----------------------------------------------------------------------------
+!                                                          GetCurrentTimeStep
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetCurrentTimeStep
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurrentTimeStep()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%currentTimeStep
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetCurrentTimeStep
+
+!----------------------------------------------------------------------------
 !                                                          GetTotalTimeSteps
 !----------------------------------------------------------------------------
 
