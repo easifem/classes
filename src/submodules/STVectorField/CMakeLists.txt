@@ -22,4 +22,5 @@ target_sources(
           ${src_path}/STVectorField_Class@DBCMethods.F90
           ${src_path}/STVectorField_Class@GetMethods.F90
           ${src_path}/STVectorField_Class@IOMethods.F90
+          ${src_path}/STVectorField_Class@HDFMethods.F90
           ${src_path}/STVectorField_Class@SetMethods.F90)
