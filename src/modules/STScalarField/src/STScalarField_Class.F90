@@ -275,13 +275,17 @@ END INTERFACE STScalarFieldCheckEssentialParam
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE STScalarFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+INTERFACE STScalarFieldInitiate
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -292,7 +296,7 @@ END INTERFACE STScalarFieldInitiate
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE STScalarFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
@@ -302,6 +306,10 @@ INTERFACE STScalarFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE STScalarFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -312,10 +320,14 @@ END INTERFACE STScalarFieldInitiate
 ! date: 25 June 2021
 ! summary: It deallocates the data stored inside the STScalarField_ obj
 
-INTERFACE STScalarFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE STScalarFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -331,23 +343,31 @@ END INTERFACE STScalarFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE STScalarFieldSafeAllocate
+INTERFACE
   MODULE SUBROUTINE obj_STScalarFieldSafeAllocate1(obj, newsize)
     TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable scalar field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_STScalarFieldSafeAllocate1
+END INTERFACE
+
+INTERFACE STScalarFieldSafeAllocate
+  MODULE PROCEDURE obj_STScalarFieldSafeAllocate1
 END INTERFACE STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE STScalarFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE STScalarFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -368,12 +388,16 @@ END INTERFACE
 ! date: 26 June 2021
 ! summary: Display the content of [[STScalarField_]]
 
-INTERFACE STScalarFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE STScalarFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE STScalarFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -409,12 +433,16 @@ END INTERFACE STScalarFieldImport
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE STScalarFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE STScalarFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE STScalarFieldExport
 
 !----------------------------------------------------------------------------
