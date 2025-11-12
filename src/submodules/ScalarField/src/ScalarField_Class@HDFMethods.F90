@@ -17,7 +17,6 @@
 
 SUBMODULE(ScalarField_Class) HDFMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
-USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -33,7 +32,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
-TYPE(ParameterList_) :: param
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -51,14 +50,19 @@ bools(2) = hdf5%pathExists(dsetname%chars())
 dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
-IF (.NOT. ALL(bools)) THEN
-  CALL param%initiate()
-  CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
-                           engine=obj%engine%chars(), fieldType=obj%fieldType)
-  obj%isInit = .FALSE.
-  CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-  CALL param%DEALLOCATE()
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! IF (.NOT. ALL(bools)) THEN
+!   CALL param%initiate()
+!   CALL SetScalarFieldParam(param=param, name=obj%name%chars(), &
+!                            engine=obj%engine%chars(), fieldType=obj%fieldType)
+!   obj%isInit = .FALSE.
+!   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+!   CALL param%DEALLOCATE()
+! END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
