@@ -22,5 +22,6 @@ if(USE_LIS)
     PRIVATE ${src_path}/STVectorFieldLis_Class@ConstructorMethods.F90
             ${src_path}/STVectorFieldLis_Class@GetMethods.F90
             ${src_path}/STVectorFieldLis_Class@IOMethods.F90
+            ${src_path}/STVectorFieldLis_Class@HDFMethods.F90
             ${src_path}/STVectorFieldLis_Class@SetMethods.F90)
 endif()
