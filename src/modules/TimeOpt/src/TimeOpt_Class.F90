@@ -109,6 +109,8 @@ CONTAINS
   !! Update time step
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateCurrentTime => obj_UpdateCurrentTime
   !! Update current time
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEndTime => obj_GetEndTime
+  !! Get final time of the simulation
 END TYPE TimeOpt_
 
 !----------------------------------------------------------------------------
@@ -312,6 +314,21 @@ INTERFACE
   MODULE SUBROUTINE obj_UpdateCurrentTime(obj)
     CLASS(TimeOpt_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_UpdateCurrentTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  GetEndTime
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get the final time of the simulation
+
+INTERFACE
+  MODULE FUNCTION obj_GetEndTime(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetEndTime
 END INTERFACE
 
 END MODULE TimeOpt_Class

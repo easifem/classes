@@ -385,6 +385,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_UpdateCurrentTime
 
 !----------------------------------------------------------------------------
+!                                                                 GetEndTime
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEndTime
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEndTime()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%endTime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetEndTime
+
+!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 
