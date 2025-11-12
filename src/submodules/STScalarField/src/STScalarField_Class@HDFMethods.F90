@@ -27,27 +27,32 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#endif
+
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3), isok
-TYPE(ParameterList_) :: param
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
-                    fedofs=fedofs, timefedof=timefedof, timefedofs=timefedofs)
+CALL AbstractNodeFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  timefedof=timefedof, timefedofs=timefedofs)
 
 ! timeCompo
 dsetname = TRIM(group)//"/timeCompo"
+
+#ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: The dataset timeCompo should be present')
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  'The dataset timeCompo should be present')
+#endif
+
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
 dsetname = TRIM(group)//"/tSize"
@@ -58,18 +63,29 @@ dsetname = TRIM(group)//"/realVec"
 bools(3) = hdf5%pathExists(dsetname%chars())
 
 isok = ALL(bools)
-IF (isok) RETURN
+IF (isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-CALL SetSTScalarFieldParam(param=param, name=obj%name%chars(), &
-  fieldType=obj%fieldType, timeCompo=obj%timeCompo, engine=obj%engine%chars())
-
-obj%isInit = .FALSE.
-
-CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! CALL SetSTScalarFieldParam(param=param, name=obj%name%chars(), &
+!   fieldType=obj%fieldType, timeCompo=obj%timeCompo, engine=obj%engine%chars())
+!
+! obj%isInit = .FALSE.
+!
+! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
@@ -83,7 +99,10 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
 TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
