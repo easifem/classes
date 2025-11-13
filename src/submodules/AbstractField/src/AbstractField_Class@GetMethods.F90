@@ -265,17 +265,6 @@ END IF
 END PROCEDURE obj_isConstant
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-ans = ""
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-'[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                           GetFEDOFPointer
 !----------------------------------------------------------------------------
 

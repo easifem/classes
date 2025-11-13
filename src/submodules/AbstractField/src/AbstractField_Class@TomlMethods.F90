@@ -162,8 +162,6 @@ MODULE PROCEDURE obj_ImportFromToml3
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 #endif
 
-TYPE(ParameterList_) :: param
-CHARACTER(:), ALLOCATABLE :: prefix
 LOGICAL(LGT) :: isok
 ! INTEGER(I4B) :: comm, local_n, global_n
 
@@ -172,10 +170,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-prefix = obj%GetPrefix()
-CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
+! CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
+
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
@@ -183,14 +184,10 @@ isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml( &
   table=table, timefedof=timefedof, timeOpt=timeOpt)
 
-CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
-                  timefedof=timefedof)
+! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
+!                   timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
-
-CALL param%DEALLOCATE()
-
-prefix = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -203,12 +200,14 @@ END PROCEDURE obj_ImportFromToml3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml4
-! internal variables
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml4()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -236,7 +235,8 @@ CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
                         timefedof=timefedof, dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
+isok = PRESENT(printToml)
+IF (isok) THEN
   CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
                CHAR_LF, unitno=stdout)
 END IF
@@ -248,7 +248,6 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml4
 
 !----------------------------------------------------------------------------
@@ -260,35 +259,31 @@ MODULE PROCEDURE obj_ImportFromToml5
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml5()"
 #endif
 
-TYPE(ParameterList_) :: param
-CHARACTER(:), ALLOCATABLE :: prefix
 LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: comm, local_n, global_n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-prefix = obj%GetPrefix()
-CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
+! CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
 isok = PRESENT(timefedof)
-IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml( &
-  table=table, timefedof=timefedof, timeOpt=timeOpt)
+IF (isok) &
+  CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
+                                          timeOpt=timeOpt)
 
-CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
-                  timefedof=timefedof)
+! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
+!                   timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
-
-CALL param%DEALLOCATE()
-
-prefix = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -301,8 +296,9 @@ END PROCEDURE obj_ImportFromToml5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml6
-! internal variables
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml6()"
+#endif
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -334,7 +330,8 @@ CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
                         timefedof=timefedof, dom=dom, timeOpt=timeOpt)
 
 #ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
+isok = PRESENT(printToml)
+IF (isok) THEN
   CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
                CHAR_LF, unitno=stdout)
 END IF
@@ -371,8 +368,8 @@ SUBROUTINE ReadNameFromToml(table, name)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading name ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading name ...')
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=name, &
@@ -412,13 +409,13 @@ SUBROUTINE ReadEngineFromToml(table, engine)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading engine ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading engine ...')
 #endif
 
-  CALL GetValue(table=table, key="engine", VALUE=engine, &
-                default_value=default_engine, origin=origin, &
-                stat=stat, isFound=isFound)
+  CALL GetValue( &
+    table=table, key="engine", VALUE=engine, default_value=default_engine, &
+    origin=origin, stat=stat, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isFound, myName, &
@@ -449,13 +446,13 @@ SUBROUTINE ReadFieldTypeFromToml(table, fieldType)
   TYPE(String) :: fieldTypeChar
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading fieldType ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading fieldType ...')
 #endif
   CALL GetValue(table=table, key="fieldType", VALUE=fieldTypeChar, &
                 default_value=default_fieldTypeChar, origin=origin, &
@@ -498,8 +495,8 @@ SUBROUTINE ReadSpaceCompoFromToml(table, spaceCompo, isSpaceCompo, &
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading spaceCompo ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading spaceCompo ...')
 #endif
 
   CALL GetValue(table=table, key="spaceCompo", VALUE=spaceCompo, &
@@ -527,7 +524,6 @@ SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
   CHARACTER(*), PARAMETER :: myName = "ReadTimeCompoFromToml()"
 #endif
   INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -535,8 +531,8 @@ SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading timeCompo ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading timeCompo ...')
 #endif
 
   CALL GetValue(table=table, key="timeCompo", VALUE=timeCompo, &
@@ -553,10 +549,9 @@ END SUBROUTINE ReadTimeCompoFromToml
 !                                              ReadPhysicalVarNamesFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ReadPhysicalVarNamesFromToml(table, physicalVarNames, &
-                                        isPhysicalVarNames, &
-                                        isPhysicalVarNamesScalar, &
-                                        tPhysicalVarNames)
+SUBROUTINE ReadPhysicalVarNamesFromToml( &
+  table, physicalVarNames, isPhysicalVarNames, isPhysicalVarNamesScalar, &
+  tPhysicalVarNames)
   TYPE(toml_table), INTENT(INOUT) :: table
   CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
   LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
@@ -568,7 +563,6 @@ SUBROUTINE ReadPhysicalVarNamesFromToml(table, physicalVarNames, &
 #endif
 
   INTEGER(I4B) :: origin, stat, ii
-  LOGICAL(LGT) :: isFound
   TYPE(String), ALLOCATABLE :: tempstrs(:)
 
 #ifdef DEBUG_VER
@@ -577,15 +571,13 @@ SUBROUTINE ReadPhysicalVarNamesFromToml(table, physicalVarNames, &
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading physicalVarNames ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading physicalVarNames ...')
 #endif
 
-  CALL GetValue(table=table, key="physicalVarNames", &
-                VALUE=tempstrs, &
-                origin=origin, stat=stat, &
-                isFound=isPhysicalVarNames, &
-                isScalar=isPhysicalVarNamesScalar)
+  CALL GetValue( &
+    table=table, key="physicalVarNames", VALUE=tempstrs, origin=origin, &
+    stat=stat, isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
 
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(tempstrs)
@@ -621,20 +613,19 @@ CALL ReadNameFromToml(table=table, name=name)
 CALL ReadEngineFromToml(table=table, engine=engine)
 CALL ReadFieldTypeFromToml(table=table, fieldType=fieldType)
 
-CALL ReadSpaceCompoFromToml(table=table, spaceCompo=spaceCompo, &
-                            isSpaceCompo=isSpaceCompo, &
-                            isSpaceCompoScalar=isSpaceCompoScalar)
+CALL ReadSpaceCompoFromToml( &
+  table=table, spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
+  isSpaceCompoScalar=isSpaceCompoScalar)
 
-CALL ReadTimeCompoFromToml(table=table, timeCompo=timeCompo, &
-                           isTimeCompo=isTimeCompo, &
-                           isTimeCompoScalar=isTimeCompoScalar)
+CALL ReadTimeCompoFromToml( &
+  table=table, timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+  isTimeCompoScalar=isTimeCompoScalar)
 
-CALL ReadPhysicalVarNamesFromToml(table=table, &
-                                  physicalVarNames=physicalVarNames, &
-                                  isPhysicalVarNames=isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar= &
-                                  isPhysicalVarNamesScalar, &
-                                  tPhysicalVarNames=tPhysicalVarNames)
+CALL ReadPhysicalVarNamesFromToml( &
+  table=table, physicalVarNames=physicalVarNames, &
+  isPhysicalVarNames=isPhysicalVarNames, &
+  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
+  tPhysicalVarNames=tPhysicalVarNames)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -642,132 +633,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE AbstractFieldReadOptsFromToml
-
-!----------------------------------------------------------------------------
-!                                               SetAbstractFieldParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetAbstractFieldParamFromToml
-CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParamFromToml()"
-CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
-CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
-
-CHARACTER(:), ALLOCATABLE :: key
-CHARACTER(1), ALLOCATABLE :: physicalVarNamesChar(:)
-TYPE(String) :: name, engine, fieldTypeChar
-TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-INTEGER(I4B) :: fieldType, origin, stat, tPhysicalVarNames, ii
-INTEGER(I4B), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
-LOGICAL(LGT) :: isfound, isSpaceCompo, isTimeCompo, isSpaceCompoScalar, &
-               isTimeCompoScalar, isPhysicalVarNames, isPhysicalVarNamesScalar
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-key = "name"
-!============
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//" ...")
-#endif
-CALL GetValue(table=table, key=key, VALUE=name, &
-              default_value=prefix, origin=origin, &
-              stat=stat, isFound=isfound)
-
-#ifdef DEBUG_VER
-CALL AssertError1(isfound, myName, &
-                  key//" not found in the toml file")
-#endif
-
-key = "engine"
-!=============
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//" ...")
-#endif
-CALL GetValue(table=table, key=key, VALUE=engine, &
-              default_value=default_engine, origin=origin, &
-              stat=stat, isFound=isfound)
-#ifdef DEBUG_VER
-CALL AssertError1(isfound, myName, &
-                  key//" not found in the toml file")
-#endif
-
-key = "fieldType"
-!================
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//" ...")
-#endif
-CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
-              default_value=default_fieldTypeChar, origin=origin, &
-              stat=stat, isFound=isfound)
-#ifdef DEBUG_VER
-CALL AssertError1(isfound, myName, &
-                  key//" not found in the toml file")
-#endif
-
-fieldType = TypeField%ToNumber(fieldTypeChar%chars())
-
-key = "spaceCompo"
-!================
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//" ...")
-#endif
-CALL GetValue(table=table, key=key, VALUE=spaceCompo, &
-              origin=origin, stat=stat, isFound=isSpaceCompo, &
-              isScalar=isSpaceCompoScalar)
-
-key = "timeCompo"
-!================
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//" ...")
-#endif
-CALL GetValue(table=table, key=key, VALUE=timeCompo, &
-              origin=origin, stat=stat, isFound=isTimeCompo, &
-              isScalar=isTimeCompoScalar)
-
-key = "physicalVarNames"
-!========================
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//' ...')
-#endif
-CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-              origin=origin, stat=stat, isFound=isPhysicalVarNames, &
-              isScalar=isPhysicalVarNamesScalar)
-tPhysicalVarNames = 0
-IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
-ALLOCATE (physicalVarNamesChar(tPhysicalVarNames))
-DO ii = 1, tPhysicalVarNames
-  physicalVarNamesChar(ii) = physicalVarNames(ii)%slice(1, 1)
-END DO
-
-CALL SetAbstractFieldParam(param=param, name=name%chars(), &
-                           engine=engine%chars(), fieldType=fieldType, &
-                           prefix=prefix, comm=comm, local_n=local_n, &
-                           global_n=global_n, spaceCompo=spaceCompo, &
-                           isSpaceCompo=isSpaceCompo, &
-                           isSpaceCompoScalar=isSpaceCompoScalar, &
-                           timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-                           isTimeCompoScalar=isTimeCompoScalar, &
-                           physicalVarNames=physicalVarNamesChar, &
-                           tPhysicalVarNames=tPhysicalVarNames, &
-                           isPhysicalVarNames=isPhysicalVarNames)
-
-name = ""; engine = ""; fieldTypeChar = ""; key = ""
-DEALLOCATE (physicalVarNamesChar)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetAbstractFieldParamFromToml
 
 !----------------------------------------------------------------------------
 !                                             AbstractFieldReadFEDOFFromToml
@@ -795,8 +660,8 @@ isfedof = fedof%IsInitiated()
 IF (isfedof) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'fedof is already initiated, nothing to do')
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
@@ -864,8 +729,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 key = "physicalVarNames"
 !========================
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//' ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading '//key//' ...')
 #endif
 CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
               origin=origin, stat=stat, &
@@ -956,8 +821,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 key = "physicalVarNames"
 !========================
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//' ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading '//key//' ...')
 #endif
 
 CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
@@ -1065,8 +930,8 @@ isfedof = fedof%IsInitiated()
 IF (isfedof) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'fedof is already initiated, nothing to do')
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
@@ -1133,8 +998,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 key = "physicalVarNames"
 !========================
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//' ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading '//key//' ...')
 #endif
 CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
               origin=origin, stat=stat, &
@@ -1225,8 +1090,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 key = "physicalVarNames"
 !========================
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//key//' ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading '//key//' ...')
 #endif
 
 CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
@@ -1331,8 +1196,8 @@ isok = PRESENT(timefedof)
 IF (.NOT. isok) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'timefedof is not present, nothing to do')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'timefedof is not present, nothing to do')
 
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -1347,8 +1212,8 @@ isfedof = timefedof%IsInitiated()
 IF (isfedof) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'fedof is already initiated, nothing to do')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'fedof is already initiated, nothing to do')
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
@@ -1427,8 +1292,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 obj%exact => NULL()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading exact...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading exact...')
 #endif
 
 astr = "exact"
@@ -1588,6 +1453,132 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE AbstractFieldReadPointNBCFromToml
+
+!----------------------------------------------------------------------------
+!                                               SetAbstractFieldParamFromToml
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE SetAbstractFieldParamFromToml
+! CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParamFromToml()"
+! CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
+! CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
+!
+! CHARACTER(:), ALLOCATABLE :: key
+! CHARACTER(1), ALLOCATABLE :: physicalVarNamesChar(:)
+! TYPE(String) :: name, engine, fieldTypeChar
+! TYPE(String), ALLOCATABLE :: physicalVarNames(:)
+! INTEGER(I4B) :: fieldType, origin, stat, tPhysicalVarNames, ii
+! INTEGER(I4B), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
+! LOGICAL(LGT) :: isfound, isSpaceCompo, isTimeCompo, isSpaceCompoScalar, &
+!                isTimeCompoScalar, isPhysicalVarNames, isPhysicalVarNamesScalar
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! key = "name"
+! !============
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//" ...")
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=name, &
+!               default_value=prefix, origin=origin, &
+!               stat=stat, isFound=isfound)
+!
+! #ifdef DEBUG_VER
+! CALL AssertError1(isfound, myName, &
+!                   key//" not found in the toml file")
+! #endif
+!
+! key = "engine"
+! !=============
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//" ...")
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=engine, &
+!               default_value=default_engine, origin=origin, &
+!               stat=stat, isFound=isfound)
+! #ifdef DEBUG_VER
+! CALL AssertError1(isfound, myName, &
+!                   key//" not found in the toml file")
+! #endif
+!
+! key = "fieldType"
+! !================
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//" ...")
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
+!               default_value=default_fieldTypeChar, origin=origin, &
+!               stat=stat, isFound=isfound)
+! #ifdef DEBUG_VER
+! CALL AssertError1(isfound, myName, &
+!                   key//" not found in the toml file")
+! #endif
+!
+! fieldType = TypeField%ToNumber(fieldTypeChar%chars())
+!
+! key = "spaceCompo"
+! !================
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//" ...")
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=spaceCompo, &
+!               origin=origin, stat=stat, isFound=isSpaceCompo, &
+!               isScalar=isSpaceCompoScalar)
+!
+! key = "timeCompo"
+! !================
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//" ...")
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=timeCompo, &
+!               origin=origin, stat=stat, isFound=isTimeCompo, &
+!               isScalar=isTimeCompoScalar)
+!
+! key = "physicalVarNames"
+! !========================
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         'Reading '//key//' ...')
+! #endif
+! CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
+!               origin=origin, stat=stat, isFound=isPhysicalVarNames, &
+!               isScalar=isPhysicalVarNamesScalar)
+! tPhysicalVarNames = 0
+! IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
+! ALLOCATE (physicalVarNamesChar(tPhysicalVarNames))
+! DO ii = 1, tPhysicalVarNames
+!   physicalVarNamesChar(ii) = physicalVarNames(ii)%slice(1, 1)
+! END DO
+!
+! CALL SetAbstractFieldParam(param=param, name=name%chars(), &
+!                            engine=engine%chars(), fieldType=fieldType, &
+!                            prefix=prefix, comm=comm, local_n=local_n, &
+!                            global_n=global_n, spaceCompo=spaceCompo, &
+!                            isSpaceCompo=isSpaceCompo, &
+!                            isSpaceCompoScalar=isSpaceCompoScalar, &
+!                            timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+!                            isTimeCompoScalar=isTimeCompoScalar, &
+!                            physicalVarNames=physicalVarNamesChar, &
+!                            tPhysicalVarNames=tPhysicalVarNames, &
+!                            isPhysicalVarNames=isPhysicalVarNames)
+!
+! name = ""; engine = ""; fieldTypeChar = ""; key = ""
+! DEALLOCATE (physicalVarNamesChar)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+!
+! END PROCEDURE SetAbstractFieldParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

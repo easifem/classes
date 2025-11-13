@@ -36,7 +36,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stdin, INT64, Constant, &
                       Space, Time, SpaceTime
 USE BaseType, ONLY: RealVector_, DOF_
 USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
@@ -57,17 +56,13 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractField"
 
 PUBLIC :: AbstractFieldInitiate
 PUBLIC :: AbstractFieldDisplay
 PUBLIC :: AbstractFieldImport
 PUBLIC :: AbstractFieldExport
 PUBLIC :: AbstractFieldDeallocate
-PUBLIC :: SetAbstractFieldParam
-PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
-PUBLIC :: SetAbstractFieldParamFromToml
 PUBLIC :: AbstractFieldReadFEDOFFromToml
 PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 
@@ -140,22 +135,13 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE(obj_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
-    CheckEssentialParam
-  !! Check essential parameters
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate the field by reading param and given domain
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate  block fields (different physical variables) defined
-  !! over different order of domain.
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate the field by arguments
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
   !! Initiate the field by arguments
-  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate3, &
-    Initiate4, Initiate5
+  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate4, Initiate5
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
 
@@ -236,9 +222,6 @@ CONTAINS
     obj_isConstant
   !! It returns true if the field is constant field
   !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix of the field, it is necessary for Setting essential param
-  !!  This routine should be implemented by child classes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
     obj_GetFEDOFPointer1
   !! Get the FEDOF pointer, a single pointer is returned
@@ -297,129 +280,6 @@ CONTAINS
 END TYPE AbstractField_
 
 !----------------------------------------------------------------------------
-!                                   CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Check the essential parameters in param.
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_CheckEssentialParam(obj, param)
-    IMPORT :: AbstractField_, ParameterList_
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SetAbstractFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-04
-! summary:  Set AbstractField_ parameters
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, &
-                                          fieldType, comm, local_n, &
-                                          global_n, spaceCompo, &
-                                          isSpaceCompo, isSpaceCompoScalar, &
-                                          timeCompo, isTimeCompo, &
-                                          isTimeCompoScalar, &
-                                          tPhysicalVarNames, &
-                                          physicalVarNames, &
-                                          isPhysicalVarNames)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
-    CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL
-    !! following options are available
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
-    !! space components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
-    !! if true we will try to access spaceCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
-    !! is space component scalar,
-    !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
-    !! Time components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
-    !! if true we will try to access TimeCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
-    !! is Time component scalar,
-    !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
-    !! total physical variable names
-    !! if it is zero, then physicalVarNames will not be written
-    !! evenif physicalVarNames is present, and isPhysicalVarNames
-    !! is true
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
-    !! Names of the physical variables
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
-    !! logical variable to check if physicalVarNames is present or not
-    !! if it is false then physicalVarNames will not be written
-  END SUBROUTINE SetAbstractFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Check essential param
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, param, prefix)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldCheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 29 Sept 2021
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    !! FEDOF object
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
-    !! Geometric Fedof object
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
-    !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE AbstractFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE AbstractFieldInitiate
-
-!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -440,29 +300,6 @@ END INTERFACE
 
 INTERFACE AbstractFieldInitiate
   MODULE PROCEDURE obj_Initiate2
-END INTERFACE AbstractFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 29 Sept 2021
-! summary: Initiate by reading options From [[ParameterList_]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-    !! Vector of TimeFEDOFPointers
-    !! All timefedofs should be initiated
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-INTERFACE AbstractFieldInitiate
-  MODULE PROCEDURE obj_Initiate3
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -964,35 +801,6 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    SetAbstractFieldParamFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-15
-! summary:  Make param From toml file
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParamFromToml( &
-    param, table, prefix, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! Parameter list to be set
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! toml table From which parameters are read
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-  END SUBROUTINE SetAbstractFieldParamFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1720,21 +1528,6 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsConstant
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
