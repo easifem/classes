@@ -24,7 +24,6 @@ USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -36,13 +35,11 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
 INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 
 PUBLIC :: STVectorField_
 PUBLIC :: STVectorFieldPointer_
-PUBLIC :: SetSTVectorFieldParam
 PUBLIC :: STVectorFieldInitiate
 PUBLIC :: STVectorFieldDeallocate
 PUBLIC :: STVectorFieldDisplay
@@ -71,14 +68,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! check the essential parameter in param
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate by using param
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
 
@@ -200,9 +189,6 @@ CONTAINS
     obj_GetFeVariable
   !! Get multiple values in FEVariable
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get prefix
-
   ! SET:
   ! @DirichletBCMethods
 
@@ -223,81 +209,6 @@ END TYPE STVectorField_
 TYPE :: STVectorFieldPointer_
   CLASS(STVectorField_), POINTER :: ptr => NULL()
 END TYPE STVectorFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                   SetSTVectorFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Aug 2021
-! summary: Set essential parameter
-
-INTERFACE
-  MODULE SUBROUTINE SetSTVectorFieldParam(param, name, engine, &
-                    spaceCompo, timeCompo, fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    CHARACTER(*), INTENT(IN) :: engine
-    !! Engine name, see TypeEngineName
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communicator
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size
-  END SUBROUTINE SetSTVectorFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(STVectorField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the space-time vector field
-!
-!# Introduction
-!
-! This routine initiate the space-time vector field object.
-! `param` contains the information of parameters required to initiate the
-! this field.
-! There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STvector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE STVectorFieldInitiate
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(STVectorField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -1294,21 +1205,6 @@ INTERFACE STVectorFieldGetFEVariable
     !! physical variable
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE STVectorFieldGetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(STVectorField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods
