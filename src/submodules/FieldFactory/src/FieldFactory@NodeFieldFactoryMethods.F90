@@ -368,52 +368,59 @@ END PROCEDURE STScalarFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VectorField_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "VectorField_Initiate1()"
-INTEGER(I4B) :: tsize, ii
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
+#endif
+
+! INTEGER(I4B) :: tsize, ii
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
-
-DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => VectorFieldFactory(engine)
-
-  CALL SetVectorFieldParam( &
-    param=param, name=names(ii)%Chars(), spaceCompo=spaceCompo, &
-    fieldType=fieldType, engine=engine)
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+! isok = SIZE(obj) .GE. tsize
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! DO ii = 1, tsize
+!
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       " as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => VectorFieldFactory(engine)
+!
+!   CALL SetVectorFieldParam( &
+!     param=param, name=names(ii)%Chars(), spaceCompo=spaceCompo, &
+!     fieldType=fieldType, engine=engine)
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+!
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE VectorField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -421,61 +428,68 @@ END PROCEDURE VectorField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VectorField_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "VectorField_Initiate2()"
-INTEGER(I4B) :: tsize, ii, nn(6)
-TYPE(ParameterList_) :: param
+#endif
+
+! INTEGER(I4B) :: tsize, ii, nn(6)
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(obj)
-
-nn = [ &
-  & tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), SIZE(engine),  &
-  & SIZE(fedof) &
-]
-
-CALL Assert(nn=nn, &
-      msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
-            "engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
-
-DO ii = 1, tsize
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[ALLOCATION ERROR] :: VectorField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-  END IF
-
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-  END IF
-
-  obj(ii)%ptr => VectorFieldFactory(engine(ii)%Chars())
-
-  CALL SetVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                           spaceCompo=spaceCompo(ii), &
-                           fieldType=fieldType(ii), &
-                           engine=engine(ii)%chars())
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
-                            geofedof=geofedof(ii)%ptr)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(obj)
+!
+! nn = [ &
+!   & tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), SIZE(engine),  &
+!   & SIZE(fedof) &
+! ]
+!
+! CALL Assert(nn=nn, &
+!       msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
+!             "engine, fedof should be the same", &
+!             file=__FILE__, line=__LINE__, routine=myName)
+!
+! DO ii = 1, tsize
+!   IF (ASSOCIATED(obj(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                   '[ALLOCATION ERROR] :: VectorField_::obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       ", as it may cause memory leak.")
+!   END IF
+!
+!   IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
+!                    ") is not associated. It will lead to segmentation fault.")
+!   END IF
+!
+!   obj(ii)%ptr => VectorFieldFactory(engine(ii)%Chars())
+!
+!   CALL SetVectorFieldParam(param=param, name=names(ii)%Chars(), &
+!                            spaceCompo=spaceCompo(ii), &
+!                            fieldType=fieldType(ii), &
+!                            engine=engine(ii)%chars())
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+!                             geofedof=geofedof(ii)%ptr)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
-
+#endif
 END PROCEDURE VectorField_Initiate2
 
 !----------------------------------------------------------------------------
@@ -483,45 +497,52 @@ END PROCEDURE VectorField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STVectorField_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "STVectorField_Initiate1()"
-INTEGER(I4B) :: tsize, ii
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
+#endif
+! INTEGER(I4B) :: tsize, ii
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
-
-DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => STVectorFieldFactory(engine)
-
-  CALL SetSTVectorFieldParam( &
-    param=param, name=names(ii)%chars(), spaceCompo=spaceCompo, &
-    timeCompo=timeCompo, fieldType=fieldType, engine=engine)
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+! isok = SIZE(obj) .GE. tsize
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! DO ii = 1, tsize
+!
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       " as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => STVectorFieldFactory(engine)
+!
+!   CALL SetSTVectorFieldParam( &
+!     param=param, name=names(ii)%chars(), spaceCompo=spaceCompo, &
+!     timeCompo=timeCompo, fieldType=fieldType, engine=engine)
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -535,60 +556,67 @@ END PROCEDURE STVectorField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STVectorField_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "STVectorField_Initiate2()"
-INTEGER(I4B) :: tsize, ii, nn(7)
-TYPE(ParameterList_) :: param
+#endif
+
+! INTEGER(I4B) :: tsize, ii, nn(7)
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif DEBUG_VER
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(obj)
-
-nn = [ tsize, SIZE(names), SIZE(spaceCompo), SIZE(timeCompo), SIZE(fieldType), &
-      SIZE(engine), SIZE(fedof)]
-
-CALL Assert(nn=nn, &
-       msg="[ARG ERROR] :: The size of obj, names, spaceCompo, timeCompo,"// &
-            "fieldType, engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
-
-DO ii = 1, tsize
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[ALLOCATION ERROR] :: STVectorField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
-  END IF
-
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => STVectorFieldFactory(engine(ii)%Chars())
-
-  CALL SetSTVectorFieldParam(param=param, name=names(ii)%Chars(), &
-                         spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
-                           fieldType=fieldType(ii), engine=engine(ii)%chars())
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
-                            geofedof=geofedof(ii)%ptr)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(obj)
+!
+! nn = [ tsize, SIZE(names), SIZE(spaceCompo), SIZE(timeCompo), SIZE(fieldType), &
+!       SIZE(engine), SIZE(fedof)]
+!
+! CALL Assert(nn=nn, &
+!        msg="[ARG ERROR] :: The size of obj, names, spaceCompo, timeCompo,"// &
+!             "fieldType, engine, fedof should be the same", &
+!             file=__FILE__, line=__LINE__, routine=myName)
+!
+! DO ii = 1, tsize
+!   IF (ASSOCIATED(obj(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                 '[ALLOCATION ERROR] :: STVectorField_::obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       ", as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
+!                    ") is not associated. It will lead to segmentation fault.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => STVectorFieldFactory(engine(ii)%Chars())
+!
+!   CALL SetSTVectorFieldParam(param=param, name=names(ii)%Chars(), &
+!                          spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
+!                            fieldType=fieldType(ii), engine=engine(ii)%chars())
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+!                             geofedof=geofedof(ii)%ptr)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE STVectorField_Initiate2
 
 !----------------------------------------------------------------------------
@@ -596,44 +624,51 @@ END PROCEDURE STVectorField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarField_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "ScalarField_Initiate1()"
-INTEGER(I4B) :: tsize, ii
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
+#endif
+! INTEGER(I4B) :: tsize, ii
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif DEBUG_VER
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
-
-DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => ScalarFieldFactory(engine)
-
-  CALL SetScalarFieldParam(param=param, name=names(ii)%chars(), &
-                           fieldType=fieldType, engine=engine)
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+! isok = SIZE(obj) .GE. tsize
+!
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! DO ii = 1, tsize
+!
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       " as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => ScalarFieldFactory(engine)
+!
+!   CALL SetScalarFieldParam(param=param, name=names(ii)%chars(), &
+!                            fieldType=fieldType, engine=engine)
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -647,54 +682,62 @@ END PROCEDURE ScalarField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarField_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "ScalarField_Initiate2()"
-INTEGER(I4B) :: tsize, ii, nn(5)
-TYPE(ParameterList_) :: param
+#endif
+
+! INTEGER(I4B) :: tsize, ii, nn(5)
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif DEBUG_VER
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(obj)
-
-nn = [tsize, SIZE(names), SIZE(fieldType), SIZE(engine), SIZE(fedof)]
-
-CALL Assert(nn=nn, &
-            msg="[ARG ERROR] :: The size of obj, names, fieldType, "// &
-            "engine, fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
-
-DO ii = 1, tsize
-
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[ALLOCATION ERROR] :: ScalarField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
-  END IF
-
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => ScalarFieldFactory(engine(ii)%Chars())
-
-  CALL SetScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                           fieldType=fieldType(ii), engine=engine(ii)%Chars())
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
-                            geofedof=geofedof(ii)%ptr)
-
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(obj)
+!
+! nn = [tsize, SIZE(names), SIZE(fieldType), SIZE(engine), SIZE(fedof)]
+!
+! CALL Assert(nn=nn, &
+!             msg="[ARG ERROR] :: The size of obj, names, fieldType, "// &
+!             "engine, fedof should be the same", &
+!             file=__FILE__, line=__LINE__, routine=myName)
+!
+! DO ii = 1, tsize
+!
+!   IF (ASSOCIATED(obj(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                   '[ALLOCATION ERROR] :: ScalarField_::obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       ", as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
+!                    ") is not associated. It will lead to segmentation fault.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => ScalarFieldFactory(engine(ii)%Chars())
+!
+!   CALL SetScalarFieldParam(param=param, name=names(ii)%Chars(), &
+!                            fieldType=fieldType(ii), engine=engine(ii)%Chars())
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+!                             geofedof=geofedof(ii)%ptr)
+!
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -707,44 +750,52 @@ END PROCEDURE ScalarField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STScalarField_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "STScalarField_Initiate1()"
-INTEGER(I4B) :: tsize, ii
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
+#endif
+
+! INTEGER(I4B) :: tsize, ii
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
-
-DO ii = 1, tsize
-
-  problem = ASSOCIATED(obj(ii)%ptr)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => STScalarFieldFactory(engine)
-
-  CALL SetSTScalarFieldParam( &
-    param=param, name=names(ii)%Chars(), timeCompo=timeCompo, &
-    fieldType=fieldType, engine=engine)
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+! isok = SIZE(obj) .GE. tsize
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! DO ii = 1, tsize
+!
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[ALLOCATION ERROR] :: obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       " as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => STScalarFieldFactory(engine)
+!
+!   CALL SetSTScalarFieldParam( &
+!     param=param, name=names(ii)%Chars(), timeCompo=timeCompo, &
+!     fieldType=fieldType, engine=engine)
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -758,56 +809,64 @@ END PROCEDURE STScalarField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE STScalarField_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "STScalarField_Initiate2()"
-INTEGER(I4B) :: tsize, ii, nn(6)
-TYPE(ParameterList_) :: param
+#endif
+
+! INTEGER(I4B) :: tsize, ii, nn(6)
+! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif DEBUG_VER
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-tsize = SIZE(obj)
-
-nn = [tsize, SIZE(names), SIZE(timeCompo), SIZE(fieldType), SIZE(engine), &
-      SIZE(fedof)]
-
-CALL Assert(nn=nn, &
-       msg="[ARG ERROR] :: The size of obj, names, timeCompo, fieldType, "// &
-            "engine,  fedof should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
-
-DO ii = 1, tsize
-
-  IF (ASSOCIATED(obj(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[ALLOCATION ERROR] :: STScalarField_::obj('//ToString(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
-  END IF
-
-  IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
-  END IF
-
-  obj(ii)%ptr => STScalarFieldFactory(engine(ii)%Chars())
-
-  CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
-                             timeCompo=timeCompo(ii), &
-                             fieldType=fieldType(ii), &
-                             engine=engine(ii)%Chars())
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
-                            geofedof=geofedof(ii)%ptr)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(obj)
+!
+! nn = [tsize, SIZE(names), SIZE(timeCompo), SIZE(fieldType), SIZE(engine), &
+!       SIZE(fedof)]
+!
+! CALL Assert(nn=nn, &
+!        msg="[ARG ERROR] :: The size of obj, names, timeCompo, fieldType, "// &
+!             "engine,  fedof should be the same", &
+!             file=__FILE__, line=__LINE__, routine=myName)
+!
+! DO ii = 1, tsize
+!
+!   IF (ASSOCIATED(obj(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                 '[ALLOCATION ERROR] :: STScalarField_::obj('//ToString(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       ", as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   IF (.NOT. ASSOCIATED(fedof(ii)%ptr)) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[POINTER ERROR] :: FEDOF_::fedof('//ToString(ii)// &
+!                    ") is not associated. It will lead to segmentation fault.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => STScalarFieldFactory(engine(ii)%Chars())
+!
+!   CALL SetSTScalarFieldParam(param=param, name=names(ii)%Chars(), &
+!                              timeCompo=timeCompo(ii), &
+!                              fieldType=fieldType(ii), &
+!                              engine=engine(ii)%Chars())
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+!                             geofedof=geofedof(ii)%ptr)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

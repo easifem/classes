@@ -18,6 +18,8 @@
 SUBMODULE(STScalarFieldLis_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE STScalarField_Class, ONLY: STScalarFieldDisplay
+USE Display_Method, ONLY: Display
+
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -25,7 +27,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display

@@ -154,7 +154,7 @@ CONTAINS
   !! Initiate the field by arguments
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
   !! Initiate the field by arguments
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
+  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate3, &
     Initiate4, Initiate5
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
