@@ -22,8 +22,6 @@ USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
                                    AbstractNodeFieldDeallocate
-USE AbstractField_Class, ONLY: AbstractFieldCheckEssentialParam, &
-                               SetAbstractFieldParam
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
@@ -32,144 +30,23 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       SetVectorFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetVectorFieldParam
-CHARACTER(*), PARAMETER :: myName = "SetVectorFieldParam()"
-INTEGER(I4B) :: ierr
-LOGICAL(LGT) :: isok
-TYPE(ParameterList_), POINTER :: sublist
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL SetAbstractFieldParam(param=param, prefix=myprefix, &
-                           name=name, engine=engine, fieldType=fieldType, &
-                           comm=comm, local_n=local_n, global_n=global_n)
-
-sublist => NULL()
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-isok = ierr .EQ. 0_I4B
-CALL AssertError1(isok, myName, &
-                  'some error occured in getting sublist(1)')
-
-isok = ASSOCIATED(sublist)
-CALL AssertError1(isok, myName, &
-                  'some error occured in getting sublist(2)')
-
-CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, &
-         key="spaceCompo", VALUE=spaceCompo)
-
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetVectorFieldParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam()"
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
-
-isok = param%IsPresent(key=myprefix//"/spaceCompo")
-CALL AssertError1(isok, myName, &
-                  'spaceCompo should be present in param.')
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_checkEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-CHARACTER(1) :: names(1)
-TYPE(String) :: astr
-INTEGER(I4B) :: tdof, ierr, tNodes(1)
-TYPE(ParameterList_), POINTER :: sublist
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! main
-sublist => NULL()
-
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-isok = ierr .EQ. 0
-CALL AssertError1(isok, myName, &
-                  'some error occured in getting sublist(1)')
-
-isok = ASSOCIATED(sublist)
-CALL AssertError1(isok, myName, &
-                  'some error occured in getting sublist(2)')
-
-CALL obj%CheckEssentialParam(sublist)
-CALL obj%DEALLOCATE()
-
-CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", &
-              VALUE=obj%spaceCompo)
-
-tNodes(1) = fedof%GetTotalDOF()
-tdof = tNodes(1) * obj%spaceCompo
-names(1) (:) = astr%slice(1, 1)
-
-CALL AbstractNodeFieldSetParam(obj=obj, dof_tPhysicalVars=1_I4B, &
-                               dof_storageFMT=MYSTORAGEFORMAT, &
-                               dof_spaceCompo=[obj%spaceCompo], &
-                               dof_timeCompo=[1_I4B], dof_tNodes=tNodes, &
-                               dof_names_char=names, tSize=tdof)
-
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                               timefedof=timefedof, geofedof=geofedof)
-
-CALL Reallocate(obj%idofs, obj%spaceCompo)
-obj%idofs = Arange(1_I4B, obj%spaceCompo)
-
-astr = ""
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
 INTEGER(I4B) :: ii, tsize
 
-CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                               copyStructure=copyStructure, &
-                               usePointer=usePointer)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (VectorField_)
   obj%spaceCompo = obj2%spaceCompo
@@ -180,6 +57,11 @@ SELECT TYPE (obj2); CLASS IS (VectorField_)
     obj%idofs(ii) = obj2%idofs(ii)
   END DO
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------

@@ -446,14 +446,6 @@ VALUE = NodalVariable(v, TypeFEVariableVector, TypeFEVariableSpace)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
-!                                                                  GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                              GetStorageFMT
 !----------------------------------------------------------------------------
 

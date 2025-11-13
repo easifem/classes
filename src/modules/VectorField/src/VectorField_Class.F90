@@ -24,7 +24,6 @@ USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -41,13 +40,11 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "VectorField"
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_
 PUBLIC :: VectorFieldPointer_
-PUBLIC :: SetVectorFieldParam
 PUBLIC :: VectorFieldInitiate
 PUBLIC :: VectorFieldDeallocate
 PUBLIC :: VectorFieldDisplay
@@ -73,12 +70,9 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    obj_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
   ! IO:
@@ -164,8 +158,6 @@ CONTAINS
   !! Get the entries of Vector field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix name
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Get the storage format of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
@@ -211,88 +203,6 @@ END TYPE VectorField_
 TYPE :: VectorFieldPointer_
   CLASS(VectorField_), POINTER :: ptr => NULL()
 END TYPE VectorFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                            SetVectorFieldParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: Sets parameters for creating the vector field
-!
-INTERFACE
-  MODULE SUBROUTINE SetVectorFieldParam(param, name, engine, spaceCompo, &
-                                        fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !!
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE SetVectorFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            checkEssentialParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-!
-!# Introduction
-! This routine check the essential parameters required to the initiate the
-! [[VectorField_]] data type. We need following parameters
-!
-! - CHARACTER(  * ) :: name
-! - INTEGER( I4B ) :: tdof
-
-INTERFACE
-  MODULE SUBROUTINE obj_checkEssentialParam(obj, param)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_checkEssentialParam
-END INTERFACE
-
-INTERFACE VectorFieldCheckEssentialParam
-  MODULE PROCEDURE obj_checkEssentialParam
-END INTERFACE VectorFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                        Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the VectorField_ object
-!
-!# Introduction
-! This routine initiate the vector field object.
-! `param` contains the information of parameters required to initiate the
-! vector. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of vector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE VectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethods
@@ -1323,21 +1233,6 @@ END INTERFACE
 INTERFACE VectorFieldGetFEVariable
   MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE VectorFieldGetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetStorageFMT@GetMethods
