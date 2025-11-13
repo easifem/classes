@@ -23,7 +23,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
@@ -32,7 +31,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "ScalarField"
 
 PUBLIC :: ScalarFieldLis_
 PUBLIC :: ScalarFieldLisPointer_
@@ -53,43 +51,30 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
-
   FINAL :: obj_Final
   !! Finalizer
-
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Get the size of the object
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of ScalarFieldLis_
-
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the object
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the object
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the object
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
-
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! This method is not avaiable in ScalarFieldList
-
 END TYPE ScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -142,23 +127,6 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-22
-! summary: This subroutine initiates the ScalarFieldLis_ object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------

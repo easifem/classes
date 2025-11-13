@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) GetMethods
-
 USE InputUtility, ONLY: Input
 
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
@@ -340,14 +339,6 @@ ivar0 = input(option=ivar, default=1_I4B)
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE, ivar=ivar0, &
              islocal=islocal)
 END PROCEDURE obj_GetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

@@ -433,14 +433,6 @@ CALL obj%Get(globalNode=globalNode, VALUE=VALUE, islocal=islocal)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

@@ -25,7 +25,6 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -39,14 +38,11 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
 INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 
 PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
-PUBLIC :: SetSTScalarFieldParam
-PUBLIC :: STScalarFieldCheckEssentialParam
 PUBLIC :: STScalarFieldInitiate
 PUBLIC :: STScalarFieldDeallocate
 PUBLIC :: STScalarFieldDisplay
@@ -74,13 +70,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of STScalarField by using param and fedof
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
 
@@ -190,7 +179,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -215,78 +203,26 @@ END TYPE STScalarFieldPointer_
 ! date: 26 Aug 2021
 ! summary: This routine is used to for Setting space time scalar field
 
-INTERFACE
-  MODULE SUBROUTINE SetSTScalarFieldParam(param, name, timeCompo, &
-                                   engine, fieldType, comm, global_n, local_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component
-    CHARACTER(*), INTENT(IN) :: engine
-    !! engine name
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communicator
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size
-  END SUBROUTINE SetSTScalarFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Check the essential parameters in param.
-!
-!# Introduction
-! This routine Check the essential parameters required to the initiate the
-! [[STScalarField_]] data type. We need following parameters
-!
-! - CHARACTER(  * ) :: name
-! - INTEGER( I4B ) :: tdof
-
-INTERFACE STScalarFieldCheckEssentialParam
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(STScalarField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE STScalarFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the STScalarField_ object
-!
-!# Introduction
-! This routine initiate the STScalar field object.
-! `param` contains the information of parameters required to initiate the
-! STScalar. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STScalar field
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE STScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE STScalarFieldInitiate
+! INTERFACE
+!   MODULE SUBROUTINE SetSTScalarFieldParam(param, name, timeCompo, &
+!                                    engine, fieldType, comm, global_n, local_n)
+!     TYPE(ParameterList_), INTENT(INOUT) :: param
+!     CHARACTER(*), INTENT(IN) :: name
+!     !! name of the variable
+!     INTEGER(I4B), INTENT(IN) :: timeCompo
+!     !! time component
+!     CHARACTER(*), INTENT(IN) :: engine
+!     !! engine name
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+!     !! field type
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+!     !! communicator
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+!     !! global size
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+!     !! local size
+!   END SUBROUTINE SetSTScalarFieldParam
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -297,8 +233,8 @@ END INTERFACE STScalarFieldInitiate
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
@@ -1226,21 +1162,6 @@ INTERFACE STScalarFieldGetFEVariable
     !! Physical component
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE STScalarFieldGetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(STScalarField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

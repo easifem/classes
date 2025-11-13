@@ -39,7 +39,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
 TYPE(String) :: dsetname
-TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: bools(3), isok
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)

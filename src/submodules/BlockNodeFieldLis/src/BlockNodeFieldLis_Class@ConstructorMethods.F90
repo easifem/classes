@@ -15,39 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeFieldLis_Class) ConstructorMethods
-USE BlockNodeField_Class, ONLY: BlockNodeFieldInitiate, &
-                                BlockNodeFieldDeallocate
+USE BlockNodeField_Class, ONLY: BlockNodeFieldDeallocate
 
 IMPLICIT NONE
 
 #include "lisf.h"
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-#endif
-
-INTEGER(I4B) :: ierr
-
-CALL BlockNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                            timefedof=timefedof, geofedof=geofedof)
-
-CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-                         obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                      Final

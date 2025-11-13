@@ -37,21 +37,21 @@ END PROCEDURE obj_Final
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-INTEGER(I4B) :: ierr
-
-CALL STScalarFieldInitiate(obj=obj, param=param, fedof=fedof, &
-                           timefedof=timefedof, geofedof=geofedof)
-
-CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Initiate1
+! MODULE PROCEDURE obj_Initiate1
+! INTEGER(I4B) :: ierr
+!
+! CALL STScalarFieldInitiate(obj=obj, param=param, fedof=fedof, &
+!                            timefedof=timefedof, geofedof=geofedof)
+!
+! CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+! CALL CHKERR(ierr)
+!
+! CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+! CALL CHKERR(ierr)
+!
+! CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+! CALL CHKERR(ierr)
+! END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

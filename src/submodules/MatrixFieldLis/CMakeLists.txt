@@ -20,17 +20,5 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/MatrixFieldLis_Class@ConstructorMethods.F90
           ${src_path}/MatrixFieldLis_Class@IOMethods.F90
-          ${src_path}/MatrixFieldLis_Class@MatVecMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@GetMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@GetRowMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@GetColMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@SetMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@SetRowMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@SetColMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@LUsolveMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@PreconditionMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@DiagonalMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@DiagonalScalingMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@SpectralMethods.F90
-          # ${src_path}/MatrixFieldLis_Class@DBCMethods.F90
-)
+          ${src_path}/MatrixFieldLis_Class@HDFMethods.F90
+          ${src_path}/MatrixFieldLis_Class@MatVecMethods.F90)

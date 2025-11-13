@@ -25,7 +25,6 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE VectorField_Class, ONLY: VectorField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -36,7 +35,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "VectorFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "VectorField"
 
 PUBLIC :: VectorFieldLis_
 PUBLIC :: VectorFieldLisPointer_
@@ -59,31 +57,22 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Get the size of the vector field
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate the vector field
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the vector field
-
   FINAL :: obj_Final
   !! Finalizer
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of vector field
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the vector field
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the vector field
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   !! obj@[ivar, idof] = value@[ivar, idof]
 
@@ -92,7 +81,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! Get pointer of the vector field
   !! This method is not callable
-
 END TYPE VectorFieldLis_
 
 !----------------------------------------------------------------------------
@@ -117,32 +105,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-25
-! summary: This subroutine initiates the VectorFieldLis_ object
-!
-!# Introduction
-! This routine initiate the vector field object.
-! `param` contains the information of parameters required to initiate the
-! vector. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of vector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------

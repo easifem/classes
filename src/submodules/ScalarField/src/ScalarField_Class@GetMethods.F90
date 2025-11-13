@@ -212,14 +212,6 @@ END PROCEDURE obj_GetFEVariable
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_Size
 ans = obj%local_n
 END PROCEDURE obj_Size

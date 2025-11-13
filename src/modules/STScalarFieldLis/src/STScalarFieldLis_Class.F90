@@ -25,7 +25,6 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE STScalarField_Class, ONLY: STScalarField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
@@ -36,7 +35,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
 
 PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
@@ -57,41 +55,28 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of STScalarFieldLis_
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-  !!
-
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the content
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   !! Set values using FEVariable
-
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! Set values using FEVariable
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! Get pointer
 END TYPE STScalarFieldLis_
@@ -112,32 +97,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(STScalarFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the STScalarFieldLis_ object
-!
-!# Introduction
-! This routine initiate the STScalar field object.
-! `param` contains the information of parameters required to initiate the
-! STScalar. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STScalar field
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------

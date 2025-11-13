@@ -20,19 +20,12 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) MatrixFieldFactoryMethods
-USE FPL, ONLY: ParameterList_
 USE StringUtility, ONLY: UpperCase
 USE AssertUtility, ONLY: Assert
 USE Display_Method, ONLY: ToString
-
-USE MatrixField_Class, ONLY: MatrixField_, &
-                             SetMatrixFieldParam
-
+USE MatrixField_Class, ONLY: MatrixField_
 USE MatrixFieldLis_Class, ONLY: MatrixFieldLis_
-
-USE BlockMatrixField_Class, ONLY: BlockMatrixField_, &
-                                  SetBlockMatrixFieldParam
-
+USE BlockMatrixField_Class, ONLY: BlockMatrixField_
 USE BlockMatrixFieldLis_Class, ONLY: BlockMatrixFieldLis_
 
 IMPLICIT NONE

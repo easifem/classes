@@ -23,7 +23,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE BlockNodeField_Class, ONLY: BlockNodeField_
@@ -34,7 +33,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BlockNodeFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
 
 PUBLIC :: BlockNodeFieldLis_
 PUBLIC :: BlockNodeFieldLisPointer_
@@ -56,21 +54,17 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: Set18 => obj_Set18
 
   ! GET:
@@ -85,35 +79,6 @@ END TYPE BlockNodeFieldLis_
 TYPE :: BlockNodeFieldLisPointer_
   CLASS(BlockNodeFieldLis_), POINTER :: ptr => NULL()
 END TYPE BlockNodeFieldLisPointer_
-
-!----------------------------------------------------------------------------
-!                                                 Initiate@ConstructorMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: This subroutine initiates the BlockNodeFieldLis_ object
-!
-!# Introduction
-!
-! This routine initiate the [[BlockNodeFieldLis_]] object.
-! `param` contains the information of parameters required to initiate the
-! instance of BlockNodeFieldLis_ .
-!
-! - It is better to make `param` by calling
-! [[BlockNodeFieldLis_::SetBlockNodeFieldParam]]
-! - The size of `dom` should be equal to the number of physical variables
-! present in the block node field.
-! - `dom` contains the pointer to [[Domain_]] class.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethod

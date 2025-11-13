@@ -30,7 +30,6 @@
 
 MODULE MatrixField_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, DOF_FMT
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
@@ -46,20 +45,14 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
-CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
 CHARACTER(*), PRIVATE, PARAMETER :: precondPrefix = "Precond"
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 
-PUBLIC :: SetMatrixFieldParam
 PUBLIC :: MatrixField_
 PUBLIC :: MatrixFieldPointer_
-PUBLIC :: SetMatrixFieldPrecondParam
-PUBLIC :: SetRectangleMatrixFieldParam
 PUBLIC :: DEALLOCATE
-PUBLIC :: MatrixFieldCheckEssentialParam
-PUBLIC :: RectangleMatrixFieldCheckEssentialParam
 PUBLIC :: MatrixFieldInitiate
 PUBLIC :: MatrixFieldDeallocate
 PUBLIC :: MatrixFieldDisplay
@@ -169,116 +162,73 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    MatrixFieldCheckEssentialParam
-  !! Check essential parameters
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from the parameter list
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other object
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate for block matrices
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
-
   FINAL :: obj_Final
   !! Deallocate the field
 
   ! IO:
   !@IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from hdf5 file
-
   PROCEDURE, PUBLIC, PASS(obj) :: ImportPmat => obj_ImportPmat
   !! Import from hdf5 file
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! export matrix field in hdf5file_
-
   PROCEDURE, PUBLIC, PASS(obj) :: ExportPmat => obj_ExportPmat
   !! export PMat
-
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   !! Get the sparsity pattern in various file formats
 
   ! GET:
   !@GetMethods
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix
-
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the size of the matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Returns the shape of the matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
   !! Get the matrix in rank-2 array
   !! filter: globalNode(:)
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
   !! Get a single value
   !! filter: idof, jdof, iNodeNum, jNodeNum
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
   !! Get the multiple values
   !! Filter: iNodeNum(:), jNodeNum(:), ivar, jvar
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get4 => obj_Get4
   !! Get the multiple values
   !! Filter: iNodeNum(:), jNodeNum(:), ivar, jvar
   !! idof, jdof
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get5 => obj_Get5
   !! Get a single value
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get6 => obj_Get6
   !! Get a single value
-
   PROCEDURE, PUBLIC, PASS(obj) :: Get7 => obj_Get7
   !! Get multiple values
 
   ! GET:
   ! @GetRowMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRow2 => obj_GetRow2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRow3 => obj_GetRow3
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow4 => obj_GetRow4
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => obj_GetRow5
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => obj_GetRow6
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => obj_GetRow7
 
   ! GET:
   ! @GetColMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => obj_GetColumn3
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn4 => obj_GetColumn4
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => obj_GetColumn5
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
 
   ! SET:
@@ -286,50 +236,34 @@ CONTAINS
 
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
   !! Set multiple value by using a rank-2 matrix
-
   PROCEDURE, PASS(obj) :: Set2 => obj_Set2
   !! Set multiple value by using a constant scalar
-
   PROCEDURE, PASS(obj) :: Set3 => obj_Set3
   !! Set a single value
-
   PROCEDURE, PASS(obj) :: Set4 => obj_Set4
   !! Set multiple values by using rank-2 array
-
   PROCEDURE, PASS(obj) :: Set5 => obj_Set5
   !! Set multiple values by using rank-2 array
-
   PROCEDURE, PASS(obj) :: Set6 => obj_Set6
   !! Set a single value
-
   PROCEDURE, PASS(obj) :: Set7 => obj_Set7
   !! Set a single value
-
   PROCEDURE, PASS(obj) :: Set8 => obj_Set8
   !! Set multiple values by using a scalar value
-
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   !! Set multiple values by using a scalar value
-
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
   !! Set multiple values by using a scalar value
-
   PROCEDURE, PASS(obj) :: Set11 => obj_Set11
   !! Add or set by using a MatrixField_
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTMatrix => obj_SetFromSTMatrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetToSTMatrix => obj_SetToSTMatrix
 
   ! SET:
   ! @SetRowMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => obj_SetRow1
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetRow2 => obj_SetRow2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetRow3 => obj_SetRow3
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow4 => obj_SetRow4
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => obj_SetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => obj_SetRow6
@@ -338,27 +272,19 @@ CONTAINS
   ! SET:
   ! @SetColMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetColumn2 => &
     obj_SetColumn2
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetColumn3 => &
     obj_SetColumn3
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn4 => obj_SetColumn4
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => obj_SetColumn5
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
 
   ! GET:
   ! @MatvecMethods
-
   PROCEDURE, PASS(obj) :: Matvec1 => obj_Matvec1
   !! Matrix vector multiplication
-
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 
@@ -372,13 +298,10 @@ CONTAINS
 
   ! SET:
   ! @PreconditionMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => obj_SetPrecondition
+  ! PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => obj_SetPrecondition
   !! Building precondition matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => obj_GetPrecondition
   !! Get the precondition matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => obj_ReversePermutation
 
   ! GET:
@@ -406,7 +329,6 @@ CONTAINS
 
   ! GET:
   ! @UnaryMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Scal => obj_Scal
 
 END TYPE MatrixField_
@@ -427,34 +349,35 @@ END TYPE MatrixFieldPointer_
 ! date: 20 July 2021
 ! summary: This routine Sets the parameter for creating MatrixField_
 
-INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldParam(param, name, matrixProp, engine, &
-                    spaceCompo, timeCompo, fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! Options to create [[MatrixField_]] will be stored in this
-    CHARACTER(*), INTENT(IN) :: name
-    !! Name of the matrix field
-    CHARACTER(*), INTENT(IN) :: matrixProp
-    !! Matrix property, "SYM" or "UNSYM"
-    CHARACTER(*), INTENT(IN) :: engine
-    !! "NATIVE_SERIE"
-    !! "LIS_OMP"
-    !! "LIS_MPI"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! Number of space-components, see [[DOF_]]
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-    !! Number of time-components, see [[DOF_]]
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! fieldType can be following
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    !! FIELD_TYPE_CONSTANT_SPACE
-    !! FIELD_TYPE_CONSTANT_TIME
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE SetMatrixFieldParam
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE SetMatrixFieldParam( &
+!     param, name, matrixProp, engine, spaceCompo, timeCompo, fieldType, &
+!     comm, local_n, global_n)
+!     TYPE(ParameterList_), INTENT(INOUT) :: param
+!     !! Options to create [[MatrixField_]] will be stored in this
+!     CHARACTER(*), INTENT(IN) :: name
+!     !! Name of the matrix field
+!     CHARACTER(*), INTENT(IN) :: matrixProp
+!     !! Matrix property, "SYM" or "UNSYM"
+!     CHARACTER(*), INTENT(IN) :: engine
+!     !! "NATIVE_SERIE"
+!     !! "LIS_OMP"
+!     !! "LIS_MPI"
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+!     !! Number of space-components, see [[DOF_]]
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+!     !! Number of time-components, see [[DOF_]]
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+!     !! fieldType can be following
+!     !! FIELD_TYPE_NORMAL
+!     !! FIELD_TYPE_CONSTANT
+!     !! FIELD_TYPE_CONSTANT_SPACE
+!     !! FIELD_TYPE_CONSTANT_TIME
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+!   END SUBROUTINE SetMatrixFieldParam
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                           SetMatrixFieldPrecondParam@sConstructorMethods
@@ -464,29 +387,30 @@ END INTERFACE
 ! date: 20 July 2021
 ! summary: This routine Sets the parameter for precondition of MatrixField_
 
-INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldPrecondParam(param, name, engine, &
-                lfil, mbloc, droptol, permtol, alpha, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! Options to create precondition of [[MatrixField_]]
-    INTEGER(I4B), INTENT(IN) :: name
-    !! Name of precondition
-    CHARACTER(*), INTENT(IN) :: engine
-    !! "NATIVE_SERIE"
-    !! "LIS_OMP"
-    !! "LIS_MPI"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
-    !! Droptoleranace
-    REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
-    !! permutation tolerance
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE SetMatrixFieldPrecondParam
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE SetMatrixFieldPrecondParam( &
+!     param, name, engine, lfil, mbloc, droptol, permtol, alpha, comm, &
+!     local_n, global_n)
+!     TYPE(ParameterList_), INTENT(INOUT) :: param
+!     !! Options to create precondition of [[MatrixField_]]
+!     INTEGER(I4B), INTENT(IN) :: name
+!     !! Name of precondition
+!     CHARACTER(*), INTENT(IN) :: engine
+!     !! "NATIVE_SERIE"
+!     !! "LIS_OMP"
+!     !! "LIS_MPI"
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
+!     !! Droptoleranace
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
+!     !! permutation tolerance
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+!   END SUBROUTINE SetMatrixFieldPrecondParam
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                            SetRectangleMatrixFieldParam@ConstructorMethods
@@ -510,44 +434,37 @@ END INTERFACE
 ! the same and equal to 2.
 !@endnote
 
-INTERFACE
-  MODULE SUBROUTINE SetRectangleMatrixFieldParam( &
-    & param, &
-    & name, &
-    & matrixProp, &
-    & physicalVarNames, &
-    & spaceCompo, &
-    & timeCompo, &
-    & engine, &
-    & fieldType, &
-    & comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! Options to create [[BlockMatrixField_]] will be stored in this
-    CHARACTER(*), INTENT(IN) :: name
-    !! Name of the matrix field
-    CHARACTER(*), INTENT(IN) :: matrixProp
-    !! Matrix property, "SYM" or "UNSYM"
-    CHARACTER(*), INTENT(IN) :: physicalVarNames(2)
-    !! Name of physical variables
-    INTEGER(I4B), INTENT(IN) :: spaceCompo(2)
-    !! Number of space-components in each physicalVarNames, see [[DOF_]]
-    INTEGER(I4B), INTENT(IN) :: timeCompo(2)
-    !! Number of time-components in each physicalVarNames, see [[DOF_]]
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
-    !! "NATIVE_SERIE"
-    !! "LIS_OMP"
-    !! "LIS_MPI"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! fieldType can be following
-    !! FIELD_TYPE_NORMAL <-- DEFAULT
-    !! FIELD_TYPE_CONSTANT
-    !! FIELD_TYPE_CONSTANT_SPACE
-    !! FIELD_TYPE_CONSTANT_TIME
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE SetRectangleMatrixFieldParam
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE SetRectangleMatrixFieldParam( &
+!     param, name, matrixProp, physicalVarNames, spaceCompo, timeCompo, &
+!     engine, fieldType, comm, local_n, global_n)
+!     TYPE(ParameterList_), INTENT(INOUT) :: param
+!     !! Options to create [[BlockMatrixField_]] will be stored in this
+!     CHARACTER(*), INTENT(IN) :: name
+!     !! Name of the matrix field
+!     CHARACTER(*), INTENT(IN) :: matrixProp
+!     !! Matrix property, "SYM" or "UNSYM"
+!     CHARACTER(*), INTENT(IN) :: physicalVarNames(2)
+!     !! Name of physical variables
+!     INTEGER(I4B), INTENT(IN) :: spaceCompo(2)
+!     !! Number of space-components in each physicalVarNames, see [[DOF_]]
+!     INTEGER(I4B), INTENT(IN) :: timeCompo(2)
+!     !! Number of time-components in each physicalVarNames, see [[DOF_]]
+!     CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
+!     !! "NATIVE_SERIE"
+!     !! "LIS_OMP"
+!     !! "LIS_MPI"
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+!     !! fieldType can be following
+!     !! FIELD_TYPE_NORMAL <-- DEFAULT
+!     !! FIELD_TYPE_CONSTANT
+!     !! FIELD_TYPE_CONSTANT_SPACE
+!     !! FIELD_TYPE_CONSTANT_TIME
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+!   END SUBROUTINE SetRectangleMatrixFieldParam
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -571,46 +488,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(MatrixField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-!
-!# Introduction
-!
-! This routine check the essential parameters required to the initiate the
-! [[MatrixField_]] data type.
-
-INTERFACE
-  MODULE SUBROUTINE MatrixFieldCheckEssentialParam(obj, param)
-    CLASS(MatrixField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE MatrixFieldCheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-!
-!# Introduction
-!
-! This routine check the essential parameters required to the initiate the
-! [[MatrixField_]] data type.
-
-INTERFACE
-  MODULE SUBROUTINE RectangleMatrixFieldCheckEssentialParam(obj, param)
-    CLASS(MatrixField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE RectangleMatrixFieldCheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -645,18 +522,18 @@ END INTERFACE
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE MatrixFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE MatrixFieldInitiate
+! INTERFACE
+!   MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
+!     CLASS(MatrixField_), INTENT(INOUT) :: obj
+!     TYPE(ParameterList_), INTENT(IN) :: param
+!     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+!     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+!   END SUBROUTINE obj_Initiate1
+! END INTERFACE
+!
+! INTERFACE MatrixFieldInitiate
+!   MODULE PROCEDURE obj_Initiate1
+! END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -717,18 +594,18 @@ END INTERFACE MatrixFieldInitiate
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-INTERFACE MatrixFieldInitiate
-  MODULE PROCEDURE obj_Initiate3
-END INTERFACE MatrixFieldInitiate
+! INTERFACE
+!   MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
+!     CLASS(MatrixField_), INTENT(INOUT) :: obj
+!     TYPE(ParameterList_), INTENT(IN) :: param
+!     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
+!     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+!   END SUBROUTINE obj_Initiate3
+! END INTERFACE
+!
+! INTERFACE MatrixFieldInitiate
+!   MODULE PROCEDURE obj_Initiate3
+! END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -809,8 +686,9 @@ END INTERFACE MatrixFieldDisplay
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE MatrixFieldImport
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+  MODULE SUBROUTINE obj_Import( &
+    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs, geofedof, &
+    geofedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -830,8 +708,8 @@ END INTERFACE MatrixFieldImport
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-MODULE SUBROUTINE obj_ImportPmat(obj, hdf5, group, fedof, fedofs, timefedof, &
-                                   timefedofs)
+  MODULE SUBROUTINE obj_ImportPmat( &
+    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -888,21 +766,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: filename
     CHARACTER(*), INTENT(IN) :: ext
   END SUBROUTINE obj_SPY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(MatrixField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1067,38 +930,38 @@ INTERFACE
   END SUBROUTINE obj_ILUSOLVE2
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                       SetPrecondition@PreconditionMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 July 2021
-! summary: This routine Sets the precondition
+! !----------------------------------------------------------------------------
+! !                                       SetPrecondition@PreconditionMethods
+! !----------------------------------------------------------------------------
 !
-!# Introduction
-! This routine Sets the precondition matrix
+! !> authors: Vikas Sharma, Ph. D.
+! ! date: 18 July 2021
+! ! summary: This routine Sets the precondition
+! !
+! !# Introduction
+! ! This routine Sets the precondition matrix
+! !
+! ! - The information about the precondition is given in `param`
+! ! - The number of parameters defined in `param` actually  depends upon the
+! ! type of precondition matrix
+! !
+! ! Following preconditions has been added.
+! !
+! ! ILUT : preconditionName, droptol, lfil
+! ! ILUTP : preconditionName, droptol, permtol, lfil, mbloc
+! ! ILUD : preconditionName, droptol, alpha
+! ! ILUDP : preconditionName, droptol, permtol, alpha, mbloc
+! ! ILUK : preconditionName, lfil
+! !
+! ! This routine is avaiable for NATIVE_SERIAL only.
 !
-! - The information about the precondition is given in `param`
-! - The number of parameters defined in `param` actually  depends upon the
-! type of precondition matrix
-!
-! Following preconditions has been added.
-!
-! ILUT : preconditionName, droptol, lfil
-! ILUTP : preconditionName, droptol, permtol, lfil, mbloc
-! ILUD : preconditionName, droptol, alpha
-! ILUDP : preconditionName, droptol, permtol, alpha, mbloc
-! ILUK : preconditionName, lfil
-!
-! This routine is avaiable for NATIVE_SERIAL only.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_SetPrecondition
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
+!     CLASS(MatrixField_), INTENT(INOUT) :: obj
+!     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+!   END SUBROUTINE obj_SetPrecondition
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                       GetPrecondition@PreconditionMethods
@@ -1212,8 +1075,8 @@ END INTERFACE
 ! summary: SymSchurLargestEigenVal
 
 INTERFACE
-  MODULE FUNCTION obj_SymLargestEigenVal(obj, nev, which, NCV, &
-                                         maxIter, tol) RESULT(ans)
+  MODULE FUNCTION obj_SymLargestEigenVal( &
+    obj, nev, which, NCV, maxIter, tol) RESULT(ans)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! CSRMatrix, symmetric
     INTEGER(I4B), INTENT(IN) :: nev
@@ -1260,8 +1123,8 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBCToRHS(obj, x, y, isTranspose, &
-                                              scale, addContribution)
+  MODULE SUBROUTINE obj_ApplyDirichletBCToRHS( &
+    obj, x, y, isTranspose, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     CLASS(AbstractNodeField_), INTENT(INOUT) :: y
@@ -1320,8 +1183,8 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, storageFMT, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, storageFMT, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1370,8 +1233,8 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set2(obj, VALUE, globalNode, islocal, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set2( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
@@ -1408,8 +1271,9 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, iNodeNum, jNodeNum, islocal, idof, &
-                             jdof, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set3( &
+    obj, iNodeNum, jNodeNum, islocal, idof, jdof, VALUE, scale, &
+    addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
@@ -1431,8 +1295,9 @@ END INTERFACE
 ! summary: This routine Sets data to matrix field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, islocal, ivar, &
-                             jvar, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, VALUE, scale, &
+    addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1456,8 +1321,9 @@ END INTERFACE
 ! summary: This routine Sets data to matrix field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, islocal, ivar, &
-                             jvar, idof, jdof, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, idof, jdof, VALUE, &
+    scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1542,9 +1408,9 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
-             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set7( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, ispacecompo, itimecompo, &
+    jspacecompo, jtimecompo, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
@@ -1584,9 +1450,9 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
-             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set8( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, ispacecompo, itimecompo, &
+    jspacecompo, jtimecompo, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1626,9 +1492,9 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
-             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set9( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, ispacecompo, itimecompo, &
+    jspacecompo, jtimecompo, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1668,9 +1534,9 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, iNodeNum, jNodeNum, islocal, ivar, jvar, &
-             ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
-                              addContribution)
+  MODULE SUBROUTINE obj_Set10( &
+    obj, iNodeNum, jNodeNum, islocal, ivar, jvar, ispacecompo, itimecompo, &
+    jspacecompo, jtimecompo, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1785,8 +1651,8 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetRow1(obj, globalNode, islocal, idof, scalarVal, vecVal, &
-                                nodeFieldVal)
+  MODULE SUBROUTINE obj_SetRow1( &
+    obj, globalNode, islocal, idof, scalarVal, vecVal, nodeFieldVal)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT), INTENT(IN) :: islocal

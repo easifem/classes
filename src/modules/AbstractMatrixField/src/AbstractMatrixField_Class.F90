@@ -23,7 +23,6 @@ MODULE AbstractMatrixField_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
@@ -96,10 +95,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => obj_isPreconditionSet
   !! True if prcondition is Set
-
-  PROCEDURE(obj_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
-    SetPrecondition
-  !! Build precondition matrix
 
   PROCEDURE(obj_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
     GetPrecondition
@@ -411,14 +406,14 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine Sets the precondition
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
-    IMPORT :: AbstractMatrixField_, ParameterList_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_SetPrecondition
-END INTERFACE
+! ABSTRACT INTERFACE
+!   SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
+!     IMPORT :: AbstractMatrixField_, ParameterList_, I4B
+!     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+!     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+!   END SUBROUTINE obj_SetPrecondition
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetPrecondition

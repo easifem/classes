@@ -30,7 +30,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
 
 PUBLIC :: BlockMatrixFieldLis_
 
@@ -47,15 +46,12 @@ TYPE, EXTENDS(BlockMatrixField_) :: BlockMatrixFieldLis_
   INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
 
 CONTAINS
-
   PRIVATE
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from the parameter list
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
   !! Finalizer
@@ -73,7 +69,6 @@ CONTAINS
   ! @MatvecMethods
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
-
 END TYPE BlockMatrixFieldLis_
 
 !----------------------------------------------------------------------------
@@ -84,46 +79,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine initiates the Matrix Field
-!
-!# Introduction
-!
-! This routine initiates an instance of [[BlockMatrixField_]].
-! The options/arguments to initiate the matrix field are
-! contained inside param, which is an instance of [[ParameterList_]].
-! In addition, [[Domain_]] `dom` is target to the pointer
-! [[AbstractField_:domain]] and [[AbstractField_::domains]]
-!
-! - `param` contains both essential and optional parameters which are used in
-! constructing the matrix field
-! - `dom` is a pointer to a domain
-!
-! ESSENTIAL PARAMETERS are
-!
-! - `name` This is name of field (char)
-! - `matrixProp`, UNSYM, SYM (char)
-!
-! OPTIONAL PARAMETERS
-!
-! - `timeCompo `, INT, default is 1
-! - `timeCompo`, INT, default is 1
-! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -156,22 +111,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine initiates the Matrix Field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -270,5 +209,9 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE obj_Matvec2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE BlockMatrixFieldLis_Class

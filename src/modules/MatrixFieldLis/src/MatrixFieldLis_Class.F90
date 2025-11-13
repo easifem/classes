@@ -16,7 +16,6 @@
 
 MODULE MatrixFieldLis_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
@@ -31,7 +30,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
-CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
 
 PUBLIC :: MatrixFieldLis_
 PUBLIC :: MatrixFieldLisInitiate2
@@ -55,20 +53,14 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from the parameter list
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other object
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -78,7 +70,6 @@ CONTAINS
 
   ! GET:
   ! @MatvecMethods
-
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 
@@ -92,47 +83,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(MatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-30
-! summary: This routine initiates the Matrix Field
-!
-!# Introduction
-!
-! This routine initiates an instance of [[MatrixField_]].
-! The options/arguments to initiate the matrix field are
-! contained inside param, which is an instance of [[ParameterList_]].
-! In addition, [[Domain_]] `dom` is target to the pointer
-! [[AbstractField_:domain]]
-!
-! - Param contains both essential and optional parameters which are used in
-! constructing the matrix field
-! - dom is a pointer to a domain, where we are interested in constructing the
-! matrix
-!
-! ESSENTIAL PARAMETERS are
-!
-! - `name` This is name of field (char)
-! - `matrixProp`, UNSYM, SYM (char)
-!
-! OPTIONAL PARAMETERS
-!
-! - `spaceCompo`, INT, default is 1
-! - `timeCompo`, INT, default is 1
-! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -181,23 +131,6 @@ INTERFACE MatrixFieldLisInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
 END INTERFACE MatrixFieldLisInitiate2
-
-!----------------------------------------------------------------------------
-!                                               Initiate@sConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-30
-! summary: This routine initiates the Matrix Field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -283,8 +216,8 @@ END INTERFACE
 ! outside and it should have same length as the input vector.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, &
-                                addContribution, scale)
+  MODULE SUBROUTINE obj_Matvec2( &
+    obj, x, y, isTranspose, addContribution, scale)
     CLASS(MatrixFieldLis_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
@@ -295,5 +228,9 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE obj_Matvec2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE MatrixFieldLis_Class

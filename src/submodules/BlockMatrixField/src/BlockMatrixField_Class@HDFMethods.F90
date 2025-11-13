@@ -44,7 +44,6 @@ TYPE(String) :: strval, dsetname, name, matrixProp, engine
 INTEGER(I4B), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
 INTEGER(I4B) :: fieldType, ii, tvar
 CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
-TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: isok, ismat, isRectangle
 
 #ifdef DEBUG_VER

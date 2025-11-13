@@ -20,19 +20,8 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) NodeFieldFactoryMethods
-USE FPL, ONLY: ParameterList_
-
 USE Display_Method, ONLY: ToString
-
 USE AssertUtility, ONLY: Assert
-
-USE ScalarField_Class, ONLY: SetScalarFieldParam
-
-USE STScalarField_Class, ONLY: SetSTScalarFieldParam
-
-USE STVectorField_Class, ONLY: SetSTVectorFieldParam
-
-USE VectorField_Class, ONLY: SetVectorFieldParam
 
 IMPLICIT NONE
 CONTAINS

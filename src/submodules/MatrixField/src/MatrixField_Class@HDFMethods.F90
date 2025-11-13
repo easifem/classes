@@ -50,7 +50,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 
 TYPE(String) :: dname, matprop
 TYPE(DOF_), POINTER :: dofobj
-INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -203,7 +202,6 @@ TYPE(String) :: name1, name2
 CHARACTER(20) :: varnames(2)
 INTEGER(I4B) :: fieldType
 LOGICAL(LGT) :: isRectangle0
-TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
