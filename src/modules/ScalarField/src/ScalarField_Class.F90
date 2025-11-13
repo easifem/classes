@@ -25,7 +25,6 @@ USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -41,13 +40,10 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
-PUBLIC :: SetScalarFieldParam
-PUBLIC :: ScalarFieldCheckEssentialParam
 PUBLIC :: ScalarFieldInitiate
 PUBLIC :: ScalarFieldImport
 PUBLIC :: ScalarFieldDeallocate
@@ -69,12 +65,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check the essential parameters
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of ScalarField_
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate an instance of ScalarField_ by passing arguments
 
@@ -132,8 +122,6 @@ CONTAINS
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
   !! Get Finite Element variable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Get the size of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
@@ -197,83 +185,6 @@ END TYPE ScalarField_
 TYPE :: ScalarFieldPointer_
   CLASS(ScalarField_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                           SetScalarFieldParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: Set the essential parameters
-
-INTERFACE
-  MODULE SUBROUTINE SetScalarFieldParam(param, name, engine, &
-                                        fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size of scalar field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size of scalar field on distributed on processors
-    !! Only needed for parallel environment
-  END SUBROUTINE SetScalarFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           CheckEssentialParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-INTERFACE ScalarFieldCheckEssentialParam
-  MODULE PROCEDURE obj_CheckEssentialParam
-END INTERFACE ScalarFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the ScalarField_ object
-!
-!# Introduction
-!
-! This routine initiate the [[ScalarField_]] object.
-! `param` contains the information of parameters required to initiate the
-! scalar field. There are essential and optional information.
-! Essential information are described below.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(in) :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE ScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -859,21 +770,6 @@ INTERFACE ScalarFieldGetFEVariable
     !! physical variable
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE ScalarFieldGetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Size@GetMethods
