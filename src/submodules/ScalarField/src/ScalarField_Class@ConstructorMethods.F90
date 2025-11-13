@@ -21,8 +21,6 @@ USE FPL_Method, ONLY: FPL_GetValue => GetValue
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
                                    AbstractNodeFieldInitiate, &
                                    AbstractNodeFieldDeallocate
-USE AbstractField_Class, ONLY: SetAbstractFieldParam, &
-                               AbstractFieldCheckEssentialParam
 IMPLICIT NONE
 CONTAINS
 
