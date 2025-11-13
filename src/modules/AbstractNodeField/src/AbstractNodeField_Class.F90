@@ -16,7 +16,6 @@ MODULE AbstractNodeField_Class
 USE GlobalData, ONLY: DFP, LGT, I4B, NODES_FMT
 USE Basetype, ONLY: RealVector_, DOF_, FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
@@ -45,7 +44,6 @@ PUBLIC :: AbstractNodeFieldGetFEVariable
 PUBLIC :: NodeFieldsWriteData
 
 CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
@@ -98,11 +96,7 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate an instance of AbstrtactNodeField
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
@@ -271,27 +265,6 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 29 Sept 2021
-! summary: Initiate the field by reading param and given fdof
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof, geofedof, timefedof)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(in) :: timefedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
 ! date: 25 Sept 2021
 ! summary: Initiate AbstractNodeField_ from another instance
 !
@@ -322,29 +295,6 @@ END INTERFACE
 
 INTERFACE AbstractNodeFieldInitiate
   MODULE PROCEDURE obj_Initiate2
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: Initiates AbstractNodeField_ from parameters and fedof
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof, geofedof, timefedof)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    !! vectpr fedof pointers
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
-    !! Vector of TimeFEDOFPointers
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------

@@ -38,8 +38,8 @@ CONTAINS
 
 MODULE PROCEDURE AbstractNodeFieldCheckError
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldCheckError()"
-INTEGER(I4B) :: ivar, tvar
-LOGICAL(LGT) :: problem, isok
+INTEGER(I4B) :: tvar
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -102,53 +102,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractNodeFieldCheckError
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-CHARACTER(:), ALLOCATABLE :: prefix
-INTEGER(I4B) :: local_n, global_n
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-prefix = obj%GetPrefix()
-
-CALL AbstractFieldInitiate( &
-  obj=obj, param=param, fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-
-CALL AbstractNodeFieldCheckError(obj)
-
-!info: So when a child calls this routine then dof_** are already set
-! That is also the reason why we are not calling deallocate in the begining
-
-CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
-                  names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
-                  timeCompo=obj%dof_timeCompo, storageFMT=obj%dof_storageFMT)
-
-CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = RealVector_SIZE(obj%realVec)
-
-CALL obj%GetParam(local_n=local_n, global_n=global_n)
-IF (local_n .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (global_n .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
-
-prefix = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate2
 !----------------------------------------------------------------------------
 
@@ -185,51 +138,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                            obj_Initiate3
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-#endif
-
-INTEGER(I4B) :: local_n, global_n
-CHARACTER(:), ALLOCATABLE :: prefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-prefix = obj%GetPrefix()
-
-CALL AbstractFieldInitiate( &
-  obj=obj, param=param, fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-
-CALL AbstractNodeFieldCheckError(obj)
-
-CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
-                  names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
-                  timeCompo=obj%dof_timeCompo, storageFMT=obj%dof_storageFMT)
-
-CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = RealVector_SIZE(obj%realVec)
-
-CALL obj%GetParam(local_n=local_n, global_n=global_n)
-
-IF (local_n .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (global_n .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
-
-prefix = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
