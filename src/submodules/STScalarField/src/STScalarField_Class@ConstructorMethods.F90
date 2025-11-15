@@ -32,154 +32,93 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    SetSTScalarFieldParam
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE SetSTScalarFieldParam
-! CHARACTER(*), PARAMETER :: myName = "SetSTScalarFieldParam()"
-! TYPE(ParameterList_), POINTER :: sublist
-! INTEGER(I4B) :: ierr
-! LOGICAL(LGT) :: isok
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! CALL SetAbstractFieldParam(param=param, prefix=myprefix, name=name, &
-!              engine=engine, fieldType=fieldType, comm=comm, local_n=local_n, &
-!                            global_n=global_n)
-!
-! sublist => NULL()
-! ierr = param%GetSubList(key=myprefix, sublist=sublist)
-!
-! #ifdef DEBUG_VER
-! isok = ierr .EQ. 0_I4B
-! CALL AssertError1(isok, myName, "error occured in getting sublist")
-!
-! isok = ASSOCIATED(sublist)
-! CALL AssertError1(isok, myName, &
-!            "sublist is not associated, some error occured in getting sublist")
-! #endif
-!
-! CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, key="timeCompo", &
-!          VALUE=timeCompo)
-!
-! sublist => NULL()
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-!
-! END PROCEDURE SetSTScalarFieldParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_CheckEssentialParam
-! CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-! LOGICAL(LGT) :: isok
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-!
-! END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-! MODULE PROCEDURE obj_Initiate1
-! CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-! CHARACTER(1) :: names(1)
-! TYPE(String) :: astr
-! INTEGER(I4B) :: tdof, ierr, tNodes(1), timeCompo(1)
-! INTEGER(I4B), PARAMETER :: spaceCompo(1) = 1_I4B, tPhysicalVars = 1_I4B
-! TYPE(ParameterList_), POINTER :: sublist
-! LOGICAL(LGT) :: isok, istimefedof
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! sublist => NULL()
-!
-! ierr = param%GetSubList(key=myprefix, sublist=sublist)
-! isok = ierr .EQ. 0_I4B
-! CALL AssertError1(isok, myName, &
-!                   "error occured in getting sublist(1)")
-!
-! isok = ASSOCIATED(sublist)
-! CALL AssertError1(isok, myName, &
-!         "sublist is not associated, some error occured in getting sublist(1)")
-!
-! CALL obj%CheckEssentialParam(sublist)
-! CALL obj%DEALLOCATE()
-!
-! CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-!
-! istimefedof = PRESENT(timefedof)
-! IF (istimefedof) THEN
-!   obj%timeCompo = timefedof%GetTotalDOF()
-!
-! ELSE
-!   isok = sublist%IsPresent(key=myprefix//"/timeCompo")
-!   CALL AssertError1(isok, myName, &
-!                     "timeCompo is not present in the parameter list")
-!   CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", &
-!                 VALUE=obj%timeCompo)
-! END IF
-!
-! tNodes(1) = fedof%GetTotalDOF()
-! tdof = tNodes(1) * obj%timeCompo
-! names(1) (:) = astr%slice(1, 1)
-! timeCompo(1) = obj%timeCompo
-!
-! CALL AbstractNodeFieldSetParam(obj=obj, &
-!                                dof_tPhysicalVars=tPhysicalVars, &
-!                                dof_storageFMT=mystorageformat, &
-!                                dof_spaceCompo=spaceCompo, &
-!                                dof_timeCompo=timeCompo, &
-!                                dof_tNodes=tNodes, &
-!                                dof_names_char=names, &
-!                                tSize=tdof)
-!
-! CALL AbstractNodeFieldInitiate(obj=obj, param=param, fedof=fedof, &
-!                                timefedof=timefedof, geofedof=geofedof)
-!
-! CALL Reallocate(obj%idofs, obj%timeCompo)
-! obj%idofs = Arange(1_I4B, obj%timeCompo)
-!
-! astr = ""
-! sublist => NULL()
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-!
-! END PROCEDURE obj_Initiate1
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+CHARACTER(1) :: dof_names(1)
+INTEGER(I4B) :: dof_tNodes(1), dof_tsize, dof_spaceCompo(1), &
+                dof_timeCompo(1), dof_tPhysicalVarNames
+LOGICAL(LGT) :: istimefedof, isok, timeCompoMade
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+
+! Handle timefedof and timeCompo
+! we can compute timeCompo from timefedof as well as from timeCompo
+! so let's do it
+
+timeCompoMade = .FALSE.
+istimefedof = PRESENT(timefedof)
+IF (istimefedof) THEN
+  timeCompoMade = timefedof%IsInitiated()
+  IF (timeCompoMade) dof_timeCompo(1) = timefedof%GetTotalDOF()
+END IF
+
+IF (.NOT. timeCompoMade) THEN
+#ifdef DEBUG_VER
+  isok = PRESENT(timeCompo)
+  CALL AssertError1(isok, myName, "timeCompo is not present")
+#endif
+  dof_timeCompo(1) = timeCompo(1)
+  timeCompoMade = .TRUE.
+END IF
+
+obj%timeCompo = dof_timeCompo(1)
+
+CALL Reallocate(obj%idofs, obj%timeCompo)
+obj%idofs = Arange(1_I4B, obj%timeCompo)
+
+dof_names(1) = name(1:1)
+dof_tNodes(1) = fedof%GetTotalDOF()
+dof_spaceCompo(1) = 1_I4B
+dof_tsize = dof_tNodes(1) * dof_spaceCompo(1) * dof_timeCompo(1)
+dof_tPhysicalVarNames = 1_I4B
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
+  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
+  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
+  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
+  isTNodesScalar=.TRUE., geofedof=geofedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
 INTEGER(I4B) :: tsize, ii
-CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                           copyStructure=copyStructure, usePointer=usePointer)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
+
 SELECT TYPE (obj2); CLASS IS (STScalarField_)
   obj%timeCompo = obj2%timeCompo
 
@@ -189,6 +128,11 @@ SELECT TYPE (obj2); CLASS IS (STScalarField_)
     obj%idofs(ii) = obj2%idofs(ii)
   END DO
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------

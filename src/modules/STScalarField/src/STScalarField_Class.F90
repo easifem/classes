@@ -72,6 +72,8 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate an instance of ScalarField_ by passing arguments
 
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside the STScalarField_ object
@@ -246,6 +248,97 @@ END INTERFACE
 
 INTERFACE STScalarFieldInitiate
   MODULE PROCEDURE obj_Initiate2
+END INTERFACE STScalarFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Initiates by passing arguments
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field, needed
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine, needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL, needed
+    !! following options are available FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the scalar field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1), NOT REQUIRED
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components, needed for space-time field
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required, Not needed
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1), Not needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true, Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE STScalarFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
 END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
