@@ -219,8 +219,8 @@ END TYPE STVectorFieldPointer_
 ! summary: Initiate2
 
 INTERFACE STVectorFieldInitiate
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
