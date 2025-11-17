@@ -71,6 +71,7 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   !! obj(ivar, idof) = obj(ivar, idof) + scalar*obj2(ivar, idof)
+
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
@@ -109,6 +110,10 @@ END INTERFACE
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-15
+! summary: Display the object
+
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
@@ -121,6 +126,10 @@ END INTERFACE
 !                                                           Export@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-15
+! summary:  Export the data into hdf5 file
+
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
@@ -132,6 +141,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         Import@IOMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-15
+! summary: Import data from hdf5 file
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
