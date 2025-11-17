@@ -69,7 +69,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -88,7 +87,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
@@ -131,7 +129,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! returns vector values at single node or
   !! get all nodal values of a space-components
@@ -165,7 +162,6 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 
@@ -193,7 +189,6 @@ CONTAINS
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
   !! Generic method for setting body source
-
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -213,8 +208,8 @@ END TYPE VectorFieldPointer_
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
