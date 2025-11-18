@@ -17,11 +17,7 @@
 
 SUBMODULE(LinSolverLis_Class) ConstructorMethods
 USE BaseType, ONLY: TypePrecondOpt, &
-                    TypeConvergenceOpt, &
                     TypeSolverNameOpt
-USE InputUtility, ONLY: Input
-USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
-                                   AbstractLinSolverDeallocate
 USE LinSolver_Class, ONLY: LinSolverInitiate, &
                            LinSolverDeallocate
 USE Display_Method, ONLY: ToString
@@ -37,9 +33,9 @@ CONTAINS
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 INTEGER(I4B) :: ierr, solverName0, preconditionOption0, convergenceIn0, &
@@ -162,19 +158,16 @@ opt = ""
 SELECT CASE (solverName0)
 
 CASE (TypeSolverNameOpt%BICGSTABL)
-
-  opt = opt//' -i bicgstabl -ell '//ToString(bicgstab_ell0)
+  opt = ' -i bicgstabl -ell '//ToString(bicgstab_ell0)
 
 CASE (TypeSolverNameOpt%ORTHOMIN, TypeSolverNameOpt%GMRES, &
       TypeSolverNameOpt%FGMRES)
-
-  opt = ' -i '//ToString(solverName0)// &
-        ' -restart '//ToString(krylovSubspaceSize0)
+  opt = ' -i '//ToString(solverName0)//' -restart '// &
+        ToString(krylovSubspaceSize0)
 
 CASE (TypeSolverNameOpt%IDRS)
-
-  opt = ' -i '//ToString(solverName0)// &
-        ' -irestart '//ToString(krylovSubspaceSize0)
+  opt = ' -i '//ToString(solverName0)//' -irestart '// &
+        ToString(krylovSubspaceSize0)
 
 CASE (TypeSolverNameOpt%SOR)
   opt = ' -i sor -omega '//ToString(sor_omega0)
@@ -273,7 +266,7 @@ CALL CHKERR(ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
@@ -283,6 +276,7 @@ MODULE PROCEDURE obj_Deallocate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
+
 INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
@@ -313,7 +307,9 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_final
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

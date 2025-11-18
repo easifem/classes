@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,15 +14,15 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-SUBMODULE(AbstractLinSolver_Class) IOMethods
+SUBMODULE(LinSolverOpt_Class) IOMethods
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
@@ -48,19 +49,22 @@ IF (.NOT. isok) THEN
 #endif
 END IF
 
-CALL obj%opt%Display("AbstractLinSolver options:", unitno=unitno)
-CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
-CALL Display(obj%iter, "iter: ", unitNo=unitno)
-CALL Display(obj%tol, "tol: ", unitNo=unitno)
-CALL Display(obj%normRes, "normRes: ", unitNo=unitno)
-CALL Display(obj%error0, "error0: ", unitNo=unitno)
-CALL Display(obj%error, "error: ", unitNo=unitno)
-
-isok = ALLOCATED(obj%res)
-CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
-
-isok = ASSOCIATED(obj%amat)
-CALL Display(isok, "amat is ASSOCIATED: ", unitNo=unitno)
+CALL Display("engine: "//TRIM(obj%engine), unitNo=unitno)
+CALL Display(obj%solverName, "solverName: ", unitNo=unitno)
+CALL Display(obj%preconditionOption, "preconditionOption: ", unitNo=unitno)
+CALL Display(obj%maxIter, "maxIter: ", unitNo=unitno)
+CALL Display(obj%convergenceIn, "convergenceIn: ", unitNo=unitno)
+CALL Display(obj%convergenceType, "convergenceType: ", unitNo=unitno)
+CALL Display(obj%krylovSubspaceSize, "krylovSubspaceSize: ", unitNo=unitno)
+CALL Display(obj%globalNumRow, "globalNumRow: ", unitNo=unitno)
+CALL Display(obj%localNumRow, "localNumRow: ", unitNo=unitno)
+CALL Display(obj%comm, "comm: ", unitNo=unitno)
+CALL Display(obj%myRank, "myRank: ", unitNo=unitno)
+CALL Display(obj%numProcs, "numProcs: ", unitNo=unitno)
+CALL Display(obj%scale, "scale: ", unitNo=unitno)
+CALL Display(obj%atol, "atol: ", unitNo=unitno)
+CALL Display(obj%rtol, "rtol: ", unitNo=unitno)
+CALL Display(obj%relativeToRHS, "relativeToRHS: ", unitNo=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

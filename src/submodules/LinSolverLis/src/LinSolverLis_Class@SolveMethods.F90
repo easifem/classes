@@ -204,7 +204,6 @@ CALL chkerr(ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Solve
 
 !----------------------------------------------------------------------------

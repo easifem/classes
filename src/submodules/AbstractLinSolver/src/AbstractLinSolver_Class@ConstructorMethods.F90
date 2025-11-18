@@ -16,8 +16,6 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
-USE InputUtility, ONLY: Input
-
 IMPLICIT NONE
 CONTAINS
 
@@ -35,31 +33,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL obj%opt%DEALLOCATE()
 obj%isInit = .FALSE.
-obj%engine = TypeLinSolverOpt%engine
-obj%solverName = TypeLinSolverOpt%solverName
 obj%ierr = 0
-obj%preconditionOption = TypeLinSolverOpt%preconditionOption
 obj%iter = 0
-obj%maxIter = TypeLinSolverOpt%maxIter
-obj%convergenceIn = TypeLinSolverOpt%convergenceIn
-obj%convergenceType = TypeLinSolverOpt%convergenceType
-obj%krylovSubspaceSize = TypeLinSolverOpt%krylovSubspaceSize
-obj%globalNumColumn = 0
-obj%globalNumRow = 0
-obj%localNumColumn = 0
-obj%localNumRow = 0
-obj%comm = 0
-obj%myRank = 0
-obj%numProcs = 1
-obj%scale = TypeLinSolverOpt%scale
-obj%atol = TypeLinSolverOpt%atol
-obj%rtol = TypeLinSolverOpt%rtol
 obj%tol = 0.0
 obj%normRes = 0.0
 obj%error0 = 0.0
 obj%error = 0.0
-obj%relativeToRHS = TypeLinSolverOpt%relativeToRHS
 IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
 NULLIFY (obj%amat)
 
@@ -71,11 +52,11 @@ END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Initiate
-!-------------------------------------------------------------------- --------
+!----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -83,58 +64,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'This method is deprecated. Use obj_Initiate2() instead.')
-#endif
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+CALL obj%opt%Initiate( &
+  engine=engine, solverName=solverName, &
+  preconditionOption=preconditionOption, maxIter=maxIter, atol=atol, &
+  rtol=rtol, convergenceIn=convergenceIn, convergenceType=convergenceType, &
+  relativeToRHS=relativeToRHS, krylovSubspaceSize=krylovSubspaceSize, &
+  scale=scale, initx_zeros=initx_zeros, bicgstab_ell=bicgstab_ell, &
+  sor_omega=sor_omega, p_name=p_name, p_ilu_lfil=p_ilu_lfil, &
+  p_ilu_mbloc=p_ilu_mbloc, p_ilu_droptol=p_ilu_droptol, &
+  p_ilu_permtol=p_ilu_permtol, p_ilu_alpha=p_ilu_alpha, &
+  p_ilu_fill=p_ilu_fill, p_ssor_omega=p_ssor_omega, p_hybrid_i=p_hybrid_i, &
+  p_hybrid_maxiter=p_hybrid_maxiter, p_hybrid_tol=p_hybrid_tol, &
+  p_hybrid_omega=p_hybrid_omega, p_hybrid_ell=p_hybrid_ell, &
+  p_hybrid_restart=p_hybrid_restart, p_is_alpha=p_is_alpha, &
+  p_is_m=p_is_m, p_sainv_drop=p_sainv_drop, p_saamg_unsym=p_saamg_unsym, &
+  p_saamg_theta=p_saamg_theta, p_iluc_drop=p_iluc_drop, &
+  p_iluc_rate=p_iluc_rate, p_adds=p_adds, p_adds_iter=p_adds_iter)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                    Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-LOGICAL(LGT) :: isok
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = .NOT. obj%isInit
-CALL AssertError1(isok, myName, &
-                  "Object is already initialized. Deallocate it first")
-#endif
-
-! The deallocate method should be called from the calling routine
-! CALL obj%DEALLOCATE()
-
-obj%isInit = .TRUE.
-obj%engine = TRIM(engine)
-IF (PRESENT(solverName)) obj%solverName = solverName
-IF (PRESENT(preconditionOption)) obj%preconditionOption = preconditionOption
-IF (PRESENT(maxIter)) obj%maxIter = maxIter
-IF (PRESENT(atol)) obj%atol = atol
-IF (PRESENT(rtol)) obj%rtol = rtol
-IF (PRESENT(convergenceIn)) obj%convergenceIn = convergenceIn
-IF (PRESENT(convergenceType)) obj%convergenceType = convergenceType
-IF (PRESENT(relativeToRHS)) obj%relativeToRHS = relativeToRHS
-IF (PRESENT(KrylovSubspaceSize)) obj%krylovSubspaceSize = krylovSubspaceSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                              Include error

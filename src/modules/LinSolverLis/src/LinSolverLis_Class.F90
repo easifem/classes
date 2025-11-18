@@ -37,7 +37,6 @@ PUBLIC :: TypeLinSolverLis
 PUBLIC :: LinSolverLisPointer_
 
 CHARACTER(*), PARAMETER :: modName = "LinSolverLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "LinSolver"
 CHARACTER(*), PARAMETER :: myengine = "LIS_OMP"
 
 !----------------------------------------------------------------------------
@@ -59,7 +58,7 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate object
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
     !! Deallocate Data
@@ -99,7 +98,7 @@ END TYPE LinSolverLisPointer_
 ! summary: Initiate the linear solver
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
+  MODULE SUBROUTINE obj_Initiate( &
     obj, engine, solverName, preconditionOption, maxIter, atol, rtol, &
     convergenceIn, convergenceType, relativeToRHS, KrylovSubspaceSize, &
     scale, initx_zeros, bicgstab_ell, sor_omega, p_name, p_ilu_lfil, &
@@ -188,7 +187,7 @@ INTERFACE
     !! if True, then we Set sol=0.0 as initial guess.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_adds
     !! ilut Additive Schwarz, default is true
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------

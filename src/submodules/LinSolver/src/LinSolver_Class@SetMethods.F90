@@ -17,9 +17,7 @@
 
 SUBMODULE(LinSolver_Class) SetMethods
 USE BaseType, ONLY: TypeSolverNameOpt
-
 USE InputUtility, ONLY: Input
-
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
