@@ -16,9 +16,7 @@
 !
 
 SUBMODULE(LinSolver_Class) GetMethods
-
 USE StringUtility, ONLY: UpperCase
-
 USE BaseType, ONLY: TypeSolverNameOpt
 
 IMPLICIT NONE
@@ -26,19 +24,19 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                 GetLinSolverCodeFromName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLinSolverCodeFromName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLinSolverCodeFromName()"
+#endif
 CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 astr = UpperCase(name)
 
@@ -159,9 +157,20 @@ CASE ("SUPERLU") !29
 
   ans = TypeSolverNameOpt%SUPERLU
 
+#ifdef DEBUG_VER
+CASE Default
+  CALL AssertError1(.FALSE., myName, &
+                    'Unknown linear solver name: '//astr)
+#endif
+
 END SELECT
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetLinSolverCodeFromName
 
 !----------------------------------------------------------------------------
@@ -169,6 +178,15 @@ END PROCEDURE obj_GetLinSolverCodeFromName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLinSolverNameFromCode
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLinSolverNameFromCode()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 SELECT CASE (name)
 CASE (TypeSolverNameOpt%SUPERLU)
 
@@ -286,12 +304,20 @@ CASE (TypeSolverNameOpt%DQGMRES)
 
   ans = "DQGMRES" !28
 
+#ifdef DEBUG_VER
+CASE Default
+  CALL AssertError1(.FALSE., myName, &
+                    'Unknown linear solver name')
+#endif
+
 END SELECT
 
 END PROCEDURE obj_GetLinSolverNameFromCode
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

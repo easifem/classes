@@ -17,9 +17,7 @@
 
 SUBMODULE(AbstractLinSolver_Class) GetMethods
 USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
-
 USE StringUtility, ONLY: UpperCase
-
 USE FPL_Method, ONLY: GetValue
 
 IMPLICIT NONE
@@ -50,14 +48,6 @@ ans = obj%GetLinSolverCodeFromName(name)
 END PROCEDURE solverName_ToInteger
 
 !----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                                 GetParam
 !----------------------------------------------------------------------------
 
@@ -83,6 +73,7 @@ IF (PRESENT(globalNumRow)) globalNumRow = obj%globalNumRow
 IF (PRESENT(globalNumColumn)) globalNumColumn = obj%globalNumColumn
 IF (PRESENT(localNumRow)) localNumRow = obj%localNumRow
 IF (PRESENT(localNumColumn)) localNumColumn = obj%localNumColumn
+IF (PRESENT(scale)) scale = obj%scale
 IF (PRESENT(res)) res = obj%res
 IF (PRESENT(Amat)) amat => obj%amat
 END PROCEDURE obj_GetParam

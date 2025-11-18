@@ -17,9 +17,7 @@
 
 SUBMODULE(AbstractLinSolver_Class) ImportHDFMethods
 USE HDF5File_Method, ONLY: HDF5ReadScalar
-
 USE Display_Method, ONLY: ToString
-
 USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
 
 IMPLICIT NONE
@@ -31,9 +29,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-TYPE(String) :: dsetname, strval
+TYPE(String) :: strval
 LOGICAL(LGT) :: isok
-TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -117,24 +114,29 @@ CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%atol, group=group, &
 
 obj%isInit = .FALSE.
 
-CALL param%Initiate()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-CALL SetAbstractLinSolverParam( &
-  param=param, &
-  prefix=obj%GetPrefix(), &
-  engine=obj%engine%chars(), &
-  solverName=obj%solverName, &
-  preconditionOption=obj%preconditionOption, &
-  convergenceIn=obj%convergenceIn, &
-  convergenceType=obj%convergenceType, &
-  maxIter=obj%maxIter, &
-  relativeToRHS=obj%relativeToRHS, &
-  KrylovSubspaceSize=obj%KrylovSubspaceSize, &
-  rtol=obj%rtol, &
-  atol=obj%atol)
-
-CALL obj%Initiate(param)
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! CALL SetAbstractLinSolverParam( &
+!   param=param, &
+!   prefix=obj%GetPrefix(), &
+!   engine=obj%engine%chars(), &
+!   solverName=obj%solverName, &
+!   preconditionOption=obj%preconditionOption, &
+!   convergenceIn=obj%convergenceIn, &
+!   convergenceType=obj%convergenceType, &
+!   maxIter=obj%maxIter, &
+!   relativeToRHS=obj%relativeToRHS, &
+!   KrylovSubspaceSize=obj%KrylovSubspaceSize, &
+!   rtol=obj%rtol, &
+!   atol=obj%atol)
+!
+! CALL obj%Initiate(param)
+! CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

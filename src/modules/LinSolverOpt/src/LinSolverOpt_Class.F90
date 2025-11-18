@@ -49,7 +49,7 @@ TYPE :: LinSolverOpt_
   CHARACTER(128) :: convergenceType_char = "RELATIVE"
   INTEGER(I4B) :: maxIter = 1000
   LOGICAL(LGT) :: relativeToRHS = .FALSE.
-  INTEGER(I4B) :: KrylovSubspaceSize = 50
+  INTEGER(I4B) :: krylovSubspaceSize = 50
   REAL(DFP) :: rtol = 1.0E-8
   REAL(DFP) :: atol = 1.0E-8
   REAL(DFP) :: sor_omega = 1.9_DFP

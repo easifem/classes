@@ -25,22 +25,53 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL Display(msg, unitNo=unitno)
+
+isok = obj%isInit
+IF (.NOT. isok) THEN
+  CALL Display(obj%isInit, "isInitiated: ", unitNo=unitno)
+  RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END IF
+
 CALL Display("engine: "//obj%engine%chars(), unitNo=unitno)
-CALL Display(obj%isInit, "isInitiated: ", unitNo=unitno)
 CALL Display(obj%solverName, "solverName: ", unitNo=unitno)
+CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
 CALL Display(obj%preconditionOption, "preconditionOption: ", unitNo=unitno)
+CALL Display(obj%iter, "iter: ", unitNo=unitno)
+CALL Display(obj%maxIter, "maxIter: ", unitNo=unitno)
 CALL Display(obj%convergenceIn, "convergenceIn: ", unitNo=unitno)
 CALL Display(obj%convergenceType, "convergenceType: ", unitNo=unitno)
-CALL Display(obj%maxIter, "maxIter: ", unitNo=unitno)
-CALL Display(obj%relativeToRHS, "relativeToRHS: ", unitNo=unitno)
-CALL Display(obj%KrylovSubspaceSize, "KrylovSubspaceSize: ", unitNo=unitno)
+CALL Display(obj%krylovSubspaceSize, "krylovSubspaceSize: ", unitNo=unitno)
+CALL Display(obj%globalNumRow, "globalNumRow: ", unitNo=unitno)
+CALL Display(obj%localNumRow, "localNumRow: ", unitNo=unitno)
+CALL Display(obj%comm, "comm: ", unitNo=unitno)
+CALL Display(obj%myRank, "myRank: ", unitNo=unitno)
+CALL Display(obj%numProcs, "numProcs: ", unitNo=unitno)
+CALL Display(obj%scale, "scale: ", unitNo=unitno)
+
 CALL Display(obj%atol, "atol: ", unitNo=unitno)
 CALL Display(obj%rtol, "rtol: ", unitNo=unitno)
-CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
-CALL Display(obj%iter, "iter: ", unitNo=unitno)
+CALL Display(obj%tol, "tol: ", unitNo=unitno)
+CALL Display(obj%normRes, "normRes: ", unitNo=unitno)
+CALL Display(obj%error0, "error0: ", unitNo=unitno)
+CALL Display(obj%error, "error: ", unitNo=unitno)
+
+CALL Display(obj%relativeToRHS, "relativeToRHS: ", unitNo=unitno)
 
 isok = ALLOCATED(obj%res)
 CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
@@ -48,6 +79,10 @@ CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
 isok = ASSOCIATED(obj%amat)
 CALL Display(isok, "amat is ASSOCIATED: ", unitNo=unitno)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------

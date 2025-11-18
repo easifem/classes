@@ -38,7 +38,6 @@ PUBLIC :: LinSolver_
 PUBLIC :: TypeLinSolver
 
 CHARACTER(*), PARAMETER :: modName = "LinSolver_Class"
-CHARACTER(*), PARAMETER :: myprefix = "LinSolver"
 CHARACTER(*), PARAMETER :: myengine = "NATIVE_SERIAL"
 INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
@@ -75,36 +74,28 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-    !! Initiate object
-
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate object
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate Data
-
-  FINAL :: obj_final
+  FINAL :: obj_Final
   !! Final
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Set the matrix and preconditioning matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_solve
   !! Solve the system of linear equation
 
   ! GET:
   ! @GetMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-
   PROCEDURE, PUBLIC, NOPASS :: GetLinSolverCodeFromName => &
     obj_GetLinSolverCodeFromName
-
+  !! Get linear solver code from name
   PROCEDURE, PUBLIC, NOPASS :: GetLinSolverNameFromCode => &
     obj_GetLinSolverNameFromCode
-
+  !! Get linear solver name form code
 END TYPE LinSolver_
 
 !----------------------------------------------------------------------------
@@ -122,39 +113,122 @@ TYPE :: LinSolverPointer_
 END TYPE LinSolverPointer_
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                                   Initiate
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This subroutine initiate the [[LinSolver_]] object
-!
-!# Introduction
-!
-! This subroutine initiate the [[LinSolver_]] object
-!
-! - It Sets the name of the solver
-! - It Sets the parameters related to the solver
-!
-! If name of the solver is `lis_gmres`, `lis_fgmres`, `lis_dqgmres`,
-! or `lis_om` then `ipar(1)` denotes the number of restarts required in
-! these algorithms. Default value is Set to 20.
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Initiate the linear solver
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, engine, solverName, preconditionOption, maxIter, atol, rtol, &
+    convergenceIn, convergenceType, relativeToRHS, KrylovSubspaceSize, &
+    scale, initx_zeros, bicgstab_ell, sor_omega, p_name, p_ilu_lfil, &
+    p_ilu_mbloc, p_ilu_droptol, p_ilu_permtol, p_ilu_alpha, p_ilu_fill, &
+    p_ssor_omega, p_hybrid_i, p_hybrid_maxiter, p_hybrid_tol, &
+    p_hybrid_omega, p_hybrid_ell, p_hybrid_restart, p_is_alpha, p_is_m, &
+    p_sainv_drop, p_saamg_unsym, p_saamg_theta, p_iluc_drop, p_iluc_rate, &
+    p_adds, p_adds_iter)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
+    !! name of linear solver, it should be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
+    !! precondition option
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_name
+    !! if preconditionOption .ne. NO_PRECONDITION
+    !! then p_name should be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceIn
+    !! convergence in residual or solution
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceType
+    !! relative or absolute convergence
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scale
+    !! LIS, Solver digonal scaling
+    !! scale_none: No scaling
+    !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+    !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! maximum iteration allowed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: krylovSubspaceSize
+    !! Size of KrylovSubspaceSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: bicgstab_ell
+    !! Needed for solver BiCGSTABL
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_lfil
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_mbloc
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_fill
+    !! ILU, fill-in
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_i
+    !! Hybrid, the linear solver, for example, SSOR, GMRES,
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_maxiter
+    !! Hybrid, maximum number of iterations
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_ell
+    !!Hybrid, The degree l of the BiCGSTAB(l)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_restart
+    !! Hybrid, The restart value of GMRES and Orthomin
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_is_m
+    !! I+S, The parameter m of $I + \alpha {S}^{m}$
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_adds_iter
+    !! default value is 1
+    !! ILUT Additive Schwarz number of iteration
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    !! absolute tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+    !! relative tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: sor_omega
+    !! The relaxation coefficient
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_is_alpha
+    !! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_droptol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_permtol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_alpha
+    !! Sparsekit, ilu, alpha
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ssor_omega
+    !! The relaxation coefficient omega in (0.0, 2.0)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_tol
+    !! Hybrid, convergence tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_omega
+    !! Hybrid, The relaxation coefficient omega of the SOR
+    !! omega should be in (0.0, 2.0)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_sainv_drop
+    !! SA-AMG, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_saamg_theta
+    !! SA-AMG, The drop criteria
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_saamg_unsym
+    !! SA-AMG, Select the unsymmetric version
+    !! The matrix structure must be symmetric
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_drop
+    !! Crout ILU, default is 0.05, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_rate
+    !! Crout ILU, The ratio of the maximum fill-in
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: initx_zeros
+    !! if True, then we Set sol=0.0 as initial guess.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_adds
+    !! ilut Additive Schwarz, default is true
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
 
 INTERFACE LinSolverInitiate
-  MODULE SUBROUTINE obj_Initiate(obj, param)
-    CLASS(LinSolver_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE LinSolverInitiate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE LinSolverDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE LinSolverDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE LinSolverDeallocate
 
 !----------------------------------------------------------------------------
@@ -195,21 +269,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: name
     CHARACTER(15) :: ans
   END FUNCTION obj_GetLinSolverNameFromCode
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  Get the prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(LinSolver_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

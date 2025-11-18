@@ -470,7 +470,13 @@ IF (isok) THEN
                 origin=origin, stat=stat)
 END IF
 
-prefix = obj%GetPrefix()
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development&
+                  &we are working on removing param dependency')
+#endif
+
+! prefix = obj%GetPrefix()
 solverName_int = obj%solverName_ToInteger(solverName%chars())
 preconditionOption_int = TypeLinSolverOpt%PrecondOptToInteger( &
                          preconditionOption%chars())

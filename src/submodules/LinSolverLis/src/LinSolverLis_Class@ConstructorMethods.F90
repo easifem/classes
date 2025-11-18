@@ -37,239 +37,271 @@ CONTAINS
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
 
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: solverName
-INTEGER(I4B) :: preconditionOption
-INTEGER(I4B) :: convergenceIn
-INTEGER(I4B) :: convergenceType
-INTEGER(I4B) :: maxIter
-LOGICAL(LGT) :: relativeToRHS
-INTEGER(I4B) :: KrylovSubspaceSize
-REAL(DFP) :: rtol
-REAL(DFP) :: atol
-INTEGER(I4B) :: scale
+INTEGER(I4B) :: ierr, solverName0, preconditionOption0, convergenceIn0, &
+                convergenceType0, maxIter0, krylovSubspaceSize0
+LOGICAL(LGT) :: relativeToRHS0
+REAL(DFP) :: rtol0, atol0
+INTEGER(I4B) :: scale0
 ! LIS, Solver digonal scaling
 ! scale_none: No scaling
 ! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
 ! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
-LOGICAL(LGT) :: initx_zeros
-! if True, then we set sol=0.0 as initial guess.
-INTEGER(I4B) :: bicgstab_ell
-!
-REAL(DFP) :: sor_omega
-INTEGER(I4B) :: p_name
+INTEGER(I4B) :: bicgstab_ell0
+INTEGER(I4B) :: p_name0
 ! Name of preconditioner
-INTEGER(I4B) :: p_ilu_lfil
+INTEGER(I4B) :: p_ilu_lfil0
 ! Sparsekit, ilu
-INTEGER(I4B) :: p_ilu_mbloc
+INTEGER(I4B) :: p_ilu_mbloc0
 ! Sparsekit, ilu
-REAL(DFP) :: p_ilu_droptol
-! Sparsekit, ilu
-REAL(DFP) :: p_ilu_permtol
-! Sparsekit, ilu
-REAL(DFP) :: p_ilu_alpha
-! Sparsekit, ilu, alpha
-INTEGER(I4B) :: p_ilu_fill
+INTEGER(I4B) :: p_ilu_fill0
 ! ILU, fill-in
-REAL(DFP) :: p_ssor_omega
-! The relaxation coefficient omega in (0.0, 2.0)
-INTEGER(I4B) :: p_hybrid_i
+INTEGER(I4B) :: p_hybrid_i0
 ! Hybrid, the linear solver, for example, SSOR, GMRES,
-INTEGER(I4B) :: p_hybrid_maxiter
+INTEGER(I4B) :: p_hybrid_maxiter0
 ! Hybrid, maximum number of iterations
-REAL(DFP) :: p_hybrid_tol
-! Hybrid, convergence tolerance
-REAL(DFP) :: p_hybrid_omega
-! Hybrid, The relaxation coefficient omega of the SOR
-! omega should be in (0.0, 2.0)
-INTEGER(I4B) :: p_hybrid_ell
+INTEGER(I4B) :: p_hybrid_ell0
 !Hybrid, The degree l of the BiCGSTAB(l)
-INTEGER(I4B) :: p_hybrid_restart
+INTEGER(I4B) :: p_hybrid_restart0
 ! Hybrid, The restart value of GMRES and Orthomin
-REAL(DFP) :: p_is_alpha
-! I+S, The parameter alpha of $I + \alpha {S}^{m}$
-INTEGER(I4B) :: p_is_m
+INTEGER(I4B) :: p_is_m0
 ! I+S, The parameter m of $I + \alpha {S}^{m}$
-REAL(DFP) :: p_sainv_drop
-! SA-AMG, The drop criteria
-LOGICAL(LGT) :: p_saamg_unsym
-! SA-AMG, Select the unsymmetric version
-! The matrix structure must be symmetric
-REAL(DFP) :: p_saamg_theta
-! SA-AMG, The drop criteria
-REAL(DFP) :: p_iluc_drop
-! Crout ILU, default is 0.05, The drop criteria
-REAL(DFP) :: p_iluc_rate
-! Crout ILU, The ratio of the maximum fill-in
-LOGICAL(LGT) :: p_adds
-! ilut Additive Schwarz, default is true
-INTEGER(I4B) :: p_adds_iter
+INTEGER(I4B) :: p_adds_iter0
 ! default value is 1
 ! ILUT Additive Schwarz number of iteration
+REAL(DFP) :: sor_omega0
+REAL(DFP) :: p_ilu_droptol0
+! Sparsekit, ilu
+REAL(DFP) :: p_ilu_permtol0
+! Sparsekit, ilu
+REAL(DFP) :: p_ilu_alpha0
+! Sparsekit, ilu, alpha
+REAL(DFP) :: p_ssor_omega0
+! The relaxation coefficient omega in (0.0, 2.0)
+REAL(DFP) :: p_hybrid_tol0
+! Hybrid, convergence tolerance
+REAL(DFP) :: p_hybrid_omega0
+! Hybrid, The relaxation coefficient omega of the SOR
+! omega should be in (0.0, 2.0)
+REAL(DFP) :: p_is_alpha0
+! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+REAL(DFP) :: p_sainv_drop0
+! SA-AMG, The drop criteria
+LOGICAL(LGT) :: p_saamg_unsym0
+! SA-AMG, Select the unsymmetric version
+! The matrix structure must be symmetric
+REAL(DFP) :: p_saamg_theta0
+! SA-AMG, The drop criteria
+REAL(DFP) :: p_iluc_drop0
+! Crout ILU, default is 0.05, The drop criteria
+REAL(DFP) :: p_iluc_rate0
+! Crout ILU, The ratio of the maximum fill-in
+LOGICAL(LGT) :: p_adds0
+! ilut Additive Schwarz, default is true
+
+LOGICAL(LGT) :: initx_zeros0
+! if True, then we set sol=0.0 as initial guess.
+
+LOGICAL(LGT) :: isPrecondition
+! If true then precondition is used
+
 TYPE(String) :: opt
 
-CALL LinSolverInitiate(obj=obj, param=param)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL LinSolverInitiate( &
+  obj=obj, engine=engine, solverName=solverName, &
+  preconditionOption=preconditionOption, maxIter=maxIter, atol=atol, &
+  rtol=rtol, convergenceIn=convergenceIn, convergenceType=convergenceType, &
+  relativeToRHS=relativeToRHS, krylovSubspaceSize=krylovSubspaceSize, &
+  scale=scale, initx_zeros=initx_zeros, bicgstab_ell=bicgstab_ell, &
+  sor_omega=sor_omega, p_name=p_name, p_ilu_lfil=p_ilu_lfil, &
+  p_ilu_mbloc=p_ilu_mbloc, p_ilu_droptol=p_ilu_droptol, &
+  p_ilu_permtol=p_ilu_permtol, p_ilu_alpha=p_ilu_alpha, &
+  p_ilu_fill=p_ilu_fill, p_ssor_omega=p_ssor_omega, p_hybrid_i=p_hybrid_i, &
+  p_hybrid_maxiter=p_hybrid_maxiter, p_hybrid_tol=p_hybrid_tol, &
+  p_hybrid_omega=p_hybrid_omega, p_hybrid_ell=p_hybrid_ell, &
+  p_hybrid_restart=p_hybrid_restart, p_is_alpha=p_is_alpha, p_is_m=p_is_m, &
+  p_sainv_drop=p_sainv_drop, p_saamg_unsym=p_saamg_unsym, &
+  p_saamg_theta=p_saamg_theta, p_iluc_drop=p_iluc_drop, &
+  p_iluc_rate=p_iluc_rate, p_adds=p_adds, p_adds_iter=p_adds_iter)
 
 CALL lis_solver_create(obj%lis_solver, ierr)
 
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
-CALL GetAbstractLinSolverParam( &
-  param=param, &
-  prefix=myPrefix, &
-  solverName=solverName, &
-  preconditionOption=preconditionOption, &
-  maxIter=maxIter, &
-  atol=atol, &
-  rtol=rtol, &
-  convergenceIn=convergenceIn, &
-  convergenceType=convergenceType, &
-  relativeToRHS=relativeToRHS, &
-  KrylovSubspaceSize=KrylovSubspaceSize, &
-  scale=scale, &
-  initx_zeros=initx_zeros, &
-  bicgstab_ell=bicgstab_ell, &
-  sor_omega=sor_omega, &
-  p_name=p_name, &
-  p_ilu_lfil=p_ilu_lfil, &
-  p_ilu_mbloc=p_ilu_mbloc, &
-  p_ilu_droptol=p_ilu_droptol, &
-  p_ilu_permtol=p_ilu_permtol, &
-  p_ilu_alpha=p_ilu_alpha, &
-  p_ilu_fill=p_ilu_fill, &
-  p_ssor_omega=p_ssor_omega, &
-  p_hybrid_i=p_hybrid_i, &
-  p_hybrid_maxiter=p_hybrid_maxiter, &
-  p_hybrid_tol=p_hybrid_tol, &
-  p_hybrid_omega=p_hybrid_omega, &
-  p_hybrid_ell=p_hybrid_ell, &
-  p_hybrid_restart=p_hybrid_restart, &
-  p_is_alpha=p_is_alpha, &
-  p_is_m=p_is_m, &
-  p_sainv_drop=p_sainv_drop, &
-  p_saamg_unsym=p_saamg_unsym, &
-  p_saamg_theta=p_saamg_theta, &
-  p_iluc_drop=p_iluc_drop, &
-  p_iluc_rate=p_iluc_rate, &
-  p_adds=p_adds, &
-  p_adds_iter=p_adds_iter)
+CALL obj%GetParam( &
+  solverName=solverName0, preconditionOption=preconditionOption0, &
+  maxIter=maxIter0, atol=atol0, rtol=rtol0, convergenceIn=convergenceIn0, &
+  convergenceType=convergenceType0, relativeToRHS=relativeToRHS0, &
+  krylovSubspaceSize=krylovSubspaceSize0, scale=scale0, &
+  initx_zeros=initx_zeros0, bicgstab_ell=bicgstab_ell0, &
+  sor_omega=sor_omega0, p_name=p_name0, p_ilu_lfil=p_ilu_lfil0, &
+  p_ilu_mbloc=p_ilu_mbloc0, p_ilu_droptol=p_ilu_droptol0, &
+  p_ilu_permtol=p_ilu_permtol0, p_ilu_alpha=p_ilu_alpha0, &
+  p_ilu_fill=p_ilu_fill0, p_ssor_omega=p_ssor_omega0, &
+  p_hybrid_i=p_hybrid_i0, p_hybrid_maxiter=p_hybrid_maxiter0, &
+  p_hybrid_tol=p_hybrid_tol0, p_hybrid_omega=p_hybrid_omega0, &
+  p_hybrid_ell=p_hybrid_ell0, p_hybrid_restart=p_hybrid_restart0, &
+  p_is_alpha=p_is_alpha0, p_is_m=p_is_m0, p_sainv_drop=p_sainv_drop0, &
+  p_saamg_unsym=p_saamg_unsym0, p_saamg_theta=p_saamg_theta0, &
+  p_iluc_drop=p_iluc_drop0, p_iluc_rate=p_iluc_rate0, &
+  p_adds=p_adds0, p_adds_iter=p_adds_iter0)
 
 opt = ""
 
-SELECT CASE (SolverName)
+SELECT CASE (solverName0)
 
 CASE (TypeSolverNameOpt%BICGSTABL)
 
-  opt = opt//' -i bicgstabl -ell '//tostring(bicgstab_ell)
+  opt = opt//' -i bicgstabl -ell '//ToString(bicgstab_ell0)
 
 CASE (TypeSolverNameOpt%ORTHOMIN, TypeSolverNameOpt%GMRES, &
       TypeSolverNameOpt%FGMRES)
 
-  opt = ' -i '//tostring(SolverName)// &
-        ' -restart '//tostring(KrylovSubspaceSize)
+  opt = ' -i '//ToString(solverName0)// &
+        ' -restart '//ToString(krylovSubspaceSize0)
 
 CASE (TypeSolverNameOpt%IDRS)
 
-  opt = ' -i '//tostring(SolverName)// &
-        ' -irestart '//tostring(KrylovSubspaceSize)
+  opt = ' -i '//ToString(solverName0)// &
+        ' -irestart '//ToString(krylovSubspaceSize0)
 
 CASE (TypeSolverNameOpt%SOR)
-  opt = ' -i sor -omega '//tostring(sor_omega)
+  opt = ' -i sor -omega '//ToString(sor_omega0)
 
 CASE DEFAULT
-  opt = ' -i '//tostring(SolverName)
+  opt = ' -i '//ToString(solverName0)
 
 END SELECT
 
-opt = opt//' -maxiter '//tostring(maxIter)//" -print 3 "// &
-      " -scale "//tostring(scale)//' -tol '//tostring(rtol)
+opt = opt//' -maxiter '//ToString(maxIter0)//" -print 3 "// &
+      " -scale "//ToString(scale0)//' -tol '//ToString(rtol0)
 
-IF (initx_zeros) THEN
+IF (initx_zeros0) THEN
   opt = opt//' -initx_zeros true '
 ELSE
   opt = opt//' -initx_zeros false '
 END IF
 
-IF (relativeToRHS) THEN
+IF (relativeToRHS0) THEN
   opt = opt//" -conv_cond 1 "
 ELSE
   opt = opt//" -conv_cond 0 "
 END IF
 
-IF (preconditionOption .NE. TypePrecondOpt%NONE) THEN
+isPrecondition = preconditionOption0 .NE. TypePrecondOpt%NONE
+IF (.NOT. isPrecondition) THEN
+  CALL lis_solver_set_option(opt%chars(), obj%lis_solver, ierr)
 
-  SELECT CASE (p_name)
-  CASE (TypePrecondOpt%NONE)
-    opt = opt//' -p none '
-  CASE (TypePrecondOpt%JACOBI)
-    opt = opt//' -p jacobi '
-  CASE (TypePrecondOpt%ILU)
-    opt = opt//' -p ilu -ilu_fill '//tostring(p_ilu_fill)
-  CASE (TypePrecondOpt%SSOR)
-    opt = opt//' -p ssor -ssor_omega '//tostring(p_ssor_omega)
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
 
-  CASE (TypePrecondOpt%HYBRID)
-    opt = opt//' -p hybrid -hybrid_i '//tostring(p_hybrid_i)// &
-          ' -hybrid_maxiter '//tostring(p_hybrid_maxiter)// &
-          ' -hybrid_ell '//tostring(p_hybrid_ell)// &
-          ' -hybrid_restart '//tostring(p_hybrid_restart)// &
-          ' -hybrid_tol '//tostring(p_hybrid_tol)// &
-          ' -hybrid_omega '//tostring(p_hybrid_omega)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
-  CASE (TypePrecondOpt%IS)
-    opt = opt//' -p is ' &
-          //' -is_m '//tostring(p_is_m) &
-          //' -is_alpha '//tostring(p_is_alpha)
-
-  CASE (TypePrecondOpt%SAINV)
-    opt = opt//' -p sainv -sainv_drop '//tostring(p_sainv_drop)
-
-  CASE (TypePrecondOpt%SAAMG)
-    IF (p_saamg_unsym) THEN
-      opt = opt//' -p saamg -sammg_unsym true -saamg_theta ' &
-            //tostring(p_saamg_theta)
-    ELSE
-      opt = opt//' -p saamg -sammg_unsym false -saamg_theta ' &
-            //tostring(p_saamg_theta)
-    END IF
-
-  CASE (TypePrecondOpt%ILUC)
-    opt = opt//' -p iluc -iluc_drop ' &
-          //tostring(p_iluc_drop) &
-          //' -iluc_rate ' &
-          //tostring(p_iluc_rate)
-
-  CASE (TypePrecondOpt%ADDS)
-    opt = opt//' -p ilut -adds true -adds_iter ' &
-          //tostring(p_adds_iter)
-
-  CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: Unknown precondition option')
-    RETURN
-
-  END SELECT
-
+  RETURN
 END IF
+
+SELECT CASE (p_name0)
+CASE (TypePrecondOpt%NONE)
+  opt = opt//' -p none '
+CASE (TypePrecondOpt%JACOBI)
+  opt = opt//' -p jacobi '
+CASE (TypePrecondOpt%ILU)
+  opt = opt//' -p ilu -ilu_fill '//ToString(p_ilu_fill0)
+CASE (TypePrecondOpt%SSOR)
+  opt = opt//' -p ssor -ssor_omega '//ToString(p_ssor_omega0)
+
+CASE (TypePrecondOpt%HYBRID)
+  opt = opt//' -p hybrid -hybrid_i '//ToString(p_hybrid_i0)// &
+        ' -hybrid_maxiter '//ToString(p_hybrid_maxiter0)// &
+        ' -hybrid_ell '//ToString(p_hybrid_ell0)// &
+        ' -hybrid_restart '//ToString(p_hybrid_restart0)// &
+        ' -hybrid_tol '//ToString(p_hybrid_tol0)// &
+        ' -hybrid_omega '//ToString(p_hybrid_omega0)
+
+CASE (TypePrecondOpt%IS)
+  opt = opt//' -p is '//' -is_m '//ToString(p_is_m0)// &
+        ' -is_alpha '//ToString(p_is_alpha0)
+
+CASE (TypePrecondOpt%SAINV)
+  opt = opt//' -p sainv -sainv_drop '//ToString(p_sainv_drop0)
+
+CASE (TypePrecondOpt%SAAMG)
+  IF (p_saamg_unsym0) THEN
+    opt = opt//' -p saamg -sammg_unsym true -saamg_theta '// &
+          ToString(p_saamg_theta0)
+  ELSE
+    opt = opt//' -p saamg -sammg_unsym false -saamg_theta '// &
+          ToString(p_saamg_theta0)
+  END IF
+
+CASE (TypePrecondOpt%ILUC)
+  opt = opt//' -p iluc -iluc_drop '//ToString(p_iluc_drop0)// &
+        ' -iluc_rate '//ToString(p_iluc_rate0)
+
+CASE (TypePrecondOpt%ADDS)
+  opt = opt//' -p ilut -adds true -adds_iter '//ToString(p_adds_iter0)
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, "No case found for p_name0")
+#endif
+
+END SELECT
 
 CALL lis_solver_set_option(opt%chars(), obj%lis_solver, ierr)
 
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
-END PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
 INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL lis_solver_destroy(obj%lis_solver, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
+
 CALL LinSolverDeallocate(obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

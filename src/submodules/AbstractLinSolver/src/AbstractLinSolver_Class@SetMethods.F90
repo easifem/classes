@@ -57,6 +57,7 @@ IF (PRESENT(localNumRow)) obj%localNumRow = localNumRow
 IF (PRESENT(localNumColumn)) obj%localNumColumn = localNumColumn
 IF (PRESENT(res)) obj%res = res
 IF (PRESENT(amat)) obj%amat => amat
+IF (PRESENT(scale)) obj%scale = scale
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------

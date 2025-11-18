@@ -20,7 +20,8 @@ USE BaseType, ONLY: TypePrecondOpt, &
                     TypeConvergenceOpt
 USE InputUtility, ONLY: Input
 USE AbstractLinSolver_Class, ONLY: GetAbstractLinSolverParam, &
-                                   AbstractLinSolverDeallocate
+                                   AbstractLinSolverDeallocate, &
+                                   AbstractLinSolverInitiate
 
 USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt
 
@@ -129,60 +130,62 @@ END SUBROUTINE SetTolerance
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
-INTEGER(I4B) :: solverName, preconditionOption, convergenceIn, &
-                convergenceType, maxIter, KrylovSubspaceSize
-REAL(DFP) :: rtol, atol
-LOGICAL(LGT) :: relativeToRHS
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+INTEGER(I4B) :: preconditionOption0, maxIter0, convergenceIn0, &
+                convergenceType0, krylovSubspaceSize0
+REAL(DFP) :: rtol0, atol0
+LOGICAL(LGT) :: relativeToRHS0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL obj%DEALLOCATE()
 
-CALL obj%CheckEssentialParam(param)
+CALL AbstractLinSolverInitiate( &
+  obj=obj, engine=engine, solverName=solverName, &
+  preconditionOption=preconditionOption, maxIter=maxIter, atol=atol, &
+  rtol=rtol, convergenceIn=convergenceIn, convergenceType=convergenceType, &
+  relativeToRHS=relativeToRHS, krylovSubspaceSize=krylovSubspaceSize, &
+  scale=scale, initx_zeros=initx_zeros, bicgstab_ell=bicgstab_ell, &
+  sor_omega=sor_omega, p_name=p_name, p_ilu_lfil=p_ilu_lfil, &
+  p_ilu_mbloc=p_ilu_mbloc, p_ilu_droptol=p_ilu_droptol, &
+  p_ilu_permtol=p_ilu_permtol, p_ilu_alpha=p_ilu_alpha, &
+  p_ilu_fill=p_ilu_fill, p_ssor_omega=p_ssor_omega, p_hybrid_i=p_hybrid_i, &
+  p_hybrid_maxiter=p_hybrid_maxiter, p_hybrid_tol=p_hybrid_tol, &
+  p_hybrid_omega=p_hybrid_omega, p_hybrid_ell=p_hybrid_ell, &
+  p_hybrid_restart=p_hybrid_restart, p_is_alpha=p_is_alpha, p_is_m=p_is_m, &
+  p_sainv_drop=p_sainv_drop, p_saamg_unsym=p_saamg_unsym, &
+  p_saamg_theta=p_saamg_theta, p_iluc_drop=p_iluc_drop, &
+  p_iluc_rate=p_iluc_rate, p_adds=p_adds, p_adds_iter=p_adds_iter)
 
-CALL GetAbstractLinSolverParam( &
-  param=param, &
-  prefix=myprefix, &
-  solverName=solverName, &
-  preconditionOption=preconditionOption, &
-  convergenceIn=convergenceIn, &
-  convergenceType=convergenceType, &
-  maxIter=maxIter, &
-  relativeToRHS=relativeToRHS, &
-  KrylovSubspaceSize=KrylovSubspaceSize, &
-  rtol=rtol, &
-  atol=atol)
+CALL obj%SetParam(ierr=0_I4B, iter=0_I4B)
 
-CALL obj%SetParam( &
-  isInitiated=.TRUE., &
-  engine="NATIVE_SERIAL", &
-  ierr=0_I4B, &
-  iter=0_I4B, &
-  solverName=solverName, &
-  preconditionOption=preconditionOption, &
-  convergenceIn=convergenceIn, &
-  convergenceType=convergenceType, &
-  maxIter=maxIter, &
-  relativeToRHS=relativeToRHS, &
-  KrylovSubspaceSize=KrylovSubspaceSize, &
-  atol=atol, &
-  rtol=rtol)
+CALL obj%GetParam( &
+  preconditionOption=preconditionOption0, convergenceIn=convergenceIn0, &
+  convergenceType=convergenceType0, relativeToRHS=relativeToRHS0, &
+  krylovSubspaceSize=krylovSubspaceSize0, maxIter=maxIter0)
 
-obj%IPAR = 0
-CALL SetPreconditionOption(obj%IPAR, preconditionOption)
-CALL SetConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
-                        relativeToRHS)
+CALL SetPreconditionOption(IPAR=obj%IPAR, PRECOND_TYPE=preconditionOption0)
 
-obj%IPAR(5) = KrylovSubspaceSize
+CALL SetConvergenceType( &
+  IPAR=obj%IPAR, convergenceIn=convergenceIn0, &
+  convergenceType=convergenceType0, relativeToRHS=relativeToRHS0)
 
-CALL SetMaxIter(obj%IPAR, maxIter)
+obj%IPAR(5) = krylovSubspaceSize0
+CALL SetMaxIter(IPAR=obj%IPAR, maxIter=maxIter0)
+CALL SetTolerance(fpar=obj%fpar, rtol=rtol0, atol=atol0)
 
-obj%FPAR = 0.0_DFP
-
-CALL SetTolerance(fpar=obj%fpar, rtol=rtol, atol=atol)
-! CALL Reallocate(obj%RES, maxIter)
-! CALL Reallocate(obj%dbcIndx, 0)
-
-END PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate

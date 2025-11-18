@@ -43,6 +43,7 @@ PUBLIC :: AbstractLinSolver_
 PUBLIC :: ExportAbstractLinSolver
 PUBLIC :: AbstractLinSolverExport
 PUBLIC :: AbstractLinSolverDeallocate
+PUBLIC :: AbstractLinSolverInitiate
 PUBLIC :: AbstractLinSolverImportParamFromToml
 PUBLIC :: AbstractLinSolverImportFromToml
 PUBLIC :: SetAbstractLinSolverParam
@@ -91,14 +92,33 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! Error code returned by the solver
   INTEGER(I4B) :: preconditionOption = TypeLinSolverOpt%preconditionOption
   !! Name of preconditioner;
-  !! NO_PRECONDITION
-  !! LEFT_PRECONDITION
-  !! RIGHT_PRECONDITION
+  !! NO_PRECONDITION ! LEFT_PRECONDITION ! RIGHT_PRECONDITION
   !! LEFT_RIGHT_PRECONDITON
   INTEGER(I4B) :: iter = 0
   !! Current iteration number
   INTEGER(I4B) :: maxIter = TypeLinSolverOpt%maxIter
   !! Maximum iteration number
+  INTEGER(I4B) :: convergenceIn = TypeLinSolverOpt%convergenceIn
+  !! convergence in residual or solution
+  INTEGER(I4B) :: convergenceType = TypeLinSolverOpt%convergenceType
+  !! relative/ absolute convergence
+  INTEGER(I4B) :: krylovSubspaceSize = TypeLinSolverOpt%krylovSubspaceSize
+  !! Useful for GMRES type algorithm
+  INTEGER(I4B) :: globalNumRow = 0, globalNumColumn = 0
+  !! Size of the global problem;
+  INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
+  !! Size of the problem on a single process
+  INTEGER(I4B) :: comm = 0_I4B
+  !! This is not needed
+  INTEGER(I4B) :: myRank = 0_I4B
+  !! This is not needed
+  INTEGER(I4B) :: numProcs = 1_I4B
+  !! this is not needed
+  INTEGER(I4B) :: scale = TypeLinSolverOpt%scale
+  !! Diagonal scaling
+  !! scale_none: No scaling
+  !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+  !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
   REAL(DFP) :: atol = TypeLinSolverOpt%atol
   !! absolute tolerance
   REAL(DFP) :: rtol = TypeLinSolverOpt%rtol
@@ -111,27 +131,9 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! initial error res or sol
   REAL(DFP) :: error = 0.0_DFP
   !! final error in res of sol
-  INTEGER(I4B) :: convergenceIn = TypeLinSolverOpt%convergenceIn
-  !! convergence in residual or solution
-  INTEGER(I4B) :: convergenceType = TypeLinSolverOpt%convergenceType
-  !! relative/ absolute convergence
   LOGICAL(LGT) :: relativeToRHS = TypeLinSolverOpt%relativeToRHS
-  !! In case of relative convergence
-  !! is convergence
-  !! is relative to
+  !! In case of relative convergence isConvergence, is relative to
   !! right hand side
-  INTEGER(I4B) :: KrylovSubspaceSize = TypeLinSolverOpt%KrylovSubspaceSize
-  !! Useful for GMRES type algorithm
-  INTEGER(I4B) :: globalNumRow = 0, globalNumColumn = 0
-  !! Size of the global problem;
-  INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
-  !! Size of the problem on a single process
-  INTEGER(I4B) :: comm = 0_I4B
-  !! This is not needed
-  INTEGER(I4B) :: myRank = 0_I4B
-  !! This is not needed
-  INTEGER(I4B) :: numProcs = 1_I4B
-  !! this is not needed
   REAL(DFP), ALLOCATABLE :: res(:)
   !! Residual in each iteration
   CLASS(AbstractMatrixField_), POINTER :: amat => NULL()
@@ -142,92 +144,65 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameters
-
-  PROCEDURE(obj_initiate), PUBLIC, DEFERRED, PASS(obj) :: Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the object
-
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate the object with arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate Data
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE(obj_Set), PUBLIC, DEFERRED, PASS(obj) :: Set
   !! Set the matrix and preconditioning matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTolerance => obj_SetTolerance
   !! Set the tolerance
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set param
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! returns isInit
-
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetMatrixPointer => &
     obj_GetMatrixPointer
   !! Get pointer to amat
-
-  PROCEDURE(obj_GetLinSolverCodeFromName), DEFERRED, PUBLIC, NOPASS :: &
-    GetLinSolverCodeFromName
-
-  PROCEDURE(obj_GetLinSolverNameFromCode), DEFERRED, PUBLIC, NOPASS :: &
-    GetLinSolverNameFromCode
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPreconditionOption => &
     obj_GetPreconditionOption
   !! Get precondition options
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get paramereters from abstractlin solver
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix
-
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: solverName_ToInteger
   !! Convert solver name to integer code
-
   PROCEDURE(obj_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
   !! Solve system of linear equation
+  PROCEDURE(obj_GetLinSolverCodeFromName), DEFERRED, PUBLIC, NOPASS :: &
+    GetLinSolverCodeFromName
+  PROCEDURE(obj_GetLinSolverNameFromCode), DEFERRED, PUBLIC, NOPASS :: &
+    GetLinSolverNameFromCode
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
   !! Display the content
 
   ! IO:
-  ! @ImportHDFMethods
-
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Importing linsolver from external file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Exporting linsolver from external file
 
   ! IO:
-  ! @ImportTomlMethods
-
+  ! @TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import abstract kernel from toml
-
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
     obj_ImportParamFromToml
   !! Import parameters for TOML file
-
-  ! IO:
-  ! @ExportMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Exporting linsolver from external file
 END TYPE AbstractLinSolver_
 
 !----------------------------------------------------------------------------
@@ -239,21 +214,6 @@ TYPE :: AbstractLinSolverPointer_
 END TYPE
 
 !----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Aug 2021
-! summary: This routine Checks the essential parameters
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                            SetLinSolverParam@Constructor
 !----------------------------------------------------------------------------
 
@@ -262,15 +222,15 @@ END INTERFACE
 ! summary: Set linear solver parameters
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractLinSolverParam(param, prefix, engine, &
-         solverName, preconditionOption, maxIter, atol, rtol, convergenceIn, &
-     convergenceType, relativeToRHS, KrylovSubspaceSize, scale, initx_zeros, &
-    bicgstab_ell, sor_omega, p_name, p_ilu_lfil, p_ilu_mbloc, p_ilu_droptol, &
-           p_ilu_permtol, p_ilu_alpha, p_ilu_fill, p_ssor_omega, p_hybrid_i, &
-               p_hybrid_maxiter, p_hybrid_tol, p_hybrid_omega, p_hybrid_ell, &
-          p_hybrid_restart, p_is_alpha, p_is_m, p_sainv_drop, p_saamg_unsym, &
-                 p_saamg_theta, p_iluc_drop, p_iluc_rate, p_adds, p_adds_iter)
-
+  MODULE SUBROUTINE SetAbstractLinSolverParam( &
+    param, prefix, engine, solverName, preconditionOption, maxIter, atol, &
+    rtol, convergenceIn, convergenceType, relativeToRHS, krylovSubspaceSize, &
+    scale, initx_zeros, bicgstab_ell, sor_omega, p_name, p_ilu_lfil, &
+    p_ilu_mbloc, p_ilu_droptol, p_ilu_permtol, p_ilu_alpha, p_ilu_fill, &
+    p_ssor_omega, p_hybrid_i, p_hybrid_maxiter, p_hybrid_tol, &
+    p_hybrid_omega, p_hybrid_ell, p_hybrid_restart, p_is_alpha, p_is_m, &
+    p_sainv_drop, p_saamg_unsym, p_saamg_theta, p_iluc_drop, p_iluc_rate, &
+    p_adds, p_adds_iter)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), INTENT(IN) :: engine
@@ -645,13 +605,117 @@ END INTERFACE
 ! date:  2023-03-15
 ! summary: Initiate the linear solver
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_Initiate(obj, param)
-    IMPORT :: AbstractLinSolver_, ParameterList_
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Initiate the linear solver
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, engine, solverName, preconditionOption, maxIter, atol, rtol, &
+    convergenceIn, convergenceType, relativeToRHS, KrylovSubspaceSize, &
+    scale, initx_zeros, bicgstab_ell, sor_omega, p_name, p_ilu_lfil, &
+    p_ilu_mbloc, p_ilu_droptol, p_ilu_permtol, p_ilu_alpha, p_ilu_fill, &
+    p_ssor_omega, p_hybrid_i, p_hybrid_maxiter, p_hybrid_tol, &
+    p_hybrid_omega, p_hybrid_ell, p_hybrid_restart, p_is_alpha, p_is_m, &
+    p_sainv_drop, p_saamg_unsym, p_saamg_theta, p_iluc_drop, p_iluc_rate, &
+    p_adds, p_adds_iter)
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
+    !! name of linear solver, it should be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
+    !! precondition option
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_name
+    !! if preconditionOption .ne. NO_PRECONDITION
+    !! then p_name should be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceIn
+    !! convergence in residual or solution
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceType
+    !! relative or absolute convergence
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scale
+    !! LIS, Solver digonal scaling
+    !! scale_none: No scaling
+    !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+    !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! maximum iteration allowed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: krylovSubspaceSize
+    !! Size of KrylovSubspaceSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: bicgstab_ell
+    !! Needed for solver BiCGSTABL
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_lfil
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_mbloc
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_fill
+    !! ILU, fill-in
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_i
+    !! Hybrid, the linear solver, for example, SSOR, GMRES,
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_maxiter
+    !! Hybrid, maximum number of iterations
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_ell
+    !!Hybrid, The degree l of the BiCGSTAB(l)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_restart
+    !! Hybrid, The restart value of GMRES and Orthomin
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_is_m
+    !! I+S, The parameter m of $I + \alpha {S}^{m}$
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_adds_iter
+    !! default value is 1
+    !! ILUT Additive Schwarz number of iteration
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    !! absolute tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+    !! relative tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: sor_omega
+    !! The relaxation coefficient
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_is_alpha
+    !! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_droptol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_permtol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_alpha
+    !! Sparsekit, ilu, alpha
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ssor_omega
+    !! The relaxation coefficient omega in (0.0, 2.0)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_tol
+    !! Hybrid, convergence tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_omega
+    !! Hybrid, The relaxation coefficient omega of the SOR
+    !! omega should be in (0.0, 2.0)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_sainv_drop
+    !! SA-AMG, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_saamg_theta
+    !! SA-AMG, The drop criteria
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_saamg_unsym
+    !! SA-AMG, Select the unsymmetric version
+    !! The matrix structure must be symmetric
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_drop
+    !! Crout ILU, default is 0.05, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_rate
+    !! Crout ILU, The ratio of the maximum fill-in
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: initx_zeros
+    !! if True, then we Set sol=0.0 as initial guess.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_adds
+    !! ilut Additive Schwarz, default is true
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE AbstractLinSolverInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE AbstractLinSolverInitiate
 
 !----------------------------------------------------------------------------
 !                                                                       Set
@@ -870,32 +934,25 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, isInitiated, engine, solverName, &
-          ierr, preconditionOption, iter, maxIter, atol, rtol, tol, normRes, &
-               error0, error, convergenceIn, convergenceType, relativeToRHS, &
-                          KrylovSubspaceSize, globalNumRow, globalNumColumn, &
-                                 localNumRow, localNumColumn, RES, Amat)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isInitiated, engine, solverName, ierr, preconditionOption, iter, &
+    maxIter, atol, rtol, tol, normRes, error0, error, convergenceIn, &
+    convergenceType, relativeToRHS, krylovSubspaceSize, globalNumRow, &
+    globalNumColumn, localNumRow, localNumColumn, scale, res, amat)
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     !! is object initiated?
     CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
     !! Name of the engine
-    !! NATIVE-SERIAL
-    !! NATIVE-OMP
-    !! NATIVE-ACC
-    !! NATIVE-MPI
-    !! PETSC
-    !! LIS-OMP
-    !! LIS-MPI
+    !! NATIVE-SERIAL ! NATIVE-OMP ! NATIVE-ACC ! NATIVE-MPI ! PETSC
+    !! LIS-OMP ! LIS-MPI
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
     !! Solver name
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ierr
     !! Error code returned by the solver
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
     !! Name of preconditioner;
-    !! NO_PRECONDITION
-    !! LEFT_PRECONDITION
-    !! RIGHT_PRECONDITION
+    !! NO_PRECONDITION ! LEFT_PRECONDITION ! RIGHT_PRECONDITION
     !! LEFT_RIGHT_PRECONDITON
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: iter
     !! Current iteration number
@@ -918,19 +975,22 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceType
     !! relative/ absolute convergence
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
-    !! In case of relative convergence
-    !! is convergence
-    !! is relative to
+    !! In case of relative convergence isConvergence is relative to
     !! right hand side
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: KrylovSubspaceSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: krylovSubspaceSize
     !! Useful for GMRES type algorithm
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNumRow, globalNumColumn
     !! Size of the global problem;
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: localNumRow, localNumColumn
     !! Size of the problem on a single process
-    REAL(DFP), OPTIONAL, INTENT(IN) :: RES(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scale
+    !! LIS, Solver digonal scaling
+    !! scale_none: No scaling
+    !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+    !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
+    REAL(DFP), OPTIONAL, INTENT(IN) :: res(:)
     !! Residual in each iteration
-    CLASS(AbstractMatrixField_), OPTIONAL, TARGET, INTENT(IN) :: Amat
+    CLASS(AbstractMatrixField_), OPTIONAL, TARGET, INTENT(IN) :: amat
     !! Pointer to child of [[AbstractMatrixField_]]
   END SUBROUTINE obj_SetParam
 END INTERFACE
@@ -970,33 +1030,22 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, solverName, &
-          ierr, preconditionOption, iter, maxIter, atol, rtol, tol, normRes, &
-               error0, error, convergenceIn, convergenceType, relativeToRHS, &
-                          KrylovSubspaceSize, globalNumRow, globalNumColumn, &
-                                 localNumRow, localNumColumn, RES, Amat)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, engine, solverName, ierr, preconditionOption, iter, &
+    maxIter, atol, rtol, tol, normRes, error0, error, convergenceIn, &
+    convergenceType, relativeToRHS, krylovSubspaceSize, globalNumRow, &
+    globalNumColumn, localNumRow, localNumColumn, scale, res, amat)
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isInitiated
     !! is object initiated?
     CHARACTER(*), OPTIONAL, INTENT(INOUT) :: engine
     !! Name of the engine
-    !! NATIVE-SERIAL
-    !! NATIVE-OMP
-    !! NATIVE-ACC
-    !! NATIVE-MPI
-    !! PETSC
-    !! LIS-OMP
-    !! LIS-MPI
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: solverName
     !! Solver name
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: ierr
     !! Error code returned by the solver
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: preconditionOption
     !! Name of preconditioner;
-    !! NO_PRECONDITION
-    !! LEFT_PRECONDITION
-    !! RIGHT_PRECONDITION
-    !! LEFT_RIGHT_PRECONDITON
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: iter
     !! Current iteration number
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: maxIter
@@ -1018,36 +1067,20 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: convergenceType
     !! relative/ absolute convergence
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: relativeToRHS
-    !! In case of relative convergence
-    !! is convergence
-    !! is relative to
-    !! right hand side
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: KrylovSubspaceSize
+    !! See the documentation of class
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: krylovSubspaceSize
     !! Useful for GMRES type algorithm
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: globalNumRow, globalNumColumn
     !! Size of the global problem;
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localNumRow, localNumColumn
     !! Size of the problem on a single process
-    REAL(DFP), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: RES(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: scale
+    !! Diagonal scaling
+    REAL(DFP), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: res(:)
     !! Residual in each iteration
-    CLASS(AbstractMatrixField_), OPTIONAL, POINTER, INTENT(INOUT) :: Amat
+    CLASS(AbstractMatrixField_), OPTIONAL, POINTER, INTENT(INOUT) :: amat
     !! Pointer to child of [[AbstractMatrixField_]]
   END SUBROUTINE obj_GetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  Get the prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
