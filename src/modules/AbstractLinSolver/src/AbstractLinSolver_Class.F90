@@ -114,14 +114,8 @@ CONTAINS
   !! Get pointer to amat
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get paramereters from abstractlin solver
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: solverName_ToInteger
-  !! Convert solver name to integer code
   PROCEDURE(obj_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
   !! Solve system of linear equation
-  PROCEDURE(obj_GetLinSolverCodeFromName), DEFERRED, PUBLIC, NOPASS :: &
-    GetLinSolverCodeFromName
-  PROCEDURE(obj_GetLinSolverNameFromCode), DEFERRED, PUBLIC, NOPASS :: &
-    GetLinSolverNameFromCode
 
   ! IO:
   ! @IOMethods
@@ -287,38 +281,6 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
   END SUBROUTINE obj_Solve
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetLinSolverCodeFromName
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-15
-! summary: Get linear solver integer code from name
-
-ABSTRACT INTERFACE
-  FUNCTION obj_GetLinSolverCodeFromName(name) RESULT(Ans)
-    IMPORT :: I4B
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetLinSolverCodeFromName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetLinSolverNameFromCode@Constructor
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-15
-! summary: Get the linear solver name from integer code
-
-ABSTRACT INTERFACE
-  FUNCTION obj_GetLinSolverNameFromCode(name) RESULT(Ans)
-    IMPORT :: I4B
-    INTEGER(I4B), INTENT(IN) :: name
-    CHARACTER(15) :: ans
-  END FUNCTION obj_GetLinSolverNameFromCode
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -724,19 +686,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           solverName_ToInteger@GetMethods
+!
 !----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-09
-! summary:  solver name to integer
-
-INTERFACE
-  MODULE FUNCTION solverName_ToInteger(obj, name) RESULT(ans)
-    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION solverName_ToInteger
-END INTERFACE
 
 END MODULE AbstractLinSolver_Class

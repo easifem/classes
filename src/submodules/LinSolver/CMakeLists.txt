@@ -20,5 +20,4 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/LinSolver_Class@ConstructorMethods.F90
           ${src_path}/LinSolver_Class@SetMethods.F90
-          ${src_path}/LinSolver_Class@GetMethods.F90
           ${src_path}/LinSolver_Class@SolveMethods.F90)

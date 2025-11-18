@@ -39,6 +39,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
 CALL obj%opt%ImportFromToml(table=table)
 
 #ifdef DEBUG_VER

@@ -36,14 +36,6 @@ ans => obj%amat
 END PROCEDURE obj_GetMatrixPointer
 
 !----------------------------------------------------------------------------
-!                                                     solverName_ToInteger
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE solverName_ToInteger
-ans = obj%GetLinSolverCodeFromName(name)
-END PROCEDURE solverName_ToInteger
-
-!----------------------------------------------------------------------------
 !                                                                 GetParam
 !----------------------------------------------------------------------------
 

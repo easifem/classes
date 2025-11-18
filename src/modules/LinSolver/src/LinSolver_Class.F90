@@ -85,15 +85,6 @@ CONTAINS
   !! Set the matrix and preconditioning matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_solve
   !! Solve the system of linear equation
-
-  ! GET:
-  ! @GetMethods
-  PROCEDURE, PUBLIC, NOPASS :: GetLinSolverCodeFromName => &
-    obj_GetLinSolverCodeFromName
-  !! Get linear solver code from name
-  PROCEDURE, PUBLIC, NOPASS :: GetLinSolverNameFromCode => &
-    obj_GetLinSolverNameFromCode
-  !! Get linear solver name form code
 END TYPE LinSolver_
 
 !----------------------------------------------------------------------------
@@ -237,36 +228,6 @@ INTERFACE
   MODULE SUBROUTINE obj_final(obj)
     TYPE(LinSolver_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetLinSolverCodeFromName@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-15
-! summary: Get linear solver integer code from name
-
-INTERFACE
-  MODULE FUNCTION obj_GetLinSolverCodeFromName(name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetLinSolverCodeFromName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GetLinSolverNameFromCode@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-15
-! summary: Get the linear solver name from integer code
-
-INTERFACE
-  MODULE FUNCTION obj_GetLinSolverNameFromCode(name) RESULT(Ans)
-    INTEGER(I4B), INTENT(IN) :: name
-    CHARACTER(15) :: ans
-  END FUNCTION obj_GetLinSolverNameFromCode
 END INTERFACE
 
 !----------------------------------------------------------------------------
