@@ -183,6 +183,9 @@ CONTAINS
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SolverNameToInteger => &
     obj_SolverNameToInteger
   !! Convert solver name to integer code
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SolverIntegerToName => &
+    obj_SolverIntegerToName
+  !! Convert solver integer code to string
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: PrecondOptToInteger => &
     obj_PrecondOptToInteger
   !! Convert precondition option to integer code
@@ -667,6 +670,22 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION obj_SolverNameToInteger
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              SolverIntegerToName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Get the linear solver name from integer code
+
+INTERFACE
+  MODULE FUNCTION obj_SolverIntegerToName(obj, name) RESULT(Ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: name
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_SolverIntegerToName
 END INTERFACE
 
 !----------------------------------------------------------------------------
