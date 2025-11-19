@@ -147,10 +147,6 @@ CONTAINS
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     Set6, Set7, Set8, Set9, Set10, Set11
 
-PROCEDURE(obj_SetFromSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetFromSTMatrix
-
-  PROCEDURE(obj_SetToSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetToSTMatrix
-
   ! SET:
   ! @SetRow
 
@@ -848,41 +844,6 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set11
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetFromSTMatrix@SetMethods
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetFromSTMatrix(obj, VALUE, a, b)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    !! Space-time matrix field
-    INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-  END SUBROUTINE obj_SetFromSTMatrix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetToSTMatrix@SetMethods
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetToSTMatrix(obj, VALUE, a, b)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    !! Space-time matrix
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    !! Space matrix field
-    INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-  END SUBROUTINE obj_SetToSTMatrix
 END INTERFACE
 
 !----------------------------------------------------------------------------

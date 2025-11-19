@@ -74,10 +74,8 @@ CONTAINS
   !! Initiate by copy
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate an instance of ScalarField_ by passing arguments
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside the STScalarField_ object
-
   FINAL :: obj_Final
   !! Finalizer
 
@@ -85,10 +83,8 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of STScalarField_
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the content of STScalarField_
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content of STScalarField_
 
@@ -97,88 +93,68 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a constant time node values
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given STScalar
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given STScalar
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given STScalar
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@timeCompo=obj@timeCompo+scale*value
   !! (value is an instance of abstract noe field)
   !! if value is space-time field, then
   !! value@timeCompo is used
   !! This method calls Set13
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a STScalar by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a STScalar by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set values to a STScalar by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set values to a STScalar by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set values using FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all the value to a constant
   !! WE call setall method here
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   !! obj@[ivar, idof] = value@[ivar, idof]
-
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! Copy
-
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, &
     Set14
-
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => obj_SetByFunction
+  !! Generic Set Method
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
+    SetByFunction => obj_SetByFunction
+  !! Set by user function
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get all components at a given node
   !! Get all values of a given component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get all values in a rank  array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! Get selected many values in a rank-2 array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get selected many values in a rank-1 array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get single entry; call GetSingle method
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get value in FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get by copy, value is an instance of AbstractNodeField_
   !! We call Get8
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
   !! Get a single value of time component at a global/local node
-
-  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7, Get8
-
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, &
+    Get7, Get8
+  !! Generic Get method
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
 
@@ -187,6 +163,28 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 
+  ! SET:
+  ! @BodySourceMethods
+  PROCEDURE, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  PROCEDURE, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
+  !! Add contribution of body source to the scalar field
+  !! body source is given external scalar field
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
+  !! Generic method for setting body source
+
+  ! SET:
+  ! @SurfaceNBCMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
+    obj_ApplySurfaceNeumannBC
+  !! Apply Surface neumann boundary condition
+
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC1 => &
+    obj_ApplyPointNeumannBC1
+  !! Apply point neumann boundary condition
 END TYPE STScalarField_
 
 !----------------------------------------------------------------------------
@@ -1290,6 +1288,93 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-19
+! summary: Add Contribution of body source to scalar field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a scalar function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time, which will be passed to the body source function
+  END SUBROUTINE obj_ApplyBodySource1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-19
+! summary: Add Contribution of body source to scalar field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
+    !! The test function will be corresponding to the obj
+    CLASS(STScalarField_), INTENT(INOUT) :: bodySource
+    !! Body source in terms of scalar field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+  END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-06
+! summary: Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC(obj, nbcField, scale, times)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
+    CLASS(STScalarField_), INTENT(INOUT) :: nbcField
+    !! Scalar field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times
+  END SUBROUTINE obj_ApplySurfaceNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             ApplyPointNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-06
+! summary: Add Contribution of point neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, scale, times, ivar, &
+                                             extField)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+  END SUBROUTINE obj_ApplyPointNeumannBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------

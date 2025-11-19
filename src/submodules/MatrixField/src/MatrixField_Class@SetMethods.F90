@@ -652,7 +652,10 @@ END SUBROUTINE obj_SetFromSTMatrix_help
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetToSTMatrix
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetToSTMatrix()"
+LOGICAL(LGT) :: isok
+#endif
 INTEGER(I4B) :: spaceCompo
 TYPE(DOF_), POINTER :: dof_obj
 
@@ -661,11 +664,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isRectangle
+CALL AssertError1(isok, myName, &
+                  'This routine is not for rectangle matrix')
+#endif
 
 SELECT TYPE (VALUE); CLASS is (MatrixField_)
 

@@ -153,12 +153,10 @@ CONTAINS
 
   ! SET:
   ! @BodySourceMethods
-  PROCEDURE, PASS(obj) :: ApplyBodySource1 => &
-    obj_ApplyBodySource1
+  PROCEDURE, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, PASS(obj) :: ApplyBodySource2 => &
-    obj_ApplyBodySource2
+  PROCEDURE, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
