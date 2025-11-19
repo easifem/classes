@@ -43,7 +43,7 @@ CHARACTER(*), PARAMETER :: modName = "LinSolverOpt_Class"
 
 TYPE :: LinSolverOpt_
   LOGICAL(LGT) :: isInit = .FALSE.
-  !! It is true when the object is intiated
+!! It is true when the object is intiated
   LOGICAL(LGT) :: relativeToRHS = .FALSE.
   !! relative to RHS vector
   LOGICAL(LGT) :: initx_zeros = .TRUE.
@@ -139,7 +139,7 @@ TYPE :: LinSolverOpt_
   REAL(DFP) :: ssor_omega = 1.0_DFP
   !! SSOR omega parameter
   REAL(DFP) :: hybrid_tol = 1.0E-3
-  !! tolerance for hybrid preconditioner
+!! tolerance for hybrid preconditioner
   REAL(DFP) :: hybrid_omega = 1.5
   !! omega for hybrid preconditioner
   REAL(DFP) :: is_alpha = 1.0
@@ -202,11 +202,37 @@ CONTAINS
     obj_ScaleToInteger
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Return isInit
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    GetPreconditionOption => obj_GetPreconditionOption
   !! Get precondition options
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the field values
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetPreconditionOption => obj_GetPreconditionOption, &
+    GetPreconditionName => obj_GetPreconditionName, &
+    GetSolverName => obj_GetSolverName, &
+    GetBicgstabEll => obj_GetBicgstabEll, &
+    GetKrylovSubspaceSize => obj_GetKrylovSubspaceSize, &
+    GetSorOmega => obj_GetSorOmega, &
+    GetSsorOmega => obj_GetSsorOmega, &
+    GetMaxIter => obj_GetMaxIter, &
+    GetScale => obj_GetScale, &
+    GetRelativeTolerance => obj_GetRelativeTolerance, &
+    GetInitxZeros => obj_GetInitxZeros, &
+    GetRelativeToRHS => obj_GetRelativeToRHS, &
+    GetIluFill => obj_GetIluFill, &
+    GetHybridI => obj_GetHybridI, &
+    GetHybridMaxIter => obj_GetHybridMaxIter, &
+    GetHybridEll => obj_GetHybridEll, &
+    GetHybridRestart => obj_GetHybridRestart, &
+    GetHybridTol => obj_GetHybridTol, &
+    GetHybridOmega => obj_GetHybridOmega, &
+    GetIsM => obj_GetIsM, &
+    GetIsAlpha => obj_GetIsAlpha, &
+    GetSainvDrop => obj_GetSainvDrop, &
+    GetSaamgUnsym => obj_GetSaamgUnsym, &
+    GetSaamgTheta => obj_GetSaamgTheta, &
+    GetIlucDrop => obj_GetIlucDrop, &
+    GetIlucRate => obj_GetIlucRate, &
+    GetAddsIter => obj_GetAddsIter
 
   ! IO:
   ! @IOMethods
@@ -283,7 +309,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_maxiter
     !! Hybrid, maximum number of iterations
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_ell
-    !!Hybrid, The degree l of the BiCGSTAB(l)
+!!Hybrid, The degree l of the BiCGSTAB(l)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_restart
     !! Hybrid, The restart value of GMRES and Orthomin
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_is_m
@@ -784,21 +810,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            GetPreconditionOption@Methods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 3 Sept 2021
-! summary: Returns the preconditionOption
-
-INTERFACE
-  MODULE FUNCTION obj_GetPreconditionOption(obj) RESULT(Ans)
-    CLASS(LinSolverOpt_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetPreconditionOption
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                         GetParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -911,6 +922,311 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: p_adds
     !! ilut Additive Schwarz, default is true
   END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetPreconditionOption@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 3 Sept 2021
+! summary: Returns the preconditionOption
+
+INTERFACE
+  MODULE FUNCTION obj_GetPreconditionOption(obj) RESULT(Ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetPreconditionOption
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetPreconditionName@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 3 Sept 2021
+! summary: Returns the preconditionOption
+
+INTERFACE
+  MODULE FUNCTION obj_GetPreconditionName(obj) RESULT(Ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetPreconditionName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetSolverName@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSolverName(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetSolverName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetBicgstabEll@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetBicgstabEll(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetBicgstabEll
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetKrylovSubspaceSize@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetKrylovSubspaceSize(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetKrylovSubspaceSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetSorOmega@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSorOmega(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetSorOmega
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSsorOmega@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSsorOmega(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetSsorOmega
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetMaxIter@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxIter(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxIter
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetScale@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetScale(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetRelativeTolerance@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetRelativeTolerance(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetRelativeTolerance
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetInitxZeros@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetInitxZeros(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetInitxZeros
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetRelativeToRHS@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetRelativeToRHS(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetRelativeToRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetIluFill@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIluFill(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetIluFill
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetHybridI@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridI(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetHybridI
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetHybridMaxIter@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridMaxIter(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetHybridMaxIter
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetHybridEll@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridEll(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetHybridEll
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetHybridRestart@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridRestart(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetHybridRestart
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetHybridTol@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridTol(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetHybridTol
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetHybridOmega@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetHybridOmega(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetHybridOmega
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           GetIsM@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIsM(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetIsM
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetIsAlpha@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIsAlpha(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetIsAlpha
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetSainvDrop@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSainvDrop(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetSainvDrop
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetSaamgUnsym@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSaamgUnsym(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetSaamgUnsym
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetSaamgTheta@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetSaamgTheta(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetSaamgTheta
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetIlucDrop@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIlucDrop(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetIlucDrop
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetIlucRate@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIlucRate(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetIlucRate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetAddsIter@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetAddsIter(obj) RESULT(ans)
+    CLASS(LinSolverOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetAddsIter
 END INTERFACE
 
 !----------------------------------------------------------------------------

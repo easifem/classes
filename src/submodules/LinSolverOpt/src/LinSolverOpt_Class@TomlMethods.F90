@@ -261,10 +261,12 @@ SUBROUTINE ImportSolverNameFromToml(obj, table, origin, stat)
                           '[START] ')
 #endif
 
-  CALL GetValue(table=table, key="solverName", VALUE=astr, &
-     default_value=TypeLinSolverOpt%solverName_char, origin=origin, stat=stat)
+  CALL GetValue( &
+    table=table, key="solverName", VALUE=astr, &
+    default_value=TypeLinSolverOpt%solverName_char, origin=origin, stat=stat)
 
   obj%solverName = TypeLinSolverOpt%SolverNameToInteger(astr%chars())
+  obj%solverName_char = astr%chars()
 
   astr = ""
 
@@ -287,7 +289,7 @@ SUBROUTINE ImportConvergenceInFromToml(obj, table, origin, stat)
   CHARACTER(*), PARAMETER :: myName = "ImportConvergenceInFromToml()"
 #endif
 
-  TYPE(String) :: convergenceIn
+  TYPE(String) :: astr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -295,14 +297,16 @@ SUBROUTINE ImportConvergenceInFromToml(obj, table, origin, stat)
 #endif
 
   CALL GetValue( &
-    table=table, key="convergenceIn", VALUE=convergenceIn, &
+    table=table, key="convergenceIn", VALUE=astr, &
     default_value=TypeLinSolverOpt%convergenceIn_char, &
     origin=origin, stat=stat)
 
   obj%convergenceIn = TypeLinSolverOpt%ConvergenceInToInteger( &
-                      convergenceIn%chars())
+                      astr%chars())
 
-  convergenceIn = ""
+  obj%convergenceIn_char = astr%chars()
+
+  astr = ""
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -323,7 +327,7 @@ SUBROUTINE ImportConvergenceTypeFromToml(obj, table, origin, stat)
   CHARACTER(*), PARAMETER :: myName = "ImportConvergenceTypeFromToml()"
 #endif
 
-  TYPE(String) :: convergenceType
+  TYPE(String) :: astr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -331,14 +335,15 @@ SUBROUTINE ImportConvergenceTypeFromToml(obj, table, origin, stat)
 #endif
 
   CALL GetValue( &
-    table=table, key="convergenceType", VALUE=convergenceType, &
+    table=table, key="convergenceType", VALUE=astr, &
     default_value=TypeLinSolverOpt%convergenceType_char, &
     origin=origin, stat=stat)
 
   obj%convergenceType = TypeLinSolverOpt%ConvergenceTypeToInteger( &
-                        convergenceType%chars())
+                        astr%chars())
+  obj%convergenceType_char = astr%chars()
 
-  convergenceType = ""
+  astr = ""
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -371,6 +376,7 @@ SUBROUTINE ImportScaleFromToml(obj, table, origin, stat)
                 origin=origin, stat=stat)
 
   obj%scale = TypeLinSolverOpt%ScaleToInteger(astr%chars())
+  obj%scale_char = astr%chars()
 
   astr = ""
 

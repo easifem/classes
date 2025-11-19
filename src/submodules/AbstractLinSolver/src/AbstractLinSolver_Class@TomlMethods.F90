@@ -39,8 +39,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
 CALL obj%opt%ImportFromToml(table=table)
+CALL obj%Initiate()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

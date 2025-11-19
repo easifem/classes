@@ -216,24 +216,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-
-CALL AbstractLinSolverInitiate( &
-  obj=obj, engine=engine, solverName=solverName, &
-  preconditionOption=preconditionOption, maxIter=maxIter, atol=atol, &
-  rtol=rtol, convergenceIn=convergenceIn, convergenceType=convergenceType, &
-  relativeToRHS=relativeToRHS, krylovSubspaceSize=krylovSubspaceSize, &
-  scale=scale, initx_zeros=initx_zeros, bicgstab_ell=bicgstab_ell, &
-  sor_omega=sor_omega, p_name=p_name, p_ilu_lfil=p_ilu_lfil, &
-  p_ilu_mbloc=p_ilu_mbloc, p_ilu_droptol=p_ilu_droptol, &
-  p_ilu_permtol=p_ilu_permtol, p_ilu_alpha=p_ilu_alpha, &
-  p_ilu_fill=p_ilu_fill, p_ssor_omega=p_ssor_omega, p_hybrid_i=p_hybrid_i, &
-  p_hybrid_maxiter=p_hybrid_maxiter, p_hybrid_tol=p_hybrid_tol, &
-  p_hybrid_omega=p_hybrid_omega, p_hybrid_ell=p_hybrid_ell, &
-  p_hybrid_restart=p_hybrid_restart, p_is_alpha=p_is_alpha, p_is_m=p_is_m, &
-  p_sainv_drop=p_sainv_drop, p_saamg_unsym=p_saamg_unsym, &
-  p_saamg_theta=p_saamg_theta, p_iluc_drop=p_iluc_drop, &
-  p_iluc_rate=p_iluc_rate, p_adds=p_adds, p_adds_iter=p_adds_iter)
+CALL AbstractLinSolverInitiate(obj=obj)
 
 CALL obj%GetParam( &
   preconditionOption=preconditionOption0, convergenceIn=convergenceIn0, &

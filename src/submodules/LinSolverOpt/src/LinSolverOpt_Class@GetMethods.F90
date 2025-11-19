@@ -502,14 +502,6 @@ ans = obj%isInit
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!                                                       GetPreconditionOption
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPreconditionOption
-ans = obj%preconditionOption
-END PROCEDURE obj_GetPreconditionOption
-
-!----------------------------------------------------------------------------
 !                                                                   GetParam
 !----------------------------------------------------------------------------
 
@@ -579,6 +571,222 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                       GetPreconditionOption
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPreconditionOption
+ans = obj%preconditionOption
+END PROCEDURE obj_GetPreconditionOption
+
+!----------------------------------------------------------------------------
+!                                                         GetPreconditionName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPreconditionName
+ans = obj%p_name
+END PROCEDURE obj_GetPreconditionName
+
+!----------------------------------------------------------------------------
+!                                                               GetSolverName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSolverName
+ans = obj%solverName
+END PROCEDURE obj_GetSolverName
+
+!----------------------------------------------------------------------------
+!                                                             GetBicgstabEll
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBicgstabEll
+ans = obj%bicgstab_ell
+END PROCEDURE obj_GetBicgstabEll
+
+!----------------------------------------------------------------------------
+!                                                      GetKrylovSubspaceSize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetKrylovSubspaceSize
+ans = obj%krylovSubspaceSize
+END PROCEDURE obj_GetKrylovSubspaceSize
+
+!----------------------------------------------------------------------------
+!                                                                 GetSorOmega
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSorOmega
+ans = obj%sor_omega
+END PROCEDURE obj_GetSorOmega
+
+!----------------------------------------------------------------------------
+!                                                                GetSsorOmega
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSsorOmega
+ans = obj%ssor_omega
+END PROCEDURE obj_GetSsorOmega
+
+!----------------------------------------------------------------------------
+!                                                                 GetMaxIter
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxIter
+ans = obj%maxIter
+END PROCEDURE obj_GetMaxIter
+
+!----------------------------------------------------------------------------
+!                                                                    GetScale
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetScale
+ans = obj%scale
+END PROCEDURE obj_GetScale
+
+!----------------------------------------------------------------------------
+!                                                       GetRelativeTolerance
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRelativeTolerance
+ans = obj%rtol
+END PROCEDURE obj_GetRelativeTolerance
+
+!----------------------------------------------------------------------------
+!                                                               GetInitxZeros
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInitxZeros
+ans = obj%initx_zeros
+END PROCEDURE obj_GetInitxZeros
+
+!----------------------------------------------------------------------------
+!                                                            GetRelativeToRHS
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRelativeToRHS
+ans = obj%relativeToRHS
+END PROCEDURE obj_GetRelativeToRHS
+
+!----------------------------------------------------------------------------
+!                                                                  GetIluFill
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIluFill
+ans = obj%ilu_fill
+END PROCEDURE obj_GetIluFill
+
+!----------------------------------------------------------------------------
+!                                                                 GetHybridI
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridI
+ans = obj%hybrid_i
+END PROCEDURE obj_GetHybridI
+
+!----------------------------------------------------------------------------
+!                                                           GetHybridMaxIter
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridMaxIter
+ans = obj%hybrid_maxiter
+END PROCEDURE obj_GetHybridMaxIter
+
+!----------------------------------------------------------------------------
+!                                                               GetHybridEll
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridEll
+ans = obj%hybrid_ell
+END PROCEDURE obj_GetHybridEll
+
+!----------------------------------------------------------------------------
+!                                                            GetHybridRestart
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridRestart
+ans = obj%hybrid_restart
+END PROCEDURE obj_GetHybridRestart
+
+!----------------------------------------------------------------------------
+!                                                                GetHybridTol
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridTol
+ans = obj%hybrid_tol
+END PROCEDURE obj_GetHybridTol
+
+!----------------------------------------------------------------------------
+!                                                             GetHybridOmega
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHybridOmega
+ans = obj%hybrid_omega
+END PROCEDURE obj_GetHybridOmega
+
+!----------------------------------------------------------------------------
+!                                                                      GetIsM
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIsM
+ans = obj%is_m
+END PROCEDURE obj_GetIsM
+
+!----------------------------------------------------------------------------
+!                                                                  GetIsAlpha
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIsAlpha
+ans = obj%is_alpha
+END PROCEDURE obj_GetIsAlpha
+
+!----------------------------------------------------------------------------
+!                                                               GetSainvDrop
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSainvDrop
+ans = obj%sainv_drop
+END PROCEDURE obj_GetSainvDrop
+
+!----------------------------------------------------------------------------
+!                                                               GetSaamgUnsym
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaamgUnsym
+ans = obj%saamg_unsym
+END PROCEDURE obj_GetSaamgUnsym
+
+!----------------------------------------------------------------------------
+!                                                               GetSaamgTheta
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaamgTheta
+ans = obj%saamg_theta
+END PROCEDURE obj_GetSaamgTheta
+
+!----------------------------------------------------------------------------
+!                                                                 GetIlucDrop
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIlucDrop
+ans = obj%iluc_drop
+END PROCEDURE obj_GetIlucDrop
+
+!----------------------------------------------------------------------------
+!                                                                 GetIlucRate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIlucRate
+ans = obj%iluc_rate
+END PROCEDURE obj_GetIlucRate
+
+!----------------------------------------------------------------------------
+!                                                                GetAddsIter
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetAddsIter
+ans = obj%adds_iter
+END PROCEDURE obj_GetAddsIter
 
 !----------------------------------------------------------------------------
 !                                                              Include error
