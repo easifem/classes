@@ -347,7 +347,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetQuadraturePoints
+!                                             GetQuadraturePoints@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
