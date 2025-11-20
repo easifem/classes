@@ -27,6 +27,10 @@ USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
 USE Display_Method, ONLY: ToString
 
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 IMPLICIT NONE
 
 CONTAINS
