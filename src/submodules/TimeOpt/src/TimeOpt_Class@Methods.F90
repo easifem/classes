@@ -115,7 +115,6 @@ END PROCEDURE obj_Display
 MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: origin, stat
@@ -127,11 +126,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isInit) THEN
+
 #ifdef DEBUG_VER
-isok = .NOT. obj%isInit
-CALL AssertError1(isok, myName, &
-                  'TimeOpt is already initialized, deallocate it first.')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Object is already initialized. Nothing to do here.')
 #endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+CALL obj%DEALLOCATE()
+
+obj%isInit = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
