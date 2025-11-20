@@ -27,6 +27,8 @@ PRIVATE
 PUBLIC :: TDGAlgorithm1_
 CHARACTER(*), PARAMETER :: modName = "TDGAlgorithm1_Class()"
 
+INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -86,6 +88,15 @@ TYPE :: TDGAlgorithm1_
   !! coeff(1) coefficient of displacement at tn
   !! coeff(2) coefficient of velocity at tn
   LOGICAL(LGT) :: initialGuess_zero(2) = .TRUE.
+
+  INTEGER(I4B) :: nrow = 0_I4B, ncol = 0_I4B
+  !! Number of rows and columns in ct, mt, mtplus matrices
+
+  REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  !! coefficient for mass matrix in space (Ms)
+
+  REAL(DFP) :: kt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  !! coefficient for stiffness matrix in space (Ks*dt)
 
 CONTAINS
   PRIVATE
