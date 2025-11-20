@@ -27,8 +27,22 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName="obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+'[START] ')
+#endif
+
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%timeCompo, msg="timeCompo: ", unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+'[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
