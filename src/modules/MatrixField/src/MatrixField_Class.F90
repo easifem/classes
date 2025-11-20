@@ -1589,14 +1589,14 @@ END INTERFACE
 ! from value and put it in the obj
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetFromSTMatrix(obj, VALUE, a, b, scale, &
-                                        addContribution)
+  MODULE SUBROUTINE obj_SetFromSTMatrix( &
+    obj, VALUE, itimecompo, jtimecompo, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(MatrixField_), INTENT(INOUT) :: VALUE
     !! Space-time matrix field
-    INTEGER(I4B), INTENT(IN) :: a
+    INTEGER(I4B), INTENT(IN) :: itimecompo
     !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
     !! jtimecompo
     REAL(DFP), INTENT(IN) :: scale
     !! scale
@@ -1624,15 +1624,15 @@ END INTERFACE
 ! in the obj from the obj
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetToSTMatrix(obj, VALUE, a, b, scale, &
-                                      addContribution)
+  MODULE SUBROUTINE obj_SetToSTMatrix( &
+    obj, VALUE, itimecompo, jtimecompo, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! Space-Time matrix
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    CLASS(MatrixField_), INTENT(INOUT) :: VALUE
     !! Space matrix field
-    INTEGER(I4B), INTENT(IN) :: a
+    INTEGER(I4B), INTENT(IN) :: itimecompo
     !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
     !! jtimecompo
     REAL(DFP), INTENT(IN) :: scale
     !! scale

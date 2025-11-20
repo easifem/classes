@@ -27,7 +27,7 @@ USE DOF_Method, ONLY: OPERATOR(.tdof.), &
                       OPERATOR(.spacecomponents.), &
                       OPERATOR(.timecomponents.)
 
-USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer
+USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer, SetToSTMatrix
 USE BaseType, ONLY: DOF_
 USE Display_Method, ONLY: ToString
 
@@ -516,136 +516,32 @@ END PROCEDURE obj_Set11
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFromSTMatrix
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTMatrix()"
-INTEGER(I4B) :: spaceCompo
-TYPE(DOF_), POINTER :: dof_obj
+LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isRectangle
+CALL AssertError1(isok, myName, &
+                  'This routine is not for rectangle matrix.')
+#endif
 
-SELECT TYPE (VALUE); CLASS is (MatrixField_)
-
-  dof_obj => GetDOFPointer(obj%mat, 1)
-
-  spaceCompo = dof_obj.spacecomponents.1
-
-  CALL obj_SetFromSTMatrix_help(obj=obj, VALUE=VALUE, fedof=obj%fedof, &
-                                a=a, b=b, spaceCompo=spaceCompo)
-
-CLASS default
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found.')
-  RETURN
-END SELECT
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetFromSTMatrix
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_SetFromSTMatrix_help(obj, VALUE, &
-  & fedof, spaceCompo, a, b)
-  CLASS(MatrixField_), INTENT(INOUT) :: obj
-  CLASS(MatrixField_), INTENT(INOUT) :: VALUE
-  CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! Space-time matrix field
-  INTEGER(I4B), INTENT(IN) :: spaceCompo
-  !!
-  INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-  INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-
-  ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTMatrix_help()"
-  INTEGER(I4B) :: id, nsd, iel, nns, ispacecompo, jspacecompo, &
-                  r1, r2, c1, c2
-  INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-  LOGICAL(LGT) :: problem
-  REAL(DFP), ALLOCATABLE :: elem_value(:, :)
-  CLASS(AbstractMesh_), POINTER :: meshptr
-  ! CLASS(ReferenceElement_), POINTER :: refelem
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  meshptr => fedof%GetMeshPointer()
-  nsd = meshptr%GetNSD()
-
-  problem = .NOT. ASSOCIATED(meshptr)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: mesh pointer is not associted.')
-    RETURN
-  END IF
-
-  problem = meshptr%isEmpty()
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: mesh is empty.')
-    RETURN
-  END IF
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-
-!     nns = (.NNE.refelem)
-!     CALL Reallocate(nptrs, nns)
-!     CALL Reallocate(elem_value, spaceCompo * nns, spaceCompo * nns)
-!
-!     DO iel = meshptr%GetMinElemNumber(), meshptr%GetMaxElemNumber()
-!
-!       problem = .NOT. meshptr%isElementPresent(iel)
-!       IF (problem) CYCLE
-!
-!       nptrs = meshptr%GetConnectivity(iel)
-!
-!       DO ispacecompo = 1, spaceCompo
-!         r1 = 1 + (ispacecompo - 1) * nns
-!         r2 = ispacecompo * nns
-!         DO jspacecompo = 1, spaceCompo
-!           c1 = 1 + (jspacecompo - 1) * nns
-!           c2 = jspacecompo * nns
-!           CALL VALUE%Get(inodenum=nptrs, jnodenum=nptrs,  &
-!             & VALUE=elem_value(r1:r2, c1:c2),  &
-!             & ivar=1, jvar=1, ispacecompo=ispacecompo,  &
-!             & jspacecompo=jspacecompo,  &
-!             & itimecompo=a, jtimecompo=b)
-!
-!         END DO
-!       END DO
-!
-!       CALL obj%Set(globalNode=nptrs, VALUE=elem_value, storageFMT=FMT_DOF)
-!
-!     END DO
-!
-!   END DO
-!
-!   NULLIFY (meshptr, refelem)
-!   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-!   IF (ALLOCATED(elem_value)) DEALLOCATE (elem_value)
-!
-! #ifdef DEBUG_VER
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[END] ')
-! #endif
-
-END SUBROUTINE obj_SetFromSTMatrix_help
 
 !----------------------------------------------------------------------------
 !                                                             SetToSTMatrix
@@ -656,8 +552,6 @@ MODULE PROCEDURE obj_SetToSTMatrix
 CHARACTER(*), PARAMETER :: myName = "obj_SetToSTMatrix()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: spaceCompo
-TYPE(DOF_), POINTER :: dof_obj
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -667,23 +561,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 isok = .NOT. obj%isRectangle
 CALL AssertError1(isok, myName, &
-                  'This routine is not for rectangle matrix')
+                  'This routine is not for rectangle matrix.')
 #endif
 
-SELECT TYPE (VALUE); CLASS is (MatrixField_)
+! check that obj has space-time components
+! check that number of space components is same in both obj and value
+! Make sure that the storage patter is fmt_dof in both obj and value
 
-  dof_obj => GetDOFPointer(obj%mat, 1)
-  spaceCompo = dof_obj.spacecomponents.1
-
-  CALL obj_SetToSTMatrix_help(obj=obj, VALUE=VALUE, fedof=obj%fedof, &
-                              spaceCompo=spaceCompo, a=a, b=b)
-
-CLASS DEFAULT
+IF (addContribution) THEN
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found.')
-  RETURN
+                    '[WIP ERROR] :: This routine is under development')
+#endif
+END IF
 
-END SELECT
+CALL SetToSTMatrix(obj=obj%mat, VALUE=VALUE%mat, &
+                   itimecompo=itimecompo, jtimecompo=jtimecompo, &
+                   scale=scale)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -691,107 +585,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 END PROCEDURE obj_SetToSTMatrix
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_SetToSTMatrix_help(obj, VALUE, fedof, spaceCompo, a, b)
-  CLASS(MatrixField_), INTENT(INOUT) :: obj
-    !! Space time matrix
-  CLASS(MatrixField_), INTENT(INOUT) :: VALUE
-    !! space matrix
-  CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! Space-time matrix field
-  INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space-components
-  INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-  INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-
-  ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "obj_SetToSTMatrix_help()"
-! !   INTEGER(I4B) :: tmesh, id, nsd, iel, nns, ispacecompo, jspacecompo,  &
-! !     & idof, jdof
-! !   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-! !   LOGICAL(LGT) :: problem
-! !   REAL(DFP), ALLOCATABLE :: elem_value(:, :)
-! !   CLASS(AbstractMesh_), POINTER :: meshptr
-! !   CLASS(ReferenceElement_), POINTER :: refelem
-! !   TYPE(DOF_), POINTER :: idof_obj, jdof_obj
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-
-! ! #ifdef DEBUG_VER
-! !   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-! !     & '[START] ')
-! ! #endif
-! !
-! !   nsd = dom%GetNSD()
-! !   tmesh = dom%GetTotalEntities(dim=nsd)
-! !
-! !   NULLIFY (meshptr, refelem, idof_obj, jdof_obj)
-! !
-! !   idof_obj => GetDOFPointer(obj%mat, 1)
-! !   jdof_obj => GetDOFPointer(obj%mat, 2)
-! !
-! !   DO id = 1, tmesh
-! !     meshptr => dom%GetMeshPointer(dim=nsd, entityNum=id)
-! !
-! !     problem = .NOT. ASSOCIATED(meshptr)
-! !     IF (problem) CYCLE
-! !
-! !     problem = meshptr%isEmpty()
-! !     IF (problem) CYCLE
-! !
-! !     refelem => meshptr%GetRefElemPointer()
-! !     nns = (.NNE.refelem)
-! !     CALL Reallocate(nptrs, nns)
-! !     CALL Reallocate(elem_value, nns, nns)
-! !
-! !     DO iel = meshptr%GetMinElemNumber(), meshptr%GetMaxElemNumber()
-! !
-! !       problem = .NOT. meshptr%isElementPresent(iel)
-! !       IF (problem) CYCLE
-! !
-! !       nptrs = meshptr%GetConnectivity(iel)
-! !
-! !       DO ispacecompo = 1, spaceCompo
-! !         idof = GetIDOF(obj=idof_obj, ivar=1, spaceCompo=ispacecompo,  &
-! !           & timeCompo=a)
-! !
-! !         DO jspacecompo = 1, spaceCompo
-! !           jdof = GetIDOF(obj=jdof_obj, ivar=1, spaceCompo=jspacecompo,  &
-! !             & timeCompo=b)
-! !
-! !           CALL VALUE%Get(inodenum=nptrs, jnodenum=nptrs,  &
-! !             & VALUE=elem_value,  &
-! !             & ivar=1, jvar=1, ispacecompo=ispacecompo,  &
-! !             & jspacecompo=jspacecompo,  &
-! !             & itimecompo=1, jtimecompo=1)
-! !
-! !           CALL obj%Set(inodenum=nptrs,  &
-! !             & jnodenum=nptrs, VALUE=elem_value,  &
-! !             & ivar=1, jvar=1, idof=idof, jdof=jdof)
-! !
-! !         END DO
-! !       END DO
-! !
-! !     END DO
-! !
-! !   END DO
-! !
-! !   NULLIFY (meshptr, refelem, idof_obj, jdof_obj)
-! !   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-! !   IF (ALLOCATED(elem_value)) DEALLOCATE (elem_value)
-! !
-! ! #ifdef DEBUG_VER
-! !   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-! !     & '[END] ')
-! ! #endif
-! !
-END SUBROUTINE obj_SetToSTMatrix_help
 !
 !----------------------------------------------------------------------------
 !
