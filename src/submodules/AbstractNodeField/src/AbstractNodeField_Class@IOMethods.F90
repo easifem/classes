@@ -38,6 +38,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
+CALL Display(obj%dof_tPhysicalVars, "dof_tPhysicalVars: ", unitNo=unitNo)
+CALL Display(obj%dof_storageFMT, "dof_storageFMT: ", unitNo=unitNo)
+CALL Display(obj%dof_spaceCompo, "dof_spaceCompo: ", unitNo=unitNo)
+CALL Display(obj%dof_timeCompo, "dof_timeCompo: ", unitNo=unitNo)
+CALL Display(obj%dof_tNodes, "dof_tNodes: ", unitNo=unitNo)
 CALL Display(obj%tSize, "tSize: ", unitNo=unitNo)
 CALL DOF_Display(obj%realVec, obj%dof, "realVec: ", unitNo=unitNo)
 
