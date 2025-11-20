@@ -48,31 +48,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL CheckEssentialParam(obj=param, keys=fedofEssentialParam, &
-                         prefix=myprefix, myName=myName, modName=modName)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
 INTEGER(I4B) :: order0(1)
 
 #ifdef DEBUG_VER
@@ -102,7 +85,6 @@ CALL obj%Initiate(order=order0, dom=dom, baseContinuity=baseContinuity, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -110,7 +92,9 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
 
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, elemType, nsd, jj
@@ -182,133 +166,20 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                             SetFEDOFParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetFEDOFParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetFEDOFParam()"
-#endif
-
-INTEGER(I4B) :: AINT(3)
-INTEGER(I4B), PARAMETER :: ipType0 = TypeInterpolationOpt%Equidistance
-INTEGER(I4B), PARAMETER :: basisType0(3) = TypePolynomialOpt%Monomial
-REAL(DFP) :: areal(3)
-REAL(DFP), PARAMETER :: three_zero(3) = [0.0, 0.0, 0.0]
-REAL(DFP), PARAMETER :: three_half(3) = [0.5, 0.5, 0.5]
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Set(obj=param, prefix=myprefix, key="baseContinuity", &
-         VALUE=baseContinuity, dataType=baseContinuity)
-
-CALL Set(obj=param, prefix=myprefix, key="baseInterpolation", &
-         VALUE=baseInterpolation, dataType=baseInterpolation)
-
-CALL Set(obj=param, prefix=myprefix, key="orderFile", &
-         VALUE=orderFile, dataType=orderFile)
-
-CALL Set(obj=param, prefix=myprefix, key="ipType", &
-         VALUE=Input(option=ipType, default=ipType0), &
-         dataType=ipType0)
-
-CALL make_a_int(a=basistype, a0=basistype0)
-CALL set(obj=param, prefix=myprefix, key="basistype", &
-         VALUE=aint, datatype=aint)
-
-CALL make_a_real(a=alpha, a0=three_zero)
-CALL set(obj=param, prefix=myprefix, key="alpha", &
-         VALUE=areal, datatype=areal)
-
-CALL make_a_real(a=beta, a0=three_zero)
-CALL set(obj=param, prefix=myprefix, key="beta", &
-         VALUE=areal, datatype=areal)
-
-CALL make_a_real(a=lambda, a0=three_half)
-CALL set(obj=param, prefix=myprefix, key="lambda", &
-         VALUE=areal, datatype=areal)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-CONTAINS
-SUBROUTINE make_a_int(a, a0)
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: a(:)
-  INTEGER(I4B), INTENT(IN) :: a0(:)
-  LOGICAL(LGT) :: isok
-
-  isok = PRESENT(a)
-  IF (isok) THEN
-    SELECT CASE (SIZE(a))
-    CASE (1)
-      aint = a(1)
-    CASE (2)
-      AINT(1:2) = a(1:2)
-    CASE (3)
-      aint = a
-    CASE DEFAULT
-      aint = a(1:3)
-    END SELECT
-  ELSE
-    aint = a0
-  END IF
-
-END SUBROUTINE make_a_int
-
-SUBROUTINE make_a_real(a, a0)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: a(:)
-  REAL(DFP), INTENT(IN) :: a0(:)
-  LOGICAL(LGT) :: isok
-
-  isok = PRESENT(a)
-  IF (isok) THEN
-    SELECT CASE (SIZE(a))
-    CASE (1)
-      areal = a(1)
-    CASE (2)
-      areal(1:2) = a(1:2)
-    CASE (3)
-      areal = a
-    CASE DEFAULT
-      areal = a(1:3)
-    END SELECT
-  ELSE
-    areal = a0
-  END IF
-
-END SUBROUTINE
-
-END PROCEDURE SetFEDOFParam
-
-!----------------------------------------------------------------------------
-!                                                                Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B), ALLOCATABLE :: order0(:)
 INTEGER(I4B) :: telems, tsize, globalElement, localElement, ii
-LOGICAL(LGT) :: problem
-
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -319,15 +190,13 @@ telems = dom%GetTotalElements()
 tsize = SIZE(order, 2)
 
 #ifdef DEBUG_VER
-
-problem = SIZE(order, 1) .NE. 2
-CALL AssertError1(problem, myName, &
+isok = SIZE(order, 1) .NE. 2
+CALL AssertError1(isok, myName, &
                   'number of rows of order array is not equal to 2')
 
-problem = tsize .NE. telems
-CALL AssertError1(problem, myName, &
+isok = tsize .NE. telems
+CALL AssertError1(isok, myName, &
            'number of cols of order array is not equal to number of elements')
-
 #endif
 
 ALLOCATE (order0(telems))
@@ -361,7 +230,6 @@ DEALLOCATE (order0)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
@@ -369,7 +237,6 @@ END PROCEDURE obj_Initiate4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AllocateSizes
-  !! internal variables
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AllocateSizes()"
 #endif
@@ -405,7 +272,6 @@ CALL Reallocate(obj%cellIA, obj%tCells + 1)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_AllocateSizes
 
 !----------------------------------------------------------------------------

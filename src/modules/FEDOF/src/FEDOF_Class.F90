@@ -21,10 +21,7 @@ USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-USE BaseType, ONLY: CSRMatrix_, &
-                    QuadraturePoint_, &
-                    ElemshapeData_
+USE BaseType, ONLY: CSRMatrix_, QuadraturePoint_, ElemshapeData_
 USE AbstractFE_Class, ONLY: AbstractFE_, AbstractFEPointer_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
@@ -35,18 +32,13 @@ PRIVATE
 PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
 PUBLIC :: FEDOFSetSparsity
-PUBLIC :: SetFEDOFParam
 
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
-CHARACTER(*), PARAMETER :: myprefix = "FEDOF"
 CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
 CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
-CHARACTER(*), PARAMETER :: fedofEssentialParam = &
-  "baseContinuity/baseInterpolation/orderFile/ipType/basisType/alpha/&
-  &beta/lambda/"
 
 !----------------------------------------------------------------------------
 !                                                                   FEDOF_
@@ -165,12 +157,9 @@ CONTAINS
   !! Initiate FEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate FEDOF by using inhomogeneous order
-  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate FEDOF from ParameterList
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate FEDOF from order vector defined for global elements
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
-    Initiate4
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate4
   !! Generic method for initiating FEDOF
   PROCEDURE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
   !! This method is called in the Intiate methods
@@ -182,9 +171,6 @@ CONTAINS
   !! This method is used to set the faceOrder, edgeOrder from
   !! cellOrder. This method is called internally from
   !! Initiate methods. This put data in faceIA, edgeIA, cellIA
-  PROCEDURE, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameters
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -264,8 +250,6 @@ CONTAINS
   !! Retuns the total dof of an element with opt filter
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Generic mehthod for getting the total dof
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix for setting the data
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
@@ -332,52 +316,6 @@ TYPE :: FEDOFPointer_
 END TYPE FEDOFPointer_
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(FEDOF_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           SetFEDOFParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set the essential parameters for constructing the FEDOF
-
-INTERFACE
-  MODULE SUBROUTINE SetFEDOFParam(param, baseContinuity, baseInterpolation, &
-                            orderFile, ipType, basisType, alpha, beta, lambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity or conformity of basis defined on reference
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Type of basis functions used for interpolation on reference
-    CHARACTER(*), INTENT(IN) :: orderFile
-    !! file containing the order of each element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! interpolation type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! basis type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! ultraspherical parameter
-  END SUBROUTINE SetFEDOFParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -386,15 +324,11 @@ END INTERFACE
 ! summary: Initiate geometric fedof
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateGeoFEDOF(obj, dom, baseContinuity, &
-                                         baseInterpolation, feType, ipType, &
-                                         basisType, alpha, beta, lambda, &
-                                         dofType, transformType, &
-                                         quadratureIsHomogeneous, &
-                                         quadratureType, quadratureOrder, &
-                                         quadratureIsOrder, quadratureNips, &
-                                         quadratureIsNips, quadratureAlpha, &
-                                         quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_InitiateGeoFEDOF( &
+    obj, dom, baseContinuity, baseInterpolation, feType, ipType, basisType, &
+    alpha, beta, lambda, dofType, transformType, quadratureIsHomogeneous, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! Finite element degree of freedom object
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
@@ -466,14 +400,12 @@ END INTERFACE
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, beta, lambda, dofType, &
-                                  transformType, quadratureIsHomogeneous, &
-                                  quadratureType, quadratureOrder, &
-                                  quadratureIsOrder, quadratureNips, &
-                                  quadratureIsNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate1( &
+    obj, order, dom, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -543,15 +475,12 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, lambda, beta, islocal, &
-                                  dofType, transformType, &
-                                  quadratureIsHomogeneous, &
-                                  quadratureType, quadratureOrder, &
-                                  quadratureIsOrder, quadratureNips, &
-                                  quadratureIsNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, order, dom, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, lambda, beta, islocal, dofType, transformType, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
@@ -625,25 +554,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
-    CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! Fintie degree of freedom object
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter list
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
-    !! domain
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-14
-! summary: Initiate an instance of fe dof
 !
 !# Introduction
 !
@@ -656,15 +566,12 @@ END INTERFACE
 ! This routine will make order0(:) from order(:,:) and call initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, beta, lambda, &
-                                  dofType, transformType, &
-                                  quadratureIsHomogeneous, &
-                                  quadratureType, quadratureOrder, &
-                                  quadratureIsOrder, quadratureNips, &
-                                  quadratureIsNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, order, dom, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! the number of columns in order is equal to total number of elements
@@ -1217,21 +1124,6 @@ MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
     INTEGER(I4B) :: ans
     !! Total number of dof in the FEDOF with opt filter
   END FUNCTION obj_GetTotalDOF3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Get the prefix for setting essential parameters
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(FEDOF_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
