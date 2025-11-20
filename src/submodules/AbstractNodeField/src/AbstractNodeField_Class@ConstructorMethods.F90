@@ -156,7 +156,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-CALL obj%DEALLOCATE()
+! We should not call this method here
+! CALL obj%DEALLOCATE()
 
 CALL AbstractFieldInitiate( &
   obj=obj, name=name, engine=engine, storageFMT=storageFMT, &
