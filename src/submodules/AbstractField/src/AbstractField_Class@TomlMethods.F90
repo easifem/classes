@@ -446,8 +446,8 @@ SUBROUTINE ReadFieldTypeFromToml(table, fieldType)
   TYPE(String) :: fieldTypeChar
 
 #ifdef DEBUG_VER
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
