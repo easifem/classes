@@ -110,7 +110,6 @@ ans = 2 + obj%cellIA(ii + 1) - obj%cellIA(ii)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetTotalDOF2
 
 !----------------------------------------------------------------------------
@@ -222,14 +221,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetConnectivity_
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                           GetMeshPointer

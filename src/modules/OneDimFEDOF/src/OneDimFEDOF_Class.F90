@@ -20,12 +20,8 @@
 MODULE OneDimFEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-USE BaseType, ONLY: CSRMatrix_, &
-                    QuadraturePoint_, &
-                    ElemshapeData_
+USE BaseType, ONLY: CSRMatrix_, QuadraturePoint_, ElemshapeData_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-
 USE OneDimDomain_Class, ONLY: OneDimDomain_
 
 USE TxtFile_Class, ONLY: TxtFile_
@@ -36,19 +32,15 @@ PRIVATE
 
 PUBLIC :: OneDimFEDOF_
 PUBLIC :: OneDimFEDOFPointer_
-PUBLIC :: SetOneDimFEDOFParam
 
 ! PUBLIC :: OneDimFEDOFSetSparsity
 
 CHARACTER(*), PARAMETER :: modName = "OneDimFEDOF_Class"
-CHARACTER(*), PARAMETER :: myprefix = "OneDimFEDOF"
 CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
 CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
 REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
-CHARACTER(*), PARAMETER :: essentialParam = &
-  "baseContinuity/baseInterpolation/orderFile/ipType/basisType/alpha/beta/lambda/"
 
 !----------------------------------------------------------------------------
 !                                                              OneDimFEDOF_
@@ -98,18 +90,13 @@ CONTAINS
 
   !CONSTRUCTOR:
   !@ConstructorMethods
-  PROCEDURE, PASS(obj) :: CheckEssentialParam => obj_CheckEssentialParam
-  !! Check essential parameters
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate OneDimFEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate OneDimFEDOF by using inhomogeneous order
-  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate OneDimFEDOF from ParameterList
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate OneDimFEDOF from order vector defined for global elements
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
-    Initiate4
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate4
   !! Generic method for initiating OneDimFEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
@@ -137,32 +124,27 @@ CONTAINS
   !@SetMethods
   PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
   !! Set the cell order, this is a private method
-
   PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
   !! This is for non block matrix
-
   PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
   !! This is for non block matrix
-
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
 
   !GET:
   !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
-  !! Get the case name of OneDimFEDOF, it returns baseContinuity+baseInterpolation
-
+  !! Get the case name of OneDimFEDOF, it returns
+  !! baseContinuity+baseInterpolation
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get vertex degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
   !! Retuns the total number of vertex dof
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
   !! Get cell degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Get total cell degrees of freedom
-
   PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Retuns the total degrees of freedom in OneDimFEDOF
   PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
@@ -171,37 +153,25 @@ CONTAINS
   !! Retuns the total dof of an element with opt filter
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Generic mehthod for getting the total dof
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   !! Get the connectivity of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix for setting the data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get the mesh pointer
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
-
   PROCEDURE, PASS(obj) :: GetQuadraturePoints => obj_GetQuadraturePoints
   !! Get quadrature points for isotropic order
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-
 END TYPE OneDimFEDOF_
 
 !----------------------------------------------------------------------------
@@ -211,52 +181,6 @@ END TYPE OneDimFEDOF_
 TYPE :: OneDimFEDOFPointer_
   TYPE(OneDimFEDOF_), POINTER :: ptr => NULL()
 END TYPE OneDimFEDOFPointer_
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(OneDimFEDOF_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     SetOneDimFEDOFParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set the essential parameters for constructing the OneDimFEDOF
-
-INTERFACE
-  MODULE SUBROUTINE SetOneDimFEDOFParam(param, baseContinuity, &
-         baseInterpolation, orderFile, ipType, basisType, alpha, beta, lambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity or conformity of basis defined on reference
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Type of basis functions used for interpolation on reference
-    CHARACTER(*), INTENT(IN) :: orderFile
-    !! file containing the order of each element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! interpolation type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
-    !! basis type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! jacobian parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! ultraspherical parameter
-  END SUBROUTINE SetOneDimFEDOFParam
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -270,10 +194,10 @@ END INTERFACE
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, order, mesh, baseContinuity, &
-          baseInterpolation, fetype, ipType, basisType, alpha, beta, lambda, &
-                            quadratureType, quadratureOrder, quadratureNips, &
-                            quadratureAlpha, quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate1( &
+    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -328,10 +252,11 @@ END INTERFACE
 ! summary: Initiate an instance of fe dof
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, order, mesh, baseContinuity, &
-          baseInterpolation, fetype, ipType, basisType, alpha, beta, lambda, &
-  islocal, quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    basisType, alpha, beta, lambda, islocal, quadratureType, &
+    quadratureOrder, quadratureNips, quadratureAlpha, quadratureBeta, &
+    quadratureLambda)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
@@ -399,25 +324,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, mesh)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! Fintie degree of freedom object
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter list
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
-    !! mesh
-  END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-14
-! summary: Initiate an instance of fe dof
 !
 !# Introduction
 !
@@ -430,10 +336,10 @@ END INTERFACE
 ! This routine will make order0(:) from order(:,:) and call initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, order, mesh, baseContinuity, &
-          baseInterpolation, fetype, ipType, basisType, alpha, beta, lambda, &
-           quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! The number of columns in order is equal to total number of elements
@@ -889,21 +795,6 @@ MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
     INTEGER(I4B) :: ans
     !! Total number of dof in the OneDimFEDOF with opt filter
   END FUNCTION obj_GetTotalDOF3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Get the prefix for setting essential parameters
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(OneDimFEDOF_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -19,22 +19,12 @@
 
 SUBMODULE(OneDimFEDOF_Class) ConstructorMethods
 USE InputUtility, ONLY: Input
-
 USE Display_Method, ONLY: ToString
-
 USE IntVector_Method, ONLY: IntegerCopy => Copy
-
 USE StringUtility, ONLY: UpperCase
-
 USE ReallocateUtility, ONLY: Reallocate
-
-USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
-
-USE BaseType, ONLY: TypeInterpolationOpt, &
-                    TypePolynomialOpt
-
+USE BaseType, ONLY: TypeInterpolationOpt, TypePolynomialOpt
 USE LagrangeOneDimFE_Class, ONLY: LagrangeOneDimFEPointer
-
 USE HierarchicalOneDimFE_Class, ONLY: HierarchicalOneDimFEPointer
 
 #ifdef DEBUG_VER
@@ -46,115 +36,13 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=myprefix, &
-                         myName=myName, modName=modName)
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                        SetOneDimFEDOFParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetOneDimFEDOFParam
-CHARACTER(*), PARAMETER :: myName = "SetOneDimFEDOFParam()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-
-! INTEGER(I4B) :: AINT(3)
-! INTEGER(I4B), PARAMETER :: ipType0 = TypeInterpolationOpt%Equidistance
-! INTEGER(I4B), PARAMETER :: basisType0(3) = TypePolynomialOpt%Monomial
-! REAL(DFP) :: areal(3)
-! REAL(DFP), PARAMETER :: three_zero(3) = [0.0, 0.0, 0.0]
-! REAL(DFP), PARAMETER :: three_half(3) = [0.5, 0.5, 0.5]
-!
-! CALL Set(obj=param, prefix=myprefix, key="baseContinuity", &
-!          VALUE=baseContinuity, dataType=baseContinuity)
-!
-! CALL Set(obj=param, prefix=myprefix, key="baseInterpolation", &
-!          VALUE=baseInterpolation, dataType=baseInterpolation)
-!
-! CALL Set(obj=param, prefix=myprefix, key="orderFile", &
-!          VALUE=orderFile, dataType=orderFile)
-!
-! CALL Set(obj=param, prefix=myprefix, key="ipType", &
-!          VALUE=Input(option=ipType, default=ipType0), &
-!          dataType=ipType0)
-!
-! CALL make_a_int(a=basistype, a0=basistype0)
-! CALL set(obj=param, prefix=myprefix, key="basistype", &
-!          VALUE=aint, datatype=aint)
-!
-! CALL make_a_real(a=alpha, a0=three_zero)
-! CALL set(obj=param, prefix=myprefix, key="alpha", &
-!          VALUE=areal, datatype=areal)
-!
-! CALL make_a_real(a=beta, a0=three_zero)
-! CALL set(obj=param, prefix=myprefix, key="beta", &
-!          VALUE=areal, datatype=areal)
-!
-! CALL make_a_real(a=lambda, a0=three_half)
-! CALL set(obj=param, prefix=myprefix, key="lambda", &
-!          VALUE=areal, datatype=areal)
-!
-! CONTAINS
-! SUBROUTINE make_a_int(a, a0)
-!   INTEGER(I4B), OPTIONAL, INTENT(IN) :: a(:)
-!   INTEGER(I4B), INTENT(IN) :: a0(:)
-!   LOGICAL(LGT) :: isok
-!
-!   isok = PRESENT(a)
-!   IF (isok) THEN
-!     SELECT CASE (SIZE(a))
-!     CASE (1)
-!       aint = a(1)
-!     CASE (2)
-!       AINT(1:2) = a(1:2)
-!     CASE (3)
-!       aint = a
-!     CASE DEFAULT
-!       aint = a(1:3)
-!     END SELECT
-!   ELSE
-!     aint = a0
-!   END IF
-!
-! END SUBROUTINE make_a_int
-!
-! SUBROUTINE make_a_real(a, a0)
-!   REAL(DFP), OPTIONAL, INTENT(IN) :: a(:)
-!   REAL(DFP), INTENT(IN) :: a0(:)
-!   LOGICAL(LGT) :: isok
-!
-!   isok = PRESENT(a)
-!   IF (isok) THEN
-!     SELECT CASE (SIZE(a))
-!     CASE (1)
-!       areal = a(1)
-!     CASE (2)
-!       areal(1:2) = a(1:2)
-!     CASE (3)
-!       areal = a
-!     CASE DEFAULT
-!       areal = a(1:3)
-!     END SELECT
-!   ELSE
-!     areal = a0
-!   END IF
-!
-! END SUBROUTINE
-
-END PROCEDURE SetOneDimFEDOFParam
-
-!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
 INTEGER(I4B) :: order0(1)
 
 #ifdef DEBUG_VER
@@ -164,18 +52,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 order0 = order
 
-CALL obj%Initiate2(order=order0, mesh=mesh, baseContinuity=baseContinuity, &
-          baseInterpolation=baseInterpolation, fetype=fetype, ipType=ipType, &
-                 basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
-             quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
-             quadratureNips=quadratureNips, quadratureAlpha=quadratureAlpha, &
-             quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
+CALL obj%Initiate2( &
+  order=order0, mesh=mesh, baseContinuity=baseContinuity, &
+  baseInterpolation=baseInterpolation, fetype=fetype, ipType=ipType, &
+  basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+  quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+  quadratureNips=quadratureNips, quadratureAlpha=quadratureAlpha, &
+  quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -183,10 +71,13 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: tcells, ii
 CHARACTER(LEN=4) :: baseInterpolation0
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -197,8 +88,10 @@ CALL obj%DEALLOCATE()
 obj%isInit = .TRUE.
 obj%mesh => mesh
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(obj%mesh)
 CALL AssertError1(isok, myName, "mesh is not associated")
+#endif
 
 baseInterpolation0 = UpperCase(baseInterpolation(1:4))
 
@@ -207,23 +100,22 @@ CASE ("LAGR")
   obj%fe => LagrangeOneDimFEPointer()
 CASE ("HIER", "HEIR")
   obj%fe => HierarchicalOneDimFEPointer()
+
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for baseInterpolation')
-  RETURN
+  CALL AssertError1(.FALSE., myName, &
+                    'No case found for baseInterpolation')
+#endif
+
 END SELECT
 
-CALL obj%fe%Initiate(baseContinuity=baseContinuity, &
-                     baseInterpolation=baseInterpolation, &
-                     feType=feType, ipType=ipType, &
-                     basisType=basisType, alpha=alpha, &
-                     beta=beta, lambda=lambda, &
-                     quadratureType=quadratureType, &
-                     quadratureOrder=quadratureOrder, &
-                     quadratureNips=quadratureNips, &
-                     quadratureAlpha=quadratureAlpha, &
-                     quadratureBeta=quadratureBeta, &
-                     quadratureLambda=quadratureLambda)
+CALL obj%fe%Initiate( &
+  baseContinuity=baseContinuity, baseInterpolation=baseInterpolation, &
+  feType=feType, ipType=ipType, basisType=basisType, alpha=alpha, &
+  beta=beta, lambda=lambda, quadratureType=quadratureType, &
+  quadratureOrder=quadratureOrder, quadratureNips=quadratureNips, &
+  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
+  quadratureLambda=quadratureLambda)
 
 tcells = obj%mesh%GetTotalElements()
 CALL Reallocate(obj%cellOrder, tcells)
@@ -239,28 +131,21 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B), ALLOCATABLE :: order0(:)
 INTEGER(I4B) :: telems, tsize, globalElement, localElement, ii
-LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -289,10 +174,10 @@ DO ii = 1, telems
   order0(localElement) = order(2, ii)
 END DO
 
-CALL obj%Initiate(mesh=mesh, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, order=order0, &
-                  ipType=ipType, basisType=basisType, alpha=alpha, &
-                  beta=beta, lambda=lambda, islocal=.TRUE.)
+CALL obj%Initiate( &
+  mesh=mesh, baseContinuity=baseContinuity, &
+  baseInterpolation=baseInterpolation, order=order0, ipType=ipType, &
+  basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, islocal=.TRUE.)
 
 DEALLOCATE (order0)
 
@@ -300,7 +185,6 @@ DEALLOCATE (order0)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
@@ -334,7 +218,6 @@ obj%fe => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -342,10 +225,16 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
 
-INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL obj%DEALLOCATE()
 obj%isInit = obj2%isInit
@@ -356,6 +245,11 @@ isok = ALLOCATED(obj2%cellOrder)
 IF (isok) THEN
   CALL IntegerCopy(x=obj%cellOrder, y=obj2%cellOrder)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
