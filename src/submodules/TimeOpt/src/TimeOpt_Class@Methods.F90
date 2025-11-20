@@ -113,7 +113,11 @@ END PROCEDURE obj_Display
 !```
 
 MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isFound
 TYPE(String) :: astr
@@ -121,6 +125,12 @@ TYPE(String) :: astr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. obj%isInit
+CALL AssertError1(isok, myName, &
+                  'TimeOpt is already initialized, deallocate it first.')
 #endif
 
 #ifdef DEBUG_VER
@@ -405,6 +415,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetEndTime
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = TypeTimeOpt%isInit
+obj%static = TypeTimeOpt%static
+obj%steady = TypeTimeOpt%steady
+obj%pseudostatic = TypeTimeOpt%pseudostatic
+obj%transient = TypeTimeOpt%transient
+obj%dynamic = TypeTimeOpt%dynamic
+obj%default = TypeTimeOpt%default
+obj%timeDependency = TypeTimeOpt%timeDependency
+obj%default_char = TypeTimeOpt%default_char
+obj%totalTimeSteps = TypeTimeOpt%totalTimeSteps
+obj%currentTimeStep = TypeTimeOpt%currentTimeStep
+obj%currentTime = TypeTimeOpt%currentTime
+obj%dt = TypeTimeOpt%dt
+obj%startTime = TypeTimeOpt%startTime
+obj%endTime = TypeTimeOpt%endTime
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !                                                              Include error

@@ -38,6 +38,9 @@ CHARACTER(*), PARAMETER :: modName = "TimeOpt_Class"
 ! summary: This class contains options related to time discretization
 
 TYPE :: TimeOpt_
+  LOGICAL(LGT) :: isInit = .FALSE.
+  !! Flag to check if the object is initialized or not
+
   INTEGER(I4B) :: static = 0
   !! PDE defines a Static problem
 
@@ -111,6 +114,10 @@ CONTAINS
   !! Update current time
   PROCEDURE, PUBLIC, PASS(obj) :: GetEndTime => obj_GetEndTime
   !! Get final time of the simulation
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the object
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Check if the object is initialized
 END TYPE TimeOpt_
 
 !----------------------------------------------------------------------------
@@ -329,6 +336,27 @@ INTERFACE
     CLASS(TimeOpt_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetEndTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  Deallocate
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(TimeOpt_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  Deallocate
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(INOUT) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
 END INTERFACE
 
 END MODULE TimeOpt_Class
