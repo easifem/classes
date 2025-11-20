@@ -27,7 +27,8 @@ USE DOF_Method, ONLY: OPERATOR(.tdof.), &
                       OPERATOR(.spacecomponents.), &
                       OPERATOR(.timecomponents.)
 
-USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer, SetToSTMatrix
+USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer, SetToSTMatrix, &
+                            AddToSTMatrix
 USE BaseType, ONLY: DOF_
 USE Display_Method, ONLY: ToString
 
@@ -569,15 +570,15 @@ CALL AssertError1(isok, myName, &
 ! Make sure that the storage patter is fmt_dof in both obj and value
 
 IF (addContribution) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-#endif
-END IF
+  CALL AddToSTMatrix( &
+    obj=obj%mat, VALUE=VALUE%mat, itimecompo=itimecompo, &
+    jtimecompo=jtimecompo, scale=scale)
+ELSE
 
-CALL SetToSTMatrix(obj=obj%mat, VALUE=VALUE%mat, &
-                   itimecompo=itimecompo, jtimecompo=jtimecompo, &
-                   scale=scale)
+  CALL SetToSTMatrix( &
+    obj=obj%mat, VALUE=VALUE%mat, itimecompo=itimecompo, &
+    jtimecompo=jtimecompo, scale=scale)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
