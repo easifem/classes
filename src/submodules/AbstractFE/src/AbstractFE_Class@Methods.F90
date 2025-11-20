@@ -16,6 +16,7 @@
 
 SUBMODULE(AbstractFE_Class) Methods
 USE GlobalData, ONLY: stdout, CHAR_LF
+USE BaseType, ONLY: TypeFEVariableOpt
 USE Display_Method, ONLY: ToString, Display
 USE TomlUtility, ONLY: GetValue, GetValue_
 USE tomlf, ONLY: toml_get => get_value, &
@@ -1254,7 +1255,7 @@ tsize = 0
 nsd = obj%opt%GetNSD()
 
 CALL obj%GetVertexDOFValue(ans=ans, tsize=tVertex, func=func, xij=xij, &
-                           times=times)
+                           times=times, icompo=icompo)
 
 tsize = tsize + tVertex
 
@@ -1265,7 +1266,7 @@ DO iface = 1, tFace
     elemsd=elemsd(iface), facetElemsd=facetElemsd(iface), xij=xij, &
     times=times, localFaceNumber=iface, func=func, ans=temp, &
     tsize=tFaceDOF, massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
-    onlyFaceBubble=.TRUE.)
+    onlyFaceBubble=.TRUE., icompo=icompo)
   ans(tsize + 1:tsize + tFaceDOF) = temp(1:tFaceDOF)
   tsize = tsize + tFaceDOF
 END DO
@@ -1273,7 +1274,7 @@ END DO
 CALL obj%GetInCellDOFValue( &
   cellElemsd=cellElemsd, func=func, times=times, ans=ans, &
   temp=temp, tsize=tCellDOF, massMat=massMat, ipiv=ipiv, &
-  funcValue=funcValue, offset=tsize)
+  funcValue=funcValue, offset=tsize, icompo=icompo)
 ! 1:offset are vertex, edge and face dofs
 ! from offset+1 inside cell dof values start
 
@@ -1420,19 +1421,12 @@ INTEGER(I4B) :: tReturns, tArgs
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: ii, nsd
-REAL(DFP) :: args(4)
+INTEGER(I4B) :: ii, nsd, returnType, icompo0
+REAL(DFP) :: args(4), temp_ans(10)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-tReturns = func%GetNumReturns()
-isok = tReturns .EQ. 1
-CALL AssertError1(isok, myName, &
-                  "WIP: the user function must return a single value")
 #endif
 
 nsd = obj%opt%GetNSD()
@@ -1447,10 +1441,48 @@ CALL AssertError1(isok, myName, &
 
 args(1:3) = 0.0_DFP
 args(4) = times
-DO ii = 1, tsize
-  args(1:nsd) = xij(1:nsd, ii)
-  CALL func%GetScalarValue(args=args, val=ans(ii))
-END DO
+
+returnType = func%GetReturnType()
+tReturns = func%GetNumReturns()
+
+SELECT CASE (returnType)
+CASE (TypeFEVariableOpt%scalar)
+
+#ifdef DEBUG_VER
+  isok = tReturns .EQ. 1
+  CALL AssertError1(isok, myName, &
+                    "WIP: the user function must return a single value")
+#endif
+
+  DO ii = 1, tsize
+    args(1:nsd) = xij(1:nsd, ii)
+    CALL func%GetScalarValue(args=args, val=ans(ii))
+  END DO
+
+CASE (TypeFEVariableOpt%vector)
+
+  icompo0 = Input(default=1_I4B, option=icompo)
+
+#ifdef DEBUG_VER
+  isok = tReturns .LT. icompo0
+  CALL AssertError1(isok, myName, &
+                    "WIP: the user function must return " &
+                    //ToString(icompo0)//" values")
+#endif
+
+  DO ii = 1, tsize
+    args(1:nsd) = xij(1:nsd, ii)
+    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
+                             n=tReturns)
+    ans(ii) = temp_ans(icompo0)
+  END DO
+
+CASE default
+#ifdef DEBUG_VER
+  CALL AssertError1(.FALSE., myName, &
+                    "Return type of user function must be scalar or vector")
+#endif
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1469,8 +1501,8 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: mysize
 #endif
 
-INTEGER(I4B) :: ii, nips, nsd
-REAL(DFP) :: args(4), ainterpol
+INTEGER(I4B) :: ii, nips, nsd, returnType, icompo0, tReturns
+REAL(DFP) :: args(4), ainterpol, temp_ans(10)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1492,14 +1524,32 @@ nsd = cellElemsd%nsd
 
 args(1:3) = 0.0_DFP
 args(4) = times
-DO ii = 1, nips
-  args(1:nsd) = cellElemsd%coord(1:nsd, ii)
-  CALL func%GetScalarValue(args=args, val=funcValue(ii))
 
-  ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
+returnType = func%GetReturnType()
+SELECT CASE (returnType)
+CASE (TypeFEVariableOpt%scalar)
+  DO ii = 1, nips
+    args(1:nsd) = cellElemsd%coord(1:nsd, ii)
+    CALL func%GetScalarValue(args=args, val=funcValue(ii))
 
-  funcValue(ii) = funcValue(ii) - ainterpol
-END DO
+    ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
+
+    funcValue(ii) = funcValue(ii) - ainterpol
+  END DO
+CASE (TypeFEVariableOpt%vector)
+  icompo0 = Input(default=1_I4B, option=icompo)
+  tReturns = func%GetNumReturns()
+  DO ii = 1, nips
+    args(1:nsd) = cellElemsd%coord(1:nsd, ii)
+    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
+                             n=tReturns)
+    funcValue(ii) = temp_ans(icompo0)
+
+    ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
+
+    funcValue(ii) = funcValue(ii) - ainterpol
+  END DO
+END SELECT
 
 #ifdef DEBUG_VER
 mysize = SIZE(temp)
@@ -1579,7 +1629,8 @@ CALL obj%GetGlobalElemShapeData( &
 CALL obj%GetDOFValue( &
   cellElemsd=cellElemsd, elemsd=elemsd, facetElemsd=facetElemsd, &
   xij=xij, times=times, func=func, ans=ans, tsize=tsize, &
-  massMat=massMat, ipiv=ipiv, funcValue=funcValue, temp=temp)
+  massMat=massMat, ipiv=ipiv, funcValue=funcValue, temp=temp, &
+  icompo=icompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

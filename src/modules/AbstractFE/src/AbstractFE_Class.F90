@@ -1340,7 +1340,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv, funcValue, onlyFaceBubble)
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -1366,6 +1366,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
   END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
 END INTERFACE
 
@@ -1383,7 +1385,8 @@ INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromSTFunc2( &
     obj, geofeptr, elemsd, geoelemsd, facetElemsd, geoFacetElemsd, &
     cellElemsd, geoCellElemsd, quad, facetQuad, cellQuad, xij, times, &
-    func, ans, tsize, massMat, ipiv, funcValue, temp)
+    func, ans, tsize, massMat, ipiv, funcValue, temp, &
+    icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
@@ -1419,6 +1422,8 @@ INTERFACE
     !! temporary array used for getting the degrees of freedom
     !! The size of temp should be at least equal to maximum number
     !! of degree of freedom in the element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from user function
   END SUBROUTINE obj_GetDOFValueFromSTFunc2
 END INTERFACE
 
@@ -1437,7 +1442,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, cellElemsd, xij, times, func, ans, tsize, &
-    massMat, ipiv, funcValue, temp)
+    massMat, ipiv, funcValue, temp, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:)
@@ -1465,6 +1470,8 @@ INTERFACE
     !! temporary array used for getting the degrees of freedom
     !! The size of temp should be at least equal to maximum number
     !! of degree of freedom in the element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from user function
   END SUBROUTINE obj_GetDOFValueFromSTFunc
 END INTERFACE
 
@@ -1478,7 +1485,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVertexDOFValueFromSTFunc( &
-    obj, ans, tsize, func, xij, times)
+    obj, ans, tsize, func, xij, times, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     REAL(DFP), INTENT(INOUT) :: ans(:)
@@ -1490,6 +1497,9 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! Nodal coordinates of the elements
     REAL(DFP), INTENT(IN) :: times
+    !! time
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which a vector user function return
   END SUBROUTINE obj_GetVertexDOFValueFromSTFunc
 END INTERFACE
 
@@ -1500,7 +1510,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetInCellDOFValueFromSTFunc( &
     obj, cellElemsd, func, times, ans, temp, tsize, massMat, ipiv, &
-    funcValue, offset)
+    funcValue, offset, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
@@ -1523,6 +1533,8 @@ INTERFACE
     !! the size should be enough that quadrature values can be stored
     INTEGER(I4B), INTENT(IN) :: offset
     !! Starting and ending indices for vertex and face DOFs
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
   END SUBROUTINE obj_GetInCellDOFValueFromSTFunc
 END INTERFACE
 

@@ -269,21 +269,15 @@ INTEGER(I4B) :: tReturns, tArgs
 #endif
 
 INTEGER(I4B), PARAMETER :: tVertices = 2
-INTEGER(I4B) :: ii, nips, nns, nsd, faceCon(tVertices, 4)
+INTEGER(I4B) :: ii, nips, nns, nsd, faceCon(tVertices, 4), &
+                returnType, icompo0
 REAL(DFP) :: args(4), scale, vertexVal(tVertices), xijLine(3, tVertices), &
-             vertexInterpol
+             vertexInterpol, temp_ans(10)
 LOGICAL(LGT) :: onlyFaceBubble0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-tReturns = func%GetNumReturns()
-isok = tReturns .EQ. 1
-CALL AssertError1(isok, myName, &
-                  "WIP: the user function must return a single value")
 #endif
 
 #ifdef DEBUG_VER
@@ -300,33 +294,80 @@ nsd = obj%opt%GetNSD()
 scale = 0.0_DFP
 vertexVal = 0.0_DFP
 
-onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
-
 args(1:3) = 0.0_DFP
 args(4) = times
-IF (onlyFaceBubble0) THEN
-  faceCon = FacetConnectivity_Quadrangle()
-  xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
 
-  DO ii = 1, tVertices
-    args(1:nsd) = xijLine(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=vertexVal(ii))
+tReturns = func%GetNumReturns()
+onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
+returnType = func%GetReturnType()
+SELECT CASE (returnType)
+CASE (TypeFEVariableOpt%scalar)
+
+#ifdef DEBUG_VER
+  isok = tReturns .EQ. 1
+  CALL AssertError1(isok, myName, &
+                    "WIP: the user function must return a single value")
+#endif
+
+  IF (onlyFaceBubble0) THEN
+    faceCon = FacetConnectivity_Quadrangle()
+    xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
+
+    DO ii = 1, tVertices
+      args(1:nsd) = xijLine(1:nsd, ii)
+      CALL func%GetScalarValue(args=args, val=vertexVal(ii))
+    END DO
+
+    scale = 1.0_DFP
+  END IF
+
+  DO ii = 1, nips
+    args(1:nsd) = facetElemsd%coord(1:nsd, ii)
+    CALL func%GetScalarValue(args=args, val=funcValue(ii))
+
+    vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
+                                 vertexVal(1:tVertices))
+
+    funcValue(ii) = funcValue(ii) - scale * vertexInterpol
   END DO
 
-  scale = 1.0_DFP
-END IF
+CASE (TypeFEVariableOpt%vector)
+  icompo0 = Input(default=1_I4B, option=icompo)
 
-args(1:3) = 0.0_DFP
-args(4) = times
-DO ii = 1, nips
-  args(1:nsd) = facetElemsd%coord(1:nsd, ii)
-  CALL func%GetScalarValue(args=args, val=funcValue(ii))
+#ifdef DEBUG_VER
+  isok = tReturns .LE. icompo0
+  CALL AssertError1(isok, myName, &
+                    "WIP: the user function must return " &
+                    //ToString(icompo0)//" values")
+#endif
 
-  vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
-                               vertexVal(1:tVertices))
+  IF (onlyFaceBubble0) THEN
+    faceCon = FacetConnectivity_Quadrangle()
+    xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
 
-  funcValue(ii) = funcValue(ii) - scale * vertexInterpol
-END DO
+    DO ii = 1, tVertices
+      args(1:nsd) = xijLine(1:nsd, ii)
+      CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
+                               n=tReturns)
+      vertexVal(ii) = temp_ans(icompo0)
+    END DO
+
+    scale = 1.0_DFP
+  END IF
+
+  DO ii = 1, nips
+    args(1:nsd) = facetElemsd%coord(1:nsd, ii)
+    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
+                             n=tReturns)
+    funcValue(ii) = temp_ans(icompo0)
+
+    vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
+                                 vertexVal(1:tVertices))
+
+    funcValue(ii) = funcValue(ii) - scale * vertexInterpol
+  END DO
+
+END SELECT
 
 CALL obj%GetFacetDOFValueFromQuadrature( &
   elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &

@@ -252,7 +252,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
-    massMat, ipiv, funcValue, onlyFaceBubble)
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
     CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -279,6 +279,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
   END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
 END INTERFACE
 
