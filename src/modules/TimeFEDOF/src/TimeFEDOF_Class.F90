@@ -46,7 +46,7 @@ TYPE :: TimeFEDOF_
   PRIVATE
   LOGICAL(LGT) :: isinit = .FALSE.
   !! It is set to true when TimeFEDOF is initiated
-  TYPE(TimeOpt_), POINTER :: opt => NULL()
+  CLASS(TimeOpt_), POINTER :: opt => NULL()
   !! option related to the time domain discretization
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
   !! pointer to finite element object
