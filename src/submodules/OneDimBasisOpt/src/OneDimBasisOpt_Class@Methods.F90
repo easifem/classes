@@ -325,7 +325,6 @@ ans = obj%baseContinuity
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetBaseContinuity
 
 !----------------------------------------------------------------------------
