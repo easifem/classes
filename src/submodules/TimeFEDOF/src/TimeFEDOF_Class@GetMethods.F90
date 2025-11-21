@@ -184,17 +184,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
 IF (.NOT. obj%isMaxQuadPointSet) THEN
   cellOrder = obj%cellOrder * obj%scaleForQuadOrder
   CALL obj%fe%SetQuadratureOrder(order=cellOrder)
-  ans = obj%fe%GetTotalQuadraturePoints()
-  ! obj%maxQuadPoint = obj%tdof
-  ! obj%isMaxQuadPointSet = .TRUE.
+  obj%maxQuadPoint = obj%fe%GetTotalQuadraturePoints()
+  obj%isMaxQuadPointSet = .TRUE.
 END IF
 
 ans = obj%maxQuadPoint
