@@ -21,4 +21,5 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/MeshField_Class@ConstructorMethods.F90
   PRIVATE ${src_path}/MeshField_Class@GetMethods.F90
+  PRIVATE ${src_path}/MeshField_Class@QuadratureMethods.F90
   PRIVATE ${src_path}/MeshField_Class@InterpolationMethods.F90)

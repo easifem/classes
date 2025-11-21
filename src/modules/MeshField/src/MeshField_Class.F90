@@ -42,6 +42,8 @@ PUBLIC :: TensorMeshFieldInitiate
 PUBLIC :: STTensorMeshFieldInitiate
 PUBLIC :: InitiateInterpolationPoints
 PUBLIC :: SetInterpolationPoints
+PUBLIC :: InitiateQuadraturePoints
+PUBLIC :: SetQuadraturePoints
 
 !----------------------------------------------------------------------------
 !                                                            MeshField_Class
@@ -627,6 +629,40 @@ INTERFACE
     TYPE(FEDOF_), INTENT(INOUT) :: fedof
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE SetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GenerateQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-07
+! summary:  Generate quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE InitiateQuadraturePoints(obj, fedof, mesh, &
+                                             geofedof, engine)
+    CLASS(MeshField_), INTENT(INOUT) :: obj
+    TYPE(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    CHARACTER(*), INTENT(IN) :: engine
+  END SUBROUTINE InitiateQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                             UpdateInterpolationPoints@InterpolationMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-07
+! summary:  Generate quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE SetQuadraturePoints(obj, fedof, geofedof, mesh)
+    CLASS(MeshField_), INTENT(INOUT) :: obj
+    TYPE(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE SetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

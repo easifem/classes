@@ -18,4 +18,5 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/AssembleMassMatrixUtility@ScalarFieldMethods.F90)
+  PRIVATE ${src_path}/AssembleMassMatrixUtility@ScalarFieldMethods.F90
+          ${src_path}/AssembleMassMatrixUtility@VectorFieldMethods.F90)

@@ -16,19 +16,27 @@
 !
 
 MODULE LinearElasticModelUtility
-USE GlobalData, ONLY: DFP, LGT
+USE GlobalData, ONLY: DFP, LGT, I4B
 USE ExceptionHandler_Class, ONLY: err => e
+USE BaseType, ONLY: FEVariable_
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModelUtility"
 
 PUBLIC :: GetYoungsModulus
+PUBLIC :: GetYoungsModulusFEVar
 PUBLIC :: GetShearModulus
+PUBLIC :: GetShearModulusFEVar
+PUBLIC :: GetPoissonRatio
 PUBLIC :: GetElasticParam
 PUBLIC :: Get_PlaneStrain_C_InvC
 PUBLIC :: Get_PlaneStress_C_InvC
 PUBLIC :: Get_3D_C_InvC
+PUBLIC :: GetPlaneStrainC
+PUBLIC :: GetPlaneStressC
+PUBLIC :: GetC
+PUBLIC :: Get3DC
 
 !----------------------------------------------------------------------------
 !                                                  Get_3D_C_InvC@GetMethods
@@ -78,6 +86,65 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                        GetC
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-07
+! summary:  master of Get C
+
+INTERFACE
+  MODULE SUBROUTINE GetC(C, E, G, lambda, mu, nu, K, &
+                         nsd, isPlaneStrain)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E, G, lambda, mu, nu, K
+    INTEGER(I4B), INTENT(IN) :: nsd
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStrain
+  END SUBROUTINE GetC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                        GetC
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-07
+! summary:  master of Get C
+
+INTERFACE
+  MODULE SUBROUTINE Get3DC(C, E, G, lambda, mu, nu, K)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E, G, lambda, mu, nu, K
+  END SUBROUTINE Get3DC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetPlaneStrainC
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-07
+! summary:  Get C for plane strain
+
+INTERFACE
+  MODULE SUBROUTINE GetPlaneStrainC(C, E, G, lambda, mu, nu, K)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E, G, lambda, mu, nu, K
+  END SUBROUTINE GetPlaneStrainC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetPlaneStressC
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE GetPlaneStressC(C, E, G, lambda, mu, nu, K)
+    REAL(DFP), INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E, G, lambda, mu, nu, K
+  END SUBROUTINE GetPlaneStressC
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            GetYoungsModulus
 !----------------------------------------------------------------------------
 
@@ -94,6 +161,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION GetYoungsModulusFEVar(E, G, lambda, mu, nu, K) RESULT(ans)
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: E
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: G
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: lambda
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: mu
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: nu
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: K
+    TYPE(FEVariable_) :: ans
+  END FUNCTION GetYoungsModulusFEVar
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           GetShearModulus
 !----------------------------------------------------------------------------
 
@@ -107,6 +190,42 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: K
     REAL(DFP) :: ans
   END FUNCTION GetShearModulus
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION GetShearModulusFEVar(E, G, lambda, mu, nu, K) RESULT(ans)
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: E
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: G
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: lambda
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: mu
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: nu
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: K
+    TYPE(FEVariable_) :: ans
+  END FUNCTION GetShearModulusFEVar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-08
+! summary:  Get Poisson ratio from other parameters
+
+INTERFACE
+  MODULE FUNCTION GetPoissonRatio(E, G, lambda, mu, nu, K) RESULT(ans)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: E
+    REAL(DFP), OPTIONAL, INTENT(IN) :: G
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(IN) :: mu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: K
+    REAL(DFP) :: ans
+  END FUNCTION GetPoissonRatio
 END INTERFACE
 
 !----------------------------------------------------------------------------
