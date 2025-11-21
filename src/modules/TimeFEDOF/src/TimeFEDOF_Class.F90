@@ -128,6 +128,12 @@ CONTAINS
   !! Get the cell order
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
   !! Get FE pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
+    obj_GetMaxTotalConnectivity
+  !! Get maximum total connectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalQuadraturePoints => &
+    obj_GetMaxTotalQuadraturePoints
+  !! Get the maximum total quadrature points
 
   !SET:
   !@SetMethods
@@ -408,6 +414,36 @@ INTERFACE
     CLASS(TimeFEDOF_), INTENT(IN) :: obj
     CLASS(AbstractOneDimFE_), POINTER :: ans
   END FUNCTION obj_GetFEPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetMaxTotalConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Returns maxCon
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalConnectivity(obj) RESULT(ans)
+    CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetMaxTotalConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Returns maximum total quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

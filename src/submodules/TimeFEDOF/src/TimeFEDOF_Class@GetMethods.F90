@@ -35,7 +35,7 @@ END PROCEDURE obj_IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCaseName
-ans = obj%fe%GetCaseName()
+ans = obj%baseContinuity//obj%baseInterpolation
 END PROCEDURE obj_GetCaseName
 
 !----------------------------------------------------------------------------
@@ -52,8 +52,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%GetCellOrder()
-ans = ans + 1
+ans = obj%tdof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -104,7 +103,6 @@ END PROCEDURE obj_GetBaseInterpolation
 MODULE PROCEDURE obj_GetCellOrder
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetCellOrder()"
-LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
@@ -112,12 +110,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%fe)
-CALL AssertError1(isok, myName, 'obj%fe is not associated')
-#endif
-
-ans = obj%fe%GetOrder()
+ans = obj%cellOrder
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -147,6 +140,70 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetFEPointer
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxTotalConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalConnectivity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalConnectivity()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (.NOT. obj%isMaxConSet) THEN
+  obj%maxCon = obj%tdof
+  obj%isMaxConSet = .TRUE.
+END IF
+
+ans = obj%maxCon
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalConnectivity
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalQuadraturePoints()"
+#endif
+
+INTEGER(I4B) :: cellOrder
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+IF (.NOT. obj%isMaxQuadPointSet) THEN
+  cellOrder = obj%cellOrder * obj%scaleForQuadOrder
+  ! CALL obj%fe%SetQuadratureOrder(order=cellOrder)
+  ! ans = feptr%GetTotalQuadraturePoints()
+  ! obj%maxQuadPoint = obj%tdof
+  ! obj%isMaxQuadPointSet = .TRUE.
+END IF
+
+ans = obj%maxQuadPoint
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
 !
