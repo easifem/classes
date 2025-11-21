@@ -99,7 +99,7 @@ INTEGER(I4B) :: nns, nips, nsd, xidim
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                       '[START] ')
+                        '[START] ')
 #endif
 
 nns = geoelemsd%nns
@@ -186,7 +186,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
