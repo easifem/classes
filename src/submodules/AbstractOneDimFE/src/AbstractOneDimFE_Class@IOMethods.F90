@@ -26,7 +26,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
 INTEGER(I4B) :: s(2)
 LOGICAL(LGT) :: isok
 
@@ -67,9 +70,7 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MdEncode
-#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_MdEncode()"
-#endif
 
 ! INTEGER(I4B), PARAMETER :: jj = 21
 ! TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
@@ -79,10 +80,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
-#endif
 
 ! colTitle(1) = ""
 ! rowTitle(1) = "**nsd**"; astr(1) = ToString(obj%nsd)
@@ -128,6 +127,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
 END PROCEDURE obj_MdEncode
 
 !----------------------------------------------------------------------------
@@ -135,17 +135,13 @@ END PROCEDURE obj_MdEncode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReactEncode
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode()"
-#endif
+CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode"
 
 ! INTEGER(I4B), PARAMETER :: jj = 21
 ! TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
-#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
-#endif
 
 ! colTitle(1) = ""
 ! rowTitle(1) = "**nsd**"
@@ -231,10 +227,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !       MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf// &
 !       React_EndTabItem()//char_lf
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 END PROCEDURE obj_ReactEncode
 
 !----------------------------------------------------------------------------
