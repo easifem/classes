@@ -379,6 +379,28 @@ CALL QuadraturePointInitiate(obj=quad, &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                   GetTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalQuadraturePoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%quadOpt%GetTotalQuadraturePoints()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalQuadraturePoints
+
+!----------------------------------------------------------------------------
 !                                                             GetCaseName
 !----------------------------------------------------------------------------
 

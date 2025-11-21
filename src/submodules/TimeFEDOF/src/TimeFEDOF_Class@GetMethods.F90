@@ -192,7 +192,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 IF (.NOT. obj%isMaxQuadPointSet) THEN
   cellOrder = obj%cellOrder * obj%scaleForQuadOrder
   CALL obj%fe%SetQuadratureOrder(order=cellOrder)
-  ! ans = obj%fe%GetTotalQuadraturePoints()
+  ans = obj%fe%GetTotalQuadraturePoints()
   ! obj%maxQuadPoint = obj%tdof
   ! obj%isMaxQuadPointSet = .TRUE.
 END IF

@@ -73,29 +73,25 @@ TYPE :: OneDimQuadratureOpt_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy the options from another object
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of the object
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set the parameters
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Intiate by using parameters directly
-
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml table
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import from toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
-
   PROCEDURE, PUBLIC :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
-
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalQuadraturePoints => &
+    obj_GetTotalQuadraturePoints
+  !! Get total number of quadrature points
 END TYPE OneDimQuadratureOpt_
 
 !----------------------------------------------------------------------------
@@ -254,6 +250,21 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(OneDimQuadratureOpt_), INTENT(inout) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Get the total number of quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(OneDimQuadratureOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

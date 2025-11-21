@@ -145,6 +145,11 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  !! Get the quadrature points
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+  !! Get total number of quadrature points
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
     obj_GetCaseName
@@ -440,8 +445,8 @@ END INTERFACE
 ! summary:  Get the quadratuere points
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-                                            order, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints( &
+    obj, quad, quadratureType, order, alpha, beta, lambda)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     !! OneDimBasisOpt
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
@@ -464,6 +469,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary:  Get total number of quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

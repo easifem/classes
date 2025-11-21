@@ -20,6 +20,7 @@ USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger
+USE LineInterpolationUtility, ONLY: QuadratureNumber_Line
 USE InputUtility, ONLY: Input
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
@@ -227,7 +228,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading quadratureType...')
+                  'Reading quadratureType...')
 #endif
 
 CALL GetValue(table=table, key="quadratureType", &
@@ -239,7 +240,7 @@ quadratureType = QuadraturePoint_ToInteger(quadratureType_char%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading order...')
+                  'Reading order...')
 #endif
 
 CALL GetValue( &
@@ -249,7 +250,7 @@ CALL GetValue( &
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading nips...')
+                  'Reading nips...')
 #endif
 
 CALL GetValue(table=table, key="nips", VALUE=nips, &
@@ -258,7 +259,7 @@ CALL GetValue(table=table, key="nips", VALUE=nips, &
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading alpha...')
+                  'Reading alpha...')
 #endif
 
 CALL GetValue(table=table, key="alpha", &
@@ -268,7 +269,7 @@ CALL GetValue(table=table, key="alpha", &
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading beta...')
+                  'Reading beta...')
 #endif
 
 CALL GetValue(table=table, key="beta", &
@@ -278,7 +279,7 @@ CALL GetValue(table=table, key="beta", &
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                        'Reading lambda...')
+                  'Reading lambda...')
 #endif
 
 CALL GetValue(table=table, key="lambda", &
@@ -353,6 +354,46 @@ END PROCEDURE obj_ImportFromToml2
 MODULE PROCEDURE obj_Deallocate
 CALL obj%Copy(TypeOneDimQuadratureOpt)
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                    GetTotalQuadraturePoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalQuadraturePoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalQuadraturePoints()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isNips .OR. obj%isOrder
+CALL AssertError1(isok, myName, &
+                  'Either nips or order must be specified before '// &
+                  'getting total quadrature points.')
+#endif
+
+#ifdef DEBUG_VER
+isok = .NOT. (obj%isNips .AND. obj%isOrder)
+CALL AssertError1(isok, myName, &
+                  'Both nips or order cannot be specified')
+#endif
+
+IF (obj%isNips) THEN
+  ans = obj%nips(1)
+ELSE
+  ans = QuadratureNumber_Line(order=obj%order, quadType=obj%quadratureType)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
 !

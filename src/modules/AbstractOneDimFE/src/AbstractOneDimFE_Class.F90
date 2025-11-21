@@ -122,6 +122,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
+  !! Get the order of the finite element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
 
   ! GET:
   ! @QuadratureMethods
@@ -595,6 +598,21 @@ INTERFACE
     CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Get total number of quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
