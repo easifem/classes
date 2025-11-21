@@ -121,6 +121,10 @@ CONTAINS
   !! Get case name for the finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
+  !! Get base interpolation
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
+    obj_GetBaseContinuity
+  !! Get base continuity
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   !! Get the order of the finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
@@ -583,6 +587,21 @@ INTERFACE
     CLASS(AbstractOneDimFE_), INTENT(in) :: obj
     CHARACTER(4) :: ans
   END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetBaseContinuity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-21
+! summary:  Get base continuity
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(in) :: obj
+    CHARACTER(2) :: ans
+  END FUNCTION obj_GetBaseContinuity
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -208,6 +208,14 @@ ans = obj%opt%GetBaseInterpolation()
 END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
+!                                                       GetBaseInterpolation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseContinuity
+ans = obj%opt%GetBaseContinuity()
+END PROCEDURE obj_GetBaseContinuity
+
+!----------------------------------------------------------------------------
 !                                                                  GetOrder
 !----------------------------------------------------------------------------
 
