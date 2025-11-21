@@ -41,14 +41,23 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 LOGICAL(LGT) :: isok
 #endif
 
+INTEGER(I4B) :: origin, stat
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
-obj%opt => timeOpt
+
 obj%isInit = .TRUE.
+obj%opt => timeOpt
+
+CALL ImportCellOrderFromToml(obj=obj, table=table, origin=origin, stat=stat)
+CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table, &
+                                     origin=origin, stat=stat)
+obj%tdof = obj%cellOrder + 1
+
 obj%fe => OneDimFEFactory(table=table)
 
 #ifdef DEBUG_VER
@@ -58,6 +67,9 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%fe%ImportFromToml(table=table)
+
+obj%baseInterpolation = obj%fe%GetBaseInterpolation()
+! obj%baseContinuity = obj%fe%GetBaseContinuity()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -70,11 +82,14 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -96,18 +111,97 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%ImportFromToml(table=node, timeOpt=timeOpt)
 
-! #ifdef DEBUG_VER
-! IF (PRESENT(printToml)) THEN
-!   CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-!                unitNo=stdout)
-! END IF
-! #endif
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                    ImportCellOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportCellOrderFromToml(obj, table, origin, stat)
+  CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+  ! Internal variables
+  LOGICAL(LGT) :: isFound
+  INTEGER(I4B) :: cellOrder
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportCellOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading islocal...')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading order...')
+#endif
+
+  CALL GetValue(table=table, key="order", VALUE=cellOrder, &
+                origin=origin, stat=stat, isFound=isFound, &
+                default_value=0_I4B)
+
+  obj%cellOrder = INT(cellOrder, kind=INT8)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportCellOrderFromToml
+
+!----------------------------------------------------------------------------
+!                                            ImportScaleForQuadOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table, origin, stat)
+  CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+  ! internal variables
+  INTEGER(I4B) :: scaleForQuadOrder
+  LOGICAL(LGT) :: isFound
+  INTEGER(I4B), PARAMETER :: default_value = 2
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportScaleForQuadOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="scaleForQuadOrder", VALUE=scaleForQuadOrder, &
+    default_value=default_value, origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  IF (.NOT. isFound) THEN
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'scaleForQuadOrder not found, using default value 2')
+  END IF
+#endif
+
+  obj%scaleForQuadOrder = INT(scaleForQuadOrder, kind=INT8)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportScaleForQuadOrderFromToml
 
 !----------------------------------------------------------------------------
 !
