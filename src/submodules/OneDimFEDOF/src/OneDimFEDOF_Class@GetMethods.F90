@@ -19,11 +19,6 @@
 
 SUBMODULE(OneDimFEDOF_Class) GetMethods
 USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
-USE Display_Method, ONLY: ToString
-
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
 
 IMPLICIT NONE
 
