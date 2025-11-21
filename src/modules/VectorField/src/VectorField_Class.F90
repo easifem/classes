@@ -34,6 +34,8 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE MeshField_Class, ONLY: MeshField_
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 
@@ -73,17 +75,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
-
-  ! IO:
-  ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  !! Display the content of VectorField
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Import data from HDF5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export data to HDF5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Export data to VTK file
 
   ! SET:
   ! @SetMethods
@@ -189,6 +180,23 @@ CONTAINS
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
   !! Generic method for setting body source
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of VectorField
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from HDF5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data to HDF5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export data to VTK file
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
+  !! Initiate from toml
+
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -973,6 +981,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-12-19
+!> author: Shion Shimizu
+! update: 2025-11-12
 ! summary:  Set by user function
 
 INTERFACE
@@ -988,7 +998,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
     !! idof (not used)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! space component, not used
+    !! space component, used when func is a scalar function
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
     !! time component, not used
   END SUBROUTINE obj_SetByFunction
@@ -1386,6 +1396,21 @@ INTERFACE
     !! scale for body source
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-12
+! summary: Set from Toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromToml(obj, table)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_SetFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
