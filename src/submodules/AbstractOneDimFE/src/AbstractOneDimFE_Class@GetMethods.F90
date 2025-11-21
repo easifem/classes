@@ -140,14 +140,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!                                                               GetCaseName
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetCaseName
-ans = obj%opt%GetCaseName()
-END PROCEDURE obj_GetCaseName
-
-!----------------------------------------------------------------------------
 !                                                       GetBaseInterpolation
 !----------------------------------------------------------------------------
 

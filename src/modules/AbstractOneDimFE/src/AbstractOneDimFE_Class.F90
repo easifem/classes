@@ -110,9 +110,6 @@ CONTAINS
   !! Get global element shape data
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetCaseName => &
-    obj_GetCaseName
-  !! Get case name for the finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get base interpolation
@@ -556,21 +553,6 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              GetCaseName
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-21
-! summary: Get case name for the finite element
-
-INTERFACE
-  MODULE FUNCTION obj_GetCaseName(obj) RESULT(ans)
-    CLASS(AbstractOneDimFE_), INTENT(in) :: obj
-    CHARACTER(LEN=:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetCaseName
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ! This program is a part of EASIFEM library
-!) Expandable And Scalable Infrastructure for Finite Element Methods
+! Expandable And Scalable Infrastructure for Finite Element Methods
 ! htttps://www.easifem.com
 ! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
 !
@@ -34,7 +34,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCaseName
-ans = obj%fe%GetCaseName()
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetCaseName()'
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! ans = obj%baseContinuity//obj%baseInterpolation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCaseName
 
 !----------------------------------------------------------------------------
