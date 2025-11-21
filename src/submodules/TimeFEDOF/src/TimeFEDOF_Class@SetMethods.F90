@@ -30,6 +30,8 @@ MODULE PROCEDURE obj_SetFE
 CHARACTER(*), PARAMETER :: myName = "obj_SetFE()"
 #endif
 
+INTEGER(I4B) :: cellOrder
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -40,10 +42,11 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! CALL obj%fe%SetOrder(order=obj%cellOrder)
+cellOrder = obj%cellOrder
+CALL obj%fe%SetOrder(order=cellOrder)
 ! CALL obj%fe%SetOrientation(cellOrient=cellOrient)
-! cellOrder(1:3) = cellOrder(1:3) * obj%scaleForQuadOrder
-! CALL obj%fe(ii)%ptr%SetQuadratureOrder(order=cellOrder)
+cellOrder = cellOrder * obj%scaleForQuadOrder
+CALL obj%fe%SetQuadratureOrder(order=cellOrder)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
