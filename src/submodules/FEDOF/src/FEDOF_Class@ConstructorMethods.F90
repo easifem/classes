@@ -455,7 +455,7 @@ obj%maxQuadPoint = 0
 obj%baseContinuity = "H1"
 obj%baseInterpolation = "LAGR"
 
-obj%scaleForQuadOrder = 1_INT8
+obj%scaleForQuadOrder = 2_INT8
 obj%maxCellOrder = 0_INT8
 obj%maxFaceOrder = 0_INT8
 obj%maxEdgeOrder = 0_INT8

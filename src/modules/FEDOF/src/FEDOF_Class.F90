@@ -89,7 +89,7 @@ TYPE :: FEDOF_
   !! HERM: HermitInterpolation
   !! SERE: SerendipityInterpolation
 
-  INTEGER(INT8) :: scaleForQuadOrder = 1_INT8
+  INTEGER(INT8) :: scaleForQuadOrder = 2_INT8
   !! Scale for quadrature order
   !! Quadrature order = element order * scaleForQuadOrder
   !! This is used for constructing the quadrature points
