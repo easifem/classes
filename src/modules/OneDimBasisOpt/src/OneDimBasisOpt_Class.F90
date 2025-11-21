@@ -114,8 +114,19 @@ TYPE :: OneDimBasisOpt_
   TYPE(OneDimQuadratureOpt_) :: quadOpt
   !! Quadrature options
 
-  TYPE(QuadraturePoint_) :: quad
-  !! quadrature points
+  REAL(DFP), ALLOCATABLE :: coeff(:, :), xx(:, :)
+  !! coefficient necessary for lagrange Interpolation
+  !! coefficient matrix needed for Lagrange interpolation
+  !! Coeff helps us in reducing the computation time for Lagrange polynomials
+  !! xx is evaluation of basis points
+
+  REAL(DFP), ALLOCATABLE :: xij(:, :)
+  !! Interpolation points used for Lagrange interpolation
+  !! It is internal variables used in GetLocalElemShapeData
+
+  REAL(DFP), ALLOCATABLE :: temp(:, :, :)
+  !! temporary array used in case of Lagrange Interpolation
+  !! It is internal variables used in GetLocalElemShapeData
 
 CONTAINS
 
@@ -497,29 +508,11 @@ END INTERFACE
 ! summary:  Get the quadratuere points
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints( &
-    obj, quad, quadratureType, order, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     !! OneDimBasisOpt
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! GaussLegendre, GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight, GaussChebyshev
-    !! GaussChebyshevLobatto, GaussChebyshevRadau,
-    !! GaussChebyshevRadauLeft, GaussChebyshevRadauRight
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of integrand
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 

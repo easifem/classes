@@ -406,27 +406,21 @@ END PROCEDURE obj_GetBaseInterpolation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetQuadraturePoints
-INTEGER(I4B) :: order0, quadratureType0
-REAL(DFP) :: alpha0, beta0, lambda0
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
+#endif
 
-! Let us update the quadrature points quadOpt
-CALL obj%quadOpt%SetParam(quadratureType=quadratureType, &
-                          order=order, alpha=alpha, beta=beta, lambda=lambda)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-! Let us get the quadrature points
-CALL obj%quadOpt%GetParam(quadratureType=quadratureType0, &
-                       order=order0, alpha=alpha0, beta=beta0, lambda=lambda0)
+CALL obj%quadOpt%GetQuadraturePoints(quad=quad)
 
-! Internal variables
-CALL QuadraturePointInitiate(obj=quad, &
-                             elemType=elemNameOpt%line, &
-                             domainName=obj%refelemDomain, &
-                             order=order0, &
-                             quadratureType=quadratureType0, &
-                             alpha=alpha0, &
-                             beta=beta0, &
-                             lambda=lambda0)
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
