@@ -166,12 +166,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
-  PROCEDURE, PASS(obj) :: GetQuadraturePoints => obj_GetQuadraturePoints
-  !! Get quadrature points for isotropic order
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
-    obj_GetLocalElemShapeData
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
 END TYPE OneDimFEDOF_
 
 !----------------------------------------------------------------------------
@@ -865,88 +859,6 @@ INTERFACE
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalConnectivity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetQuadraturePoints
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, globalElement, &
-                    quadratureType, order, nips, alpha, beta, lambda, islocal)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! OneDimFEDOF object
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! quadrature points
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! global element number
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! Read the docs of AbstractOneDimFE and OneDimQuadratureOpt
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of integrand
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then global element is local element
-  END SUBROUTINE obj_GetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetLocalElemShapeData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-13
-! summary:  Get local element shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, globalElement, elemsd, &
-                                              quad, islocal)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_GetLocalElemShapeData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-13
-! summary:  Get global element shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, globalElement, elemsd, &
-                                               xij, geoElemsd, islocal)
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    INTEGER(I4B), INTENT(IN) :: globalElement
-    !! shape function data
-    TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd
-    !! global element shape data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-    !! if true then the global element is a local element
-  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
