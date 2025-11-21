@@ -44,6 +44,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
+obj%opt => timeOpt
+
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
 
@@ -55,8 +57,6 @@ END IF
 #endif
 
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
-
-obj%opt => timeOpt
 
 obj%fe => OneDimFEFactory(baseContinuity=obj%baseContinuity, &
                           baseInterpolation=obj%baseInterpolation)
