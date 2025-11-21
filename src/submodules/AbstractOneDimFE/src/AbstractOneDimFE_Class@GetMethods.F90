@@ -96,14 +96,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
 
 INTEGER(I4B) :: nns, nips, nsd, xidim
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+                       '[START] ')
 #endif
-
-isok = PRESENT(geoelemsd)
 
 nns = geoelemsd%nns
 nips = geoelemsd%nips
@@ -134,9 +131,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%GetQuadraturePoints( &
-  quad=quad, order=order, quadratureType=quadratureType, alpha=alpha, &
-  beta=beta, lambda=lambda)
+CALL obj%opt%GetQuadraturePoints(quad=quad)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -551,30 +551,10 @@ END INTERFACE
 ! summary: Get the quadrature points for the finite element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-                                            order, nips, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! GaussLegendre ! GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight ! GaussChebyshev
-    !! GaussChebyshevLobatto ! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of integrand
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
