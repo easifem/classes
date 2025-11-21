@@ -50,7 +50,6 @@ obj%isInit = .TRUE.
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------

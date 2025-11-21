@@ -45,7 +45,6 @@ CALL obj%opt%Display(unitno=unitno, msg="opt:")
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------

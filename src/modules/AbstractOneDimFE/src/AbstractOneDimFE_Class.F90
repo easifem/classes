@@ -78,6 +78,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
     obj_ReactEncode
   !! Display the contents
+
+  !IO:
+  !@TomlMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Initiate from reading toml table

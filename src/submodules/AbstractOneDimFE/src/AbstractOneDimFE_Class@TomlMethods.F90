@@ -15,6 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractOneDimFE_Class) TomlMethods
+USE TomlUtility, ONLY: GetValue
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
+
 IMPLICIT NONE
 
 CONTAINS
@@ -34,8 +38,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-CALL obj%opt%ImportFromToml(table=table)
+
 obj%isInit = .TRUE.
+CALL obj%opt%ImportFromToml(table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -49,22 +54,37 @@ END PROCEDURE obj_ImportFromToml1
 
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
 #endif
+
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+                        '[START]')
 #endif
 
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
+
+CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+                        '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml2
 
