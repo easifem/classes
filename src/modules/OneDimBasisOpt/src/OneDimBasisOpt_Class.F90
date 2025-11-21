@@ -44,6 +44,9 @@ CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
 
 TYPE :: OneDimBasisOpt_
   PRIVATE
+  LOGICAL(LGT) :: isInit = .FALSE.
+  !! flag to check if the object is initialized or not
+
   LOGICAL(LGT) :: firstCall = .TRUE.
   !! flag to check if the shape functions are constructed from scratch or not
 

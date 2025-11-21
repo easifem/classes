@@ -175,7 +175,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, quadratureType, order, nips, alpha, beta, lambda, isOrder, isNips)
+    obj, quadratureType, order, nips, alpha, beta, lambda, isOrder, isNips, &
+    refelemCoord)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
     INTEGER(I4B), INTENT(IN), OPTIONAL :: order
@@ -185,6 +186,7 @@ INTERFACE
     REAL(DFP), INTENT(IN), OPTIONAL :: lambda
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNips
+    REAL(DFP), OPTIONAL, INTENT(IN) :: refelemCoord(:, :)
   END SUBROUTINE obj_Initiate
 END INTERFACE
 

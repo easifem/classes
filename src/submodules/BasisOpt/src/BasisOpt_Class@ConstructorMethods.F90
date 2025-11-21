@@ -83,20 +83,13 @@ CALL obj%SetOrder( &
   faceOrient=faceOrient, edgeOrient=edgeOrient, tcell=tcell, &
   tface=tface, tedge=tedge, errCheck=errCheck)
 
-CALL obj%quadOpt%Initiate(isHomogeneous=quadratureIsHomogeneous, &
-                          quadratureType=quadratureType, &
-                          order=quadratureOrder, &
-                          isOrder=quadratureIsOrder, &
-                          nips=quadratureNips, &
-                          isNips=quadratureIsNips, &
-                          alpha=quadratureAlpha, &
-                          beta=quadratureBeta, &
-                          lambda=quadratureLambda, &
-                          topoType=obj%topoType, &
-                          nsd=obj%nsd, &
-                          xidim=obj%xidim, &
-                          refelemDomain=obj%refelemDomain, &
-                          refelemCoord=obj%refelemCoord)
+CALL obj%quadOpt%Initiate( &
+  isHomogeneous=quadratureIsHomogeneous, quadratureType=quadratureType, &
+  order=quadratureOrder, isOrder=quadratureIsOrder, nips=quadratureNips, &
+  isNips=quadratureIsNips, alpha=quadratureAlpha, beta=quadratureBeta, &
+  lambda=quadratureLambda, topoType=obj%topoType, nsd=obj%nsd, &
+  xidim=obj%xidim, refelemDomain=obj%refelemDomain, &
+  refelemCoord=obj%refelemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

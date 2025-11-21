@@ -57,8 +57,8 @@ IF (isok) obj%isOrder = isOrder
 isok = PRESENT(isNips)
 IF (isok) obj%isNips = isNips
 
-obj%refelemCoord(1, 1) = -1.0_DFP
-obj%refelemCoord(1, 2) = 1.0_DFP
+isok = PRESENT(refelemCoord)
+IF (isok) obj%refelemCoord(1:1, 1:2) = refelemCoord(1:1, 1:2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
