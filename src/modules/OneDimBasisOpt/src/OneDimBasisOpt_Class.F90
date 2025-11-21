@@ -58,6 +58,12 @@ TYPE :: OneDimBasisOpt_
   !! type of finite element
   !!  Scalar, Vector, Matrix
 
+  INTEGER(I4B) :: dofType = 0
+  !! degree of freedom type
+
+  INTEGER(I4B) :: transformType = 0
+  !! transformation type
+
   INTEGER(I4B) :: ipType = ipopt%equidistance
   !! interpolation type, it is used incase baseInterpolation is Lagrange
 
@@ -297,7 +303,7 @@ INTERFACE
     obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
     refElemDomain, baseContinuity, baseInterpolation, firstCall, &
     quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-    quadratureBeta, quadratureLambda)
+    quadratureBeta, quadratureLambda, dofType, transformType)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
@@ -333,6 +339,8 @@ INTERFACE
     !! Quadrature beta parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Quadrature lambda parameter
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -360,7 +368,7 @@ INTERFACE
     obj, order, tdof, fetype, ipType, basisType, alpha, beta, lambda, &
     refElemDomain, baseContinuity, baseInterpolation, firstCall, &
     quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-    quadratureBeta, quadratureLambda)
+    quadratureBeta, quadratureLambda, dofType, transformType)
     CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
     !! Abstract one dimenstional finite element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
@@ -399,6 +407,10 @@ INTERFACE
     !! Quadrature beta parameter
     REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureLambda
     !! Quadrature lambda parameter
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
+    !! Transformation type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType
+    !! Degree of freedom type
   END SUBROUTINE obj_GetParam
 END INTERFACE
 

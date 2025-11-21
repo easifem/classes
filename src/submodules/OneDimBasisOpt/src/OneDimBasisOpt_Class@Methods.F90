@@ -230,6 +230,9 @@ IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
 IF (PRESENT(firstCall)) obj%firstCall = firstCall
 
+IF (PRESENT(dofType)) obj%dofType = dofType
+IF (PRESENT(transformType)) obj%transformType = transformType
+
 CALL obj%quadOpt%SetParam( &
   quadratureType=quadratureType, order=quadratureOrder, &
   nips=quadratureNips, alpha=quadratureAlpha, beta=quadratureBeta, &
@@ -293,6 +296,8 @@ IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
 IF (PRESENT(firstCall)) firstCall = obj%firstCall
+IF (PRESENT(dofType)) dofType = obj%dofType
+IF (PRESENT(transformType)) transformType = obj%transformType
 
 CALL obj%quadOpt%GetParam( &
   quadratureType=quadratureType, order=quadratureOrder, &
