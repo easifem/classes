@@ -74,49 +74,11 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! CHARACTER(4) :: baseInterpolation
-! INTEGER(I4B), PARAMETER :: one = 1
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! baseInterpolation = obj%opt%GetBaseInterpolation()
-!
-! SELECT CASE (baseInterpolation)
-! CASE ("LAGR")
-!   CALL LagrangeElemShapeData(obj=elemsd, &
-!                              quad=quad, &
-!                              nsd=one, &
-!                              xidim=one, &
-!                              elemType=elemNameOpt%line, &
-!                              refelemCoord=obj%opt%refelemCoord, &
-!                              domainName=obj%opt%refelemDomain, &
-!                              order=obj%opt%order, &
-!                              ipType=obj%opt%ipType, &
-!                              basisType=obj%opt%basisType, &
-!                              coeff=obj%coeff, &
-!                              firstCall=obj%opt%firstCall, &
-!                              alpha=obj%opt%alpha, &
-!                              beta=obj%opt%beta, &
-!                              lambda=obj%opt%lambda)
-!
-! CASE ("HIER", "HEIR")
-! ! CALL HierarchicalElemShapeData(obj=elemsd, quad=quad, nsd=obj%nsd, &
-! !       xidim=obj%xidim, elemType=obj%elemType, refelemCoord=obj%refelemCoord, &
-! !                       domainName=obj%refelemDomain, cellOrder=obj%cellOrder, &
-! !                            faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder, &
-! !                        cellOrient=obj%cellOrient, faceOrient=obj%faceOrient, &
-! !                                edgeOrient=obj%edgeOrient)
-!
-! CASE ("ORTH")
-!
-! CASE DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTERNAL ERROR] :: No case found for baseInterpolation')
-!   RETURN
-! END SELECT
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -143,26 +105,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = PRESENT(geoelemsd)
 
-IF (isok) THEN
-  nns = geoelemsd%nns
-  nips = geoelemsd%nips
-  nsd = geoelemsd%nsd
-  xidim = geoelemsd%xidim
-  CALL Elemsd_Set( &
-    obj=elemsd, val=xij(1:nsd, 1:nns), N=geoelemsd%N(1:nns, 1:nips), &
-    dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+nns = geoelemsd%nns
+nips = geoelemsd%nips
+nsd = geoelemsd%nsd
+xidim = geoelemsd%xidim
 
-ELSE
-
-  nns = elemsd%nns
-  nips = elemsd%nips
-  nsd = elemsd%nsd
-  xidim = elemsd%xidim
-
-  CALL Elemsd_Set( &
-    obj=elemsd, val=xij(1:nsd, 1:nns), N=elemsd%N(1:nns, 1:nips), &
-    dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
-END IF
+CALL Elemsd_Set( &
+  obj=elemsd, val=xij(1:nsd, 1:nns), N=geoelemsd%N(1:nns, 1:nips), &
+  dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
