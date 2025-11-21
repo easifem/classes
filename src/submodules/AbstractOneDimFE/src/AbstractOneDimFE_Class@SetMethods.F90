@@ -34,23 +34,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%SetParam(order=order, &
-                      fetype=fetype, &
-                      ipType=ipType, &
-                      basisType=basisType, &
-                      alpha=alpha, &
-                      beta=beta, &
-                      lambda=lambda, &
-                      refElemDomain=refElemDomain, &
-                      baseContinuity=baseContinuity, &
-                      baseInterpolation=baseInterpolation, &
-                      firstCall=firstCall, &
-                      quadratureType=quadratureType, &
-                      quadratureOrder=quadratureOrder, &
-                      quadratureNips=quadratureNips, &
-                      quadratureAlpha=quadratureAlpha, &
-                      quadratureBeta=quadratureBeta, &
-                      quadratureLambda=quadratureLambda)
+CALL obj%opt%SetParam( &
+  order=order, ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, &
+  lambda=lambda, fetype=fetype, dofType=dofType, &
+  transformType=transformType, refElemDomain=refElemDomain, &
+  baseContinuity=baseContinuity, baseInterpolation=baseInterpolation, &
+  firstCall=firstCall, quadratureType=quadratureType, &
+  quadratureOrder=quadratureOrder, quadratureNips=quadratureNips, &
+  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
+  quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -94,10 +86,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+CALL obj%opt%SetQuadratureOrder(order=order)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
