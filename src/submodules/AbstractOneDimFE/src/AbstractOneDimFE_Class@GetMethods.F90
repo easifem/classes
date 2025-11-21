@@ -46,7 +46,10 @@ CALL obj%opt%GetParam( &
   order=order, fetype=fetype, ipType=ipType, basisType=basisType, &
   alpha=alpha, beta=beta, lambda=lambda, refElemDomain=refElemDomain, &
   baseContinuity=baseContinuity, baseInterpolation=baseInterpolation, &
-  firstCall=firstCall)
+  firstCall=firstCall, dofType=dofType, transformType=transformType, &
+  quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
+  quadratureLambda=quadratureLambda)
 
 IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 

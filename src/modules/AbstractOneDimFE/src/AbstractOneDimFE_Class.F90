@@ -454,7 +454,8 @@ INTERFACE
     obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
     refElemDomain, baseContinuity, baseInterpolation, firstCall, &
     isInitiated, quadratureType, quadratureOrder, quadratureNips, &
-    quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureAlpha, quadratureBeta, quadratureLambda, dofType, &
+    transformType)
     CLASS(AbstractOneDimFE_), INTENT(IN) :: obj
     !! Abstract one dimenstional finite element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
@@ -493,6 +494,8 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
