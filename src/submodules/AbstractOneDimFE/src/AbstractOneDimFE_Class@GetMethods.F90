@@ -62,9 +62,14 @@ END PROCEDURE obj_GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 ! CHARACTER(4) :: baseInterpolation
 ! INTEGER(I4B), PARAMETER :: one = 1
@@ -109,12 +114,11 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !                     '[INTERNAL ERROR] :: No case found for baseInterpolation')
 !   RETURN
 ! END SELECT
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
@@ -177,18 +181,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%GetQuadraturePoints(quad=quad, &
-                                 order=order, &
-                                 quadratureType=quadratureType, &
-                                 alpha=alpha, &
-                                 beta=beta, &
-                                 lambda=lambda)
+CALL obj%opt%GetQuadraturePoints( &
+  quad=quad, order=order, quadratureType=quadratureType, alpha=alpha, &
+  beta=beta, lambda=lambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
