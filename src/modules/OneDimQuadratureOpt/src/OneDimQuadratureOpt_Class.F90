@@ -20,6 +20,7 @@ MODULE OneDimQuadratureOpt_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt
+USE BaseType, ONLY: QuadraturePoint_
 USE ExceptionHandler_Class, ONLY: e
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
@@ -43,7 +44,22 @@ CHARACTER(*), PARAMETER :: modName = "OneDimQuadratureOpt_Class"
 
 TYPE :: OneDimQuadratureOpt_
   PRIVATE
+  LOGICAL(LGT) :: isOrder = .FALSE.
+  !! is order specified?
+
+  LOGICAL(LGT) :: isNips = .FALSE.
+  !! is number of integration points specified?
+
   INTEGER(I4B) :: quadratureType = ipopt%GaussLegendre
+  !! quadrature type
+
+  INTEGER(I4B) :: order = 0_I4B
+  !! order of accuracy of the quadrature
+
+  INTEGER(I4B) :: nips(1) = 0_I4B
+  !! number of integration points
+
+  CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
   !! quadrature type
 
   REAL(DFP) :: alpha = 0.0_DFP
@@ -55,20 +71,8 @@ TYPE :: OneDimQuadratureOpt_
   REAL(DFP) :: lambda = 0.5_DFP
   !! lambda parameter for Ultraspherical polynomials
 
-  INTEGER(I4B) :: order = 0_I4B
-  !! order of accuracy of the quadrature
-
-  INTEGER(I4B) :: nips(1) = 0_I4B
-  !! number of integration points
-
-  CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
-  !! quadrature type
-
-  LOGICAL(LGT) :: isOrder = .FALSE.
-  !! is order specified?
-
-  LOGICAL(LGT) :: isNips = .FALSE.
-  !! is number of integration points specified?
+  REAL(DFP) :: refelemCoord(1, 2) = RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
+  !! coordinate of reference element
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -96,6 +100,8 @@ CONTAINS
   !! Set the order of quadrature
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => obj_SetQuadratureType
   !! Set the quadrature type
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
 END TYPE OneDimQuadratureOpt_
 
 !----------------------------------------------------------------------------
@@ -301,6 +307,21 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: quadratureType
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda
   END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary:  Get the quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
+    CLASS(OneDimQuadratureOpt_), INTENT(IN) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
