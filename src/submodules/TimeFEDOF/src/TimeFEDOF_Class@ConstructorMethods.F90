@@ -18,15 +18,8 @@
 !
 
 SUBMODULE(TimeFEDOF_Class) ConstructorMethods
-USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFEPointer
-USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFEPointer
-USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFEPointer
 USE FEFactoryUtility, ONLY: OneDimFEFactory
 USE StringUtility, ONLY: UpperCase
-
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
 
 IMPLICIT NONE
 
@@ -39,8 +32,9 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-LOGICAL(LGT) :: isok
 #endif
+
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -82,6 +76,12 @@ CALL obj%fe%Initiate( &
   quadratureIsNips=quadratureIsNips, quadratureAlpha=quadratureAlpha, &
   quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 
+obj%cellOrder = INT(order, kind=INT8)
+obj%tdof = order + 1
+
+isok = PRESENT(scaleForQuadOrder)
+IF (isok) obj%scaleForQuadOrder = INT(scaleForQuadOrder, kind=INT8)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -105,12 +105,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
+obj%isLagrange = .FALSE.
+obj%isMaxConSet = .FALSE.
+obj%isMaxQuadPointSet = .FALSE.
+obj%tdof = 0
+obj%maxCon = 0
+obj%maxQuadPoint = 0
+obj%baseContinuity = "H1"
+obj%baseInterpolation = "LAGR"
+obj%scaleForQuadOrder = 2_INT8
+obj%cellOrder = 0
+
 obj%opt => NULL()
 
 isok = ASSOCIATED(obj%fe)
-
 IF (isok) CALL obj%fe%DEALLOCATE()
-
 obj%fe => NULL()
 
 #ifdef DEBUG_VER
@@ -133,8 +142,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
 obj%isInit = obj2%isInit
+obj%isLagrange = obj2%isLagrange
+obj%isMaxConSet = obj2%isMaxConSet
+obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
+obj%tdof = obj2%tdof
+obj%maxCon = obj2%maxCon
+obj%maxQuadPoint = obj2%maxQuadPoint
+obj%baseContinuity = obj2%baseContinuity
+obj%baseInterpolation = obj2%baseInterpolation
+obj%scaleForQuadOrder = obj2%scaleForQuadOrder
+obj%cellOrder = obj2%cellOrder
 obj%opt => obj2%opt
 obj%fe => obj2%fe
 

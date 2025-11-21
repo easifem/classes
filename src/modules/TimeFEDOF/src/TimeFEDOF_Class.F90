@@ -76,11 +76,8 @@ TYPE :: TimeFEDOF_
   !! Quadrature order = element order * scaleForQuadOrder
   !! This is used for constructing the quadrature points
 
-  INTEGER(INT8) :: cellOrder
+  INTEGER(INT8) :: cellOrder = 0
   !! Order of time element
-
-  INTEGER(INT8) :: faceOrder
-  !! order of face of time element
 
   CLASS(TimeOpt_), POINTER :: opt => NULL()
   !! option related to the time domain discretization
@@ -162,7 +159,8 @@ INTERFACE
     obj, order, timeOpt, baseContinuity, baseInterpolation, feType, ipType, &
     basisType, alpha, beta, lambda, dofType, transformType, &
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
-    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    scaleForQuadOrder)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -213,6 +211,11 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
+    !! Scale for quadrature order, if quadratureOrder  or
+    !! quadratureNips are both not provided, then you can specify
+    !! scaleForQuadOrder to set the quadrature order
+    !! In this case quadratureOrder = order * scaleForQuadOrder
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
