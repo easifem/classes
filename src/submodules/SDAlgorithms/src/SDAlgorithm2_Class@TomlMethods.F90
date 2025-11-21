@@ -385,7 +385,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-CALL GetValue(table=table, key="timeIntegration", VALUE=astr, &
+CALL GetValue(table=table, key="methodName", VALUE=astr, &
               default_value="NEWM", origin=origin, stat=stat, &
               isfound=found)
 

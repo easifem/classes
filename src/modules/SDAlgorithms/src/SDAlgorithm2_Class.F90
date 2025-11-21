@@ -101,6 +101,13 @@ TYPE :: SDAlgorithm2_
   REAL(DFP) :: alpha = 0.0_DFP
   !! only in case of HHT-alpha method it can be less than 0.0
 
+  REAL(DFP) :: initialGuess(3) = 0.0_DFP
+  !! coefficient for initial guess of solution
+  !! u = coeff(1)*Un + coeff(2) * Vn * dt + coeff(3) * An * dt * dt
+  !! coeff(1) coefficient of displacement at tn
+  !! coeff(2) coefficient of velocity at tn
+  LOGICAL(LGT) :: initialGuess_zero(3) = .TRUE.
+
 CONTAINS
   PRIVATE
 
