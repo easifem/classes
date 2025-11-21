@@ -138,6 +138,14 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of the basis functions
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
+  !! Set the order for quadrature points
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
+  !! Set the quadrature type
+
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters
 
@@ -357,6 +365,38 @@ INTERFACE
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary: Set the order of the basis functions
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-17
+! summary: Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, alpha, beta, lambda)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda
+  END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------

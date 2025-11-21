@@ -271,6 +271,53 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
+!                                                              SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%SetOrder(order=order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                           SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%quadOpt%SetQuadratureType( &
+  quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
 !                                                                  GetParam
 !----------------------------------------------------------------------------
 

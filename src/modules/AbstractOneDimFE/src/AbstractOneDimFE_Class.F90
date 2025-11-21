@@ -422,6 +422,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              GetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Set quadrature order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, alpha, beta, lambda)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+    !! quadrature type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda
+    !! parameters for jacobi and ultraspherical parameters
+  END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 

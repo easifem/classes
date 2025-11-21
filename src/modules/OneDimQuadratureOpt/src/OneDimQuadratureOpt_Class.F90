@@ -92,6 +92,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalQuadraturePoints => &
     obj_GetTotalQuadraturePoints
   !! Get total number of quadrature points
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order of quadrature
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => obj_SetQuadratureType
+  !! Set the quadrature type
 END TYPE OneDimQuadratureOpt_
 
 !----------------------------------------------------------------------------
@@ -265,6 +269,38 @@ INTERFACE
     CLASS(OneDimQuadratureOpt_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Set the order of quadrature
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrder(obj, order)
+    CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+  END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetQuadratureType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, alpha, beta, lambda)
+    CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: quadratureType
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda
+  END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
 !----------------------------------------------------------------------------

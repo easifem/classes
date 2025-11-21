@@ -396,6 +396,58 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                                   SetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isOrder = .TRUE.
+obj%isNips = .FALSE.
+obj%order = order
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                           SetQuadratureType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%quadratureType = quadratureType
+obj%quadratureType_char = QuadraturePoint_ToChar(quadratureType, &
+                                                 isUpper=.TRUE.)
+
+IF (PRESENT(alpha)) obj%alpha = alpha
+IF (PRESENT(beta)) obj%beta = beta
+IF (PRESENT(lambda)) obj%lambda = lambda
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureType
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
