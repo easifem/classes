@@ -43,6 +43,17 @@ CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
+CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
+CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+CALL Display(obj%tdof, "tdof: ", unitno=unitno)
+CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
+CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
+CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
+CALL Display(obj%scaleForQuadOrder, "scaleForQuadOrder: ", unitno=unitno)
+CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno)
+
 isok = ASSOCIATED(obj%opt)
 CALL Display(isok, "opt ASSOCIATED: ", unitno=unitno)
 IF (isok) THEN
