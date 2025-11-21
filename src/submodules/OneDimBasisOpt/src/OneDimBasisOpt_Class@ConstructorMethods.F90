@@ -88,6 +88,10 @@ CALL obj%quadOpt%Initiate( &
   lambda=quadratureLambda, isOrder=quadratureIsOrder, &
   isNips=quadratureIsNips, refelemCoord=obj%refelemCoord)
 
+obj%basisType_char = BaseType_ToChar(obj%basisType, isupper=.TRUE.)
+obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isupper=.TRUE.)
+! obj%feType_char =
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
