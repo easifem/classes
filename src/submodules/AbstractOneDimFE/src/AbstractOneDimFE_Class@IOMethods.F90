@@ -36,8 +36,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%isInitiated, msg="isInitiated: ", unitno=unitno)
-IF (.NOT. obj%isInitiated) RETURN
+CALL Display(obj%isInit, msg="isInitiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
 
 CALL obj%opt%Display(unitno=unitno, msg="OneDimBasisOpt from opt:")
 
@@ -67,7 +67,9 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MdEncode
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_MdEncode()"
+#endif
 
 ! INTEGER(I4B), PARAMETER :: jj = 21
 ! TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
@@ -77,8 +79,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 ! colTitle(1) = ""
 ! rowTitle(1) = "**nsd**"; astr(1) = ToString(obj%nsd)
@@ -124,7 +128,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_MdEncode
 
 !----------------------------------------------------------------------------
@@ -132,13 +135,17 @@ END PROCEDURE obj_MdEncode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReactEncode
-CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode()"
+#endif
 
 ! INTEGER(I4B), PARAMETER :: jj = 21
 ! TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 ! colTitle(1) = ""
 ! rowTitle(1) = "**nsd**"
@@ -224,58 +231,16 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !       MdEncode(val=astr(1:21), rh=rowTitle(1:21), ch=colTitle)//char_lf// &
 !       React_EndTabItem()//char_lf
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ReactEncode
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
+!                                                              Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-CALL obj%opt%ImportFromToml(table=table)
-obj%isInitiated = .TRUE.
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml2
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

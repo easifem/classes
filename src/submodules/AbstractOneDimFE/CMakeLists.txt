@@ -20,5 +20,6 @@ target_sources(
   PRIVATE ${src_path}
           ${src_path}/AbstractOneDimFE_Class@ConstructorMethods.F90
           ${src_path}/AbstractOneDimFE_Class@IOMethods.F90
+          ${src_path}/AbstractOneDimFE_Class@TomlMethods.F90
           ${src_path}/AbstractOneDimFE_Class@GetMethods.F90
           ${src_path}/AbstractOneDimFE_Class@SetMethods.F90)

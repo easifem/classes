@@ -47,7 +47,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractOneDimFE_Class"
 
 TYPE, ABSTRACT :: AbstractOneDimFE_
   PRIVATE
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
 
   TYPE(OneDimBasisOpt_) :: opt
@@ -75,6 +75,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Deallocate the data stored in an instance
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
+    obj_IsInitiated
 
   !IO:
   !@IOMethods
@@ -100,8 +102,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order and reallocate appropriate data in
   !! already initiated AbstractOneDimFE_
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
+  !! Set the quadrature order
 
   !GET:
+  ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
@@ -231,11 +237,30 @@ END INTERFACE
 ! date: 29 Aug 2022
 ! summary: Deallocate the data
 
-INTERFACE AbstractOneDimFEDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractOneDimFEDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractOneDimFEDeallocate
+
+!----------------------------------------------------------------------------
+!                                            IsInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Returns isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -245,10 +270,14 @@ END INTERFACE AbstractOneDimFEDeallocate
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE AbstractOneDimFEDeallocate
+INTERFACE
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(AbstractOneDimFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE AbstractOneDimFEDeallocate
+  MODULE PROCEDURE Deallocate_Ptr_Vector
 END INTERFACE AbstractOneDimFEDeallocate
 
 INTERFACE DEALLOCATE
@@ -370,6 +399,23 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: order
     !! order
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetQuadratureOrder@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Set quadrature order
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), INTENT(IN) :: order
+    !! order
+  END SUBROUTINE obj_SetQuadratureOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

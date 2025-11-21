@@ -42,19 +42,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%GetParam(order=order, &
-                      fetype=fetype, &
-                      ipType=ipType, &
-                      basisType=basisType, &
-                      alpha=alpha, &
-                      beta=beta, &
-                      lambda=lambda, &
-                      refElemDomain=refElemDomain, &
-                      baseContinuity=baseContinuity, &
-                      baseInterpolation=baseInterpolation, &
-                      firstCall=firstCall)
+CALL obj%opt%GetParam( &
+  order=order, fetype=fetype, ipType=ipType, basisType=basisType, &
+  alpha=alpha, beta=beta, lambda=lambda, refElemDomain=refElemDomain, &
+  baseContinuity=baseContinuity, baseInterpolation=baseInterpolation, &
+  firstCall=firstCall)
 
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -133,20 +127,24 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 #endif
 
 INTEGER(I4B) :: nns, nips, nsd, xidim
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(geoelemsd)) THEN
+isok = PRESENT(geoelemsd)
+
+IF (isok) THEN
   nns = geoelemsd%nns
   nips = geoelemsd%nips
   nsd = geoelemsd%nsd
   xidim = geoelemsd%xidim
-  CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
-                  N=geoelemsd%N(1:nns, 1:nips), &
-                  dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+  CALL Elemsd_Set( &
+    obj=elemsd, val=xij(1:nsd, 1:nns), N=geoelemsd%N(1:nns, 1:nips), &
+    dNdXi=geoelemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+
 ELSE
 
   nns = elemsd%nns
@@ -154,9 +152,9 @@ ELSE
   nsd = elemsd%nsd
   xidim = elemsd%xidim
 
-  CALL Elemsd_Set(obj=elemsd, val=xij(1:nsd, 1:nns), &
-                  N=elemsd%N(1:nns, 1:nips), &
-                  dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
+  CALL Elemsd_Set( &
+    obj=elemsd, val=xij(1:nsd, 1:nns), N=elemsd%N(1:nns, 1:nips), &
+    dNdXi=elemsd%dNdXi(1:nns, 1:xidim, 1:nips))
 END IF
 
 #ifdef DEBUG_VER

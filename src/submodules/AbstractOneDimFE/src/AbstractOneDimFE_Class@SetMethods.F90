@@ -81,6 +81,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
+!                                                          SetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetQuadratureOrder
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

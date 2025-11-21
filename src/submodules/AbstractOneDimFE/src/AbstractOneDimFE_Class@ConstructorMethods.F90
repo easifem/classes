@@ -46,7 +46,7 @@ CALL obj%opt%Initiate( &
   quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
   quadratureLambda=quadratureLambda)
 
-obj%isInitiated = .TRUE.
+obj%isInit = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -71,7 +71,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInitiated = obj2%isInitiated
+obj%isInit = obj2%isInit
 CALL obj%opt%Copy(obj2%opt)
 
 IF (ALLOCATED(obj2%coeff)) THEN
@@ -105,7 +105,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 CALL obj%opt%DEALLOCATE()
 IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
 IF (ALLOCATED(obj%xij)) DEALLOCATE (obj%xij)
@@ -147,8 +147,29 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                                IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !
