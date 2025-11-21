@@ -30,9 +30,6 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
-INTEGER(I4B) :: s(2)
-LOGICAL(LGT) :: isok
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -42,21 +39,7 @@ CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInit, msg="isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
-CALL obj%opt%Display(unitno=unitno, msg="OneDimBasisOpt from opt:")
-
-isok = ALLOCATED(obj%xij)
-CALL Display(isok, msg="xij is Allocated: ", unitno=unitno)
-IF (isok) THEN
-  s = SIZE(obj%xij)
-  CALL Display(s, msg="xij size: ", unitno=unitno)
-END IF
-
-isok = ALLOCATED(obj%coeff)
-CALL Display(isok, msg="coeff is Allocated: ", unitno=unitno)
-IF (isok) THEN
-  s = SIZE(obj%coeff)
-  CALL Display(isok, msg="coeff size: ", unitno=unitno)
-END IF
+CALL obj%opt%Display(unitno=unitno, msg="opt:")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

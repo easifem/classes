@@ -49,16 +49,7 @@ TYPE, ABSTRACT :: AbstractOneDimFE_
   PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-
   TYPE(OneDimBasisOpt_) :: opt
-
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
-  !! coefficient necessary for lagrange interpolation
-
-  REAL(DFP), ALLOCATABLE :: xij(:, :)
-  !! interpolation points for lagrange polynomial
-  !! coeff, and xij are needed internally for
-  !! constructing the lagrange polynomial
 
 CONTAINS
 
