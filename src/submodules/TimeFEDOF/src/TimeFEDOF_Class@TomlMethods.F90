@@ -53,11 +53,17 @@ CALL obj%DEALLOCATE()
 obj%isInit = .TRUE.
 obj%opt => timeOpt
 
+! cellOrder
 CALL ImportCellOrderFromToml(obj=obj, table=table, origin=origin, stat=stat)
+
+! scaleForQuadOrder
 CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table, &
                                      origin=origin, stat=stat)
+
+! tdof
 obj%tdof = obj%cellOrder + 1
 
+! fe
 obj%fe => OneDimFEFactory(table=table)
 
 #ifdef DEBUG_VER
@@ -68,7 +74,13 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%fe%ImportFromToml(table=table)
 
+! baseInterpolation
 obj%baseInterpolation = obj%fe%GetBaseInterpolation()
+
+! isLagrange
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = .TRUE.
+
+! baseContinuity
 obj%baseContinuity = obj%fe%GetBaseContinuity()
 
 #ifdef DEBUG_VER
