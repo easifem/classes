@@ -69,7 +69,7 @@ CALL AssertError1(isok, myName, &
 CALL obj%fe%ImportFromToml(table=table)
 
 obj%baseInterpolation = obj%fe%GetBaseInterpolation()
-! obj%baseContinuity = obj%fe%GetBaseContinuity()
+obj%baseContinuity = obj%fe%GetBaseContinuity()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
