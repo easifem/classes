@@ -14,71 +14,68 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE LagrangeOneDimFE_Class
+MODULE OneDimLagrangeFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemShapedata_
-
+USE BaseType, ONLY: QuadraturePoint_, ElemShapedata_
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: LagrangeOneDimFE_
-PUBLIC :: LagrangeOneDimFEPointer_
-PUBLIC :: LagrangeOneDimFEPointer
-PUBLIC :: LagrangeOneDimFE
+PUBLIC :: OneDimLagrangeFE_
+PUBLIC :: OneDimLagrangeFEPointer_
+PUBLIC :: OneDimLagrangeFEPointer
+PUBLIC :: OneDimLagrangeFE
 
 PUBLIC :: FiniteElementDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "LagrangeOneDimFE_Class"
+CHARACTER(*), PARAMETER :: modName = "OneDimLagrangeFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                          LagrangeOneDimFE_
+!                                                          OneDimLagrangeFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-17
-! summary: LagrangeOneDimFE is lagrange fe for one dimensional cases
+! summary: OneDimLagrangeFE is lagrange fe for one dimensional cases
 
-TYPE, EXTENDS(AbstractOneDimFE_) :: LagrangeOneDimFE_
-END TYPE LagrangeOneDimFE_
-
-!----------------------------------------------------------------------------
-!                                                   LagrangeOneDimFEPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: LagrangeOneDimFEPointer_
-  CLASS(LagrangeOneDimFE_), POINTER :: ptr => NULL()
-END TYPE LagrangeOneDimFEPointer_
+TYPE, EXTENDS(AbstractOneDimFE_) :: OneDimLagrangeFE_
+END TYPE OneDimLagrangeFE_
 
 !----------------------------------------------------------------------------
-!                                           LagrangeOneDimFEPointer@Methods
+!                                                   OneDimLagrangeFEPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: OneDimLagrangeFEPointer_
+  CLASS(OneDimLagrangeFE_), POINTER :: ptr => NULL()
+END TYPE OneDimLagrangeFEPointer_
+
+!----------------------------------------------------------------------------
+!                                           OneDimLagrangeFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE LagrangeOneDimFEPointer
-  MODULE FUNCTION obj_LagrangeOneDimFEPointer1() RESULT(ans)
-    TYPE(LagrangeOneDimFE_), POINTER :: ans
-  END FUNCTION obj_LagrangeOneDimFEPointer1
-END INTERFACE LagrangeOneDimFEPointer
+INTERFACE OneDimLagrangeFEPointer
+  MODULE FUNCTION obj_OneDimLagrangeFEPointer1() RESULT(ans)
+    TYPE(OneDimLagrangeFE_), POINTER :: ans
+  END FUNCTION obj_OneDimLagrangeFEPointer1
+END INTERFACE OneDimLagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                                       LagrangeOneDimFE@Methods
+!                                                       OneDimLagrangeFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE LagrangeOneDimFEPointer
-  MODULE FUNCTION obj_LagrangeOneDimFEPointer2( &
+INTERFACE OneDimLagrangeFEPointer
+  MODULE FUNCTION obj_OneDimLagrangeFEPointer2( &
     baseContinuity, ipType, basisType, order, alpha, beta, lambda) &
     RESULT(ans)
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -99,20 +96,20 @@ INTERFACE LagrangeOneDimFEPointer
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameters
-    TYPE(LagrangeOneDimFE_), POINTER :: ans
-  END FUNCTION obj_LagrangeOneDimFEPointer2
-END INTERFACE LagrangeOneDimFEPointer
+    TYPE(OneDimLagrangeFE_), POINTER :: ans
+  END FUNCTION obj_OneDimLagrangeFEPointer2
+END INTERFACE OneDimLagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                                   LagrangeOneDimFE@Methods
+!                                                   OneDimLagrangeFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE LagrangeOneDimFE
-  MODULE FUNCTION obj_LagrangeOneDimFE( &
+INTERFACE OneDimLagrangeFE
+  MODULE FUNCTION obj_OneDimLagrangeFE( &
     baseContinuity, ipType, basisType, order, alpha, beta, lambda) &
     RESULT(ans)
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -133,9 +130,9 @@ INTERFACE LagrangeOneDimFE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameters
-    TYPE(LagrangeOneDimFE_) :: ans
-  END FUNCTION obj_LagrangeOneDimFE
-END INTERFACE LagrangeOneDimFE
+    TYPE(OneDimLagrangeFE_) :: ans
+  END FUNCTION obj_OneDimLagrangeFE
+END INTERFACE OneDimLagrangeFE
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
@@ -143,11 +140,11 @@ END INTERFACE LagrangeOneDimFE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of LagrangeOneDimFE
+! summary:  Deallocate a vector of OneDimLagrangeFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(LagrangeOneDimFE_), ALLOCATABLE :: obj(:)
+    TYPE(OneDimLagrangeFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -157,11 +154,11 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of LagrangeOneDimFEPointer_
+! summary:  Deallocate the vector of OneDimLagrangeFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(LagrangeOneDimFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(OneDimLagrangeFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -169,4 +166,4 @@ END INTERFACE FiniteElementDeallocate
 !
 !----------------------------------------------------------------------------
 
-END MODULE LagrangeOneDimFE_Class
+END MODULE OneDimLagrangeFE_Class

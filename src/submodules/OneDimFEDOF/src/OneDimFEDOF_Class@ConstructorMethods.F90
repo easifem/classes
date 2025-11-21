@@ -24,8 +24,9 @@ USE IntVector_Method, ONLY: IntegerCopy => Copy
 USE StringUtility, ONLY: UpperCase
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: TypeInterpolationOpt, TypePolynomialOpt
-USE LagrangeOneDimFE_Class, ONLY: LagrangeOneDimFEPointer
-USE HierarchicalOneDimFE_Class, ONLY: HierarchicalOneDimFEPointer
+USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFEPointer
+USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFEPointer
+USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFEPointer
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -97,9 +98,11 @@ baseInterpolation0 = UpperCase(baseInterpolation(1:4))
 
 SELECT CASE (baseInterpolation0)
 CASE ("LAGR")
-  obj%fe => LagrangeOneDimFEPointer()
+  obj%fe => OneDimLagrangeFEPointer()
 CASE ("HIER", "HEIR")
-  obj%fe => HierarchicalOneDimFEPointer()
+  obj%fe => OneDimHierarchicalFEPointer()
+CASE ("ORTH")
+  obj%fe => OneDimOrthogonalFEPointer()
 
 #ifdef DEBUG_VER
 CASE DEFAULT

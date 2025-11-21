@@ -21,7 +21,7 @@ SUBMODULE(TimeFEDOF_Class) TomlMethods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
 USE tomlf, ONLY: toml_serialize
-USE OneDimFEFactoryUtility, ONLY: OneDimFEFactory
+USE FEFactoryUtility, ONLY: OneDimFEFactory
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -36,7 +36,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -47,6 +50,14 @@ CALL obj%DEALLOCATE()
 obj%opt => timeOpt
 obj%isInit = .TRUE.
 obj%fe => OneDimFEFactory(table=table)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fe)
+CALL AssertError1(isok, myName, &
+                  'fe pointer returned from OneDimFEFactory is NULL pointer.')
+#endif
+
+CALL obj%fe%ImportFromToml(table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

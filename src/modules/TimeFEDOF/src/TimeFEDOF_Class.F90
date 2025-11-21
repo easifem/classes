@@ -46,6 +46,42 @@ TYPE :: TimeFEDOF_
   PRIVATE
   LOGICAL(LGT) :: isinit = .FALSE.
   !! It is set to true when TimeFEDOF is initiated
+  LOGICAL(LGT) :: isLagrange = .FALSE.
+  !! It is true when baseInterpolation is Lagrange
+  LOGICAL(LGT) :: isMaxConSet = .FALSE.
+  !! It is set to true when maxCon is set in GetMaxTotalConnectivity
+  LOGICAL(LGT) :: isMaxQuadPointSet = .FALSE.
+  !! It is set to true when maxQuadPoint is set in
+  !! GetMaxTotalQuadraturePoints
+  INTEGER(I4B) :: tdof = 0
+  !! Total number of degrees of freedom
+  INTEGER(I4B) :: maxCon = 0
+  !! maximum number of connectivity
+  INTEGER(I4B) :: maxQuadPoint = 0
+  !! maximum number of quadrature points
+
+  CHARACTER(2) :: baseContinuity = "H1"
+  !! continuity or conformity of basis defined on reference
+  !! element, following values are allowed
+  !! H1, DG
+  CHARACTER(4) :: baseInterpolation = "LAGR"
+  !! Type of basis functions used for interpolation on reference
+  !! element, Following values are allowed
+  !! LAGR: LagrangeInterpolation
+  !! HIER: HierarchyInterpolation
+  !! ORTHO: OrthogonalInterpolation
+
+  INTEGER(INT8) :: scaleForQuadOrder = 2_INT8
+  !! Scale for quadrature order
+  !! Quadrature order = element order * scaleForQuadOrder
+  !! This is used for constructing the quadrature points
+
+  INTEGER(INT8) :: cellOrder
+  !! Order of time element
+
+  INTEGER(INT8) :: faceOrder
+  !! order of face of time element
+
   CLASS(TimeOpt_), POINTER :: opt => NULL()
   !! option related to the time domain discretization
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
@@ -93,12 +129,13 @@ CONTAINS
   !! Get the base interpolation
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
-  PROCEDURE, PASS(obj) :: GetQuadraturePoints => obj_GetQuadraturePoints
-  !! Get quadrature points for isotropic order
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
-    obj_GetLocalElemShapeData
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
+  !! Get FE pointer
+
+  !SET:
+  !@SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFE => obj_SetFE
+  !! Set FE object
 END TYPE TimeFEDOF_
 
 !----------------------------------------------------------------------------
@@ -122,9 +159,10 @@ END TYPE TimeFEDOFPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, order, timeOpt, baseContinuity, baseInterpolation, fetype, ipType, &
-    basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
-    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    obj, order, timeOpt, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -155,12 +193,20 @@ INTERFACE
     !! lambda parameter for Ultraspherical parameter
     !! used when baseInterpolation is Lagrange
     !! used when basistype is Ultraspherical
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    !! Degree of freedom type, default is nodal
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Should we consider quadratureNips
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
@@ -347,73 +393,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetQuadraturePoints@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad, quadratureType, &
-                                            order, nips, alpha, beta, lambda)
-    CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
-    !! TimeFEDOF object
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! quadrature points
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Type of quadrature points
-    !! Read the docs of AbstractOneDimFE and OneDimQuadratureOpt
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Order of integrand
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical parameter
-  END SUBROUTINE obj_GetQuadraturePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetLocalElemShapeData@GetMethods
+!                                                     GetFEPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-13
-! summary:  Get local element shape data
+! date: 2025-11-20
+! summary:  Get FE pointer
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
-    CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    TYPE(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData
+  MODULE FUNCTION obj_GetFEPointer(obj) RESULT(ans)
+    CLASS(TimeFEDOF_), INTENT(IN) :: obj
+    CLASS(AbstractOneDimFE_), POINTER :: ans
+  END FUNCTION obj_GetFEPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                            SetFE@SetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-13
-! summary:  Get global element shape data
-
 INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+  MODULE SUBROUTINE obj_SetFE(obj)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    TYPE(ElemshapeData_), INTENT(INOUT) :: elemsd
-    !! global element shape data
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
-    TYPE(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData
+  END SUBROUTINE obj_SetFE
 END INTERFACE
 
 !----------------------------------------------------------------------------

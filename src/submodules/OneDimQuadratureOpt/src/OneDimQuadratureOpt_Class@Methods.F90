@@ -18,7 +18,6 @@
 SUBMODULE(OneDimQuadratureOpt_Class) Methods
 USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
-USE FPL_Method, ONLY: Set, GetValue
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
                                   QuadraturePoint_ToInteger
 USE InputUtility, ONLY: Input
@@ -94,73 +93,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                 SetOneDimQuadratureOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetOneDimQuadratureOptParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetOneDimQuadratureOptParam()"
-#endif
-
-INTEGER(I4B) :: aint, bint(1)
-REAL(DFP) :: areal
-LOGICAL(LGT) :: abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting quadratureType
-aint = Input(default=TypeOneDimQuadratureOpt%quadratureType, &
-             option=quadratureType)
-CALL Set(obj=param, prefix=prefix, key="quadratureType", &
-         datatype=aint, VALUE=aint)
-
-! setting order
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isOrder", &
-         datatype=abool, VALUE=abool)
-aint = Input(default=TypeOneDimQuadratureOpt%order, &
-             option=order)
-CALL Set(obj=param, prefix=prefix, key="order", &
-         datatype=aint, VALUE=aint)
-
-! setting nips
-abool = PRESENT(order)
-CALL Set(obj=param, prefix=prefix, key="isNips", &
-         datatype=abool, VALUE=abool)
-
-bint = Input(default=TypeOneDimQuadratureOpt%nips, &
-             option=nips)
-CALL Set(obj=param, prefix=prefix, key="nips", &
-         datatype=bint(1), VALUE=bint(1))
-
-! setting alpha
-areal = Input(default=TypeOneDimQuadratureOpt%alpha, &
-              option=alpha)
-CALL Set(obj=param, prefix=prefix, key="alpha", &
-         datatype=areal, VALUE=areal)
-
-! setting beta
-areal = Input(default=TypeOneDimQuadratureOpt%beta, &
-              option=beta)
-CALL Set(obj=param, prefix=prefix, key="beta", &
-         datatype=areal, VALUE=areal)
-
-! setting lambda
-areal = Input(default=TypeOneDimQuadratureOpt%lambda, &
-              option=lambda)
-CALL Set(obj=param, prefix=prefix, key="lambda", &
-         datatype=areal, VALUE=areal)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetOneDimQuadratureOptParam
-
-!----------------------------------------------------------------------------
 !                                                                    SetParam
 !----------------------------------------------------------------------------
 
@@ -169,27 +101,32 @@ MODULE PROCEDURE obj_SetParam
 CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 ! Set quadratureType if present
-IF (PRESENT(quadratureType)) THEN
+isok = PRESENT(quadratureType)
+IF (isok) THEN
   obj%quadratureType = quadratureType
-  obj%quadratureType_char = QuadraturePoint_ToChar(obj%quadratureType, &
-                                                   isUpper=.TRUE.)
+  obj%quadratureType_char = QuadraturePoint_ToChar( &
+                            obj%quadratureType, isUpper=.TRUE.)
 END IF
 
 ! Set order if present
-IF (PRESENT(order)) THEN
+isok = PRESENT(order)
+IF (isok) THEN
   obj%order = order
   obj%isOrder = .TRUE.
 END IF
 
 ! Set number of integration points if present
-IF (PRESENT(nips)) THEN
-  obj%nips = nips
+isok = PRESENT(nips)
+IF (isok) THEN
+  obj%nips(1) = nips
   obj%isNips = .TRUE.
 END IF
 
@@ -212,53 +149,9 @@ END PROCEDURE obj_SetParam
 !                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL GetValue(obj=param, prefix=prefix, key="quadratureType", &
-              VALUE=obj%quadratureType)
-
-CALL GetValue(obj=param, prefix=prefix, key="order", &
-              VALUE=obj%order)
-
-CALL GetValue(obj=param, prefix=prefix, key="nips", &
-              VALUE=obj%nips(1))
-
-CALL GetValue(obj=param, prefix=prefix, key="alpha", &
-              VALUE=obj%alpha)
-
-CALL GetValue(obj=param, prefix=prefix, key="beta", &
-              VALUE=obj%beta)
-
-CALL GetValue(obj=param, prefix=prefix, key="lambda", &
-              VALUE=obj%lambda)
-
-CALL GetValue(obj=param, prefix=prefix, key="isNips", &
-              VALUE=obj%isNips)
-
-CALL GetValue(obj=param, prefix=prefix, key="isOrder", &
-              VALUE=obj%isOrder)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                    Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
@@ -268,13 +161,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-CALL obj%SetParam(quadratureType=quadratureType, &
-                  order=order, nips=nips, alpha=alpha, &
-                  beta=beta, lambda=lambda)
+CALL obj%SetParam( &
+  quadratureType=quadratureType, order=order, nips=nips, alpha=alpha, &
+  beta=beta, lambda=lambda)
 
 ! Set the quadrature type character
-obj%quadratureType_char = QuadraturePoint_ToChar(obj%quadratureType, &
-                                                 isUpper=.TRUE.)
+obj%quadratureType_char = QuadraturePoint_ToChar( &
+                          obj%quadratureType, isUpper=.TRUE.)
 
 ! Set isOrder and isNips flags
 obj%isOrder = (PRESENT(order))
@@ -287,7 +180,7 @@ IF (PRESENT(isNips)) obj%isNips = isNips
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                   GetParam
@@ -305,7 +198,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (PRESENT(quadratureType)) quadratureType = obj%quadratureType
 IF (PRESENT(order)) order = obj%order
-IF (PRESENT(nips)) nips(1) = obj%nips(1)
+IF (PRESENT(nips)) nips = obj%nips(1)
 IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
@@ -322,7 +215,7 @@ END PROCEDURE obj_GetParam
 
 MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-INTEGER(I4B) :: origin, stat, order, nips(1), tsize, quadratureType
+INTEGER(I4B) :: origin, stat, order, nips, tsize, quadratureType
 LOGICAL(LGT) :: isFound, isOrder, isNips
 TYPE(String) :: quadratureType_char
 REAL(DFP) :: alpha, beta, lambda
@@ -333,7 +226,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading quadratureType...')
 #endif
 
@@ -345,26 +238,26 @@ CALL GetValue(table=table, key="quadratureType", &
 quadratureType = QuadraturePoint_ToInteger(quadratureType_char%chars())
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading order...')
 #endif
 
-CALL GetValue(table=table, key="order", &
-              VALUE=order, &
-              default_value=TypeOneDimQuadratureOpt%order, &
-              origin=origin, stat=stat, isFound=isOrder)
+CALL GetValue( &
+  table=table, key="order", VALUE=order, &
+  default_value=TypeOneDimQuadratureOpt%order, &
+  origin=origin, stat=stat, isFound=isOrder)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading nips...')
 #endif
 
-CALL GetValue_(table=table, key="nips", &
-               VALUE=nips, tsize=tsize, &
-               origin=origin, stat=stat, isFound=isNips)
+CALL GetValue(table=table, key="nips", VALUE=nips, &
+              default_value=TypeOneDimQuadratureOpt%nips(1), &
+              origin=origin, stat=stat, isFound=isNips)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading alpha...')
 #endif
 
@@ -374,7 +267,7 @@ CALL GetValue(table=table, key="alpha", &
               origin=origin, stat=stat, isFound=isFound)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading beta...')
 #endif
 
@@ -384,7 +277,7 @@ CALL GetValue(table=table, key="beta", &
               origin=origin, stat=stat, isFound=isFound)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading lambda...')
 #endif
 

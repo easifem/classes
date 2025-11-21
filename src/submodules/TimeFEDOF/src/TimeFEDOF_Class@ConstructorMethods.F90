@@ -18,22 +18,11 @@
 !
 
 SUBMODULE(TimeFEDOF_Class) ConstructorMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
-USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value, toml_serialize
-USE Display_Method, ONLY: ToString, Display
-USE ReallocateUtility, ONLY: Reallocate
-USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: Display, ToString
-USE IntVector_Method, ONLY: IntegerCopy => Copy
+USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFEPointer
+USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFEPointer
+USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFEPointer
+USE FEFactoryUtility, ONLY: OneDimFEFactory
 USE StringUtility, ONLY: UpperCase
-USE ReallocateUtility, ONLY: Reallocate
-USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
-USE BaseType, ONLY: TypeInterpolationOpt, TypePolynomialOpt
-USE LagrangeOneDimFE_Class, ONLY: LagrangeOneDimFEPointer
-USE HierarchicalOneDimFE_Class, ONLY: HierarchicalOneDimFEPointer
-USE OrthogonalOneDimFE_Class, ONLY: OrthogonalOneDimFEPointer
-USE OneDimFEFactoryUtility, ONLY: OneDimFEFactory
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -50,6 +39,7 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
@@ -58,21 +48,39 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
+
 obj%isInit = .TRUE.
+obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
+IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
+
+#ifdef DEBUG_VER
+IF (obj%isLagrange) THEN
+  isok = PRESENT(ipType)
+  CALL AssertError1(isok, myName, "ipType should be present")
+END IF
+#endif
+
+obj%baseContinuity = UpperCase(baseContinuity(1:2))
+
 obj%opt => timeOpt
 
-obj%fe => OneDimFEFactory( &
-          baseContinuity=baseContinuity, &
-          baseInterpolation=baseInterpolation, &
-          order=order, feType=feType, ipType=ipType, &
-          basisType=basisType, alpha=alpha, &
-          beta=beta, lambda=lambda, &
-          quadratureType=quadratureType, &
-          quadratureOrder=quadratureOrder, &
-          quadratureNips=quadratureNips, &
-          quadratureAlpha=quadratureAlpha, &
-          quadratureBeta=quadratureBeta, &
-          quadratureLambda=quadratureLambda)
+obj%fe => OneDimFEFactory(baseContinuity=obj%baseContinuity, &
+                          baseInterpolation=obj%baseInterpolation)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fe)
+CALL AssertError1(isok, myName, "obj%fe is not associated")
+#endif
+
+CALL obj%fe%Initiate( &
+  baseContinuity=obj%baseContinuity, order=order, &
+  baseInterpolation=obj%baseInterpolation, ipType=ipType, &
+  basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+  feType=feType, dofType=dofType, transformType=transformType, &
+  quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+  quadratureIsOrder=quadratureIsOrder, quadratureNips=quadratureNips, &
+  quadratureIsNips=quadratureIsNips, quadratureAlpha=quadratureAlpha, &
+  quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

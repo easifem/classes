@@ -232,7 +232,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Jacobi parameter for quadrature
@@ -306,7 +306,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Jacobi parameter for quadrature

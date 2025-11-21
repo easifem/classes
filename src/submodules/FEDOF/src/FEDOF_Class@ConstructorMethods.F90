@@ -30,7 +30,6 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalFaceDOF, &
                           ElemData_GetTotalCellDOF
 
-USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
 USE StringUtility, ONLY: UpperCase
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
 USE BaseType, ONLY: TypeInterpolationOpt, &
@@ -142,23 +141,15 @@ DO ii = 1, totalTopo
                               baseInterpolation=obj%baseInterpolation)
 
   CALL obj%fe(jj)%ptr%Initiate( &
-    elemType=elemType, nsd=nsd, &
-    baseContinuity=obj%baseContinuity, &
-    baseInterpolation=obj%baseInterpolation, &
-    ipType=ipType, basisType=basisType, &
-    alpha=alpha, beta=beta, lambda=lambda, &
-    feType=feType, &
-    dofType=dofType, &
-    transformType=transformType, &
+    elemType=elemType, nsd=nsd, baseContinuity=obj%baseContinuity, &
+    baseInterpolation=obj%baseInterpolation, ipType=ipType, &
+    basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+    feType=feType, dofType=dofType, transformType=transformType, &
     quadratureIsHomogeneous=quadratureIsHomogeneous, &
-    quadratureType=quadratureType, &
-    quadratureOrder=quadratureOrder, &
-    quadratureIsOrder=quadratureIsOrder, &
-    quadratureNips=quadratureNips, &
-    quadratureIsNips=quadratureIsNips, &
-    quadratureAlpha=quadratureAlpha, &
-    quadratureBeta=quadratureBeta, &
-    quadratureLambda=quadratureLambda)
+    quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+    quadratureIsOrder=quadratureIsOrder, quadratureNips=quadratureNips, &
+    quadratureIsNips=quadratureIsNips, quadratureAlpha=quadratureAlpha, &
+    quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 
 END DO
 

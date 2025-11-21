@@ -21,7 +21,6 @@ USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 
@@ -31,7 +30,6 @@ PRIVATE
 
 PUBLIC :: OneDimQuadratureOpt_
 PUBLIC :: TypeOneDimQuadratureOpt
-PUBLIC :: SetOneDimQuadratureOptParam
 
 CHARACTER(*), PARAMETER :: modName = "OneDimQuadratureOpt_Class"
 
@@ -85,14 +83,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters
 
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Intiate the object with parameterList
-
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Intiate by using parameters directly
-
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-  !! Generic method for initiating the object
 
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml table
@@ -147,24 +139,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                SetOneDimQuadratureOptParam
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE SetOneDimQuadratureOptParam(param, prefix, quadratureType, &
-                                             order, nips, alpha, beta, lambda)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN), OPTIONAL :: prefix
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: order
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips(1)
-    REAL(DFP), INTENT(IN), OPTIONAL :: alpha
-    REAL(DFP), INTENT(IN), OPTIONAL :: beta
-    REAL(DFP), INTENT(IN), OPTIONAL :: lambda
-  END SUBROUTINE SetOneDimQuadratureOptParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                                SetParam
 !----------------------------------------------------------------------------
 
@@ -173,12 +147,12 @@ END INTERFACE
 ! summary: Sets the parameters for 1D quadrature options
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, quadratureType, order, nips, &
-                                 alpha, beta, lambda)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, quadratureType, order, nips, alpha, beta, lambda)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
     INTEGER(I4B), INTENT(IN), OPTIONAL :: order
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips(1)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips
     REAL(DFP), INTENT(IN), OPTIONAL :: alpha
     REAL(DFP), INTENT(IN), OPTIONAL :: beta
     REAL(DFP), INTENT(IN), OPTIONAL :: lambda
@@ -189,35 +163,23 @@ END INTERFACE
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, prefix)
-    CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-01
-! summary:  Initiate by parameters
+! summary:  Initiate OneDimQuadratureOpt_
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, quadratureType, order, nips, alpha, &
-                                  beta, lambda, isOrder, isNips)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, quadratureType, order, nips, alpha, beta, lambda, isOrder, isNips)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
     INTEGER(I4B), INTENT(IN), OPTIONAL :: order
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips(1)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips
     REAL(DFP), INTENT(IN), OPTIONAL :: alpha
     REAL(DFP), INTENT(IN), OPTIONAL :: beta
     REAL(DFP), INTENT(IN), OPTIONAL :: lambda
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNips
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -229,11 +191,12 @@ END INTERFACE
 ! summary: Get the parameters of the 1D quadrature
 
 INTERFACE
-  module SUBROUTINE obj_GetParam(obj, quadratureType, order, nips, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, quadratureType, order, nips, alpha, beta, lambda)
     CLASS(OneDimQuadratureOpt_), INTENT(in) :: obj
     INTEGER(i4b), INTENT(out), OPTIONAL :: quadratureType
     INTEGER(i4b), INTENT(out), OPTIONAL :: order
-    INTEGER(i4b), INTENT(out), OPTIONAL :: nips(1)
+    INTEGER(i4b), INTENT(out), OPTIONAL :: nips
     REAL(DFP), INTENT(out), OPTIONAL :: alpha
     REAL(DFP), INTENT(out), OPTIONAL :: beta
     REAL(DFP), INTENT(out), OPTIONAL :: lambda

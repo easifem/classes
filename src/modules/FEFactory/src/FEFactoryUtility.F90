@@ -19,6 +19,7 @@
 MODULE FEFactoryUtility
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE tomlf, ONLY: toml_table
 USE ExceptionHandler_Class, ONLY: e
 
@@ -28,6 +29,7 @@ PRIVATE
 CHARACTER(*), PARAMETER :: modName = "FEFactoryUtility"
 
 PUBLIC :: FEFactory
+PUBLIC :: OneDimFEFactory
 
 !----------------------------------------------------------------------------
 !                                                                 FEFactory
@@ -62,5 +64,38 @@ INTERFACE FEFactory
     CLASS(AbstractFE_), POINTER :: ans
   END FUNCTION FEFactory2
 END INTERFACE FEFactory
+
+!----------------------------------------------------------------------------
+!                                                            OneDimFEFactory
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Internal routine for creating pointer form baseContinuity
+! and baseInterpolation
+
+INTERFACE
+  MODULE FUNCTION OneDimFEFactory1(baseContinuity, baseInterpolation) &
+    RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CLASS(AbstractOneDimFE_), POINTER :: ans
+  END FUNCTION OneDimFEFactory1
+END INTERFACE
+
+INTERFACE OneDimFEFactory
+  MODULE PROCEDURE OneDimFEFactory1
+END INTERFACE OneDimFEFactory
+
+!----------------------------------------------------------------------------
+!                                                            OneDimFEFactory
+!----------------------------------------------------------------------------
+
+INTERFACE OneDimFEFactory
+  MODULE FUNCTION OneDimFEFactory2(table) RESULT(ans)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(AbstractOneDimFE_), POINTER :: ans
+  END FUNCTION OneDimFEFactory2
+END INTERFACE OneDimFEFactory
 
 END MODULE FEFactoryUtility

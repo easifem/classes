@@ -456,7 +456,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
-! summary: Initiate an instance of fe dof
+! summary: Initiate an instance of FEDOF
+!
+!# Introduction
+!
+! This method uses order vector, it means you can specify the
+! order for each cell element
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &

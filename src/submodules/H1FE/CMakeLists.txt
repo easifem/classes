@@ -20,9 +20,9 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 # OneDim
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/OneDim/LagrangeOneDimFE_Class@Methods.F90
-          ${src_path}/OneDim/HierarchicalOneDimFE_Class@Methods.F90
-          ${src_path}/OneDim/OrthogonalOneDimFE_Class@Methods.F90)
+  PRIVATE ${src_path}/OneDim/OneDimLagrangeFE_Class@Methods.F90
+          ${src_path}/OneDim/OneDimHierarchicalFE_Class@Methods.F90
+          ${src_path}/OneDim/OneDimOrthogonalFE_Class@Methods.F90)
 
 # Line
 target_sources(

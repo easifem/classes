@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE OrthogonalOneDimFE_Class
+MODULE OneDimOrthogonalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: QuadraturePoint_, &
@@ -26,64 +26,64 @@ IMPLICIT NONE
 
 PRIVATE
 
-PUBLIC :: OrthogonalOneDimFE_
-PUBLIC :: OrthogonalOneDimFEPointer_
+PUBLIC :: OneDimOrthogonalFE_
+PUBLIC :: OneDimOrthogonalFEPointer_
 PUBLIC :: FiniteElementDeallocate
-PUBLIC :: OrthogonalOneDimFEPointer
+PUBLIC :: OneDimOrthogonalFEPointer
 
-CHARACTER(*), PARAMETER :: modName = "OrthogonalOneDimFE_Class"
+CHARACTER(*), PARAMETER :: modName = "OneDimOrthogonalFE_Class"
 
 !----------------------------------------------------------------------------
-!                                                      OrthogonalOneDimFE_
+!                                                      OneDimOrthogonalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-11
 ! summary: Finite element class
 
-TYPE, EXTENDS(AbstractOneDimFE_) :: OrthogonalOneDimFE_
-END TYPE OrthogonalOneDimFE_
+TYPE, EXTENDS(AbstractOneDimFE_) :: OneDimOrthogonalFE_
+END TYPE OneDimOrthogonalFE_
 
 !----------------------------------------------------------------------------
-!                                               OrthogonalOneDimFEPointer_
+!                                               OneDimOrthogonalFEPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: OrthogonalOneDimFEPointer_
-  CLASS(OrthogonalOneDimFE_), POINTER :: ptr => NULL()
-END TYPE OrthogonalOneDimFEPointer_
+TYPE :: OneDimOrthogonalFEPointer_
+  CLASS(OneDimOrthogonalFE_), POINTER :: ptr => NULL()
+END TYPE OneDimOrthogonalFEPointer_
 
 !----------------------------------------------------------------------------
-!                                               OrthogonalOneDimFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Constructor method
-
-INTERFACE OrthogonalOneDimFEPointer
-  MODULE FUNCTION obj_OrthogonalOneDimFEPointer1() RESULT(ans)
-    TYPE(OrthogonalOneDimFE_), POINTER :: ans
-  END FUNCTION obj_OrthogonalOneDimFEPointer1
-END INTERFACE OrthogonalOneDimFEPointer
-
-!----------------------------------------------------------------------------
-!                                               OrthogonalOneDimFE@Methods
+!                                               OneDimOrthogonalFE@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE OrthogonalOneDimFEPointer
-  MODULE FUNCTION obj_OrthogonalOneDimFEPointer2(baseContinuity, order) &
+INTERFACE OneDimOrthogonalFEPointer
+  MODULE FUNCTION obj_OneDimOrthogonalFEPointer1() RESULT(ans)
+    TYPE(OneDimOrthogonalFE_), POINTER :: ans
+  END FUNCTION obj_OneDimOrthogonalFEPointer1
+END INTERFACE OneDimOrthogonalFEPointer
+
+!----------------------------------------------------------------------------
+!                                               OneDimOrthogonalFE@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary: Constructor method
+
+INTERFACE OneDimOrthogonalFEPointer
+  MODULE FUNCTION obj_OneDimOrthogonalFEPointer2(baseContinuity, order) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: order
     !! Number of spatial dimension
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! base continuity of the element
-    TYPE(OrthogonalOneDimFE_), POINTER :: ans
-  END FUNCTION obj_OrthogonalOneDimFEPointer2
-END INTERFACE OrthogonalOneDimFEPointer
+    TYPE(OneDimOrthogonalFE_), POINTER :: ans
+  END FUNCTION obj_OneDimOrthogonalFEPointer2
+END INTERFACE OneDimOrthogonalFEPointer
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
@@ -91,11 +91,11 @@ END INTERFACE OrthogonalOneDimFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of OrthogonalOneDimFE
+! summary:  Deallocate a vector of OneDimOrthogonalFE
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(OrthogonalOneDimFE_), ALLOCATABLE :: obj(:)
+    TYPE(OneDimOrthogonalFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -105,11 +105,11 @@ END INTERFACE FiniteElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of OrthogonalOneDimFEPointer_
+! summary:  Deallocate the vector of OneDimOrthogonalFEPointer_
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(OrthogonalOneDimFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(OneDimOrthogonalFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -117,4 +117,4 @@ END INTERFACE FiniteElementDeallocate
 !
 !----------------------------------------------------------------------------
 
-END MODULE OrthogonalOneDimFE_Class
+END MODULE OneDimOrthogonalFE_Class

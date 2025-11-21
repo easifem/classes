@@ -33,7 +33,6 @@ USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
 USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
                                   QuadraturePointDisplay => Display, &
                                   QuadraturePointInitiate => Initiate
-USE OneDimQuadratureOpt_Class, ONLY: SetOneDimQuadratureOptParam
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_serialize
@@ -47,216 +46,10 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    SetOneDimBasisOptParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetOneDimBasisOptParam
-CHARACTER(*), PARAMETER :: myName = "SetFEParam_BasisType_Line()"
-INTEGER(I4B), PARAMETER :: default_feType = TypeFEVariableOpt%scalar
-INTEGER(I4B), PARAMETER :: default_ipType = ipopt%equidistance
-CHARACTER(:), ALLOCATABLE :: baseContinuity0, baseInterpolation0
-INTEGER(I4B) :: aint
-REAL(DFP) :: areal
-TYPE(String) :: refelemDomainName
-LOGICAL(LGT) :: isok, abool
-TYPE(ParameterList_), POINTER :: sublist
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! setting order
-CALL Set(obj=param, prefix=prefix, key="order", &
-         datatype=order, VALUE=order)
-
-! setting baseContinuity
-baseContinuity0 = UpperCase(baseContinuity)
-CALL Set(obj=param, prefix=prefix, key="baseContinuity", &
-         datatype=baseContinuity0, VALUE=baseContinuity0)
-
-! setting baseInterpolation
-baseInterpolation0 = UpperCase(baseInterpolation)
-CALL Set(obj=param, prefix=prefix, key="baseInterpolation", &
-         datatype=baseContinuity0, VALUE=baseInterpolation0)
-
-! setting feType, default fetypee is scalar
-aint = Input(default=default_feType, option=feType)
-CALL Set(obj=param, prefix=prefix, key="feType", &
-         datatype=aint, VALUE=aint)
-
-!  ipType should be present when baseInterpolation is Lagrange
-abool = baseInterpolation0(1:4) .EQ. "LAGR"
-IF (abool) THEN
-  isok = PRESENT(ipType)
-  CALL AssertError1(isok, myName, &
-                  'In case of LAGRANGE polynomials ipType should be present.')
-END IF
-aint = Input(default=default_ipType, option=ipType)
-CALL Set(obj=param, prefix=prefix, key="ipType", datatype=aint, &
-         VALUE=aint)
-
-! setting refElemDomain
-refelemDomainName = RefElemDomain_Line(baseInterpol=baseInterpolation0, &
-                                       baseContinuity=baseContinuity0)
-CALL Set(obj=param, prefix=prefix, key="refElemDomain", &
-         datatype=refelemDomainName, VALUE=refelemDomainName)
-
-! setting basisType
-isok = PRESENT(basisType)
-
-IF (isok) THEN
-  aint = basisType
-ELSE
-  SELECT CASE (baseInterpolation0(1:4))
-  CASE ("LAGR")
-    aint = polyopt%monomial
-  CASE ("ORTH")
-    aint = polyopt%legendre
-  CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[INTERNAL ERROR] :: No case found for baseInterpolation0(1:4)='// &
-                      baseInterpolation0(1:4))
-  END SELECT
-END IF
-CALL Set(obj=param, prefix=prefix, key="basisType", datatype=aint, &
-         VALUE=aint)
-
-! default value of alpha is 0.0
-areal = 0.0_DFP; IF (PRESENT(alpha)) areal = alpha
-CALL Set(obj=param, prefix=prefix, key="alpha", datatype=areal, &
-         VALUE=areal)
-
-! default value of beta is 0.0
-areal = 0.0_DFP; IF (PRESENT(beta)) areal = beta
-CALL Set(obj=param, prefix=prefix, key="beta", datatype=areal, &
-         VALUE=areal)
-
-! default value of lambda is 0.5
-areal = 0.5_DFP; IF (PRESENT(lambda)) areal = lambda
-CALL Set(obj=param, prefix=prefix, key="lambda", datatype=areal, &
-         VALUE=areal)
-
-baseContinuity0 = ""
-baseInterpolation0 = ""
-refelemDomainName = ""
-
-! We need to make a sublist for quadOpt
-! otherwise the keys will collide, quadOptPrefix is a macro
-! defined at the top of this file
-sublist => NULL()
-sublist => param%NewSubList(key=quadOptPrefix)
-
-isok = ASSOCIATED(sublist)
-CALL AssertError1(isok, myName, &
-                  'cannot get sublist by using prefix='//quadOptPrefix)
-
-CALL SetOneDimQuadratureOptParam(param=sublist, &
-                                 prefix=prefix, &
-                                 quadratureType=quadratureType, &
-                                 order=quadratureOrder, &
-                                 nips=quadratureNips, &
-                                 alpha=quadratureAlpha, &
-                                 beta=quadratureBeta, &
-                                 lambda=quadratureLambda)
-
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetOneDimBasisOptParam
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-! internal variables
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "OneDimBasisOpt_Initiate()"
-#endif
-
-TYPE(String) :: astr
-TYPE(ParameterList_), POINTER :: sublist
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ierr
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-
-CALL obj%CheckEssentialParam(param=param, prefix=prefix)
-
-CALL GetValue(obj=param, prefix=prefix, key="order", &
-              VALUE=obj%order)
-obj%tdof = obj%order + 1
-
-CALL GetValue(obj=param, prefix=prefix, key="feType", &
-              VALUE=obj%feType)
-
-CALL GetValue(obj=param, prefix=prefix, key="ipType", &
-              VALUE=obj%ipType)
-
-CALL GetValue(obj=param, prefix=prefix, key="basisType", &
-              VALUE=obj%basisType)
-
-obj%basisType_char = BaseType_ToChar(obj%basisType, isUpper=.TRUE.)
-obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isUpper=.TRUE.)
-
-CALL GetValue(obj=param, prefix=prefix, key="alpha", &
-              VALUE=obj%alpha)
-
-CALL GetValue(obj=param, prefix=prefix, key="beta", &
-              VALUE=obj%beta)
-
-CALL GetValue(obj=param, prefix=prefix, key="lambda", &
-              VALUE=obj%lambda)
-
-CALL GetValue(obj=param, prefix=prefix, key="refElemDomain", &
-              VALUE=astr)
-obj%refelemDomain = astr%slice(1, 1)
-
-CALL GetValue(obj=param, prefix=prefix, key="baseContinuity", &
-              VALUE=astr)
-obj%baseContinuity = astr%slice(1, 2)
-
-CALL GetValue(obj=param, prefix=prefix, key="baseInterpolation", &
-              VALUE=astr)
-obj%baseInterpolation = astr%slice(1, 4)
-
-obj%refelemCoord(1:1, 1:2) = RefCoord_Line(obj%refelemDomain)
-
-! now we will initiate quadOpt
-! it is kept in a sublist, see the SetOneDimQuadratureOptParam
-! method
-
-sublist => NULL()
-ierr = param%GetSubList(key=quadOptPrefix, sublist=sublist)
-
-isok = ASSOCIATED(sublist)
-CALL AssertError1(isok, myName, &
-                  "cannot get sublist by using prefix="//quadOptPrefix)
-CALL obj%quadOpt%Initiate(param=sublist, prefix=prefix)
-
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 ! Internal variables
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myname = "obj_Initiate2()"
@@ -300,30 +93,7 @@ obj%refelemCoord(1:1, 1:2) = RefCoord_Line(obj%refelemDomain)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL CheckEssentialParam(obj=param, keys=essentialParams, &
-                         prefix=prefix, myName=myName, modName=modName)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -460,12 +230,10 @@ IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
 IF (PRESENT(firstCall)) obj%firstCall = firstCall
 
-CALL obj%quadOpt%SetParam(quadratureType=quadratureType, &
-                          order=quadratureOrder, &
-                          nips=quadratureNips, &
-                          alpha=quadratureAlpha, &
-                          beta=quadratureBeta, &
-                          lambda=quadratureLambda)
+CALL obj%quadOpt%SetParam( &
+  quadratureType=quadratureType, order=quadratureOrder, &
+  nips=quadratureNips, alpha=quadratureAlpha, beta=quadratureBeta, &
+  lambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -526,12 +294,10 @@ IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
 IF (PRESENT(firstCall)) firstCall = obj%firstCall
 
-CALL obj%quadOpt%GetParam(quadratureType=quadratureType, &
-                          order=quadratureOrder, &
-                          nips=quadratureNips, &
-                          alpha=quadratureAlpha, &
-                          beta=quadratureBeta, &
-                          lambda=quadratureLambda)
+CALL obj%quadOpt%GetParam( &
+  quadratureType=quadratureType, order=quadratureOrder, &
+  nips=quadratureNips, alpha=quadratureAlpha, &
+  beta=quadratureBeta, lambda=quadratureLambda)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

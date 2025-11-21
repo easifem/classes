@@ -17,7 +17,6 @@
 SUBMODULE(AbstractOneDimFE_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE RefElementFactory, ONLY: RefElement_Pointer
-USE OneDimBasisOpt_Class, ONLY: SetOneDimBasisOptParam
 
 IMPLICIT NONE
 
@@ -37,16 +36,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%Initiate(baseContinuity=baseContinuity, &
-                      baseInterpolation=baseInterpolation, &
-                      ipType=ipType, basisType=basisType, alpha=alpha, &
-                      beta=beta, lambda=lambda, order=order, fetype=fetype, &
-                      quadratureType=quadratureType, &
-                      quadratureOrder=quadratureOrder, &
-                      quadratureNips=quadratureNips, &
-                      quadratureAlpha=quadratureAlpha, &
-                      quadratureBeta=quadratureBeta, &
-                      quadratureLambda=quadratureLambda)
+CALL obj%opt%Initiate( &
+  baseContinuity=baseContinuity, baseInterpolation=baseInterpolation, &
+  feType=feType, ipType=ipType, basisType=basisType, alpha=alpha, &
+  beta=beta, lambda=lambda, dofType=dofType, transformType=transformType, &
+  order=order, quadratureType=quadratureType, &
+  quadratureOrder=quadratureOrder, quadratureIsOrder=quadratureIsOrder, &
+  quadratureNips=quadratureNips, quadratureIsNips=quadratureIsNips, &
+  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
+  quadratureLambda=quadratureLambda)
 
 obj%isInitiated = .TRUE.
 

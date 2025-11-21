@@ -20,7 +20,6 @@ USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     polyopt => TypePolynomialOpt, &
                     QuadraturePoint_
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -30,13 +29,9 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
-CHARACTER(*), PARAMETER :: essentialParams = &
-     "/order/fetype/ipType/refElemDomain/baseContinuity/baseInterpolation"// &
-                           "/basisType/alpha/beta/lambda"
-
 PUBLIC :: OneDimBasisOpt_, TypeOneDimBasisOpt
-PUBLIC :: SetOneDimBasisOptParam
+
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
 
 !----------------------------------------------------------------------------
 !                                                             BasisOpt_Class
@@ -118,18 +113,8 @@ TYPE :: OneDimBasisOpt_
 
 CONTAINS
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate OneDimBasisOpt object from parameters
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate by arguments
-
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! This method checks the essential parameters in the parameter list
-  !! It is called while initiating the object from the parameter list
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
@@ -185,78 +170,6 @@ END TYPE OneDimBasisOpt_
 TYPE(OneDimBasisOpt_), PARAMETER :: TypeOneDimBasisOpt = OneDimBasisOpt_()
 
 !----------------------------------------------------------------------------
-!                                              SetOneDimBasisOptParam@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-16
-! summary:  Set the basis type in parameter list
-
-INTERFACE
-  MODULE SUBROUTINE SetOneDimBasisOptParam(param, prefix, order, &
-                                           baseContinuity, &
-                                           baseInterpolation, &
-                                           ipType, basisType, alpha, beta, &
-                                           lambda, feType, quadratureType, &
-                                           quadratureOrder, quadratureNips, &
-                                           quadratureAlpha, quadratureBeta, &
-                                           quadratureLambda)
-
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix used for setting values in parameter list
-    INTEGER(I4B), INTENT(IN) :: order
-    !! order of the basis functionsa
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! continuity of basis functions
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! interpolation of basis functions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! Interpolation type in case baseInterpolation is Lagrange
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType
-    !! basis type in case baseInterpolation is Lagrange
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Jacobi polynomial parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta
-    !! Jacobi polynomial parametera
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    !! Ultraspherical polynomial parameter
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-    !! Quadrature type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
-    !! Quadrature order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
-    !! Number of integration points
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
-    !! Quadrature alpha parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
-    !! Quadrature beta parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
-    !! Quadrature lambda parameter
-  END SUBROUTINE SetOneDimBasisOptParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-16
-! summary: Initiate OneDimBasisOpt object from parameters
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, prefix)
-    CLASS(OneDimBasisOpt_), INTENT(inout) :: obj
-    TYPE(ParameterList_), INTENT(in) :: param
-    CHARACTER(*), INTENT(in) :: prefix
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
@@ -265,12 +178,11 @@ END INTERFACE
 ! summary:  Initiate OneDimBasisOpt by arguments
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, baseContinuity, baseInterpolation, &
-                                  ipType, basisType, alpha, beta, lambda, &
-                                  order, fetype, quadratureType, &
-                                  quadratureOrder, quadratureNips, &
-                                  quadratureAlpha, quadratureBeta, &
-                                  quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, order, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -289,6 +201,9 @@ INTERFACE
     !! HierarchyInterpolation, HierarchyPolynomial
     !! OrthogonalInterpolation, OrthogonalPolynomial
     !! HermitInterpolation, HermitPolynomial
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    !! Finite element type
+    !! Default is Scalar, For HDiv and Hcurl it should be Vector
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
     !! baseInterpol is LagrangePolynomial
@@ -302,41 +217,29 @@ INTERFACE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameters
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    !! degree of freedom type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
-  !! Quadrature type
+    !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
-    !! Quadrature orders
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    !! Accuracy of quadrature rule
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! If true, then quadratureOrder is used to set the number of
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! If true, then quadratureNips is used to set the number of
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
-    !! Quadrature alpha parameter
+    !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
-    !! Quadrature beta parameter
+    !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
-    !! Quadrature lambda parameter
-  END SUBROUTINE obj_Initiate2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
-    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE obj_CheckEssentialParam
+    !! Ultraspherical parameter for quadrature
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -385,13 +288,11 @@ END INTERFACE
 ! summary:  Set the parameters in the OneDimBasisOpt object
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, order, fetype, ipType, basisType, &
-                                 alpha, beta, lambda, refElemDomain, &
-                                 baseContinuity, baseInterpolation, &
-                                 firstCall, quadratureType, &
-                                 quadratureOrder, quadratureNips, &
-                                 quadratureAlpha, quadratureBeta, &
-                                 quadratureLambda)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
+    refElemDomain, baseContinuity, baseInterpolation, firstCall, &
+    quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
@@ -419,7 +320,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Quadrature order
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Quadrature alpha parameter
@@ -450,13 +351,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, order, tdof, fetype, ipType, &
-                                 basisType, alpha, beta, lambda, &
-                                 refElemDomain, baseContinuity, &
-                                 baseInterpolation, firstCall, &
-                                 quadratureType, quadratureOrder, &
-                                 quadratureNips, quadratureAlpha, &
-                                 quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, order, tdof, fetype, ipType, basisType, alpha, beta, lambda, &
+    refElemDomain, baseContinuity, baseInterpolation, firstCall, &
+    quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
     !! Abstract one dimenstional finite element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
@@ -487,7 +386,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureOrder
     !! Quadrature order
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureAlpha
     !! Quadrature alpha parameter

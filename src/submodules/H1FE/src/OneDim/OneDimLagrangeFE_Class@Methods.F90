@@ -17,34 +17,49 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(HierarchicalOneDimFE_Class) Methods
+SUBMODULE(OneDimLagrangeFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                HierarchicalOneDimFEPointer
+!                                                    OneDimLagrangeFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_HierarchicalOneDimFEPointer1
+MODULE PROCEDURE obj_OneDimLagrangeFEPointer1
 ALLOCATE (ans)
-END PROCEDURE obj_HierarchicalOneDimFEPointer1
+END PROCEDURE obj_OneDimLagrangeFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                HierarchicalOneDimFEPointer
+!                                                    OneDimLagrangeFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_HierarchicalOneDimFEPointer2
+MODULE PROCEDURE obj_OneDimLagrangeFEPointer2
 ALLOCATE (ans)
 CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
                   baseContinuity=baseContinuity, &
-                  baseInterpolation="Hierarchical", &
-                  order=order)
-END PROCEDURE obj_HierarchicalOneDimFEPointer2
+                  baseInterpolation="LAGRANGE", &
+                  ipType=ipType, &
+                  basisType=basisType, &
+                  alpha=alpha, beta=beta, lambda=lambda, order=order)
+END PROCEDURE obj_OneDimLagrangeFEPointer2
 
 !----------------------------------------------------------------------------
-!                                                   FiniteElementDeallocate
+!                                                           OneDimLagrangeFE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_OneDimLagrangeFE
+CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
+                  baseContinuity=baseContinuity, &
+                  baseInterpolation="LAGRANGE", &
+                  ipType=ipType, &
+                  basisType=basisType, &
+                  alpha=alpha, beta=beta, lambda=lambda, order=order)
+END PROCEDURE obj_OneDimLagrangeFE
+
+!----------------------------------------------------------------------------
+!                                                    FiniteElementDeallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector

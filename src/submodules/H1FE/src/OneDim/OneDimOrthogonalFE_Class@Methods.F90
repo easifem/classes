@@ -17,27 +17,27 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(OrthogonalOneDimFE_Class) Methods
+SUBMODULE(OneDimOrthogonalFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                OrthogonalOneDimFEPointer
+!                                                OneDimOrthogonalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_OrthogonalOneDimFEPointer1
+MODULE PROCEDURE obj_OneDimOrthogonalFEPointer1
 ALLOCATE (ans)
-END PROCEDURE obj_OrthogonalOneDimFEPointer1
+END PROCEDURE obj_OneDimOrthogonalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                OrthogonalOneDimFEPointer
+!                                                OneDimOrthogonalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_OrthogonalOneDimFEPointer2
+MODULE PROCEDURE obj_OneDimOrthogonalFEPointer2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "OrthogonalOneDimFEPointer2()"
+CHARACTER(*), PARAMETER :: myName = "OneDimOrthogonalFEPointer2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -55,7 +55,7 @@ CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_OrthogonalOneDimFEPointer2
+END PROCEDURE obj_OneDimOrthogonalFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                   FiniteElementDeallocate

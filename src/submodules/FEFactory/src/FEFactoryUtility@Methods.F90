@@ -21,6 +21,7 @@ USE Display_Method, ONLY: ToString
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: UpperCase
 USE BasisOpt_Class, ONLY: TypeBasisOpt
+USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
 USE TomlUtility, ONLY: GetValue
 USE BaseType, ONLY: TypeElemNameOpt
 
@@ -38,6 +39,10 @@ USE PrismH1LagrangeFE_Class, ONLY: PrismH1LagrangeFE_
 USE PrismH1HierarchicalFE_Class, ONLY: PrismH1HierarchicalFE_
 USE PyramidH1LagrangeFE_Class, ONLY: PyramidH1LagrangeFE_
 USE PyramidH1HierarchicalFE_Class, ONLY: PyramidH1HierarchicalFE_
+
+USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFE_
+USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFE_
+USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFE_
 
 IMPLICIT NONE
 
@@ -467,6 +472,99 @@ FUNCTION FEFactoryPyramid(baseContinuity, baseInterpolation) RESULT(ans)
                           '[END] ')
 #endif
 END FUNCTION FEFactoryPyramid
+
+!----------------------------------------------------------------------------
+!                                                              FEFactoryLine
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE OneDimFEFactory1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "FEFactoryLine()"
+#endif
+
+CHARACTER(4) :: acase
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+acase = UpperCase(baseInterpolation(1:4))
+
+SELECT CASE (acase)
+CASE ("LAGR")
+  ALLOCATE (OneDimLagrangeFE_ :: ans)
+
+CASE ("HIER", "HEIR")
+  ALLOCATE (OneDimHierarchicalFE_ :: ans)
+
+CASE ("ORTH")
+  ALLOCATE (OneDimOrthogonalFE_ :: ans)
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, &
+                    "No case found for acase="//acase)
+#endif
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE OneDimFEFactory1
+
+!----------------------------------------------------------------------------
+!                                                            OneDimFEFactory
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE OneDimFEFactory2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "OneDimFEFactory2()"
+#endif
+
+TYPE(String) :: baseInterpolation, baseContinuity
+CHARACTER(4) :: baseInterpolation0, baseContinuity0
+LOGICAL(LGT) :: isFound
+INTEGER(I4B) :: stat, origin
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading baseInterpolation...')
+#endif
+
+!Read baseInterpolation and baseContinuity from table
+baseInterpolation0 = TypeOneDimBasisOpt%GetBaseInterpolation()
+baseContinuity0 = TypeOneDimBasisOpt%GetBaseContinuity()
+
+CALL GetValue( &
+  table=table, key="baseInterpolation", VALUE=baseInterpolation, &
+  default_value=baseInterpolation0, origin=origin, stat=stat, &
+  isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading baseContinuity...')
+#endif
+
+CALL GetValue( &
+  table=table, key="baseContinuity", VALUE=baseContinuity, &
+  default_value=baseContinuity0, origin=origin, stat=stat, isFound=isFound)
+
+ans => OneDimFEFactory1(baseContinuity=baseContinuity%chars(), &
+                        baseInterpolation=baseInterpolation%chars())
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE OneDimFEFactory2
 
 !----------------------------------------------------------------------------
 !                                                              Include error

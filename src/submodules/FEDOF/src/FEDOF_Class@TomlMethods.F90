@@ -18,11 +18,10 @@
 !
 
 SUBMODULE(FEDOF_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
+! USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
 USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
+USE tomlf, ONLY: toml_get => get_value !, toml_serialize
 USE String_Class, ONLY: String
 USE FEFactoryUtility, ONLY: FEFactory
 USE ReferenceElement_Method, ONLY: GetElementIndex
@@ -162,15 +161,14 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
                           '[START] ')
 #endif
 
-  CALL GetValue(table=table, key="scaleForQuadOrder", &
-                VALUE=scaleForQuadOrder, &
-                default_value=default_value, &
-                origin=origin, stat=stat, isFound=isFound)
+  CALL GetValue( &
+    table=table, key="scaleForQuadOrder", VALUE=scaleForQuadOrder, &
+    default_value=default_value, origin=origin, stat=stat, isFound=isFound)
 
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'scaleForQuadOrder not found, using default value ')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'scaleForQuadOrder not found, using default value ')
   END IF
 #endif
 
@@ -189,12 +187,12 @@ END SUBROUTINE ImportScaleForQuadOrderFromToml
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
 #endif
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -216,12 +214,12 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%ImportFromToml(table=node, dom=dom)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
+! #ifdef DEBUG_VER
+! IF (PRESENT(printToml)) THEN
+!   CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+!                unitNo=stdout)
+! END IF
+! #endif
 
 node => NULL()
 
@@ -229,7 +227,6 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------

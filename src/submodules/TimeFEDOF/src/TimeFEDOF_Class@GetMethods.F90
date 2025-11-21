@@ -127,13 +127,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetCellOrder
 
 !----------------------------------------------------------------------------
-!
+!                                                              GetFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetQuadraturePoints
+MODULE PROCEDURE obj_GetFEPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetQuadraturePoints1()'
-LOGICAL(LGT) :: isok
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEPointer()"
 #endif
 
 #ifdef DEBUG_VER
@@ -141,77 +140,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%fe)
-CALL AssertError1(isok, myName, 'obj%fe is not associated')
-#endif
-
-CALL obj%fe%GetQuadraturePoints(quad=quad, order=order, nips=nips, &
-         quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+ans => obj%fe
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_GetQuadraturePoints
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetLocalElemShapeData()'
-LOGICAL(LGT) :: isok
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%fe)
-CALL AssertError1(isok, myName, 'obj%fe is not associated')
-#endif
-
-CALL obj%fe%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_GetGlobalElemShapeData()'
-LOGICAL(LGT) :: isok
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%fe)
-CALL AssertError1(isok, myname, 'obj%fe is not associated')
-#endif
-
-CALL obj%fe%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                   geoElemsd=geoElemsd)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetGlobalElemShapeData
+END PROCEDURE obj_GetFEPointer
 
 !----------------------------------------------------------------------------
 !

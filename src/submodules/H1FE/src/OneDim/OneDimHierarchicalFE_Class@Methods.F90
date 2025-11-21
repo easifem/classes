@@ -17,49 +17,34 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(LagrangeOneDimFE_Class) Methods
+SUBMODULE(OneDimHierarchicalFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    LagrangeOneDimFEPointer
+!                                                OneDimHierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LagrangeOneDimFEPointer1
+MODULE PROCEDURE obj_OneDimHierarchicalFEPointer1
 ALLOCATE (ans)
-END PROCEDURE obj_LagrangeOneDimFEPointer1
+END PROCEDURE obj_OneDimHierarchicalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                    LagrangeOneDimFEPointer
+!                                                OneDimHierarchicalFEPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_LagrangeOneDimFEPointer2
+MODULE PROCEDURE obj_OneDimHierarchicalFEPointer2
 ALLOCATE (ans)
 CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
                   baseContinuity=baseContinuity, &
-                  baseInterpolation="LAGRANGE", &
-                  ipType=ipType, &
-                  basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, order=order)
-END PROCEDURE obj_LagrangeOneDimFEPointer2
+                  baseInterpolation="Hierarchical", &
+                  order=order)
+END PROCEDURE obj_OneDimHierarchicalFEPointer2
 
 !----------------------------------------------------------------------------
-!                                                           LagrangeOneDimFE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_LagrangeOneDimFE
-CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
-                  baseContinuity=baseContinuity, &
-                  baseInterpolation="LAGRANGE", &
-                  ipType=ipType, &
-                  basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, order=order)
-END PROCEDURE obj_LagrangeOneDimFE
-
-!----------------------------------------------------------------------------
-!                                                    FiniteElementDeallocate
+!                                                   FiniteElementDeallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
@@ -71,7 +56,6 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-
 END PROCEDURE Deallocate_Vector
 
 !----------------------------------------------------------------------------

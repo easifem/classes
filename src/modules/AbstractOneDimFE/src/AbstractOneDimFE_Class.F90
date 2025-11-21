@@ -139,11 +139,12 @@ END TYPE AbstractOneDimFEPointer_
 ! date: 27 Aug 2022
 ! summary: Initiates an instance of the finite element
 
-INTERFACE AbstractOneDimFEInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, baseContinuity, baseInterpolation, ipType, basisType, alpha, beta, &
-    lambda, order, fetype, quadratureType, quadratureOrder, quadratureNips, &
-    quadratureAlpha, quadratureBeta, quadratureLambda)
+    obj, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, order, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     !! Finite element object
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -162,6 +163,9 @@ INTERFACE AbstractOneDimFEInitiate
     !! HierarchyInterpolation, HierarchyPolynomial
     !! OrthogonalInterpolation, OrthogonalPolynomial
     !! HermitInterpolation, HermitPolynomial
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    !! Finite element type
+    !! Default is Scalar, For HDiv and Hcurl it should be Vector
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
     !! baseInterpol is LagrangePolynomial
@@ -175,18 +179,22 @@ INTERFACE AbstractOneDimFEInitiate
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
     !! Ultraspherical parameters
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
+    !! degree of freedom type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! If true, then quadratureOrder is used to set the number of
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! If true, then quadratureNips is used to set the number of
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta
@@ -194,6 +202,10 @@ INTERFACE AbstractOneDimFEInitiate
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
   END SUBROUTINE obj_Initiate
+END INTERFACE
+
+INTERFACE AbstractOneDimFEInitiate
+  MODULE PROCEDURE obj_Initiate
 END INTERFACE AbstractOneDimFEInitiate
 
 !----------------------------------------------------------------------------
@@ -332,7 +344,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha
     !! Jacobi parameter for quadrature
@@ -404,7 +416,7 @@ INTERFACE
     !! Quadrature type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureOrder
     !! Accuracy of quadrature rule
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips(1)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureNips
     !! Number of integration points
     REAL(DFP), OPTIONAL, INTENT(OUT) :: quadratureAlpha
     !! Jacobi parameter for quadrature
