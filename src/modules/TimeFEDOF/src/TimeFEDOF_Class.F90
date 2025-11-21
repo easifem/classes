@@ -124,6 +124,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBaseContinuity => obj_GetBaseContinuity
+  !! Get the base continuity
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get the cell order
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
@@ -381,8 +383,23 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
     CLASS(TimeFEDOF_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
+    CHARACTER(4) :: ans
   END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetBaseInterpolation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-05-24
+! summary: Get the base interpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
+    CLASS(TimeFEDOF_), INTENT(IN) :: obj
+    CHARACTER(2) :: ans
+  END FUNCTION obj_GetBaseContinuity
 END INTERFACE
 
 !----------------------------------------------------------------------------

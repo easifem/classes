@@ -75,7 +75,6 @@ END PROCEDURE obj_GetTimeOptPointer
 MODULE PROCEDURE obj_GetBaseInterpolation
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetBaseInterpolation()"
-LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
@@ -83,18 +82,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%fe)
-CALL AssertError1(isok, myName, 'obj%fe is not associated')
-#endif
-
-ans = obj%fe%GetBaseInterpolation()
+ans = obj%baseInterpolation
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
+!                                                           GetBaseContinuity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetBaseContinuity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBaseContinuity()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%baseContinuity
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetBaseContinuity
 
 !----------------------------------------------------------------------------
 !                                                               GetCellOrder
