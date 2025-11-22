@@ -18,11 +18,273 @@
 SUBMODULE(OneDimQuadratureOpt_Class) TomlMethods
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToInteger
 USE tomlf, ONLY: toml_get => get_value
-USE TomlUtility, ONLY: GetValue
+USE TomlUtility, ONLY: GetValue, GetValue_
+USE ReferenceLine_Method, ONLY: RefCoord_Line
 
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                ImportQuadratureTypeFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportQuadratureTypeFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportQuadratureTypeFromToml()"
+#endif
+
+  TYPE(String) :: astr
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="quadratureType", VALUE=astr, &
+    default_value=TypeOneDimQuadratureOpt%quadratureType_char, &
+    origin=origin, stat=stat, isFound=isFound)
+
+  obj%quadratureType = QuadraturePoint_ToInteger(astr%chars())
+  obj%quadratureType_char = astr%chars()
+
+  astr = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportQuadratureTypeFromToml
+
+!----------------------------------------------------------------------------
+!                                                        ImportOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportOrderFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="order", VALUE=obj%order, origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%order, isFound=obj%isOrder)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportOrderFromToml
+
+!----------------------------------------------------------------------------
+!                                                         ImportNipsFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportNipsFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportNipsFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="nips", VALUE=obj%nips(1), origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%nips(1), isFound=obj%isNips)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportNipsFromToml
+
+!----------------------------------------------------------------------------
+!                                                        ImportAlphaFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportAlphaFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportAlphaFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="alpha", VALUE=obj%alpha, origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%alpha, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportAlphaFromToml
+
+!----------------------------------------------------------------------------
+!                                                         ImportBetaFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportBetaFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportBetaFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="beta", VALUE=obj%beta, origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%beta, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportBetaFromToml
+
+!----------------------------------------------------------------------------
+!                                                       ImportlambdaFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportLambdaFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportLambdaFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="lambda", VALUE=obj%lambda, origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%lambda, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportLambdaFromToml
+
+!----------------------------------------------------------------------------
+!                                                 ImportRefelemDomainFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportRefelemDomainFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportRefelemDomainFromToml()"
+#endif
+
+  TYPE(String) :: astr
+  LOGICAL(LGT) :: isFound
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="refelemDomain", VALUE=astr, origin=origin, stat=stat, &
+    default_value=TypeOneDimQuadratureOpt%refelemDomain, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportRefelemDomainFromToml
+
+!----------------------------------------------------------------------------
+!                                                 ImportRefelemCoordFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportRefelemCoordFromToml(obj, table, origin, stat)
+  CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportRefelemCoordFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isFound
+  REAL(DFP) :: refelemCoord(3, 8)
+  INTEGER(I4B) :: nrow, ncol
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue_( &
+    table=table, key="refelemCoord", VALUE=refelemCoord, &
+    origin=origin, stat=stat, nrow=nrow, ncol=ncol, &
+    isFound=isFound)
+
+  IF (.NOT. isFound) THEN
+    refelemCoord(1:1, 1:2) = RefCoord_Line(obj%refelemDomain)
+  END IF
+
+  obj%refelemCoord(1:1, 1:2) = refelemCoord(1:1, 1:2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportRefelemCoordFromToml
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
@@ -33,85 +295,23 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
-INTEGER(I4B) :: origin, stat, order, nips, quadratureType
-LOGICAL(LGT) :: isFound, isOrder, isNips
-TYPE(String) :: quadratureType_char
-REAL(DFP) :: alpha, beta, lambda
+INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading quadratureType...')
-#endif
+CALL obj%DEALLOCATE()
 
-CALL GetValue( &
-  table=table, key="quadratureType", VALUE=quadratureType_char, &
-  default_value=TypeOneDimQuadratureOpt%quadratureType_char, &
-  origin=origin, stat=stat, isFound=isFound)
-
-quadratureType = QuadraturePoint_ToInteger(quadratureType_char%chars())
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading order...')
-#endif
-
-CALL GetValue( &
-  table=table, key="order", VALUE=order, &
-  default_value=TypeOneDimQuadratureOpt%order, origin=origin, stat=stat, &
-  isFound=isOrder)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading nips...')
-#endif
-
-CALL GetValue( &
-  table=table, key="nips", VALUE=nips, &
-  default_value=TypeOneDimQuadratureOpt%nips(1), origin=origin, stat=stat, &
-  isFound=isNips)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading alpha...')
-#endif
-
-CALL GetValue( &
-  table=table, key="alpha", VALUE=alpha, &
-  default_value=TypeOneDimQuadratureOpt%alpha, origin=origin, stat=stat, &
-  isFound=isFound)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading beta...')
-#endif
-
-CALL GetValue( &
-  table=table, key="beta", VALUE=beta, &
-  default_value=TypeOneDimQuadratureOpt%beta, origin=origin, stat=stat, &
-  isFound=isFound)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading lambda...')
-#endif
-
-CALL GetValue( &
-  table=table, key="lambda", VALUE=lambda, &
-  default_value=TypeOneDimQuadratureOpt%lambda, origin=origin, stat=stat, &
-  isFound=isFound)
-
-! Here we call initiate methods with above parameters
-CALL obj%Initiate( &
-  quadratureType=quadratureType, order=order, nips=nips, alpha=alpha, &
-  beta=beta, lambda=lambda, isOrder=isOrder, isNips=isNips)
-
-! clean up
-quadratureType_char = ""
+CALL ImportQuadratureTypeFromToml(obj, table, origin, stat)
+CALL ImportOrderFromToml(obj, table, origin, stat)
+CALL ImportNipsFromToml(obj, table, origin, stat)
+CALL ImportAlphaFromToml(obj, table, origin, stat)
+CALL ImportBetaFromToml(obj, table, origin, stat)
+CALL ImportLambdaFromToml(obj, table, origin, stat)
+CALL ImportRefelemDomainFromToml(obj, table, origin, stat)
+CALL ImportRefelemCoordFromToml(obj, table, origin, stat)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -152,6 +352,9 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%ImportFromToml(table=node)
+
+NULLIFY (node)
+DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
