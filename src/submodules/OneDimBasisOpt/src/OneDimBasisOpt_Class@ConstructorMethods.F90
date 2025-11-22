@@ -19,8 +19,9 @@ SUBMODULE(OneDimBasisOpt_Class) ConstructorMethods
 USE String_Class, ONLY: String
 USE LineInterpolationUtility, ONLY: RefElemDomain_Line
 USE ReferenceLine_Method, ONLY: RefCoord_Line
-USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    InterpolationPoint_ToChar
+USE BaseInterpolation_Method, ONLY: BaseType_ToChar
+USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToChar
+USE FEVariable_Method, ONLY: FEVariable_ToChar
 IMPLICIT NONE
 
 CONTAINS
@@ -69,7 +70,7 @@ CALL obj%quadOpt%Initiate( &
 
 obj%basisType_char = BaseType_ToChar(obj%basisType, isupper=.TRUE.)
 obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isupper=.TRUE.)
-! obj%feType_char =
+obj%feType_char = FEVariable_ToChar(obj%feType, isupper=.TRUE.)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
