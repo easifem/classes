@@ -16,32 +16,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimBasisOpt_Class) ConstructorMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE String_Class, ONLY: String
-USE Display_Method, ONLY: ToString, Display
-USE BaseType, ONLY: TypeFEVariableOpt, &
-                    elemNameOpt => TypeElemNameOpt
-USE FPL_Method, ONLY: GetValue, CheckEssentialParam, Set
-USE StringUtility, ONLY: UpperCase
-USE InputUtility, ONLY: Input
 USE LineInterpolationUtility, ONLY: RefElemDomain_Line
 USE ReferenceLine_Method, ONLY: RefCoord_Line
 USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    BaseType_ToInteger, &
-                                    InterpolationPoint_ToChar, &
-                                    InterpolationPoint_ToInteger
-USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
-                                  QuadraturePointDisplay => Display, &
-                                  QuadraturePointInitiate => Initiate
-USE TxtFile_Class, ONLY: TxtFile_
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-USE TomlUtility, ONLY: GetValue
-USE FEVariable_Method, ONLY: FEVariable_ToInteger
-
+                                    InterpolationPoint_ToChar
 IMPLICIT NONE
-
-#define quadOptPrefix "quadratureOpt"
 
 CONTAINS
 
@@ -50,9 +30,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
-! Internal variables
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myname = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myname = "obj_Initiate()"
 #endif
 
 TYPE(String) :: astr
@@ -103,7 +82,9 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -152,6 +133,7 @@ obj%baseInterpolation = obj2%baseInterpolation
 obj%refelemCoord = obj2%refelemCoord
 obj%basisType_char = obj2%basisType_char
 obj%ipType_char = obj2%ipType_char
+obj%feType_char = obj2%feType_char
 
 CALL obj%quadOpt%Copy(obj2%quadOpt)
 

@@ -241,7 +241,8 @@ END INTERFACE
 ! summary:  Import TimeOpt from toml file
 
 INTERFACE
-  module SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile

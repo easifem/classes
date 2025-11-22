@@ -16,32 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimBasisOpt_Class) GetMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
-USE String_Class, ONLY: String
-USE Display_Method, ONLY: ToString, Display
-USE BaseType, ONLY: TypeFEVariableOpt, &
-                    elemNameOpt => TypeElemNameOpt
-USE FPL_Method, ONLY: GetValue, CheckEssentialParam, Set
-USE StringUtility, ONLY: UpperCase
-USE InputUtility, ONLY: Input
-USE LineInterpolationUtility, ONLY: RefElemDomain_Line
-USE ReferenceLine_Method, ONLY: RefCoord_Line
-USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    BaseType_ToInteger, &
-                                    InterpolationPoint_ToChar, &
-                                    InterpolationPoint_ToInteger
-USE QuadraturePoint_Method, ONLY: QuadratureCopy => Copy, &
-                                  QuadraturePointDisplay => Display, &
-                                  QuadraturePointInitiate => Initiate
-USE TxtFile_Class, ONLY: TxtFile_
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-USE TomlUtility, ONLY: GetValue
-USE FEVariable_Method, ONLY: FEVariable_ToInteger
-
 IMPLICIT NONE
-
-#define quadOptPrefix "quadratureOpt"
 
 CONTAINS
 
@@ -190,7 +165,7 @@ ans = obj%order
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
