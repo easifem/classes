@@ -373,11 +373,6 @@ SUBROUTINE ImportQuadOptFromToml(obj, table, origin, stat, isFound)
   END IF
 #endif
 
-#ifdef DEBUG_VER
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-#endif
-
   CALL obj%quadOpt%ImportFromToml(table=node)
 
   node => NULL()
