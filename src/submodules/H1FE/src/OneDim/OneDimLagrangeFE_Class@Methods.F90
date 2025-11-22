@@ -24,11 +24,47 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                      GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Lagrange_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                    OneDimLagrangeFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_OneDimLagrangeFEPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_OneDimLagrangeFEPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ALLOCATE (ans)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_OneDimLagrangeFEPointer1
 
 !----------------------------------------------------------------------------
@@ -36,13 +72,25 @@ END PROCEDURE obj_OneDimLagrangeFEPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_OneDimLagrangeFEPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_OneDimLagrangeFEPointer2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ALLOCATE (ans)
-CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
-                  baseContinuity=baseContinuity, &
-                  baseInterpolation="LAGRANGE", &
-                  ipType=ipType, &
-                  basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, order=order)
+CALL ans%Initiate( &
+  fetype=TypeFeVariableOpt%scalar, baseContinuity=baseContinuity, &
+  baseInterpolation="LAGRANGE", ipType=ipType, basisType=basisType, &
+  alpha=alpha, beta=beta, lambda=lambda, order=order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_OneDimLagrangeFEPointer2
 
 !----------------------------------------------------------------------------
@@ -50,12 +98,24 @@ END PROCEDURE obj_OneDimLagrangeFEPointer2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_OneDimLagrangeFE
-CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
-                  baseContinuity=baseContinuity, &
-                  baseInterpolation="LAGRANGE", &
-                  ipType=ipType, &
-                  basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, order=order)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_OneDimLagrangeFE()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL ans%Initiate( &
+  fetype=TypeFeVariableOpt%scalar, baseContinuity=baseContinuity, &
+  baseInterpolation="LAGRANGE", ipType=ipType, basisType=basisType, &
+  alpha=alpha, beta=beta, lambda=lambda, order=order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_OneDimLagrangeFE
 
 !----------------------------------------------------------------------------
@@ -63,14 +123,11 @@ END PROCEDURE obj_OneDimLagrangeFE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
-INTEGER(I4B) :: ii
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
 
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#include "../../../include/deallocate_vector.F90"
 
 END PROCEDURE Deallocate_Vector
 
@@ -79,22 +136,18 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
 
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#include "../../../include/deallocate_vector_ptr.F90"
 
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!
+!                                                               Include error
 !----------------------------------------------------------------------------
+
+#include "../../../include/errors.F90"
 
 END SUBMODULE Methods

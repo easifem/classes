@@ -24,6 +24,28 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                      GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Hierarchical_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                OneDimHierarchicalFEPointer
 !----------------------------------------------------------------------------
 

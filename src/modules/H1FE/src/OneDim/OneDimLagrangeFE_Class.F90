@@ -42,6 +42,11 @@ CHARACTER(*), PARAMETER :: modName = "OneDimLagrangeFE_Class"
 ! summary: OneDimLagrangeFE is lagrange fe for one dimensional cases
 
 TYPE, EXTENDS(AbstractOneDimFE_) :: OneDimLagrangeFE_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data
 END TYPE OneDimLagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -53,6 +58,22 @@ TYPE :: OneDimLagrangeFEPointer_
 END TYPE OneDimLagrangeFEPointer_
 
 !----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(OneDimLagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                           OneDimLagrangeFEPointer@Methods
 !----------------------------------------------------------------------------
 
@@ -60,10 +81,14 @@ END TYPE OneDimLagrangeFEPointer_
 ! date:  2024-07-12
 ! summary:  Empty constructor
 
-INTERFACE OneDimLagrangeFEPointer
+INTERFACE
   MODULE FUNCTION obj_OneDimLagrangeFEPointer1() RESULT(ans)
     TYPE(OneDimLagrangeFE_), POINTER :: ans
   END FUNCTION obj_OneDimLagrangeFEPointer1
+END INTERFACE
+
+INTERFACE OneDimLagrangeFEPointer
+  MODULE PROCEDURE obj_OneDimLagrangeFEPointer1
 END INTERFACE OneDimLagrangeFEPointer
 
 !----------------------------------------------------------------------------
@@ -74,7 +99,7 @@ END INTERFACE OneDimLagrangeFEPointer
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE OneDimLagrangeFEPointer
+INTERFACE
   MODULE FUNCTION obj_OneDimLagrangeFEPointer2( &
     baseContinuity, ipType, basisType, order, alpha, beta, lambda) &
     RESULT(ans)
@@ -98,6 +123,10 @@ INTERFACE OneDimLagrangeFEPointer
     !! Ultraspherical parameters
     TYPE(OneDimLagrangeFE_), POINTER :: ans
   END FUNCTION obj_OneDimLagrangeFEPointer2
+END INTERFACE
+
+INTERFACE OneDimLagrangeFEPointer
+  MODULE PROCEDURE obj_OneDimLagrangeFEPointer2
 END INTERFACE OneDimLagrangeFEPointer
 
 !----------------------------------------------------------------------------
@@ -108,7 +137,7 @@ END INTERFACE OneDimLagrangeFEPointer
 ! date: 2024-06-24
 ! summary: Constructor method
 
-INTERFACE OneDimLagrangeFE
+INTERFACE
   MODULE FUNCTION obj_OneDimLagrangeFE( &
     baseContinuity, ipType, basisType, order, alpha, beta, lambda) &
     RESULT(ans)
@@ -132,6 +161,10 @@ INTERFACE OneDimLagrangeFE
     !! Ultraspherical parameters
     TYPE(OneDimLagrangeFE_) :: ans
   END FUNCTION obj_OneDimLagrangeFE
+END INTERFACE
+
+INTERFACE OneDimLagrangeFE
+  MODULE PROCEDURE obj_OneDimLagrangeFE
 END INTERFACE OneDimLagrangeFE
 
 !----------------------------------------------------------------------------
@@ -142,10 +175,14 @@ END INTERFACE OneDimLagrangeFE
 ! date: 2024-06-24
 ! summary:  Deallocate a vector of OneDimLagrangeFE
 
-INTERFACE FiniteElementDeallocate
+INTERFACE
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(OneDimLagrangeFE_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
+END INTERFACE
+
+INTERFACE FiniteElementDeallocate
+  MODULE PROCEDURE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------

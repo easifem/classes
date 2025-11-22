@@ -42,6 +42,11 @@ CHARACTER(*), PARAMETER :: modName = "OneDimOrthogonalFE_Class"
 ! summary: Finite element class
 
 TYPE, EXTENDS(AbstractOneDimFE_) :: OneDimOrthogonalFE_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data
 END TYPE OneDimOrthogonalFE_
 
 !----------------------------------------------------------------------------
@@ -51,6 +56,22 @@ END TYPE OneDimOrthogonalFE_
 TYPE :: OneDimOrthogonalFEPointer_
   CLASS(OneDimOrthogonalFE_), POINTER :: ptr => NULL()
 END TYPE OneDimOrthogonalFEPointer_
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(OneDimOrthogonalFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               OneDimOrthogonalFE@Methods
