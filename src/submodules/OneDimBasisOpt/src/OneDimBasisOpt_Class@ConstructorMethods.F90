@@ -66,7 +66,8 @@ CALL obj%quadOpt%Initiate( &
   quadratureType=quadratureType, order=quadratureOrder, &
   nips=quadratureNips, alpha=quadratureAlpha, beta=quadratureBeta, &
   lambda=quadratureLambda, isOrder=quadratureIsOrder, &
-  isNips=quadratureIsNips, refelemCoord=obj%refelemCoord)
+  isNips=quadratureIsNips, refelemCoord=obj%refelemCoord, &
+  refelemDomain=obj%refelemDomain)
 
 obj%basisType_char = BaseType_ToChar(obj%basisType, isupper=.TRUE.)
 obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isupper=.TRUE.)
