@@ -59,9 +59,6 @@ TYPE :: OneDimQuadratureOpt_
   INTEGER(I4B) :: nips(1) = 0_I4B
   !! number of integration points
 
-  CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
-  !! quadrature type
-
   REAL(DFP) :: alpha = 0.0_DFP
   !! alpha parameter for Jacobi polynomials
 
@@ -73,6 +70,15 @@ TYPE :: OneDimQuadratureOpt_
 
   REAL(DFP) :: refelemCoord(1, 2) = RESHAPE([-1.0_DFP, 1.0_DFP], [1, 2])
   !! coordinate of reference element
+
+  CHARACTER(128) :: quadratureType_char = "GAUSSLEGENDRE"
+  !! quadrature type
+
+  CHARACTER(1) :: refelemDomain = "B"
+  !! String name for reference element domain.
+  !! It can take following values:
+  !! - UNIT "U"
+  !! - BIUNIT "B"
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -98,6 +104,10 @@ CONTAINS
   !! Get total number of quadrature points
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the order of quadrature
+  !! this will set isOrder to true and isNips to false
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNips => obj_SetNips
+  !! Set the number of quadrature points
+  !! this will set isNips to true and isOrder to false
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => obj_SetQuadratureType
   !! Set the quadrature type
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
@@ -154,14 +164,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam( &
-    obj, quadratureType, order, nips, alpha, beta, lambda)
+    obj, quadratureType, order, nips, alpha, beta, lambda, refelemCoord, &
+    refelemDomain)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: order
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: nips
-    REAL(DFP), INTENT(IN), OPTIONAL :: alpha
-    REAL(DFP), INTENT(IN), OPTIONAL :: beta
-    REAL(DFP), INTENT(IN), OPTIONAL :: lambda
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType, order, nips
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda, &
+                                       refelemCoord(:, :)
+    CHARACTER(1), OPTIONAL, INTENT(IN) :: refelemDomain
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -176,7 +185,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
     obj, quadratureType, order, nips, alpha, beta, lambda, isOrder, isNips, &
-    refelemCoord)
+    refelemCoord, refelemDomain)
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType
     INTEGER(I4B), INTENT(IN), OPTIONAL :: order
@@ -187,6 +196,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNips
     REAL(DFP), OPTIONAL, INTENT(IN) :: refelemCoord(:, :)
+    CHARACTER(1), OPTIONAL, INTENT(IN) :: refelemDomain
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -200,14 +210,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam( &
-    obj, quadratureType, order, nips, alpha, beta, lambda)
+    obj, quadratureType, order, nips, alpha, beta, lambda, refelemCoord, &
+    refelemDomain)
     CLASS(OneDimQuadratureOpt_), INTENT(in) :: obj
-    INTEGER(i4b), INTENT(out), OPTIONAL :: quadratureType
-    INTEGER(i4b), INTENT(out), OPTIONAL :: order
-    INTEGER(i4b), INTENT(out), OPTIONAL :: nips
-    REAL(DFP), INTENT(out), OPTIONAL :: alpha
-    REAL(DFP), INTENT(out), OPTIONAL :: beta
-    REAL(DFP), INTENT(out), OPTIONAL :: lambda
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: quadratureType, order, nips
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha, beta, lambda
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: refelemCoord(:, :)
+    CHARACTER(1), OPTIONAL, INTENT(OUT) :: refelemDomain
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -293,6 +302,26 @@ INTERFACE
     CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
   END SUBROUTINE obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetNips@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary: Set the number of quadrature points
+!
+!# Introduction
+!
+! This method sets the number of integration points (nips) for the quadrature.
+! It will set isNips to true and isOrder to false.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNips(obj, nips)
+    CLASS(OneDimQuadratureOpt_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nips
+  END SUBROUTINE obj_SetNips
 END INTERFACE
 
 !----------------------------------------------------------------------------

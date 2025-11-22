@@ -44,6 +44,8 @@ IF (PRESENT(nips)) nips = obj%nips(1)
 IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
+IF (PRESENT(refelemCoord)) refelemCoord(1:1, 1:2) = obj%refelemCoord(1:1, 1:2)
+IF (PRESENT(refelemDomain)) refelemDomain(1:1) = obj%refelemDomain(1:1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -96,7 +98,6 @@ END PROCEDURE obj_GetTotalQuadraturePoints
 MODULE PROCEDURE obj_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetQuadraturePoints()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nips(1), nrow, ncol
@@ -106,23 +107,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = obj%isNips .OR. obj%isOrder
-CALL AssertError1(isok, myName, &
-                  "Either nips or order must be specified before "// &
-                  "getting quadrature points.")
-
-isok = .NOT. (obj%isNips .AND. obj%isOrder)
-CALL AssertError1(isok, myName, &
-                  "Both isOrder and isNips is set, I am confuse what to do")
-#endif
-
-IF (obj%isOrder) THEN
-  nips(1) = QuadratureNumber_Line( &
-            order=obj%order, quadtype=obj%quadratureType)
-ELSE
-  nips(1) = obj%nips(1)
-END IF
+nips = obj%GetTotalQuadraturePoints()
 
 nrow = 2_I4B
 quad%txi = nrow

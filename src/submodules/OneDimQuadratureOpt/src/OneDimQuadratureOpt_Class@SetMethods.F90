@@ -71,6 +71,12 @@ IF (isok) obj%beta = beta
 isok = PRESENT(lambda)
 IF (isok) obj%lambda = lambda
 
+isok = PRESENT(refelemCoord)
+IF (isok) obj%refelemCoord(1:1, 1:2) = refelemCoord(1:1, 1:2)
+
+isok = PRESENT(refelemDomain)
+IF (isok) obj%refelemDomain(1:1) = refelemDomain(1:1)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -100,6 +106,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetOrder
+
+!----------------------------------------------------------------------------
+!                                                                 SetNips
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetNips
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetNips()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isNips = .TRUE.
+obj%isOrder = .FALSE.
+obj%nips(1) = nips
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetNips
 
 !----------------------------------------------------------------------------
 !                                                           SetQuadratureType

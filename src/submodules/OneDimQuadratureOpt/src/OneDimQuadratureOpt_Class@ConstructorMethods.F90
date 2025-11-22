@@ -39,6 +39,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
+obj%isOrder = (PRESENT(order))
+obj%isNips = (PRESENT(nips))
+
+#ifdef DEBUG_VER
+isok = obj%isOrder .OR. obj%isNips
+CALL AssertError1(isok, myName, &
+                  "Either 'order' or 'nips' must be provided to initiate.")
+
+isok = .NOT. (obj%isOrder .AND. obj%isNips)
+CALL AssertError1(isok, myName, &
+                "'order' and 'nips' cannot be provided together to initiate.")
+#endif
+
 CALL obj%SetParam( &
   quadratureType=quadratureType, order=order, nips=nips, alpha=alpha, &
   beta=beta, lambda=lambda)
@@ -46,10 +59,6 @@ CALL obj%SetParam( &
 ! Set the quadrature type character
 obj%quadratureType_char = QuadraturePoint_ToChar( &
                           obj%quadratureType, isUpper=.TRUE.)
-
-! Set isOrder and isNips flags
-obj%isOrder = (PRESENT(order))
-obj%isNips = (PRESENT(nips))
 
 isok = PRESENT(isOrder)
 IF (isok) obj%isOrder = isOrder
@@ -59,6 +68,9 @@ IF (isok) obj%isNips = isNips
 
 isok = PRESENT(refelemCoord)
 IF (isok) obj%refelemCoord(1:1, 1:2) = refelemCoord(1:1, 1:2)
+
+isok = PRESENT(refelemDomain)
+IF (isok) obj%refelemDomain(1:1) = refelemDomain(1:1)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -94,6 +106,7 @@ obj%nips = obj2%nips
 obj%isNips = obj2%isNips
 obj%quadratureType_char = obj2%quadratureType_char
 obj%refelemCoord = obj2%refelemCoord
+obj%refelemDomain = obj2%refelemDomain
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
