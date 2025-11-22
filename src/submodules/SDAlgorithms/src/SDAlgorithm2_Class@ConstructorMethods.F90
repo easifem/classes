@@ -239,6 +239,7 @@ obj%rhs_f2_zero = obj%rhs_f2.approxeq.myzero
 obj%dis_zero = obj%dis.approxeq.myzero
 obj%vel_zero = obj%vel.approxeq.myzero
 obj%acc_zero = obj%acc.approxeq.myzero
+obj%initialGuess_zero = obj%initialGuess.approxeq.myzero
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -286,6 +287,9 @@ obj%vel_zero = .TRUE.
 obj%acc_zero = .TRUE.
 
 obj%alpha = 0.0_DFP
+
+obj%initialGuess = 0.0_DFP
+obj%initialGuess_zero = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -1464,7 +1464,7 @@ CASE (TypeFEVariableOpt%vector)
   icompo0 = Input(default=1_I4B, option=icompo)
 
 #ifdef DEBUG_VER
-  isok = tReturns .LT. icompo0
+  isok = tReturns .GE. icompo0
   CALL AssertError1(isok, myName, &
                     "WIP: the user function must return " &
                     //ToString(icompo0)//" values")
