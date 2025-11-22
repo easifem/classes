@@ -36,14 +36,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%quadratureType, "quadratureType: ", unitNo)
-CALL Display(TRIM(obj%quadratureType_char), "quadratureType_char: ", unitNo)
-CALL Display(obj%alpha, "alpha: ", unitNo)
-CALL Display(obj%beta, "beta: ", unitNo)
-CALL Display(obj%lambda, "lambda: ", unitNo)
-CALL Display(obj%order, "order: ", unitNo)
-CALL Display(obj%nips(1), "nips(1): ", unitNo)
-CALL Display(obj%refelemCoord, "refelemCoord: ", unitNo)
+CALL Display(obj%isOrder, "isOrder: ", unitNo=unitNo)
+CALL Display(obj%isNips, "isNips: ", unitNo=unitNo)
+CALL Display(obj%quadratureType, "quadratureType: ", unitNo=unitNo)
+CALL Display(obj%order, "order: ", unitNo=unitNo)
+CALL Display(obj%nips(1), "nips(1): ", unitNo=unitNo)
+CALL Display(obj%alpha, "alpha: ", unitNo=unitNo)
+CALL Display(obj%beta, "beta: ", unitNo=unitNo)
+CALL Display(obj%lambda, "lambda: ", unitNo=unitNo)
+CALL Display(obj%refelemCoord, "refelemCoord: ", unitNo=unitNo)
+CALL Display(TRIM(obj%quadratureType_char), "quadratureType_char: ", &
+             unitNo=unitNo)
+CALL Display(obj%refelemDomain, "refelemDomain: ", unitNo=unitNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
