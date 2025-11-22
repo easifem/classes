@@ -46,7 +46,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractOneDimFE_Class"
 !{!pages/docs-api/AbstractOneDimFE/AbstractOneDimFE_.md!}
 
 TYPE, ABSTRACT :: AbstractOneDimFE_
-  PRIVATE
+  ! PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
   TYPE(OneDimBasisOpt_) :: opt
@@ -102,7 +102,7 @@ CONTAINS
 
   !GET:
   ! @GetMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
