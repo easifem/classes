@@ -301,8 +301,8 @@ CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
 
 CALL HeirarchicalBasis_Line_( &
   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
-  refLine=obj%refelemDomain, orient=obj%cellOrient, &
-  ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+  refLine=obj%refelemDomain, orient=obj%cellOrient, ans=obj%temp(:, :, 1), &
+  nrow=indx(3), ncol=indx(4))
 
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
@@ -360,19 +360,21 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! CALL OrthogonalBasis_Line_( &
-!   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
-!   refLine=obj%refelemDomain, orient=obj%cellOrient, &
-!   ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+CALL OrthogonalBasis_Line_( &
+  order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+  refLine=obj%refelemDomain, basisType=obj%basisType, ans=obj%temp(:, :, 1), &
+  nrow=indx(3), ncol=indx(4), alpha=obj%alpha, beta=obj%beta, &
+  lambda=obj%lambda)
 
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
 END DO
 
-! CALL OrthogonalBasisGradient_Line_( &
-!   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
-!   refLine=obj%refelemDomain, orient=obj%cellOrient, &
-!   ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7))
+CALL OrthogonalBasisGradient_Line_( &
+  order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+  refLine=obj%refelemDomain, basisType=obj%basisType, ans=obj%temp, &
+  dim1=indx(5), dim2=indx(6), dim3=indx(7), alpha=obj%alpha, &
+  beta=obj%beta, lambda=obj%lambda)
 
 CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
            i1=2, i2=3, i3=1)
