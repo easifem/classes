@@ -19,7 +19,7 @@ MODULE OneDimBasisOpt_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
                     polyopt => TypePolynomialOpt, &
-                    QuadraturePoint_
+                    QuadraturePoint_, ElemShapeData_
 USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -74,6 +74,9 @@ TYPE :: OneDimBasisOpt_
   !! basis type, it is used in case baseInterpolation is Lagrange
   !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
   !! Ultraspherical
+
+  INTEGER(I4B) :: cellOrient = 1_I4B
+  !! cell orientation
 
   REAL(DFP) :: alpha = 0.0_DFP
   !! Jacobi polynomial parameter, x, y, z
@@ -185,6 +188,22 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
   !! Get the order
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalDOF => &
+    Obj_GetTotalDOF
+  !! Get total degrees of freedom
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    Lagrange_GetLocalElemShapeData
+  !! Get local element shape data
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    Hierarchical_GetLocalElemShapeData
+  !! Get local element shape data
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    Orthogonal_GetLocalElemShapeData
+  !! Get local element shape data
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
@@ -554,6 +573,69 @@ INTERFACE
     CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-22
+! summary: Get total degrees of freedom
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  Lagrange_GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Lagrange_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE Lagrange_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                              Hierarchical_GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Hierarchical_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE Hierarchical_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                Orthogonal_GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Orthogonal_GetLocalElemShapeData(obj, elemsd, quad)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE Orthogonal_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

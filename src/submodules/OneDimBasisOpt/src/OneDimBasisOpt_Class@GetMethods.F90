@@ -16,6 +16,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimBasisOpt_Class) GetMethods
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
+USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
+USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
+USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
+USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
+USE LineInterpolationUtility, ONLY: OrthogonalBasisGradient_Line_
+
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE ReallocateUtility, ONLY: Reallocate
+USE SwapUtility, ONLY: SWAP_
+
+! USE ReverseUtility, ONLY: Reverse
+
 IMPLICIT NONE
 
 CONTAINS
@@ -163,6 +181,207 @@ END PROCEDURE obj_GetCaseName
 MODULE PROCEDURE obj_GetOrder
 ans = obj%order
 END PROCEDURE obj_GetOrder
+
+!----------------------------------------------------------------------------
+!                                                                  GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDOF
+ans = obj%tdof
+END PROCEDURE obj_GetTotalDOF
+
+!----------------------------------------------------------------------------
+!                                              Lagrange_GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Lagrange_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nips = GetTotalQuadraturePoints(obj=quad)
+tdof = obj%GetTotalDOF()
+
+#ifdef DEBUG_VER
+isok = tdof .GT. 0
+CALL AssertError1(isok, myName, "zero tdof found")
+#endif
+
+CALL Elemsd_Allocate(obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
+
+CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xx, tdof, nips, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+
+CALL InterpolationPoint_Line_( &
+  order=obj%order, ipType=obj%ipType, layout="VEFC", &
+  xij=obj%refelemCoord(1:1, 1:2), &
+  alpha=obj%alpha, beta=obj%beta, &
+  lambda=obj%lambda, ans=obj%xij, nrow=indx(1), ncol=indx(2))
+
+CALL LagrangeEvalAll_Line_( &
+  order=obj%order, &
+  x=quad%points(1:quad%txi, 1:nips), &
+  xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp(:, :, 1), &
+  nrow=indx(3), ncol=indx(4), &
+  coeff=obj%coeff(1:tdof, 1:tdof), &
+  xx=obj%xx(1:tdof, 1:nips), &
+  firstCall=obj%firstCall, &
+  basisType=obj%basisType, &
+  alpha=obj%alpha, beta=obj%beta, lambda=obj%lambda)
+
+DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
+  elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
+END DO
+
+CALL LagrangeGradientEvalAll_Line_( &
+  order=obj%order, &
+  x=quad%points(1:quad%txi, 1:nips), &
+  xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp, &
+  dim1=indx(5), dim2=indx(6), dim3=indx(7), &
+  coeff=obj%coeff(1:tdof, 1:tdof), &
+  xx=obj%xx(1:tdof, 1:nips), &
+  firstCall=.FALSE., &
+  basisType=obj%basisType, &
+  alpha=obj%alpha, beta=obj%beta, &
+  lambda=obj%lambda)
+
+CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
+           i1=2, i2=3, i3=1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Lagrange_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                          Hierarchical_GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Hierarchical_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Hierarchical_GetLocalElemShapeData()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nips = GetTotalQuadraturePoints(obj=quad)
+tdof = obj%GetTotalDOF()
+
+#ifdef DEBUG_VER
+isok = tdof .GT. 0
+CALL AssertError1(isok, myName, "zero tdof is found")
+#endif
+
+CALL Elemsd_Allocate( &
+  obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+
+CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
+
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+
+CALL HeirarchicalBasis_Line_( &
+  order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+  refLine=obj%refelemDomain, orient=obj%cellOrient, &
+  ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+
+DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
+  elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
+END DO
+
+CALL HeirarchicalBasisGradient_Line_( &
+  order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+  refLine=obj%refelemDomain, orient=obj%cellOrient, &
+  ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7))
+
+CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
+           i1=2, i2=3, i3=1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE Hierarchical_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                            Orthogonal_GetLocalElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthogonal_GetLocalElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Orthogonal_GetLocalElemShapeData()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nips = GetTotalQuadraturePoints(obj=quad)
+tdof = obj%GetTotalDOF()
+
+#ifdef DEBUG_VER
+isok = tdof .GT. 0
+CALL AssertError1(isok, myName, "zero tdof is found")
+#endif
+
+CALL Elemsd_Allocate( &
+  obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+
+CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
+
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! CALL OrthogonalBasis_Line_( &
+!   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+!   refLine=obj%refelemDomain, orient=obj%cellOrient, &
+!   ans=obj%temp(:, :, 1), nrow=indx(3), ncol=indx(4))
+
+DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
+  elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
+END DO
+
+! CALL OrthogonalBasisGradient_Line_( &
+!   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &
+!   refLine=obj%refelemDomain, orient=obj%cellOrient, &
+!   ans=obj%temp, dim1=indx(5), dim2=indx(6), dim3=indx(7))
+
+CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
+           i1=2, i2=3, i3=1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Orthogonal_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                              Include error
