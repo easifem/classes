@@ -48,6 +48,7 @@ PUBLIC :: ScalarFieldInitiate
 PUBLIC :: ScalarFieldImport
 PUBLIC :: ScalarFieldDeallocate
 PUBLIC :: ScalarFieldSafeAllocate
+PUBLIC :: ScalarFieldApplyBodySource
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -923,6 +924,10 @@ INTERFACE
   END SUBROUTINE obj_ApplyBodySource1
 END INTERFACE
 
+INTERFACE ScalarFieldApplyBodySource
+  MODULE PROCEDURE obj_ApplyBodySource1
+END INTERFACE ScalarFieldApplyBodySource
+
 !----------------------------------------------------------------------------
 !                                                 ApplyBodySource@NBCMethods
 !----------------------------------------------------------------------------
@@ -943,6 +948,10 @@ INTERFACE
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
 END INTERFACE
+
+INTERFACE ScalarFieldApplyBodySource
+  MODULE PROCEDURE obj_ApplyBodySource2
+END INTERFACE ScalarFieldApplyBodySource
 
 !----------------------------------------------------------------------------
 !                                                SetFromToml@TomlMethods

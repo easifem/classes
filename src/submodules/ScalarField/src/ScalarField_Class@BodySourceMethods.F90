@@ -79,6 +79,8 @@ forceVar = QuadratureVariable(tsize=maxNips, rank=TypeFEVariableScalar, &
 
 args = 0.0_DFP
 
+IF (PRESENT(times)) args(4) = times
+
 DO iel = 1, tElements
 
   CALL obj%fedof%SetFE(globalElement=iel, islocal=yes)
