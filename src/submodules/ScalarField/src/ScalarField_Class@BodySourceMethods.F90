@@ -74,8 +74,9 @@ CALL Reallocate(cellcon, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
 CALL Reallocate(forceVecQuad, maxNips)
 
-forceVar = QuadratureVariable(tsize=maxNips, rank=TypeFEVariableScalar, &
-                              vartype=TypeFEVariableSpace)
+forceVar = QuadratureVariable( &
+           tsize=maxNips, rank=TypeFEVariableScalar, &
+           vartype=TypeFEVariableSpace)
 
 args = 0.0_DFP
 
@@ -89,12 +90,11 @@ DO iel = 1, tElements
   feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=yes)
   geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=yes)
 
-  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=yes, &
-                                  ans=cellcon, tsize=tcellCon, opt="A")
+  CALL obj%fedof%GetConnectivity_( &
+    globalElement=iel, islocal=yes, ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, &
-    globalElement=iel)
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, globalElement=iel)
 
   CALL feptr%GetGlobalElemShapeData2( &
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
@@ -110,8 +110,9 @@ DO iel = 1, tElements
     rank=TypeFEVariableScalar, varType=TypeFEVariableSpace, scale=1.0_DFP, &
     addContribution=no)
 
-  CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
-                    ans=forceVec, tsize=tforceVec)
+  CALL ForceVector_( &
+    test=elemsd, c=forceVar, crank=TypeFEVariableScalar, ans=forceVec, &
+    tsize=tforceVec)
 
   CALL obj%Set( &
     globalNode=cellcon(1:tcellCon), islocal=yes, scale=scale, &
