@@ -37,11 +37,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
 cellOrder = obj%cellOrder
 CALL obj%fe%SetOrder(order=cellOrder)
 ! CALL obj%fe%SetOrientation(cellOrient=cellOrient)
