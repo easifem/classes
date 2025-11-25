@@ -142,21 +142,21 @@ CONTAINS
 
   ! SET:
   ! @PointNBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
 
   ! SET:
   ! @SurfaceNBCMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
     obj_ApplySurfaceNeumannBC
   !! Apply Surface neumann boundary condition
 
   ! SET:
   ! @BodySourceMethods
-  PROCEDURE, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
+  PROCEDURE, non_overridable, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
+  PROCEDURE, non_overridable, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
