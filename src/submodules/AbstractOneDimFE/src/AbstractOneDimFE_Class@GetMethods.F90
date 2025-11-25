@@ -87,7 +87,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!
+!                                                     GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
@@ -116,6 +116,43 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                                  GetGlobalTimeElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalTimeElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalTimeElemShapeData()"
+#endif
+
+INTEGER(I4B) :: order
+REAL(DFP) :: xij(1, 2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetQuadraturePoints(quad=quad)
+
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+order = obj%GetOrder()
+CALL obj%SetOrder(order=1_I4B)
+
+CALL obj%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+CALL obj%SetOrder(order=order)
+xij(1, 1:2) = times(1:2)
+
+CALL obj%GetGlobalElemShapeData(geoelemsd=geoelemsd, xij=xij, elemsd=elemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalTimeElemShapeData
 
 !----------------------------------------------------------------------------
 !

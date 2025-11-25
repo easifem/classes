@@ -18,7 +18,6 @@
 SUBMODULE(OneDimBasisOpt_Class) GetMethods
 USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
 USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
-
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
 USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
 USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
@@ -26,13 +25,15 @@ USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
 USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
 USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
 USE LineInterpolationUtility, ONLY: OrthogonalBasisGradient_Line_
-
 USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
 USE ReallocateUtility, ONLY: Reallocate
 USE SwapUtility, ONLY: SWAP_
-
 ! USE ReverseUtility, ONLY: Reverse
+
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
 
 IMPLICIT NONE
 

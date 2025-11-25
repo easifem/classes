@@ -110,7 +110,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 nips = obj%GetTotalQuadraturePoints()
 
 nrow = 2_I4B
-quad%txi = nrow
+quad%txi = 1_I4B
 CALL Reallocate(quad%points, nrow, nips(1))
 
 CALL QuadraturePoint_Line_( &

@@ -108,6 +108,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalTimeElemShapeData => obj_GetGlobalTimeElemShapeData
+  !! Get global element shape data for time element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
@@ -537,6 +540,32 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE obj_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetGlobalTimeElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalTimeElemShapeData( &
+    obj, elemsd, times, geoelemsd, quad)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! time shape function data
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time coordinates of time element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! Shape function data for geometry which contains local shape function
+    !! data. This will be constructed inside the routine
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! time quadrature points, this will be constructed inside
+    !! the routine
+  END SUBROUTINE obj_GetGlobalTimeElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
