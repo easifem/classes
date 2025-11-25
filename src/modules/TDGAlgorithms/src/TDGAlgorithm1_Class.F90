@@ -98,6 +98,16 @@ TYPE :: TDGAlgorithm1_
   REAL(DFP) :: kt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
   !! coefficient for stiffness matrix in space (Ks*dt)
 
+  REAL(DFP) :: rhs_m_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_m_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_k_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_k_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
+
+  LOGICAL(LGT) :: rhs_m_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_m_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_k_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_k_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
