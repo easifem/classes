@@ -18,17 +18,21 @@
 SUBMODULE(ScalarField_Class) SurfaceNBCMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_, TypeFEVariableScalar, &
-                    TypeFEVariableSpace
-USE FEVariable_Method, ONLY: NodalVariable, &
-                             FEVariable_Set => Set, &
-                             FEVariable_Deallocate => DEALLOCATE
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: math => TypeMathOpt
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ForceVector_Method, ONLY: ForceVector_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE InputUtility, ONLY: Input
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
@@ -55,6 +59,7 @@ LOGICAL(LGT) :: isok
 
 INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE
 INTEGER(I4B), ALLOCATABLE :: facetCon(:)
+REAL(DFP) :: times0(1)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:), forceVec(:)
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad
@@ -65,13 +70,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL nbcField%SetAll(VALUE=zero)
+times0(1) = Input(option=times, default=math%zero)
+
 tbc = obj%GetTotalNBC()
+
+isok = tbc .GT. 0
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+CALL nbcField%SetAll(VALUE=zero)
+
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times, ivar=ivar, &
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times0, ivar=ivar, &
                                  extField=extField)
 END DO
 nbc => NULL()
@@ -104,18 +123,14 @@ DO ibc = 1, tbc
     facetCon=facetCon)
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
-IF (ALLOCATED(facetCon)) DEALLOCATE (facetCon)
-IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
-IF (ALLOCATED(nbcValue)) DEALLOCATE (nbcValue)
+DEALLOCATE (facetCon, xij, nbcValue, forceVec)
 
-! TYPE(FEVariable_) :: forceVar
 CALL FEVariable_Deallocate(forceVar)
 CALL QuadraturePoint_Deallocate(quad)
 CALL QuadraturePoint_Deallocate(facetQuad)
 CALL ElemShapeData_Deallocate(elemsd)
-CALL ElemShapeData_Deallocate(geoElemsd)
 CALL ElemShapeData_Deallocate(facetElemsd)
+CALL ElemShapeData_Deallocate(geoElemsd)
 CALL ElemShapeData_Deallocate(geoFacetElemsd)
 
 NULLIFY (nbc, mesh)

@@ -19,6 +19,9 @@ SUBMODULE(ScalarField_Class) PointNBCMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 USE NeumannBC_Class, ONLY: NeumannBC_
+USE BaseType, ONLY: math => TypeMathOpt
+USE InputUtility, ONLY: Input
+
 IMPLICIT NONE
 CONTAINS
 
@@ -29,15 +32,14 @@ CONTAINS
 MODULE PROCEDURE obj_ApplyPointNeumannBC
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC()"
-LOGICAL(LGT) :: isok
 #endif
 
+! Internal variables
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
+REAL(DFP) :: times0(1)
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-LOGICAL(LGT) :: istimes
 INTEGER(I4B) :: idof, nrow, ncol, tsize, ibc
 CLASS(NeumannBC_), POINTER :: nbcptr
 
@@ -46,67 +48,38 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-
-#ifdef DEBUG_VER
-tsize = 0
-IF (istimes) THEN
-  tsize = SIZE(times)
-  isok = tsize .EQ. 1
-  CALL AssertError1(isok, myName, &
-                   'SIZE(times) is '//ToString(tsize)//', but it should be 1')
-END IF
-#endif
+times0(1) = Input(option=times, default=math%zero)
 
 tsize = SIZE(obj%nbc_point)
 
 ncol = 1
 DO ibc = 1, tsize
   nrow = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=yes, &
-                  expandFactor=expandFactor)
-  CALL Reallocate(nodenum, nrow, isExpand=yes, &
-                  expandFactor=expandFactor)
+
+  CALL Reallocate( &
+    nodalvalue, nrow, ncol, isExpand=math%yes, expandFactor=expandFactor)
+
+  CALL Reallocate( &
+    nodenum, nrow, isExpand=math%yes, expandFactor=expandFactor)
 END DO
-
-IF (istimes) THEN
-  DO ibc = 1, tsize
-    nbcptr => obj%nbc_point(ibc)%ptr
-    CALL nbcptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                    times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof, &
-                    geofedof=obj%geofedof)
-    DO idof = 1, ncol
-      CALL obj%Set(globalNode=nodenum(1:nrow), &
-                   VALUE=nodalvalue(1:nrow, idof), &
-                   scale=scale, addContribution=yes, &
-                   islocal=yes)
-    END DO
-  END DO
-
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  nbcptr => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
 
 DO ibc = 1, tsize
   nbcptr => obj%nbc_point(ibc)%ptr
-  CALL nbcptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                  ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               scale=scale, addContribution=yes, islocal=yes)
+  CALL nbcptr%Get( &
+    nodalvalue=nodalvalue, nodenum=nodenum, times=times0, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
+
+  DO idof = 1, ncol
+    CALL obj%Set( &
+      globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
+      scale=scale, addContribution=math%yes, islocal=math%yes)
+  END DO
 END DO
 
-nbcptr => NULL()
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+nbcptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
