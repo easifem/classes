@@ -264,7 +264,6 @@ SUBROUTINE STScalarFieldAssembleSurfaceSource( &
       VALUE=forceVec(1:forceVec_i, 1:forceVec_j), &
       scale=scale, addContribution=math%yes, islocal=math%yes, &
       storageFMT=TypeFieldOpt%storageFormatDOF)
-
   END DO
 
   NULLIFY (feptr, geofeptr)

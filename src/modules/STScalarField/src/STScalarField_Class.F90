@@ -165,13 +165,16 @@ CONTAINS
 
   ! SET:
   ! @BodySourceMethods
-  PROCEDURE, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource1 => obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource2 => obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
-  PROCEDURE, PASS(obj) :: ApplyBodySource3 => obj_ApplyBodySource3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource3 => obj_ApplyBodySource3
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
@@ -180,13 +183,13 @@ CONTAINS
 
   ! SET:
   ! @SurfaceNBCMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
     obj_ApplySurfaceNeumannBC
   !! Apply Surface neumann boundary condition
 
   ! SET:
   ! @PointNBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
   !! Apply point neumann boundary condition
 END TYPE STScalarField_
@@ -1393,14 +1396,12 @@ END INTERFACE
 ! summary: Add Contribution of point neumann boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times, ivar, &
-                                            extField)
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times, extField)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     REAL(DFP), INTENT(IN) :: scale
     !! scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    REAL(DFP), INTENT(IN) :: times(:)
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
