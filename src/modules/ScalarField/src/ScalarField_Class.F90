@@ -881,7 +881,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplySurfaceNeumannBC( &
-    obj, nbcField, scale, times, ivar, extField)
+    obj, nbcField, scale, times, extField)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
@@ -891,9 +891,7 @@ INTERFACE
     !! Scale for neumann boundary condition
     REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! times
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    !! physical variable
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    CLASS(ScalarField_), OPTIONAL, INTENT(INOUT) :: extField
     !! external field
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE

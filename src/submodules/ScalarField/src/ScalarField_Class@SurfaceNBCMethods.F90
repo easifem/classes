@@ -90,8 +90,7 @@ DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times0, ivar=ivar, &
-                                 extField=extField)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times0, extField=extField)
 END DO
 nbc => NULL()
 
