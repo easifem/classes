@@ -25,5 +25,4 @@ target_sources(
           ${src_path}/AbstractField_Class@IOMethods.F90
           ${src_path}/AbstractField_Class@HDFMethods.F90
           ${src_path}/AbstractField_Class@WriteDataMethods.F90
-          ${src_path}/AbstractField_Class@DBCMethods.F90
-          ${src_path}/AbstractField_Class@PointNBCMethods.F90)
+          ${src_path}/AbstractField_Class@DBCMethods.F90)

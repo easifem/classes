@@ -26,7 +26,7 @@ CONTAINS
 !                                                         ApplyPointNeumannBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplyPointNeumannBC1
+MODULE PROCEDURE obj_ApplyPointNeumannBC
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC1()"
 LOGICAL(LGT) :: isok
@@ -117,7 +117,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_ApplyPointNeumannBC1
+END PROCEDURE obj_ApplyPointNeumannBC
 
 !----------------------------------------------------------------------------
 !                                                             Include Errors

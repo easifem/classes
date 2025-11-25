@@ -271,12 +271,6 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
-  !SET:
-  ! @NeumannBCMethods
-  PROCEDURE, PASS(obj) :: ApplyPointNeumannBC1 => obj_ApplyPointNeumannBC1
-  !! Apply point Neumann BC to field
-  GENERIC, PUBLIC :: ApplyPointNeumannBC => ApplyPointNeumannBC1
-
 END TYPE AbstractField_
 
 !----------------------------------------------------------------------------
@@ -1294,13 +1288,13 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetPointNBCPointer(obj, indx) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
-  !! AbstractField
+    !! AbstractField
     INTEGER(I4B), INTENT(IN) :: indx
-  !! pointer number
+    !! pointer number
     CLASS(NeumannBC_), POINTER :: ans
-  !! if nbc is not allocated then ans%ptr is null()
-  !! if nbc is allocated but nbc(ii)%ptr is not associated
-  !! then ans(ii)%ptr is null()
+    !! if nbc is not allocated then ans%ptr is null()
+    !! if nbc is allocated but nbc(ii)%ptr is not associated
+    !! then ans(ii)%ptr is null()
   END FUNCTION obj_GetPointNBCPointer
 END INTERFACE
 
@@ -1700,25 +1694,6 @@ INTERFACE
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
   END SUBROUTINE obj_ApplyDirichletBC3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             ApplyPointNeumannBC@NBCMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-06
-! summary: Add contribution of point Neumann boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, scale, times, ivar, &
-                                             extField)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: scale
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyPointNeumannBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------

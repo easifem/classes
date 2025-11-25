@@ -186,8 +186,8 @@ CONTAINS
 
   ! SET:
   ! @PointNBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC1 => &
-    obj_ApplyPointNeumannBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+    obj_ApplyPointNeumannBC
   !! Apply point neumann boundary condition
 END TYPE STScalarField_
 
@@ -1393,8 +1393,8 @@ END INTERFACE
 ! summary: Add Contribution of point neumann boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyPointNeumannBC1(obj, scale, times, ivar, &
-                                             extField)
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times, ivar, &
+                                            extField)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     REAL(DFP), INTENT(IN) :: scale
@@ -1402,7 +1402,7 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyPointNeumannBC1
+  END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
