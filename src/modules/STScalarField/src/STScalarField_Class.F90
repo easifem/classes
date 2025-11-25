@@ -171,7 +171,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
-  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
+  PROCEDURE, PASS(obj) :: ApplyBodySource3 => obj_ApplyBodySource3
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
+    ApplyBodySource2, ApplyBodySource3
   !! Generic method for setting body source
 
   ! SET:
@@ -1332,6 +1336,30 @@ INTERFACE
     !! scale for body source
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-19
+! summary: Add Contribution of body source to scalar field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a scalar function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times
+    !! time, which will be passed to the body source function
+    !! This time can also represent a quadrature point time
+  END SUBROUTINE obj_ApplyBodySource3
 END INTERFACE
 
 !----------------------------------------------------------------------------
