@@ -24,6 +24,34 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                        Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+obj%nrow = test%nns
+obj%ncol = trial%nns
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
 !                                                               NewmarkBeta
 !----------------------------------------------------------------------------
 
@@ -99,6 +127,11 @@ obj%dis_zero = obj%dis.approxeq.myzero
 obj%vel_zero = obj%vel.approxeq.myzero
 obj%initialGuess_zero = obj%initialGuess.approxeq.myzero
 
+obj%rhs_m_u1_zero = obj%rhs_m_u1.approxeq.myzero
+obj%rhs_m_v1_zero = obj%rhs_m_v1.approxeq.myzero
+obj%rhs_k_u1_zero = obj%rhs_k_u1.approxeq.myzero
+obj%rhs_k_v1_zero = obj%rhs_k_v1.approxeq.myzero
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -142,6 +175,19 @@ obj%vel_zero = .TRUE.
 
 obj%initialGuess = 0.0_DFP
 obj%initialGuess_zero = .TRUE.
+
+obj%nrow = 0_I4B
+obj%ncol = 0_I4B
+obj%mt = 0.0_DFP
+obj%kt = 0.0_DFP
+obj%rhs_m_u1 = 0.0_DFP
+obj%rhs_m_v1 = 0.0_DFP
+obj%rhs_k_u1 = 0.0_DFP
+obj%rhs_k_v1 = 0.0_DFP
+obj%rhs_m_u1_zero = .TRUE.
+obj%rhs_m_v1_zero = .TRUE.
+obj%rhs_k_u1_zero = .TRUE.
+obj%rhs_k_v1_zero = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -20,6 +20,7 @@ USE GlobalData, ONLY: I4B, DFP, LGT
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
+USE BaseType, ONLY: ElemShapeData_
 
 IMPLICIT NONE
 
@@ -66,14 +67,6 @@ TYPE :: TDGAlgorithm1_
   !! rhs = rhs + rhs_f2 *dt * force2
   LOGICAL(LGT) :: rhs_f2_zero = .TRUE.
 
-  REAL(DFP) :: dis(3) = 0.0_DFP
-  !! dis coefficient for displacement update
-  !! displacement = dis(1)*Un+dis(2)*Vn*dt+dis(3)*sol
-  !! dis(1) coefficient of displacement
-  !! dis(2) coefficient of velocity
-  !! dis(3) coefficient of solution
-  LOGICAL(LGT) :: dis_zero(3) = .TRUE.
-
   REAL(DFP) :: vel(3) = 0.0_DFP
   !! vel coefficient for velocity update
   !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*sol/dt
@@ -91,6 +84,14 @@ TYPE :: TDGAlgorithm1_
 
   INTEGER(I4B) :: nrow = 0_I4B, ncol = 0_I4B
   !! Number of rows and columns in ct, mt, mtplus matrices
+
+  REAL(DFP) :: dis(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! dis coefficient for displacement update
+  !! displacement = dis(1)*Un+dis(2)*Vn*dt + dis(3)*sol(1) + ...
+  !! dis(1) coefficient of displacement at time tn
+  !! dis(2) coefficient of velocity at time tn
+  !! dis(3:MAX_ORDER_TIME+3) coefficient of solution dof at time t1, t2, ...
+  LOGICAL(LGT) :: dis_zero(MAX_ORDER_TIME + 3) = .TRUE.
 
   REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
   !! coefficient for mass matrix in space (Ms)
@@ -110,6 +111,7 @@ TYPE :: TDGAlgorithm1_
 
 CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
@@ -118,6 +120,21 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE TDGAlgorithm1_
+
+!----------------------------------------------------------------------------
+!                                                      Set@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Initiate Newmark-Beta method
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set(obj, test, trial)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    TYPE(ElemShapeData_), INTENT(IN) :: test, trial
+  END SUBROUTINE obj_Set
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             NewmarkBeta@ConstructorMethods
