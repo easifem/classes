@@ -67,14 +67,6 @@ TYPE :: TDGAlgorithm1_
   !! rhs = rhs + rhs_f2 *dt * force2
   LOGICAL(LGT) :: rhs_f2_zero = .TRUE.
 
-  REAL(DFP) :: vel(3) = 0.0_DFP
-  !! vel coefficient for velocity update
-  !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*sol/dt
-  !! vel(1) coefficient of displacement at tn
-  !! vel(2) coefficient of velocity at tn
-  !! vel(3) coefficient of solution at tn+1
-  LOGICAL(LGT) :: vel_zero(3) = .TRUE.
-
   REAL(DFP) :: initialGuess(2) = 0.0_DFP
   !! coefficient for initial guess of solution
   !! u = coeff(1)*Un + coeff(2) * Vn
@@ -92,6 +84,14 @@ TYPE :: TDGAlgorithm1_
   !! dis(2) coefficient of velocity at time tn
   !! dis(3:MAX_ORDER_TIME+3) coefficient of solution dof at time t1, t2, ...
   LOGICAL(LGT) :: dis_zero(MAX_ORDER_TIME + 3) = .TRUE.
+
+  REAL(DFP) :: vel(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! vel coefficient for velocity update
+  !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*sol(1)/dt + ...
+  !! vel(1) coefficient of displacement at time tn
+  !! vel(2) coefficient of velocity at time tn
+  !! vel(3:MAX_ORDER_TIME+3) coefficient of solution dof at time t1, t2, ...
+  LOGICAL(LGT) :: vel_zero(MAX_ORDER_TIME + 3) = .TRUE.
 
   REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
   !! coefficient for mass matrix in space (Ms)
