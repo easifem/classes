@@ -27,6 +27,8 @@ USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
 USE LineInterpolationUtility, ONLY: OrthogonalBasisGradient_Line_
 USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
 USE SwapUtility, ONLY: SWAP_
 ! USE ReverseUtility, ONLY: Reverse
@@ -269,6 +271,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Lagrange_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                        Lagrange_GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Lagrange_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
+#endif
+
+REAL(DFP) :: xij(2, 2)
+TYPE(QuadraturePoint_) :: quad
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+xij = 0.0_DFP
+xij(1, 1:2) = obj%refelemCoord(1, 1:2)
+CALL QuadraturePoint_Initiate(obj=quad, points=xij)
+CALL obj%Lagrange_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL QuadraturePoint_Deallocate(quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Lagrange_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                          Hierarchical_GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
@@ -323,6 +354,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE Hierarchical_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                     Hierarchical_GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Hierarchical_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
+#endif
+
+REAL(DFP) :: xij(2, 2)
+TYPE(QuadraturePoint_) :: quad
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+xij = 0.0_DFP
+xij(1, 1:2) = obj%refelemCoord(1, 1:2)
+CALL QuadraturePoint_Initiate(obj=quad, points=xij)
+CALL obj%Hierarchical_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL QuadraturePoint_Deallocate(quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Hierarchical_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                            Orthogonal_GetLocalElemShapeData
@@ -385,6 +445,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE Orthogonal_GetLocalElemShapeData
+
+!----------------------------------------------------------------------------
+!                                      Orthogonal_GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthogonal_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
+#endif
+
+REAL(DFP) :: xij(2, 2)
+TYPE(QuadraturePoint_) :: quad
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+xij = 0.0_DFP
+xij(1, 1:2) = obj%refelemCoord(1, 1:2)
+CALL QuadraturePoint_Initiate(obj=quad, points=xij)
+CALL obj%Orthogonal_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL QuadraturePoint_Deallocate(quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Orthogonal_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                              Include error

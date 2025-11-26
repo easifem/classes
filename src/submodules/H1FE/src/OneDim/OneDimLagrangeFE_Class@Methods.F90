@@ -46,6 +46,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
+!                                                 GetLocalFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Lagrange_GetLocalFacetElemShapeData(elemsd=elemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalFacetElemShapeData
+
+!----------------------------------------------------------------------------
 !                                                    OneDimLagrangeFEPointer
 !----------------------------------------------------------------------------
 

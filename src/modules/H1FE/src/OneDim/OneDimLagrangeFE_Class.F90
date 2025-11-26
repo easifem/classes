@@ -47,6 +47,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
+    obj_GetLocalFacetElemShapeData
+  !! Get the Local element shape data
 END TYPE OneDimLagrangeFE_
 
 !----------------------------------------------------------------------------
@@ -71,6 +74,21 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd)
+    CLASS(OneDimLagrangeFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

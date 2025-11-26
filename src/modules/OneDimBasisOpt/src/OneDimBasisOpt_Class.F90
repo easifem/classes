@@ -17,9 +17,10 @@
 
 MODULE OneDimBasisOpt_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
-                    polyopt => TypePolynomialOpt, &
-                    QuadraturePoint_, ElemShapeData_
+USE BaseType, ONLY: ipopt => TypeInterpolationOpt
+USE BaseType, ONLY: polyopt => TypePolynomialOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -194,15 +195,18 @@ CONTAINS
   !! Get total degrees of freedom
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    Lagrange_GetLocalElemShapeData
+    Lagrange_GetLocalElemShapeData, &
+    Lagrange_GetLocalFacetElemShapeData
   !! Get local element shape data
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    Hierarchical_GetLocalElemShapeData
+    Hierarchical_GetLocalElemShapeData, &
+    Hierarchical_GetLocalFacetElemShapeData
   !! Get local element shape data
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    Orthogonal_GetLocalElemShapeData
+    Orthogonal_GetLocalElemShapeData, &
+    Orthogonal_GetLocalFacetElemShapeData
   !! Get local element shape data
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
@@ -607,6 +611,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                              Lagrange_GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Lagrange_GetLocalFacetElemShapeData(obj, elemsd)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+  END SUBROUTINE Lagrange_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                              Hierarchical_GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -623,6 +642,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                         Hierarchical_GetLocalFacetElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Hierarchical_GetLocalFacetElemShapeData(obj, elemsd)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+  END SUBROUTINE Hierarchical_GetLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                Orthogonal_GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -636,6 +670,21 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE Orthogonal_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                Orthogonal_GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE Orthogonal_GetLocalFacetElemShapeData(obj, elemsd)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+  END SUBROUTINE Orthogonal_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -105,6 +105,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
+  !! Get local element shape data for cell element and local face number
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get global element shape data
@@ -513,6 +516,21 @@ INTERFACE
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetLocalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, elemsd)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

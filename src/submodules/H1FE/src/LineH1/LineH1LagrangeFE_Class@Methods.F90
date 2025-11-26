@@ -107,7 +107,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                                   SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrder
