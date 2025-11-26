@@ -133,6 +133,8 @@ CONTAINS
   !! Set by user function
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
     SetFromScalarField => obj_SetFromScalarField
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
+    SetToScalarField => obj_SetToScalarField
 
   ! GET:
   ! @GetMethods
@@ -1003,10 +1005,29 @@ INTERFACE
                                            scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_SetFromScalarField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Set the STScalarField
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetToScalarField(obj, timeCompo, VALUE, &
+                                         scale, addContribution)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_SetToScalarField
 END INTERFACE
 
 !----------------------------------------------------------------------------

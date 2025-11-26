@@ -37,6 +37,7 @@ USE FEVariable_Method, ONLY: Get
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
@@ -688,6 +689,60 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetFromScalarField
+
+!----------------------------------------------------------------------------
+!                                                           SetToScalarField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetToScalarField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetToScalarField()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: s(3), p(3)
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STScalarField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'ScalarField_::value is not initiated')
+#endif
+
+s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
+p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
+
+realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, &
+                  'realvec obtained To value is not ASSOCIATED')
+#endif
+
+CALL VALUE%SetMultiple( &
+  VALUE=realvec, scale=scale, addContribution=addContribution, &
+  istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+  istart=s(1), iend=s(2), stride=s(3))
+
+realvec => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetToScalarField
 
 !----------------------------------------------------------------------------
 !                                                               SetByFunction
