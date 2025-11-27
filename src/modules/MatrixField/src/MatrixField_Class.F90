@@ -321,7 +321,9 @@ CONTAINS
     obj_SymLargestEigenVal
 
   ! SET:
-  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1
+
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
     obj_ApplyDirichletBCToRHS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCSubMat => &
@@ -1107,11 +1109,11 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to matrixfield_
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, dbcPtrs)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
     !! These are column numbers which are local node
-  END SUBROUTINE obj_ApplyDirichletBC3
+  END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------

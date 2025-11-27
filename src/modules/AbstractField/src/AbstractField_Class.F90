@@ -1650,53 +1650,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-09-05
-! summary: Apply Dirichlet boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyDirichletBC1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Apply Dirichlet boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_ApplyDirichletBC2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 ApplyDirichletBC@DBCMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, dbcPtrs)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_ApplyDirichletBC3
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

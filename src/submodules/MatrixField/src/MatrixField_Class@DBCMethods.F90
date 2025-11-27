@@ -27,9 +27,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplyDirichletBC3
+MODULE PROCEDURE obj_ApplyDirichletBC1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC3()"
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 #endif
 
 LOGICAL(LGT) :: case1, isok
@@ -94,7 +94,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_ApplyDirichletBC3
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !                                                             GetDBCSubMat

@@ -163,9 +163,10 @@ CONTAINS
 
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+    ApplyDirichletBC2
 
 END TYPE BlockNodeField_
 
