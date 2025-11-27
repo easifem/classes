@@ -140,6 +140,9 @@ CONTAINS
     obj_ApplyDirichletBC2
   !! Apply Dirichlet Boundary Condition
 
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+    ApplyDirichletBC2
+
   ! SET:
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &

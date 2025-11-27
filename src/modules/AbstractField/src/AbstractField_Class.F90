@@ -265,11 +265,11 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
-  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-    ApplyDirichletBC2, ApplyDirichletBC3
+  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  ! GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+  !   ApplyDirichletBC2, ApplyDirichletBC3
 
 END TYPE AbstractField_
 
