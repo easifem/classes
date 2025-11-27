@@ -19,37 +19,52 @@
 SUBMODULE(TDGAlgorithm1_Class) ConstructorMethods
 USE ApproxUtility, ONLY: OPERATOR(.approxeq.)
 USE InputUtility, ONLY: Input
+USE MassMatrix_Method, ONLY: MassMatrix_
+USE ProductUtility, ONLY: OuterProd_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                        Set
+!                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
+
+INTEGER(I4B) :: i1, i2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+CALL obj%DEALLOCATE()
 
-obj%nrow = test%nns
-obj%ncol = trial%nns
+obj%name(1:4) = "TDG "
+obj%nrow = elemsd%nns
+obj%ncol = obj%nrow
+CALL MassMatrix_(test=elemsd, trial=elemsd, ans=obj%kt, nrow=obj%nrow, &
+                 ncol=obj%ncol)
+
+CALL MassMatrix_(N=elemsd%N, M=elemsd%dNdXt(:, 1, :), &
+                 js=elemsd%js, ws=elemsd%ws, thickness=elemsd%thickness, &
+                 nips=elemsd%nips, nns1=elemsd%nns, nns2=elemsd%nns, &
+                 ans=obj%mt, nrow=obj%nrow, ncol=obj%ncol)
+
+CALL OuterProd_(a=facetElemsd%N(1:obj%nrow, 1), &
+                b=facetElemsd%N(1:obj%nrow, 1), &
+                ans=obj%mt, nrow=i1, ncol=i2, scale=math%one, &
+                anscoeff=math%one)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Set
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                               NewmarkBeta

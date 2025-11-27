@@ -111,7 +111,7 @@ TYPE :: TDGAlgorithm1_
 
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
@@ -130,10 +130,10 @@ END TYPE TDGAlgorithm1_
 ! summary: Initiate Newmark-Beta method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set(obj, test, trial)
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd)
     CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
-    TYPE(ElemShapeData_), INTENT(IN) :: test, trial
-  END SUBROUTINE obj_Set
+    TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
