@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE TDGAlgorithm1_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
@@ -39,43 +38,17 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
 ! summary:  Displacement based single step semi discrete algorithm
 
 TYPE :: TDGAlgorithm1_
-  CHARACTER(4) :: name = "CRAN"
-  !! default name is "CrankNicolson"
-  REAL(DFP) :: tanmat(2) = 0.0_DFP
-  !! tanmat = tanmat(1) * M + tanmat(2) * K *dt
-  !! tanmat(1) : coefficient of mass matrix (M)
-  !! tanmat(2) : coefficient of damping matrix (C*dt)
-  LOGICAL(LGT) :: tanmat_zero(2) = .TRUE.
+  LOGICAL(LGT) :: isInit = .FALSE.
+  !! Flag to check if the object is initiated
 
-  REAL(DFP) :: rhs_u1(2) = 0.0_DFP
-  !! coefficient for rhs for displacement at time tn, Un
-  !! rhs += rhs_u1(1) * M + rhs_u1(2) * K * dt
-  LOGICAL(LGT) :: rhs_u1_zero(2) = .TRUE.
-
-  REAL(DFP) :: rhs_v1(2) = 0.0_DFP
-  !! coefficient for rhs for (velocity*dt) at time tn, Vn
-  !! rhs += rhs_v1(1) *dt * M + rhs_v1(2) * dt * K * dt
-  LOGICAL(LGT) :: rhs_v1_zero(2) = .TRUE.
-
-  REAL(DFP) :: rhs_f1 = 0.0_DFP
-  !! coefficient for rhs for (force*dt) at time tn, Fn
-  !! rhs = rhs + rhs_f1 * force1 * dt
-  LOGICAL(LGT) :: rhs_f1_zero = .TRUE.
-
-  REAL(DFP) :: rhs_f2 = 0.0_DFP
-  !! coefficient for rhs for (force*dt) at time tn+1, Fn+1
-  !! rhs = rhs + rhs_f2 *dt * force2
-  LOGICAL(LGT) :: rhs_f2_zero = .TRUE.
-
-  REAL(DFP) :: initialGuess(2) = 0.0_DFP
-  !! coefficient for initial guess of solution
-  !! u = coeff(1)*Un + coeff(2) * Vn
-  !! coeff(1) coefficient of displacement at tn
-  !! coeff(2) coefficient of velocity at tn
-  LOGICAL(LGT) :: initialGuess_zero(2) = .TRUE.
+  CHARACTER(4) :: name = "TDG1"
 
   INTEGER(I4B) :: nrow = 0_I4B, ncol = 0_I4B
   !! Number of rows and columns in ct, mt, mtplus matrices
+
+  REAL(DFP) :: initialGuess(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! coefficient for initial guess of solution
+  LOGICAL(LGT) :: initialGuess_zero(MAX_ORDER_TIME + 3) = .TRUE.
 
   REAL(DFP) :: dis(MAX_ORDER_TIME + 3) = 0.0_DFP
   !! dis coefficient for displacement update
@@ -111,15 +84,30 @@ TYPE :: TDGAlgorithm1_
 
 CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
-  PROCEDURE, PUBLIC, PASS(obj) :: AlphaMethod => obj_AlphaMethod
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE TDGAlgorithm1_
+
+!----------------------------------------------------------------------------
+!                                              IsInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-27
+! summary: Check if the object is initiated
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(TDGAlgorithm1_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      Set@ConstructorMethods
@@ -134,22 +122,6 @@ INTERFACE
     CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
   END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             NewmarkBeta@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-11-06
-! summary: Initiate Newmark-Beta method
-
-INTERFACE
-  MODULE SUBROUTINE obj_AlphaMethod(obj, alpha)
-    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-    !! Default is 0.5
-  END SUBROUTINE obj_AlphaMethod
 END INTERFACE
 
 !----------------------------------------------------------------------------

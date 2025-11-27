@@ -46,29 +46,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetLocalFacetElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%opt%Orthogonal_GetLocalFacetElemShapeData(elemsd=elemsd)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetLocalFacetElemShapeData
-
-!----------------------------------------------------------------------------
-!                                                OneDimOrthogonalFEPointer
+!                                                  OneDimOrthogonalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_OneDimOrthogonalFEPointer1
@@ -76,7 +54,7 @@ ALLOCATE (ans)
 END PROCEDURE obj_OneDimOrthogonalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                OneDimOrthogonalFEPointer
+!                                                  OneDimOrthogonalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_OneDimOrthogonalFEPointer2
@@ -90,10 +68,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ALLOCATE (ans)
-CALL ans%Initiate(fetype=TypeFeVariableOpt%scalar, &
-                  baseContinuity=baseContinuity, &
-                  baseInterpolation="Orthogonal", &
-                  order=order)
+CALL ans%Initiate( &
+  fetype=TypeFeVariableOpt%scalar, baseContinuity=baseContinuity, &
+  baseInterpolation="Orthogonal", order=order)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

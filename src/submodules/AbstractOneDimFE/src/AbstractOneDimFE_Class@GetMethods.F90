@@ -15,13 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractOneDimFE_Class) GetMethods
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                HierarchicalElemShapeData, &
-                                Elemsd_Set => Set
-
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
 USE BaseType, ONLY: elemNameOpt => TypeElemNameOpt
-
-USE QuadraturePoint_Method, ONLY: Initiate
+USE BaseType, ONLY: math => TypeMathOpt
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 
 IMPLICIT NONE
 CONTAINS
@@ -95,15 +95,26 @@ MODULE PROCEDURE obj_GetLocalFacetElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetElemShapeData()"
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+REAL(DFP) :: xij(2, 2)
+INTEGER(I4B) :: i1, i2
+TYPE(QuadraturePoint_) :: quad
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+xij = 0.0_DFP
+
+CALL obj%opt%GetRefElemCoord(ans=xij, nrow=i1, ncol=i2)
+CALL QuadraturePoint_Initiate(obj=quad, points=xij)
+
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+CALL QuadraturePoint_Deallocate(quad)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 
 #ifdef DEBUG_VER
@@ -179,6 +190,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalTimeElemShapeData
+
+!----------------------------------------------------------------------------
+!                                            GetGlobalTimeFacetElemShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalTimeFacetElemShapeData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalTimeFacetElemShapeData()"
+#endif
+
+INTEGER(I4B) :: order, i1, i2
+REAL(DFP) :: xij(1, 2), refelemCoord(2, 2)
+TYPE(QuadraturePoint_) :: quad
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+refelemCoord = 0.0_DFP
+CALL obj%opt%GetRefElemCoord(ans=refelemCoord, nrow=i1, ncol=i2)
+
+CALL QuadraturePoint_Initiate(obj=quad, points=refelemCoord)
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+order = obj%GetOrder()
+CALL obj%SetOrder(order=math%one_i)
+
+CALL obj%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+CALL obj%SetOrder(order=order)
+xij(1, 1:2) = times(1:2)
+
+CALL obj%GetGlobalElemShapeData(geoelemsd=geoelemsd, xij=xij, elemsd=elemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalTimeFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !

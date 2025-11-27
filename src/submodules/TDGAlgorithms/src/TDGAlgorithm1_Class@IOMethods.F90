@@ -30,30 +30,56 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
+INTEGER(I4B) :: nrow, ncol
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, "isInit: ", unitno=unitno)
+
+IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 CALL Display(obj%name, "name: ", unitno=unitno)
-CALL Display(obj%tanmat, "tanmat: ", unitno=unitno, advance="NO")
-CALL Display(obj%tanmat_zero, "tanmat_zero: ", unitno=unitno)
-CALL Display(obj%rhs_u1, "rhs_u1: ", unitno=unitno, advance="NO")
-CALL Display(obj%rhs_u1_zero, "rhs_u1_zero: ", unitno=unitno)
-CALL Display(obj%rhs_v1, "rhs_v1: ", unitno=unitno, advance="NO")
-CALL Display(obj%rhs_v1_zero, "rhs_v1_zero: ", unitno=unitno)
-CALL Display(obj%rhs_f1, "rhs_f1: ", unitno=unitno, advance="NO")
-CALL Display(obj%rhs_f1_zero, "rhs_f1_zero: ", unitno=unitno)
-CALL Display(obj%rhs_f2, "rhs_f2: ", unitno=unitno, advance="NO")
-CALL Display(obj%rhs_f2_zero, "rhs_f2_zero: ", unitno=unitno)
-CALL Display(obj%dis, "dis: ", unitno=unitno, advance="NO")
-CALL Display(obj%dis_zero, "dis_zero: ", unitno=unitno)
-CALL Display(obj%vel, "vel: ", unitno=unitno, advance="NO")
-CALL Display(obj%vel_zero, "vel_zero: ", unitno=unitno)
-CALL Display(obj%initialGuess, "initialGuess: ", unitno=unitno, &
-             advance="NO")
-CALL Display(obj%initialGuess_zero, "initialGuess_zero: ", unitno=unitno)
+CALL Display(obj%nrow, "nrow: ", unitno=unitno)
+CALL Display(obj%ncol, "ncol: ", unitno=unitno)
+
+nrow = obj%nrow
+ncol = obj%ncol
+
+CALL Display(obj%initialGuess(1:nrow + 2), "initialGuess: ", &
+             unitno=unitno, advance="NO")
+CALL Display(obj%initialGuess_zero(1:nrow + 2), "initialGuess_zero: ", &
+             unitno=unitno)
+
+CALL Display(obj%dis(1:nrow + 2), "dis: ", unitno=unitno, advance="NO")
+CALL Display(obj%dis_zero(1:nrow + 2), "dis_zero: ", unitno=unitno)
+
+CALL Display(obj%vel(1:nrow + 2), "vel: ", unitno=unitno, advance="NO")
+CALL Display(obj%vel_zero(1:nrow + 2), "vel_zero: ", unitno=unitno)
+
+CALL Display(obj%mt(1:nrow, 1:ncol), "mt: ", unitno=unitno)
+CALL Display(obj%kt(1:nrow, 1:ncol), "kt: ", unitno=unitno)
+
+CALL Display(obj%rhs_m_u1(1:nrow), "rhs_m_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_u1_zero(1:nrow), "rhs_m_u1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_m_v1(1:nrow), "rhs_m_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_v1_zero(1:nrow), "rhs_m_v1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_k_u1(1:nrow), "rhs_k_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_u1_zero(1:nrow), "rhs_k_u1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_k_v1(1:nrow), "rhs_k_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_v1_zero(1:nrow), "rhs_k_v1_zero: ", unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

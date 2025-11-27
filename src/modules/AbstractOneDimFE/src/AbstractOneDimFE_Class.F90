@@ -105,7 +105,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and local face number
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
@@ -114,6 +114,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetGlobalTimeElemShapeData => obj_GetGlobalTimeElemShapeData
   !! Get global element shape data for time element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalTimeFacetElemShapeData => obj_GetGlobalTimeFacetElemShapeData
+  !! Get global element shape data for facet time element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
@@ -584,6 +587,29 @@ INTERFACE
     !! time quadrature points, this will be constructed inside
     !! the routine
   END SUBROUTINE obj_GetGlobalTimeElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetGlobalTimeElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetGlobalTimeFacetElemShapeData( &
+    obj, elemsd, times, geoelemsd)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! time shape function data
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time coordinates of time element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! Shape function data for geometry which contains local shape function
+    !! data. This will be constructed inside the routine
+  END SUBROUTINE obj_GetGlobalTimeFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -271,35 +271,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Lagrange_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                        Lagrange_GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Lagrange_GetLocalFacetElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
-#endif
-
-REAL(DFP) :: xij(2, 2)
-TYPE(QuadraturePoint_) :: quad
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-xij = 0.0_DFP
-xij(1, 1:2) = obj%refelemCoord(1, 1:2)
-CALL QuadraturePoint_Initiate(obj=quad, points=xij)
-CALL obj%Lagrange_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-CALL QuadraturePoint_Deallocate(quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE Lagrange_GetLocalFacetElemShapeData
-
-!----------------------------------------------------------------------------
 !                                          Hierarchical_GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
@@ -354,35 +325,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE Hierarchical_GetLocalElemShapeData
-
-!----------------------------------------------------------------------------
-!                                     Hierarchical_GetLocalFacetElemShapeData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Hierarchical_GetLocalFacetElemShapeData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
-#endif
-
-REAL(DFP) :: xij(2, 2)
-TYPE(QuadraturePoint_) :: quad
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-xij = 0.0_DFP
-xij(1, 1:2) = obj%refelemCoord(1, 1:2)
-CALL QuadraturePoint_Initiate(obj=quad, points=xij)
-CALL obj%Hierarchical_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-CALL QuadraturePoint_Deallocate(quad)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE Hierarchical_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------
 !                                            Orthogonal_GetLocalElemShapeData
@@ -447,33 +389,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Orthogonal_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
-!                                      Orthogonal_GetLocalFacetElemShapeData
+!                                                            GetRefElemCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Orthogonal_GetLocalFacetElemShapeData
+MODULE PROCEDURE obj_GetRefElemCoord
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Lagrange_GetLocalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRefElemCoord()"
 #endif
-
-REAL(DFP) :: xij(2, 2)
-TYPE(QuadraturePoint_) :: quad
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-xij = 0.0_DFP
-xij(1, 1:2) = obj%refelemCoord(1, 1:2)
-CALL QuadraturePoint_Initiate(obj=quad, points=xij)
-CALL obj%Orthogonal_GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-CALL QuadraturePoint_Deallocate(quad)
+nrow = 1
+ncol = 2
+ans(1:nrow, 1:ncol) = obj%refelemCoord(1:nrow, 1:ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE Orthogonal_GetLocalFacetElemShapeData
+END PROCEDURE obj_GetRefElemCoord
 
 !----------------------------------------------------------------------------
 !                                                              Include error
