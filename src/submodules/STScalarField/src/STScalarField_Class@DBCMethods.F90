@@ -26,12 +26,16 @@ CONTAINS
 !                                                                 ApplyDBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
+MODULE PROCEDURE obj_ApplyDirichletBC1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
+LOGICAL(LGT) :: isok
+#endif
+
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, aint, nrow, ncol
-LOGICAL(LGT) :: problem, istimes
+LOGICAL(LGT) :: istimes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -44,14 +48,11 @@ istimes = PRESENT(times)
 aint = 0
 IF (istimes) THEN
   aint = SIZE(times)
-  problem = aint .NE. obj%timeCompo
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                   ToString(aint)//' which is not equal to obj%timeCompo '// &
-                      ' which is '//ToString(obj%timeCompo))
-    RETURN
-  END IF
+  isok = aint .EQ. obj%timeCompo
+  CALL AssertError1(isok, myName, &
+                    'SIZE( times ) is '//ToString(aint)// &
+                    ' which is not equal to obj%timeCompo '// &
+                    ' which is '//ToString(obj%timeCompo))
 END IF
 #endif
 
@@ -88,21 +89,25 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_applyDirichletBC1
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
+MODULE PROCEDURE obj_ApplyDirichletBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
+LOGICAL(LGT) :: isok
+#endif
+
 LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, ii, aint, tsize, nrow, ncol
-LOGICAL(LGT) :: istimes, problem
+LOGICAL(LGT) :: istimes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -115,14 +120,11 @@ istimes = PRESENT(times)
 aint = 0
 IF (istimes) THEN
   aint = SIZE(times)
-  problem = aint .NE. obj%timeCompo
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                   ToString(aint)//' which is not equal to obj%timeCompo '// &
-                      ' which is '//ToString(obj%timeCompo))
-    RETURN
-  END IF
+  isok = aint .EQ. obj%timeCompo
+  CALL AssertError1(isok, myName, &
+                    'SIZE( times ) is '//ToString(aint)// &
+                    ' which is not equal to obj%timeCompo '// &
+                    ' which is '//ToString(obj%timeCompo))
 END IF
 #endif
 
@@ -173,10 +175,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE obj_applyDirichletBC2
+END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
-!
+!                                                               Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods
