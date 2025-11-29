@@ -30,30 +30,24 @@ MODULE PROCEDURE obj_ApplyDirichletBC1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: aint
 #endif
 
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, aint, nrow, ncol
-LOGICAL(LGT) :: istimes
+INTEGER(I4B) :: idof, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-
 #ifdef DEBUG_VER
-aint = 0
-IF (istimes) THEN
-  aint = SIZE(times)
-  isok = aint .EQ. obj%timeCompo
-  CALL AssertError1(isok, myName, &
-                    'SIZE( times ) is '//ToString(aint)// &
-                    ' which is not equal to obj%timeCompo '// &
-                    ' which is '//ToString(obj%timeCompo))
-END IF
+aint = SIZE(times)
+isok = aint .EQ. obj%timeCompo
+CALL AssertError1(isok, myName, 'SIZE( times ) is '//ToString(aint)// &
+                  ' which is not equal to obj%timeCompo '// &
+                  ' which is '//ToString(obj%timeCompo))
 #endif
 
 nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
@@ -62,23 +56,8 @@ ALLOCATE (nodalvalue(nrow, ncol), nodenum(nrow))
 CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
              ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
-IF (istimes) THEN
-
-  aint = SIZE(nodalvalue, 2)
-
-  DO idof = 1, aint
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                 timecompo=idof, islocal=.TRUE.)
-  END DO
-
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-
-  RETURN
-END IF
-
-DO idof = 1, obj%timecompo
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
+DO idof = 1, ncol
+  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
                timecompo=idof, islocal=.TRUE.)
 END DO
 
@@ -107,25 +86,18 @@ INTEGER(I4B), PARAMETER :: expandFactor = 2
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, ii, aint, tsize, nrow, ncol
-LOGICAL(LGT) :: istimes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-
 #ifdef DEBUG_VER
-aint = 0
-IF (istimes) THEN
-  aint = SIZE(times)
-  isok = aint .EQ. obj%timeCompo
-  CALL AssertError1(isok, myName, &
-                    'SIZE( times ) is '//ToString(aint)// &
-                    ' which is not equal to obj%timeCompo '// &
-                    ' which is '//ToString(obj%timeCompo))
-END IF
+aint = SIZE(times)
+isok = aint .EQ. obj%timeCompo
+CALL AssertError1(isok, myName, 'SIZE( times ) is '//ToString(aint)// &
+                  ' which is not equal to obj%timeCompo '// &
+                  ' which is '//ToString(obj%timeCompo))
 #endif
 
 tsize = SIZE(dbc)
@@ -139,30 +111,14 @@ DO ii = 1, tsize
                   expandFactor=expandFactor)
 END DO
 
-IF (istimes) THEN
-  DO ii = 1, tsize
-
-    CALL dbc(ii)%ptr%Get( &
-      nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-      ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
-
-    DO idof = 1, ncol
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                   timecompo=idof, islocal=.TRUE.)
-    END DO
-  END DO
-
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
-
 DO ii = 1, tsize
-  CALL dbc(ii)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                       ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
-  DO idof = 1, obj%timecompo
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:ncol, 1), &
+  CALL dbc(ii)%ptr%Get( &
+    nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
+
+  DO idof = 1, ncol
+    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
                  timecompo=idof, islocal=.TRUE.)
   END DO
 END DO

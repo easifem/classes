@@ -723,7 +723,7 @@ CALL AssertError1(isok, myName, &
 s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
 p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-realvec => VALUE%GetPointer()
+realvec => obj%GetPointer()
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
