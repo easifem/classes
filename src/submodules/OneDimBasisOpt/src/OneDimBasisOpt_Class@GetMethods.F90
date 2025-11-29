@@ -218,19 +218,45 @@ isok = tdof .GT. 0
 CALL AssertError1(isok, myName, "zero tdof found")
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling Elemsd_Allocate() ...')
+#endif
+
 CALL Elemsd_Allocate(obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling GetQuadratureWeights_() ...')
+#endif
+
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Allocating internal arrays')
+#endif
 
 CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%xx, tdof, nips, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling InterpolationPoint_Line_() ...')
+#endif
 
 CALL InterpolationPoint_Line_( &
   order=obj%order, ipType=obj%ipType, layout="VEFC", &
   xij=obj%refelemCoord(1:1, 1:2), &
   alpha=obj%alpha, beta=obj%beta, &
   lambda=obj%lambda, ans=obj%xij, nrow=indx(1), ncol=indx(2))
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling LagrangeEvalAll_Line_() ...')
+#endif
 
 CALL LagrangeEvalAll_Line_( &
   order=obj%order, &
@@ -239,10 +265,15 @@ CALL LagrangeEvalAll_Line_( &
   ans=obj%temp(:, :, 1), &
   nrow=indx(3), ncol=indx(4), &
   coeff=obj%coeff(1:tdof, 1:tdof), &
-  xx=obj%xx(1:tdof, 1:nips), &
+  xx=obj%xx(1:nips, 1:tdof), &
   firstCall=obj%firstCall, &
   basisType=obj%basisType, &
   alpha=obj%alpha, beta=obj%beta, lambda=obj%lambda)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Populating elemsd%N ...')
+#endif
 
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
@@ -255,7 +286,7 @@ CALL LagrangeGradientEvalAll_Line_( &
   ans=obj%temp, &
   dim1=indx(5), dim2=indx(6), dim3=indx(7), &
   coeff=obj%coeff(1:tdof, 1:tdof), &
-  xx=obj%xx(1:tdof, 1:nips), &
+  xx=obj%xx(1:nips, 1:tdof), &
   firstCall=.FALSE., &
   basisType=obj%basisType, &
   alpha=obj%alpha, beta=obj%beta, &
