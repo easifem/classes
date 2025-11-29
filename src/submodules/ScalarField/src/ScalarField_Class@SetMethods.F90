@@ -34,16 +34,18 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ReallocateUtility, ONLY: Reallocate
 USE StringUtility, ONLY: UpperCase
 USE ReferenceElement_Method, ONLY: ReferenceElementInfo
-USE DOF_Method, ONLY: GetNodeLoc, &
-                      OPERATOR(.tNodes.), &
-                      GetIDOF
-USE BaseType, ONLY: TypeFEVariableScalar, &
-                    TypeFEVariableConstant, &
-                    TypeFEVariableSpace, &
-                    QuadraturePoint_, &
-                    ElemShapeData_
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: OPERATOR(.tNodes.)
+USE DOF_Method, ONLY: GetIDOF
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableConstant
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
+USE InputUtility, ONLY: Input
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
@@ -458,8 +460,7 @@ CALL AssertError1(isok, myName, &
                   "mesh pointer obtained from fedof is not associated...")
 #endif
 
-times0 = 0.0_DFP
-IF (PRESENT(times)) times0 = times(1)
+times0 = Input(option=times, default=math%zero)
 
 maxNNS = obj%fedof%GetMaxTotalConnectivity()
 maxGeoNNS = obj%geofedof%GetMaxTotalConnectivity()
@@ -476,14 +477,14 @@ CALL Reallocate(funcValue, maxNips)
 telements = meshptr%GetTotalElements()
 
 DO iel = 1, telements
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=.TRUE.)
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
   CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=xij_i, &
-                            ncol=xij_j, globalElement=iel, islocal=.TRUE.)
+                            ncol=xij_j, globalElement=iel, islocal=math%yes)
 
   CALL feptr%GetDOFValue( &
     geofeptr=geofeptr, elemsd=elemsd, geoElemsd=geoElemsd, &
@@ -497,11 +498,11 @@ DO iel = 1, telements
   ! cellElemsd, geoCellElemsd, quad, facetQuad, cellQuad, xij, times, &
   ! func, ans, tsize, massMat, ipiv, funcValue, temp)
   CALL obj%fedof%GetConnectivity_(ans=con, tsize=tcon, opt="A", &
-                                  globalElement=iel, islocal=.TRUE.)
+                                  globalElement=iel, islocal=math%yes)
 
   ! (obj, ans, tsize, opt, globalElement, islocal)
   CALL obj%Set(VALUE=ans(1:tans), globalNode=con(1:tcon), &
-               islocal=.TRUE.)
+               islocal=math%yes)
 END DO
 
 DEALLOCATE (massMat, ipiv, xij, ans, temp, con, funcValue)

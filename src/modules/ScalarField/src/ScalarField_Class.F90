@@ -611,21 +611,12 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! If present then its size should be 1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    !! ivar (not used)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
-    !! idof (not used)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! space component, not used
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-    !! time component, not used
   END SUBROUTINE obj_SetByFunction
 END INTERFACE
 

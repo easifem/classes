@@ -211,10 +211,6 @@ CONTAINS
   !! Set multiple entries using range
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
     SetMultiple3, SetMultiple4
-  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
-  !! Set by user function
-
-  GENERIC, PUBLIC :: Set => SetByFunction
 
   ! GET:
   ! @BlasMethods
@@ -852,27 +848,6 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total number of data written in value
   END SUBROUTINE obj_GetMultiple3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetByFunction@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-04
-! summary: Set values of field by user function
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CLASS(UserFunction_), INTENT(INOUT) :: func
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-  END SUBROUTINE obj_SetByFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
