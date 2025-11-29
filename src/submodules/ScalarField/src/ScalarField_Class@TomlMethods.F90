@@ -228,10 +228,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'calling ImportIsUserFunctionFromToml() ...')
+#endif
+
 CALL ImportIsUserFunctionFromToml(obj=obj, table=table, &
                                   isUserFunction=isUserFunction)
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'calling ImportUserFunctionValueFromToml() ...')
+#endif
+
 IF (isUserFunction) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportUserFunctionValueFromToml() ...')
+#endif
 
   CALL ImportUserFunctionValueFromToml(obj=obj, table=table)
 
@@ -243,13 +258,31 @@ IF (isUserFunction) THEN
   RETURN
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling ImportNodalValueTypeFromToml() ...')
+#endif
+
 CALL ImportNodalValueTypeFromToml(obj=obj, table=table, &
                                   nodalValueType=nodalValueType)
 
 SELECT CASE (nodalValueType)
 CASE (TypeFieldOpt%constant)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportConstantValueFromToml...')
+#endif
+
   CALL ImportConstantValueFromToml(obj=obj, table=table)
+
 CASE (TypeFieldOpt%space)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportSpaceValueFromToml...')
+#endif
+
   CALL ImportSpaceValueFromToml(obj=obj, table=table)
 
 #ifdef DEBUG_VER
