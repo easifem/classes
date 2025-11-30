@@ -27,10 +27,10 @@ USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE FEDOF_Class, ONLY: FEDOF_
-USE BaseType, ONLY: TypeFEVariableOpt, &
-                    FEVariable_, &
-                    QuadraturePoint_, &
-                    ElemShapeData_
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 
 IMPLICIT NONE
 PRIVATE
@@ -266,6 +266,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get the prefix of boundary condition, it should be
   !! overridden in the derived class
+
+  ! GET:
+  ! @GetValueMethods
 
   !! @NBCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetNBCValue => obj_GetNBCValue
