@@ -27,6 +27,7 @@ USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE FEDOF_Class, ONLY: FEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: QuadraturePoint_
@@ -246,13 +247,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshIDPointer => &
     obj_GetMeshIDPointer
   !! Get mesh id pointer
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
-  !! Get the node number and nodal value of the boundary conditions
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
-  !! Get node numbers where the boundary condition is applied
-  GENERIC, PUBLIC :: Get => Get1, Get2
-  !! Generic method to get the node number and nodal values of the
-  !! boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
     obj_GetTotalNodeNum
   !! Get total node number
@@ -269,6 +263,13 @@ CONTAINS
 
   ! GET:
   ! @GetValueMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get => obj_Get
+  !! Get the node number and nodal value of the boundary conditions
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetNodeNumber => obj_GetNodeNumber
+  !! Get the degree of freedom number on boundary
 
   !! @NBCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetNBCValue => obj_GetNBCValue
@@ -677,8 +678,8 @@ END INTERFACE
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, fedof, geofedof, nodeNum, nodalValue, &
-                             nrow, ncol, times)
+  MODULE SUBROUTINE obj_Get(obj, fedof, geofedof, nodeNum, nodalValue, &
+                            nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -693,11 +694,11 @@ INTERFACE
     !! number of rows and cols written in nodalValue
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_Get1
+  END SUBROUTINE obj_Get
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                         Get@GetValueMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -940,5 +941,42 @@ INTERFACE
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_GetNBCValue
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetNodeNumber@GetValueMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary: Get the nodeNum
+!
+!# Introduction
+!
+! This method returns the nodeNum and tsize
+! It calls GetH1Lagrange or GetH1Hierarchical methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeNumber( &
+    obj, fedof, nodeNum, tsize, iNodeOnNode, iNodeOnFace, iNodeOnEdge)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! finite element degree of freedom
+    INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
+    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size of data written in nodeNum(:)
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnNode
+    !! starting point of nodes on nodes
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnFace
+    !! starting point of nodes on face
+    INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
+    !! starting point of nodes on edge
+  END SUBROUTINE obj_GetNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractBC_Class

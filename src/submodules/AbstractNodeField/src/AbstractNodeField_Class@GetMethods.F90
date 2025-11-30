@@ -685,7 +685,7 @@ IF (isfedof) fedof => obj%fedof
 
 tnode = dbc%GetTotalNodeNum(fedof)
 ALLOCATE (globalNode(tnode))
-CALL dbc%Get(nodeNum=globalNode, tsize=tnode, fedof=fedof, &
+CALL dbc%GetNodeNumber(nodeNum=globalNode, tsize=tnode, fedof=fedof, &
     iNodeOnNode=iNodeOnNode, iNodeOnEdge=iNodeOnEdge, iNodeOnFace=iNodeOnFace)
 
 CALL obj%GetNodeLoc_(globalNode=globalNode, ans=ans, tsize=tsize, &
