@@ -46,10 +46,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL CheckError(obj, myName)
+#endif
 
-IF (obj%isUserFunction) THEN
-  CALL CheckError_uf(obj, myName, times)
-END IF
+#ifdef DEBUG_VER
+IF (obj%isUserFunction) CALL CheckError_uf(obj, myName, times)
 #endif
 
 istimes = PRESENT(times)
