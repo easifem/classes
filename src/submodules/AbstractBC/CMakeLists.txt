@@ -20,7 +20,6 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/AbstractBC_Class@ConstructorMethods.F90
           ${src_path}/AbstractBC_Class@GetMethods.F90
-          ${src_path}/AbstractBC_Class@GetSingleValueMethods.F90
           ${src_path}/AbstractBC_Class@GetValueMethods.F90
           ${src_path}/AbstractBC_Class@IOMethods.F90
           ${src_path}/AbstractBC_Class@TomlMethods.F90
