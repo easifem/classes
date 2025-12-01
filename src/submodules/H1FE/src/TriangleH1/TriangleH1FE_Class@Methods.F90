@@ -17,13 +17,14 @@
 !
 
 SUBMODULE(TriangleH1FE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
-                                        InterpolationPoint_Triangle_, &
-                                        FacetConnectivity_Triangle
+USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt
+USE BaseType, ONLY: TypeFEVariableOpt, TypeInterpolationOpt
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
+USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 
 IMPLICIT NONE
 CONTAINS
@@ -351,9 +352,9 @@ CASE (TypeFEVariableOpt%vector)
 
 END SELECT
 
-CALL obj%GetFacetDOFValueFromQuadrature( &
-  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
-  localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, func=funcValue, ans=ans, tsize=tsize, &
   massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
   tVertices=tVertices)
 
