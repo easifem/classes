@@ -1101,13 +1101,7 @@ END DO
 
 CALL GetL2ProjectionDOFValueFromQuadrature( &
   elemsd=facetElemsd, func=funcValue, ans=ans, tsize=tsize, massMat=massMat, &
-  ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, tVertices=tVertices)
-
-! FacetDOFValueFromQuadrature( &
-!   elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
-!   localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
-!   massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
-!   tVertices=tVertices)
+  ipiv=ipiv, skipVertices=onlyFaceBubble, tVertices=tVertices)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

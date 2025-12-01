@@ -303,7 +303,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
-    func, ans, tsize, massMat, ipiv, funcValue, temp, onlyFaceBubble, icompo)
+    func, ans, nrow, ncol, massMat, ipiv, funcValue, temp, onlyFaceBubble, &
+    icompo)
     CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -321,17 +322,19 @@ INTERFACE
     !! user defined functions quadrature values of function
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
     !! Nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! Data written in ans
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
     !! mass matrix
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
-    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
     !! function values at quadrature points used inside
-    REAL( DFP ), INTENT(INOUT) :: temp(:)
-    !! temporary vector the size should be at least equal to 
-    !! number of space-time degree of freedom in facet element
+    !! The number of rows should be atleast max(nips, nipt)
+    !! The number of columns should be at least nipt
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary vector needed internally
+    !! the size should be nns * nnt
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.

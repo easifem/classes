@@ -355,7 +355,7 @@ END SELECT
 
 CALL GetL2ProjectionDOFValueFromQuadrature( &
   elemsd=facetElemsd, func=funcValue, ans=ans, tsize=tsize, &
-  massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
+  massMat=massMat, ipiv=ipiv, skipVertices=onlyFaceBubble, &
   tVertices=tVertices)
 
 #ifdef DEBUG_VER
