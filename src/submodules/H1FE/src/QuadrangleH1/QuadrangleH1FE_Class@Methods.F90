@@ -17,15 +17,19 @@
 !
 
 SUBMODULE(QuadrangleH1FE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString, Display
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_
-USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
-                                          InterpolationPoint_Quadrangle_, &
-                                          FacetConnectivity_Quadrangle
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
+USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 
 IMPLICIT NONE
 CONTAINS
@@ -258,7 +262,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrientation
 
 !----------------------------------------------------------------------------
-!                                   GetFacetDOFValueFromSpaceTimeUserFunction
+!                                                            GetFacetDOFValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
@@ -369,9 +373,8 @@ CASE (TypeFEVariableOpt%vector)
 
 END SELECT
 
-CALL obj%GetFacetDOFValueFromQuadrature( &
-  elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
-  localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, func=funcValue, ans=ans, tsize=tsize, &
   massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
   tVertices=tVertices)
 
@@ -380,6 +383,142 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetFacetDOFValueFromSTFunc
+
+!----------------------------------------------------------------------------
+!                                                            GetFacetDOFValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSTFacetDOFValueFromSTFunc
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSTFacetDOFValueFromSTFunc()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tReturns, tArgs
+#endif
+
+INTEGER(I4B), PARAMETER :: tSpaceVertices = 2, tTimeVertices = 2
+INTEGER(I4B) :: ii, jj, nips, nns, nsd, faceCon(tSpaceVertices, 4), &
+                returnType, icompo0, ips, ipt, nipt
+REAL(DFP) :: args(4), scale, stVertexValue(tSpaceVertices, tTimeVertices), &
+             xijLine(3, tSpaceVertices), vertexInterpol, temp_ans(10)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+tArgs = func%GetNumArgs()
+isok = tArgs .GE. 4_I4B
+CALL AssertError1(isok, myName, &
+                "The user function must have at least 4 arguments, (x,y,z,t)")
+#endif
+
+nipt = timeElemsd%nips
+nips = facetElemsd%nips
+nns = facetElemsd%nns
+nsd = obj%opt%GetNSD()
+scale = 0.0_DFP
+stVertexValue = 0.0_DFP
+args = 0.0_DFP
+args(1:3) = 0.0_DFP
+
+tReturns = func%GetNumReturns()
+returnType = func%GetReturnType()
+
+#ifdef DEBUG_VER
+isok = tReturns .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "The user function must return a single value")
+#endif
+
+! faceCon contains the facet connectivity of quadrangle element
+faceCon = FacetConnectivity_Quadrangle()
+
+! xijLine contains the x1 and x2 coordinates of the line (end points)
+xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
+                                   faceCon(1:tSpaceVertices, localFaceNumber))
+
+! Now we form space-time vertex values of func
+DO jj = 1, tTimeVertices
+  args(4) = times(jj)
+  DO ii = 1, tSpaceVertices
+    args(1:nsd) = xijLine(1:nsd, ii)
+    CALL func%GetScalarValue(args=args, val=stVertexValue(ii, jj))
+  END DO
+END DO
+
+scale = 1.0_DFP
+
+! Making Col 1 by projecting at bottom space-time slab, tn
+! this projection is on line space elements
+args(4) = times(1)
+DO ips = 1, nips
+  args(1:nsd) = facetElemsd%coord(1:nsd, ips)
+  CALL func%GetScalarValue(args=args, val=funcValue(ips))
+
+  vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tSpaceVertices, ips), &
+                               stVertexValue(1:tSpaceVertices, 1))
+
+  funcValue(ips) = funcValue(ips) - scale * vertexInterpol
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, func=funcValue, ans=temp, &
+  tsize=tsize, massMat=massMat, ipiv=ipiv, &
+  onlyFaceBubble=math%yes, tVertices=tSpaceVertices)
+
+ans(1:tSpaceVertices, 1) = stVertexValue(1:tSpaceVertices, 1)
+DO ii = 1, tsize
+  ans(tSpaceVertices + ii, 1) = temp(ii)
+END DO
+
+! Making Col 2 by projecting at top space-time slab, tn+1
+! this projection is on line space elements
+args(4) = times(2)
+DO ips = 1, nips
+  args(1:nsd) = facetElemsd%coord(1:nsd, ips)
+  CALL func%GetScalarValue(args=args, val=funcValue(ips))
+
+  vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tSpaceVertices, ips), &
+                               stVertexValue(1:tSpaceVertices, 2))
+
+  funcValue(ips) = funcValue(ips) - scale * vertexInterpol
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, func=funcValue, ans=temp, &
+  tsize=tsize, massMat=massMat, ipiv=ipiv, &
+  onlyFaceBubble=math%yes, tVertices=tSpaceVertices)
+
+ans(1:tSpaceVertices, 2) = stVertexValue(1:tSpaceVertices, 2)
+DO ii = 1, tsize
+  ans(tSpaceVertices + ii, 2) = temp(ii)
+END DO
+
+! Making Row 1 by projecting at left space-time slab, xn
+! this projection is on line time elements
+args(1:nsd) = xijLine(1:nsd, 1)
+DO ipt = 1, nipt
+  args(4) = timeElemsd%coord(1, ipt)
+  CALL func%GetScalarValue(args=args, val=funcValue(ipt))
+
+  vertexInterpol = DOT_PRODUCT(timeElemsd%N(1:tTimeVertices, ipt), &
+                               stVertexValue(1, 1:tTimeVertices))
+
+  funcValue(ipt) = funcValue(ipt) - scale * vertexInterpol
+END DO
+
+! CALL obj%GetFacetDOFValueFromQuadrature( &
+!   elemsd=elemsd, facetElemsd=facetElemsd, xij=xij, &
+!   localFaceNumber=localFaceNumber, func=funcValue, ans=ans, tsize=tsize, &
+!   massMat=massMat, ipiv=ipiv, onlyFaceBubble=onlyFaceBubble, &
+!   tVertices=tVertices)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+END PROCEDURE obj_GetSTFacetDOFValueFromSTFunc
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
