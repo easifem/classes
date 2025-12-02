@@ -59,7 +59,6 @@ LOGICAL(LGT) :: isok
 
 INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE
 INTEGER(I4B), ALLOCATABLE :: facetCon(:)
-REAL(DFP) :: times0(1)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:), forceVec(:)
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad
@@ -69,8 +68,6 @@ TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
-
-times0(1) = Input(option=times, default=math%zero)
 
 tbc = obj%GetTotalNBC()
 
@@ -90,7 +87,7 @@ DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times0, extField=extField)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 END DO
 nbc => NULL()
 
