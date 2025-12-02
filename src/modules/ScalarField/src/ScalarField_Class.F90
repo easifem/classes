@@ -819,12 +819,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -837,13 +835,30 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+!
+!# Introduction
+!
+! This method calls ApplyDirichletBC2 with obj%dbc
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+  END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -875,7 +890,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplySurfaceNeumannBC( &
-    obj, nbcField, scale, times, extField)
+    obj, nbcField, scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
@@ -885,8 +900,6 @@ INTERFACE
     !! Scale for neumann boundary condition
     REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! times
-    CLASS(ScalarField_), OPTIONAL, INTENT(INOUT) :: extField
-    !! external field
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
 
