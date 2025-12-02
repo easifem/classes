@@ -17,8 +17,10 @@
 
 SUBMODULE(BlockNodeField_Class) DBCMethods
 USE InputUtility, ONLY: Input
-USE DOF_Method, ONLY: OPERATOR(.timecomponents.)
+USE DOF_Method, ONLY: OPERATOR(.timeComponents.)
+USE DOF_Method, ONLY: OPERATOR(.spaceComponents.)
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -28,134 +30,321 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, spacecompo, ttimecompo, ivar0, aint, nrow, ncol
-LOGICAL(LGT) :: case1, problem
-
-ivar0 = Input(default=1_I4B, option=ivar)
-ttimecompo = obj%dof.timecomponents.ivar0
-spacecompo = dbc%GetDOFNo()
-ncol = ttimecompo
-
-nrow = dbc%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
-ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
-CALL dbc%Get( &
-  nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, ncol=ncol, &
-  fedof=obj%fedofs(ivar0)%ptr, geofedof=obj%geofedofs(ivar0)%ptr)
-
-aint = SIZE(nodalvalue, 2)
-case1 = aint .EQ. 1
-
-IF (case1) THEN
-  DO idof = 1, ttimecompo
-    CALL obj%Set( &
-      globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), ivar=ivar0, &
-      spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
-  END DO
-
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
-
-problem = aint .NE. ttimecompo
-IF (problem) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-                  '[INTERNAL ERROR] :: SIZE( nodalvalue, 2 ) .NE. ttimecompo')
-  RETURN
-END IF
-
-DO idof = 1, ttimecompo
-  CALL obj%Set( &
-    globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), ivar=ivar0, &
-    spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
-END DO
-
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-
-END PROCEDURE obj_applyDirichletBC1
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
-LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
-INTEGER(I4B), PARAMETER :: expandFactor = 2
-
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo, ivar0, tsize, nrow, &
-                ncol
-LOGICAL(LGT) :: case1, problem
-
-ivar0 = Input(default=1_I4B, option=ivar)
-ttimecompo = obj%dof.timecomponents.ivar0
-tsize = SIZE(dbc)
-
-ncol = ttimecompo
-
-DO ibc = 1, tsize
-
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar0)%ptr)
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-
-  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-END DO
-
-DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get( &
-    nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-    ncol=ncol, fedof=obj%fedofs(ivar0)%ptr, geofedof=obj%geofedofs(ivar0)%ptr)
-
-  spacecompo = dbc(ibc)%ptr%GetDOFNo()
-
-  case1 = ncol .EQ. 1
-
-  IF (case1) THEN
-    DO idof = 1, ttimecompo
-      CALL obj%Set( &
-        globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-        ivar=ivar0, spacecompo=spacecompo, timecompo=idof, islocal=.TRUE.)
-    END DO
-  END IF
-
 #ifdef DEBUG_VER
-  IF (.NOT. case1) THEN
-    problem = ncol .NE. ttimecompo
-    IF (problem) THEN
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-                  '[INTERNAL ERROR] :: SIZE( nodalvalue, 2 ) .NE. ttimecompo')
-      RETURN
-    END IF
-  END IF
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tTimeCompo, tSpaceCompo
 #endif
 
-  IF (.NOT. case1) THEN
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+INTEGER(I4B) :: spaceCompo, nrow, ncol
 
-    DO idof = 1, ttimecompo
-    CALL obj%Set(globalNode=nodenum(1:nrow), timecompo=idof, islocal=.TRUE., &
-            VALUE=nodalvalue(1:nrow, idof), ivar=ivar0, spacecompo=spacecompo)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-    END DO
+#ifdef DEBUG_VER
+tTimeCompo = obj%dof.timeComponents.ivar
+isok = tTimeCompo .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "timeComponents is not equal to 1")
+#endif
 
-  END IF
+spaceCompo = dbc%GetDOFNo()
 
-END DO
+#ifdef DEBUG_VER
+tSpaceCompo = obj%dof.spaceComponents.ivar
+isok = spaceCompo .LE. tSpaceCompo
+CALL AssertError1(isok, myName, &
+                  "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
+#endif
 
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%fedofs(ivar)%ptr is not associated")
+#endif
 
-END PROCEDURE obj_applyDirichletBC2
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%geofedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%geofedofs(ivar)%ptr is not associated")
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbc=dbc, ivar=ivar)
+nrow = obj%GetMaxTotalNodeNumForBC(ivar=ivar)
+ncol = 1
+
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+CALL dbc%Get( &
+  nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+  ncol=ncol, fedof=obj%fedofs(ivar)%ptr, geofedof=obj%geofedofs(ivar)%ptr)
+
+CALL obj%Set( &
+  globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, 1), &
+  ivar=ivar, spaceCompo=spaceCompo, timeCompo=math%one_i, islocal=math%yes)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyDirichletBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
+INTEGER(I4B) :: tTimeCompo, tSpaceCompo
+#endif
+
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ibc, spaceCompo, tbc, nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+tTimeCompo = obj%dof.timeComponents.ivar
+isok = tTimeCompo .EQ. 1
+CALL AssertError1(isok, myName, &
+                  "timeComponents is not equal to 1")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%fedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%geofedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%geofedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+tSpaceCompo = obj%dof.spaceComponents.ivar
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc, ivar=ivar)
+nrow = obj%GetMaxTotalNodeNumForBC(ivar=ivar)
+ncol = 1
+
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+tbc = SIZE(dbc)
+
+DO ibc = 1, tbc
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
+
+  spaceCompo = dbc(ibc)%ptr%GetDOFNo()
+
+#ifdef DEBUG_VER
+  isok = spaceCompo .LE. tSpaceCompo
+  CALL AssertError1( &
+    isok, myName, "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
+#endif
+
+  CALL dbc(ibc)%ptr%Get( &
+    nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedofs(ivar)%ptr, geofedof=obj%geofedofs(ivar)%ptr)
+
+  CALL obj%Set( &
+    globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, 1), &
+    ivar=ivar, spaceCompo=spaceCompo, timeCompo=math%one_i, islocal=math%yes)
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC2
+
+!----------------------------------------------------------------------------
+!                                                            ApplyDirichletBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyDirichletBC3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC3()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tSpaceCompo
+#endif
+
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+INTEGER(I4B) :: spaceCompo, nrow, ncol, tTimeCompo, idof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tTimeCompo = obj%dof.timeComponents.ivar
+spaceCompo = dbc%GetDOFNo()
+
+#ifdef DEBUG_VER
+tSpaceCompo = obj%dof.spaceComponents.ivar
+isok = spaceCompo .LE. tSpaceCompo
+CALL AssertError1(isok, myName, &
+                  "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%fedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%geofedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%geofedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%timefedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%timefedofs(ivar)%ptr is not associated")
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbc=dbc, ivar=ivar)
+nrow = obj%GetMaxTotalNodeNumForBC(ivar=ivar)
+ncol = tTimeCompo
+
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+CALL dbc%Get( &
+  nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+  ncol=ncol, fedof=obj%fedofs(ivar)%ptr, geofedof=obj%geofedofs(ivar)%ptr, &
+  timefedof=obj%timefedofs(ivar)%ptr)
+
+#ifdef DEBUG_VER
+isok = ncol .EQ. tTimeCompo
+CALL AssertError1(isok, myName, "tTimeCompo not same as ncol")
+#endif
+
+DO idof = 1, tTimeCompo
+  CALL obj%Set( &
+    globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, idof), &
+    ivar=ivar, spaceCompo=spaceCompo, timeCompo=idof, islocal=math%yes)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC3
+
+!----------------------------------------------------------------------------
+!                                                            ApplyDirichletBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyDirichletBC4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC4()"
+#endif
+
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ibc, spaceCompo, tbc, nrow, ncol, tTimeCompo, idof, &
+                tSpaceCompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tTimeCompo = obj%dof.timeComponents.ivar
+tSpaceCompo = obj%dof.spaceComponents.ivar
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%fedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%geofedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%geofedofs(ivar)%ptr is not associated")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%timefedofs(ivar)%ptr)
+CALL AssertError1(isok, myName, &
+                  "obj%timefedofs(ivar)%ptr is not associated")
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc, ivar=ivar)
+nrow = obj%GetMaxTotalNodeNumForBC(ivar=ivar)
+ncol = tTimeCompo
+
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+tbc = SIZE(dbc)
+
+DO ibc = 1, tbc
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
+
+  spaceCompo = dbc(ibc)%ptr%GetDOFNo()
+
+#ifdef DEBUG_VER
+  isok = spaceCompo .LE. tSpaceCompo
+  CALL AssertError1( &
+    isok, myName, "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
+#endif
+
+  CALL dbc(ibc)%ptr%Get( &
+    nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedofs(ivar)%ptr, geofedof=obj%geofedofs(ivar)%ptr, &
+    timefedof=obj%timefedofs(ivar)%ptr)
+
+#ifdef DEBUG_VER
+  isok = ncol .EQ. tTimeCompo
+  CALL AssertError1(isok, myName, "tTimeCompo not same as ncol")
+#endif
+
+  DO idof = 1, tTimeCompo
+    CALL obj%Set( &
+      globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, idof), &
+      ivar=ivar, spaceCompo=spaceCompo, timeCompo=idof, islocal=math%yes)
+  END DO
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC4
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods

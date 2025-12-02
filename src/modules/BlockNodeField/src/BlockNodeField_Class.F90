@@ -976,12 +976,11 @@ END INTERFACE BlockFieldGetFEVariable
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, ivar, times)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -994,13 +993,46 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, ivar, times)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, dbc, ivar, times)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC4(obj, dbc, ivar, times)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC4
 END INTERFACE
 
 !----------------------------------------------------------------------------
