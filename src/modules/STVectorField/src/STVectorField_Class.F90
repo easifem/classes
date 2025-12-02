@@ -198,8 +198,11 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
   !! Apply dirichlet boundary condition
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
+    obj_ApplyDirichletBC3
+  !! Apply dirichlet boundary condition
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-    ApplyDirichletBC2
+    ApplyDirichletBC2, ApplyDirichletBC3
 
 END TYPE STVectorField_
 
@@ -1216,12 +1219,10 @@ END INTERFACE STVectorFieldGetFEVariable
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), INTENT(IN) :: times(:)
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1234,18 +1235,31 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     !! Dirichlet boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), INTENT(IN) :: times(:)
     !! times
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    !! physical variable
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-    !! external field
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times
+  END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------
