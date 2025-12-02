@@ -264,8 +264,13 @@ CONTAINS
   ! GET:
   ! @GetValueMethods
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get => obj_Get
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  !! Get the node number and nodal value of the boundary conditions
+
+  GENERIC, PUBLIC :: Get => Get1, Get2
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetNodeNumber => obj_GetNodeNumber
@@ -678,8 +683,8 @@ END INTERFACE
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get(obj, fedof, geofedof, nodeNum, nodalValue, &
-                            nrow, ncol, times)
+  MODULE SUBROUTINE obj_Get1(obj, fedof, geofedof, nodeNum, nodalValue, &
+                             nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -692,41 +697,43 @@ INTERFACE
     !! ncol = 1 or size of times
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     !! number of rows and cols written in nodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! times vector is only used when usefunction is true in obj
-  END SUBROUTINE obj_Get
+  END SUBROUTINE obj_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Get@GetValueMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
-! summary: Get the nodeNum
+! summary:  Get the nodenum and nodalValue
 !
 !# Introduction
 !
-! This method returns the nodeNum and tsize
-! It calls GetH1Lagrange or GetH1Hierarchical methods
+! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get2(obj, fedof, nodeNum, tsize, iNodeOnNode, &
-                             iNodeOnFace, iNodeOnEdge)
+  MODULE SUBROUTINE obj_Get2(obj, fedof, geofedof, timefedof, nodeNum, &
+                             nodalValue, nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
-    CLASS(FEDOF_), INTENT(INOUT) :: fedof
-    !! finite element degree of freedom
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    !! Degree of freedom for variable and geometry
+    CLASS(TimeFEDOF_), INTENT(INOUT) :: timefedof
+    !! Time degrees of freedom
     INTEGER(I4B), INTENT(INOUT) :: nodeNum(:)
-    !! size of nodeNum can be obtained from obj%boundary%GetTotalNodeNum
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Total size of data written in nodeNum(:)
-    INTEGER(I4B), INTENT(OUT) :: iNodeOnNode
-    !! starting point of nodes on nodes
-    INTEGER(I4B), INTENT(OUT) :: iNodeOnFace
-    !! starting point of nodes on face
-    INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
-    !! starting point of nodes on edge
+    !! size of nodeNum can be obtained from obj%GetTotalNodeNum
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! Nodal values of boundary value
+    !! nrow = size of nodeNum
+    !! ncol = 1 or size of times
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and cols written in nodalValue
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times vector is only used when usefunction is true in obj
+    !! times length should be 2
   END SUBROUTINE obj_Get2
 END INTERFACE
 
