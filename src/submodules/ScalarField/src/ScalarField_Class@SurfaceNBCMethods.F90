@@ -50,16 +50,12 @@ MODULE PROCEDURE obj_ApplySurfaceNeumannBC
 CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC()"
 #endif
 
-REAL(DFP), PARAMETER :: zero = 0.0_DFP
-
-CLASS(NeumannBC_), POINTER :: nbc
-CLASS(AbstractMesh_), POINTER :: mesh
-
 LOGICAL(LGT) :: isok
-
 INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE
 INTEGER(I4B), ALLOCATABLE :: facetCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:), forceVec(:)
+CLASS(NeumannBC_), POINTER :: nbc
+CLASS(AbstractMesh_), POINTER :: mesh
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad
 TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd
@@ -70,7 +66,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 tbc = obj%GetTotalNBC()
-
 isok = tbc .GT. 0
 IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
@@ -81,12 +76,13 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=zero)
+CALL nbcField%SetAll(VALUE=math%zero)
 
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
   CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 END DO
 nbc => NULL()

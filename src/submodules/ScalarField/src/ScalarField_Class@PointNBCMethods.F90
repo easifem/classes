@@ -34,7 +34,6 @@ MODULE PROCEDURE obj_ApplyPointNeumannBC
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC()"
 #endif
 
-! Internal variables
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 INTEGER(I4B) :: nrow, ncol, tbc, ibc
 CLASS(NeumannBC_), POINTER :: nbcptr
