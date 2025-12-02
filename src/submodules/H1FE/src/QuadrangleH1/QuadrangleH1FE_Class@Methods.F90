@@ -398,8 +398,8 @@ INTEGER(I4B) :: tReturns, tArgs
 INTEGER(I4B), PARAMETER :: tSpaceVertices = 2, tTimeVertices = 2
 INTEGER(I4B) :: ii, jj, kk, nips, nns, nsd, faceCon(tSpaceVertices, 4), &
                 ips, ipt, nipt, in_nns, in_nnt, tsize, nnt
-REAL(DFP) :: args(4), scale, stVertexValue(tSpaceVertices, tTimeVertices), &
-             xijLine(3, tSpaceVertices), vertexInterpol
+REAL(DFP) :: args(4), scale, xijLine(3, tSpaceVertices), vertexInterpol, &
+             areal
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -410,33 +410,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 tArgs = func%GetNumArgs()
 isok = tArgs .GE. 4_I4B
 CALL AssertError1( &
-  isok, myName, &
-  "The user function must have at least 4 arguments, (x,y,z,t)")
+  isok, myName, "User function must have at least 4 arguments, (x,y,z,t)")
 #endif
 
 nnt = timeElemsd%nns
 nipt = timeElemsd%nips
-
 nips = facetElemsd%nips
 nns = facetElemsd%nns
 
-nrow = nns
-ncol = nnt
-
+nrowStart = 1
+nrowEnd = nns
+ncolStart = 1
+ncolEnd = nnt
 nsd = obj%opt%GetNSD()
-
 scale = 0.0_DFP
-stVertexValue = 0.0_DFP
 args = 0.0_DFP
-args(1:3) = 0.0_DFP
-
-tReturns = func%GetNumReturns()
 
 #ifdef DEBUG_VER
+tReturns = func%GetNumReturns()
 isok = tReturns .EQ. 1
 CALL AssertError1( &
-  isok, myName, &
-  "The user function must return a single value")
+  isok, myName, "The user function must return a single value")
 #endif
 
 ! faceCon contains the facet connectivity of quadrangle element
@@ -451,11 +445,15 @@ DO jj = 1, tTimeVertices
   args(4) = times(jj)
   DO ii = 1, tSpaceVertices
     args(1:nsd) = xijLine(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=stVertexValue(ii, jj))
+    CALL func%GetScalarValue(args=args, val=ans(ii, jj))
   END DO
 END DO
 
-scale = 1.0_DFP
+IF (onlyFaceBubble) THEN
+  scale = 1.0_DFP
+ELSE
+  scale = 0.0_DFP
+END IF
 
 ! (jj = 1) : Making Col 1 by projecting at bottom space-time slab, tn
 ! this projection is on line space elements
@@ -469,7 +467,7 @@ DO jj = 1, tTimeVertices
     CALL func%GetScalarValue(args=args, val=funcValue(ips, 1))
 
     vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tSpaceVertices, ips), &
-                                 stVertexValue(1:tSpaceVertices, jj))
+                                 ans(1:tSpaceVertices, jj))
 
     funcValue(ips, 1) = funcValue(ips, 1) - scale * vertexInterpol
   END DO
@@ -479,14 +477,13 @@ DO jj = 1, tTimeVertices
     massMat=massMat, ipiv=ipiv, skipVertices=math%yes, &
     tVertices=tSpaceVertices)
 
-  ans(1:tSpaceVertices, jj) = stVertexValue(1:tSpaceVertices, jj)
   DO ii = 1, tsize
     ans(tSpaceVertices + ii, jj) = temp(ii)
   END DO
 END DO
 
 ! Making Row 1 by projecting at left space-time slab, xn
-! this projection is on line time elements
+! this projection is on time elements (line)
 DO jj = 1, tSpaceVertices
   args(1:nsd) = xijLine(1:nsd, jj)
 
@@ -495,7 +492,7 @@ DO jj = 1, tSpaceVertices
     CALL func%GetScalarValue(args=args, val=funcValue(ipt, 1))
 
     vertexInterpol = DOT_PRODUCT(timeElemsd%N(1:tTimeVertices, ipt), &
-                                 stVertexValue(jj, 1:tTimeVertices))
+                                 ans(jj, 1:tTimeVertices))
 
     funcValue(ipt, 1) = funcValue(ipt, 1) - scale * vertexInterpol
   END DO
@@ -520,14 +517,23 @@ DO ipt = 1, nipt
     CALL func%GetScalarValue(args=args, val=funcValue(ips, ipt))
 
     vertexInterpol = 0.0_DFP
+
+    ! Bottom ST-slab Projection, at time tn
+    ! Top ST-slab Projection, at time tn+1
     DO jj = 1, tTimeVertices
-      DO ii = 1, tSpaceVertices
-        vertexInterpol = vertexInterpol + facetElemsd%N(ii, ips) &
-                         * timeElemsd%N(jj, ipt) * stVertexValue(ii, jj)
-      END DO
+      areal = DOT_PRODUCT(facetElemsd%N(1:nns, ips), ans(1:nns, jj))
+      vertexInterpol = vertexInterpol + areal * timeElemsd%N(jj, ipt)
+    END DO
+
+    ! Left ST-slab Projection at x1
+    ! Right ST-slab Projection at x2
+    DO jj = 1, tSpaceVertices
+      areal = DOT_PRODUCT(timeElemsd%N(1:nnt, ipt), ans(jj, 1:nnt))
+      vertexInterpol = vertexInterpol + areal * facetElemsd%N(jj, ips)
     END DO
 
     funcValue(ips, ipt) = funcValue(ips, ipt) - scale * vertexInterpol
+
   END DO
 END DO
 
@@ -536,8 +542,8 @@ CALL GetL2ProjectionDOFValueFromQuadrature( &
   tsize=tsize, massMat=massMat, ipiv=ipiv, skipVertices=math%yes, &
   tSpaceVertices=tSpaceVertices, tTimeVertices=tTimeVertices)
 
-in_nnt = ncol - tTimeVertices
-in_nns = nrow - tSpaceVertices
+in_nnt = nnt - tTimeVertices
+in_nns = nns - tSpaceVertices
 
 DO jj = 1, in_nnt
   DO ii = 1, in_nns
@@ -545,6 +551,14 @@ DO jj = 1, in_nnt
     ans(tSpaceVertices + ii, tTimeVertices + jj) = temp(kk)
   END DO
 END DO
+
+IF (onlyFaceBubble) THEN
+  nrowStart = tSpaceVertices + 1
+  nrowEnd = nns
+
+  ncolStart = 1
+  ncolEnd = nnt
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &

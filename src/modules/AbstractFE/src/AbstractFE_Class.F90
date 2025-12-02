@@ -1344,8 +1344,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
-    func, ans, nrow, ncol, massMat, ipiv, funcValue, temp, onlyFaceBubble, &
-    icompo)
+    func, ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, &
+    funcValue, temp, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
@@ -1363,7 +1363,7 @@ INTERFACE
     !! user defined functions quadrature values of function
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
     !! Nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
     !! Data written in ans
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
     !! mass matrix
@@ -1376,9 +1376,9 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: temp(:)
     !! temporary vector needed internally
     !! the size should be at nns * nnt
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face dof of space elements,
+    !! Note that we always include all the dof of time element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
     !! index of values which are returned from vector user function
   END SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc

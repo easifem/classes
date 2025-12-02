@@ -22,6 +22,7 @@ USE BaseType, ONLY: elemNameOpt => TypeElemNameOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 
 IMPLICIT NONE
 CONTAINS
@@ -298,6 +299,56 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                              GetTimeDOFValueFromSTFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeDOFValueFromSTFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSTFunction()"
+#endif
+
+INTEGER(I4B) :: ipt, nipt, ii
+REAL(DFP) :: args(4), scale, vertexInterpol, vertexValue(2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+args = 0.0_DFP
+args(1:nsd) = x(1:nsd)
+nipt = elemsd%nips
+
+IF (onlyFaceBubble) THEN
+  scale = 1.0_DFP
+ELSE
+  scale = 0.0_DFP
+END IF
+
+! make vertex values
+DO ii = 1, 2
+  args(4) = times(ii)
+  CALL func%GetScalarValue(args=args, val=vertexValue(ii))
+END DO
+
+DO ipt = 1, nipt
+  args(4) = elemsd%coord(1, ipt)
+  CALL func%GetScalarValue(args=args, val=funcValue(ipt))
+  vertexInterpol = DOT_PRODUCT(elemsd%N(1:2, ipt), vertexValue(1:2))
+  funcValue(ipt) = funcValue(ipt) - scale * vertexInterpol
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=elemsd, func=funcValue, ans=ans, tsize=tsize, massMat=massMat, &
+  ipiv=ipiv, skipVertices=onlyFaceBubble, tVertices=2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeDOFValueFromSTFunction
 
 !----------------------------------------------------------------------------
 !                                                              Include error

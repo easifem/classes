@@ -22,6 +22,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE OneDimBasisOpt_Class, ONLY: OneDimBasisOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
+USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
 PRIVATE
@@ -102,6 +103,12 @@ CONTAINS
 
   !GET:
   ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeDOFValueFromSTFunction => &
+    obj_GetTimeDOFValueFromSTFunction
+  !! Get time degree of freedom values from space-time function
+  GENERIC, PUBLIC :: GetTimeDOFValue => GetTimeDOFValueFromSTFunction
+  !! Generic method to get time dof values
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for Discontinuous Galerkin
@@ -445,6 +452,48 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha, beta, lambda
     !! parameters for jacobi and ultraspherical parameters
   END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetDOFValue@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-01
+! summary: Get time degree of freedom values from space-time function
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetTimeDOFValueFromSTFunction( &
+    obj, elemsd, x, nsd, times, func, ans, tsize, massMat, ipiv, funcValue, &
+    onlyFaceBubble, icompo)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! time element shape data
+    REAL(DFP), INTENT(IN) :: x(:)
+    !! a space point coordinate
+    INTEGER(I4B), INTENT(IN) :: nsd
+    !! number of space dimensions
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time element coordinates
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    !! It should be space-time function with 4 argumnets
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! returned dof values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size of returned dof values
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix used internally
+    !! size should be atleast elemsd%nns x elemsd%nns
+    INTEGER(I4B), INTENT(OUT) :: ipiv(:)
+    !! size should be atleast elemsd%nns
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points will be stored here
+    !! used internally, size should be atleast elemsd%nips
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then only inside dof are returned
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+  END SUBROUTINE obj_GetTimeDOFValueFromSTFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
