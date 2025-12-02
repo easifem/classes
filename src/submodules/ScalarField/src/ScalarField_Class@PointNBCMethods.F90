@@ -37,10 +37,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC()"
 ! Internal variables
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 
-REAL(DFP) :: times0(1)
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, nrow, ncol, tsize, ibc
+INTEGER(I4B) :: nrow, ncol, tbc, ibc
 CLASS(NeumannBC_), POINTER :: nbcptr
 
 #ifdef DEBUG_VER
@@ -48,37 +45,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-times0(1) = Input(option=times, default=math%zero)
-
-tsize = SIZE(obj%nbc_point)
-
+CALL obj%SetMaxTotalNodeNumForBC()
 ncol = 1
-DO ibc = 1, tsize
-  nrow = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+nrow = obj%GetMaxTotalNodeNumForBC()
 
-  CALL Reallocate( &
-    nodalvalue, nrow, ncol, isExpand=math%yes, expandFactor=expandFactor)
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
 
-  CALL Reallocate( &
-    nodenum, nrow, isExpand=math%yes, expandFactor=expandFactor)
-END DO
+tbc = SIZE(obj%nbc_point)
 
-DO ibc = 1, tsize
+DO ibc = 1, tbc
   nbcptr => obj%nbc_point(ibc)%ptr
 
   CALL nbcptr%Get( &
-    nodalvalue=nodalvalue, nodenum=nodenum, times=times0, nrow=nrow, &
-    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
+    nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, &
+    nrow=nrow, ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
-  DO idof = 1, ncol
-    CALL obj%Set( &
-      globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-      scale=scale, addContribution=math%yes, islocal=math%yes)
-  END DO
+  CALL obj%Set( &
+    globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, 1), &
+    scale=scale, addContribution=math%yes, islocal=math%yes)
 END DO
 
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 nbcptr => NULL()
 
 #ifdef DEBUG_VER
