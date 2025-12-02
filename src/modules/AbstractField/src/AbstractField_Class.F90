@@ -271,12 +271,17 @@ CONTAINS
   !! Get the pointer to nbc_point
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetMaxTotalNodeNumForBC => obj_GetMaxTotalNodeNumForBC
+  PROCEDURE, PASS(obj) :: &
+    GetMaxTotalNodeNumForBC1 => obj_GetMaxTotalNodeNumForBC1
+  PROCEDURE, PASS(obj) :: &
+    GetMaxTotalNodeNumForBC2 => obj_GetMaxTotalNodeNumForBC2
   !! Get the maximum node number for applying boundary conditions
   !! This will call GetTotalNodeNum on every dbc, nbc, nbc_point
   !! and return the maximum value. This method is necessary for
   !! allocating the nodeNum and nodalValue arrays
+  GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
+    GetMaxTotalNodeNumForBC1, &
+    GetMaxTotalNodeNumForBC2
 
   ! SET:
   ! @SetMethods
@@ -284,8 +289,11 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    SetMaxTotalNodeNumForBC => obj_SetMaxTotalNodeNumForBC
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    SetMaxTotalNodeNumForBC1 => obj_SetMaxTotalNodeNumForBC1, &
+    SetMaxTotalNodeNumForBC2 => obj_SetMaxTotalNodeNumForBC2
+  GENERIC, PUBLIC :: SetMaxTotalNodeNumForBC &
+    => SetMaxTotalNodeNumForBC1, SetMaxTotalNodeNumForBC2
 
 END TYPE AbstractField_
 
@@ -1234,12 +1242,33 @@ END INTERFACE
 ! summary: Get the maximum total node number for applying boundary conds
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC(obj, dbcVec, dbc)
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC1(obj, dbcVec, dbc)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
     CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
     INTEGER(I4B) :: ans
-  END SUBROUTINE obj_SetMaxTotalNodeNumForBC
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+!
+!# Introduction
+!   This method if for block node fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC2(obj, ivar, dbcVec, dbc)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1691,10 +1720,26 @@ END INTERFACE
 ! summary: Get the maximum total node number for applying boundary conds
 
 INTERFACE
-  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC1(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetMaxTotalNodeNumForBC
+  END FUNCTION obj_GetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC2(obj, ivar) RESULT(ans)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

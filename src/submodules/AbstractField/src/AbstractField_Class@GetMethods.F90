@@ -630,9 +630,9 @@ END PROCEDURE obj_GetMeshField
 !                                                    GetMaxTotalNodeNumForBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC
+MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -652,7 +652,35 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetMaxTotalNodeNumForBC
+END PROCEDURE obj_GetMaxTotalNodeNumForBC1
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isMaxTotalNodeNumForBCSet) THEN
+  ans = obj%maxTotalNodeNumForBC
+
+ELSE
+  CALL obj%SetMaxTotalNodeNumForBC(ivar=ivar)
+  ans = obj%maxTotalNodeNumForBC
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalNodeNumForBC2
 
 !----------------------------------------------------------------------------
 !                                                             Include error
