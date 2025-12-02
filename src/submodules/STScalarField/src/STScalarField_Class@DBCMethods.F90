@@ -74,11 +74,10 @@ END PROCEDURE obj_ApplyDirichletBC1
 MODULE PROCEDURE obj_ApplyDirichletBC2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-INTEGER(I4B) :: idof, ii, aint, tbc, nrow, ncol
+INTEGER(I4B) :: idof, ii, tbc, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
