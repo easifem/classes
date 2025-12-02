@@ -33,44 +33,41 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC1()"
 #endif
 
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, nrow, ncol, tsize, ibc
+INTEGER(I4B) :: idof, nrow, ncol, tbc, ibc
 CLASS(NeumannBC_), POINTER :: nbcptr
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj%nbc_point)
+ncol = obj%timeCompo
+nrow = obj%GetMaxTotalNodeNumForBC()
 
-ncol = 1
-DO ibc = 1, tsize
-  nrow = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
 
-  CALL Reallocate( &
-    nodalvalue, nrow, ncol, isExpand=math%yes, expandFactor=expandFactor)
-
-  CALL Reallocate( &
-    nodenum, nrow, isExpand=math%yes, expandFactor=expandFactor)
-END DO
-
-DO ibc = 1, tsize
+tbc = SIZE(obj%nbc_point)
+DO ibc = 1, tbc
   nbcptr => obj%nbc_point(ibc)%ptr
+  isok = ASSOCIATED(nbcptr)
+  IF (.NOT. isok) CYCLE
+
   CALL nbcptr%Get( &
-    nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
+    nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, &
+    nrow=nrow, ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof, &
+    timefedof=obj%timefedof)
 
   DO idof = 1, ncol
     CALL obj%Set( &
-      globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
+      globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, idof), &
       scale=scale, addContribution=math%yes, islocal=math%yes)
   END DO
 END DO
 
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 nbcptr => NULL()
 
 #ifdef DEBUG_VER
