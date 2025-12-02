@@ -36,16 +36,15 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC()"
 
 ! Internal variables
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-
 INTEGER(I4B) :: nrow, ncol, tbc, ibc
 CLASS(NeumannBC_), POINTER :: nbcptr
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%SetMaxTotalNodeNumForBC()
 ncol = 1
 nrow = obj%GetMaxTotalNodeNumForBC()
 
@@ -55,9 +54,10 @@ CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
                 expandFactor=expandFactor)
 
 tbc = SIZE(obj%nbc_point)
-
 DO ibc = 1, tbc
   nbcptr => obj%nbc_point(ibc)%ptr
+  isok = ASSOCIATED(nbcptr)
+  IF (.NOT. isok) CYCLE
 
   CALL nbcptr%Get( &
     nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, &
