@@ -77,7 +77,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
 #endif
 
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-INTEGER(I4B) :: idof, ii, tbc, nrow, ncol
+INTEGER(I4B) :: idof, ibc, tbc, nrow, ncol
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -85,8 +86,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc)
-ncol = obj%timeCompo
 nrow = obj%GetMaxTotalNodeNumForBC()
+ncol = obj%timeCompo
 
 CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
                 expandFactor=expandFactor)
@@ -95,16 +96,19 @@ CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
 
 tbc = SIZE(dbc)
 
-DO ii = 1, tbc
+DO ibc = 1, tbc
 
-  CALL dbc(ii)%ptr%Get( &
-    nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, nrow=nrow, &
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
+
+  CALL dbc(ibc)%ptr%Get( &
+    nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
     ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof, &
     timefedof=obj%timefedof)
 
   DO idof = 1, ncol
     CALL obj%Set( &
-      globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, idof), &
+      globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, idof), &
       timecompo=idof, islocal=math%yes)
   END DO
 
