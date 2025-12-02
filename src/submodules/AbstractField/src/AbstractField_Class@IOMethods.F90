@@ -142,6 +142,26 @@ IF (isok) THEN
   END DO
 END IF
 
+CALL Display(obj%isMaxTotalNodeNumForBCSet, &
+             "isMaxTotalNodeNumForBCSet: ", unitNo=unitNo)
+
+CALL Display(obj%maxTotalNodeNumForBC, &
+             "maxTotalNodeNumForBC: ", unitNo=unitNo)
+
+isok = ALLOCATED(obj%nodalValue)
+CALL Display(isok, "nodalValue ALLOCATED: ", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(SHAPE(obj%nodalValue), "Shape of nodalValue: ", &
+               unitNo=unitNo)
+END IF
+
+isok = ALLOCATED(obj%nodeNum)
+CALL Display(isok, "nodeNum ALLOCATED: ", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(SIZE(obj%nodeNum), "Size of nodeNum: ", &
+               unitNo=unitNo)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

@@ -627,6 +627,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMeshField
 
 !----------------------------------------------------------------------------
+!                                                    GetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isMaxTotalNodeNumForBCSet) THEN
+  ans = obj%maxTotalNodeNumForBC
+
+ELSE
+  CALL obj%SetMaxTotalNodeNumForBC()
+  ans = obj%maxTotalNodeNumForBC
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalNodeNumForBC
+
+!----------------------------------------------------------------------------
 !                                                             Include error
 !----------------------------------------------------------------------------
 

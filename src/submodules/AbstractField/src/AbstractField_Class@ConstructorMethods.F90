@@ -269,9 +269,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
+obj%isMaxTotalNodeNumForBCSet = .FALSE.
 obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
+obj%maxTotalNodeNumForBC = 0
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1
@@ -344,6 +346,12 @@ IF (isok) THEN
   END DO
   DEALLOCATE (obj%nbc_point)
 END IF
+
+isok = ALLOCATED(obj%nodalValue)
+IF (isok) DEALLOCATE (obj%nodalValue)
+
+isok = ALLOCATED(obj%nodeNum)
+IF (isok) DEALLOCATE (obj%nodeNum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

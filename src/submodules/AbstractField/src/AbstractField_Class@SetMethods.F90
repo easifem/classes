@@ -140,6 +140,93 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
+!                                                    SetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaxTotalNodeNumForBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaxTotalNodeNumForBC()"
+#endif
+
+LOGICAL(LGT) :: isok, ispresent, notset
+INTEGER(I4B) :: ibc, tbc, ans1, ans2, ans
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans1 = obj%maxTotalNodeNumForBC
+ans2 = ans1
+ans = ans1
+
+ispresent = PRESENT(dbc)
+IF (ispresent) THEN
+  ans2 = dbc%GetTotalNodeNum(fedof=obj%fedof)
+  ans = MAX(ans1, ans2)
+  ans1 = ans
+END IF
+
+ispresent = PRESENT(dbcvec)
+IF (ispresent) THEN
+  tbc = SIZE(dbcvec)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(dbcvec(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = dbcvec(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+notset = .NOT. obj%isMaxTotalNodeNumForBCSet
+
+ispresent = ALLOCATED(obj%dbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%dbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%dbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc_point) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc_point)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc_point(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+obj%maxTotalNodeNumForBC = ans
+obj%isMaxTotalNodeNumForBCSet = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMaxTotalNodeNumForBC
+
+!----------------------------------------------------------------------------
 !                                                             Include Errors
 !----------------------------------------------------------------------------
 

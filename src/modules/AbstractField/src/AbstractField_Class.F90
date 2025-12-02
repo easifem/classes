@@ -77,6 +77,9 @@ PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
+  LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = .FALSE.
+  !! It is true when we set the maxTotalNodeNumForBC
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE(String) :: name
@@ -84,6 +87,9 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(String) :: engine
   !! Engine of the field, for example
   !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
+  INTEGER(I4B) :: maxTotalNodeNumForBC = 0_I4B
+  !! maximum total node num for applying boundary conditions
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
   INTEGER(I4B) :: comm = 0_I4B
   !! communication group (MPI)
   INTEGER(I4B) :: myRank = 0_I4B
@@ -129,6 +135,16 @@ TYPE, ABSTRACT :: AbstractField_
 
   TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc_point(:)
   !! Neumann boundary conditions for point
+
+  REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
+  !! This array is used internally to store the nodal values of
+  !! for dirichletBC, NeumannBC,
+  !! The entries are obtained from Get method of AbstractBC
+  !! The number of rows is maxTotalNodeNumForBC
+  INTEGER(I4B), ALLOCATABLE :: nodeNum(:)
+  !! This vector is used internally to apply Dirichlet boundary condition
+  !! It stores the node numbers (fedof) where the DBC, NBC, or nbcPoint
+  !! are applied.
 
 CONTAINS
   PRIVATE
@@ -176,15 +192,15 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: IsInitiated => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns isInit
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam => obj_GetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters of AbstractField
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     obj_GetTotalPhysicalVars
   !! Returns the total number of physical variables
-  !!  This routine should be implemented by child classes
+  !! This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -255,6 +271,12 @@ CONTAINS
   !! Get the pointer to nbc_point
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetMaxTotalNodeNumForBC => obj_GetMaxTotalNodeNumForBC
+  !! Get the maximum node number for applying boundary conditions
+  !! This will call GetTotalNodeNum on every dbc, nbc, nbc_point
+  !! and return the maximum value. This method is necessary for
+  !! allocating the nodeNum and nodalValue arrays
 
   ! SET:
   ! @SetMethods
@@ -262,14 +284,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-
-  ! SET:
-  ! @DirichletBCMethods
-  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
-  ! PROCEDURE, PASS(obj) :: ApplyDirichletBC3 => obj_ApplyDirichletBC3
-  ! GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-  !   ApplyDirichletBC2, ApplyDirichletBC3
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    SetMaxTotalNodeNumForBC => obj_SetMaxTotalNodeNumForBC
 
 END TYPE AbstractField_
 
@@ -1210,6 +1226,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC(obj, dbcVec, dbc)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      IsInitiated@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1647,6 +1680,21 @@ INTERFACE
     CLASS(MeshField_), INTENT(INOUT) :: meshField
     INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
   END SUBROUTINE obj_GetMeshField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
