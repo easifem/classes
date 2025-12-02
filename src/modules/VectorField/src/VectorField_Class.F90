@@ -153,10 +153,14 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC3 => obj_ApplyDirichletBC3
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-    ApplyDirichletBC2
+    ApplyDirichletBC2, ApplyDirichletBC3
 
   ! SET:
   ! @PointNBCMethods
@@ -1281,12 +1285,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1299,13 +1301,26 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+  END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1338,8 +1353,7 @@ END INTERFACE
 ! summary:  Add Contribution of neumann boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC( &
-    obj, nbcField, scale, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC(obj, nbcField, scale, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! Vector field
     CLASS(VectorField_), INTENT(INOUT) :: nbcField
@@ -1347,12 +1361,8 @@ INTERFACE
     !! extension to the entire domain
     REAL(DFP), INTENT(IN) :: scale
     !! Scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! times
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    !! physical variable
-    CLASS(AbstractField_), OPTIONAL, INTENT(INOUT) :: extField
-    !! external field
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
 
