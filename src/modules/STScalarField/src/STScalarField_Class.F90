@@ -164,10 +164,14 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC3 => obj_ApplyDirichletBC3
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
-    ApplyDirichletBC2
+    ApplyDirichletBC2, ApplyDirichletBC3
 
   ! SET:
   ! @BodySourceMethods
@@ -1335,6 +1339,21 @@ INTERFACE
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     REAL(DFP), INTENT(IN) :: times(:)
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------
