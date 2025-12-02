@@ -16,14 +16,16 @@
 !
 
 SUBMODULE(VectorField_Class) SurfaceNBCMethods
-USE GlobalData, ONLY: NODES_FMT
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_, TypeFEVariableVector, &
-                    TypeFEVariableSpace
-USE FEVariable_Method, ONLY: NodalVariable, &
-                             FEVariable_Set => Set, &
-                             FEVariable_Deallocate => DEALLOCATE
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: math => TypeMathOpt
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
 USE AbstractFE_Class, ONLY: AbstractFE_
@@ -47,13 +49,9 @@ MODULE PROCEDURE obj_ApplySurfaceNeumannBC
 CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC()"
 #endif
 
-REAL(DFP), PARAMETER :: zero = 0.0_DFP
-
 CLASS(NeumannBC_), POINTER :: nbc
 CLASS(AbstractMesh_), POINTER :: mesh
-
 LOGICAL(LGT) :: isok
-
 INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE, spaceCompo(1)
 INTEGER(I4B), ALLOCATABLE :: facetCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:, :), forceVec(:, :)
@@ -66,14 +64,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL nbcField%SetAll(VALUE=zero)
 tbc = obj%GetTotalNBC()
+isok = tbc .GT. 0
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+CALL nbcField%SetAll(VALUE=math%zero)
+
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times, ivar=ivar, &
-                                 extField=extField)
+
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 END DO
 nbc => NULL()
 
@@ -86,8 +95,9 @@ CALL Reallocate(facetCon, maxNNE)
 CALL Reallocate(forceVec, spaceCompo(1), maxNNE)
 CALL Reallocate(nbcValue, spaceCompo(1), maxNNE)
 
-forceVar = NodalVariable(nrow=spaceCompo(1), ncol=maxNNE, rank=TypeFEVariableVector, &
-                         vartype=TypeFEVariableSpace)
+forceVar = NodalVariable( &
+           nrow=spaceCompo(1), ncol=maxNNE, rank=TypeFEVariableVector, &
+           vartype=TypeFEVariableSpace)
 
 mesh => obj%fedof%GetMeshPointer()
 
@@ -106,12 +116,8 @@ DO ibc = 1, tbc
     facetCon=facetCon)
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
-IF (ALLOCATED(facetCon)) DEALLOCATE (facetCon)
-IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
-IF (ALLOCATED(nbcValue)) DEALLOCATE (nbcValue)
+DEALLOCATE (xij, facetCon, forceVec, nbcValue)
 
-! TYPE(FEVariable_) :: forceVar
 CALL FEVariable_Deallocate(forceVar)
 CALL QuadraturePoint_Deallocate(quad)
 CALL QuadraturePoint_Deallocate(facetQuad)
@@ -171,12 +177,8 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
   CHARACTER(*), PARAMETER :: myName = "VectorFieldAssembleSurfaceSource()"
 #endif
 
-  LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
-  REAL(DFP), PARAMETER :: one = 1.0_DFP
-
   LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
   INTEGER(I4B) :: tElemToFace, indx, localCellNumber, localFaceNumber, &
-                  tnbcValue, tforceVec, &
                   xij_i, xij_j, tFacetCon, nrow, ncol
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 
@@ -190,7 +192,7 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
 
   isok = isElemToEdge .OR. isElemToFace
   IF (.NOT. isok) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
           'isElemToEdge and isElemToFace are both .false. So, nothing to do.')
 
 #ifdef DEBUG_VER
@@ -207,20 +209,20 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
     CALL nbc%GetElemToFace(indx=indx, localCellNumber=localCellNumber, &
                            localFaceNumber=localFaceNumber)
 
-    CALL fedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    CALL fedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
-                                islocal=yes)
+                                islocal=math%yes)
 
-    CALL geofedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    CALL geofedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
-                                      islocal=yes)
+                                      islocal=math%yes)
 
     CALL fedof%GetFacetConnectivity_( &
-      globalElement=localCellNumber, islocal=yes, ans=facetCon, &
+      globalElement=localCellNumber, islocal=math%yes, ans=facetCon, &
       tsize=tFacetCon, localFaceNumber=localFaceNumber)
 
     CALL mesh%GetNodeCoord( &
-      nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, &
+      nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
       globalElement=localCellNumber)
 
     CALL feptr%GetGlobalFacetElemShapeData2( &
@@ -229,12 +231,14 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
       localFaceNumber=localFaceNumber, quad=quad, facetQuad=facetQuad, &
       xij=xij)
 
-    CALL nbcField%Get(VALUE=nbcValue, globalNode=facetCon(1:tFacetCon), &
-                      nrow=nrow, ncol=ncol, islocal=yes, storageFMT=NODES_FMT)
+    CALL nbcField%Get( &
+      VALUE=nbcValue, globalNode=facetCon(1:tFacetCon), &
+      nrow=nrow, ncol=ncol, islocal=math%yes, &
+      storageFMT=TypeFieldOpt%storageFormatNodes)
 
     CALL FEVariable_Set( &
       obj=forceVar, val=nbcValue(1:nrow, 1:ncol), rank=TypeFEVariableVector, &
-      vartype=TypeFEVariableSpace, scale=one, addContribution=no)
+      vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
     CALL ForceVector_( &
       test=facetElemsd, c=forceVar, crank=TypeFEVariableVector, &
@@ -242,7 +246,8 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
 
     CALL obj%Set( &
       globalNode=facetCon(1:tFacetCon), VALUE=forceVec(1:nrow, 1:ncol), &
-      scale=scale, addContribution=yes, islocal=yes, storageFMT=NODES_FMT)
+      scale=scale, addContribution=math%yes, islocal=math%yes, &
+      storageFMT=TypeFieldOpt%storageFormatNodes)
   END DO
 
   NULLIFY (feptr, geofeptr)
