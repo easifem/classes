@@ -495,11 +495,8 @@ DO jj = 1, tTimeVertices
   END DO
 END DO
 
-IF (onlyFaceBubble) THEN
-  scale = 1.0_DFP
-ELSE
-  scale = 0.0_DFP
-END IF
+scale = math%zero
+IF (onlyFaceBubble) scale = math%one
 
 ! (jj = 1) : Making Col 1 by projecting at bottom space-time slab, tn
 ! this projection is on line space elements
@@ -562,7 +559,7 @@ DO ipt = 1, nipt
     args(1:nsd) = facetElemsd%coord(1:nsd, ips)
     CALL func%GetScalarValue(args=args, val=funcValue(ips, ipt))
 
-    vertexInterpol = 0.0_DFP
+    vertexInterpol = math%zero
 
     ! Bottom ST-slab Projection, at time tn
     ! Top ST-slab Projection, at time tn+1

@@ -178,7 +178,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromVertex => obj_GetFacetDOFValueFromVertex
   !! Get the dof values corresponding to a constant function
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
   !! Get the dof values corresponding to a constant function
   !! This method should be implemented by the child class

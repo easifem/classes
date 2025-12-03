@@ -63,6 +63,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set the orientation of element
   PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
+  !! Get facet dof value from space-time user function
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromSTFunc => obj_GetFacetDOFValueFromSTFunc
   !! Get facet dof value from space-time user function
   PROCEDURE, PUBLIC, PASS(obj) :: &

@@ -63,7 +63,16 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set orientation of the finite element
   PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
+  !! Get facet dof value from space-time user function
+  PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromSTFunc => obj_GetFacetDOFValueFromSTFunc
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetSTFacetDOFValueFromSTFunc => obj_GetSTFacetDOFValueFromSTFunc
+  !! Get facet dof value from space-time user function
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetSTFacetDOFValueFromConstant => obj_GetSTFacetDOFValueFromConstant
+  !! Get facet dof value from space-time user function
 END TYPE TriangleH1FE_
 
 !----------------------------------------------------------------------------
@@ -275,6 +284,48 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromConstant( &
+    obj, elemsd, facetElemsd, xij, localFaceNumber, ans, tsize, &
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    !! not needed
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    !! not needed
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    !! not  needed
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function value at quadrature points
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+  END SUBROUTINE obj_GetFacetDOFValueFromConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                   GetFacetDOFValueFromUserFunction@Methods
 !----------------------------------------------------------------------------
 
@@ -317,6 +368,116 @@ INTERFACE
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
   END SUBROUTINE obj_GetFacetDOFValueFromUserFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
+! It is a function of space and time.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc( &
+    obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
+    func, ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, &
+    funcValue, temp, onlyFaceBubble, icompo)
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
+    !! shape function for timeElemsd
+    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
+    !! Nodal coordinates of element
+    !! Times should have size equal to 2
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
+    !! Data written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
+    !! function values at quadrature points used inside
+    !! The number of rows should be atleast max(nips, nipt)
+    !! The number of columns should be at least nipt
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary vector needed internally
+    !! the size should be nns * nnt
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face dof of space elements,
+    !! Note that we always include all the dof of time element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
+! It is a function of space and time.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSTFacetDOFValueFromConstant( &
+    obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
+    ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, funcValue, &
+    temp, onlyFaceBubble, icompo)
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
+    !! shape function for timeElemsd
+    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
+    !! Nodal coordinates of element
+    !! Times should have size equal to 2
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
+    !! Data written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
+    !! function values at quadrature points used inside
+    !! The number of rows should be atleast max(nips, nipt)
+    !! The number of columns should be at least nipt
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary vector needed internally
+    !! the size should be nns * nnt
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face dof of space elements,
+    !! Note that we always include all the dof of time element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetSTFacetDOFValueFromConstant
 END INTERFACE
 
 !----------------------------------------------------------------------------
