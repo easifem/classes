@@ -18,9 +18,9 @@ SUBMODULE(AbstractField_Class) ConstructorMethods
 USE GlobalData, ONLY: TypeIntI4B
 USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE FPL_Method, ONLY: CheckEssentialParam, &
-                      FPL_Set => Set, &
-                      FPL_GetValue => GetValue
+USE FPL_Method, ONLY: CheckEssentialParam
+USE FPL_Method, ONLY: FPL_Set => Set
+USE FPL_Method, ONLY: FPL_GetValue => GetValue
 IMPLICIT NONE
 CONTAINS
 
