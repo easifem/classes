@@ -397,7 +397,7 @@ INTERFACE
     !! pivot indices for LU decomposition of mass matrix
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
     !! function values at quadrature points used inside
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo

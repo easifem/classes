@@ -249,6 +249,48 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-05
 ! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromConstant( &
+    obj, elemsd, facetElemsd, xij, localFaceNumber, ans, tsize, &
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    !! not needed
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    !! not needed
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    !! not  needed
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function value at quadrature points
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+  END SUBROUTINE obj_GetFacetDOFValueFromConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
 !
 !# Introduction
 !
@@ -282,7 +324,7 @@ INTERFACE
     !! pivot indices for LU decomposition of mass matrix
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
     !! function values at quadrature points used inside
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo

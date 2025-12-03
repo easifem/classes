@@ -265,6 +265,52 @@ END PROCEDURE obj_SetOrientation
 !                                                            GetFacetDOFValue
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetFacetDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromConstant()"
+#endif
+
+INTEGER(I4B), PARAMETER :: tVertices = 2
+INTEGER(I4B) :: ii, nips
+
+REAL(DFP) :: scale, vertexVal(tVertices), vertexInterpol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nips = facetElemsd%nips
+scale = math%zero
+vertexVal = math%zero
+
+IF (onlyFaceBubble) THEN
+  vertexVal = math%one
+  scale = 1.0_DFP
+END IF
+
+DO ii = 1, nips
+  funcValue(ii) = math%one
+  vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
+                               vertexVal(1:tVertices))
+  funcValue(ii) = funcValue(ii) - scale * vertexInterpol
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, func=funcValue, ans=ans, tsize=tsize, &
+  massMat=massMat, ipiv=ipiv, skipVertices=onlyFaceBubble, &
+  tVertices=tVertices)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetFacetDOFValueFromConstant
+
+!----------------------------------------------------------------------------
+!                                                            GetFacetDOFValue
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromSTFunc()"
@@ -277,7 +323,6 @@ INTEGER(I4B) :: ii, nips, nns, nsd, faceCon(tVertices, 4), &
                 returnType, icompo0
 REAL(DFP) :: args(4), scale, vertexVal(tVertices), xijLine(3, tVertices), &
              vertexInterpol, temp_ans(10)
-LOGICAL(LGT) :: onlyFaceBubble0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -295,15 +340,14 @@ nips = facetElemsd%nips
 nns = facetElemsd%nns
 nsd = obj%opt%GetNSD()
 
-scale = 0.0_DFP
-vertexVal = 0.0_DFP
-
-args(1:3) = 0.0_DFP
+scale = math%zero
+vertexVal = math%zero
+args(1:3) = math%zero
 args(4) = times
 
 tReturns = func%GetNumReturns()
-onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
 returnType = func%GetReturnType()
+
 SELECT CASE (returnType)
 CASE (TypeFEVariableOpt%scalar)
 
@@ -313,9 +357,10 @@ CASE (TypeFEVariableOpt%scalar)
                     "WIP: the user function must return a single value")
 #endif
 
-  IF (onlyFaceBubble0) THEN
+  IF (onlyFaceBubble) THEN
     faceCon = FacetConnectivity_Quadrangle()
-    xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
+    xijLine(1:nsd, 1:tVertices) = xij(1:nsd, &
+                                      faceCon(1:tVertices, localFaceNumber))
 
     DO ii = 1, tVertices
       args(1:nsd) = xijLine(1:nsd, ii)
@@ -345,9 +390,10 @@ CASE (TypeFEVariableOpt%vector)
                     //ToString(icompo0)//" values")
 #endif
 
-  IF (onlyFaceBubble0) THEN
+  IF (onlyFaceBubble) THEN
     faceCon = FacetConnectivity_Quadrangle()
-    xijLine(1:nsd, :) = xij(1:nsd, faceCon(:, localFaceNumber))
+    xijLine(1:nsd, 1:tVertices) = xij(1:nsd, &
+                                      faceCon(1:tVertices, localFaceNumber))
 
     DO ii = 1, tVertices
       args(1:nsd) = xijLine(1:nsd, ii)
