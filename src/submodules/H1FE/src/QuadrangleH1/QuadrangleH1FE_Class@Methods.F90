@@ -561,15 +561,160 @@ IF (onlyFaceBubble) THEN
 END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
+END PROCEDURE obj_GetSTFacetDOFValueFromSTFunc
+
+!----------------------------------------------------------------------------
+!                                                            GetFacetDOFValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSTFacetDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSTFacetDOFValueFromConstant()"
+#endif
+
+INTEGER(I4B), PARAMETER :: tSpaceVertices = 2, tTimeVertices = 2
+INTEGER(I4B) :: ii, jj, kk, nips, nns, nsd, faceCon(tSpaceVertices, 4), &
+                ips, ipt, nipt, in_nns, in_nnt, tsize, nnt
+REAL(DFP) :: scale, xijLine(3, tSpaceVertices), vertexInterpol, areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nnt = timeElemsd%nns
+nipt = timeElemsd%nips
+
+nips = facetElemsd%nips
+nns = facetElemsd%nns
+
+nrowStart = 1
+nrowEnd = nns
+
+ncolStart = 1
+ncolEnd = nnt
+
+nsd = obj%opt%GetNSD()
+
+! faceCon contains the facet connectivity of quadrangle element
+faceCon = FacetConnectivity_Quadrangle()
+
+! xijLine contains the x1 and x2 coordinates of the line (end points)
+xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
+                                   faceCon(1:tSpaceVertices, localFaceNumber))
+
+! Now we form space-time vertex values of func
+ans(1:tTimeVertices, 1:tSpaceVertices) = math%one
+
+scale = math%zero
+IF (onlyFaceBubble) scale = math%one
+
+! (jj = 1) : Making Col 1 by projecting at bottom space-time slab, tn
+! this projection is on line space elements
+!
+! (jj = 2) : Making Col 2 by projecting at bottom space-time slab, tn+1
+! this projection is on line space elements
+DO jj = 1, tTimeVertices
+
+  DO ips = 1, nips
+    funcValue(ips, 1) = math%one
+    vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tSpaceVertices, ips), &
+                                 ans(1:tSpaceVertices, jj))
+    funcValue(ips, 1) = funcValue(ips, 1) - scale * vertexInterpol
+  END DO
+
+  CALL GetL2ProjectionDOFValueFromQuadrature( &
+    elemsd=facetElemsd, func=funcValue(:, 1), ans=temp, tsize=tsize, &
+    massMat=massMat, ipiv=ipiv, skipVertices=math%yes, &
+    tVertices=tSpaceVertices)
+
+  DO ii = 1, tsize
+    ans(tSpaceVertices + ii, jj) = temp(ii)
+  END DO
+
+END DO
+
+! Making Row 1 by projecting at left space-time slab, xn
+! this projection is on time elements (line)
+DO jj = 1, tSpaceVertices
+
+  DO ipt = 1, nipt
+    funcValue(ipt, 1) = 1.0_DFP
+    vertexInterpol = DOT_PRODUCT(timeElemsd%N(1:tTimeVertices, ipt), &
+                                 ans(jj, 1:tTimeVertices))
+    funcValue(ipt, 1) = funcValue(ipt, 1) - scale * vertexInterpol
+  END DO
+
+  CALL GetL2ProjectionDOFValueFromQuadrature( &
+    elemsd=timeElemsd, func=funcValue(:, 1), ans=temp, tsize=tsize, &
+    massMat=massMat, ipiv=ipiv, skipVertices=math%yes, &
+    tVertices=tTimeVertices)
+
+  DO ii = 1, tsize
+    ans(jj, tTimeVertices + ii) = temp(ii)
+  END DO
+END DO
+
+! Making data starting from Row 3 and Col 3 by projecting
+! at interior space-time slab, here we will need space time projection
+DO ipt = 1, nipt
+
+  DO ips = 1, nips
+
+    funcValue(ips, ipt) = math%one
+
+    vertexInterpol = math%zero
+
+    ! Bottom ST-slab Projection, at time tn
+    ! Top ST-slab Projection, at time tn+1
+    DO jj = 1, tTimeVertices
+      areal = DOT_PRODUCT(facetElemsd%N(1:nns, ips), ans(1:nns, jj))
+      vertexInterpol = vertexInterpol + areal * timeElemsd%N(jj, ipt)
+    END DO
+
+    ! Left ST-slab Projection at x1
+    ! Right ST-slab Projection at x2
+    DO jj = 1, tSpaceVertices
+      areal = DOT_PRODUCT(timeElemsd%N(1:nnt, ipt), ans(jj, 1:nnt))
+      vertexInterpol = vertexInterpol + areal * facetElemsd%N(jj, ips)
+    END DO
+
+    funcValue(ips, ipt) = funcValue(ips, ipt) - scale * vertexInterpol
+
+  END DO
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=facetElemsd, timeElemsd=timeElemsd, func=funcValue, ans=temp, &
+  tsize=tsize, massMat=massMat, ipiv=ipiv, skipVertices=math%yes, &
+  tSpaceVertices=tSpaceVertices, tTimeVertices=tTimeVertices)
+
+in_nnt = nnt - tTimeVertices
+in_nns = nns - tSpaceVertices
+
+DO jj = 1, in_nnt
+  DO ii = 1, in_nns
+    kk = (jj - 1) * in_nns + ii
+    ans(tSpaceVertices + ii, tTimeVertices + jj) = temp(kk)
+  END DO
+END DO
+
+IF (onlyFaceBubble) THEN
+  nrowStart = tSpaceVertices + 1
+  nrowEnd = nns
+
+  ncolStart = 1
+  ncolEnd = nnt
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSTFacetDOFValueFromSTFunc
+END PROCEDURE obj_GetSTFacetDOFValueFromConstant
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
