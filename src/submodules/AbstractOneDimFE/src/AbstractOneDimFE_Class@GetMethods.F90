@@ -351,6 +351,45 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTimeDOFValueFromSTFunction
 
 !----------------------------------------------------------------------------
+!                                              GetTimeDOFValueFromSTFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSTFunction()"
+#endif
+
+INTEGER(I4B) :: ipt
+REAL(DFP) :: scale, vertexInterpol, vertexValue(2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! make vertex values
+vertexValue = 1.0_DFP
+
+scale = 0.0_DFP
+IF (onlyFaceBubble) scale = 1.0_DFP
+
+DO ipt = 1, elemsd%nips
+  funcValue(ipt) = 1.0_DFP
+  vertexInterpol = DOT_PRODUCT(elemsd%N(1:2, ipt), vertexValue(1:2))
+  funcValue(ipt) = funcValue(ipt) - scale * vertexInterpol
+END DO
+
+CALL GetL2ProjectionDOFValueFromQuadrature( &
+  elemsd=elemsd, func=funcValue, ans=ans, tsize=tsize, massMat=massMat, &
+  ipiv=ipiv, skipVertices=onlyFaceBubble, tVertices=math%two_i)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeDOFValueFromConstant
+
+!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 
