@@ -17,34 +17,24 @@
 
 SUBMODULE(ScalarField_Class) GetMethods
 USE RealVector_Method, ONLY: GetValue_, Get, GetValue
-USE ScalarField_Class, ONLY: ScalarField_
-USE STScalarField_Class, ONLY: STScalarField_
-USE VectorField_Class, ONLY: VectorField_
-USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-USE ArangeUtility, ONLY: Arange
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString, Display
 USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractFE_Class, ONLY: AbstractFE_
-
-USE FEVariable_Method, ONLY: NodalVariable, &
-                             QuadratureVariable, &
-                             FEVariable_Set => Set
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate, &
-                                  QuadraturePoint_Set => Set
-USE BaseType, ONLY: TypeFEVariableScalar, &
-                    TypeFEVariableSpace, &
-                    QuadraturePoint_, ElemShapeData_
-USE DOF_Method, ONLY: GetNodeLoc, &
-                      OPERATOR(.tNodes.), &
-                      GetIDOF
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: math => TypeMathOpt
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: OPERATOR(.tNodes.)
+USE DOF_Method, ONLY: GetIDOF
 USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
                                 GetInterpolation
-
 #ifdef DEBUG_VER
 USE FEVariable_Method, ONLY: FEVariable_Display => Display
 #endif
@@ -57,9 +47,22 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-#include "./localNodeError.F90"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./include/localNodeError.F90"
 CALL obj%GetSingle(VALUE=VALUE, indx=globalNode)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -67,10 +70,24 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
+#endif
 INTEGER(I4B) :: s(3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 s = GetNodeLoc(obj=obj%dof, idof=1)
 CALL obj%GetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
                      tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -78,9 +95,22 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
-#include "./localNodeError.F90"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./include/localNodeError.F90"
 CALL obj%GetMultiple(VALUE=VALUE, indx=globalNode, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
@@ -88,12 +118,25 @@ END PROCEDURE obj_Get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
-#include "./localNodeError.F90"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#include "./include/localNodeError.F90"
 
 VALUE = NodalVariable( &
-        Get(obj=obj%realVec, nodenum=globalNode, dataType=1.0_DFP), &
+        Get(obj=obj%realVec, nodenum=globalNode, dataType=math%one), &
         TypeFEVariableScalar, TypeFEVariableSpace)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -103,7 +146,11 @@ END PROCEDURE obj_Get4
 MODULE PROCEDURE obj_Get5
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: tsize, s(3)
+REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -111,11 +158,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'ScalarFieldLis_::obj is not initiated')
 #endif
 
-! CALL obj%Get(ivar=1, idof=1, VALUE=VALUE, ivar_value=1, idof_value=1)
+#ifdef DEBUG_VER
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField::value is not initiated')
+#endif
+
+s = GetNodeLoc(obj=obj%dof, idof=math%one_i)
+realvec => VALUE%GetPointer()
+CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
+                     tsize=tsize)
+realvec => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -16,43 +16,25 @@
 !
 
 SUBMODULE(ScalarField_Class) SetMethods
-USE GlobalData, ONLY: Constant, Space, Scalar
 USE InputUtility, ONLY: Input
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-USE STScalarField_Class, ONLY: STScalarField_
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-USE VectorField_Class, ONLY: VectorField_
-USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-USE BlockNodeField_Class, ONLY: BlockNodeField_
-USE RealVector_Method, ONLY: Set, Add
-USE Display_Method, ONLY: ToString
-USE ArangeUtility, ONLY: Arange
-USE FEVariable_Method, ONLY: GET
+USE FEVariable_Method, ONLY: FEVariableGet => GET
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ReallocateUtility, ONLY: Reallocate
-USE StringUtility, ONLY: UpperCase
-USE ReferenceElement_Method, ONLY: ReferenceElementInfo
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE DOF_Method, ONLY: GetIDOF
+! USE DOF_Method, ONLY: GetIDOF
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableConstant
 USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
-USE InputUtility, ONLY: Input
-USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
-
-! #ifdef USE_LIS
-! #include "lisf.h"
-! #endif
 
 CONTAINS
 
@@ -263,17 +245,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (VALUE%vartype)
 
-CASE (Constant)
+CASE (TypeFEVariableOpt%constant)
 
   CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableConstant), &
+    VALUE=FEVariableGet(VALUE, TypeFEVariableScalar, &
+                        TypeFEVariableConstant), &
     globalNode=globalNode, scale=scale, addContribution=addContribution, &
     islocal=islocal)
 
-CASE (Space)
+CASE (TypeFEVariableOpt%space)
 
   CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableSpace), &
+    VALUE=FEVariableGet(VALUE, TypeFEVariableScalar, TypeFEVariableSpace), &
     globalNode=globalNode, scale=scale, addContribution=addContribution, &
     islocal=islocal)
 
