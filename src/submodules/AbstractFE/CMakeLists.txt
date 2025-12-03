@@ -15,4 +15,8 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(${PROJECT_NAME} PRIVATE ${src_path}/AbstractFE_Class@Methods.F90)
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/AbstractFE_Class@Methods.F90
+          ${src_path}/AbstractFE_Class@CellDOFMethods.F90
+          ${src_path}/AbstractFE_Class@FacetDOFMethods.F90)

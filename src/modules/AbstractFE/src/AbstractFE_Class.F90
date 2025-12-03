@@ -174,43 +174,47 @@ CONTAINS
   !! Get total number of Interpolation points
 
   ! GET:
-  ! @GetFacetDOFValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromConstant => &
-    obj_GetFacetDOFValueFromConstant
+  ! @FacetDOFMethods
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromVertex => obj_GetFacetDOFValueFromVertex
   !! Get the dof values corresponding to a constant function
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
+  !! Get the dof values corresponding to a constant function
+  !! This method should be implemented by the child class
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSTFunc => &
     obj_GetFacetDOFValueFromSTFunc
   !! Get the dof values of a space-time user function on a facet
-  !! Get the dof values of a space-time user function on a facet
+  !! This method should be implemented by the child class
   PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromSTFunc => &
     obj_GetSTFacetDOFValueFromSTFunc
+  !! Get the space time dof values from space time user function
+  !! This method should be implemented by the child class
   PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromConstant => &
     obj_GetSTFacetDOFValueFromConstant
   !! Get the space time dof values of a space-time user function on a facet
+  !! This method should be implemented by the child class
   GENERIC, PUBLIC :: GetFacetDOFValue => &
     GetFacetDOFValueFromSTFunc, &
+    GetFacetDOFValueFromVertex, &
     GetFacetDOFValueFromConstant, &
     GetSTFacetDOFValueFromSTFunc, &
     GetSTFacetDOFValueFromConstant
 
   ! GET:
-  ! @GetVertexDOFValue
+  ! @CellDOFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOFValueFromSTUserFunc => &
     obj_GetVertexDOFValueFromSTFunc
   !! Get the vertex dof values from space-time user functions
   GENERIC, PUBLIC :: GetVertexDOFValue => GetVertexDOFValueFromSTUserFunc
   !! Get the vertex dof values
 
-  ! GET:
-  ! @GetInCellDOFValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetInCellDOFValueFromSTUserFunc => &
     obj_GetInCellDOFValueFromSTFunc
   !! Get the vertex dof values from space-time user functions
   GENERIC, PUBLIC :: GetInCellDOFValue => GetInCellDOFValueFromSTUserFunc
   !! Get the vertex dof values
 
-  ! GET:
-  ! @GetDOFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
     obj_GetDOFValueFromSTFunc
   !! Get the dof values of a space-time user function on a facet
@@ -1211,17 +1215,20 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromConstant( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, ans, tsize, &
-    massMat, ipiv, onlyFaceBubble, tVertices)
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite elemenet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
     !! element shape function defined inside the cell
+    !! not needed
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
     !! shape function defined on the face of element
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of reference element
+    !! not needed
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number
+    !! not  needed
     REAL(DFP), INTENT(INOUT) :: ans(:)
     !! nodal coordinates of interpolation points
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -1230,13 +1237,15 @@ INTERFACE
     !! mass matrix
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at the quadrature points
+    !! used internally. The should be atleast facetElemsd%nips
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
-    !! tVertices are needed when onlyFaceBubble is true
-    !! tVertices are total number of vertex degree of
-    !! freedom
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! Component index for vector valued constant function
+    !! icompo is not used here.
   END SUBROUTINE obj_GetFacetDOFValueFromConstant
 END INTERFACE
 
@@ -1276,10 +1285,10 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
     !! function values at the quadrature points
     !! this is formed inside the routine
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    INTEGER(I4B), INTENT(IN) :: tVertices
     !! tVertices are needed when onlyFaceBubble is true
     !! tVertices are total number of vertex degree of
     !! freedom
@@ -1324,7 +1333,7 @@ INTERFACE
     !! pivot indices for LU decomposition of mass matrix
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
     !! function values at quadrature points used inside
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
@@ -1441,7 +1450,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  GetDOFValueFromQuadrature2
+!                                    GetDOFValueFromQuadrature@CellDOFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1497,7 +1506,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         GetDOFValueFromUserFunction@Methods
+!                                  GetDOFValueFromUserFunction@CellDOFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1545,7 +1554,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         GetVertexDOFValueFromSTFunc@Methods
+!                                  GetVertexDOFValueFromSTFunc@CellDOFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1573,7 +1582,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetInCellDOFValue@Methods
+!                                            GetInCellDOFValue@CellDOFMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -1608,7 +1617,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              GetFacetDOFValueFromQuadrature
+!                               GetFacetDOFValueFromQuadrature@CellDOFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1634,12 +1643,12 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
     !! pivot indices for LU decomposition of mass matrix
     !! The size should be atleast elemsd%nns
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyInside
+    LOGICAL(LGT), INTENT(IN) :: onlyInside
     !! if true then we include only face bubble, that is,
     !! only include internal face bubble.
     !! if onlyInside is true, then we will not use 1:Vertices
     !! and use tVertices + 1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tVertices
+    INTEGER(I4B), INTENT(IN) :: tVertices
     !! tVertices are needed when onlyFaceBubble is true
     !! tVertices are total number of vertex degree of
     !! freedom
