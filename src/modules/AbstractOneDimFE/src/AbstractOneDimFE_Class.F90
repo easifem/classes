@@ -103,10 +103,15 @@ CONTAINS
 
   !GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeDOFValueFromSTFunction => &
+  PROCEDURE, PASS(obj) :: GetTimeDOFValueFromSTFunction => &
     obj_GetTimeDOFValueFromSTFunction
   !! Get time degree of freedom values from space-time function
-  GENERIC, PUBLIC :: GetTimeDOFValue => GetTimeDOFValueFromSTFunction
+  PROCEDURE, PASS(obj) :: GetTimeDOFValueFromConstant => &
+    obj_GetTimeDOFValueFromConstant
+  !! Get time degree of freedom values from space-time function
+  GENERIC, PUBLIC :: GetTimeDOFValue => &
+    GetTimeDOFValueFromSTFunction, &
+    GetTimeDOFValueFromConstant
   !! Generic method to get time dof values
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
@@ -494,6 +499,45 @@ INTERFACE
     !! if true then only inside dof are returned
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
   END SUBROUTINE obj_GetTimeDOFValueFromSTFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTimeDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get time dof value for a constant function
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetTimeDOFValueFromConstant( &
+    obj, elemsd, times, ans, tsize, massMat, ipiv, funcValue, &
+    onlyFaceBubble, icompo)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! nodal coordinates of reference element
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points will be stored here
+    !! used internally, size should be atleast elemsd%nips
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
+  END SUBROUTINE obj_GetTimeDOFValueFromConstant
 END INTERFACE
 
 !----------------------------------------------------------------------------
