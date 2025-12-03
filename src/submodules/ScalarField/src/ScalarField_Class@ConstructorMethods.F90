@@ -18,9 +18,9 @@
 SUBMODULE(ScalarField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE FPL_Method, ONLY: FPL_GetValue => GetValue
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
-                                   AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldDeallocate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
+USE BaseType, ONLY: math => TypeMathOpt
+
 IMPLICIT NONE
 CONTAINS
 
@@ -46,20 +46,20 @@ CALL obj%DEALLOCATE()
 dof_names(1) = name(1:1)
 dof_tNodes(1) = fedof%GetTotalDOF()
 dof_tsize = dof_tNodes(1)
-dof_spaceCompo(1) = 1_I4B
-dof_timeCompo(1) = 1_I4B
-dof_tPhysicalVarNames = 1_I4B
+dof_spaceCompo(1) = math%one_i
+dof_timeCompo(1) = math%one_i
+dof_tPhysicalVarNames = math%one_i
 
 CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
   local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
   storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
-  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
-  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  isSpaceCompo=math%yes, isSpaceCompoScalar=math%yes, &
+  timeCompo=dof_timeCompo, isTimeCompo=math%yes, isTimeCompoScalar=math%yes, &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
-  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
-  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
-  isTNodesScalar=.TRUE., geofedof=geofedof)
+  isPhysicalVarNames=math%yes, isPhysicalVarNamesScalar=math%yes, &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=math%yes, &
+  isTNodesScalar=math%yes, geofedof=geofedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -76,28 +76,15 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                               Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate
-CALL AbstractNodeFieldDeallocate(obj)
-END PROCEDURE obj_Deallocate
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_ptr_vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_ptr_vector()"
+#endif
+
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_ptr_vector
 
 !----------------------------------------------------------------------------
@@ -105,8 +92,16 @@ END PROCEDURE obj_Deallocate_ptr_vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ScalarFieldSafeAllocate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ScalarFieldSafeAllocate1()"
+#endif
 LOGICAL(LGT) :: isalloc
 INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 isalloc = ALLOCATED(obj)
 
@@ -122,6 +117,10 @@ IF (tsize .LT. newsize) THEN
   ALLOCATE (obj(newsize))
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ScalarFieldSafeAllocate1
 
 !----------------------------------------------------------------------------

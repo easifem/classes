@@ -68,7 +68,6 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate an instance of ScalarField_ by passing arguments
-
   FINAL :: obj_Final
 
   ! SET:
@@ -93,13 +92,13 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
   !! (we call Set9 method here)
-  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-  !! obj@[ivar, idof] = value@[ivar, idof
+  ! PROCEDURE, PASS(obj) :: Set9 => obj_Set9
+  ! !! obj@[ivar, idof] = value@[ivar, idof
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set scalar field using a function
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
-    Set5, Set6, Set7, Set8, Set9
+    Set5, Set6, Set7, Set8
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
   !! Set values to a vector
 
@@ -116,9 +115,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get values in ScalarField by copy
   !! We call Get6 here
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
-  !! value@[ivar, idof] = obj@[ivar, idof]
-  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5
   !! Get the entries of scalar field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
@@ -291,7 +288,7 @@ INTERFACE ScalarFieldInitiate
 END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                         Final@Constructor
+!                                                    Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -301,22 +298,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate(obj)
-    TYPE(ScalarField_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE ScalarFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate
-END INTERFACE ScalarFieldDeallocate
-
-!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-03
+! summary:  Dealocate the scalar field
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
@@ -410,8 +397,8 @@ END INTERFACE
 ! summary: This routine Sets the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global node number
@@ -472,8 +459,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set4( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global nodes
@@ -497,8 +484,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set5( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local nodes
@@ -522,8 +509,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set6( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -560,7 +547,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: obj=obj+scalar*obj2
+! summary: obj=obj+scalar*VALUE
 
 INTERFACE
   MODULE SUBROUTINE obj_Set8(obj, VALUE, scale, addContribution)
@@ -579,26 +566,26 @@ END INTERFACE
 ! date: 2024-05-23
 ! summary: Set
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, ivar, idof, VALUE, ivar_value, &
-                             idof_value, scale, addContribution)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable of obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom of physical variable ivar
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    !! right hand side in obj = value
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable of value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom of physical variable ivar_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set9
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set9( &
+!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
+!     CLASS(ScalarField_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable of obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom of physical variable ivar
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     !! right hand side in obj = value
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable of value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     !! local degree of freedom of physical variable ivar_value
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     !! scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!     !! add or set
+!   END SUBROUTINE obj_Set9
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   SetByFunction@SetMethods
@@ -720,29 +707,29 @@ INTERFACE
   END SUBROUTINE obj_Get5
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-05
-! summary: value@[ivar, idof] = obj@[ivar, idof]
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! obj = value
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj (physical variable)
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom in value (physical variable)
-  END SUBROUTINE obj_Get6
-END INTERFACE
+! !----------------------------------------------------------------------------
+! !                                                             Get@GetMethods
+! !----------------------------------------------------------------------------
+!
+! !> author: Vikas Sharma, Ph. D.
+! ! date: 2024-06-05
+! ! summary: value@[ivar, idof] = obj@[ivar, idof]
+!
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
+!     CLASS(ScalarField_), INTENT(IN) :: obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     !! obj = value
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom in obj (physical variable)
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable in value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     !! local degree of freedom in value (physical variable)
+!   END SUBROUTINE obj_Get6
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
