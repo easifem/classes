@@ -20,8 +20,10 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) NodeFieldFactoryMethods
-USE Display_Method, ONLY: ToString
-USE AssertUtility, ONLY: Assert
+! USE AssertUtility, ONLY: Assert
+USE StringUtility, ONLY: UpperCase
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -157,41 +159,37 @@ END PROCEDURE BlockNodeFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarFieldFactory
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "ScalarFieldFactory()"
+#endif
+
+CHARACTER(:), ALLOCATABLE :: engine0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
-SELECT CASE (TRIM(engine))
+engine0 = UpperCase(TRIM(engine))
+
+SELECT CASE (engine0)
 
 CASE ("NATIVE_SERIAL")
   ALLOCATE (ScalarField_ :: ans)
 
-CASE ("NATIVE_OMP")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-        '[INTERNAL ERRROR] :: NATIVE_OMP engine is not available currently!!')
-
-CASE ("NATIVE_MPI")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[INTERNAL ERROR] :: NATIVE_MPI engine is not available currently!!')
-
-CASE ("PETSC")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-              '[INTERNAL ERROR] :: PETSC engine is not available currently!!')
-
 CASE ("LIS_OMP")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_OMP engine is not available currently!!')
+  ALLOCATE (ScalarFieldLis_ :: ans)
 
-CASE ("LIS_MPI")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            '[INTERNAL ERROR] :: LIS_MPI engine is not available currently!!')
+! CASE ("NATIVE_OMP")
+! CASE ("NATIVE_MPI")
+! CASE ("PETSC")
+! CASE ("LIS_MPI")
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given engine')
+  CALL AssertError1(math%no, myName, &
+                    'No case found for engine named '//engine0)
+#endif
 
 END SELECT
 
