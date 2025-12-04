@@ -64,9 +64,9 @@ IF (PRESENT(fedofs)) THEN
   ii = SIZE(fedofs)
 
   isok = tfedof .EQ. ii
-  CALL AssertError1(isok, myName, &
-                    'AbstractField_::Obj%fedofs '// &
-                    CHAR_LF//'size is not same as size of fedofs')
+  CALL AssertError1( &
+    isok, myName, 'AbstractField_::Obj%fedofs size is not same as &
+    &size of fedofs')
 #endif
 
   tfedof = SIZE(fedofs)

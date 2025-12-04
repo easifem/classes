@@ -178,7 +178,6 @@ ELSE
   END DO
 
 END IF
-
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -218,7 +217,6 @@ ELSE
   END DO
 
 END IF
-
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
@@ -227,8 +225,9 @@ END PROCEDURE obj_Get3
 
 MODULE PROCEDURE obj_Get4
 INTEGER(I4B) :: indx(SIZE(globalNode))
-CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, ivar=1, &
-            spaceCompo=spaceCompo, timeCompo=timeCompo, ans=indx, tsize=tsize)
+CALL GetNodeLoc_( &
+  obj=obj%dof, nodenum=globalNode, ivar=1, spaceCompo=spaceCompo, &
+  timeCompo=timeCompo, ans=indx, tsize=tsize)
 CALL obj%GetMultiple(VALUE=VALUE, indx=indx, tsize=tsize)
 END PROCEDURE obj_Get4
 
@@ -238,8 +237,9 @@ END PROCEDURE obj_Get4
 
 MODULE PROCEDURE obj_Get5
 INTEGER(I4B) :: indx
-indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, ivar=1, &
-                  spaceCompo=spaceCompo, timeCompo=timeCompo)
+indx = GetNodeLoc( &
+       obj=obj%dof, nodenum=globalNode, ivar=1, spaceCompo=spaceCompo, &
+       timeCompo=timeCompo)
 CALL obj%GetSingle(VALUE=VALUE, indx=indx)
 END PROCEDURE obj_Get5
 
@@ -253,12 +253,12 @@ INTEGER(I4B) :: indx(obj%spaceCompo), ii
 ncol = obj%timeCompo
 
 DO ii = 1, ncol
-  CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, ivar=1, &
-               spaceCompo=obj%space_idofs, timeCompo=ii, ans=indx, tsize=nrow)
+  CALL GetNodeLoc_( &
+    obj=obj%dof, nodenum=globalNode, ivar=1, spaceCompo=obj%space_idofs, &
+    timeCompo=ii, ans=indx, tsize=nrow)
 
   CALL obj%GetMultiple(VALUE=VALUE(:, ii), indx=indx, tsize=nrow)
 END DO
-
 END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
@@ -279,221 +279,219 @@ CALL obj%Get(VALUE=m3b, globalNode=globalNode, islocal=islocal, &
 ! We will call swap method from Utility.
 CALL SWAP_(a=m3a, b=m3b, i1=1, i2=3, i3=2)
 
-VALUE = NodalVariable(m3a, TypeFEVariableVector, &
-                      TypeFEVariableSpacetime)
-
+VALUE = NodalVariable(m3a, TypeFEVariableVector, TypeFEVariableSpacetime)
 END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get8
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-#endif
-CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
-INTEGER(I4B) :: idof, idof_value, ii
-CHARACTER(2) :: mycase
-
-#ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "STVectorField_:: obj is not initiated")
-
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "AbstractNodeField_:: value is not initiated")
-
-CALL AssertError2(obj%dof.tNodes.1, VALUE%dof.tNodes.1, myName, &
-                  "a=tNodes in obj, b= tNodes in value")
-
-IF (PRESENT(spaceCompo)) THEN
-  isok = spaceCompo .LE. obj%spaceCompo
-  CALL AssertError1(isok, myName, "spaceCompo is greater than obj%spacecompo")
-END IF
-
-IF (PRESENT(timeCompo)) THEN
-  isok = timeCompo .LE. obj%timeCompo
-  CALL AssertError1(isok, myName, "timeCompo is greater than obj%timeCompo")
-END IF
-#endif
-
-mycase = "NN"
-
-IF (PRESENT(spaceCompo)) mycase(1:1) = "Y"
-IF (PRESENT(timeCompo)) mycase(2:2) = "Y"
-
-SELECT CASE (mycase)
-! spacecompo and timecompo are present
-CASE ("YY")
-  idof = GetIDOF(spaceCompo=spacecompo, timeCompo=timecompo, &
-                 tspaceCompo=obj%spaceCompo)
-
-  SELECT TYPE (VALUE)
-  CLASS IS (ScalarField_)
-    idof_value = 1
-
-  CLASS IS (STScalarField_)
-    idof_value = timeCompo
-
-  CLASS IS (VectorField_)
-    idof_value = spaceCompo
-
-  CLASS IS (STVectorField_)
-    idof_value = GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
-                         tspaceCompo=VALUE%spaceCompo)
-
-  CLASS DEFAULT
-    CALL valueTypeError
-    RETURN
-  END SELECT
-
-  CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
-               idof_value=idof_value)
-
-! spaceCompo is present
-! timeCompo is not present
-
-CASE ("YN")
-  SELECT TYPE (VALUE)
-
-  CLASS IS (STScalarField_)
-    DO idof_value = 1, obj%timeCompo
-      idof = GetIDOF(spaceCompo=spacecompo, timeCompo=idof_value, &
-                     tspaceCompo=obj%spaceCompo)
-      CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
-                   idof_value=idof_value)
-    END DO
-
-  CLASS IS (STVectorField_)
-
-    DO ii = 1, obj%timeCompo
-      idof = GetIDOF(spaceCompo=spaceCompo, timeCompo=ii, &
-                     tspaceCompo=obj%spaceCompo)
-      idof_value = GetIDOF(spaceCompo=spaceCompo, timeCompo=ii, &
-                           tspaceCompo=VALUE%spaceCompo)
-
-      CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
-                   idof_value=idof_value)
-    END DO
-
-  CLASS DEFAULT
-    CALL ValueTypeError
-
-  END SELECT
-
-! timecompo is present
-! spaceCompo is not present
-
-CASE ("NY")
-  SELECT TYPE (VALUE)
-
-  CLASS IS (VectorField_)
-    DO idof_value = 1, obj%spaceCompo
-      idof = GetIDOF(spaceCompo=idof_value, timeCompo=timeCompo, &
-                     tspaceCompo=obj%spaceCompo)
-      CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
-                   idof_value=idof_value)
-    END DO
-
-  CLASS IS (STVectorField_)
-
-    DO ii = 1, obj%spaceCompo
-      idof = GetIDOF(spaceCompo=ii, timeCompo=timeCompo, &
-                     tspaceCompo=obj%spaceCompo)
-      idof_value = GetIDOF(spaceCompo=ii, timeCompo=timeCompo, &
-                           tspaceCompo=VALUE%spaceCompo)
-
-      CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
-                   idof_value=idof_value)
-    END DO
-
-  CLASS DEFAULT
-    CALL ValueTypeError
-
-  END SELECT
-
-! spacecompo is not present
-! timecompo is not present
-CASE ("NN")
-  SELECT TYPE (VALUE)
-
-  CLASS IS (STVectorField_)
-    CALL VALUE%Copy(obj)
-
-  CLASS DEFAULT
-    CALL ValueTypeError
-
-  END SELECT
-
-CASE default
-  CALL ValueTypeError
-END SELECT
-
-CONTAINS
-SUBROUTINE ValueTypeError
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for type of value')
-END SUBROUTINE ValueTypeError
-
-END PROCEDURE obj_Get8
+! MODULE PROCEDURE obj_Get8
+! #ifdef DEBUG_VER
+! LOGICAL(LGT) :: isok
+! #endif
+! CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
+! INTEGER(I4B) :: idof, idof_value, ii
+! CHARACTER(2) :: mycase
+!
+! #ifdef DEBUG_VER
+! isok = obj%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "STVectorField_:: obj is not initiated")
+!
+! isok = VALUE%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "AbstractNodeField_:: value is not initiated")
+!
+! CALL AssertError2(obj%dof.tNodes.1, VALUE%dof.tNodes.1, myName, &
+!                   "a=tNodes in obj, b= tNodes in value")
+!
+! IF (PRESENT(spaceCompo)) THEN
+!   isok = spaceCompo .LE. obj%spaceCompo
+!   CALL AssertError1(isok, myName, "spaceCompo is greater than obj%spacecompo")
+! END IF
+!
+! IF (PRESENT(timeCompo)) THEN
+!   isok = timeCompo .LE. obj%timeCompo
+!   CALL AssertError1(isok, myName, "timeCompo is greater than obj%timeCompo")
+! END IF
+! #endif
+!
+! mycase = "NN"
+!
+! IF (PRESENT(spaceCompo)) mycase(1:1) = "Y"
+! IF (PRESENT(timeCompo)) mycase(2:2) = "Y"
+!
+! SELECT CASE (mycase)
+! ! spacecompo and timecompo are present
+! CASE ("YY")
+!   idof = GetIDOF(spaceCompo=spacecompo, timeCompo=timecompo, &
+!                  tspaceCompo=obj%spaceCompo)
+!
+!   SELECT TYPE (VALUE)
+!   CLASS IS (ScalarField_)
+!     idof_value = 1
+!
+!   CLASS IS (STScalarField_)
+!     idof_value = timeCompo
+!
+!   CLASS IS (VectorField_)
+!     idof_value = spaceCompo
+!
+!   CLASS IS (STVectorField_)
+!     idof_value = GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
+!                          tspaceCompo=VALUE%spaceCompo)
+!
+!   CLASS DEFAULT
+!     CALL valueTypeError
+!     RETURN
+!   END SELECT
+!
+!   CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
+!                idof_value=idof_value)
+!
+! ! spaceCompo is present
+! ! timeCompo is not present
+!
+! CASE ("YN")
+!   SELECT TYPE (VALUE)
+!
+!   CLASS IS (STScalarField_)
+!     DO idof_value = 1, obj%timeCompo
+!       idof = GetIDOF(spaceCompo=spacecompo, timeCompo=idof_value, &
+!                      tspaceCompo=obj%spaceCompo)
+!       CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
+!                    idof_value=idof_value)
+!     END DO
+!
+!   CLASS IS (STVectorField_)
+!
+!     DO ii = 1, obj%timeCompo
+!       idof = GetIDOF(spaceCompo=spaceCompo, timeCompo=ii, &
+!                      tspaceCompo=obj%spaceCompo)
+!       idof_value = GetIDOF(spaceCompo=spaceCompo, timeCompo=ii, &
+!                            tspaceCompo=VALUE%spaceCompo)
+!
+!       CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
+!                    idof_value=idof_value)
+!     END DO
+!
+!   CLASS DEFAULT
+!     CALL ValueTypeError
+!
+!   END SELECT
+!
+! ! timecompo is present
+! ! spaceCompo is not present
+!
+! CASE ("NY")
+!   SELECT TYPE (VALUE)
+!
+!   CLASS IS (VectorField_)
+!     DO idof_value = 1, obj%spaceCompo
+!       idof = GetIDOF(spaceCompo=idof_value, timeCompo=timeCompo, &
+!                      tspaceCompo=obj%spaceCompo)
+!       CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
+!                    idof_value=idof_value)
+!     END DO
+!
+!   CLASS IS (STVectorField_)
+!
+!     DO ii = 1, obj%spaceCompo
+!       idof = GetIDOF(spaceCompo=ii, timeCompo=timeCompo, &
+!                      tspaceCompo=obj%spaceCompo)
+!       idof_value = GetIDOF(spaceCompo=ii, timeCompo=timeCompo, &
+!                            tspaceCompo=VALUE%spaceCompo)
+!
+!       CALL obj%Get(ivar=1, idof=idof, VALUE=VALUE, ivar_value=1, &
+!                    idof_value=idof_value)
+!     END DO
+!
+!   CLASS DEFAULT
+!     CALL ValueTypeError
+!
+!   END SELECT
+!
+! ! spacecompo is not present
+! ! timecompo is not present
+! CASE ("NN")
+!   SELECT TYPE (VALUE)
+!
+!   CLASS IS (STVectorField_)
+!     CALL VALUE%Copy(obj)
+!
+!   CLASS DEFAULT
+!     CALL ValueTypeError
+!
+!   END SELECT
+!
+! CASE default
+!   CALL ValueTypeError
+! END SELECT
+!
+! CONTAINS
+! SUBROUTINE ValueTypeError
+!   CALL e%raiseError(modName//'::'//myName//' - '// &
+!                     '[INTERNAL ERROR] :: No case found for type of value')
+! END SUBROUTINE ValueTypeError
+!
+! END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get9
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "STVectorField_:: obj is not initiated")
-
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "STVectorField_:: value is not initiated")
-#endif
-
-SELECT TYPE (VALUE)
-
-CLASS IS (ScalarField_)
-  CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
-
-CLASS IS (STScalarField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-CLASS IS (VectorField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-CLASS IS (STVectorField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-#ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTENRAL ERROR] :: No case found for the type of value')
-#endif
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Get9
+! MODULE PROCEDURE obj_Get9
+! #ifdef DEBUG_VER
+! LOGICAL(LGT) :: isok
+! CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
+! #endif
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = obj%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "STVectorField_:: obj is not initiated")
+!
+! isok = VALUE%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "STVectorField_:: value is not initiated")
+! #endif
+!
+! SELECT TYPE (VALUE)
+!
+! ! CLASS IS (ScalarField_)
+! !   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
+!
+! CLASS IS (STScalarField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! CLASS IS (VectorField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! CLASS IS (STVectorField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! #ifdef DEBUG_VER
+! CLASS DEFAULT
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                     '[INTENRAL ERROR] :: No case found for the type of value')
+! #endif
+!
+! END SELECT
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+! END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
 !                                                              GetFEVariable

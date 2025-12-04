@@ -286,7 +286,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%Copy(VALUE)
+CALL obj%Set(VALUE=VALUE, scale=math%one, addContribution=math%no)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

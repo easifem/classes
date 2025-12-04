@@ -105,7 +105,6 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of AbstractNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -121,7 +120,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! GetPointer to the fortran vector stored inside the realvec
   !! This function should be called for Native engine only
@@ -131,7 +129,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
-
   PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
   !! get many values from indices
   PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2

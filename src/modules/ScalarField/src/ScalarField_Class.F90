@@ -89,11 +89,8 @@ CONTAINS
   !! WE call copy method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set selected values using FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
-  !! (we call Set9 method here)
-  ! PROCEDURE, PASS(obj) :: Set9 => obj_Set9
-  ! !! obj@[ivar, idof] = value@[ivar, idof
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set scalar field using a function
@@ -112,10 +109,7 @@ CONTAINS
   !! Get selected values
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get selected values in FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
-  !! Get values in ScalarField by copy
-  !! We call Get6 here
-  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4
   !! Get the entries of scalar field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
@@ -690,21 +684,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true, then globalNodes are local nodes
   END SUBROUTINE obj_Get4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: returns the selected values in ScalarField by copy
-
-INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get5
 END INTERFACE
 
 ! !----------------------------------------------------------------------------

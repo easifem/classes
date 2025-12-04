@@ -273,61 +273,61 @@ END PROCEDURE obj_Get7
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get8
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
-LOGICAL(LGT) :: isok
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "BlockNodeField_:: obj is not initiated")
-
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "BlockNodeField_:: value is not initiated")
-#endif
-
-SELECT TYPE (VALUE)
-
-CLASS IS (ScalarField_)
-  CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
-
-CLASS IS (STScalarField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-CLASS IS (VectorField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-CLASS IS (STVectorField_)
-  CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-CLASS IS (BlockNodeField_)
-CALL VALUE%Set(ivar=ivar_value, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-                 idof_value=idof)
-
-#ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTENRAL ERROR] :: No case found for the type of value')
-#endif
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Get8
+! MODULE PROCEDURE obj_Get8
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
+! LOGICAL(LGT) :: isok
+! #endif
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = obj%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "BlockNodeField_:: obj is not initiated")
+!
+! isok = VALUE%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   "BlockNodeField_:: value is not initiated")
+! #endif
+!
+! SELECT TYPE (VALUE)
+!
+! ! CLASS IS (ScalarField_)
+! !   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
+!
+! CLASS IS (STScalarField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! CLASS IS (VectorField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! CLASS IS (STVectorField_)
+!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! CLASS IS (BlockNodeField_)
+! CALL VALUE%Set(ivar=ivar_value, idof=idof_value, VALUE=obj, ivar_value=ivar, &
+!                  idof_value=idof)
+!
+! #ifdef DEBUG_VER
+! CLASS DEFAULT
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                     '[INTENRAL ERROR] :: No case found for the type of value')
+! #endif
+! END SELECT
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+!
+! END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                           GetFEVariable

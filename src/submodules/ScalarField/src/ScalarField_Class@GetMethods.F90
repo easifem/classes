@@ -143,48 +143,6 @@ END PROCEDURE obj_Get4
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Get5
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
-LOGICAL(LGT) :: isok
-#endif
-
-INTEGER(I4B) :: tsize, s(3)
-REAL(DFP), POINTER :: realvec(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'ScalarFieldLis_::obj is not initiated')
-#endif
-
-#ifdef DEBUG_VER
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField::value is not initiated')
-#endif
-
-s = GetNodeLoc(obj=obj%dof, idof=math%one_i)
-realvec => VALUE%GetPointer()
-CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
-                     tsize=tsize)
-realvec => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Get5
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
 ! MODULE PROCEDURE obj_Get6
 ! CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 ! INTEGER(I4B) :: tsize

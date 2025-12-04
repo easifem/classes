@@ -19,9 +19,9 @@ SUBMODULE(STScalarField_Class) SetMethods
 USE InputUtility, ONLY: Input
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE ScalarField_Class, ONLY: ScalarField_
-USE VectorField_Class, ONLY: VectorField_
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE VectorField_Class, ONLY: VectorField_
+! USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE RealVector_Method, ONLY: Set, Add, GetPointer
 USE Display_Method, ONLY: tostring
 USE GlobalData, ONLY: NONE, SpaceTime, Scalar
@@ -315,8 +315,27 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-CALL obj%Set(ivar=1, idof=timeCompo, VALUE=VALUE, ivar_value=1_I4B, &
-           idof_value=timeCompo, scale=scale, addContribution=addContribution)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! CALL obj%Set(ivar=1, idof=timeCompo, VALUE=VALUE, ivar_value=1_I4B, &
+!            idof_value=timeCompo, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -532,87 +551,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), p(3)
-
-REAL(DFP), POINTER :: realvec(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'STScalarField_::obj is not initiated')
-#endif
-
-#ifdef DEBUG_VER
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::value is not initiated')
-#endif
-
-s = GetNodeLoc(obj=obj%dof, idof=idof)
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-
-  realvec => VALUE%GetPointer()
-
-  CALL obj%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3))
-
-  realvec => NULL()
-
-TYPE IS (STScalarField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3), &
-    istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (VectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3), &
-    istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-#ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL AssertError1(.FALSE., myName, &
-                    'Unknown or unsupported type of VALUE ')
-#endif
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Set13
-
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set14
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
-LOGICAL(LGT) :: isok
-#endif
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -636,7 +574,88 @@ CALL obj%Copy(VALUE)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Set14
+END PROCEDURE obj_Set13
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_Set13
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+! LOGICAL(LGT) :: isok
+! #endif
+!
+! INTEGER(I4B) :: s(3), p(3)
+!
+! REAL(DFP), POINTER :: realvec(:)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = obj%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   'STScalarField_::obj is not initiated')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = VALUE%IsInitiated()
+! CALL AssertError1(isok, myName, &
+!                   'AbstractNodeField_::value is not initiated')
+! #endif
+!
+! s = GetNodeLoc(obj=obj%dof, idof=idof)
+!
+! SELECT TYPE (VALUE)
+!
+! TYPE IS (ScalarField_)
+!
+!   realvec => VALUE%GetPointer()
+!
+!   CALL obj%SetMultiple( &
+!     VALUE=realvec, scale=scale, addContribution=addContribution, &
+!     istart=s(1), iend=s(2), stride=s(3))
+!
+!   realvec => NULL()
+!
+! TYPE IS (STScalarField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple( &
+!     VALUE=realvec, scale=scale, addContribution=addContribution, &
+!     istart=s(1), iend=s(2), stride=s(3), &
+!     istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (VectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple( &
+!     VALUE=realvec, scale=scale, addContribution=addContribution, &
+!     istart=s(1), iend=s(2), stride=s(3), &
+!     istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! #ifdef DEBUG_VER
+! CLASS DEFAULT
+!   CALL AssertError1(.FALSE., myName, &
+!                     'Unknown or unsupported type of VALUE ')
+! #endif
+!
+! END SELECT
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+! END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                         SetFromScalarField
