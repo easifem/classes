@@ -16,8 +16,9 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) IOMethods
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldDisplay
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
+USE Display_Method, ONLY: Display
 
 IMPLICIT NONE
 
@@ -30,9 +31,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
 
 INTEGER(I4B) :: ierr
+LOGICAL(LGT) :: isok
 REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
@@ -42,15 +46,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
-IF (ierr .NE. LIS_FALSE) THEN
+isok = ierr .EQ. LIS_FALSE
+CALL Display(isok, "ScalarFieldLis_ is available: ", unitno=unitno)
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'ScalarFieldLis_ is NOT AVAILABLE')
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(obj)
 CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 NULLIFY (realvec)
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
@@ -59,7 +72,6 @@ CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------

@@ -17,11 +17,64 @@
 
 SUBMODULE(ScalarFieldLis_Class) ConstructorMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
+USE ScalarField_Class, ONLY: ScalarFieldInitiate
+
 IMPLICIT NONE
 
 #include "lisf.h"
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL ScalarFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, &
+  storageFMT=storageFMT, comm=comm, local_n=local_n, global_n=global_n, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
+  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
+  tPhysicalVarNames=tPhysicalVarNames, physicalVarNames=physicalVarNames, &
+  isPhysicalVarNames=isPhysicalVarNames, &
+  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, tNodes=tNodes, &
+  isTNodes=isTNodes, isTNodesScalar=isTNodesScalar, tSize=tSize, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+
+CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                                     Final
@@ -36,10 +89,28 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
 INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
+
 CALL AbstractNodeFieldDeallocate(obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
