@@ -27,6 +27,7 @@ USE MatrixField_Class, ONLY: MatrixField_
 USE MatrixFieldLis_Class, ONLY: MatrixFieldLis_
 USE BlockMatrixField_Class, ONLY: BlockMatrixField_
 USE BlockMatrixFieldLis_Class, ONLY: BlockMatrixFieldLis_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -73,7 +74,10 @@ END PROCEDURE AbstractMatrixFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixFieldFactory
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory()"
+#endif
+
 CHARACTER(:), ALLOCATABLE :: case0
 
 case0 = UpperCase(engine)
@@ -85,15 +89,18 @@ CASE ("NATIVE_SERIAL")
 CASE ("LIS_OMP")
   ALLOCATE (MatrixFieldLis_ :: ans)
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[NO CASE FOUND] :: No case found for given engine '// &
-                    "following values are acceptable = "// &
-                    "[NATIVE_SERIAL, LIS_OMP]"// &
-                    " but found  = "//TRIM(case0))
-  ALLOCATE (MatrixField_ :: ans)
-  RETURN
+  CALL AssertError1(math%no, myName, "No case found for given engine name")
+#endif
 END SELECT
+
+case0 = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE MatrixFieldFactory
 
 !----------------------------------------------------------------------------
