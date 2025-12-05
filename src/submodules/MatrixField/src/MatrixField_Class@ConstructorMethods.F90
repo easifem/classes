@@ -23,26 +23,18 @@ USE InputUtility, ONLY: INPUT
 USE String_Class, ONLY: String
 USE Display_Method, ONLY: ToString
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE GlobalData, ONLY: PRECOND_ILUT, PRECOND_ILUTP, PRECOND_ILUD, &
-                      PRECOND_ILUDP, PRECOND_ILUK
-
-USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE, &
-                            CSRMatrix_Initiate => Initiate, &
-                            ASSIGNMENT(=)
-
+USE BaseType, ONLY: TypePrecondOpt
+USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE
+USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate
+USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
-
 USE AbstractField_Class, ONLY: AbstractFieldInitiate
-
 USE BaseType, ONLY: DOF_
-
-USE DOF_Method, ONLY: DOF_Initiate => Initiate, &
-                      DOF_Deallocate => DEALLOCATE, &
-                      OPERATOR(.tNodes.)
-
+USE DOF_Method, ONLY: DOF_Initiate => Initiate
+USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
+USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE SafeSizeUtility, ONLY: SafeSize
 USE ReallocateUtility, ONLY: Reallocate
-
 USE FEDOF_Class, ONLY: FEDOFSetSparsity
 
 IMPLICIT NONE
@@ -460,8 +452,9 @@ isok = obj2%IsInitiated()
 CALL AssertError1(isok, myName, "obj2 is not initiated")
 #endif
 
-CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                           copyStructure=copyStructure, usePointer=usePointer)
+CALL AbstractFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
 
 SELECT TYPE (obj2)
 CLASS IS (AbstractNodeField_)
@@ -472,9 +465,9 @@ CLASS IS (AbstractNodeField_)
   astr = obj2%GetName()
   storageFMT = mystorageformat
   names_char(1) (1:1) = astr%Slice(1, 1)
-  CALL DOF_Initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
-                    spaceCompo=spaceCompo, timeCompo=timeCompo, &
-                    storageFMT=storageFMT)
+  CALL DOF_Initiate( &
+    obj=dofobj, tNodes=tNodes, names=names_char, spaceCompo=spaceCompo, &
+    timeCompo=timeCompo, storageFMT=storageFMT)
 
   ! Get nrow and ncol from obj2
   nrow = obj2%SIZE()
@@ -487,11 +480,15 @@ CLASS IS (AbstractNodeField_)
 #endif
 
   ! Initiate CSRMatrix
-  CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
-                          jdof=dofobj, matrixProp=astr%chars())
+  CALL CSRMatrix_Initiate( &
+    obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, jdof=dofobj, &
+    matrixProp=astr%chars())
 
-  IF (obj%local_n .EQ. 0) obj%local_n = nrow
-  IF (obj%global_n .EQ. 0) obj%global_n = nrow
+  isok = obj%local_n .EQ. 0
+  IF (isok) obj%local_n = nrow
+
+  isok = obj%global_n .EQ. 0
+  IF (isok) obj%global_n = nrow
 
   CALL obj%fedof%SetSparsity(mat=obj%mat)
 
@@ -528,7 +525,6 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -598,7 +594,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE MatrixFieldPreconditionCopy
 
 !----------------------------------------------------------------------------
@@ -735,7 +730,15 @@ END PROCEDURE MatrixFieldPreconditionCopy
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-INTEGER(I4B) :: ierr
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractMatrixFieldDeallocate(obj)
 CALL CSRMatrix_Deallocate(obj%mat)
 CALL CSRMatrix_Deallocate(obj%submat)
@@ -745,6 +748,11 @@ obj%tdbcptrs = 0
 obj%tsubindices = 0
 IF (ALLOCATED(obj%dbcPtrs)) DEALLOCATE (obj%dbcPtrs)
 IF (ALLOCATED(obj%subIndices)) DEALLOCATE (obj%subIndices)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -752,6 +760,15 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Pmat_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Pmat_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%PmatName = 0
 IF (ALLOCATED(obj%A)) DEALLOCATE (obj%A)
 IF (ALLOCATED(obj%JA)) DEALLOCATE (obj%JA)
@@ -768,6 +785,11 @@ obj%mbloc = 0
 obj%alpha = 0
 obj%droptol = 0
 obj%permtol = 0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE Pmat_Deallocate
 
 !----------------------------------------------------------------------------
@@ -783,41 +805,54 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_ptr_vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_ptr_vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_ptr_vector
 
 !----------------------------------------------------------------------------
 !                                                               SafeAllocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_MatrixFieldSafeAllocate1
-LOGICAL(LGT) :: isalloc
+MODULE PROCEDURE obj_MatrixFieldAllocate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_MatrixFieldAllocate1()"
+#endif
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tsize
 
-isalloc = ALLOCATED(obj)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (.NOT. isalloc) THEN
+isok = ALLOCATED(obj)
+
+IF (.NOT. isok) THEN
   ALLOCATE (obj(newsize))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 tsize = SIZE(obj)
 
-IF (tsize .LT. newsize) THEN
+isok = tsize .LT. newsize
+IF (isok) THEN
   CALL MatrixFieldDeallocate(obj)
   ALLOCATE (obj(newsize))
 END IF
 
-END PROCEDURE obj_MatrixFieldSafeAllocate1
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_MatrixFieldAllocate1
 
 !----------------------------------------------------------------------------
 !

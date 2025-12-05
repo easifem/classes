@@ -32,7 +32,7 @@ PRIVATE
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
 
 PUBLIC :: MatrixFieldLis_
-PUBLIC :: MatrixFieldLisInitiate2
+PUBLIC :: MatrixFieldLisInitiate
 PUBLIC :: MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
@@ -72,7 +72,6 @@ CONTAINS
   ! @MatvecMethods
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
-
 END TYPE MatrixFieldLis_
 
 !----------------------------------------------------------------------------
@@ -120,9 +119,9 @@ END INTERFACE
 ! Add functionality for other options too.
 !@endtodo
 
-INTERFACE MatrixFieldLisInitiate2
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be an instance of MatrixField_
@@ -130,7 +129,11 @@ INTERFACE MatrixFieldLisInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE MatrixFieldLisInitiate2
+END INTERFACE
+
+INTERFACE MatrixFieldLisInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE MatrixFieldLisInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -140,10 +143,14 @@ END INTERFACE MatrixFieldLisInitiate2
 ! date: 2023-03-30
 ! summary: This routine deallocates the data stored inside the matrix
 
-INTERFACE MatrixFieldLisDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE MatrixFieldLisDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
@@ -171,8 +178,9 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+  MODULE SUBROUTINE obj_Import( &
+    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs, geofedof, &
+    geofedofs)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
