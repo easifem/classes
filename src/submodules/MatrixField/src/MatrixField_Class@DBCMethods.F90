@@ -13,18 +13,20 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(MatrixField_Class) DBCMethods
 USE ReallocateUtility, ONLY: Reallocate
-USE CSRMatrix_Method, ONLY: GetSubMatrix, Matvec, ApplyDBC
+USE CSRMatrix_Method, ONLY: CSRMatrix_GetSubMatrix => GetSubMatrix
+USE CSRMatrix_Method, ONLY: CSRMatrix_Matvec => Matvec
+USE CSRMatrix_Method, ONLY: CSRMatrix_ApplyDBC => ApplyDBC
 USE Display_Method, ONLY: ToString
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                           ApplyDirichletBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC1
@@ -32,7 +34,7 @@ MODULE PROCEDURE obj_ApplyDirichletBC1
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 #endif
 
-LOGICAL(LGT) :: case1, isok
+LOGICAL(LGT) :: isok, isDBCPtrsPresent
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
 
@@ -41,23 +43,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-case1 = PRESENT(dbcPtrs)
+isDBCPtrsPresent = PRESENT(dbcPtrs)
 
-IF (case1) THEN
-  obj%tdbcptrs = SIZE(dbcptrs)
-  CALL Reallocate(obj%dbcptrs, obj%tdbcptrs, isExpand=isExpand, &
-                  expandFactor=expandFactor)
+! If dbcPtrs are present
+IF (isDBCPtrsPresent) THEN
+  obj%tdbcptrs = SIZE(dbcPtrs)
+  CALL Reallocate( &
+    obj%dbcPtrs, obj%tdbcptrs, isExpand=isExpand, expandFactor=expandFactor)
 
   obj%dbcPtrs(1:obj%tdbcptrs) = dbcPtrs(1:obj%tdbcptrs)
 
-  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcptrs(1:obj%tdbcptrs), &
-                    submat=obj%submat, subIndices=obj%subindices)
+  CALL CSRMatrix_GetSubMatrix( &
+    obj=obj%mat, cols=obj%dbcptrs(1:obj%tdbcptrs), submat=obj%submat, &
+    subIndices=obj%subIndices)
+
+  obj%isSubmatInit = math%yes
 
   obj%tsubindices = SIZE(obj%subindices)
 
-  IF (obj%tdbcptrs .GT. 0) THEN
-    CALL ApplyDBC(obj=obj%mat, dbcptrs=obj%dbcptrs(1:obj%tdbcptrs))
-  END IF
+  isok = obj%tdbcptrs .GT. 0
+  IF (isok) &
+    CALL CSRMatrix_ApplyDBC(obj=obj%mat, dbcptrs=obj%dbcptrs(1:obj%tdbcptrs))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -73,11 +79,11 @@ CALL AssertError1(isok, myname, &
                   "MatrxiField_::obj%subindices not allocated")
 #endif
 
-IF (obj%tsubindices .GT. 0) THEN
-  CALL GetSubMatrix(obj=obj%mat, &
-                    subIndices=obj%subindices(1:obj%tsubindices), &
-                    submat=obj%submat)
-END IF
+isok = obj%tsubindices .GT. 0
+IF (isok) &
+  CALL CSRMatrix_GetSubMatrix( &
+  obj=obj%mat, subIndices=obj%subindices(1:obj%tsubindices), &
+  submat=obj%submat)
 
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%dbcptrs)
@@ -85,15 +91,14 @@ CALL AssertError1(isok, myname, &
                   "MatrxiField_::obj%dbcptrs not allocated")
 #endif
 
-IF (obj%tdbcptrs .GT. 0) THEN
-  CALL ApplyDBC(obj=obj%mat, dbcPtrs=obj%dbcptrs(1:obj%tdbcptrs))
-END IF
+isok = obj%tdbcptrs .GT. 0
+IF (isok) &
+  CALL CSRMatrix_ApplyDBC(obj=obj%mat, dbcPtrs=obj%dbcptrs(1:obj%tdbcptrs))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -101,9 +106,24 @@ END PROCEDURE obj_ApplyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetDirichletBCSubMat
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCSubMat()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetDirichletBCSubMat
 
 !----------------------------------------------------------------------------
@@ -111,7 +131,10 @@ END PROCEDURE obj_GetDirichletBCSubMat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBCToRHS
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBCToRHS()"
+#endif
+
 REAL(DFP), POINTER :: xvec(:)
 REAL(DFP), POINTER :: yvec(:)
 
@@ -123,8 +146,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 xvec => x%GetPointer()
 yvec => y%GetPointer()
 
-CALL Matvec(obj=obj%submat, y=yvec, x=xvec, isTranspose=isTranspose, &
-            addContribution=addContribution, scale=scale)
+CALL CSRMatrix_Matvec( &
+  obj=obj%submat, y=yvec, x=xvec, isTranspose=isTranspose, &
+  addContribution=addContribution, scale=scale)
 
 NULLIFY (xvec, yvec)
 
