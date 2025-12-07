@@ -20,6 +20,7 @@
 
 MODULE ScalarFieldLis_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
+USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
@@ -51,6 +52,8 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate an instance by copying
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate an instance of ScalarField_ by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -132,6 +135,39 @@ END TYPE ScalarFieldLis_
 TYPE :: ScalarFieldLisPointer_
   CLASS(ScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldLisPointer_
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: Initiate AbstractNodeField_ from another instance
+!
+!# Introduction
+!
+! This method initiates an AbstractNodeField_ instance
+! by copying all or some contents from another instance of AbstractNodeField_
+!
+! If obj is not initiated then we copy everything
+! For fedof and fedofs we always use pointers
+!
+! If obj is initiated then we only copy the data stored in realvec
+!
+!
+! Currently, copyStructure and usePointer is not used
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
+    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
