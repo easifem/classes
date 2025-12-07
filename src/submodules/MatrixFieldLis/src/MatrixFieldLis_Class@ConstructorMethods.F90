@@ -98,6 +98,7 @@ MODULE PROCEDURE obj_Deallocate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
+
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isok
 
@@ -107,7 +108,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isok = obj%IsInitiated()
-
 IF (isok) THEN
   CALL lis_matrix_unset(obj%lis_ptr, ierr)
 
@@ -122,8 +122,29 @@ IF (isok) THEN
 #endif
 END IF
 
+isok = obj%IsSubmatInitiated()
+IF (isok) THEN
+  CALL lis_matrix_unset(obj%submat_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_matrix_destroy(obj%submat_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+END IF
+
 IF (ALLOCATED(obj%lis_ia)) DEALLOCATE (obj%lis_ia)
 IF (ALLOCATED(obj%lis_ja)) DEALLOCATE (obj%lis_ja)
+IF (ALLOCATED(obj%submat_lis_ia)) DEALLOCATE (obj%submat_lis_ia)
+IF (ALLOCATED(obj%submat_lis_ja)) DEALLOCATE (obj%submat_lis_ja)
+
+obj%submat_is = 0
+obj%submat_ie = 0
+obj%submat_lis_ptr = 0
 
 CALL MatrixFieldDeallocate(obj)
 
