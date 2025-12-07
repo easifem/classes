@@ -57,6 +57,7 @@ PUBLIC :: MatrixFieldDisplay
 PUBLIC :: MatrixFieldImport
 PUBLIC :: MatrixFieldExport
 PUBLIC :: MatrixFieldAllocate
+PUBLIC :: MatrixFieldApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !                                                               MSRSparsity_
@@ -137,10 +138,12 @@ END INTERFACE
 
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   LOGICAL(LGT) :: isRectangle = .FALSE.
-  !!
-  INTEGER(I4B) :: tdbcptrs = 0
+  !! True if the matrix is a rectangle matrix
+  LOGICAL(LGT) :: isSubmatInit = .FALSE.
+  !! True if the submatrix is initiated
+  INTEGER(I4B) :: tdbcPtrs = 0
   !! total size of dbcptrs
-  INTEGER(I4B) :: tsubindices = 0
+  INTEGER(I4B) :: tsubIndices = 0
   !! total size of subindices
   TYPE(CSRMatrix_) :: mat
   !! main matrix
@@ -150,11 +153,12 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   !! Submatrix of columns
   !! this is used to apply Dirichlet boundary condition
   !! to rhs of the problem
-  INTEGER(I4B), ALLOCATABLE :: dbcptrs(:)
+  INTEGER(I4B), ALLOCATABLE :: dbcPtrs(:)
   !! Dirichlet nodes numbers
-  INTEGER(I4B), ALLOCATABLE :: subindices(:)
+  INTEGER(I4B), ALLOCATABLE :: subIndices(:)
   !! Indices of dirichlet boundary condition submatrix in
   !! matrix field
+
 CONTAINS
   PRIVATE
 
@@ -185,6 +189,9 @@ CONTAINS
   ! GET:
   !@GetMethods
 
+  PROCEDURE, PUBLIC, PASS(obj) :: IsSubmatInitiated => &
+    obj_IsSubmatInitiated
+  !! Returns the status of submatrix initiation
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the size of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
@@ -319,6 +326,7 @@ CONTAINS
     obj_SymLargestEigenVal
 
   ! SET:
+  ! @DBCMethods
   PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1
 
@@ -723,6 +731,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               IsSubmatInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-06
+! summary: This routine returns the status of submatrix initiation
+
+INTERFACE
+  MODULE FUNCTION obj_IsSubmatInitiated(obj) RESULT(ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsSubmatInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Size@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1067,6 +1090,10 @@ INTERFACE
     !! These are column numbers which are local node
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
+
+INTERFACE MatrixFieldApplyDirichletBC
+  MODULE PROCEDURE obj_ApplyDirichletBC1
+END INTERFACE MatrixFieldApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !                                            ApplyDirichletBCtoRHS@DBCMethods
