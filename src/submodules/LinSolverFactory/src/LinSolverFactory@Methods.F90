@@ -21,8 +21,8 @@
 
 SUBMODULE(LinSolverFactory) Methods
 USE ExceptionHandler_Class, ONLY: e
-
 USE LinSolver_Class, ONLY: LinSolver_
+USE LinSolverLis_Class, ONLY: LinSolverLis_
 
 IMPLICIT NONE
 CONTAINS
@@ -39,29 +39,28 @@ SELECT CASE (engine)
 CASE ("NATIVE_SERIAL")
   ALLOCATE (LinSolver_ :: ans)
 
-CASE ("NATIVE_OMP")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-       'NATIVE_OMP engine is not available currently!! We are working on it.')
-
-CASE ("NATIVE_MPI")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-       'NATIVE_MPI engine is not available currently!! We are working on it.')
-
-CASE ("PETSC")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-            'PETSC engine is not available currently!! We are working on it.')
-
-CASE ("LIS_SERIAL")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-       'LIS_SERIAL engine is not available currently!! We are working on it.')
-
 CASE ("LIS_OMP")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-          'LIS_OMP engine is not available currently!! We are working on it.')
+  ALLOCATE (LinSolverLis_ :: ans)
 
-CASE ("LIS_MPI")
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-          'LIS_MPI engine is not available currently!! We are working on it.')
+! CASE ("NATIVE_OMP")
+!   CALL e%RaiseError(modName//'::'//myName//" - "// &
+!        'NATIVE_OMP engine is not available currently!! We are working on it.')
+!
+! CASE ("NATIVE_MPI")
+!   CALL e%RaiseError(modName//'::'//myName//" - "// &
+!        'NATIVE_MPI engine is not available currently!! We are working on it.')
+!
+! CASE ("PETSC")
+!   CALL e%RaiseError(modName//'::'//myName//" - "// &
+!             'PETSC engine is not available currently!! We are working on it.')
+!
+! CASE ("LIS_MPI")
+!   CALL e%RaiseError(modName//'::'//myName//" - "// &
+!           'LIS_MPI engine is not available currently!! We are working on it.')
+
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'No case found for given engine')
 
 END SELECT
 END PROCEDURE LinearSolverFactory
