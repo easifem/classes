@@ -17,6 +17,7 @@
 
 SUBMODULE(ScalarFieldLis_Class) ConstructorMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE ScalarField_Class, ONLY: ScalarFieldInitiate
 
 IMPLICIT NONE
@@ -24,6 +25,50 @@ IMPLICIT NONE
 #include "lisf.h"
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
+
+CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
