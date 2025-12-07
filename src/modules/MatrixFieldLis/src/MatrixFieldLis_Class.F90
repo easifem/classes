@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE MatrixFieldLis_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: I4B, DFP, LGT, INT64
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
@@ -46,8 +46,17 @@ PUBLIC :: MatrixFieldLisDeallocate
 !{!pages/docs-api/MatrixFieldLis/MatrixFieldLis_.md!}
 
 TYPE, EXTENDS(MatrixField_) :: MatrixFieldLis_
-  INTEGER(I4B), ALLOCATABLE :: lis_ia(:)
-  INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
+  INTEGER(I4B), ALLOCATABLE :: lis_ia(:), submat_lis_ia(:)
+  !! IA of CSR matrix
+  INTEGER(I4B), ALLOCATABLE :: lis_ja(:), submat_lis_ja(:)
+  !! JA of CSR matrix
+  INTEGER(I4B) :: submat_is = 0_I4B
+  !! starting index (MPI)
+  INTEGER(I4B) :: submat_ie = 0_I4B
+  !! end index + 1 (MPI)
+  INTEGER(INT64) :: submat_lis_ptr = 0_INT64
+  !! lis_ptr is pointer returned by the LIS library
+  !! It is used when engine is LIS_OMP or LIS_MPI
 CONTAINS
   PRIVATE
 
@@ -72,6 +81,17 @@ CONTAINS
   ! @MatvecMethods
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
+
+  ! SET:
+  ! @DBCMethods
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  !! Apply dirichlet boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
+    obj_ApplyDirichletBCToRHS
+  !! Apply dirichlet boundary conditions to rhs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCSubMat => &
+    obj_GetDirichletBCSubMat
+  !! Get submatrix for dirichlet boundary condition
 END TYPE MatrixFieldLis_
 
 !----------------------------------------------------------------------------
@@ -235,6 +255,57 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE obj_Matvec2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to matrixfield_
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbcPtrs)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+    !! These are column numbers which are local node
+  END SUBROUTINE obj_ApplyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            ApplyDirichletBCtoRHS@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to a node field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBCToRHS( &
+    obj, x, y, isTranspose, scale, addContribution)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: x
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: y
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_ApplyDirichletBCToRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetDirichletBCSubMat@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-14
+! summary:  Get submatrix for apply dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
+  END SUBROUTINE obj_GetDirichletBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
