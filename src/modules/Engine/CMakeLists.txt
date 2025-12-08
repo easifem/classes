@@ -16,4 +16,9 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(${PROJECT_NAME} PRIVATE ${src_path}/EngineOpt_Class.F90)
+target_sources(${PROJECT_NAME} PRIVATE 
+              ${src_path}/EngineOpt_Class.F90
+              ${src_path}/AbstractEngine_Class.F90
+              ${src_path}/NativeSerialEngine_Class.F90
+              ${src_path}/LisOmpEngine_Class.F90
+              ${src_path}/EngineFactoryUtility.F90)

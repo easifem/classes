@@ -204,8 +204,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 # CoordOpt
 include(${CMAKE_CURRENT_LIST_DIR}/CoordOpt/CMakeLists.txt)
 
-# EngineOpt
-include(${CMAKE_CURRENT_LIST_DIR}/EngineOpt/CMakeLists.txt)
+# Engine
+include(${CMAKE_CURRENT_LIST_DIR}/Engine/CMakeLists.txt)
 
 # FieldOpt
 include(${CMAKE_CURRENT_LIST_DIR}/FieldOpt/CMakeLists.txt)
