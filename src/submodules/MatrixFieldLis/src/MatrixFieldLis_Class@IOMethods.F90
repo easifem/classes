@@ -43,23 +43,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
-IF (obj%engine%chars() .EQ. "LIS_OMP") THEN
+isok = ALLOCATED(obj%lis_ia)
+CALL Display(isok, "obj%lis_ia ALLOCATED:", unitNo=unitno)
+IF (isok) &
+  CALL Display(obj%lis_ia, "lis_ia:", unitno=unitno)
 
-  isok = ALLOCATED(obj%lis_ia)
-  IF (isok) THEN
-    CALL Display("lis_ia ALLOCATED", unitNo=unitNo)
-  ELSE
-    CALL Display("lis_ia NOT ALLOCATED", unitNo=unitNo)
-  END IF
-
-  isok = ALLOCATED(obj%lis_ja)
-  IF (isok) THEN
-    CALL Display("lis_ja ALLOCATED", unitNo=unitNo)
-  ELSE
-    CALL Display("lis_ja NOT ALLOCATED", unitNo=unitNo)
-  END IF
-
-END IF
+isok = ALLOCATED(obj%lis_ja)
+CALL Display(isok, "obj%lis_ja ALLOCATED:", unitno=unitno)
+IF (isok) &
+  CALL Display(obj%lis_ja, "lis_ja:", unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
