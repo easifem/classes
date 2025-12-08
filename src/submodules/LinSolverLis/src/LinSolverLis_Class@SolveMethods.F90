@@ -17,7 +17,6 @@
 
 SUBMODULE(LinSolverLis_Class) SolveMethods
 USE GlobalData, ONLY: stdout
-
 USE Display_Method, ONLY: EqualLine, Display, Blanklines, &
                           ToString
 
@@ -200,25 +199,6 @@ isok = ASSOCIATED(amat)
 CALL AssertError1(isok, myname, &
                   'LinSolverLis_::obj%amat is not ASSOCIATED')
 #endif
-
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'start')
-
-BLOCK
-  INTEGER(I4B) :: aint
-  CALL Display(amat%lis_ptr, "amat%lis_ptr: ")
-  CALL Display(rhs%lis_ptr, "rhs%lis_ptr: ")
-  CALL Display(sol%lis_ptr, "sol%lis_ptr: ")
-  CALL Display(obj%lis_solver, "lis solver: ")
-  CALL lis_solver_get_solver(obj%lis_solver, aint, ierr)
-  CALL Display(aint, "solver name: ")
-  CALL lis_solver_get_precon(obj%lis_solver, aint, ierr)
-  CALL Display(aint, "precon name: ")
-END BLOCK
-
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'stop')
-STOP
 
 CALL lis_solve(amat%lis_ptr, rhs%lis_ptr, sol%lis_ptr, obj%lis_solver, ierr)
 
