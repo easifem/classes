@@ -44,6 +44,7 @@ TYPE, EXTENDS(AbstractEngine_) :: LisOmpEngine_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 END TYPE LisOmpEngine_
 
 !----------------------------------------------------------------------------
@@ -64,6 +65,18 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(LisOmpEngine_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Display@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(LisOmpEngine_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 END MODULE LisOmpEngine_Class

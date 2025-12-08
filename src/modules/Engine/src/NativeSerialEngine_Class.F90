@@ -44,6 +44,7 @@ TYPE, EXTENDS(AbstractEngine_) :: NativeSerialEngine_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 END TYPE NativeSerialEngine_
 
 !----------------------------------------------------------------------------
@@ -64,6 +65,18 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(NativeSerialEngine_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Display@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(NativeSerialEngine_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 END MODULE NativeSerialEngine_Class

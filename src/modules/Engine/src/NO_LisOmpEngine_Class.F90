@@ -16,57 +16,63 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE AbstractEngine_Class
+MODULE LisOmpEngine_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
+USE AbstractEngine_Class, ONLY: AbstractEngine_
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: AbstractEngine_
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractEngine_Class"
+CHARACTER(*), PARAMETER :: modName = "LisOmpEngine_Class"
 #endif
 
+PUBLIC :: LisOmpEngine_
+
 !----------------------------------------------------------------------------
-!                                                           AbstractEngine_
+!                                                               LisOmpEngine_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-12-08
 ! summary: Abstract engine for linear algebra operations
 
-TYPE, ABSTRACT :: AbstractEngine_
+TYPE, EXTENDS(AbstractEngine_) :: LisOmpEngine_
 
 CONTAINS
-  PROCEDURE(EmptyMethod), DEFERRED, PUBLIC, PASS(obj) :: Initiate
-  PROCEDURE(EmptyMethod), DEFERRED, PUBLIC, PASS(obj) :: DEALLOCATE
-  PROCEDURE(DisplayInterface), DEFERRED, PUBLIC, PASS(obj) :: Display
-END TYPE AbstractEngine_
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+END TYPE LisOmpEngine_
+
+CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                EmptyMethod
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE EmptyMethod(obj)
-    IMPORT :: AbstractEngine_
-    CLASS(AbstractEngine_), INTENT(INOUT) :: obj
-  END SUBROUTINE EmptyMethod
-END INTERFACE
+SUBROUTINE obj_Initiate(obj)
+  CLASS(LisOmpEngine_), INTENT(INOUT) :: obj
+END SUBROUTINE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                            DisplayInterface
+!                                                            Deallocate@Methods
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE DisplayInterface(obj, msg, unitno)
-    IMPORT :: AbstractEngine_, I4B, LGT
-    CLASS(AbstractEngine_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE DisplayInterface
-END INTERFACE
+SUBROUTINE obj_Deallocate(obj)
+  CLASS(LisOmpEngine_), INTENT(INOUT) :: obj
+END SUBROUTINE obj_Deallocate
 
-END MODULE AbstractEngine_Class
+!----------------------------------------------------------------------------
+!                                                             Display@Methods
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Display(obj, msg, unitno)
+  CLASS(LisOmpEngine_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+END SUBROUTINE obj_Display
+
+END MODULE LisOmpEngine_Class

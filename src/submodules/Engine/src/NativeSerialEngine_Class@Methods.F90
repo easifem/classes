@@ -17,6 +17,8 @@
 !
 
 SUBMODULE(NativeSerialEngine_Class) Methods
+USE EngineOpt_Class, ONLY: TypeEngineOpt
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
@@ -59,6 +61,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+CALL Display(TypeEngineOpt%native_serial, unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                            Include error

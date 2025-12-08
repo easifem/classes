@@ -17,7 +17,12 @@
 !
 
 SUBMODULE(LisOmpEngine_Class) Methods
+USE EngineOpt_Class, ONLY: TypeEngineOpt
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,9 +34,17 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
+INTEGER(I4B) :: ierr
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+CALL lis_initialize(ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
@@ -49,9 +62,17 @@ MODULE PROCEDURE obj_Deallocate
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
+INTEGER(I4B) :: ierr
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+CALL lis_finalize(ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
@@ -59,6 +80,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+CALL Display(TypeEngineOpt%lis_omp, unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                            Include error

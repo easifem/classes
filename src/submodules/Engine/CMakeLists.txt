@@ -20,5 +20,10 @@ SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/NativeSerialEngine_Class@Methods.F90
-  ${src_path}/LisOmpEngine_Class@Methods.F90
   ${src_path}/EngineFactoryUtility@Methods.F90)
+
+if(USE_LIS)
+  target_sources(${PROJECT_NAME} PRIVATE
+  ${src_path}/LisOmpEngine_Class@Methods.F90)
+
+endif()
