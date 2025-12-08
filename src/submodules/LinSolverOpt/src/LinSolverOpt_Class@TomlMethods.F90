@@ -88,9 +88,6 @@ CALL ImportInitXZerosFromToml(obj=obj, table=table, &
 CALL ImportSorOmegaFromToml(obj=obj, table=table, &
                             origin=origin, stat=stat)
 
-! CALL ImportSorOmegaFromToml(obj=obj, table=table, &
-!                             origin=origin, stat=stat)
-
 node => NULL()
 CALL toml_get(table, "precondition", node, origin=origin, &
               stat=stat, requested=.FALSE.)
