@@ -23,6 +23,7 @@ SUBMODULE(MatrixField_Class) IOMethods
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
 USE Display_Method, ONLY: Display
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
+USE CSRMatrix_Method, ONLY: CSRMatrix_Display => Display
 
 IMPLICIT NONE
 CONTAINS
@@ -36,6 +37,8 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -43,10 +46,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
-IF (obj%isRectangle) THEN
-  CALL Display("Shape: Rectangle", unitNo=unitNo)
-ELSE
-  CALL Display("Shape: Square", unitNo=unitNo)
+CALL Display(obj%isRectangle, "Is Rectangle: ", unitNo=unitNo)
+CALL Display(obj%isSubmatInit, "Is Submatrix Init: ", unitNo=unitNo)
+CALL Display(obj%tdbcPtrs, "tdbcPtrs: ", unitNo=unitNo)
+CALL Display(obj%tsubIndices, "tsubIndices: ", unitNo=unitNo)
+isok = ALLOCATED(obj%dbcPtrs)
+CALL Display(isok, "dbcPtrs Allocated: ", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(obj%dbcPtrs, "dbcPtrs: ", unitNo=unitNo)
+END IF
+
+isok = ALLOCATED(obj%subIndices)
+CALL Display(isok, "subIndices Allocated: ", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(obj%subIndices, "subIndices: ", unitNo=unitNo)
+END IF
+
+CALL CSRMatrix_Display(obj%mat, "CSRMatrix_::mat: ", unitNo=unitNo)
+
+IF (obj%isSubmatInit) THEN
+  CALL CSRMatrix_Display(obj%submat, "CSRMatrix_::submat: ", unitNo=unitNo)
 END IF
 
 #ifdef DEBUG_VER
