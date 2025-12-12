@@ -98,8 +98,11 @@ MODULE PROCEDURE obj_GetStringForKernelLog
 REAL(DFP) :: t, wt
 t = obj%GetTime()
 !$ wt = obj%GetWTime()
-ans = ToString(currentTimeStep)//","//ToString(currentTime)//"," &
-      //'"'//methodName//'"'//","//ToString(t)
+ans = ToString(currentTimeStep)//"," &
+      //ToString(currentTime)//"," &
+      //'"'//moduleName//'"'//"," &
+      //'"'//methodName//'"'//"," &
+      //ToString(t)
 !$ ans = ans//","//tostring(wt)
 END PROCEDURE obj_GetStringForKernelLog
 
