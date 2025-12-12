@@ -52,6 +52,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL MatrixFieldApplyDirichletBC(obj=obj, dbcPtrs=dbcPtrs)
 
 IF (.NOT. obj%isSubmatInit) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'no submatrix initialized, returning')
+
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+isDBCPtrsPresent = PRESENT(dbcPtrs)
+IF (.NOT. isDBCPtrsPresent) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+    'dbcPtrs not present, there is not need to initiate submatrix, returning')
+#endif
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -85,12 +105,6 @@ CALL CHKERR(ierr)
 #endif
 
 CALL lis_matrix_assemble(obj%submat_lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_matrix_get_size(obj%submat_lis_ptr, obj%local_n, obj%global_n, ierr)
 
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
@@ -150,7 +164,7 @@ IF (addContribution0) THEN
 #endif
 
   ! computing matvec Ax into temp_lis_ptr
-  CALL lis_matvec(obj%lis_ptr, x%lis_ptr, temp_lis_ptr, ierr)
+  CALL lis_matvec(obj%submat_lis_ptr, x%lis_ptr, temp_lis_ptr, ierr)
 
 #ifdef DEBUG_VER
   CALL CHKERR(ierr)
