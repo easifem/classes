@@ -110,8 +110,6 @@ DO iel = 1, tElements
                                    args=args, n=elemsd%nsd)
   END DO
 
-  CALL Display(forceVecQuad(1:elemsd%nsd, 1:elemsd%nips), "forceVecQuad")
-
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpace, scale=1.0_DFP, &

@@ -164,7 +164,7 @@ CONTAINS
 
   ! SET:
   ! @PointNBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
   !! Apply point neumann boundary condition
 
