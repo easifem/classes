@@ -19,16 +19,17 @@
 ! summary: STVector field data type is defined
 
 MODULE STVectorField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
-USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE BaseType, ONLY: FEVariable_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE UserFunction_Class, ONLY: UserFunction_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE VectorField_Class, ONLY: VectorField_
 
 IMPLICIT NONE
 
@@ -68,7 +69,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate by copy
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate by copy
 
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -222,7 +226,7 @@ END TYPE STVectorFieldPointer_
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE STVectorFieldInitiate
+INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
@@ -232,6 +236,93 @@ INTERFACE STVectorFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE STVectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE STVectorFieldInitiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field, needed
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine, needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL, needed
+    !! following options are available FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the Vector field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1), NOT REQUIRED
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components, needed for space-time field
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required, Not needed
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1), Not needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true, Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE STVectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
 END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
