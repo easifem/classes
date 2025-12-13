@@ -755,15 +755,91 @@ END PROCEDURE obj_Set16
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFromVectorField
-INTEGER(I4B) :: ii, jj
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
+LOGICAL(LGT) :: isok
+#endif
 
-DO ii = 1, obj%spaceCompo
-  jj = GetIDOF(spaceCompo=ii, timeCompo=1, tspaceCompo=obj%spaceCompo)
-  CALL obj%Set(idof=jj, ivar=1, VALUE=VALUE, idof_value=ii, &
+INTEGER(I4B) :: idof, icompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STVectorField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'VectorField_::value is not initiated')
+#endif
+
+DO icompo = 1, obj%spaceCompo
+  idof = GetIDOF(spaceCompo=icompo, timeCompo=timeCompo, tspaceCompo=obj%spaceCompo)
+  CALL obj%Set(idof=idof, ivar=1, VALUE=VALUE, idof_value=icompo, &
                ivar_value=1, scale=scale, addContribution=addContribution)
 END DO
 
 END PROCEDURE obj_SetFromVectorField
+
+!----------------------------------------------------------------------------
+!                                                        SetToVectorField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetToVectorField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetToVectorField()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: s(3), p(3), icompo, idof
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STVectorField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'VectorField_::value is not initiated')
+#endif
+
+realvec => obj%GetPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, &
+                  'realvec obtained To value is not ASSOCIATED')
+#endif
+
+DO icompo = 1, obj%spaceCompo
+  s = GetNodeLoc(obj=VALUE%dof, idof=icompo)
+
+  idof = GetIDOF(spaceCompo=icompo, timeCompo=timeCompo, tspaceCompo=obj%spaceCompo)
+  p = GetNodeLoc(obj=obj%dof, idof=idof)
+
+  CALL VALUE%SetMultiple( &
+    VALUE=realvec, scale=scale, addContribution=addContribution, &
+    istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+    istart=s(1), iend=s(2), stride=s(3))
+END DO
+
+realvec => NULL()
+
+END PROCEDURE obj_SetToVectorField
 
 !----------------------------------------------------------------------------
 !

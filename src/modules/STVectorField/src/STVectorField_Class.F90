@@ -150,10 +150,11 @@ CONTAINS
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14, Set15, Set16
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => obj_SetByFunction
-
+  !! Set by function
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetFromVectorField => &
     obj_SetFromVectorField
-  !! Set by function
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetToVectorField => &
+    obj_SetToVectorField
 
   ! GET:
   ! @GetMethods
@@ -968,6 +969,25 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_SetFromVectorField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Set to VectorField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetToVectorField(obj, VALUE, timeCompo, &
+                                         scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_SetToVectorField
 END INTERFACE
 
 !----------------------------------------------------------------------------
