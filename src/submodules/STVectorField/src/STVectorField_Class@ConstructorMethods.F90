@@ -110,6 +110,12 @@ dof_spaceCompo(1) = spaceCompo(1)
 obj%timeCompo = dof_timeCompo(1)
 obj%spaceCompo = dof_spaceCompo(1)
 
+CALL Reallocate(obj%space_idofs, obj%spaceCompo)
+obj%space_idofs = Arange(1_I4B, obj%spaceCompo)
+
+CALL Reallocate(obj%time_idofs, obj%timeCompo)
+obj%time_idofs = Arange(1_I4B, obj%timeCompo)
+
 CALL Reallocate(obj%idofs, obj%timeCompo * obj%spaceCompo)
 obj%idofs = Arange(1_I4B, obj%timeCompo * obj%spaceCompo)
 
