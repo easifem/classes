@@ -292,13 +292,11 @@ CALL AssertError2(SIZE(VALUE, 3), SIZE(globalNode), myName, &
 
 #endif
 
-!$OMP PARALLEL DO PRIVATE(ii)
 DO ii = 1, SIZE(globalNode)
   CALL obj%Set(VALUE=VALUE(:, :, ii), globalNode=globalNode(ii), &
                scale=scale, addContribution=addContribution, &
                islocal=islocal)
 END DO
-!$OMP END PARALLEL DO
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
@@ -484,7 +482,6 @@ END IF
 
 indx = obj%dof.tNodes.1
 
-!$OMP PARALLEL DO PRIVATE(ii)
 DO ii = 1, indx
 
   CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, tsize=tsize, &
@@ -494,7 +491,6 @@ DO ii = 1, indx
                        scale=scale, addContribution=addContribution)
 
 END DO
-!$OMP END PARALLEL DO
 
 END PROCEDURE obj_Set12
 

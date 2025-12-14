@@ -209,6 +209,24 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
+  ! SET:
+  ! @BodySourceMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource1 => obj_ApplyBodySource1
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource2 => obj_ApplyBodySource2
+  !! Add contribution of body source to the scalar field
+  !! body source is given external scalar field
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource3 => obj_ApplyBodySource3
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
+    ApplyBodySource2, ApplyBodySource3
+  !! Generic method for setting body source
+
 END TYPE STVectorField_
 
 !---------------------------------------------------------------------------
@@ -1371,6 +1389,74 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: times(:)
     !! times
   END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time, which will be passed to the body source function
+  END SUBROUTINE obj_ApplyBodySource1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! ST vector field
+    !! The test function will be corresponding to the obj
+    CLASS(STVectorField_), INTENT(INOUT) :: bodySource
+    !! Body source in terms of vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+  END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times
+    !! time, which will be passed to the body source function
+    !! This time can also represent a quadrature point time
+  END SUBROUTINE obj_ApplyBodySource3
 END INTERFACE
 
 !----------------------------------------------------------------------------
