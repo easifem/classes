@@ -227,6 +227,18 @@ CONTAINS
     ApplyBodySource2, ApplyBodySource3
   !! Generic method for setting body source
 
+  ! SET:
+  ! @SurfaceNBCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
+    obj_ApplySurfaceNeumannBC
+  !! Apply Surface neumann boundary condition
+
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+    obj_ApplyPointNeumannBC
+  !! Apply point neumann boundary condition
+
 END TYPE STVectorField_
 
 !---------------------------------------------------------------------------
@@ -1457,6 +1469,46 @@ INTERFACE
     !! time, which will be passed to the body source function
     !! This time can also represent a quadrature point time
   END SUBROUTINE obj_ApplyBodySource3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC(obj, nbcField, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    CLASS(STVectorField_), INTENT(INOUT) :: nbcField
+    !! Vector field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times
+  END SUBROUTINE obj_ApplySurfaceNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             ApplyPointNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Add Contribution of point neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
+    REAL(DFP), INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
