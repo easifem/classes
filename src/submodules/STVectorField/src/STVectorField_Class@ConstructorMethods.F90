@@ -66,6 +66,82 @@ END SELECT
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+CHARACTER(1) :: dof_names(1)
+INTEGER(I4B) :: dof_tNodes(1), dof_tsize, dof_spaceCompo(1), &
+                dof_timeCompo(1), dof_tPhysicalVarNames
+LOGICAL(LGT) :: istimefedof, isok, timeCompoMade
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+
+timeCompoMade = .FALSE.
+istimefedof = PRESENT(timefedof)
+IF (istimefedof) THEN
+  timeCompoMade = timefedof%IsInitiated()
+  IF (timeCompoMade) dof_timeCompo(1) = timefedof%GetTotalDOF()
+END IF
+
+IF (.NOT. timeCompoMade) THEN
+#ifdef DEBUG_VER
+  isok = PRESENT(timeCompo)
+  CALL AssertError1(isok, myName, "timeCompo is not present")
+#endif
+  dof_timeCompo(1) = timeCompo(1)
+  timeCompoMade = .TRUE.
+END IF
+
+isok = PRESENT(spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo is not present")
+
+dof_spaceCompo(1) = spaceCompo(1)
+
+obj%timeCompo = dof_timeCompo(1)
+obj%spaceCompo = dof_spaceCompo(1)
+
+CALL Reallocate(obj%space_idofs, obj%spaceCompo)
+obj%space_idofs = Arange(1_I4B, obj%spaceCompo)
+
+CALL Reallocate(obj%time_idofs, obj%timeCompo)
+obj%time_idofs = Arange(1_I4B, obj%timeCompo)
+
+CALL Reallocate(obj%idofs, obj%timeCompo * obj%spaceCompo)
+obj%idofs = Arange(1_I4B, obj%timeCompo * obj%spaceCompo)
+
+dof_names(1) = name(1:1)
+dof_tNodes(1) = fedof%GetTotalDOF()
+dof_tsize = dof_tNodes(1) * dof_spaceCompo(1) * dof_timeCompo(1)
+dof_tPhysicalVarNames = 1_I4B
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
+  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
+  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
+  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
+  isTNodesScalar=.TRUE., geofedof=geofedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 

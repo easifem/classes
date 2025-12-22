@@ -19,17 +19,18 @@
 ! summary: STVector field data type is defined
 
 MODULE STVectorField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
-USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE VectorField_Class, ONLY: VectorField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE BaseType, ONLY: FEVariable_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE UserFunction_Class, ONLY: UserFunction_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE VectorField_Class, ONLY: VectorField_
 
 IMPLICIT NONE
 
@@ -69,7 +70,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate by copy
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate by copy
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored
@@ -125,7 +129,8 @@ CONTAINS
     obj_SetByFunction
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetFromVectorField => &
     obj_SetFromVectorField
-  !! Set by function
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetToVectorField => &
+    obj_SetToVectorField
 
   ! GET:
   ! @GetMethods
@@ -164,6 +169,36 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
+  ! SET:
+  ! @BodySourceMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource1 => obj_ApplyBodySource1
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource2 => obj_ApplyBodySource2
+  !! Add contribution of body source to the scalar field
+  !! body source is given external scalar field
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyBodySource3 => obj_ApplyBodySource3
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
+    ApplyBodySource2, ApplyBodySource3
+  !! Generic method for setting body source
+
+  ! SET:
+  ! @SurfaceNBCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
+    obj_ApplySurfaceNeumannBC
+  !! Apply Surface neumann boundary condition
+
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+    obj_ApplyPointNeumannBC
+  !! Apply point neumann boundary condition
+
 END TYPE STVectorField_
 
 !---------------------------------------------------------------------------
@@ -196,6 +231,89 @@ END INTERFACE
 
 INTERFACE STVectorFieldInitiate
   MODULE PROCEDURE obj_Initiate2
+END INTERFACE STVectorFieldInitiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field, needed
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine, needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL, needed
+    !! following options are available FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the Vector field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1), NOT REQUIRED
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components, needed for space-time field
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required, Not needed
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1), Not needed
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true, Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! NOT REQUIRED
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE STVectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
 END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -866,6 +984,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Set to VectorField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetToVectorField(obj, VALUE, timeCompo, &
+                                         scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_SetToVectorField
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1249,6 +1386,114 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: times(:)
     !! times
   END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! time, which will be passed to the body source function
+  END SUBROUTINE obj_ApplyBodySource1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! ST vector field
+    !! The test function will be corresponding to the obj
+    CLASS(STVectorField_), INTENT(INOUT) :: bodySource
+    !! Body source in terms of vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+  END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Apply Body source to ST vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times
+    !! time, which will be passed to the body source function
+    !! This time can also represent a quadrature point time
+  END SUBROUTINE obj_ApplyBodySource3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC(obj, nbcField, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    CLASS(STVectorField_), INTENT(INOUT) :: nbcField
+    !! Vector field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times
+  END SUBROUTINE obj_ApplySurfaceNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             ApplyPointNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-11
+! summary:  Add Contribution of point neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
+    REAL(DFP), INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
