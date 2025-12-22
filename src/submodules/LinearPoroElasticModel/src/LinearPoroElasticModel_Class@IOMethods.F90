@@ -21,9 +21,7 @@
 
 SUBMODULE(LinearPoroElasticModel_Class) IOMethods
 USE BaseMethod
-USE LinearElasticModel_Class, ONLY: TypeElasticity,  &
-& ElasticityType_tonumber,  &
-& ElasticityType_char
+USE LinearElasticModel_Class, ONLY: TypeElasticityOpt
 IMPLICIT NONE
 CONTAINS
 
@@ -78,7 +76,7 @@ IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
 END IF
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-elasticityType = ElasticityType_tonumber(strval%chars())
+elasticityType = TypeElasticityOpt%ToNumber(strval%chars())
 
 !> READ isPlaneStrain
 dsetname = TRIM(group)//"/isPlaneStrain"
@@ -96,7 +94,7 @@ ELSE
   isPlaneStress = .FALSE.
 END IF
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = elasticityType .EQ. TypeElasticityOpt%Isotropic
 IF (isIsotropic) THEN
   dsetname = TRIM(group)//"/PoissonRatio"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
@@ -200,7 +198,7 @@ strval = ""
 
 !> WRITE elasticityType
 dsetname = TRIM(group)//"/elasticityType"
-strval = ElasticityType_char(obj%elasticityType)
+strval = TypeElasticityOpt%ToString(obj%elasticityType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 !> WRITE isPlaneStrain
@@ -212,7 +210,7 @@ dsetname = TRIM(group)//"/isPlaneStress"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isPlaneStress())
 
 !> C and invC
-IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
+IF (obj%elasticityType .EQ. TypeElasticityOpt%Isotropic) THEN
   dsetname = TRIM(group)//"/PoissonRatio"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%nu)
   dsetname = TRIM(group)//"/YoungsModulus"
@@ -253,13 +251,13 @@ IF (.NOT. obj%isInitiated()) THEN
 END IF
 
 CALL Display("name: "//myPrefix, unitNo=unitNo)
-IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
+IF (obj%elasticityType .EQ. TypeElasticityOpt%Isotropic) THEN
   CALL Display("elasticityType: IsoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. TypeElasticity%Anisotropic) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticityOpt%Anisotropic) THEN
   CALL Display("elasticityType: AnisoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. TypeElasticity%Orthotropic) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticityOpt%Orthotropic) THEN
   CALL Display("elasticityType: OrthoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. TypeElasticity%TransIsotropic) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticityOpt%TransIsotropic) THEN
   CALL Display("elasticityType: TransLinearElasticModel", unitNo=unitNo)
 ELSE
   CALL Display("elasticityType: Unknown", unitNo=unitNo)
@@ -271,7 +269,7 @@ isPlaneStress = obj%isPlaneStress()
 CALL Display(isPlaneStress, "isPlaneStress: ", unitNo=unitNo)
 CALL Display(isPlaneStrain, "isPlaneStrain: ", unitNo=unitNo)
 
-IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
+IF (obj%elasticityType .EQ. TypeElasticityOpt%Isotropic) THEN
 
   CALL Display(obj%nu, "Poisson ratio: ", unitNo=unitNo)
   CALL Display(obj%G, "Shear modulus: ", unitNo=unitNo)

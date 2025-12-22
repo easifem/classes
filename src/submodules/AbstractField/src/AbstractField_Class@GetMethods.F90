@@ -15,8 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) GetMethods
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !
@@ -30,7 +40,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(fieldType)) fieldType = obj%fieldType
 IF (PRESENT(name)) name = obj%name%chars()
 IF (PRESENT(engine)) engine = obj%engine%chars()
@@ -101,6 +111,28 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPhysicalNames
 
 !----------------------------------------------------------------------------
+!                                                                     GetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%name%chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetName
+
+!----------------------------------------------------------------------------
 !                                                           GetSpaceCompo
 !----------------------------------------------------------------------------
 
@@ -138,10 +170,42 @@ END PROCEDURE obj_GetStorageFMT
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  ' child classes')
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ASSOCIATED(obj%fedof)
+IF (isok) THEN
+  DO ii = 1, tPhysicalVars
+    ans(ii) = obj%fedof%GetTotalDOF()
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  DO ii = 1, tPhysicalVars
+    ans(ii) = obj%fedofs(ii)%ptr%GetTotalDOF()
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalDOF
 
 !----------------------------------------------------------------------------
@@ -201,14 +265,427 @@ END IF
 END PROCEDURE obj_isConstant
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
+!                                                           GetFEDOFPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-ans = ""
+MODULE PROCEDURE obj_GetFEDOFPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: indxPresent, fedofsAllocated
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+indxPresent = PRESENT(indx)
+fedofsAllocated = ALLOCATED(obj%fedofs)
+
+IF (indxPresent .AND. fedofsAllocated) THEN
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%fedofs)
+  isok = indx .LE. tsize
+
+  CALL AssertError1(isok, myName, &
+                    "indx should be less than or equal to size of fedofs")
+#endif
+
+  ans => obj%fedofs(indx)%ptr
+
+ELSE
+
+  ans => obj%fedof
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer1
+
+!----------------------------------------------------------------------------
+!                                                          GetFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFEDOFPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%fedofs)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+ELSE
+  tsize = 0
+END IF
+
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%fedofs(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                                        GetTimeFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeFEDOFPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeFEDOFPointer1()"
+#endif
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: indxPresent, fedofsAllocated
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+indxPresent = PRESENT(indx)
+fedofsAllocated = ALLOCATED(obj%timefedofs)
+
+IF (indxPresent .AND. fedofsAllocated) THEN
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%timefedofs)
+  isok = indx .LE. tsize
+
+  CALL AssertError1(isok, myName, &
+                    "indx should be less than or equal to size of timefedofs")
+#endif
+
+  ans => obj%timefedofs(indx)%ptr
+
+ELSE
+
+  ans => obj%timefedof
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTimeFEDOFPointer1
+
+!----------------------------------------------------------------------------
+!                                                        GetTimeFEDOFPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeFEDOFPointer2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeFEDOFPointer2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%timefedofs)
+
+IF (isok) THEN
+  tsize = SIZE(obj%timefedofs)
+ELSE
+  tsize = 0
+END IF
+
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%timefedofs(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetTimeFEDOFPointer2
+
+!----------------------------------------------------------------------------
+!                                                              GetEngineName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetEngineName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEngineName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%engine%chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetEngineName
+
+!----------------------------------------------------------------------------
+!                                                                GetTotalNBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalNBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNBC()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc)
+ans = 0
+IF (isok) ans = SIZE(obj%nbc)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalNBC
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalPointNBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalPointNBC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNBC()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc_point)
+ans = 0
+IF (isok) ans = SIZE(obj%nbc_point)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalPointNBC
+
+!----------------------------------------------------------------------------
+!                                                               GetNBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNBCPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNBCPointer()"
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc)
+
+IF (.NOT. isok) THEN
+  ans => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+tsize = SIZE(obj%nbc)
+isok = indx .LE. tsize
+CALL AssertError1(isok, myName, &
+                  "indx should be less than or equal to size of nbc")
+
+#endif
+
+ans => obj%nbc(indx)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetNBCPointer
+
+!----------------------------------------------------------------------------
+!                                                          GetPointNBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointNBCPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointNBCPointer()"
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%nbc_point)
+
+IF (.NOT. isok) THEN
+  ans => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+tsize = SIZE(obj%nbc_point)
+isok = indx .LE. tsize
+CALL AssertError1(isok, myName, &
+                  "indx should be less than or equal to size of nbc_point")
+
+#endif
+
+ans => obj%nbc_point(indx)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetPointNBCPointer
+
+!----------------------------------------------------------------------------
+!                                                               GetMeshField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshField
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshField()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-'[IMPLEMENTATION ERROR] :: This method should be implemented by child class.')
-END PROCEDURE obj_GetPrefix
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshField
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isMaxTotalNodeNumForBCSet) THEN
+  ans = obj%maxTotalNodeNumForBC
+
+ELSE
+  CALL obj%SetMaxTotalNodeNumForBC()
+  ans = obj%maxTotalNodeNumForBC
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalNodeNumForBC1
+
+!----------------------------------------------------------------------------
+!                                                    GetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxTotalNodeNumForBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxTotalNodeNumForBC2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isMaxTotalNodeNumForBCSet) THEN
+  ans = obj%maxTotalNodeNumForBC
+
+ELSE
+  CALL obj%SetMaxTotalNodeNumForBC(ivar=ivar)
+  ans = obj%maxTotalNodeNumForBC
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxTotalNodeNumForBC2
+
+!----------------------------------------------------------------------------
+!                                                             Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

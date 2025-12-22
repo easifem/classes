@@ -18,6 +18,7 @@
 SUBMODULE(STVectorField_Class) DBCMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -26,143 +27,145 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof, aint, nrow, ncol
-LOGICAL(LGT) :: istimes, problem
-
-istimes = PRESENT(times)
-
+MODULE PROCEDURE obj_ApplyDirichletBC1
 #ifdef DEBUG_VER
-IF (istimes) THEN
-  aint = SIZE(times)
-  problem = aint .NE. obj%timeCompo
-  IF (problem) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                   ToString(aint)//' which is not equal to obj%timeCompo '// &
-                      ' which is '//ToString(obj%timeCompo))
-    RETURN
-  END IF
-END IF
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
+LOGICAL(LGT) :: isok
 #endif
 
-nrow = dbc%GetTotalNodenum(fedof=obj%fedof)
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+INTEGER(I4B) :: idof, spaceCompo, nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbc=dbc)
+nrow = obj%GetMaxTotalNodeNumForBC()
 ncol = obj%timeCompo
-ALLOCATE (nodalvalue(nrow, ncol), nodenum(nrow))
 
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
 
-IF (istimes) THEN
-  aint = dbc%GetDOFNo()
-  DO idof = 1, obj%timeCompo
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                 timeCompo=idof, spacecompo=aint, islocal=.TRUE.)
-  END DO
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
+CALL dbc%Get( &
+  nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+  ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof, timefedof=obj%timefedof)
 
-DO idof = 1, obj%timecompo
-  aint = dbc%GetDOFNo()
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               timecompo=idof, spacecompo=aint, islocal=.TRUE.)
+spaceCompo = dbc%GetDOFNo()
+
+#ifdef DEBUG_VER
+isok = spaceCompo .LE. obj%spaceCompo
+CALL AssertError1( &
+  isok, myName, &
+  "DOFNo obtained from dbc ("//ToString(spaceCompo)// &
+  ") is greater than the spaceCompo in obj ("//ToString(obj%spaceCompo)//")")
+#endif
+
+DO idof = 1, ncol
+  CALL obj%Set( &
+    globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, idof), &
+    timeCompo=idof, spaceCompo=spaceCompo, islocal=math%yes)
 END DO
-
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_applyDirichletBC1
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
-LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
-INTEGER(I4B), PARAMETER :: expandFactor = 2
-
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, idof, aint, tsize, nrow, ncol
-LOGICAL(LGT) :: istimes
-
-istimes = PRESENT(times)
-
+MODULE PROCEDURE obj_ApplyDirichletBC2
 #ifdef DEBUG_VER
-IF (istimes) THEN
-  aint = SIZE(times)
-  IF (aint .NE. obj%timeCompo) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                   ToString(aint)//' which is not equal to obj%timeCompo '// &
-                      ' which is '//ToString(obj%timeCompo))
-    RETURN
-  END IF
-END IF
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
 #endif
 
-tsize = SIZE(dbc)
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+INTEGER(I4B) :: ibc, idof, spaceCompo, tbc, nrow, ncol
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc)
+nrow = obj%GetMaxTotalNodeNumForBC()
 ncol = obj%timeCompo
 
-DO ibc = 1, tsize
-  nrow = dbc(ibc)%ptr%GetTotalNodenum(fedof=obj%fedof)
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                  expandFactor=expandFactor)
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
 
-  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-END DO
+tbc = SIZE(dbc)
 
-IF (istimes) THEN
-  DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
+DO ibc = 1, tbc
 
-    aint = dbc(ibc)%ptr%GetDOFNo()
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
 
-    DO idof = 1, obj%timecompo
-      CALL obj%Set(globalNode=nodenum(1:nrow), &
-                   VALUE=nodalvalue(1:nrow, idof), &
-                   timecompo=idof, spacecompo=aint, &
-                   islocal=.TRUE.)
-    END DO
+  CALL dbc(ibc)%ptr%Get( &
+    nodalValue=obj%nodalValue, nodeNum=obj%nodeNum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof, &
+    timefedof=obj%timefedof)
 
+  spaceCompo = dbc(ibc)%ptr%GetDOFNo()
+
+#ifdef DEBUG_VER
+  isok = spaceCompo .LE. obj%spaceCompo
+  CALL AssertError1( &
+    isok, myName, "DOFNo obtained from dbc("//ToString(ibc)// &
+    ") which is "//ToString(spaceCompo)// &
+    ") is greater than the spaceCompo in obj which is "// &
+    ToString(obj%spaceCompo))
+#endif
+
+  DO idof = 1, ncol
+    CALL obj%Set( &
+      globalNode=obj%nodeNum(1:nrow), VALUE=obj%nodalValue(1:nrow, idof), &
+      timeCompo=idof, spaceCompo=spaceCompo, islocal=math%yes)
   END DO
 
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
-
-DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol, fedof=obj%fedof)
-
-  aint = dbc(ibc)%ptr%GetDOFNo()
-
-  DO idof = 1, obj%timecompo
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-                 timecompo=idof, spacecompo=aint, islocal=.TRUE.)
-  END DO
 END DO
 
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-
-END PROCEDURE obj_applyDirichletBC2
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
-!
+!                                                           ApplyDirichletBC
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyDirichletBC3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%ApplyDirichletBC(dbc=obj%dbc, times=times)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC3
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods

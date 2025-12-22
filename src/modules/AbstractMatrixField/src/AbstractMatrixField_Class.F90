@@ -23,7 +23,6 @@ MODULE AbstractMatrixField_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 
 IMPLICIT NONE
@@ -97,10 +96,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => obj_isPreconditionSet
   !! True if prcondition is Set
 
-  PROCEDURE(obj_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
-    SetPrecondition
-  !! Build precondition matrix
-
   PROCEDURE(obj_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
     GetPrecondition
   !! Get the precondition matrix
@@ -124,14 +119,13 @@ CONTAINS
     obj_SymLargestEigenVal
   !! SymLargestEigenVal
 
-  PROCEDURE(obj_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
-  !! ApplyDBC
+  PROCEDURE(obj_GetDirichletBCSubMat), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetDirichletBCSubMat
+  !! Get Submatrix corresponding to Dirichlet BC
 
-  PROCEDURE(obj_GetDBCSubMat), DEFERRED, PUBLIC, PASS(obj) :: GetDBCSubMat
-  !! ApplyDBC
-
-  PROCEDURE(obj_ApplyDBCToRHS), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBCtoRHS
-  !! ApplyDBC
+  PROCEDURE(obj_ApplyDirichletBCToRHS), DEFERRED, PUBLIC, PASS(obj) :: &
+    ApplyDirichletBCtoRHS
+  !! Apply Dirichlet Boundary Condition to RHS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   ! SPY
@@ -150,13 +144,8 @@ CONTAINS
   PROCEDURE(obj_Set9), DEFERRED, PASS(obj) :: Set9
   PROCEDURE(obj_Set10), DEFERRED, PASS(obj) :: Set10
   PROCEDURE(obj_Set11), DEFERRED, PASS(obj) :: Set11
-
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     Set6, Set7, Set8, Set9, Set10, Set11
-
-PROCEDURE(obj_SetFromSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetFromSTMatrix
-
-  PROCEDURE(obj_SetToSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetToSTMatrix
 
   ! SET:
   ! @SetRow
@@ -413,14 +402,14 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine Sets the precondition
 
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
-    IMPORT :: AbstractMatrixField_, ParameterList_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_SetPrecondition
-END INTERFACE
+! ABSTRACT INTERFACE
+!   SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
+!     IMPORT :: AbstractMatrixField_, ParameterList_, I4B
+!     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+!     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+!   END SUBROUTINE obj_SetPrecondition
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetPrecondition
@@ -593,23 +582,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_ApplyDBC(obj, dbcPtrs)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE obj_ApplyDBC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_GetDBCSubMat(obj, submat)
+  SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
-  END SUBROUTINE obj_GetDBCSubMat
+  END SUBROUTINE obj_GetDirichletBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -621,8 +598,8 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose,  &
-    & scale, addContribution)
+  SUBROUTINE obj_ApplyDirichletBCToRHS(obj, x, y, isTranspose, &
+                                       scale, addContribution)
     IMPORT :: AbstractMatrixField_, LGT, DFP, AbstractNodeField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
@@ -630,7 +607,7 @@ ABSTRACT INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_ApplyDBCToRHS
+  END SUBROUTINE obj_ApplyDirichletBCToRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -867,41 +844,6 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set11
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetFromSTMatrix@SetMethods
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetFromSTMatrix(obj, VALUE, a, b)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    !! Space-time matrix field
-    INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-  END SUBROUTINE obj_SetFromSTMatrix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetToSTMatrix@SetMethods
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE obj_SetToSTMatrix(obj, VALUE, a, b)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    !! Space-time matrix
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    !! Space matrix field
-    INTEGER(I4B), INTENT(IN) :: a
-    !! itimecompo
-    INTEGER(I4B), INTENT(IN) :: b
-    !! jtimecompo
-  END SUBROUTINE obj_SetToSTMatrix
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -21,9 +21,14 @@
 SUBMODULE(MeshSelection_Class) ConstructorMethods
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-USE IntVector_Method, ONLY: DEALLOCATE, isAllocated
+USE IntVector_Method, ONLY: IntVector_Deallocate => DEALLOCATE, &
+                            IntVector_IsAllocated => IsAllocated, &
+                            IntVector_Copy => Copy
 USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
-USE BoundingBox_Method, ONLY: BB_Deallocate => DEALLOCATE
+USE BoundingBox_Method, ONLY: BoundingBox_Deallocate => DEALLOCATE, &
+                              BoundingBox_Initiate => Initiate, &
+                              BoundingBox_Reallocate => Reallocate, &
+                              BoundingBox_Copy => Copy
 
 IMPLICIT NONE
 
@@ -149,6 +154,11 @@ MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CHARACTER(:), ALLOCATABLE :: astr, prefix0
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (PRESENT(prefix)) THEN
   prefix0 = prefix
 ELSE
@@ -160,10 +170,15 @@ astr = "/isSelectionByMeshID/isSelectionBynodeNum/"// &
 
 CALL CheckEssentialParam(obj=param, keys=astr, prefix=prefix0, &
                          myName=myName, modName=modName)
-!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
 astr = ""
 prefix0 = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -171,7 +186,14 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetMeshSelectionParam
-! CHARACTER(*), PARAMETER :: myName = "SetMeshSelectionParam()"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "SetMeshSelectionParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Set(param, datatype=.TRUE., prefix=prefix, &
          key="isSelectionByElemNum", &
@@ -189,6 +211,10 @@ CALL Set(param, datatype=.TRUE., prefix=prefix, &
          key="isSelectionByMeshID", &
          VALUE=Input(option=isSelectionByMeshID, default=.FALSE.))
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetMeshSelectionParam
 
 !----------------------------------------------------------------------------
@@ -209,11 +235,8 @@ CALL obj%DEALLOCATE()
 
 obj%isinit = .TRUE.
 obj%ms(1) = Input(option=isSelectionByMeshID, default=.FALSE.)
-
 obj%ms(2) = Input(option=isSelectionByElemNum, default=.FALSE.)
-
 obj%ms(3) = Input(option=isSelectionBynodeNum, default=.FALSE.)
-
 obj%ms(4) = Input(option=isSelectionByBox, default=.FALSE.)
 
 #ifdef DEBUG_VER
@@ -254,7 +277,6 @@ CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox", &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -286,24 +308,26 @@ obj%totalCurveNodenum = 0
 obj%totalSurfaceNodenum = 0
 obj%totalVolumeNodenum = 0
 
-CALL DEALLOCATE (obj%pointMeshID)
-CALL DEALLOCATE (obj%curveMeshID)
-CALL DEALLOCATE (obj%surfaceMeshID)
-CALL DEALLOCATE (obj%volumeMeshID)
-CALL DEALLOCATE (obj%pointElemNum)
-CALL DEALLOCATE (obj%curveElemNum)
-CALL DEALLOCATE (obj%surfaceElemNum)
-CALL DEALLOCATE (obj%volumeElemNum)
-CALL DEALLOCATE (obj%nodeNum)
-CALL DEALLOCATE (obj%pointNodeNum)
-CALL DEALLOCATE (obj%curveNodeNum)
-CALL DEALLOCATE (obj%surfaceNodeNum)
-CALL DEALLOCATE (obj%volumeNodeNum)
+CALL IntVector_DEALLOCATE(obj%pointMeshID)
+CALL IntVector_Deallocate(obj%curveMeshID)
+CALL IntVector_Deallocate(obj%surfaceMeshID)
+CALL IntVector_Deallocate(obj%volumeMeshID)
 
-CALL BB_Deallocate(obj%pointBox)
-CALL BB_Deallocate(obj%curveBox)
-CALL BB_Deallocate(obj%surfaceBox)
-CALL BB_Deallocate(obj%volumeBox)
+CALL IntVector_Deallocate(obj%pointElemNum)
+CALL IntVector_Deallocate(obj%curveElemNum)
+CALL IntVector_Deallocate(obj%surfaceElemNum)
+CALL IntVector_Deallocate(obj%volumeElemNum)
+
+CALL IntVector_Deallocate(obj%nodeNum)
+CALL IntVector_Deallocate(obj%pointNodeNum)
+CALL IntVector_Deallocate(obj%curveNodeNum)
+CALL IntVector_Deallocate(obj%surfaceNodeNum)
+CALL IntVector_Deallocate(obj%volumeNodeNum)
+
+CALL BoundingBox_Deallocate(obj%pointBox)
+CALL BoundingBox_Deallocate(obj%curveBox)
+CALL BoundingBox_Deallocate(obj%surfaceBox)
+CALL BoundingBox_Deallocate(obj%volumeBox)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -325,6 +349,18 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isinit = obj2%isinit
 obj%ms = obj2%ms
 
@@ -341,17 +377,55 @@ obj%totalCurveNodenum = obj2%totalCurveNodenum
 obj%totalSurfaceNodenum = obj2%totalSurfaceNodenum
 obj%totalVolumeNodenum = obj2%totalVolumeNodenum
 
-IF (isAllocated(obj2%pointMeshID)) obj%pointMeshID = obj2%pointMeshID
-IF (isAllocated(obj2%curveMeshID)) obj%curveMeshID = obj2%curveMeshID
-IF (isAllocated(obj2%surfaceMeshID)) obj%surfaceMeshID = obj2%surfaceMeshID
-IF (isAllocated(obj2%volumeMeshID)) obj%volumeMeshID = obj2%volumeMeshID
+CALL IntVector_Copy(obj=obj%pointMeshID, obj2=obj2%pointMeshID)
+CALL IntVector_Copy(obj=obj%curveMeshID, obj2=obj2%curveMeshID)
+CALL IntVector_Copy(obj=obj%surfaceMeshID, obj2=obj2%surfaceMeshID)
+CALL IntVector_Copy(obj=obj%volumeMeshID, obj2=obj2%volumeMeshID)
 
-IF (isAllocated(obj2%pointElemNum)) obj%pointElemNum = obj2%pointElemNum
-IF (isAllocated(obj2%curveElemNum)) obj%curveElemNum = obj2%curveElemNum
-IF (isAllocated(obj2%surfaceElemNum)) obj%surfaceElemNum = obj2%surfaceElemNum
-IF (isAllocated(obj2%volumeElemNum)) obj%volumeElemNum = obj2%volumeElemNum
+CALL IntVector_Copy(obj=obj%pointElemNum, obj2=obj2%pointElemNum)
+CALL IntVector_Copy(obj=obj%curveElemNum, obj2=obj2%curveElemNum)
+CALL IntVector_Copy(obj=obj%surfaceElemNum, obj2=obj2%surfaceElemNum)
+CALL IntVector_Copy(obj=obj%volumeElemNum, obj2=obj2%volumeElemNum)
 
-IF (isAllocated(obj2%nodeNum)) obj%nodeNum = obj2%nodeNum
+CALL IntVector_Copy(obj=obj%pointNodeNum, obj2=obj2%pointNodeNum)
+CALL IntVector_Copy(obj=obj%curveNodeNum, obj2=obj2%curveNodeNum)
+CALL IntVector_Copy(obj=obj%surfaceNodeNum, obj2=obj2%surfaceNodeNum)
+CALL IntVector_Copy(obj=obj%volumeNodeNum, obj2=obj2%volumeNodeNum)
+
+CALL IntVector_Copy(obj=obj%nodeNum, obj2=obj2%nodeNum)
+
+isok = ALLOCATED(obj2%pointBox)
+IF (isok) THEN
+  tsize = SIZE(obj2%pointBox)
+  CALL BoundingBox_Reallocate(obj%pointBox, tsize)
+  CALL BoundingBox_Copy(obj%pointBox, obj2%pointBox)
+END IF
+
+isok = ALLOCATED(obj2%curveBox)
+IF (isok) THEN
+  tsize = SIZE(obj2%curveBox)
+  CALL BoundingBox_Reallocate(obj%curveBox, tsize)
+  CALL BoundingBox_Copy(obj%curveBox, obj2%curveBox)
+END IF
+
+isok = ALLOCATED(obj2%surfaceBox)
+IF (isok) THEN
+  tsize = SIZE(obj2%surfaceBox)
+  CALL BoundingBox_Reallocate(obj%surfaceBox, tsize)
+  CALL BoundingBox_Copy(obj%surfaceBox, obj2%surfaceBox)
+END IF
+
+isok = ALLOCATED(obj2%volumeBox)
+IF (isok) THEN
+  tsize = SIZE(obj2%volumeBox)
+  CALL BoundingBox_Reallocate(obj%volumeBox, tsize)
+  CALL BoundingBox_Copy(obj%volumeBox, obj2%volumeBox)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
@@ -359,13 +433,11 @@ END PROCEDURE obj_Copy
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
+
+#include "../../include/deallocate_vector.F90"
 END PROCEDURE Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -373,16 +445,39 @@ END PROCEDURE Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
+
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                                  Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Vector()"
+#endif
+
+#include "../../include/reallocate_vector.F90"
+END PROCEDURE Reallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Ptr_Vector()"
+#endif
+
+#include "../../include/reallocate_vector_ptr.F90"
+END PROCEDURE Reallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

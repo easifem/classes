@@ -16,52 +16,13 @@
 !
 
 SUBMODULE(VectorFieldLis_Class) ConstructorMethods
-USE VectorField_Class, ONLY: VectorFieldInitiate1, &
-                             VectorFieldDeallocate
+USE VectorField_Class, ONLY: VectorFieldDeallocate
 
 IMPLICIT NONE
 
 #include "lisf.h"
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                VectorField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                        VectorField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-INTEGER(I4B) :: ierr
-
-CALL VectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
-
-CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-                         obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-
-END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

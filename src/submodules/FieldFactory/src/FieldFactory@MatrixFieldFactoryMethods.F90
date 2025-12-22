@@ -20,20 +20,14 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) MatrixFieldFactoryMethods
-USE FPL, ONLY: ParameterList_
 USE StringUtility, ONLY: UpperCase
 USE AssertUtility, ONLY: Assert
 USE Display_Method, ONLY: ToString
-
-USE MatrixField_Class, ONLY: MatrixField_, &
-                             SetMatrixFieldParam
-
+USE MatrixField_Class, ONLY: MatrixField_
 USE MatrixFieldLis_Class, ONLY: MatrixFieldLis_
-
-USE BlockMatrixField_Class, ONLY: BlockMatrixField_, &
-                                  SetBlockMatrixFieldParam
-
+USE BlockMatrixField_Class, ONLY: BlockMatrixField_
 USE BlockMatrixFieldLis_Class, ONLY: BlockMatrixFieldLis_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -80,7 +74,10 @@ END PROCEDURE AbstractMatrixFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixFieldFactory
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory()"
+#endif
+
 CHARACTER(:), ALLOCATABLE :: case0
 
 case0 = UpperCase(engine)
@@ -92,15 +89,18 @@ CASE ("NATIVE_SERIAL")
 CASE ("LIS_OMP")
   ALLOCATE (MatrixFieldLis_ :: ans)
 
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[NO CASE FOUND] :: No case found for given engine '// &
-                    "following values are acceptable = "// &
-                    "[NATIVE_SERIAL, LIS_OMP]"// &
-                    " but found  = "//TRIM(case0))
-  ALLOCATE (MatrixField_ :: ans)
-  RETURN
+  CALL AssertError1(math%no, myName, "No case found for given engine name")
+#endif
 END SELECT
+
+case0 = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE MatrixFieldFactory
 
 !----------------------------------------------------------------------------
@@ -136,39 +136,57 @@ END PROCEDURE BlockMatrixFieldFactory
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixField_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate1()"
-INTEGER(I4B) :: tsize, ii
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
+#endif
 
-CALL param%Initiate()
+! INTEGER(I4B) :: tsize, ii
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
-tsize = SIZE(names)
-isok = SIZE(obj) .GE. tsize
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-DO ii = 1, tsize
-  problem = ASSOCIATED(obj(ii)%ptr)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ALLOCATION ERROR] :: obj('//tostring(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      " as it may cause memory leak.")
-  END IF
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+! isok = SIZE(obj) .GE. tsize
+!
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! DO ii = 1, tsize
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[ALLOCATION ERROR] :: obj('//tostring(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       " as it may cause memory leak.")
+!   END IF
+!
+!   obj(ii)%ptr => MatrixFieldFactory(engine)
+!
+!   CALL SetMatrixFieldParam( &
+!     param=param, name=names(ii)%Chars(), matrixProp=matrixProps, &
+!     spaceCompo=spaceCompo, timeCompo=timeCompo, fieldType=fieldType, &
+!     engine=engine)
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof, geofedof=geofedof)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
-  obj(ii)%ptr => MatrixFieldFactory(engine)
-
-  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
-                           matrixProp=matrixProps, spaceCompo=spaceCompo, &
-                      timeCompo=timeCompo, fieldType=fieldType, engine=engine)
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof)
-END DO
-
-CALL param%DEALLOCATE()
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE MatrixField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -176,64 +194,81 @@ END PROCEDURE MatrixField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MatrixField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate2()"
-INTEGER(I4B) :: tsize, ii, nn(8)
-TYPE(ParameterList_) :: param
-LOGICAL(LGT) :: isok, problem
-
-CALL param%Initiate()
-
-tsize = SIZE(names)
-
 #ifdef DEBUG_VER
-
-nn = [tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), &
-      SIZE(engine), SIZE(fedof), SIZE(timeCompo), SIZE(matrixProps)]
-
-CALL Assert(nn=nn, &
-      msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
-            "timeCompo, engine, fedof, matProps should be the same", &
-            file=__FILE__, line=__LINE__, routine=myName)
-
-isok = SIZE(obj) .GE. tsize
-CALL AssertError1(isok, myname, &
-                  "Size of obj is not enough it is less than size of names")
-
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate2()"
 #endif
 
-DO ii = 1, tsize
-  problem = ASSOCIATED(obj(ii)%ptr)
+! INTEGER(I4B) :: tsize, ii, nn(8)
+! TYPE(ParameterList_) :: param
+! LOGICAL(LGT) :: isok, problem
 
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[ALLOCATION ERROR] :: MatrixField_::obj('//tostring(ii)// &
-                    ") is already associated. We don't allocate like this"// &
-                      ", as it may cause memory leak.")
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-  isok = ASSOCIATED(fedof(ii)%ptr)
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[POINTER ERROR] :: FEDOF_::fedof('//tostring(ii)// &
-                   ") is not associated. It will lead to segmentation fault.")
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
-  obj(ii)%ptr => MatrixFieldFactory(engine(ii)%Chars())
-
-  CALL SetMatrixFieldParam(param=param, name=names(ii)%Chars(), &
-                           matrixProp=matrixProps(ii)%Chars(), &
-                           spaceCompo=spaceCompo(ii), &
-                           timeCompo=timeCompo(ii), &
-                           fieldType=fieldType(ii), &
-                           engine=engine(ii)%Chars())
-
-  CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr)
-END DO
-
-CALL param%DEALLOCATE()
+! CALL param%Initiate()
+!
+! tsize = SIZE(names)
+!
+! #ifdef DEBUG_VER
+!
+! nn = [tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), &
+!       SIZE(engine), SIZE(fedof), SIZE(timeCompo), SIZE(matrixProps)]
+!
+! CALL Assert(nn=nn, &
+!       msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
+!             "timeCompo, engine, fedof, matProps should be the same", &
+!             file=__FILE__, line=__LINE__, routine=myName)
+!
+! isok = SIZE(obj) .GE. tsize
+! CALL AssertError1(isok, myname, &
+!                   "Size of obj is not enough it is less than size of names")
+!
+! #endif
+!
+! DO ii = 1, tsize
+!   problem = ASSOCIATED(obj(ii)%ptr)
+!
+!   IF (problem) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                   '[ALLOCATION ERROR] :: MatrixField_::obj('//tostring(ii)// &
+!                     ") is already associated. We don't allocate like this"// &
+!                       ", as it may cause memory leak.")
+!     RETURN
+!   END IF
+!
+!   isok = ASSOCIATED(fedof(ii)%ptr)
+!
+!   IF (.NOT. isok) THEN
+!     CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                       '[POINTER ERROR] :: FEDOF_::fedof('//tostring(ii)// &
+!                    ") is not associated. It will lead to segmentation fault.")
+!     RETURN
+!   END IF
+!
+!   obj(ii)%ptr => MatrixFieldFactory(engine(ii)%Chars())
+!
+!   CALL SetMatrixFieldParam( &
+!     param=param, name=names(ii)%Chars(), matrixProp=matrixProps(ii)%Chars(), &
+!     spaceCompo=spaceCompo(ii), timeCompo=timeCompo(ii), &
+!     fieldType=fieldType(ii), engine=engine(ii)%Chars())
+!
+!   CALL obj(ii)%ptr%Initiate(param=param, fedof=fedof(ii)%ptr, &
+!                             geofedof=geofedof(ii)%ptr)
+! END DO
+!
+! CALL param%DEALLOCATE()
 
 END PROCEDURE MatrixField_Initiate2
 

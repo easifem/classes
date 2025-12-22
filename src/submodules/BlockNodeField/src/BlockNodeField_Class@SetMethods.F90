@@ -20,7 +20,7 @@ USE InputUtility, ONLY: Input
 
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
-USE AbstractField_Class, ONLY: TypeField
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 
@@ -86,7 +86,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize = obj%SIZE()
@@ -111,7 +111,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -133,7 +133,7 @@ INTEGER(I4B) :: indx(128), ii, tsize, idof(128)
 REAL(DFP) :: areal(128)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -167,7 +167,7 @@ INTEGER(I4B) :: tsize1, tsize2
 INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -212,7 +212,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
@@ -241,7 +241,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
@@ -285,7 +285,7 @@ INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -331,7 +331,7 @@ INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
 
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 tsize1 = SIZE(VALUE)
@@ -375,7 +375,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set14"
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(.NOT. obj%isInitiated, myName, &
+CALL AssertError1(.NOT. obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 #endif
@@ -402,7 +402,7 @@ INTEGER(I4B) :: indx(SIZE(timeCompo)), tsize
 REAL(DFP) :: value0(SIZE(timeCompo))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -431,7 +431,7 @@ INTEGER(I4B) :: indx(SIZE(spaceCompo)), tsize
 REAL(DFP) :: value0(SIZE(spaceCompo))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -453,149 +453,174 @@ END PROCEDURE obj_Set16
 
 MODULE PROCEDURE obj_Set17
 #ifdef DEBUG_VER
-
 CHARACTER(*), PARAMETER :: myName = "obj_Set17()"
+LOGICAL(LGT) :: isok
 #endif
 
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'BlockNodeField_::obj is not initiated')
+#endif
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+#ifdef DEBUG_VER
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'BlockNodeField_::value is not initiated')
-
 #endif
 
 abool = Input(option=addContribution, default=.FALSE.)
 
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
-  CALL obj%Axpy(x=VALUE, scale=areal)
+  CALL obj%AXPY(x=VALUE, scale=areal)
   RETURN
 END IF
 
 CALL obj%Copy(VALUE)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set17
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set18
-CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
-INTEGER(I4B) :: s(3), p(3), tsize
-REAL(DFP), POINTER :: realvec(:)
-
-#ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
-                  'BlockNodeField_ ::obj is not initiated')
-
-CALL AssertError1(VALUE%isInitiated, myName, &
-                  'AbstractNodeField_::value is not initiated')
-#endif
-
-s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
-
-SELECT TYPE (VALUE)
-
-TYPE IS (ScalarField_)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-         addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3))
-  realvec => NULL()
-
-TYPE IS (STScalarField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-       addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (VectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-       addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (STVectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-       addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (ScalarFieldLis_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=1)
-  realvec => AbstractNodeFieldGetPointer(VALUE)
-  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
-                         stride_value=p(3))
-
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-                    addContribution=addContribution, istart=s(1), iend=s(2), &
-           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (STScalarFieldLis_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-  realvec => AbstractNodeFieldGetPointer(VALUE)
-  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
-                         stride_value=p(3))
-
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-                    addContribution=addContribution, istart=s(1), iend=s(2), &
-           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (VectorFieldLis_)
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-  realvec => AbstractNodeFieldGetPointer(VALUE)
-  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
-                         stride_value=p(3))
-
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-                    addContribution=addContribution, istart=s(1), iend=s(2), &
-           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (STVectorFieldLis_)
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-  realvec => AbstractNodeFieldGetPointer(VALUE)
-  CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-                         tsize=tsize, istart_value=p(1), iend_value=p(2), &
-                         stride_value=p(3))
-
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-                    addContribution=addContribution, istart=s(1), iend=s(2), &
-           stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for the type of VALUE')
-  RETURN
-
-END SELECT
-END PROCEDURE obj_Set18
+! MODULE PROCEDURE obj_Set18
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
+! #endif
+!
+! INTEGER(I4B) :: s(3), p(3), tsize
+! REAL(DFP), POINTER :: realvec(:)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! CALL AssertError1(obj%isInitiated(), myName, &
+!                   'BlockNodeField_ ::obj is not initiated')
+!
+! CALL AssertError1(VALUE%isInitiated(), myName, &
+!                   'AbstractNodeField_::value is not initiated')
+! #endif
+!
+! s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
+!
+! SELECT TYPE (VALUE)
+!
+! TYPE IS (ScalarField_)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!          addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3))
+!   realvec => NULL()
+!
+! TYPE IS (STScalarField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (VectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (STVectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (ScalarFieldLis_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=1)
+!   realvec => AbstractNodeFieldGetPointer(VALUE)
+!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
+!                          stride_value=p(3))
+!
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!                     addContribution=addContribution, istart=s(1), iend=s(2), &
+!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (STScalarFieldLis_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!   realvec => AbstractNodeFieldGetPointer(VALUE)
+!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
+!                          stride_value=p(3))
+!
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!                     addContribution=addContribution, istart=s(1), iend=s(2), &
+!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (VectorFieldLis_)
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!   realvec => AbstractNodeFieldGetPointer(VALUE)
+!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
+!                          stride_value=p(3))
+!
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!                     addContribution=addContribution, istart=s(1), iend=s(2), &
+!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (STVectorFieldLis_)
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!   realvec => AbstractNodeFieldGetPointer(VALUE)
+!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
+!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
+!                          stride_value=p(3))
+!
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
+!                     addContribution=addContribution, istart=s(1), iend=s(2), &
+!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! CLASS DEFAULT
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                     '[INTERNAL ERROR] :: No case found for the type of VALUE')
+!   RETURN
+!
+! END SELECT
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
+! END PROCEDURE obj_Set18
 
 !----------------------------------------------------------------------------
 !

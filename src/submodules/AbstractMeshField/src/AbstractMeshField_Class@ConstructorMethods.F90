@@ -15,16 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) ConstructorMethods
-USE GlobalData, ONLY: Constant, Space, Time, SpaceTime, &
-                      Scalar, Vector, Matrix
-
 USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE SafeSizeUtility, ONLY: SafeSize
-
 USE Display_Method, ONLY: ToString
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -35,12 +30,22 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetAbstractMeshFieldParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "SetAbstractMeshFieldParam()"
+#endif
+
 INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Set(obj=param, prefix=prefix, key="name", VALUE=name, dataType=name)
 CALL Set(obj=param, prefix=prefix, key="fieldType", VALUE=fieldType, &
          dataType=fieldType)
-CALL Set(obj=param, prefix=prefix, key="engine", VALUE=engine, dataType=engine)
+CALL Set(obj=param, prefix=prefix, key="engine", VALUE=engine, &
+         dataType=engine)
 CALL Set(obj=param, prefix=prefix, key="defineOn", VALUE=defineOn, &
          dataType=defineOn)
 CALL Set(obj=param, prefix=prefix, key="varType", VALUE=varType, &
@@ -52,6 +57,10 @@ tsize = SIZE(s)
 CALL Set(obj=param, prefix=prefix, key="totalShape", VALUE=tsize, &
          dataType=tsize)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE SetAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -61,49 +70,55 @@ END PROCEDURE SetAbstractMeshFieldParam
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL CheckEssentialParam(obj=param, keys=AbstractMeshFieldEssential, &
-                       prefix=obj%GetPrefix(), myName=myName, modName=modName)
-!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+                         prefix=obj%GetPrefix(), myName=myName, &
+                         modName=modName)
+!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii, tsize
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
-  DO ii = 1, tsize
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
-END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isInit = .FALSE.
-obj%fieldType = TypeField%normal
+obj%fieldType = typefield%normal
 obj%name = ""
 obj%engine = ""
 obj%tSize = 0
 obj%defineOn = 0
 obj%varType = 0
 obj%rank = 0
+obj%totalShape = 0
 IF (ALLOCATED(obj%val)) DEALLOCATE (obj%val)
 IF (ALLOCATED(obj%indxVal)) DEALLOCATE (obj%indxVal)
-
 IF (ALLOCATED(obj%ss)) DEALLOCATE (obj%ss)
 IF (ALLOCATED(obj%indxShape)) DEALLOCATE (obj%indxShape)
-
 obj%mesh => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -111,9 +126,12 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-TYPE(String) :: dSetname
-INTEGER(I4B) :: ierr, nrow, totalShape, s(MAX_RANK_FEVARIABLE)
+#endif
+
+TYPE(String) :: dsetname
+INTEGER(I4B) :: ierr, nrow, s(fevaropt%maxRank)
 CHARACTER(:), ALLOCATABLE :: prefix
 LOGICAL(LGT) :: isok
 
@@ -128,7 +146,7 @@ obj%isInit = .TRUE.
 prefix = obj%GetPrefix()
 
 ! fieldType
-obj%fieldType = TypeField%normal
+obj%fieldType = typefield%normal
 CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
 
 ! name
@@ -149,17 +167,20 @@ CALL GetValue(obj=param, prefix=prefix, key="rank", VALUE=obj%rank)
 
 nrow = GetTotalRow(rank=obj%rank, varType=obj%varType)
 
-CALL GetValue(obj=param, prefix=prefix, key="totalShape", VALUE=totalShape)
+CALL GetValue(obj=param, prefix=prefix, key="totalShape", &
+              VALUE=obj%totalShape)
 
-isok = totalShape .LE. SIZE(s)
+#ifdef DEBUG_VER
+isok = obj%totalShape .LE. SIZE(s)
 CALL AssertError1(isok, myName, &
                   'The size of s in param is more than the size of s in obj.')
+#endif
 
 dsetname = TRIM(prefix)//"/s"
-ierr = param%Get(key=dsetname%chars(), VALUE=s(1:totalShape))
+ierr = param%Get(key=dsetname%chars(), VALUE=s(1:obj%totalShape))
 
 ! tSize
-IF (obj%fieldType .EQ. TypeField%constant) THEN
+IF (obj%fieldType .EQ. typefield%constant) THEN
   obj%tSize = 1
 ELSE
   obj%tSize = mesh%GetTotalElements()
@@ -176,7 +197,7 @@ CALL Reallocate(obj%val, ierr * obj%tSize)
 CALL Reallocate(obj%indxShape, obj%tSize + 1)
 obj%indxShape = 1
 
-CALL Reallocate(obj%ss, totalShape * obj%tSize)
+CALL Reallocate(obj%ss, obj%totalShape * obj%tSize)
 
 ! mesh
 obj%mesh => mesh
@@ -195,7 +216,16 @@ END PROCEDURE obj_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
 INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 obj%isInit = obj2%isInit
 obj%fieldType = obj2%fieldType
@@ -219,9 +249,10 @@ DO CONCURRENT(ii=1:tsize)
   obj%indxVal(ii) = obj2%indxVal(ii)
 END DO
 
-tsize = SafeSize(obj2%ss)
-CALL Reallocate(obj%ss, tsize)
-DO CONCURRENT(ii=1:tsize)
+obj%totalShape = obj2%totalShape
+
+CALL Reallocate(obj%ss, obj%totalShape)
+DO CONCURRENT(ii=1:obj%totalShape)
   obj%ss(ii) = obj2%ss(ii)
 END DO
 
@@ -230,15 +261,123 @@ CALL Reallocate(obj%indxShape, tsize)
 DO CONCURRENT(ii=1:tsize)
   obj%indxShape(ii) = obj2%indxShape(ii)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                           Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+INTEGER(I4B) :: rank, nns, varType, fieldType, &
+                spaceCompo, dims(2), s(4), tsize, rank
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nns = mesh%GetMaxNNE()
+rank = func%GetReturnType()
+varType = func%GetArgType()
+spaceCompo = func%GetNumReturns()
+dims = func%GetReturnShape()
+
+fieldType = typefield%normal
+! IF (varType .EQ. typefield%constant) fieldType = varType
+! I have commented above line as it causes issue when we have multiple
+! domains with constant varType
+
+CALL AbstractMeshFieldGetShapeAndSize( &
+  rank=rank, varType=varType, s=s, tsize=tsize, nns=nns, &
+  spaceCompo=spaceCompo, dim1=dims(1), dim2=dims(2), nnt=nnt)
+
+CALL obj%Initiate(name=name, fieldType=fieldType, varType=varType, &
+                  engine=engine, defineOn=typefield%nodal, &
+                  rank=rank, s=s(1:tsize), mesh=mesh)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+#endif
+
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+obj%fieldType = fieldType
+obj%name = name
+obj%engine = engine
+obj%defineOn = defineOn
+obj%varType = varType
+obj%rank = rank
+obj%totalShape = SIZE(s)
+
+! tSize
+IF (obj%fieldType .EQ. typefield%constant) THEN
+  obj%tSize = 1
+ELSE
+  obj%tSize = mesh%GetTotalElements()
+END IF
+
+! indxVal
+CALL Reallocate(obj%indxVal, obj%tSize + 1)
+obj%indxVal = 1
+
+! val
+tsize = PRODUCT(s(1:obj%totalShape))
+CALL Reallocate(obj%val, tsize * obj%tSize)
+
+! indxShape
+CALL Reallocate(obj%indxShape, obj%tSize + 1)
+obj%indxShape = 1
+
+! ss
+CALL Reallocate(obj%ss, obj%totalShape * obj%tSize)
+
+! mesh
+obj%mesh => mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate5
 
 !----------------------------------------------------------------------------
 !                                                           Iniitate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 LOGICAL(LGT) :: isok
+#endif
+
 CLASS(UserFunction_), POINTER :: func
 
 #ifdef DEBUG_VER
@@ -246,13 +385,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 isok = material%IsMaterialPresent(name)
 CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
+#endif
 
 func => NULL()
 func => material%GetMaterialPointer(name)
+
+#ifdef DEBUG_VER
 isok = ASSOCIATED(func)
 CALL AssertError1(isok, myname, 'Material pointer not found.')
+#endif
 
 CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
 
@@ -262,79 +406,13 @@ NULLIFY (func)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
-!                                                           Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate4
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE obj_Initiate4
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
-INTEGER(I4B) :: ii, tsize
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
-  DO ii = 1, tsize
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
-END PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Vector
-INTEGER(I4B) :: ii, tsize
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
-  DO ii = 1, tsize
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
-END PROCEDURE obj_Deallocate_Ptr_Vector_Vector
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
-INTEGER(I4B) :: ii, tsize
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
-  DO ii = 1, tsize
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
-END PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
-
-!----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
-
 #include "./include/GetTotalRow.F90"
 
 END SUBMODULE ConstructorMethods

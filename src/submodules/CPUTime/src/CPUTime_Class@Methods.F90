@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(CPUTime_Class) Methods
-USE Display_Method
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
@@ -25,15 +26,18 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
 #endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -94,10 +98,11 @@ MODULE PROCEDURE obj_GetStringForKernelLog
 REAL(DFP) :: t, wt
 t = obj%GetTime()
 !$ wt = obj%GetWTime()
-ans = tostring(currentTimeStep)//","  &
-    & //tostring(currentTime)//","  &
-    & //'"'//methodName//'"'//"," &
-    & //tostring(t)
+ans = ToString(currentTimeStep)//"," &
+      //ToString(currentTime)//"," &
+      //'"'//moduleName//'"'//"," &
+      //'"'//methodName//'"'//"," &
+      //ToString(t)
 !$ ans = ans//","//tostring(wt)
 END PROCEDURE obj_GetStringForKernelLog
 

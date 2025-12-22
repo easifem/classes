@@ -34,7 +34,7 @@ LOGICAL(LGT), ALLOCATABLE :: masks(:)
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 problem = obj%xidim .EQ. 0
 IF (problem) RETURN
@@ -78,7 +78,7 @@ IF (ALLOCATED(masks)) DEALLOCATE (masks)
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 
 END PROCEDURE obj_InitiateFacetElements
 

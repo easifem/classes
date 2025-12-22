@@ -16,14 +16,8 @@
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
 USE InputUtility, ONLY: Input
-
-USE AbstractField_Class, ONLY: FIELD_TYPE_CONSTANT
-
 USE RealVector_Method, ONLY: Set, Add
-
-#ifdef USE_LIS
-#include "lisf.h"
-#endif
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -33,14 +27,23 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+#endif
+
 INTEGER(I4B) :: ii, tsize1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (PRESENT(dof_tPhysicalVars)) obj%dof_tPhysicalVars = dof_tPhysicalVars
 IF (PRESENT(dof_storageFMT)) obj%dof_storageFMT = dof_storageFMT
 IF (PRESENT(dof_spaceCompo)) obj%dof_spaceCompo = dof_spaceCompo
 IF (PRESENT(dof_timeCompo)) obj%dof_timeCompo = dof_timeCompo
 IF (PRESENT(dof_tNodes)) obj%dof_tNodes = dof_tNodes
-IF (PRESENT(tSize)) obj%tsize = tsize
+IF (PRESENT(tSize)) obj%tSize = tSize
 
 IF (PRESENT(dof_names_char)) THEN
   IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
@@ -52,6 +55,11 @@ IF (PRESENT(dof_names_char)) THEN
   END DO
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
@@ -59,49 +67,32 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSingle
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, code
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSingle()"
 #endif
 
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
-abool = Input(option=AddContribution, default=.FALSE.)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-! NATIVE_SERIAL engine
+abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj%realVec, nodenum=indx, VALUE=VALUE)
-
-  RETURN
+IF (abool) THEN
+  CALL Add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
+ELSE
+  areal = areal * VALUE
+  CALL Set(obj%realVec, nodenum=indx, VALUE=areal)
 END IF
 
-! NATIVE_SERIAL ends here
-
-! LIS_OMP engine
-
-#ifdef USE_LIS
-
-areal = Input(option=scale, default=1.0_DFP) * VALUE
-
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-
-CALL lis_vector_set_value(code, indx, areal, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
-
-#endif
-! end of USE_LIS
-
 END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
@@ -109,40 +100,30 @@ END PROCEDURE obj_SetSingle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMultiple1
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, code
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple1()"
 #endif
-
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
-abool = Input(option=addContribution, default=.FALSE.)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+abool = Input(option=addContribution, default=math%no)
 
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
-    RETURN
-  END IF
-
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL Add(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
+ELSE
   CALL Set(obj%realVec, VALUE=VALUE, nodenum=indx)
-
-  RETURN
 END IF
 
-! LIS_OMP engine
-#ifdef USE_LIS
-areal = Input(option=scale, default=1.0_DFP)
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-CALL lis_vector_set_values4(code, SIZE(indx), indx, VALUE, obj%lis_ptr, &
-                            areal, ierr)
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
-#endif
-! end of USE_LIS
-
 END PROCEDURE obj_SetMultiple1
 
 !----------------------------------------------------------------------------
@@ -150,44 +131,33 @@ END PROCEDURE obj_SetMultiple1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMultiple2
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, code, tsize
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple2()"
 #endif
-
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
-             iend=iend, stride=stride)
-    RETURN
-  END IF
-
-  CALL Set(obj%realVec, VALUE=VALUE, istart=istart, &
-           iend=iend, stride=stride)
-
-  RETURN
-END IF
-
-! LIS_OMP engine
-
-! LIS_INT lis_vector_set_values5(LIS_INT flag, LIS_INT start, LIS_INT stride,
-!                                LIS_INT count, LIS_SCALAR value[], LIS_VECTOR v,
-!                                LIS_SCALAR scale) {
-
-#ifdef USE_LIS
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-areal = Input(option=scale, default=1.0_DFP)
-tsize = (iend - istart) / stride + 1
-CALL lis_vector_set_values5(code, istart, stride, tsize, VALUE, obj%lis_ptr, &
-                            areal, ierr)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL Add( &
+    obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
+    stride=stride)
+ELSE
+  CALL Set( &
+    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetMultiple2
 
 !----------------------------------------------------------------------------
@@ -195,45 +165,35 @@ END PROCEDURE obj_SetMultiple2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMultiple3
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, code, tsize
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple3()"
 #endif
-
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
-abool = Input(option=addContribution, default=.FALSE.)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+abool = Input(option=addContribution, default=math%no)
 
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
-             iend=iend, stride=stride, istart_value=istart_value, &
-             iend_value=iend_value, stride_value=stride_value)
-    RETURN
-  END IF
-
-  CALL Set(obj=obj%realVec, VALUE=VALUE, istart=istart, &
-           iend=iend, stride=stride, istart_value=istart_value, &
-           iend_value=iend_value, stride_value=stride_value)
-
-  RETURN
+IF (abool) THEN
+  areal = Input(option=scale, default=math%one)
+  CALL Add( &
+    obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
+    iend=iend, stride=stride, istart_value=istart_value, &
+    iend_value=iend_value, stride_value=stride_value)
+ELSE
+  CALL Set( &
+    obj=obj%realVec, VALUE=VALUE, istart=istart, &
+    iend=iend, stride=stride, istart_value=istart_value, &
+    iend_value=iend_value, stride_value=stride_value)
 END IF
 
-! LIS_OMP engine
-
-! LIS_INT lis_vector_set_values8(LIS_INT flag, LIS_INT start, LIS_INT stride,
-!                                LIS_INT count, LIS_SCALAR value[], LIS_VECTOR v,
-!                                LIS_SCALAR scale, LIS_INT start_value,
-!                                LIS_INT stride_value) {
-
-#ifdef USE_LIS
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-areal = Input(option=scale, default=1.0_DFP)
-tsize = (iend - istart) / stride + 1
-CALL lis_vector_set_values8(code, istart, stride, tsize, VALUE, obj%lis_ptr, &
-                            areal, istart_value, stride_value, ierr)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_SetMultiple3
 
@@ -242,40 +202,33 @@ END PROCEDURE obj_SetMultiple3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMultiple4
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, code, tsize
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple4()"
 #endif
-
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
 
-abool = Input(option=addContribution, default=.FALSE.)
-
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
-             iend=iend, stride=stride)
-    RETURN
-  END IF
-
-  CALL Set(obj%realVec, VALUE=VALUE, istart=istart, &
-           iend=iend, stride=stride)
-
-  RETURN
-END IF
-
-! LIS_OMP engine
-#ifdef USE_LIS
-IF (abool) THEN; code = LIS_ADD_VALUE; ELSE; code = LIS_INS_VALUE; END IF
-areal = Input(option=scale, default=1.0_DFP)
-areal = areal * VALUE
-tsize = (iend - istart) / stride + 1
-CALL lis_vector_set_values6(code, istart, stride, tsize, areal, &
-                            obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
+abool = Input(option=addContribution, default=math%no)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=math%one)
+  CALL Add( &
+    obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
+    stride=stride)
+ELSE
+  CALL Set( &
+    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetMultiple4
 
 !----------------------------------------------------------------------------
@@ -283,74 +236,37 @@ END PROCEDURE obj_SetMultiple4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetAll
-#ifdef USE_LIS
-INTEGER(I4B) :: ierr, ii, n
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetAll()"
 #endif
-
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
-abool = Input(option=AddContribution, default=.FALSE.)
-
-! NATIVE_SERIAL engine
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-  IF (abool) THEN
-    areal = Input(option=scale, default=1.0_DFP)
-    CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
-    RETURN
-  END IF
-
-  CALL Set(obj%realVec, VALUE=VALUE)
-
-  RETURN
-
-END IF
-! end of NATIVE_SERIAL
-
-! LIS_OMP engine
-#ifdef USE_LIS
-
-areal = Input(option=scale, default=1.0_DFP)
-areal = areal * VALUE
-
-IF (.NOT. abool) THEN
-  CALL lis_vector_set_all(areal, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
-  CALL CHKERR(ierr)
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  RETURN
+abool = Input(option=AddContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+IF (abool) THEN
+  CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
+ELSE
+  areal = areal * VALUE
+  CALL Set(obj%realVec, VALUE=areal)
 END IF
 
-n = obj%SIZE()
-
-DO ii = 1, n
-  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, areal, obj%lis_ptr, ierr)
-END DO
-
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
-
-#endif
-
-!end of USE_LIS
-
 END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
-!                                                             SetByFunction
+!                                                              Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetByFunction
-CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_SetByFunction
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

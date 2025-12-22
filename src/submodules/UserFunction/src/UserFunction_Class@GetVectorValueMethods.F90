@@ -214,8 +214,8 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
     RETURN
   END IF
 
-  DO iarg = nresults, 1, -1
-    val(iarg) = REAL(lua_tonumber(l, nresults + iarg - 1), kind=DFP)
+  DO iarg = 1, nresults
+    val(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
   END DO
 
   CALL lua_pop(l, nresults)

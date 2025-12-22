@@ -27,30 +27,466 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
+#endif
 
-IF (PRESENT(dim)) THEN
-  SELECT CASE (dim)
-  CASE (0)
-    ans => obj%meshPoint
-  CASE (1)
-    ans => obj%meshCurve
-  CASE (2)
-    ans => obj%meshSurface
-  CASE (3)
-    ans => obj%meshVolume
-  END SELECT
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  ans => obj%mesh
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
-ans => obj%mesh
+SELECT CASE (dim)
+CASE (0)
+  ans => obj%meshPoint
+CASE (1)
+  ans => obj%meshCurve
+CASE (2)
+  ans => obj%meshSurface
+CASE (3)
+  ans => obj%meshVolume
+END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetMeshPointer1
 
-! IF (PRESENT(meshVolume)) meshVolume => obj%meshVolume
-! IF (PRESENT(meshSurface)) meshSurface => obj%meshSurface
-! IF (PRESENT(meshCurve)) meshCurve => obj%meshCurve
-! IF (PRESENT(meshPoint)) meshPoint => obj%meshPoint
-! IF (PRESENT(mesh)) mesh => obj%mesh
+!----------------------------------------------------------------------------
+!                                                         GetLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getLocalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalNodeNumber2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                        GetGlobalEdgeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalEdgeNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalEdgeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
+                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalEdgeNumber
+
+!----------------------------------------------------------------------------
+!                                                         GetGlobalFaceNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFaceNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFaceNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
+                             islocal=islocal, localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFaceNumber
+
+!----------------------------------------------------------------------------
+!                                                          GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber1
+
+!----------------------------------------------------------------------------
+!                                                          GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                  islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber2
+
+!----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%mesh%GetElemData(elemdata=elemdata, globalElement=globalElement, &
+                          islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemData
+
+!----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemDataPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemDataPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
+                                   islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemDataPointer
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalEntitiesList
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntitiesList
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntitiesList()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%mesh%GetTotalEntities(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalEntitiesList
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity1_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity1_()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  CALL obj%mesh%GetConnectivity_(globalElement=globalElement, &
+                                 ans=ans, tsize=tsize, opt=opt, &
+                                 islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%GetConnectivity_(globalElement=globalElement, &
+                                      ans=ans, tsize=tsize, opt=opt, &
+                                      islocal=islocal)
+
+CASE (1)
+  CALL obj%meshCurve%GetConnectivity_(globalElement=globalElement, &
+                                      ans=ans, tsize=tsize, opt=opt, &
+                                      islocal=islocal)
+CASE (2)
+  CALL obj%meshSurface%GetConnectivity_(globalElement=globalElement, &
+                                        ans=ans, tsize=tsize, opt=opt, &
+                                        islocal=islocal)
+CASE (3)
+  CALL obj%meshVolume%GetConnectivity_(globalElement=globalElement, &
+                                       ans=ans, tsize=tsize, opt=opt, &
+                                       islocal=islocal)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetConnectivity1_
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity2_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity2_()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = PRESENT(dim)
+
+IF (.NOT. isok) THEN
+  CALL obj%mesh%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                 edgeCon=edgeCon, nodeCon=nodeCon, &
+                                 tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                 tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                 globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+SELECT CASE (dim)
+CASE (0)
+  CALL obj%meshPoint%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                      edgeCon=edgeCon, nodeCon=nodeCon, &
+                                      tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                      tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                      globalElement=globalElement, &
+                                      islocal=islocal)
+
+CASE (1)
+  CALL obj%meshCurve%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                      edgeCon=edgeCon, nodeCon=nodeCon, &
+                                      tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                      tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                      globalElement=globalElement, &
+                                      islocal=islocal)
+CASE (2)
+  CALL obj%meshSurface%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                        edgeCon=edgeCon, nodeCon=nodeCon, &
+                                       tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                       tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                        globalElement=globalElement, &
+                                        islocal=islocal)
+CASE (3)
+
+  CALL obj%meshVolume%GetConnectivity_(cellCon=cellCon, faceCon=faceCon, &
+                                       edgeCon=edgeCon, nodeCon=nodeCon, &
+                                       tCellCon=tCellCon, tFaceCon=tFaceCon, &
+                                       tEdgeCon=tEdgeCon, tNodeCon=tNodeCon, &
+                                       globalElement=globalElement, &
+                                       islocal=islocal)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetConnectivity2_
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim)
+
+! total vertex nodes in globalElement
+isok = PRESENT(globalElement)
+IF (isok) THEN
+  ans = meshptr%GetTotalVertexNodes(globalElement=globalElement, &
+                                    islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  meshptr => NULL()
+  RETURN
+END IF
+
+! total vertex nodes in mesh of given entityNum
+isok = PRESENT(entityNum)
+IF (isok) THEN
+  ans = meshptr%GetTotalVertexNodes(meshid=entityNum)
+  meshptr => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! total vertex nodes in mesh
+ans = meshptr%GetTotalVertexNodes()
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes2()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim)
+
+! total vertex nodes in globalElement
+ans = meshptr%GetTotalVertexNodes(globalElement=globalElement, &
+                                  islocal=islocal)
+
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes2
 
 !----------------------------------------------------------------------------
 !

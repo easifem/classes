@@ -347,6 +347,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+tsize = 0
 DO ii = 0, 3
   CALL obj%GetElemNum(ans=ans(tsize + 1:), dim=ii, tsize=mysize, dom=dom)
   tsize = tsize + mysize

@@ -20,13 +20,12 @@
 ! summary: Abstract class for Material behavior
 
 MODULE AbstractSolidMechanicsModel_Class
-USE GlobalData, ONLY: I4B, LGT, DFP, CHAR_LF
-USE String_Class
-USE BaseType
+USE GlobalData, ONLY: I4B, LGT, DFP
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE FPL, ONLY: ParameterList_
-USE AbstractMaterialModel_Class
+USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModel_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
@@ -40,7 +39,7 @@ PUBLIC :: AbstractSolidMechanicsModelDeallocate
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT, EXTENDS(AbstractMaterialModel_) :: &
-  & AbstractSolidMechanicsModel_
+  AbstractSolidMechanicsModel_
   PRIVATE
   LOGICAL(LGT) :: isPStress = .FALSE.
   !! PlaneStress
@@ -51,13 +50,15 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
+    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -65,17 +66,19 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => obj_GetElasticParam
   PROCEDURE, PUBLIC, PASS(obj) :: GetC => obj_GetC
   PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => obj_GetInvC
   PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => &
-    & obj_GetElasticityType
+    obj_GetElasticityType
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStrain => obj_isPlaneStrain
   PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStress => obj_isPlaneStress
 
   ! SET:
   ! @SetMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStress => obj_SetPlaneStress
   PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStrain => obj_SetPlaneStrain
 END TYPE AbstractSolidMechanicsModel_

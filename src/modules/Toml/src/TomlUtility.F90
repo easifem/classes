@@ -50,8 +50,8 @@ INTERFACE GetValue
                                   origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
-    LOGICAL( LGT ), INTENT(INOUT) :: VALUE
-    LOGICAL( LGT ), INTENT(IN) :: default_value
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE
+    LOGICAL(LGT), INTENT(IN) :: default_value
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
@@ -217,18 +217,106 @@ END INTERFACE GetValue
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
+! date:  2025-05-29
+! summary:  GetValue Integer Vectors
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_bool_r1(table, key, VALUE, origin, stat, &
+                                     isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+    !! It is true if the value is a scalar
+  END SUBROUTINE GetValue_bool_r1
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of bool without allocation
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_bool_r1_static(table, key, VALUE, tsize, &
+                                            origin, stat, isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_bool_r1_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  GetValue of vector of strings
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_string_r1(table, key, VALUE, origin, stat, &
+                                       isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_string_r1
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of strings without allocation
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_string_r1_static(table, key, VALUE, tsize, &
+                                              origin, stat, isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    TYPE(String), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_string_r1_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_int8_r1(table, key, VALUE, origin, stat, &
-                                     isFound)
+                                     isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int8_r1
 END INTERFACE GetValue
 
@@ -242,7 +330,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_int8_r1_static(table, key, VALUE, tsize, &
-                                            origin, stat, isFound)
+                                            origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT8), INTENT(INOUT) :: VALUE(:)
@@ -250,6 +338,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int8_r1_static
 END INTERFACE GetValue_
 
@@ -263,13 +352,14 @@ END INTERFACE GetValue_
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_int16_r1(table, key, VALUE, origin, stat, &
-                                      isFound)
+                                      isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int16_r1
 END INTERFACE GetValue
 
@@ -283,7 +373,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_int16_r1_static(table, key, VALUE, &
-                                             tsize, origin, stat, isFound)
+                                       tsize, origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT16), INTENT(INOUT) :: VALUE(:)
@@ -291,6 +381,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int16_r1_static
 END INTERFACE GetValue_
 
@@ -304,13 +395,14 @@ END INTERFACE GetValue_
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_int32_r1(table, key, VALUE, origin, stat, &
-                                      isFound)
+                                      isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int32_r1
 END INTERFACE GetValue
 
@@ -324,7 +416,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_int32_r1_static(table, key, VALUE, tsize, &
-                                             origin, stat, isFound)
+                                             origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT32), INTENT(INOUT) :: VALUE(:)
@@ -332,6 +424,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int32_r1_static
 END INTERFACE GetValue_
 
@@ -345,13 +438,14 @@ END INTERFACE GetValue_
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_int64_r1(table, key, VALUE, origin, stat, &
-                                      isFound)
+                                      isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int64_r1
 END INTERFACE GetValue
 
@@ -365,7 +459,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_int64_r1_static(table, key, VALUE, tsize, &
-                                             origin, stat, isFound)
+                                             origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT64), INTENT(INOUT) :: VALUE(:)
@@ -373,6 +467,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_int64_r1_static
 END INTERFACE GetValue_
 
@@ -386,13 +481,14 @@ END INTERFACE GetValue_
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_real32_r1(table, key, VALUE, origin, stat, &
-                                       isFound)
+                                       isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_real32_r1
 END INTERFACE GetValue
 
@@ -406,7 +502,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_real32_r1_static(table, key, VALUE, tsize, &
-                                              origin, stat, isFound)
+                                              origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL32), INTENT(INOUT) :: VALUE(:)
@@ -414,6 +510,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_real32_r1_static
 END INTERFACE GetValue_
 
@@ -427,13 +524,14 @@ END INTERFACE GetValue_
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_real64_r1(table, key, VALUE, origin, stat, &
-                                       isFound)
+                                       isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_real64_r1
 END INTERFACE GetValue
 
@@ -447,7 +545,7 @@ END INTERFACE GetValue
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_real64_r1_static(table, key, VALUE, tsize, &
-                                              origin, stat, isFound)
+                                              origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL64), INTENT(INOUT) :: VALUE(:)
@@ -455,6 +553,7 @@ INTERFACE GetValue_
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_real64_r1_static
 END INTERFACE GetValue_
 
@@ -705,7 +804,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -720,12 +819,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetValue@IOMethods
+!                                                         GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate toml table from toml file
+! summary:  Initiate toml table from toml file (This is private method)
 
 INTERFACE
   MODULE SUBROUTINE GetValue_from_filename(table, filename)
@@ -735,7 +834,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -751,7 +850,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                        GetValue@IOMethods
+!                                                        GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

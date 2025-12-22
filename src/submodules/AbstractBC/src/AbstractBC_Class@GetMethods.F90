@@ -15,16 +15,113 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString
-
-USE GlobalData, ONLY: CHAR_LF
-
-USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE Display_Method, ONLY: ToString, Display
 
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsElemToEdgeInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToEdgeInitiated
+ans = obj%isElemToEdge
+END PROCEDURE obj_IsElemToEdgeInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsElemToFaceInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToFaceInitiated
+ans = obj%isElemToFace
+END PROCEDURE obj_IsElemToFaceInitiated
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToEdge
+ans = obj%tElemToEdge
+END PROCEDURE obj_GetTotalElemToEdge
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToFace
+ans = obj%tElemToFace
+END PROCEDURE obj_GetTotalElemToFace
+
+!----------------------------------------------------------------------------
+!                                                               GetElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToFace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToFace()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToFace
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToFace ("// &
+                  ToString(obj%tElemToFace)//")")
+#endif
+
+localCellNumber = obj%elemToFace(1, indx)
+localFaceNumber = obj%elemToFace(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToFace
+
+!----------------------------------------------------------------------------
+!                                                               GetElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToEdge
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToEdge()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToEdge
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToEdge ("// &
+                  ToString(obj%tElemToEdge)//")")
+#endif
+
+localCellNumber = obj%elemToEdge(1, indx)
+localEdgeNumber = obj%elemToEdge(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToEdge
 
 !----------------------------------------------------------------------------
 !                                                                 GetMeshID
@@ -51,117 +148,60 @@ ans = obj%idof
 END PROCEDURE obj_GetDOFNo
 
 !----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get1
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-CHARACTER(6) :: casename
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-
-  CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
-
-CASE ("H1HIER", "H1HEIR")
-
-  CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, &
-                     nodalValue=nodalValue, nrow=nrow, ncol=ncol, times=times)
-
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Get1
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Get2
-CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
-CHARACTER(6) :: casename
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-casename = fedof%GetCaseName()
-
-SELECT CASE (casename)
-
-CASE ("H1LAGR")
-
-  CALL obj%GetH1Lagrange(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
-CASE ("H1HIER", "H1HEIR")
-
-  CALL obj%GetH1Hierarchical(fedof=fedof, nodenum=nodenum, tsize=tsize)
-
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Get2
-
-!----------------------------------------------------------------------------
 !                                                           GetTotalNodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalNodenum
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodenum()"
-CHARACTER(6) :: casename
+MODULE PROCEDURE obj_GetTotalNodeNum
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNum()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, localFaceNumber, localEdgeNumber, localCellNumber, &
+                mysize
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-casename = fedof%GetCaseName()
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myName, &
+                  'AbstractBC_::obj%dom is not associated!')
+#endif
 
-SELECT CASE (casename)
+ans = 0
+mysize = obj%boundary%GetTotalNodeNum(dom=obj%dom)
+ans = ans + mysize
 
-CASE ("H1LAGR")
+CALL obj%SetElemToLocalBoundary()
 
-  ans = obj%GetTotalNodeNumH1Lagrange(fedof=fedof)
+DO ii = 1, obj%tElemToFace
+  CALL obj%GetElemToFace(indx=ii, localCellNumber=localCellNumber, &
+                         localFaceNumber=localFaceNumber)
 
-CASE ("H1HIER", "H1HEIR")
+  mysize = fedof%GetTotalFaceDOF(globalElement=localCellNumber, &
+                                 localFaceNumber=localFaceNumber, islocal=yes)
+  ans = ans + mysize
+END DO
 
-  ans = obj%GetTotalNodeNumH1Hierarchical(fedof=fedof)
+DO ii = 1, obj%tElemToEdge
+  CALL obj%GetElemToEdge(indx=ii, localCellNumber=localCellNumber, &
+                         localEdgeNumber=localEdgeNumber)
 
-CASE DEFAULT
-  CALL AssertError1(.FALSE., myname, "No case found for fedof casename")
-  RETURN
+  mysize = fedof%GetTotalEdgeDOF(globalElement=localCellNumber, &
+                                 localEdgeNumber=localEdgeNumber, islocal=yes)
 
-END SELECT
+  ans = ans + mysize
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+                        '[END] ')
 #endif
-END PROCEDURE obj_GetTotalNodenum
+END PROCEDURE obj_GetTotalNodeNum
 
 !----------------------------------------------------------------------------
 !
@@ -187,8 +227,10 @@ IF (PRESENT(isNormal)) isNormal = obj%isNormal
 IF (PRESENT(useFunction)) useFunction = obj%isUserFunction
 IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
+IF (PRESENT(isElemToFace)) isElemToFace = obj%isElemToFace
+IF (PRESENT(isElemToEdge)) isElemToEdge = obj%isElemToEdge
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
@@ -202,7 +244,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

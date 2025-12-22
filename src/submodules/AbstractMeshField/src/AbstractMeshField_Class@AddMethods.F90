@@ -46,19 +46,32 @@ END SUBROUTINE MasterAdd
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Add1
-INTEGER(I4B) :: iel, tsize
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Add1()"
+#endif
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
-  iel = 1
-ELSE
-  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                    islocal=islocal)
-END IF
+INTEGER(I4B) :: iel, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+iel = 1
+isok = obj%fieldType .EQ. typefield%constant
+IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                                  islocal=islocal)
 
 tsize = FEVariable_Size(fevar)
 
 CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
                scale=scale, indx=iel, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Add1
 
 !----------------------------------------------------------------------------
@@ -66,7 +79,16 @@ END PROCEDURE obj_Add1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Add2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Add2()"
+#endif
+
 INTEGER(I4B) :: iel, telem, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 telem = obj%mesh%GetTotalElements()
 tsize = FEVariable_Size(fevar)
@@ -75,6 +97,11 @@ DO iel = 1, telem
   CALL MasterAdd(val=obj%val, indxVal=obj%indxVal, add_val=fevar%val, &
                  scale=scale, indx=iel, tsize=tsize)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE obj_Add2
 

@@ -26,28 +26,30 @@ CONTAINS
 MODULE PROCEDURE obj_Set
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set()"
-CHARACTER(100) :: engine
+CHARACTER(128) :: engine
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: s(2)
 
 #ifdef DEBUG_VER
-
 CALL amat%GetParam(engine=engine)
 
-IF (TRIM(engine) .NE. "LIS_OMP") THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   'engine of amat should be LIS_OMP, but give engine is = ' &
-                    //TRIM(engine))
-END IF
-
+isok = TRIM(engine) .EQ. "LIS_OMP"
+CALL AssertError1(isok, myName, &
+      'engine of amat should be LIS_OMP, but give engine is = '//TRIM(engine))
 #endif
 
 s = amat%SHAPE()
 
 CALL obj%SetParam(amat=amat, localNumColumn=s(2), localNumRow=s(1), &
                   globalNumRow=s(1), globalNumColumn=s(2))
-
 END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

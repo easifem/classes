@@ -52,12 +52,28 @@ ans = obj%numReturns
 END PROCEDURE obj_GetNumReturns
 
 !----------------------------------------------------------------------------
+!                                                              GetNumArgs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNumArgs
+ans = obj%numArgs
+END PROCEDURE obj_GetNumArgs
+
+!----------------------------------------------------------------------------
 !                                                           GetReturnShape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetReturnShape
 ans = obj%returnShape
 END PROCEDURE obj_GetReturnShape
+
+!----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !

@@ -1,0 +1,59 @@
+solidMaterialNames = ["solid1", "solid2"]
+
+[solid1]
+name = "solid"
+propNames = ["massDensity", "poissonRatio", "youngsModulus"]
+stressStrainModel = "linearElasticModel"
+
+[solid1.massDensity]
+returnType = "Scalar"
+argType = "Constant"
+value = 1.0
+
+[solid1.poissonRatio]
+returnType = "Scalar"
+argType = "Constant"
+value = 0.33
+
+[solid1.youngsModulus]
+returnType = "Scalar"
+argType = "Constant"
+value = 3.0
+
+[solid1.linearElasticModel]
+name = "linearElasticModel"
+elasticityType = "ISO"
+poissonRatio = 0.1
+youngsModulus = 1.0
+
+[solid1.region]
+# This is same as meshSelection.toml
+
+[solid2]
+name = "solid2"
+propNames = ["massDensity", "poissonRatio", "youngsModulus"]
+stressStrainModel = "linearElasticModel"
+
+[solid2.massDensity]
+returnType = "Scalar"
+argType = "Constant"
+value = 1.0
+
+[solid2.poissonRatio]
+returnType = "Scalar"
+argType = "Constant"
+value = 0.33
+
+[solid2.youngsModulus]
+returnType = "Scalar"
+argType = "Constant"
+value = 3.0
+
+[solid2.linearElasticModel]
+name = "linearElasticModel"
+elasticityType = "ISO"
+poissonRatio = 0.1
+youngsModulus = 1.0
+
+[solid2.region]
+# This is same as meshSelection.toml

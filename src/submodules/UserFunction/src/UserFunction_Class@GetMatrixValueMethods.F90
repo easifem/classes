@@ -141,9 +141,6 @@ SUBROUTINE getvalue_lua(obj, val, args, myname)
   LOGICAL(LGT) :: isok
   REAL(DFP), ALLOCATABLE :: dummyvec(:)
 
-  CALL e%RaiseError(modName//'::'//myname//' - '// &
-                    '[WIP Progress]')
-
   nargs = obj%numArgs
   nresults = obj%numReturns
 
@@ -179,8 +176,8 @@ SUBROUTINE getvalue_lua(obj, val, args, myname)
     RETURN
   END IF
 
-  DO iarg = nresults, 1, -1
-    dummyvec(iarg) = REAL(lua_tonumber(l, nresults + iarg - 1), kind=DFP)
+  DO iarg = 1, nresults
+    dummyvec(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
   END DO
   CALL lua_pop(l, nresults)
   CALL lua_close(l)

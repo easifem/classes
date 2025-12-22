@@ -16,8 +16,7 @@
 !
 
 SUBMODULE(STVectorFieldLis_Class) ConstructorMethods
-USE STVectorField_Class, ONLY: STVectorFieldInitiate1, &
-                               STVectorFieldDeallocate
+USE STVectorField_Class, ONLY: STVectorFieldDeallocate
 
 IMPLICIT NONE
 
@@ -26,42 +25,26 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                              STVectorField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                      STVectorField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%Initiate(param=param, fedof=fedof)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-! CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-INTEGER(I4B) :: ierr
-
-CALL STVectorFieldInitiate1(obj=obj, param=param, fedof=fedof)
-
-CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-                         obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Initiate1
+! MODULE PROCEDURE obj_Initiate1
+! ! CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+! INTEGER(I4B) :: ierr
+!
+! CALL STVectorFieldInitiate(obj=obj, param=param, fedof=fedof, &
+!                            timefedof=timefedof, geofedof=geofedof)
+!
+! CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+! CALL CHKERR(ierr)
+!
+! CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
+!                          obj%global_n, ierr)
+! CALL CHKERR(ierr)
+!
+! CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+! CALL CHKERR(ierr)
+! END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate

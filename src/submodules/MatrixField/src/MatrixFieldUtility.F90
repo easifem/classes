@@ -20,9 +20,9 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE MatrixField_Class, ONLY: MatrixField_
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class, ONLY: AbstractField_, &
-                               TypeField, &
-                               FIELD_TYPE_NUMBER
+USE AbstractField_Class, ONLY: AbstractField_
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+
 USE String_Class, ONLY: String
 
 USE BaseType, ONLY: DOF_, CSRMatrix_
@@ -47,6 +47,10 @@ PUBLIC :: Export_Header
 PUBLIC :: Import_Header
 PUBLIC :: Export_PhysicalVar
 PUBLIC :: Import_PhysicalVar
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MatrixFieldUtility"
+#endif
 
 CONTAINS
 
@@ -218,7 +222,7 @@ SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, fieldType, name, &
   dsetname = TRIM(group)//"/fieldType"
   IF (hdf5%pathExists(dsetname%chars())) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    fieldType = FIELD_TYPE_NUMBER(strval%chars())
+    fieldType = TypeField%ToNumber(strval%chars())
   ELSE
     fieldType = TypeField%constant
   END IF
@@ -269,27 +273,39 @@ SUBROUTINE Import_CheckError(obj, hdf5, group, myName, modName)
   CHARACTER(*), INTENT(IN) :: myName
   CHARACTER(*), INTENT(IN) :: modName
 
-  ! main program
-  IF (obj%isInitiated) &
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'The instance of MatrixField_ is already initiated')
+  ! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName0 = "Import_CheckError()"
+  LOGICAL(LGT) :: isok
+#endif
 
-  ! print info
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                          "Importing an Instance of MatrixField_")
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[START] ')
+#endif
 
-  ! check
-  IF (.NOT. hdf5%isOpen()) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'HDF5 file is not opened')
-  END IF
+#ifdef DEBUG_VER
+  isok = .NOT. obj%IsInitiated()
+  CALL AssertError1(isok, myName0, &
+                    'The instance of MatrixField_ is already initiated')
+#endif
 
-  ! check
-  IF (.NOT. hdf5%isRead()) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'HDF5 file does not have read permission')
-  END IF
+#ifdef DEBUG_VER
+  isok = hdf5%isOpen()
+  CALL AssertError1(isok, myName0, &
+                    'HDF5 file is not opened')
+#endif
 
+#ifdef DEBUG_VER
+  isok = hdf5%isRead()
+  CALL AssertError1(isok, myName0, &
+                    'HDF5 file does not have read permission')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Import_CheckError
 
 !----------------------------------------------------------------------------
@@ -303,27 +319,38 @@ SUBROUTINE Export_CheckError(obj, hdf5, group, myName, modName)
   CHARACTER(*), INTENT(IN) :: myName
   CHARACTER(*), INTENT(IN) :: modName
 
-  IF (.NOT. obj%isInitiated) &
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'Instnace of MatrixField_ is not initiated')
-
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                          "Exporting Instance of MatrixField_")
+  CHARACTER(*), PARAMETER :: myName0 = "Export_CheckError()"
+  LOGICAL(LGT) :: isok
 #endif
 
-  ! check
-  IF (.NOT. hdf5%isOpen()) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'HDF5 file is not opened')
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[START] ')
+#endif
 
-  ! check
-  IF (.NOT. hdf5%isWrite()) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      'HDF5 file does not have write permission')
-  END IF
+#ifdef DEBUG_VER
+  isok = obj%IsInitiated()
+  CALL AssertError1(isok, myName0, &
+                    'The instance of MatrixField_ is not initiated')
+#endif
 
+#ifdef DEBUG_VER
+  isok = hdf5%isOpen()
+  CALL AssertError1(isok, myName0, &
+                    'HDF5 file is not opened')
+#endif
+
+#ifdef DEBUG_VER
+  isok = hdf5%isWrite()
+  CALL AssertError1(isok, myName0, &
+                    'HDF5 file does not have write permission')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Export_CheckError
 
 !----------------------------------------------------------------------------
@@ -452,7 +479,9 @@ SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
 END SUBROUTINE Export_PhysicalVar
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END MODULE MatrixFieldUtility

@@ -31,16 +31,26 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             GetMeshPointer
+!                                                                 IsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshPointer1
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-ans => NULL()
-END PROCEDURE obj_GetMeshPointer1
+MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !                                                             IsNodePresent
@@ -88,20 +98,6 @@ meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
 ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
 meshptr => NULL()
 END PROCEDURE obj_GetConnectivity
-
-!----------------------------------------------------------------------------
-!                                                          GetConnectivity_
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetConnectivity_
-CLASS(AbstractMesh_), POINTER :: meshptr
-
-meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum, &
-                              globalElement=globalElement, islocal=islocal)
-CALL meshptr%GetConnectivity_(globalElement=globalElement, &
-                              islocal=islocal, ans=ans, tsize=tsize)
-meshptr => NULL()
-END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
 !                                                                    GetNNE
@@ -216,27 +212,33 @@ END PROCEDURE obj_tNodes3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElements()"
+#endif
+
 CLASS(AbstractMesh_), POINTER :: meshptr
-LOGICAL(LGT) :: case1, isDim, isEntityNum
+LOGICAL(LGT) :: isok
 
-isEntityNum = PRESENT(entityNum)
-isDim = PRESENT(dim)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-case1 = isDim .AND. isEntityNum
-IF (case1) THEN
-  meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+isok = PRESENT(entityNum)
+
+IF (isok) THEN
+  ans = meshptr%GetTotalElements(meshid=entityNum)
+ELSE
   ans = meshptr%GetTotalElements()
-  meshptr => NULL()
-  RETURN
 END IF
 
-case1 = isDim .AND. (.NOT. isEntityNum)
-IF (case1) THEN
-  ans = obj%tElements(dim)
-  RETURN
-END IF
+meshptr => NULL()
 
-ans = SUM(obj%tElements)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalElements
 
 !----------------------------------------------------------------------------
@@ -300,8 +302,46 @@ END PROCEDURE obj_GetGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tEntities(dim)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEntities
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalEntitiesList
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalEntitiesList
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntitiesList()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalEntitiesList
 
 !----------------------------------------------------------------------------
 !                                                           GetDimEntityNum
@@ -736,7 +776,7 @@ END PROCEDURE obj_GetUniqueElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(engine)) engine = obj%engine%chars()
 IF (PRESENT(majorVersion)) majorVersion = obj%majorVersion
 IF (PRESENT(minorVersion)) minorVersion = obj%minorVersion
@@ -789,12 +829,333 @@ ans = obj%maxNptrs
 END PROCEDURE obj_GetMaxNodeNumber
 
 !----------------------------------------------------------------------------
-!                                                           GetDimEntityNum
+!                                                        GetGlobalEdgeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_IsInit
-ans = obj%isInitiated
-END PROCEDURE obj_IsInit
+MODULE PROCEDURE obj_GetGlobalEdgeNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalEdgeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalEdgeNumber
+
+!----------------------------------------------------------------------------
+!                                                        GetGlobalFaceNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetGlobalFaceNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFaceNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetGlobalFaceNumber
+
+!----------------------------------------------------------------------------
+!                                                        GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber1
+
+!----------------------------------------------------------------------------
+!                                                        GetLocalElemNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetLocalElemNumber2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemNumber2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetLocalElemNumber2
+
+!----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemData
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemData
+
+!----------------------------------------------------------------------------
+!                                                                GetElemData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemDataPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemDataPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemDataPointer
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConnectivity1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity1_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetConnectivity1_
+
+!----------------------------------------------------------------------------
+!                                                          GetConnectivity_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Getconnectivity2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Getconnectivity2_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Getconnectivity2_
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalVertexNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalVertexNodes2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalVertexNodes2
+
+!----------------------------------------------------------------------------
+!                                                             GetOrientation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetOrientation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrientation()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+CALL meshptr%GetOrientation(cellOrient=cellOrient, &
+                            faceOrient=faceOrient, &
+                            edgeOrient=edgeOrient, &
+                            tCellOrient=tCellOrient, &
+                            tFaceOrient=tFaceOrient, &
+                            tEdgeOrient=tEdgeOrient, &
+                            globalElement=globalElement, &
+                            islocal=islocal)
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetOrientation
+
+!----------------------------------------------------------------------------
+!                                                       GetElemTopologyIndx
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemTopologyIndx
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemTopologyIndx()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+
+ans = meshptr%GetElemTopologyIndx(globalElement=globalElement, &
+                                  islocal=islocal)
+
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemTopologyIndx
+
+!----------------------------------------------------------------------------
+!                                                           IsElementActive
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElementActive
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsElementActive()"
+#endif
+
+CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+ans = meshptr%IsElementActive(globalElement=globalElement, &
+                              islocal=islocal)
+meshptr => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsElementActive
 
 !----------------------------------------------------------------------------
 !

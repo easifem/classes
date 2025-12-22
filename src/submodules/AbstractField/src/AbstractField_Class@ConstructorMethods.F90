@@ -18,201 +18,39 @@ SUBMODULE(AbstractField_Class) ConstructorMethods
 USE GlobalData, ONLY: TypeIntI4B
 USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE FPL_Method, ONLY: CheckEssentialParam, &
-                      FPL_Set => Set, &
-                      FPL_GetValue => GetValue
+USE FPL_Method, ONLY: CheckEssentialParam
+USE FPL_Method, ONLY: FPL_Set => Set
+USE FPL_Method, ONLY: FPL_GetValue => GetValue
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE AbstractFieldCheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "AbstractFieldCheckEssentialParam()"
-TYPE(String) :: astr
-TYPE(String), ALLOCATABLE :: essentialParam(:)
-INTEGER(I4B) :: ii
-LOGICAL(LGT) :: isok
-
-astr = "/name/engine/fieldType/comm/local_n/global_n"
-CALL astr%Split(essentialParam, sep="/")
-CALL CheckEssentialParam(obj=param, keys=essentialParam, prefix=prefix, &
-                         myName=myName, modName=modName)
-! INFO: CheckEssentialParam param is defined in easifemClasses FPL_Method
-
-astr = ""
-isok = ALLOCATED(essentialParam)
-IF (.NOT. isok) RETURN
-
-DO ii = 1, SIZE(essentialParam)
-  essentialParam(ii) = ""
-END DO
-DEALLOCATE (essentialParam)
-END PROCEDURE AbstractFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                       SetScalarFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetAbstractFieldParam
-TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr
-CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
-LOGICAL(LGT) :: isSublist
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-sublist => NULL()
-
-! Create a new sublist
-isSublist = param%isSubList(prefix)
-
-IF (isSublist) THEN
-
-  ierr = param%GetSubList(key=prefix, sublist=sublist)
-  IF (ierr .NE. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-    RETURN
-  END IF
-
-ELSE
-
-  sublist => param%NewSubList(key=prefix)
-
-END IF
-
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
-
-CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="name", &
-             VALUE=name)
-
-CALL FPL_Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", &
-             VALUE=engine)
-
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
-             VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
-
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
-             VALUE=input(option=comm, default=0_I4B))
-
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
-             VALUE=input(option=local_n, default=0_I4B))
-
-CALL FPL_Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
-             VALUE=input(option=global_n, default=0_I4B))
-
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetAbstractFieldParam
-
-!----------------------------------------------------------------------------
-!                                               AbstractFieldInitiate_Help1
-!----------------------------------------------------------------------------
-
-SUBROUTINE AbstractFieldInitiate_Help1(obj, param, prefix)
-  CLASS(AbstractField_), INTENT(INOUT) :: obj
-  TYPE(ParameterList_), INTENT(IN) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-
-  obj%isInitiated = .TRUE.
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="fieldType", &
-                    VALUE=obj%fieldType)
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="name", &
-                    VALUE=obj%name)
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="global_n", &
-                    VALUE=obj%global_n)
-  CALL FPL_GetValue(obj=param, prefix=prefix, key="local_n", &
-                    VALUE=obj%local_n)
-END SUBROUTINE AbstractFieldInitiate_Help1
-
-!----------------------------------------------------------------------------
-!                                                                Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr
-CHARACTER(:), ALLOCATABLE :: prefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-prefix = obj%GetPrefix()
-
-! main
-sublist => NULL()
-ierr = param%GetSubList(key=prefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
-
-! NOTE: We should not call deallocate in abstract classes.
-! This is because, in concrete classes we may set some
-! parameters before calling this method.
-! All those parameters will be gone if we call deallocate
-! here.
-! CALL obj%DEALLOCATE()
-
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
-
-CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
-obj%fedof => fedof
-
-sublist => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!
+!                                                                   Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-IF (.NOT. obj2%isInitiated .OR. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR] :: Either obj is already initiated or '// &
-                    ' obj2 is not initiated.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = obj2%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'obj2 is not initiated.')
+#endif
 
-obj%isInitiated = obj2%isInitiated
+#ifdef DEBUG_VER
+isok = .NOT. obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'obj is already initiated.')
+#endif
+
+obj%isInit = obj2%isInit
 obj%fieldType = obj2%fieldType
 obj%name = obj2%name
 obj%engine = obj2%engine
@@ -226,99 +64,216 @@ obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
 
 obj%fedof => obj2%fedof
+obj%geofedof => obj2%geofedof
 
-IF (ALLOCATED(obj2%fedofs)) THEN
-
+isok = ALLOCATED(obj2%fedofs)
+IF (isok) THEN
   tsize = SIZE(obj2%fedofs)
   ALLOCATE (obj%fedofs(tsize))
-
   DO ii = 1, tsize
     obj%fedofs(ii)%ptr => obj2%fedofs(ii)%ptr
   END DO
-
 END IF
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
-#endif
-
-END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr, ii, tsize
-LOGICAL(LGT) :: isOK
-CHARACTER(:), ALLOCATABLE :: prefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-prefix = obj%GetPrefix()
-
-! main
-sublist => NULL()
-ierr = param%GetSubList(key=prefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
+obj%timefedof => obj2%timefedof
+isok = ALLOCATED(obj2%timefedofs)
+IF (isok) THEN
+  tsize = SIZE(obj2%timefedofs)
+  ALLOCATE (obj%timefedofs(tsize))
+  DO ii = 1, tsize
+    obj%timefedofs(ii)%ptr => obj2%timefedofs(ii)%ptr
+  END DO
 END IF
 
-! NOTE: We should not call deallocate in abstract classes.
-! This is because, in concrete classes we may set some
-! parameters before calling this method.
-! All those parameters will be gone if we call deallocate
-! here.
-! CALL obj%DEALLOCATE()
+obj%exact => obj2%exact
+obj%saveErrorNorm = obj2%saveErrorNorm
+obj%errorType = obj2%errorType
+obj%plotWithResult = obj2%plotWithResult
+obj%plotErrorNorm = obj2%plotErrorNorm
 
-isok = ASSOCIATED(sublist)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
+isok = ALLOCATED(obj2%dbc)
+IF (isok) THEN
+  tsize = SIZE(obj2%dbc)
+  ALLOCATE (obj%dbc(tsize))
+  DO ii = 1, tsize
+    obj%dbc(ii)%ptr => obj2%dbc(ii)%ptr
+  END DO
 END IF
 
-CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+isok = ALLOCATED(obj2%nbc)
+IF (isok) THEN
+  tsize = SIZE(obj2%nbc)
+  ALLOCATE (obj%nbc(tsize))
+  DO ii = 1, tsize
+    obj%nbc(ii)%ptr => obj2%nbc(ii)%ptr
+  END DO
+END IF
 
-tsize = SIZE(fedof)
-ALLOCATE (obj%fedofs(tsize))
-DO ii = 1, tsize
-  isOK = ASSOCIATED(fedof(ii)%ptr)
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: fedof('//ToString(ii)//') is not ASSOCIATED.')
-    RETURN
-  END IF
-  obj%fedofs(ii)%ptr => fedof(ii)%ptr
-END DO
-
-sublist => NULL()
+isok = ALLOCATED(obj2%nbc_point)
+IF (isok) THEN
+  tsize = SIZE(obj2%nbc_point)
+  ALLOCATE (obj%nbc_point(tsize))
+  DO ii = 1, tsize
+    obj%nbc_point(ii)%ptr => obj2%nbc_point(ii)%ptr
+  END DO
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE obj_Initiate3
+END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+! main
+
+! note: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+obj%isInit = .TRUE.
+obj%name = name
+obj%engine = engine
+obj%fieldType = Input(option=fieldType, default=TypeField%normal)
+obj%comm = Input(option=comm, default=0_I4B)
+obj%local_n = Input(option=local_n, default=0_I4B)
+obj%global_n = Input(option=global_n, default=0_I4B)
+
+obj%fedof => fedof
+obj%geofedof => geofedof
+IF (PRESENT(timefedof)) obj%timefedof => timefedof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+! main
+
+! note: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+obj%isInit = .TRUE.
+obj%name = name
+obj%engine = engine
+obj%fieldType = Input(option=fieldType, default=TypeField%normal)
+obj%comm = Input(option=comm, default=0_I4B)
+obj%local_n = Input(option=local_n, default=0_I4B)
+obj%global_n = Input(option=global_n, default=0_I4B)
+
+tsize = SIZE(fedof)
+ALLOCATE (obj%fedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(fedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'fedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%fedofs(ii)%ptr => fedof(ii)%ptr
+END DO
+
+tsize = SIZE(geofedof)
+ALLOCATE (obj%geofedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(geofedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'geofedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%geofedofs(ii)%ptr => geofedof(ii)%ptr
+END DO
+
+! If timefedof is not preseent then exit
+isok = PRESENT(timefedof)
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+tsize = SIZE(timefedof)
+ALLOCATE (obj%timefedofs(tsize))
+DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(timefedof(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'timefedof('//ToString(ii)//') is not ASSOCIATED.')
+#endif
+  obj%timefedofs(ii)%ptr => timefedof(ii)%ptr
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_Initiate5
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-INTEGER(I4B) :: ii
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .FALSE.
+obj%isMaxTotalNodeNumForBCSet = .FALSE.
+obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
-obj%isInitiated = .FALSE.
-obj%fieldType = FIELD_TYPE_NORMAL
+obj%maxTotalNodeNumForBC = 0
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1
@@ -327,56 +282,87 @@ obj%local_n = 0
 obj%is = 0
 obj%ie = 0
 obj%lis_ptr = 0
+obj%fedof => NULL()
+obj%geofedof => NULL()
 
-IF (ASSOCIATED(obj%fedof)) obj%fedof => NULL()
-
-IF (ALLOCATED(obj%fedofs)) THEN
-
-  DO ii = 1, SIZE(obj%fedofs)
-
-    IF (ASSOCIATED(obj%fedofs(ii)%ptr)) obj%fedofs(ii)%ptr => NULL()
-
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+  DO ii = 1, tsize
+    obj%fedofs(ii)%ptr => NULL()
   END DO
-
   DEALLOCATE (obj%fedofs)
-
 END IF
 
+isok = ALLOCATED(obj%geofedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%geofedofs)
+  DO ii = 1, tsize
+    obj%geofedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%geofedofs)
+END IF
+
+obj%timefedof => NULL()
+
+isok = ALLOCATED(obj%timefedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%timefedofs)
+  DO ii = 1, tsize
+    obj%timefedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%timefedofs)
+END IF
+
+obj%exact => NULL()
+obj%saveErrorNorm = .FALSE.
+obj%errorType = "NONE"
+obj%plotWithResult = .FALSE.
+obj%plotErrorNorm = .FALSE.
+
+isok = ALLOCATED(obj%dbc)
+IF (isok) THEN
+  tsize = SIZE(obj%dbc)
+  DO ii = 1, tsize
+    obj%dbc(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%dbc)
+END IF
+
+isok = ALLOCATED(obj%nbc)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc)
+  DO ii = 1, tsize
+    obj%nbc(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc)
+END IF
+
+isok = ALLOCATED(obj%nbc_point)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc_point)
+  DO ii = 1, tsize
+    obj%nbc_point(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc_point)
+END IF
+
+isok = ALLOCATED(obj%nodalValue)
+IF (isok) DEALLOCATE (obj%nodalValue)
+
+isok = ALLOCATED(obj%nodeNum)
+IF (isok) DEALLOCATE (obj%nodeNum)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE FIELD_TYPE_NUMBER
-SELECT CASE (TRIM(name))
-CASE ("NORMAL")
-  ans = FIELD_TYPE_NORMAL
-CASE ("CONSTANT")
-  ans = FIELD_TYPE_CONSTANT
-CASE ("CONSTANT_SPACE")
-  ans = FIELD_TYPE_CONSTANT_SPACE
-CASE ("CONSTANT_TIME")
-  ans = FIELD_TYPE_CONSTANT_TIME
-END SELECT
-END PROCEDURE FIELD_TYPE_NUMBER
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE FIELD_TYPE_NAME
-!
-SELECT CASE (id)
-CASE (FIELD_TYPE_NORMAL)
-  ans = "NORMAL"
-CASE (FIELD_TYPE_CONSTANT)
-  ans = "CONSTANT"
-CASE (FIELD_TYPE_CONSTANT_SPACE)
-  ans = "CONSTANT_SPACE"
-CASE (FIELD_TYPE_CONSTANT_TIME)
-  ans = "CONSTANT_TIME"
-END SELECT
-END PROCEDURE FIELD_TYPE_NAME
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

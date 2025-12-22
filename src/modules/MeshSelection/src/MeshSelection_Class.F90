@@ -37,6 +37,7 @@ CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 CHARACTER(*), PARAMETER :: myprefix = "MeshSelection"
 
 PUBLIC :: MeshSelectionDeallocate
+PUBLIC :: MeshSelectionReallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
 PUBLIC :: MeshSelectionImportParamFromToml
@@ -223,16 +224,16 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalElemNum => GetTotalElemNum1, GetTotalElemNum2, &
     GetTotalElemNum3, GetTotalElemNum4
 
-  PROCEDURE, PASS(obj) :: obj_GetElemNum1
+  PROCEDURE, PASS(obj) :: GetElemNum1 => obj_GetElemNum1
   !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: obj_GetElemNum2
+  PROCEDURE, PASS(obj) :: GetElemNum2 => obj_GetElemNum2
   !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: obj_GetElemNum3
+  PROCEDURE, PASS(obj) :: GetElemNum3 => obj_GetElemNum3
   !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: obj_GetElemNum4
+  PROCEDURE, PASS(obj) :: GetElemNum4 => obj_GetElemNum4
   !! Returns the element numbers if available
-  GENERIC, PUBLIC :: GetElemNum => obj_GetElemNum1, obj_GetElemNum2, &
-    obj_GetElemNum3, obj_GetElemNum4
+  GENERIC, PUBLIC :: GetElemNum => GetElemNum1, GetElemNum2, &
+    GetElemNum3, GetElemNum4
   !! Returns the element numbers if available
 
   PROCEDURE, PASS(obj) :: GetTotalNodeNum1 => obj_GetTotalNodeNum1
@@ -241,11 +242,11 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalNodeNum => GetTotalNodeNum1, GetTotalNodeNum2, &
     GetTotalNodeNum3
 
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum1
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum2
-  PROCEDURE, PASS(obj) :: obj_GetNodeNum3
-  GENERIC, PUBLIC :: GetNodeNum => obj_GetNodeNum1, obj_GetNodeNum2, &
-    obj_GetNodeNum3
+  PROCEDURE, PASS(obj) :: GetNodeNum1 => obj_GetNodeNum1
+  PROCEDURE, PASS(obj) :: GetNodeNum2 => obj_GetNodeNum2
+  PROCEDURE, PASS(obj) :: GetNodeNum3 => obj_GetNodeNum3
+  GENERIC, PUBLIC :: GetNodeNum => GetNodeNum1, GetNodeNum2, &
+    GetNodeNum3
     !! Returns the node number if available
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsMeshIDAllocated => &
@@ -332,6 +333,36 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                             Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector of NeumannBC_
+
+INTERFACE MeshSelectionReallocate
+  MODULE SUBROUTINE Reallocate_Vector(obj, tsize)
+    TYPE(MeshSelection_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Vector
+END INTERFACE MeshSelectionReallocate
+
+!----------------------------------------------------------------------------
+!                                             Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector of NeumannBC_
+
+INTERFACE MeshSelectionReallocate
+  MODULE SUBROUTINE Reallocate_Ptr_Vector(obj, tsize)
+    TYPE(MeshSelectionPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Ptr_Vector
+END INTERFACE MeshSelectionReallocate
+
+!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -341,7 +372,7 @@ END INTERFACE
 
 INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(MeshSelection_), ALLOCATABLE :: obj(:)
+    TYPE(MeshSelection_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE MeshSelectionDeallocate
 
@@ -406,12 +437,18 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, isSelectionByMeshID, &
-                 isSelectionByElemNum, isSelectionByBox, isSelectionByNodeNum)
+                                  isSelectionByElemNum, &
+                                  isSelectionByBox, &
+                                  isSelectionByNodeNum)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByMeshID
+    !! Is selection by MeshID
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByElemNum
+    !! is selection by element num
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByBox
+    !! is selection by bounding box
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByNodeNum
+    !! is selection by node number
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -480,6 +517,29 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 28 Aug 2021
 ! summary: This routine adds data to the meshSelection
+!
+!# Introduction
+!
+! Task-1: Internally it is performed by addmeshid
+!         If dim and meshID are provides then it will append meshID to the
+!         pointMeshID, curveMeshID, surfaceMeshID, or volumeMeshID
+!         depending on the value of dim.
+!
+! Task-2: Internally it is performed by addelemnum
+!         If dim and elemNum are provided then it will append elemNum to the
+!         pointElemNum, curveElemNum, surfaceElemNum, or volumeElemNum
+!         depending on the value of dim.
+!
+! Task-3: Internally it is performed by addnodenum
+!         If nodeNum and dim are provided then it will append nodeNum to
+!         pointNodeNum, curveNodeNum, surfaceNodeNum, or volumeNodeNum
+!         depending on the value of dim.
+!         If dim is not provided then it will append nodeNum to nodeNum
+!
+! Task-4: Internally it is performed by addbox
+!         If dim and box are provided then it will append box to the
+!         pointBox, curveBox, surfaceBox, or volumeBox
+!         depending on the value of dim.
 
 INTERFACE
   MODULE SUBROUTINE obj_Add(obj, dom, dim, meshID, box, elemNum, &
@@ -487,11 +547,15 @@ INTERFACE
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh region
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID(:)
+    !! List of mesh IDss
     TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box(:)
-    !! boxes
+    !! bounding boxes
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemNum(:)
+    !! element numbers
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodeNum(:)
+    !! node numbers
   END SUBROUTINE obj_Add
 END INTERFACE
 
@@ -516,11 +580,18 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 28 Aug 2021
 ! summary: This routine adds data to the meshSelection
+!
+!# Introduction
+!   This routine calls Set Method for each obj
 
-INTERFACE MeshSelectionSet
+INTERFACE
   MODULE SUBROUTINE obj_Set2(obj)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Set2
+END INTERFACE
+
+INTERFACE MeshSelectionSet
+  MODULE PROCEDURE obj_Set2
 END INTERFACE MeshSelectionSet
 
 !----------------------------------------------------------------------------
@@ -530,16 +601,49 @@ END INTERFACE MeshSelectionSet
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-09-29
 ! summary:  Set material to mesh
+!
+!# Introduction
+!
+! This routine set the material to the mesh. The elements in
+! mesh corresponding to the elements in MeshSelection_
+! will be assigned medium and material
+! (mesh%elementData%material(medium) = material
+!
+! It performs following tasks
+!
+! Task-1: isSelectionByMeshID
+! - First it get the pointer to mesh from dom of given dim
+! - Then it gets the meshID from obj for the given dim
+! - Then for each meshID it calls
+!   mesh%SetMaterial(entityNum, material, medium)
+!
+! Task-2: isSelectionByElemNum
+! - In this case it gets pointer to elemNum for given dim
+!   Then for each element number it calls
+!   mesh%SetMaterial(medium, material, globalElement, islocal)
+!
+! Following tasks are pending
+!
+! Task-3: isSelectionByNodeNum
+! Task-4: isSelectionByBox
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToMesh1(obj, dom, dim, medium, material)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(INOUT) :: dom
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium is like fluid, solid, etc. On a mesh we can have several
+    !! overlapping mediums (for example in coupled problem)
     INTEGER(I4B), INTENT(IN) :: material
+    !! material number of the medium. For example if medium is soil then
+    !! material = 1, 2, 3 represents different types of soils
   END SUBROUTINE obj_SetMaterialToMesh1
 END INTERFACE
+
+INTERFACE MeshSelectionSetMaterialToMesh
+  MODULE PROCEDURE obj_SetMaterialToMesh1
+END INTERFACE MeshSelectionSetMaterialToMesh
 
 !----------------------------------------------------------------------------
 !                                               SetMaterialToMesh@SetMethods
@@ -548,15 +652,22 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-09-29
 ! summary:  Set material to mesh
+!
+!# Introduction
+! This method calls SetMaterialToMesh1 with dim=dom%GetNSD()
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToMesh2(obj, dom, medium, material)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(INOUT) :: dom
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B), INTENT(IN) :: material
   END SUBROUTINE obj_SetMaterialToMesh2
 END INTERFACE
+
+INTERFACE MeshSelectionSetMaterialToMesh
+  MODULE PROCEDURE obj_SetMaterialToMesh2
+END INTERFACE MeshSelectionSetMaterialToMesh
 
 !----------------------------------------------------------------------------
 !                                                          Import@IOMethods
@@ -583,12 +694,16 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate param by reading the toml table
 
-INTERFACE MeshSelectionImportParamFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportParamFromToml
+END INTERFACE
+
+INTERFACE MeshSelectionImportParamFromToml
+  MODULE PROCEDURE obj_ImportParamFromToml
 END INTERFACE MeshSelectionImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -599,12 +714,16 @@ END INTERFACE MeshSelectionImportParamFromToml
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE MeshSelectionImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE MeshSelectionImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE MeshSelectionImportFromToml
 
 !----------------------------------------------------------------------------
@@ -615,7 +734,7 @@ END INTERFACE MeshSelectionImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE MeshSelectionImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
                                         filename, printToml, dom)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
@@ -625,6 +744,10 @@ INTERFACE MeshSelectionImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE MeshSelectionImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE MeshSelectionImportFromToml
 
 !----------------------------------------------------------------------------
@@ -819,7 +942,7 @@ END INTERFACE
 !# Introduction
 !
 ! Get total number of elements in the mesh selection
-! This method works when isSelectionByMeshID is true
+! Note: This method works when isSelectionByMeshID is true
 !
 ! For dim=0, it returns size of pointElemNum
 ! For dim=1, it returns size of curveElemNum
@@ -847,7 +970,7 @@ END INTERFACE
 !
 ! Get total number of elements in the mesh selection
 !
-! This method returns the size sum of size of pointElemNum, curveElemNum,
+! This method returns the sum of size of pointElemNum, curveElemNum,
 ! surfaceElemNum, and volumeElemNum
 
 INTERFACE
@@ -890,6 +1013,7 @@ END INTERFACE
 !# Introduction
 !
 ! Get element number if isSelectionByElemNum is true
+!
 ! dim = 0, returns pointElemNum
 ! dim = 1, returns curveElemNum
 ! dim = 2, returns surfaceElemNum

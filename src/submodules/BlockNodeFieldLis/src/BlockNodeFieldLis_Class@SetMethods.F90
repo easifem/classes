@@ -51,10 +51,10 @@ REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated, myName, &
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeFieldLis_::obj is not initiated')
 
-CALL AssertError1(VALUE%isInitiated, myName, &
+CALL AssertError1(VALUE%isInitiated(), myName, &
                   'AbstractNodeField_::value is not initiated')
 #endif
 

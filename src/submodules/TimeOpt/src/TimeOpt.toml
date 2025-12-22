@@ -1,0 +1,11 @@
+[timeOpt]
+timeDependency = "Transient"
+# timeDependency = "Static"
+# timeDependency = "Steady"
+# timeDependency = "Pseudostatic"
+# timeDependency = "Transient"
+# timeDependency = "Dynamic"
+totalTimeSteps = 10
+dt = 0.1
+startTime = 0.0
+endTime = 1.0

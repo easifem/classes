@@ -20,12 +20,12 @@ USE GlobalData
 USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
-USE Domain_Class, ONLY: Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE NeumannBC_Class
 USE DomainConnectivity_Class, ONLY: DomainConnectivity_, &
-  & DomainConnectivityPointer_
+                                    DomainConnectivityPointer_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class
 IMPLICIT NONE
@@ -58,8 +58,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => obj_SetCellData
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => obj_GetMinCellEntity
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => obj_GetMaxCellEntity
-  PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent &
-   & => obj_IsCellEntityPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent => &
+    obj_IsCellEntityPresent
   PROCEDURE, PUBLIC, PASS(obj) :: GetStartIndex => obj_GetStartIndex
   PROCEDURE, PUBLIC, PASS(obj) :: GetEndIndex => obj_GetEndIndex
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellElem => obj_GetCellElem
@@ -230,7 +230,7 @@ INTERFACE AddNitscheBC
     !! parameter for constructing [[NitscheBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
   END SUBROUTINE obj_AddNitscheBC
 END INTERFACE AddNitscheBC
 
@@ -251,7 +251,7 @@ INTERFACE AppendNitscheBC
     !! parameter for constructing [[NitscheBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Nitsche boundary number
   END SUBROUTINE obj_AppendNitscheBC
@@ -304,7 +304,7 @@ INTERFACE NitscheBCImportFromToml
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml1
@@ -322,7 +322,7 @@ INTERFACE NitscheBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile,  &
     & filename, printToml)
     TYPE(NitscheBCPointer_), INTENT(INOUT) :: obj(:)
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename

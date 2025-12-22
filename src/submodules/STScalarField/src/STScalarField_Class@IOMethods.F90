@@ -16,11 +16,9 @@
 !
 
 SUBMODULE(STScalarField_Class) IOMethods
-USE String_Class, ONLY: String
 USE Display_Method, ONLY: Display
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
-                                   AbstractNodeFieldImport, &
-                                   AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
+
 IMPLICIT NONE
 CONTAINS
 
@@ -29,94 +27,28 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%timeCompo, msg="timeCompo: ", unitno=unitno)
-END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                                 Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3), isok
-TYPE(ParameterList_) :: param
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
-                             fedofs=fedofs)
-
-! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
-isok = hdf5%pathExists(dsetname%chars())
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: The dataset timeCompo should be present')
-  RETURN
-END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
-
-dsetname = TRIM(group)//"/tSize"
-bools(1) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/dof"
-bools(2) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/realVec"
-bools(3) = hdf5%pathExists(dsetname%chars())
-
-isok = ALL(bools)
-IF (isok) RETURN
-
-CALL param%Initiate()
-
-CALL SetSTScalarFieldParam(param=param, name=obj%name%chars(), &
-  fieldType=obj%fieldType, timeCompo=obj%timeCompo, engine=obj%engine%chars())
-
-obj%isInitiated = .FALSE.
-
-CALL obj%Initiate(param=param, fedof=fedof)
-
-CALL param%DEALLOCATE()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[END]")
-#endif
-
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-TYPE(String) :: dsetname
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
-
-! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-END PROCEDURE obj_Export
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

@@ -22,6 +22,7 @@ if(USE_LIS)
     ${PROJECT_NAME}
     PRIVATE ${src_path}/STScalarFieldLis_Class@ConstructorMethods.F90
             ${src_path}/STScalarFieldLis_Class@IOMethods.F90
+            ${src_path}/STScalarFieldLis_Class@HDFMethods.F90
             ${src_path}/STScalarFieldLis_Class@SetMethods.F90
             ${src_path}/STScalarFieldLis_Class@GetMethods.F90)
 endif()

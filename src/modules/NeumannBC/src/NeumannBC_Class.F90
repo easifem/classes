@@ -20,8 +20,7 @@ USE GlobalData
 USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
-USE Domain_Class, ONLY: Domain_
-USE FEDomain_Class, ONLY: FEDomain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE DirichletBC_Class
@@ -120,7 +119,7 @@ INTERFACE AddNeumannBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(FEDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
   END SUBROUTINE obj_AddNeumannBC
 END INTERFACE AddNeumannBC
 
@@ -141,7 +140,7 @@ INTERFACE AppendNeumannBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(FEDomain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
     !! Dirichlet boundary number
   END SUBROUTINE obj_AppendNeumannBC
@@ -188,16 +187,20 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE NeumannBCImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
-    TYPE(NeumannBCPointer_), INTENT(INOUT) :: obj(:)
+    TYPE(NeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
-    CLASS(FEDomain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE NeumannBCImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE NeumannBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -208,16 +211,20 @@ END INTERFACE NeumannBCImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE NeumannBCImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile,  &
-    & filename, printToml)
-    TYPE(NeumannBCPointer_), INTENT(INOUT) :: obj(:)
-    CLASS(FEDomain_), TARGET, INTENT(IN) :: dom
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, &
+                                        filename, printToml)
+    TYPE(NeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE NeumannBCImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE NeumannBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -228,12 +235,16 @@ END INTERFACE NeumannBCImportFromToml
 ! date:  2023-09-09
 ! summary:  Display the vector of NeumannBC_
 
-INTERFACE NeumannBCDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(NeumannBC_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Vector
+END INTERFACE
+
+INTERFACE NeumannBCDisplay
+  MODULE PROCEDURE obj_Display_Vector
 END INTERFACE NeumannBCDisplay
 
 !----------------------------------------------------------------------------
@@ -244,12 +255,16 @@ END INTERFACE NeumannBCDisplay
 ! date:  2023-09-09
 ! summary:  Display the vector of NeumannBC_
 
-INTERFACE NeumannBCDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(NeumannBCPointer_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE
+
+INTERFACE NeumannBCDisplay
+  MODULE PROCEDURE obj_Display_Ptr_Vector
 END INTERFACE NeumannBCDisplay
 
 !----------------------------------------------------------------------------

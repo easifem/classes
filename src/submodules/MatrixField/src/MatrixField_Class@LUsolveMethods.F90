@@ -35,6 +35,7 @@ MODULE PROCEDURE obj_ILUSOLVE1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ILUSOLVE1()"
 INTEGER(I4B) :: s(2), info, sol1, rhs1
+LOGICAL(LGT) :: isok
 #endif
 
 LOGICAL(LGT) :: abool
@@ -42,29 +43,34 @@ LOGICAL(LGT) :: abool
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
                   '[INTERNAL ERROR] :: MatrixField_ object is not initiated.')
-  RETURN
 END IF
+#endif
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+#ifdef DEBUG_VER
+isok = obj%engine%chars() .EQ. "NATIVE_SERIAL"
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
         '[INTERNAL ERROR] :: This routine is only avaiable for NATIVE_SERIAL')
-  RETURN
 END IF
+#endif
 
+#ifdef DEBUG_VER
 s = obj%SHAPE()
 sol1 = SIZE(sol)
 rhs1 = SIZE(rhs)
 
-IF (sol1 .NE. rhs1 .OR. sol1 .NE. s(1)) THEN
+isok = (sol1 .EQ. rhs1) .AND. (sol1 .EQ. s(1))
+IF (.NOT. isok) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   '[INTERNAL ERROR] :: Size of sol vector should be equal to the size of rhs')
-  RETURN
 END IF
-
 #endif
 
 abool = Input(default=.FALSE., option=isTranspose)
@@ -82,7 +88,6 @@ CALL LUSOLVE(sol=sol, rhs=rhs, alu=obj%pmat%A, jlu=obj%pmat%JA, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ILUSOLVE1
 
 !----------------------------------------------------------------------------

@@ -16,76 +16,52 @@
 !
 
 SUBMODULE(ScalarField_Class) DBCMethods
-USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE ReallocateUtility, ONLY: Reallocate
+USE InputUtility, ONLY: Input
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                           ApplyDirichletBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: aint
 #endif
 
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-LOGICAL(LGT) :: istimes
-INTEGER(I4B) :: idof, nrow, ncol
+INTEGER(I4B) :: nrow, ncol
+INTEGER(I4B), PARAMETER :: expandFactor = 2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-aint = 0
-
-#ifdef DEBUG_VER
-IF (istimes) THEN
-  aint = SIZE(times)
-  problem = aint .NE. 1
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
-    RETURN
-  END IF
-END IF
-#endif
+CALL obj%SetMaxTotalNodeNumForBC(dbc=dbc)
 
 ncol = 1
-nrow = dbc%GetTotalNodeNum(fedof=obj%fedof)
-ALLOCATE (nodenum(nrow), nodalvalue(nrow, ncol))
+nrow = obj%GetMaxTotalNodeNumForBC()
 
-CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times, nrow=nrow, &
-             ncol=ncol, fedof=obj%fedof)
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
 
-IF (istimes) THEN
-  DO idof = 1, ncol
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:ncol, idof), &
-                 islocal=.FALSE.)
-  END DO
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
+CALL dbc%Get( &
+  nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, nrow=nrow, &
+  ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
 
-CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-             islocal=.TRUE.)
-
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+CALL obj%Set( &
+  globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, 1), &
+  islocal=math%yes)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -93,82 +69,74 @@ END PROCEDURE obj_ApplyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
-INTEGER(I4B), PARAMETER :: expandFactor = 2
-LOGICAL(LGT), PARAMETER :: isExpand = .TRUE.
+#endif
 
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, tsize, aint, idof, nrow, ncol
-LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ibc, nrow, ncol, tbc
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-aint = 0
-
-#ifdef DEBUG_VER
-IF (istimes) THEN
-  aint = SIZE(times)
-  problem = aint .NE. 1
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INERNAL ERROR] :: SIZE( times ) is '// &
-                      ToString(aint)//' which is not equal to 1 ')
-    RETURN
-  END IF
-END IF
-#endif
-
-tsize = SIZE(dbc)
-
+CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc)
 ncol = 1
-DO ibc = 1, tsize
-  nrow = dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
-  CALL Reallocate(nodalvalue, nrow, ncol, isExpand=isExpand, &
-                  expandFactor=expandFactor)
-  CALL Reallocate(nodenum, nrow, isExpand=isExpand, &
-                  expandFactor=expandFactor)
+nrow = obj%GetMaxTotalNodeNumForBC()
+
+CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
+                expandFactor=expandFactor)
+CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+tbc = SIZE(dbc)
+DO ibc = 1, tbc
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
+
+  CALL dbc(ibc)%ptr%Get( &
+    nodalvalue=obj%nodalvalue, nodenum=obj%nodenum, times=times, nrow=nrow, &
+    ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof)
+
+  CALL obj%Set( &
+    globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, 1), &
+    islocal=math%yes)
 END DO
-
-IF (istimes) THEN
-  DO ibc = 1, tsize
-    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, &
-                          times=times, nrow=nrow, ncol=ncol, fedof=obj%fedof)
-    DO idof = 1, ncol
-    CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, idof), &
-                   islocal=.TRUE.)
-    END DO
-  END DO
-
-  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-  RETURN
-END IF
-
-DO ibc = 1, tsize
-  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum, nrow=nrow, &
-                        ncol=ncol, fedof=obj%fedof)
-
-  CALL obj%Set(globalNode=nodenum(1:nrow), VALUE=nodalvalue(1:nrow, 1), &
-               islocal=.TRUE.)
-END DO
-
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
-!
+!                                                           ApplyDirichletBC
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyDirichletBC3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%ApplyDirichletBC(dbc=obj%dbc, times=times)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyDirichletBC3
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE DBCMethods

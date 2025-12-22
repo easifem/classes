@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020~  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -76,13 +77,13 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
 TYPE, ABSTRACT :: AbstractMesh_
   PRIVATE
+  LOGICAL(LGT) :: isInitiated = .FALSE.
+  !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: showTime = .FALSE.
   !! If true, then we show the time taken by various mesh operations
   !! This is for checking the performance of a subclass
   LOGICAL(LGT) :: readFromFile = .TRUE.
   !! True if the mesh is read from a file
-  LOGICAL(LGT) :: isInitiated = .FALSE.
-  !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: isNodeToElementsInitiated = .FALSE.
   !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
@@ -233,49 +234,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
   !! Deallocate the kdtree
 
-  ! IO:
-  ! @IOMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Read mesh from hdf5 file
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export mesh to an hdf5 file
-
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Export mesh to a VTKfile
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
-  !! Display the mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
-    obj_DisplayNodeData
-  !! Display node data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
-    obj_DisplayElementData
-  !! Display element data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
-    obj_DisplayFacetData
-  !! Display  facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
-    obj_DisplayInternalFacetData
-  !! Display internal facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
-    obj_DisplayBoundaryFacetData
-  !! Display mesh facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
-    obj_DisplayFacetElements
-  !! Display facet element shape data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
-    obj_DisplayMeshInfo
-  !! Display mesh statistics
-
   ! Set:
   ! @NodeDataMethods
 
@@ -298,32 +256,32 @@ CONTAINS
   ! @ElementDataMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
-    & obj_InitiateElementToElements
+    obj_InitiateElementToElements
   !! Initiate element to elements mapping
 
   ! Set:
   ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
-    & obj_InitiateBoundaryData
+    obj_InitiateBoundaryData
   !! Initiate the boundary data
 
   ! Set:
   ! @EdgeDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity =>  &
-    & obj_InitiateEdgeConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateEdgeConnectivity => &
+    obj_InitiateEdgeConnectivity
 
   ! Set:
   ! @FaceDataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity =>  &
-    & obj_InitiateFaceConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFaceConnectivity => &
+    obj_InitiateFaceConnectivity
 
   ! Set:
   ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
-    & obj_InitiateFacetElements
+    obj_InitiateFacetElements
   !! Initiate boundary data
 
-  !  GET:
+  ! GET:
   ! @GetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
@@ -460,6 +418,21 @@ CONTAINS
     GetTotalNodes3
   !! get total nodes
 
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  !! Returns the total number of vertex nodes
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  !! Returns total vertex of meshid
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes3 => obj_GetTotalVertexNodes3
+  !! Returns total vertex from a list of element number
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes4 => obj_GetTotalVertexNodes4
+  !! Return total vertex nodes of an element
+  GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
+    GetTotalVertexNodes2, GetTotalVertexNodes3, GetTotalVertexNodes4
+  !! get total vetex nodes
+  !! vetex nodes means the nodes in linear mesh. When
+  !! mesh is higher order, then TotalVertexNodes wiill
+  !! be less than TotalNodes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaces => obj_GetTotalFaces
   !! Returns the total number of faces in the mesh (obj%tFaces)
 
@@ -514,6 +487,15 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
   !! Get the orientation of the element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrientation => obj_GetCellOrientation
+  !! Get the orientation of the cell element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrientation => obj_GetFaceOrientation
+  !! Get the orientation of the faces in an element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrientation => obj_GetEdgeOrientation
+  !! Get the orientation of the edges in an element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeConnectivity => &
     obj_GetNodeConnectivity
@@ -656,6 +638,13 @@ CONTAINS
     obj_GetFacetConnectivity
   !! Generic method to Get the connectivity of a facet element
 
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
+    obj_GetFacetConnectivity_
+  !! Generic method to Get the connectivity of a facet element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetConnectivity => &
+    obj_GetTotalFacetConnectivity
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
     obj_GetFacetElementType
   !! Returns the facet element type of a given cell element number
@@ -667,8 +656,10 @@ CONTAINS
   !! get order of an element
   GENERIC, PUBLIC :: GetOrder => GetOrder1, GetOrder2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
-    obj_GetNSD
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder_ => obj_GetOrder_
+  !! Get order of elements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Return the NSD
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
@@ -773,11 +764,11 @@ CONTAINS
     SetSparsity3, SetSparsity4
   !! Generic method for Setting the sparsity
 
-  PROCEDURE, PASS(obj) :: SetTotalMaterial1 => obj_SetTotalMaterial1
+  PROCEDURE, PASS(obj) :: SetTotalMedium1 => obj_SetTotalMedium1
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PASS(obj) :: SetTotalMaterial2 => obj_SetTotalMaterial2
+  PROCEDURE, PASS(obj) :: SetTotalMedium2 => obj_SetTotalMedium2
   !! Adding a material ID of a medium which is mapped to the mesh
-  GENERIC, PUBLIC :: SetTotalMaterial => SetTotalMaterial1, SetTotalMaterial2
+  GENERIC, PUBLIC :: SetTotalMedium => SetTotalMedium1, SetTotalMedium2
   !! Generic method
 
   PROCEDURE, PASS(obj) :: SetMaterial1 => obj_SetMaterial1
@@ -801,6 +792,54 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetParam => obj_SetFacetParam
   !! Set the parametersof facet element
+
+  ! IO:
+  ! @IOMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Read mesh from hdf5 file
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export mesh to an hdf5 file
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
+  !! Display the mesh
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => &
+    obj_DisplayNodeData
+  !! Display node data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => &
+    obj_DisplayElementData
+  !! Display element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetData => &
+    obj_DisplayFacetData
+  !! Display  facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayInternalFacetData => &
+    obj_DisplayInternalFacetData
+  !! Display internal facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
+    obj_DisplayBoundaryFacetData
+  !! Display mesh facet data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
+    obj_DisplayFacetElements
+  !! Display facet element shape data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
+    obj_DisplayMeshInfo
+  !! Display mesh statistics
+
+  ! IO:
+  ! @VTKMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export mesh to a VTKfile
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  !! Write mesh into vtk file
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk
 
 END TYPE AbstractMesh_
 
@@ -911,34 +950,58 @@ END INTERFACE
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: This routine reads the mesh from a meshFile which is an hdf5
-! file
+!> author: Vikas Sharma, Ph. D.
+!> date: 2024-03-18
+!> summary: Imports mesh data from an HDF5 file
 !
-!# Introduction
+!# Description
 !
-! This routine reads the following
+! This method reads mesh data from an HDF5 file and initializes the AbstractMesh_
+! object. It serves as a wrapper around the `Initiate` method, providing the
+! same functionality with a more intuitive name for importing mesh data.
 !
-! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX,
-! meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ,
-! meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,
-! meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber,
-! meshData%connectivity, meshData%boundingEntity
+! The method reads the following data:
+! - Mesh ID (uid)
+! - Spatial dimensions (xidim, nsd)
+! - Element types and topology
+! - Bounding box information (minX, minY, minZ, maxX, maxY, maxZ)
+! - Node coordinates (x, y, z)
+! - Element counts (tElements, tNodes)
+! - Connectivity information
+! - Boundary entities
 !
-! This routine Initiate the local_nptrs data in mesh.
-! This routine also Sets the number of nodes in the mesh (tNodes)
-! This routine allocate obj%nodeData
-! This routine Set localNodeNum and globalNode data inside the
-! nodeData
+! The routine also initializes:
+! - Local node numbering (local_nptrs)
+! - Node data arrays
+! - Global-to-local node mapping
 !
+!# Arguments
 !
-! If group is present then the mesh from that group is read
+! - `obj`: The AbstractMesh_ object to be initialized
+! - `hdf5`: HDF5File_ object containing mesh data
+! - `group` (optional): Location in the HDF5 file where mesh data is stored
+! - `dim` (optional): Dimension of the mesh to read
+! - `entities` (optional): Entity numbers to be included in the mesh
 !
-! If dim is present then all entities of that dimension is read
+!# Usage
 !
-! If (dim, entities) are present then we construct groups
-! based on dim and entities and make a mesh
+!```fortran
+! type(HDF5File_) :: h5file
+! type(Mesh_) :: mesh
+!
+! call h5file%open("mesh.h5", "r")
+! call mesh%Import(h5file, group="/mesh")
+! call h5file%close()
+!```
+!
+!# Notes
+!
+! - If `group` is provided, mesh data from that group is read
+! - If `dim` is provided, all entities of that dimension are read
+! - If both `dim` and `entities` are provided, the method constructs groups
+!   based on the dimension and entities to create the mesh
+! - After reading the data, the mesh is marked as initiated (`isInitiated = .TRUE.`)
+! - This method is equivalent to calling the `Initiate` method
 
 INTERFACE AbstractMeshImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, dim, entities)
@@ -1016,13 +1079,46 @@ END INTERFACE
 !
 !# Introduction
 !
-! - If `filename` is present then call [[VTKFile_:InitiateVTKFile]] method
-! - If `nodeCoord` is present then write Points by calling
-! [[VTKFile_:WritePoints]] method
-! - If `content` is present then write cell data by calling
-! [[VTKFile_:WriteCells]] methods
-! - If openTag is true then write piece info
-! - If cloSetag is true then close the piece
+! - If `filename` is present then call vtk%InitiateVTKFile method
+! - If `nodeCoord` is present then write Points by calling obj%WritePoints
+! - If nodeCoord is not present then call obj%GetNodeCoord and write Points
+! - If `content` is true then write cell data by calling vtk%WriteCells
+! - If openTag is true then write piece info by calling vtk%WritePiece
+! - If closeTag is true then close the piece
+!
+! Note:
+! - If openTag is true then <Piece> info is written
+! - <Points> always written
+! - If content is trye then <Cell> data is written by calling vtk%WriteCells
+! - If closeTag is true then </Piece> info is written
+!
+! Example of VTK file is given below
+! <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian">
+!       <PolyData>
+!         <Piece NumberOfPoints="8" NumberOfVerts="0" NumberOfLines="0"
+!                NumberOfStrips="0" NumberOfPolys="6">
+!         <Points>
+!           <DataArray type="Float32" NumberOfComponents="3" format="ascii">
+!             0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1
+!           </DataArray>
+!         </Points>
+!        <Cells>
+!         <DataArray type="Int32" Name="connectivity" format="ascii">
+!           0 1 4 3
+!           1 2 5 4
+!           3 4 7 6
+!           4 5 8 7
+!         </DataArray>
+!         <DataArray type="Int32" Name="offsets" format="ascii">
+!           4 8 12 16
+!         </DataArray>
+!         <DataArray type="UInt8" Name="types" format="ascii">
+!           9 9 9 9
+!         </DataArray>
+!       </Cells>
+!       </Piece>
+!     </PolyData>
+!    </VTKFile>
 
 INTERFACE
   MODULE SUBROUTINE obj_ExportToVTK(obj, vtk, nodeCoord, filename, &
@@ -1038,6 +1134,21 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: content
     !! Default is true
   END SUBROUTINE obj_ExportToVTK
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       WriteData@VTKMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-04
+! summary:  Write mesh into vtk, the format will be .vtu
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, filename)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1404,7 +1515,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetElemTopoIndx@GetMethods
+!                                              GetElemTopologyIndx@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1940,7 +2051,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_isElementPresent(obj, globalElement, islocal) &
-    & RESULT(ans)
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -1971,7 +2082,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        isDomainBoundaryElement@GetMethods
+!                                         isDomainBoundaryElement@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1996,7 +2107,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        isDomainFacetElement@GetMethods
+!                                            isDomainFacetElement@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2020,7 +2131,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetTotalInternalNodes@GetMethodss
+!                                           GetTotalInternalNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2032,6 +2143,79 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalInternalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalVertexNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary: Returns total number of vertex nodes in the mesh
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes1(obj) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total nodes of a given meshid
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes2(obj, meshid) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: meshid
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in a collection of elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes3(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in an element
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes4(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2055,7 +2239,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
-! summary:  Get total nodes of meshid
+! summary:  Get total nodes of in a given meshid
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodes2(obj, meshid) RESULT(ans)
@@ -2071,7 +2255,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-07-17
-! summary:  Get total nodes in a collection of abstract mesh
+! summary:  Get total nodes in a collection of elements
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodes3(obj, globalElement, islocal) RESULT(ans)
@@ -2238,8 +2422,9 @@ END INTERFACE
 ! summary:  Get connectivity
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-      nodeCon, tCellCon, tFaceCon, tEdgeCon, tNodeCon, globalElement, islocal)
+  MODULE SUBROUTINE obj_GetConnectivity2_( &
+    obj, cellCon, faceCon, edgeCon, nodeCon, tCellCon, tFaceCon, tEdgeCon, &
+    tNodeCon, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
     !! cell connectivity of element
@@ -2273,9 +2458,9 @@ END INTERFACE
 ! summary:  Get the orientation flags of an element
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
-           edgeOrient, tCellOrient, tFaceOrient, tEdgeOrient, globalElement, &
-                                       islocal)
+  MODULE SUBROUTINE obj_GetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tCellOrient, tFaceOrient, &
+    tEdgeOrient, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
     !! cell connectivity of element
@@ -2296,6 +2481,75 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then global element is local element
   END SUBROUTINE obj_GetOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-02
+! summary:  Get the orientation of cell
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetCellOrientation(obj, ans, tsize, &
+                                           globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetCellOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get the orientation of faces
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFaceOrientation(obj, ans, nrow, ncol, &
+                                           globalElement, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
+    !! Face connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! size of data written in faceOrient
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetFaceOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetEdgeOrientation@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-02
+! summary: Get the orientation of edges
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetEdgeOrientation(obj, ans, tsize, globalElement, &
+                                           islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! Edge connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in ans
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetEdgeOrientation
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2365,8 +2619,8 @@ END INTERFACE
 ! summary: This routine returns the local node number from a global node number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -2448,8 +2702,8 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -2466,8 +2720,8 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal)  &
-    & RESULT(ans)
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
@@ -2908,6 +3162,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-24
+! summary:  Get the orders
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetOrder_(obj, order, tsize)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: order(:)
+    !! global or local element number
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetOrder_
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         GetNSD@GetMethods
 !----------------------------------------------------------------------------
 
@@ -3125,8 +3396,8 @@ END INTERFACE
 ! summary:  Get global face number from globalElement and local face number
 
 INTERFACE
-MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
-                                          islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalFaceNumber( &
+    obj, globalElement, localFaceNumber, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! local or global element number
@@ -3144,8 +3415,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
-                                          islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalEdgeNumber( &
+    obj, globalElement, localEdgeNumber, islocal) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! local or global element number
@@ -3229,13 +3500,17 @@ END INTERFACE
 !# Introduction
 !
 ! - Returns the connectivity of a given facet element
-! - facetElement is local facet element number
+! - facetElement is facet element number in face connectivity of element
+! - This method will get the globalElement and localFaceID and
+!   then call GetFacetConnectivity method
 
 INTERFACE
-  MODULE FUNCTION AbstractMeshGetFacetConnectivity(obj, facetElement, &
-                                            elementType, isMaster) RESULT(ans)
+  MODULE FUNCTION AbstractMeshGetFacetConnectivity( &
+    obj, facetElement, elementType, isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
+    !! facet element number, it can be obtained from the
+    !! connectivity
     INTEGER(I4B), INTENT(IN) :: elementType
     LOGICAL(LGT), INTENT(IN) :: isMaster
       !! if isMaster is true then connectivity of facet in master-cell
@@ -3258,7 +3533,8 @@ END INTERFACE
 !
 !# Introduction
 !
-! - Returns the connectivity of a given facet element of a cellElement
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
 ! - globalElement is global element number of cell number
 ! - iface is the local face number in globalElement
 
@@ -3271,6 +3547,59 @@ INTERFACE
     LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetFacetConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetConnectivity_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetConnectivity_(obj, globalElement, &
+                                              iface, ans, tsize, islocal)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetFacetConnectivity_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetConnectivity_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity (node numbers) of a given face element of
+!   a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFacetConnectivity(obj, globalElement, &
+                                                iface, islocal) RESULT(ans)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: iface
+    LOGICAL(I4B), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFacetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3296,25 +3625,27 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMeshGetParam
-  MODULE SUBROUTINE obj_GetParam(obj, &
-             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
-                                 maxElemNum, minElemNum, tNodes, tElements, &
-                                 minX, minY, minZ, maxX, maxY, maxZ, &
-            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+    isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+    isBoundaryDataInitiated, isFacetDataInitiated, uid, xidim, elemType, &
+    nsd, maxNptrs, minNptrs, maxElemNum, minElemNum, tNodes, tElements, &
+    minX, minY, minZ, maxX, maxY, maxZ, x, y, z, tElements_topology_wise, &
+    tElemTopologies, elemTopologies)
 
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated, &
-                          isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                                 isBoundaryDataInitiated, isFacetDataInitiated
-
+                                           isNodeToElementsInitiated, &
+                                           isNodeToNodesInitiated, &
+                                           isExtraNodeToNodesInitiated, &
+                                           isElementToElementsInitiated, &
+                                           isBoundaryDataInitiated, &
+                                           isFacetDataInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, xidim, elemType, nsd, &
-                         maxNptrs, minNptrs, maxElemNum, minElemNum, tNodes, &
-     tElements, tElements_topology_wise(8), tElemTopologies, elemTopologies(8)
-
+                                           maxNptrs, minNptrs, maxElemNum, &
+                                           minElemNum, tNodes, tElements, &
+                                           tElements_topology_wise(8), &
+                                           tElemTopologies, elemTopologies(8)
     REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, minY, minZ, maxX, maxY, maxZ, &
                                         x, y, z
   END SUBROUTINE obj_GetParam
@@ -3504,7 +3835,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-15
-! summary: Get total entities
+! summary: Get total entities of a globalElement
+!
+! # Introduction
+!
+! ans(1) =  total number of nodes in element
+! ans(2) =  total number of edges in element
+! ans(3) =  total number of faces in element
+! ans(4) = 1
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalEntities1(obj, globalElement, islocal) &
@@ -3522,7 +3860,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-15
-! summary: Get total entities
+! summary: Get total entities of the mesh
+!
+!# Introduction
+!
+! ans(1) = total number of nodes
+! ans(2) = total number of edges
+! ans(3) = total number of faces
+! ans(4) = total number of cell elements
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalEntities2(obj) &
@@ -3933,9 +4278,9 @@ END INTERFACE
 ! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity4(obj, colMesh, nodeToNode, mat, &
-     rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
-                                     colLBOUND, colUBOUND, ivar, jvar)
+  MODULE SUBROUTINE obj_SetSparsity4( &
+    obj, colMesh, nodeToNode, mat, rowGlobalToLocalNodeNum, rowLBOUND, &
+    rowUBOUND, colGlobalToLocalNodeNum, colLBOUND, colUBOUND, ivar, jvar)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! [[AbstractMesh_]] class
     CLASS(AbstractMesh_), INTENT(INOUT) :: colMesh
@@ -3965,15 +4310,16 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Set the materials id of a given medium
+! summary: Set the total material (medium) assigned to a given element
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial1(obj, n, globalElement, islocal)
+  MODULE SUBROUTINE obj_SetTotalMedium1(obj, n, globalElement, islocal)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
+    !! Total number of medium assigned to a given element
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  END SUBROUTINE obj_SetTotalMaterial1
+  END SUBROUTINE obj_SetTotalMedium1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3982,13 +4328,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! summary: Set the materials id of a given medium
+! summary: Set the total number of medium assigned to the entire mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMaterial2(obj, n)
+  MODULE SUBROUTINE obj_SetTotalMedium2(obj, n)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
-  END SUBROUTINE obj_SetTotalMaterial2
+  END SUBROUTINE obj_SetTotalMedium2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4087,7 +4433,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    & min_measures, nodeCoord, local_nptrs)
+                                   min_measures, nodeCoord, local_nptrs)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: measures(:)
     REAL(DFP), INTENT(OUT) :: max_measures(:)
@@ -4106,29 +4452,29 @@ END INTERFACE
 ! summary: Set param
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, &
-             isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
-                  isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-                         isBoundaryDataInitiated, isFacetDataInitiated, uid, &
-                                 xidim, elemType, nsd, maxNptrs, minNptrs, &
-                                 maxElemNum, minElemNum, tNodes, tElements, &
-                                 minX, minY, minZ, maxX, maxY, maxZ, &
-            x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
+    isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
+    isBoundaryDataInitiated, isFacetDataInitiated, uid, &
+    xidim, elemType, nsd, maxNptrs, minNptrs, maxElemNum, minElemNum, &
+    tNodes, tElements, minX, minY, minZ, maxX, maxY, maxZ, &
+    x, y, z, tElements_topology_wise, tElemTopologies, elemTopologies)
+
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated, &
-      & isNodeToElementsInitiated, isNodeToNodesInitiated, &
-      & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
-      & isBoundaryDataInitiated, isFacetDataInitiated
-
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: uid, &
-      & xidim, elemType, nsd, maxNptrs, minNptrs, &
-      & maxElemNum, minElemNum, tNodes, &
-      & tElements, tElements_topology_wise(8), tElemTopologies,  &
-      & elemTopologies(8)
-
-    REAL(DFP), OPTIONAL, INTENT(IN) :: minX, &
-      & minY, minZ, maxX, maxY, maxZ, &
-      & x, y, z
+                                          isNodeToElementsInitiated, &
+                                          isNodeToNodesInitiated, &
+                                          isExtraNodeToNodesInitiated, &
+                                          isElementToElementsInitiated, &
+                                          isBoundaryDataInitiated, &
+                                          isFacetDataInitiated
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: uid, xidim, elemType, nsd, &
+                                          maxNptrs, minNptrs, maxElemNum, &
+                                          minElemNum, tNodes, tElements, &
+                                          tElements_topology_wise(8), &
+                                          tElemTopologies, elemTopologies(8)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: minX, minY, minZ, maxX, maxY, maxZ, &
+                                       x, y, z
   END SUBROUTINE obj_SetParam
 END INTERFACE
 

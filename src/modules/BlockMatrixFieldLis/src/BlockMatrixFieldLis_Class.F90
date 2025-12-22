@@ -24,12 +24,12 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
 USE BlockMatrixField_Class, ONLY: BlockMatrixField_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
 
 PUBLIC :: BlockMatrixFieldLis_
 
@@ -46,15 +46,12 @@ TYPE, EXTENDS(BlockMatrixField_) :: BlockMatrixFieldLis_
   INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
 
 CONTAINS
-
   PRIVATE
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from the parameter list
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
   !! Finalizer
@@ -72,7 +69,6 @@ CONTAINS
   ! @MatvecMethods
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
-
 END TYPE BlockMatrixFieldLis_
 
 !----------------------------------------------------------------------------
@@ -83,45 +79,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine initiates the Matrix Field
-!
-!# Introduction
-!
-! This routine initiates an instance of [[BlockMatrixField_]].
-! The options/arguments to initiate the matrix field are
-! contained inside param, which is an instance of [[ParameterList_]].
-! In addition, [[Domain_]] `dom` is target to the pointer
-! [[AbstractField_:domain]] and [[AbstractField_::domains]]
-!
-! - `param` contains both essential and optional parameters which are used in
-! constructing the matrix field
-! - `dom` is a pointer to a domain
-!
-! ESSENTIAL PARAMETERS are
-!
-! - `name` This is name of field (char)
-! - `matrixProp`, UNSYM, SYM (char)
-!
-! OPTIONAL PARAMETERS
-!
-! - `timeCompo `, INT, default is 1
-! - `timeCompo`, INT, default is 1
-! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
-    CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -154,21 +111,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine initiates the Matrix Field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, fedof)
-    CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
-  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -226,12 +168,15 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -264,5 +209,9 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE obj_Matvec2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE BlockMatrixFieldLis_Class

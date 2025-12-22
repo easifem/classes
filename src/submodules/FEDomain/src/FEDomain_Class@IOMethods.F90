@@ -33,7 +33,7 @@ LOGICAL(LGT) :: abool
 
 CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
 
-IF (.NOT. obj%IsInit()) RETURN
+IF (.NOT. obj%IsInitiated()) RETURN
 
 abool = ASSOCIATED(obj%meshVolume)
 CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
@@ -94,65 +94,84 @@ END PROCEDURE obj_DisplayDomainInfo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "AbstractDomain_Import()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+INTEGER(I4B) :: nsd, aintval
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 CALL AbstractDomainImport(obj=obj, hdf5=hdf5, group=group)
 
-IF (obj%nsd .EQ. 3_I4B) THEN
+nsd = obj%GetNSD()
+
+IF (nsd .EQ. 3_I4B) THEN
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'Importing meshVolume')
+                          'Importing meshVolume')
 #endif
 
   obj%meshVolume => FEMesh_Pointer()
   CALL obj%meshVolume%Initiate(hdf5=hdf5, group=group, dim=3_I4B)
-  obj%tElements(3) = obj%meshVolume%GetTotalElements()
+  aintval = obj%meshVolume%GetTotalElements()
+  CALL obj%SetTotalElements(indx=3, VALUE=aintval)
 END IF
 
-IF (obj%nsd .GT. 1_I4B) THEN
+IF (nsd .GT. 1_I4B) THEN
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'Importing meshSurface')
+                          'Importing meshSurface')
 #endif
 
   obj%meshSurface => FEMesh_Pointer()
   CALL obj%meshSurface%Initiate(hdf5=hdf5, group=group, dim=2_I4B)
-  obj%tElements(2) = obj%meshSurface%GetTotalElements()
+  aintval = obj%meshSurface%GetTotalElements()
+  CALL obj%SetTotalElements(indx=2, VALUE=aintval)
 
 END IF
 
-IF (obj%nsd .GE. 1_I4B) THEN
+IF (nsd .GE. 1_I4B) THEN
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'Importing meshCurve')
+                          'Importing meshCurve')
 #endif
 
   obj%meshCurve => FEMesh_Pointer()
   CALL obj%meshCurve%Initiate(hdf5=hdf5, group=group, dim=1_I4B)
-  obj%tElements(1) = obj%meshCurve%GetTotalElements()
+  aintval = obj%meshCurve%GetTotalElements()
+  CALL obj%SetTotalElements(indx=1, VALUE=aintval)
 
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'Importing meshPoint')
+                        'Importing meshPoint')
 #endif
 
 obj%meshPoint => FEMesh_Pointer()
 CALL obj%meshPoint%Initiate(hdf5=hdf5, group=group, dim=0_I4B)
-obj%tElements(0) = obj%meshPoint%GetTotalElements()
+aintval = obj%meshPoint%GetTotalElements()
+CALL obj%SetTotalElements(indx=0, VALUE=aintval)
+
+! Setting mesh pointer based on nsd
+SELECT CASE (nsd)
+CASE (0)
+  obj%mesh => obj%meshPoint
+CASE (1)
+  obj%mesh => obj%meshCurve
+CASE (2)
+  obj%mesh => obj%meshSurface
+CASE (3)
+  obj%mesh => obj%meshVolume
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Import

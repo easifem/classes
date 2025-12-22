@@ -20,30 +20,23 @@
 
 MODULE STScalarFieldLis_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE STScalarField_Class, ONLY: STScalarField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
-
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-
 USE BaseType, ONLY: FEVariable_
 
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
 
 PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
-PUBLIC :: STScalarFieldLis
-PUBLIC :: STScalarFieldLis_Pointer
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -61,41 +54,26 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of STScalarFieldLis_
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-  !!
-
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the content
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! Set values using FEVariable
-
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! Set values using FEVariable
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! Get pointer
 END TYPE STScalarFieldLis_
@@ -109,38 +87,6 @@ TYPE :: STScalarFieldLisPointer_
 END TYPE STScalarFieldLisPointer_
 
 !----------------------------------------------------------------------------
-!                                                       STScalar@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-05-31
-! summary:  function returns an instance of [[STScalarFieldLis_]]
-
-INTERFACE STScalarFieldLis
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    TYPE(STScalarFieldLis_) :: ans
-  END FUNCTION obj_Constructor1
-END INTERFACE STScalarFieldLis
-
-!----------------------------------------------------------------------------
-!                                        STScalarFieldLis_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-05-31
-! summary: This function returns an instance of [[STScalarFieldLis_]]
-
-INTERFACE STScalarFieldLis_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    CLASS(STScalarFieldLis_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
-END INTERFACE STScalarFieldLis_Pointer
-
-!----------------------------------------------------------------------------
 !                                                         Final@Constructor
 !----------------------------------------------------------------------------
 
@@ -148,31 +94,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(STScalarFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the STScalarFieldLis_ object
-!
-!# Introduction
-! This routine initiate the STScalar field object.
-! `param` contains the information of parameters required to initiate the
-! STScalar. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STScalar field
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -215,12 +136,15 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -253,28 +177,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set13
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -286,10 +188,10 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
+  MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     CLASS(STScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
+  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------

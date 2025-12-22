@@ -16,8 +16,6 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
-USE FPL_Method, ONLY: FPL_CheckEssentialParam => CheckEssentialParam
-
 IMPLICIT NONE
 CONTAINS
 
@@ -26,46 +24,66 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%DEALLOCATE()
 obj%isInit = .FALSE.
-obj%engine = default_engine
-obj%solverName = default_solverName
 obj%ierr = 0
-obj%preconditionOption = default_preconditionOption
 obj%iter = 0
-obj%maxIter = default_maxIter
-obj%atol = default_atol
-obj%rtol = default_rtol
 obj%tol = 0.0
-obj%convergenceIn = default_convergenceIn
-obj%convergenceType = default_convergenceType
-obj%relativeToRHS = default_relativeToRHS
-obj%KrylovSubspaceSize = default_KrylovSubspaceSize
-obj%globalNumColumn = 0
-obj%globalNumRow = 0
-obj%localNumColumn = 0
-obj%localNumRow = 0
-obj%comm = 0
-obj%myRank = 0
-obj%numProcs = 1
+obj%normRes = 0.0
+obj%error0 = 0.0
+obj%error = 0.0
 IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
 NULLIFY (obj%amat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                       AbstractLinSolverCheckEssentialParam
+!                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myname = "ls_checkEssentialParam"
-CHARACTER(:), ALLOCATABLE :: keys, prefix
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
 
-prefix = obj%GetPrefix()
-keys = "solverName/preconditionOption/convergenceIn/convergenceType/maxIter/" // &
-       "relativeToRHS/KrylovSubspaceSize/rtol/atol"
-CALL FPL_CheckEssentialParam(obj=param, keys=keys, &
-                             prefix=prefix, myName=myname, modName=modName)
-prefix = ""
-keys = ""
-END PROCEDURE obj_CheckEssentialParam
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .TRUE.
+obj%ierr = 0
+obj%iter = 0
+obj%tol = 0.0
+obj%normRes = 0.0
+obj%error0 = 0.0
+obj%error = 0.0
+IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
+NULLIFY (obj%amat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -25,8 +25,10 @@ USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE, &
                       DOF_Initiate => Initiate
 
 USE AbstractField_Class, ONLY: AbstractFieldInitiate, &
-                               AbstractFieldInitiate2, &
                                AbstractFieldDeallocate
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -36,90 +38,61 @@ CONTAINS
 
 MODULE PROCEDURE AbstractNodeFieldCheckError
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldCheckError()"
-INTEGER(I4B) :: ivar, tvar
-LOGICAL(LGT) :: problem
+INTEGER(I4B) :: tvar
+LOGICAL(LGT) :: isok
 
-#ifdef DEBUG_VER)
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-problem = obj%dof_tPhysicalVars .EQ. 0_I4B
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_tPhysicalVars is 0')
-  RETURN
-END IF
+isok = obj%dof_tPhysicalVars .NE. 0_I4B
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::obj%dof_tPhysicalVars is 0')
 
-problem = .NOT. ALLOCATED(obj%dof_spaceCompo)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_spaceCompo '// &
-                    ' is NOT ALLOCATED')
-  RETURN
-END IF
+isok = ALLOCATED(obj%dof_spaceCompo)
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::obj%dof_spaceCompo is NOT ALLOCATED')
 
 tvar = SIZE(obj%dof_spaceCompo)
-problem = tvar .NE. obj%dof_tPhysicalVars
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: size of dof_spaceCompo ('//ToString(tvar)// &
-                    ') is not same as dof_tPhysicalVars ('// &
-                    ToString(obj%dof_tPhysicalVars)//')')
-  RETURN
-END IF
+isok = tvar .EQ. obj%dof_tPhysicalVars
+CALL AssertError1(isok, myName, &
+                  'size of dof_spaceCompo ('//ToString(tvar)// &
+                  ') is not same as dof_tPhysicalVars ('// &
+                  ToString(obj%dof_tPhysicalVars)//')')
 
-problem = .NOT. ALLOCATED(obj%dof_timeCompo)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_timeCompo '// &
-                    ' is NOT ALLOCATED')
-  RETURN
-END IF
+isok = ALLOCATED(obj%dof_timeCompo)
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::obj%dof_timeCompo is NOT ALLOCATED')
 
 tvar = SIZE(obj%dof_timeCompo)
-problem = tvar .NE. obj%dof_tPhysicalVars
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[INTERNAL ERROR] :: size of dof_timeCompo ('//ToString(tvar)// &
-                    ') is not same as dof_tPhysicalVars ('// &
-                    ToString(obj%dof_tPhysicalVars)//')')
-  RETURN
-END IF
+isok = tvar .EQ. obj%dof_tPhysicalVars
+CALL AssertError1(isok, myName, &
+                  'size of dof_timeCompo ('//ToString(tvar)// &
+                  ') is not same as dof_tPhysicalVars ('// &
+                  ToString(obj%dof_tPhysicalVars)//')')
 
-IF (.NOT. ALLOCATED(obj%dof_tNodes)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_tNodes '// &
-                    ' is NOT ALLOCATED')
-  RETURN
-END IF
+isok = ALLOCATED(obj%dof_tNodes)
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::obj%dof_tNodes is NOT ALLOCATED')
 
 tvar = SIZE(obj%dof_tNodes)
-problem = tvar .NE. obj%dof_tPhysicalVars
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                '[INTERNAL ERROR] :: size of dof_tNodes ('//ToString(tvar)// &
-                    ') is not same as dof_tPhysicalVars ('// &
-                    ToString(obj%dof_tPhysicalVars)//')')
-  RETURN
-END IF
+isok = tvar .EQ. obj%dof_tPhysicalVars
+CALL AssertError1(isok, myName, &
+                  'size of dof_tNodes ('//ToString(tvar)// &
+                  ') is not same as dof_tPhysicalVars ('// &
+                  ToString(obj%dof_tPhysicalVars)//')')
 
-IF (.NOT. ALLOCATED(obj%dof_names_char)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-             '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_names_char '// &
-                    ' is NOT ALLOCATED')
-  RETURN
-END IF
+isok = ALLOCATED(obj%dof_names_char)
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::obj%dof_names_char is NOT ALLOCATED')
 
 tvar = SIZE(obj%dof_names_char)
-problem = tvar .NE. obj%dof_tPhysicalVars
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: size of dof_names_char ('//ToString(tvar)// &
-                    ') is not same as dof_tPhysicalVars ('// &
-                    ToString(obj%dof_tPhysicalVars)//')')
-  RETURN
-END IF
+isok = tvar .EQ. obj%dof_tPhysicalVars
+CALL AssertError1(isok, myName, &
+                  'size of dof_names_char ('//ToString(tvar)// &
+                  ') is not same as dof_tPhysicalVars ('// &
+                  ToString(obj%dof_tPhysicalVars)//')')
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -129,63 +102,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractNodeFieldCheckError
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-CHARACTER(:), ALLOCATABLE :: prefix
-INTEGER(I4B) :: local_n, global_n
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-prefix = obj%GetPrefix()
-
-CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof)
-
-CALL AbstractNodeFieldCheckError(obj)
-
-!INFO: So when a child calls this routine then dof_** are already set
-! That is also the reason why we are not calling deallocate in the begining
-
-CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
-                  names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
-                  timeCompo=obj%dof_timeCompo, storageFMT=obj%dof_storageFMT)
-
-CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = RealVector_SIZE(obj%realVec)
-
-CALL obj%GetParam(local_n=local_n, global_n=global_n)
-IF (local_n .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (global_n .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
-
-prefix = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-INTEGER(I4B) :: ii, tsize
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
-CALL AbstractFieldInitiate2(obj=obj, obj2=obj2, copyFull=copyFull, &
+CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                            copyStructure=copyStructure, usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
@@ -209,30 +140,121 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                            obj_Initiate3
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-INTEGER(I4B) :: ivar, tvar, local_n, global_n
-LOGICAL(LGT) :: problem
-CHARACTER(:), ALLOCATABLE :: prefix
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, jj, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-prefix = obj%GetPrefix()
+! We should not call this method here
+! CALL obj%DEALLOCATE()
 
-CALL AbstractFieldInitiate(obj=obj, param=param, fedof=fedof)
+CALL AbstractFieldInitiate( &
+  obj=obj, name=name, engine=engine, storageFMT=storageFMT, &
+  fieldType=fieldType, comm=comm, local_n=local_n, global_n=global_n, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'Calling AbstractNodeFieldCheckError()')
+isok = PRESENT(tPhysicalVarNames)
+CALL AssertError1(isok, myName, 'tPhysicalVarNames is not present')
+
+isok = PRESENT(storageFMT)
+CALL AssertError1(isok, myName, 'storageFMT is not present')
+
+isok = PRESENT(spaceCompo)
+CALL AssertError1(isok, myName, 'spaceCompo is not present')
+
+isok = PRESENT(isSpaceCompo)
+CALL AssertError1(isok, myName, 'isSpaceCompo is not present')
+
+isok = PRESENT(isSpaceCompoScalar)
+CALL AssertError1(isok, myName, 'isSpaceCompoScalar is not present')
+
+tsize1 = SIZE(spaceCompo)
+isok = tsize1 .EQ. tPhysicalVarNames
+CALL AssertError1(isok, myName, &
+                  'size of spaceCompo ('//ToString(tsize1)// &
+                  ') is not same as tPhysicalVarNames ('// &
+                  ToString(tPhysicalVarNames)//')')
+
+isok = PRESENT(timeCompo)
+CALL AssertError1(isok, myName, 'timeCompo is not present')
+
+isok = PRESENT(isTimeCompo)
+CALL AssertError1(isok, myName, 'isTimeCompo is not present')
+
+isok = PRESENT(isTimeCompoScalar)
+CALL AssertError1(isok, myName, 'isTimeCompoScalar is not present')
+
+tsize1 = SIZE(timeCompo)
+isok = tsize1 .EQ. tPhysicalVarNames
+CALL AssertError1(isok, myName, &
+                  'size of timeCompo ('//ToString(tsize1)// &
+                  ') is not same as tPhysicalVarNames ('// &
+                  ToString(tPhysicalVarNames)//')')
+
+isok = PRESENT(physicalVarNames)
+CALL AssertError1(isok, myName, 'physicalVarNames is not present')
+
+isok = PRESENT(isPhysicalVarNames)
+CALL AssertError1(isok, myName, 'isPhysicalVarNames is not present')
+
+isok = PRESENT(isPhysicalVarNamesScalar)
+CALL AssertError1(isok, myName, 'isPhysicalVarNamesScalar is not present')
+
+tsize1 = SIZE(physicalVarNames)
+isok = tsize1 .EQ. tPhysicalVarNames
+CALL AssertError1(isok, myName, &
+                  'size of physicalVarNames ('//ToString(tsize1)// &
+                  ') is not same as tPhysicalVarNames ('// &
+                  ToString(tPhysicalVarNames)//')')
+
+isok = PRESENT(tNodes)
+CALL AssertError1(isok, myName, 'tNodes is not present')
+
+isok = PRESENT(isTNodes)
+CALL AssertError1(isok, myName, 'isTNodes is not present')
+
+isok = PRESENT(isTNodesScalar)
+CALL AssertError1(isok, myName, 'isTNodesScalar is not present')
+
+tsize1 = SIZE(tNodes)
+isok = tsize1 .EQ. tPhysicalVarNames
+CALL AssertError1(isok, myName, &
+                  'size of tNodes('//ToString(tsize1)// &
+                  ') is not same as tPhysicalVarNames ('// &
+                  ToString(tPhysicalVarNames)//')')
+
+isok = PRESENT(tSize)
+CALL AssertError1(isok, myName, 'tSize is not present')
+
 #endif
 
-CALL AbstractNodeFieldCheckError(obj)
+obj%dof_tPhysicalVars = tPhysicalVarNames
+obj%dof_storageFMT = storageFMT
+obj%tSize = tSize
+
+CALL Reallocate(obj%dof_spaceCompo, tPhysicalVarNames)
+CALL Reallocate(obj%dof_timeCompo, tPhysicalVarNames)
+CALL Reallocate(obj%dof_tNodes, tPhysicalVarNames)
+ALLOCATE (obj%dof_names_char(tPhysicalVarNames))
+
+DO ii = 1, tPhysicalVarNames
+  obj%dof_spaceCompo(ii) = spaceCompo(ii)
+  obj%dof_timeCompo(ii) = timeCompo(ii)
+  obj%dof_tNodes(ii) = tNodes(ii)
+  obj%dof_names_char(ii) (1:1) = physicalVarNames(ii) (1:1)
+END DO
 
 CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
                   names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
@@ -240,26 +262,88 @@ CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
 
 CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
 
-obj%tSize = RealVector_SIZE(obj%realVec)
+#ifdef DEBUG_VER
+tsize1 = RealVector_SIZE(obj%realVec)
+isok = tsize1 .EQ. tSize
+CALL AssertError1(isok, myName, &
+                  'size of realVec ('//ToString(tsize1)// &
+                  ') is not same as tSize ('//ToString(tSize)//')')
+#endif
 
-CALL obj%GetParam(local_n=local_n, global_n=global_n)
-
-IF (local_n .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (global_n .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
-
-prefix = ""
+CALL obj%GetParam(local_n=ii, global_n=jj)
+IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
+IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_Initiate3
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+#endif
+
+INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+CALL AbstractFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, spaceCompo=spaceCompo, &
+  isSpaceCompo=isSpaceCompo, isSpaceCompoScalar=isSpaceCompoScalar, &
+  timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+  isTimeCompoScalar=isTimeCompoScalar, tPhysicalVarNames=tPhysicalVarNames, &
+  physicalVarNames=physicalVarNames, isPhysicalVarNames=isPhysicalVarNames, &
+  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+
+CALL DOF_Initiate( &
+  obj=obj%dof, tNodes=obj%dof_tNodes, names=obj%dof_names_char, &
+  spaceCompo=obj%dof_spaceCompo, timeCompo=obj%dof_timeCompo, &
+  storageFMT=obj%dof_storageFMT)
+
+CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+obj%tSize = RealVector_SIZE(obj%realVec)
+
+CALL obj%GetParam(local_n=ii, global_n=jj)
+
+IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
+IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_Initiate5
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractFieldDeallocate(obj)
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = NODES_FMT
@@ -270,10 +354,17 @@ IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL RealVector_Deallocate(obj%realVec)
 CALL DOF_Deallocate(obj%dof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

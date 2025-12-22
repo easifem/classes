@@ -1,0 +1,150 @@
+[bc]
+name = "DirichletBC"
+# Name of the boundary condition
+idof = 1
+# idof denotes the degree of freedom where
+# we apply the contraint,
+# For x component idof is 1
+# For y component idof is 2
+# For z component idof is 3
+
+nodalValueType = "Constant" # Time, SpaceTime, Space
+# Other option: Constant, Time, Space,  SpaceTime
+# nodalValuetype denotes the type of boundary condition
+# It can take following values
+# Constant: It means the boundary condition is constant in
+#           space and time.
+# Space:    It means the boundary condition is variable in
+#           space but constant in time.
+# Time:     It means the boundary condition is variable in
+#           in time but constant in Space
+# SpaceTime:It means the boundary condition is variable in
+#           both space and time.
+
+value = 20.0
+# Value of boundary condition
+# The shape of value depends upon the nodalValueType as explained below.
+# For nodalValueType="Constant", value should be a scalar real value
+# For nodalValueType="Space", value should be a vector of real values
+# value=[1.0, 2.0, 3.0, 4.0]
+# For nodalValueType="Time", value should  be a vector of real values
+# value=[1.0, 2.0, 3.0, 4.0]
+# For nodalValueType="SpaceTime", value should be two dimensional array of
+# real values
+# value=[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]
+
+isNormal = false
+isTangent = false
+useExternal = false
+
+isUserFunction = false
+# If isUserFunction is true then bc.function will be read and used 
+# for constructing the userfunction.
+
+[bc.function]
+name = "boundaryFunction"
+# name of the function
+
+returnType = "Scalar"
+# returnType must be "Scalar"
+
+numReturns = 1
+# number of returns must be 1
+
+argType = "Space"
+# argumen type of function, It can take following values
+# "Constant", when the user function is constant
+# "Space", when the user function is space dependent only.
+# "Time", when the user function is time dependent only.
+# "SpaceTime", when the user function is space-time dependent.
+
+numArgs = 3
+# number of arguments
+# number of arguments should be 0, when argType is "Constant"
+# number of arguments should be 1, when argType is "Time"
+# number of arguments should be 3, when argType is "Space"
+# number of arguments should be 4, when argType is "SpaceTime"
+
+scalarValue = 1.0
+# if lua script and luaFunctionName are absent then this
+# variable must be given.
+# When this is given, then argType must be Constant, and
+# numArgs should be 0.
+
+luaScript = "./hello.lua"
+# name of the lua script which contains the functions
+
+luaFunctionName = "hello"
+# which function in the lua script to be used for boundary condition
+
+[bc.boundary]
+isSelectionByMeshID = false
+# set isSelectionByMeshID to true when mesh selection is by meshID
+# if this variable is set to true then we should provide following
+# table
+[bc.boundary.meshID]
+point = [1, 2, 3]
+# id of mesh of points
+# you can also give the filename
+line = [1, 2, 3, 4]
+# id of mesh of lines
+# you can also give the filename
+surface = [1, 2, 3]
+# id of mesh of surfaces
+# you can also give the filename "filename.txt"
+volume = [1, 2, 3]
+# id of mesh of volumes
+# you can also give the filename "filename.txt"
+
+isSelectionByElemNum = false
+# set isSelectionByElemNum to true when mesh selection is by
+# specifying element number
+# if this variable is set to true then we should provide following
+# table
+[bc.boundary.elemNum]
+point = [1, 2, 3]
+# element number for points
+line = [1, 2, 3]
+# element number of lines
+surface = [1, 2, 3]
+# element number of surfaces
+volume = [1, 2, 3]
+# element number of volume
+
+isSelectionByBox = false
+# set isSelectionByBox to true when mesh selection is by
+# specifying the bounding boxes
+# if this variable is set to true then we should provide following
+# table
+[bc.boundary.box]
+point = [
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 0.0, zmax = 1.0 },
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 2.0, zmax = 3.0 },
+]
+# boxes for mesh of points
+line = [
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 0.0, zmax = 1.0 },
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 2.0, zmax = 3.0 },
+]
+# boxes for mesh of lines
+surface = [
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 0.0, zmax = 1.0 },
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 2.0, zmax = 3.0 },
+]
+# boxes for mesh of surfaces
+volume = [
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 0.0, zmax = 1.0 },
+  { xmin = 0.0, xmax = 1.0, ymin = 0.0, ymax = 1.0, zmin = 2.0, zmax = 3.0 },
+]
+# boxes for mesh of volumes
+
+isSelectionByNodeNum = false
+# set isSelectionByNodeNum to true when mesh selection is by
+# by specifying the node number.
+# if this variable is set to true then we should provide following
+# table
+[bc.boundary.nodeNum]
+point = [1, 2, 3]
+line = [1, 2, 3]
+surface = [1, 2, 3]
+volume = [1, 2, 3]

@@ -16,15 +16,10 @@
 
 SUBMODULE(LinSolver_Class) SolveMethods
 USE Display_Method, ONLY: Display, EqualLine, Blanklines, ToString
-
 USE MatrixField_Class, ONLY: MatrixField_
-
 USE BaseType, ONLY: TypeSolverNameOpt
-
 USE CSRMatrix_Method, ONLY: LinSolve
-
 USE SuperLU_Types, ONLY: yes_no_t
-
 USE GlobalData, ONLY: stdout
 
 IMPLICIT NONE

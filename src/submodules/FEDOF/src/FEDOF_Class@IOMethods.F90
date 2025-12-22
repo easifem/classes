@@ -18,7 +18,9 @@
 !
 
 SUBMODULE(FEDOF_Class) IOMethods
+USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -27,25 +29,51 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
+
 CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
+CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
 CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
 CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 CALL Display(obj%tCells, "tCells: ", unitno=unitno)
-CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", unitno=unitno)
+CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
 CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
+CALL Display(obj%scaleForQuadOrder, "scaleForQuadOrder: ", unitno=unitno)
 CALL Display(obj%maxCellOrder, "maxCellOrder: ", unitno=unitno)
 CALL Display(obj%maxFaceOrder, "maxFaceOrder: ", unitno=unitno)
 CALL Display(obj%maxEdgeOrder, "maxEdgeOrder: ", unitno=unitno)
 
+isok = ASSOCIATED(obj%dom)
+CALL Display(isok, "dom ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%dom%DisplayDomainInfo("Domain information: ", unitno=unitno)
+END IF
+
 isok = ASSOCIATED(obj%mesh)
 CALL Display(isok, "mesh ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%mesh%DisplayMeshInfo("mesh information: ", unitno=unitno)
+END IF
 
 isok = ALLOCATED(obj%cellOrder)
 CALL Display(isok, "cellOrder ALLOCATED: ", unitno=unitno)
@@ -79,6 +107,41 @@ DO ii = 1, SIZE(obj%fe)
   CALL Display(isok, "fe(ii)%ptr ASSOCIATED: ", unitno=unitno)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                           DisplayCellOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DisplayCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_DisplayCellOrder()"
+#endif
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ALLOCATED(obj%cellOrder)
+CALL Display(isok, "cellOrder ALLOCATED: ", unitno=unitno)
+IF (isok) CALL Display(SIZE(obj%cellOrder), "cellOrder size: ", &
+                       unitno=unitno)
+CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno, full=full)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_DisplayCellOrder
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

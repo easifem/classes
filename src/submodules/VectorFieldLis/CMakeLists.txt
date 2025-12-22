@@ -21,6 +21,7 @@ if(USE_LIS)
     ${PROJECT_NAME}
     PRIVATE ${src_path}/VectorFieldLis_Class@ConstructorMethods.F90
             ${src_path}/VectorFieldLis_Class@IOMethods.F90
+            ${src_path}/VectorFieldLis_Class@HDFMethods.F90
             ${src_path}/VectorFieldLis_Class@SetMethods.F90
             ${src_path}/VectorFieldLis_Class@GetMethods.F90)
 endif()

@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(AbstractSolidMechanicsModel_Class) ConstructorMethods
+USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModelDeallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -24,10 +25,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of'//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -35,10 +52,26 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -46,9 +79,23 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractMaterialModelDeallocate(obj)
 obj%isPStress = .FALSE.
 obj%isPStrain = .FALSE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 END SUBMODULE ConstructorMethods

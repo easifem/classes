@@ -20,12 +20,5 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/BlockMatrixFieldLis_Class@ConstructorMethods.F90
           ${src_path}/BlockMatrixFieldLis_Class@IOMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@MatVecMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@GetMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@GetRowMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@GetColMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@SetMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@SetRowMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@SetColMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@LUsolveMethods.F90
-          ${src_path}/BlockMatrixFieldLis_Class@PreconditionMethods.F90)
+          ${src_path}/BlockMatrixFieldLis_Class@HDFMethods.F90
+          ${src_path}/BlockMatrixFieldLis_Class@MatVecMethods.F90)

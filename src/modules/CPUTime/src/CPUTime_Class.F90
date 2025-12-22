@@ -48,8 +48,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTime => obj_GetTime
 !$ PROCEDURE, PUBLIC, PASS(obj) :: GetWTime => obj_GetWTime
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStringForKernelLog =>  &
-    & obj_GetStringForKernelLog
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStringForKernelLog => &
+    obj_GetStringForKernelLog
 END TYPE CPUTime_
 
 !----------------------------------------------------------------------------
@@ -141,12 +141,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION obj_GetStringForKernelLog(obj, currentTimeStep,  &
-    & currentTime, methodName) RESULT(ans)
+  MODULE FUNCTION obj_GetStringForKernelLog( &
+    obj, currentTimeStep, currentTime, methodName, moduleName) RESULT(ans)
     CLASS(CPUTime_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: currentTimeStep
     REAL(DFP), INTENT(IN) :: currentTime
     CHARACTER(*), INTENT(IN) :: methodName
+    CHARACTER(*), INTENT(IN) :: moduleName
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetStringForKernelLog
 END INTERFACE

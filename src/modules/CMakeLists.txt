@@ -123,6 +123,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
+# TimeFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/TimeFEDOF/CMakeLists.txt)
+
+# OneDimFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEDOF/CMakeLists.txt)
+
 # FEDOF
 include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 
@@ -195,26 +201,47 @@ include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 # RefElement
 include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
+# CoordOpt
+include(${CMAKE_CURRENT_LIST_DIR}/CoordOpt/CMakeLists.txt)
+
+# Engine
+include(${CMAKE_CURRENT_LIST_DIR}/Engine/CMakeLists.txt)
+
+# FieldOpt
+include(${CMAKE_CURRENT_LIST_DIR}/FieldOpt/CMakeLists.txt)
+
+# OneDimBasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimBasisOpt/CMakeLists.txt)
+
+# OneDimDomain
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimDomain/CMakeLists.txt)
+
+# OneDimQuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimQuadratureOpt/CMakeLists.txt)
+
+# TimeOpt
+include(${CMAKE_CURRENT_LIST_DIR}/TimeOpt/CMakeLists.txt)
+
+# ErrorOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ErrorOpt/CMakeLists.txt)
+
+# BasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/BasisOpt/CMakeLists.txt)
+
+# QuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/QuadratureOpt/CMakeLists.txt)
+
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
-# ScalarFE
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarFE/CMakeLists.txt)
+# AbstractOneDimFE
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
 
-# VectorFE
-include(${CMAKE_CURRENT_LIST_DIR}/VectorFE/CMakeLists.txt)
+# H1FE
+include(${CMAKE_CURRENT_LIST_DIR}/H1FE/CMakeLists.txt)
 
-# TensorFE
-include(${CMAKE_CURRENT_LIST_DIR}/TensorFE/CMakeLists.txt)
-
-# # FiniteElement
-# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
-#
-# # MixedFiniteElement
-# include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
-#
-# # FiniteElementFactory
-# include(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
+# FEFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FEFactory/CMakeLists.txt)
 
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
@@ -257,6 +284,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
 # AbstractFluidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
 
+# ElasticityOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ElasticityOpt/CMakeLists.txt)
+
 # LinearElasticModel
 include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
 
@@ -296,23 +326,21 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 # AbstractMeshField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 
-# ScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
+# MeshField
+include(${CMAKE_CURRENT_LIST_DIR}/MeshField/CMakeLists.txt)
 
+# # ScalarMeshField
+# include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt) #
 # STScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt) #
 # VectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt) #
 # STVectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt) #
 # TensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt) #
 # STTensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
+# include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
 
 # AbstractElementField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
@@ -368,6 +396,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 # FieldFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
+# FieldUtility
+include(${CMAKE_CURRENT_LIST_DIR}/FieldUtility/CMakeLists.txt)
+
+# LinSolverOpt
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolverOpt/CMakeLists.txt)
+
 # AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 
@@ -403,8 +437,27 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
 # ----------------------------------------------------------------------------
+# Kernel level utilities
+# ----------------------------------------------------------------------------
+
+# AssembleMassMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleMassMatrix/CMakeLists.txt)
+
+# AssembleDiffusionMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
+
+# AssembleStiffnessMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleStiffnessMatrix/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
 # time integration algorithms
 # ----------------------------------------------------------------------------
 
 # semi-discrete algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
+
+# composite semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/CSDAlgorithms/CMakeLists.txt)
+
+# time discontinous algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)

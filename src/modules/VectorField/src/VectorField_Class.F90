@@ -19,35 +19,36 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE MeshField_Class, ONLY: MeshField_
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "VectorField"
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
-INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
+INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
+INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_
 PUBLIC :: VectorFieldPointer_
-PUBLIC :: SetVectorFieldParam
-PUBLIC :: VectorFieldInitiate1
-PUBLIC :: VectorFieldInitiate2
+PUBLIC :: VectorFieldInitiate
 PUBLIC :: VectorFieldDeallocate
-PUBLIC :: VectorField
-PUBLIC :: VectorField_Pointer
 PUBLIC :: VectorFieldDisplay
 PUBLIC :: VectorFieldExport
 PUBLIC :: VectorFieldSafeAllocate
@@ -70,127 +71,128 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    obj_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
-  ! IO:
-  ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a Vector values
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given Vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@spaceCompo = value (if value is a scalar)
   !! obj@spaceCompo = value@spaceCompo (if value is vector )
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a vector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a vector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set nodal values of a space component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set a single value
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set values by using a FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all values to the constant value
   !! WE call SetAll method here
-
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! obj@[ivar, idof] = value@[ivar, idof]
-
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! obj = value (we call copy method here)
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetFromSTVectorField => &
-    obj_SetFromSTVectorField
-  !! Set values from the STVectorField_
-
-  !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! returns vector values at single node or
   !! get all nodal values of a space-components
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! returns all entries in rank2 array of real
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! returns selected values in rank2 aray of real
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! returns selected values of a space components
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get a single value
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get nodal values of a vector in FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get value of vector field in the ScalarField or another VectorField
   !! value = obj@spaceCompo (if value is ScalarField_)
   !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
-  !! Copy  value=obj
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get9 => obj_Get9
-  !! value@[ivar, idof] = obj@[ivar, idof]
-
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
-    Get5, Get6, Get7, Get8, Get9
+    Get5, Get6, Get7
   !! Get the entries of Vector field
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
+  !! Get the storage format of the scalar field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
+  !! Get the mesh field corresponding to abstract field
 
   ! SET:
   ! @DirichletBCMethods
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+    ApplyDirichletBC2, ApplyDirichletBC3
 
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  ! SET:
+  ! @PointNBCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
+    obj_ApplyPointNeumannBC
+  !! Apply point neumann boundary condition
+
+  ! SET:
+  ! @SurfaceNBCMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
+    obj_ApplySurfaceNeumannBC
+  !! Apply Surface neumann boundary condition
+
+  ! SET:
+  ! @BodySourceMethods
+  PROCEDURE, PASS(obj) :: ApplyBodySource1 => &
+    obj_ApplyBodySource1
+  !! Add contribution of body source to the scalar field
+  !! body source is given as user function
+  PROCEDURE, PASS(obj) :: ApplyBodySource2 => &
+    obj_ApplyBodySource2
+  !! Add contribution of body source to the scalar field
+  !! body source is given external scalar field
+  GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
+  !! Generic method for setting body source
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content of VectorField
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from HDF5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data to HDF5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export data to VTK file
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
+  !! Initiate from toml
+
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -202,89 +204,16 @@ TYPE :: VectorFieldPointer_
 END TYPE VectorFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                            SetVectorFieldParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 July 2021
-! summary: Sets parameters for creating the vector field
-!
-INTERFACE
-  MODULE SUBROUTINE SetVectorFieldParam(param, name, engine, spaceCompo, &
-                                        fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !!
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE SetVectorFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-!
-!# Introduction
-! This routine check the essential parameters required to the initiate the
-! [[VectorField_]] data type. We need following parameters
-!
-! - CHARACTER(  * ) :: name
-! - INTEGER( I4B ) :: tdof
-
-INTERFACE VectorFieldCheckEssentialParam
-  MODULE SUBROUTINE obj_checkEssentialParam(obj, param)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_checkEssentialParam
-END INTERFACE VectorFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the VectorField_ object
-!
-!# Introduction
-! This routine initiate the vector field object.
-! `param` contains the information of parameters required to initiate the
-! vector. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of vector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE VectorFieldInitiate1
-  MODULE SUBROUTINE obj_Initiate1(obj, param, fedof)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-  END SUBROUTINE obj_Initiate1
-END INTERFACE VectorFieldInitiate1
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE VectorFieldInitiate2
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
@@ -292,30 +221,141 @@ INTERFACE VectorFieldInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE VectorFieldInitiate2
+END INTERFACE
+
+INTERFACE VectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Initiates by passing arguments
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! storage format of the scalar field
+    !! Not required.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    !! Not required
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames is scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    !! Not required
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    !! Not required
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    !! not required
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+INTERFACE VectorFieldInitiate
+  MODULE PROCEDURE obj_Initiate4
+END INTERFACE VectorFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                      Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: Deallocates the data stored inside the VectorField_ obj
 
-INTERFACE VectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(VectorField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE VectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE VectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE VectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -331,17 +371,21 @@ END INTERFACE VectorFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE VectorFieldSafeAllocate
+INTERFACE
   MODULE SUBROUTINE obj_VectorFieldSafeAllocate1(obj, newsize)
     TYPE(VectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable Vector field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_VectorFieldSafeAllocate1
+END INTERFACE
+
+INTERFACE VectorFieldSafeAllocate
+  MODULE PROCEDURE obj_VectorFieldSafeAllocate1
 END INTERFACE VectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
-!                                                         Final@Constructor
+!                                                          Final@Constructor
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -351,38 +395,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Vector@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorField_]]
-
-INTERFACE VectorField
-  MODULE FUNCTION obj_Constructor1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    TYPE(VectorField_) :: ans
-  END FUNCTION obj_Constructor1
-END INTERFACE VectorField
-
-!----------------------------------------------------------------------------
-!                                           VectorField_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This function returns an instance of [[VectorField_]]
-
-INTERFACE VectorField_Pointer
-  MODULE FUNCTION obj_Constructor_1(param, fedof) RESULT(Ans)
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
-    CLASS(VectorField_), POINTER :: ans
-  END FUNCTION obj_Constructor_1
-END INTERFACE VectorField_Pointer
-
-!----------------------------------------------------------------------------
 !                                                                 Display@IO
 !----------------------------------------------------------------------------
 
@@ -390,12 +402,16 @@ END INTERFACE VectorField_Pointer
 ! date: 26 June 2021
 ! summary: Display the content of [[VectorField_]]
 
-INTERFACE VectorFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE VectorFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE VectorFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -407,29 +423,36 @@ END INTERFACE VectorFieldDisplay
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Export@IO
+!                                                                  Export@IO
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE VectorFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE VectorFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE VectorFieldExport
 
 !----------------------------------------------------------------------------
@@ -469,8 +492,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field object
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -560,7 +583,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -605,7 +628,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -643,7 +666,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -687,7 +710,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -712,8 +735,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, islocal, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set7( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
@@ -729,7 +752,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -752,8 +775,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution, storageFMT)
+  MODULE SUBROUTINE obj_Set8( &
+    obj, globalNode, islocal, VALUE, scale, addContribution, storageFMT)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -777,7 +800,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -800,8 +823,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, spaceCompo, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set9( &
+    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be used in obj = value
@@ -819,7 +842,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                              Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -832,8 +855,8 @@ END INTERFACE
 ! vector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, islocal, &
-                              spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set10( &
+    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set
@@ -851,7 +874,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -859,8 +882,8 @@ END INTERFACE
 ! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, VALUE, globalNode, islocal, scale, &
-                              addContribution)
+  MODULE SUBROUTINE obj_Set11( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! FEVariable, space-nodal values of vector
@@ -876,7 +899,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -893,7 +916,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -901,52 +924,52 @@ END INTERFACE
 ! summary: Set values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
+  MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    CLASS(VectorField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(VectorField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set13(&
+!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
+!     CLASS(VectorField_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_Set13
+! END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_SetFromSTVectorField(obj, VALUE, timeCompo, &
-                                             scale, addContribution)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_SetFromSTVectorField
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_SetFromSTVectorField( &
+!     obj, VALUE, timeCompo, scale, addContribution)
+!     CLASS(VectorField_), INTENT(INOUT) :: obj
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: timeCompo
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_SetFromSTVectorField
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -954,11 +977,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-12-19
+!> author: Shion Shimizu
+! update: 2025-11-12
 ! summary:  Set by user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction( &
+    obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
@@ -969,7 +994,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
     !! idof (not used)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !! space component, not used
+    !! space component, used when func is a scalar function
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
     !! time component, not used
   END SUBROUTINE obj_SetByFunction
@@ -1030,7 +1055,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1038,8 +1063,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, storageFMT, &
-                             globalNode, islocal, force3D)
+  MODULE SUBROUTINE obj_Get3( &
+    obj, VALUE, nrow, ncol, storageFMT, globalNode, islocal, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! The number of columns in value is same as the
@@ -1063,7 +1088,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                              Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1071,7 +1096,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, spaceCompo)
+  MODULE SUBROUTINE obj_Get4( &
+    obj, VALUE, tsize, globalNode, islocal, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! the size of value should be same as globalNode
@@ -1136,16 +1162,9 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, spaceCompo)
+  MODULE SUBROUTINE obj_Get7(obj, VALUE)
     CLASS(VectorField_), INTENT(IN) :: obj
-    !! vector field object
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! abstract node field
-    !! It can be ScalarField_, VectorField_, ScalarFieldLis_, VectorFieldLis_
-    !! in case it is a vector field, then obj@spacecompo = value@spacecompo
-    !! otherwise obj@spacecompo = value
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
   END SUBROUTINE obj_Get7
 END INTERFACE
 
@@ -1157,34 +1176,41 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This routine return value in FEVariable
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, VALUE)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    CLASS(VectorField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get8
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get7(obj, VALUE, spaceCompo)
+!     CLASS(VectorField_), INTENT(IN) :: obj
+!     !! vector field object
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     !! abstract node field
+!     !! It can be ScalarField_, VectorField_, ScalarFieldLis_, VectorFieldLis_
+!     !! in case it is a vector field, then obj@spacecompo = value@spacecompo
+!     !! otherwise obj@spacecompo = value
+!     INTEGER(I4B), INTENT(IN) :: spaceCompo
+!     !! space component
+!   END SUBROUTINE obj_Get7
+! END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2023-03-29
 ! summary: Get value
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in val
-    INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE obj_Get9
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
+!     CLASS(VectorField_), INTENT(IN) :: obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom in obj
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable in val
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!   END SUBROUTINE obj_Get9
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
@@ -1194,7 +1220,7 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE VectorFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(VectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1204,21 +1230,41 @@ INTERFACE VectorFieldGetFEVariable
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_GetFeVariable
+END INTERFACE
+
+INTERFACE VectorFieldGetFEVariable
+  MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE VectorFieldGetFEVariable
 
 !----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
+!                                                   GetStorageFMT@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
+! date:  2023-09-22
+! summary:  Returns storage format
 
 INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
     CLASS(VectorField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetMeshField@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-04
+! summary:  Get Mesh Field
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(MeshField_), INTENT(INOUT) :: meshField
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+  END SUBROUTINE obj_GetMeshField
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1230,12 +1276,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1248,13 +1292,125 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar, extField)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+  END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary: Add Contribution of point neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+  END SUBROUTINE obj_ApplyPointNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary:  Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC(obj, nbcField, scale, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    CLASS(VectorField_), INTENT(INOUT) :: nbcField
+    !! Vector field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    !! times
+  END SUBROUTINE obj_ApplySurfaceNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary: Add Contribution of body source to vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: bodySource
+    !! Body source user function
+    !! It should be a vector function with
+    !! total arguments 4 (x, y, z, time)
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    !! time, which will be passed to the body source function
+  END SUBROUTINE obj_ApplyBodySource1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyBodySource@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-06
+! summary:  Add Contribution of body source to vector field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! Vector field
+    !! The test function will be corresponding to the obj
+    CLASS(VectorField_), INTENT(INOUT) :: bodySource
+    !! Body source in terms of vector field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale for body source
+    !! obj = obj + scale * bodySource integral
+  END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-11-12
+! summary: Set from Toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromToml(obj, table)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_SetFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------

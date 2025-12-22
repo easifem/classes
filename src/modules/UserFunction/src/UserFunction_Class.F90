@@ -53,8 +53,8 @@ PUBLIC :: UserFunctionGetReturnType
 PUBLIC :: UserFunctionGetArgType
 PUBLIC :: SetUserFunctionParam
 PUBLIC :: UserFunctionImportFromToml
-PUBLIC :: UserFunctionImportParamFromToml
 PUBLIC :: UserFunctionPointer_
+PUBLIC :: UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
 !
@@ -68,7 +68,7 @@ TYPE :: UserFunction_
   PRIVATE
   TYPE(String) :: name
   !! name of the function
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   LOGICAL(LGT) :: isUserFunctionSet = .FALSE.
   LOGICAL(LGT) :: isLuaScript = .FALSE.
   TYPE(String) :: luaScript
@@ -116,12 +116,18 @@ CONTAINS
 
   FINAL :: obj_Final
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate the userFunction from the ParameterList_
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate the user function from the arguments
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
 
   ! SET:
   ! @SetMethods
 
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  !! Set name of the function
 
   ! GET:
   ! @GetMethods
@@ -131,8 +137,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue1 => obj_GetVectorValue1
   PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable_ => obj_GetFEVariable_
   GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue1, &
     GetMatrixValue, GetFEVariable
+  GENERIC, PUBLIC :: Get_ => GetFEVariable_
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -142,6 +150,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnShape => obj_GetReturnShape
   !! Get the shape of return matrix
   !! Use only when return type if matrix.
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns isInit
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNumArgs => obj_GetNumArgs
+  !! Get the number of Args
 
   ! IO:
   ! @IOMethods
@@ -158,9 +170,6 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     & ImportFromToml2
   !! Import abstract kernel from toml
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & obj_ImportParamFromToml
-  !! Import param from toml
 END TYPE UserFunction_
 
 !----------------------------------------------------------------------------
@@ -226,7 +235,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType, &
-                 numArgs, numReturns, luaScript, luaFunctionName, returnShape)
+                                         numArgs, numReturns, luaScript, &
+                                         luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! parameter to be constructed
     CHARACTER(*), INTENT(IN) :: name
@@ -263,6 +273,46 @@ INTERFACE
   END SUBROUTINE obj_Deallocate
 END INTERFACE
 
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate
+END INTERFACE UserFunctionDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate a vector of UserFunction_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    CLASS(UserFunction_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate_Vector
+END INTERFACE UserFunctionDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate vector of UserFunctionPointer_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(UserFunctionPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+END INTERFACE UserFunctionDeallocate
+
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -286,10 +336,44 @@ END INTERFACE
 ! summary: Initiate the user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate1(obj, param)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Initiate the user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, name, returnType, argType, &
+                                  numArgs, numReturns, luaScript, &
+                                  luaFunctionName, returnShape)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    !! User function object
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the function
+    INTEGER(I4B), INTENT(IN) :: returnType
+    !! Scalar, Vector, Matrix
+    INTEGER(I4B), INTENT(IN) :: argType
+    !! Constant, Space, Time, SpaceTime
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
+    !! number of argument
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
+    !! number of returns
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
+    !! lua script
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
+    !! lua function name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
+    !! Shape of return type
+    !! Only used when returnType is Matrix
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -378,6 +462,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the Matrix value
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFEVariable_(obj, fevar, xij, times)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(INOUT) :: fevar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_GetFEVariable_
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      GetArgType@GetMethods
 !----------------------------------------------------------------------------
 
@@ -434,6 +535,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      GetNumArgs@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Get the number of arguments
+
+INTERFACE
+  MODULE PURE FUNCTION obj_GetNumArgs(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNumArgs
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 GetReturnShape@GetMethods
 !----------------------------------------------------------------------------
 
@@ -442,6 +558,21 @@ INTERFACE
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(2)
   END FUNCTION obj_GetReturnShape
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-29
+! summary:  Returns isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -475,22 +606,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              ImportParamFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param by reading the toml table
-
-INTERFACE UserFunctionImportParamFromToml
-  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportParamFromToml
-END INTERFACE UserFunctionImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
@@ -543,6 +658,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                          SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-14
+! summary:  Set name of the function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -580,9 +710,8 @@ CONTAINS
 ! summary: Sets the user function
 
 SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
-                 luaScript, luaFunctionName, scalarFunction, vectorFunction, &
-                   matrixFunction)
-
+                   luaScript, luaFunctionName, scalarFunction, &
+                   vectorFunction, matrixFunction)
   USE BaseType, ONLY: varopt => TypeFEVariableOpt
   USE GlobalData, ONLY: CHAR_LF
   USE Display_Method, ONLY: ToString
@@ -611,7 +740,7 @@ SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
                           '[START]')
 #endif
 
-  isNotOK = .NOT. obj%isInitiated
+  isNotOK = .NOT. obj%isInit
   IF (isNotOK) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                    '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')

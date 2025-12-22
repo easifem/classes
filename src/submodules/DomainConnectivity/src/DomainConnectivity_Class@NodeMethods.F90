@@ -41,14 +41,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-isok = domain1%isInit()
+isok = domain1%IsInitiated()
 ! check domain1 initiated
 IF (.NOT. isok) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-1 is not initiated, first initiate")
 END IF
 
-IF (.NOT. domain2%isInit()) THEN
+IF (.NOT. domain2%IsInitiated()) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-2 is not initiated, first initiate")
 END IF
@@ -122,19 +122,17 @@ REAL(DFP) :: X(3)
 REAL(DFP), POINTER :: node1(:, :)
 REAL(DFP), POINTER :: node2(:, :)
 
-REAL(DFP) :: debug_t1, debug_t2
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. domain1%isInit()) THEN
+IF (.NOT. domain1%IsInitiated()) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-1 is not initiated, first initiate")
 END IF
 
-IF (.NOT. domain2%isInit()) THEN
+IF (.NOT. domain2%IsInitiated()) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
   & "Domain-2 is not initiated, first initiate")
 END IF

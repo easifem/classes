@@ -18,15 +18,13 @@
 SUBMODULE(LinearPoroElasticModel_Class) ConstructorMethods
 USE BaseMethod, ONLY: Input
 USE FPL_Method
-USE AbstractSolidMechanicsModel_Class, ONLY:  &
-  & AbstractSolidMechanicsModelDeallocate
-USE LinearElasticModel_Class, ONLY: ElasticityType_char,  &
-  & ElasticityType_tonumber,  &
-  & TypeElasticity,  &
-  & Get_PlaneStress_C_InvC, &
-  & Get_PlaneStrain_C_InvC,  &
-  & Get_3D_C_InvC,  &
-  & GetElasticParam
+USE AbstractSolidMechanicsModel_Class, ONLY: &
+  AbstractSolidMechanicsModelDeallocate
+USE LinearElasticModel_Class, ONLY: TypeElasticityOpt, &
+                                    Get_PlaneStress_C_InvC, &
+                                    Get_PlaneStrain_C_InvC, &
+                                    Get_3D_C_InvC, &
+                                    GetElasticParam
 IMPLICIT NONE
 CONTAINS
 
@@ -41,10 +39,10 @@ REAL(DFP) :: lam, EE, nu, G
 TYPE(String) :: astr
 LOGICAL(LGT) :: isIsotropic
 
-CALL Set(obj=param, datatype="char", prefix=myprefix, key="name",  &
-  & VALUE=myprefix)
+CALL Set(obj=param, datatype="char", prefix=myprefix, key="name", &
+         VALUE=myprefix)
 
-astr = ElasticityType_char(elasticityType)
+astr = TypeElasticityOpt%ToString(elasticityType)
 
 CALL Set(obj=param, datatype="char", prefix=myprefix,  &
   & key="elasticityType", VALUE=astr%chars())
@@ -55,7 +53,7 @@ CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain",  &
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress",  &
   & VALUE=input(option=isPlaneStress, default=.FALSE.))
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = elasticityType .EQ. TypeElasticityOpt%Isotropic
 
 IF (isIsotropic) THEN
   CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
@@ -208,9 +206,9 @@ CALL obj%SetPlaneStress(isPlaneStress)
 CALL obj%SetPlaneStrain(isPlaneStrain)
 ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 
-obj%elasticityType = ElasticityType_tonumber(charVar)
+obj%elasticityType = TypeElasticityOpt%ToNumber(charVar)
 
-isIsotropic = obj%elasticityType .EQ. TypeElasticity%Isotropic
+isIsotropic = obj%elasticityType .EQ. TypeElasticityOpt%Isotropic
 IF (isIsotropic) THEN
   ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
   ierr = param%get(key=myprefix//"/shearModulus", VALUE=obj%G)

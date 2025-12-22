@@ -28,8 +28,6 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractLinSolver_Class, ONLY: AbstractLinSolver_
 USE LinSolver_Class, ONLY: LinSolver_
 
-! #include "lisf.h"
-
 IMPLICIT NONE
 
 PRIVATE
@@ -39,7 +37,6 @@ PUBLIC :: TypeLinSolverLis
 PUBLIC :: LinSolverLisPointer_
 
 CHARACTER(*), PARAMETER :: modName = "LinSolverLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "LinSolver"
 CHARACTER(*), PARAMETER :: myengine = "LIS_OMP"
 
 !----------------------------------------------------------------------------
@@ -61,27 +58,21 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-    !! Initiate object
-
+  !! Initiate object
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
     !! Deallocate Data
-
   FINAL :: obj_final
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
     !! Set the matrix and preconditioning matrix
 
-  ! SOLVE:
+  ! SET:
   ! @SolveMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_solve
     !! Solve the system of linear equation
-
 END TYPE LinSolverLis_
 
 !----------------------------------------------------------------------------
@@ -90,33 +81,25 @@ END TYPE LinSolverLis_
 
 TYPE(LinSolverLis_), PARAMETER :: TypeLinSolverLis = LinSolverLis_()
 
+!----------------------------------------------------------------------------
+!                                                              TypeLinSolver
+!----------------------------------------------------------------------------
+
 TYPE :: LinSolverLisPointer_
   CLASS(LinSolverLis_), POINTER :: Ptr => NULL()
 END TYPE LinSolverLisPointer_
 
-!-----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!-----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This subroutine initiate the [[LinSolver_]] object
-!
-!# Introduction
-!
-! This subroutine initiate the [[LinSolver_]] object
-!
-! - It sets the name of the solver
-! - It sets the parameters related to the solver
-!
-! If name of the solver is `lis_gmres`, `lis_fgmres`, `lis_dqgmres`,
-! or `lis_om` then `ipar(1)` denotes the number of restarts required in
-! these algorithms. Default value is set to 20.
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Initiate the linear solver
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj)
     CLASS(LinSolverLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE
 

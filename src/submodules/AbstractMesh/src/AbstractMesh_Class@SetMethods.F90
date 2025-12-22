@@ -32,7 +32,7 @@ USE CSRMatrix_Method, ONLY: SetSparsity
 
 USE FacetData_Class, ONLY: FacetData_SetParam
 
-USE ElemData_Class, ONLY: ElemData_SetTotalMaterial, &
+USE ElemData_Class, ONLY: ElemData_SetTotalMedium, &
                           ElemData_Set
 
 IMPLICIT NONE
@@ -75,7 +75,7 @@ END PROCEDURE obj_SetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
 INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: problem
 INTEGER(I4B) :: i, j, k, tNodes, ii
@@ -85,6 +85,8 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
@@ -99,6 +101,8 @@ IF (problem) THEN
                       '[INTERNAL ERROR] :: Empty mesh found, returning')
   RETURN
 END IF
+
+#endif
 
 ! check
 problem = .NOT. obj%isNodeToNodesInitiated
@@ -139,19 +143,21 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
-CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
 LOGICAL(LGT) :: problem
 INTEGER(I4B) :: i, j, tNodes, tsize
 INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
+
+#ifdef DEBUG_VER
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
@@ -159,12 +165,11 @@ tsize = obj%GetTotalElements()
 problem = tsize .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: Empty mesh found, returning')
+                      '[INTERNAL ERROR] :: Empty mesh found, returning')
   RETURN
 END IF
 
-problem = .NOT. obj%isNodeToNodesInitiated
-IF (problem) CALL obj%InitiateNodeToNodes()
+#endif
 
 problem = .NOT. obj%isNodeToNodesInitiated
 IF (problem) CALL obj%InitiateNodeToNodes()
@@ -176,7 +181,7 @@ DO i = 1, tNodes
   j = obj%GetglobalNodeNumber(localNode=i)
 
   CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
-    & ans=n2n, tsize=tsize, islocal=.TRUE.)
+                           ans=n2n, tsize=tsize, islocal=.TRUE.)
 
   CALL SetSparsity(obj=mat, row=j, col=n2n(1:tsize))
 
@@ -184,7 +189,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_SetSparsity2
 
@@ -204,6 +209,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
              "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
@@ -222,6 +228,7 @@ IF (problem) THEN
                     "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
   RETURN
 END IF
+#endif
 
 ! check
 IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
@@ -252,7 +259,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_SetSparsity3
@@ -270,28 +277,30 @@ INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+             "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
   RETURN
 END IF
 
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+          "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
   RETURN
 END IF
 
 isok = SIZE(nodeToNode) .GE. obj%GetMaxNodeNumber()
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs "//  &
-    & "[easifemClasses ISSUE#63]")
+               "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs "// &
+                    "[easifemClasses ISSUE#63]")
   RETURN
 END IF
+#endif
 
 isok = obj%isNodeToNodesInitiated
 IF (.NOT. isok) CALL obj%InitiateNodeToNodes()
@@ -326,35 +335,35 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_SetSparsity4
 
 !----------------------------------------------------------------------------
-!                                                           setTotalMaterial
+!                                                           SetTotalMedium
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial1
+MODULE PROCEDURE obj_SetTotalMedium1
 INTEGER(I4B) :: iel
 iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
-CALL ElemData_SetTotalMaterial(obj%elementData(iel)%ptr, n=n)
-END PROCEDURE obj_SetTotalMaterial1
+CALL ElemData_SetTotalMedium(obj%elementData(iel)%ptr, n=n)
+END PROCEDURE obj_SetTotalMedium1
 
 !----------------------------------------------------------------------------
-!                                                           setTotalMaterial
+!                                                           SetTotalMedium
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetTotalMaterial2
+MODULE PROCEDURE obj_SetTotalMedium2
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
 
 DO ii = 1, obj%tElements
   isok = obj%elementData(ii)%ptr%isActive
   IF (.NOT. isok) CYCLE
-  CALL ElemData_SetTotalMaterial(obj%elementData(ii)%ptr, n=n)
+  CALL ElemData_SetTotalMedium(obj%elementData(ii)%ptr, n=n)
 END DO
-END PROCEDURE obj_SetTotalMaterial2
+END PROCEDURE obj_SetTotalMedium2
 
 !----------------------------------------------------------------------------
 !                                                                setMaterial

@@ -27,12 +27,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  GetPrefix
+!                                                           IsSubmatInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
+MODULE PROCEDURE obj_IsSubmatInitiated
+ans = obj%isSubmatInit
+END PROCEDURE obj_IsSubmatInitiated
 
 !----------------------------------------------------------------------------
 !                                                                       SIZE

@@ -26,39 +26,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-
-CALL obj%IMPORT(hdf5=hdf5, group=group)
-
-SELECT CASE (obj%nsd)
-CASE (0)
-  obj%mesh => obj%meshPoint
-CASE (1)
-  obj%mesh => obj%meshCurve
-CASE (2)
-  obj%mesh => obj%meshSurface
-CASE (3)
-  obj%mesh => obj%meshVolume
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 

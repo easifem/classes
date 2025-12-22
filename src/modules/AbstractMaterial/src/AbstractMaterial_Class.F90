@@ -20,17 +20,21 @@
 ! summary: Abstract class for Material behavior
 
 MODULE AbstractMaterial_Class
-USE GlobalData
-USE String_Class
-USE BaseType
-USE UserFunction_Class
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE String_Class, ONLY: String
+USE UserFunction_Class, ONLY: UserFunction_, &
+                              UserFunctionPointer_
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
+USE HDF5File_Class, ONLY: HDF5File_
 USE FPL, ONLY: ParameterList_
-USE TxtFile_Class
+USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 USE HashTables, ONLY: HashTable_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE MeshSelection_Class, ONLY: MeshSelection_
+
 IMPLICIT NONE
+
 PRIVATE
 PUBLIC :: AbstractMaterial_
 PUBLIC :: AbstractMaterialPointer_
@@ -87,8 +91,8 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
-    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
@@ -104,8 +108,8 @@ CONTAINS
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterialPointer =>  &
-    & obj_GetMaterialPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterialPointer => &
+    obj_GetMaterialPointer
   PROCEDURE, PUBLIC, PASS(obj) :: IsMaterialPresent => obj_IsMaterialPresent
 
   ! SET:
@@ -114,6 +118,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: AddMaterial2 => obj_AddMaterial2
   GENERIC, PUBLIC :: AddMaterial => AddMaterial1, AddMaterial2
   PROCEDURE, PUBLIC, PASS(obj) :: ExpandMatProps => obj_ExpandMatProps
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  !! Set the name of the material
 END TYPE AbstractMaterial_
 
 !----------------------------------------------------------------------------
@@ -180,10 +186,50 @@ END INTERFACE AbstractMaterialInitiate
 ! date: 26 Oct 2021
 ! summary: Deallocate data
 
-INTERFACE AbstractMaterialDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractMaterialDeallocate
+  MODULE PROCEDURE obj_Deallocate
+END INTERFACE AbstractMaterialDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate vector of AbstractMaterial_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    CLASS(AbstractMaterial_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE
+
+INTERFACE AbstractMaterialDeallocate
+  MODULE PROCEDURE obj_Deallocate_Vector
+END INTERFACE AbstractMaterialDeallocate
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary:  Deallocate vector of DirichletBCPointer_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(AbstractMaterialPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE AbstractMaterialDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 END INTERFACE AbstractMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -242,6 +288,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-14
+! summary:  Set the name of the material
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+  !! Abstract Material object
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                               IsMaterialPresent@GetMethods
 !----------------------------------------------------------------------------
 
@@ -277,36 +339,60 @@ END INTERFACE
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractMaterialImport
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary: Import material from HDF5 file
+
+INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE AbstractMaterialImport
+  MODULE PROCEDURE obj_Import
 END INTERFACE AbstractMaterialImport
 
 !----------------------------------------------------------------------------
 !                                                          Export@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractMaterialExport
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary: Export material to HDF5 file
+
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE AbstractMaterialExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE AbstractMaterialExport
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractMaterialDisplay
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-27
+! summary: Display material information
+
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE AbstractMaterialDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractMaterialDisplay
 
 !----------------------------------------------------------------------------
@@ -315,13 +401,25 @@ END INTERFACE AbstractMaterialDisplay
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate param from the toml file
+! summary:  Initiate AbstractMaterial_ from the toml file
+!
+!# Introduction
+!  This interface is used to import material properties from a toml file.
+! If region is given, then we can import the region (MeshSelection_)
+! Domain is needed for calling importFromToml on region.
+! See MeshSelection_ ImportFromToml for more details.
 
-INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE AbstractMaterialImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
@@ -332,30 +430,25 @@ END INTERFACE AbstractMaterialImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
-    & printToml)
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE AbstractMaterialImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!
 !----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml_table(obj, table)
-    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportFromToml_table
-END INTERFACE
 
 END MODULE AbstractMaterial_Class

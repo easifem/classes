@@ -16,162 +16,33 @@
 !
 
 SUBMODULE(LinearElasticModel_Class) GetMethods
-USE BaseMethod, ONLY: ToString
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                           GetElasticParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetElasticParam
-LOGICAL(LGT) :: isLam, isG, isNu, isE
-REAL(DFP) :: r
-
-IF (PRESENT(shearModulus)) THEN
-  isG = .TRUE.
-  G = shearModulus
-ELSE
-  isG = .FALSE.
-END IF
-
-IF (PRESENT(youngsModulus)) THEN
-  isE = .TRUE.
-  EE = youngsModulus
-ELSE
-  isE = .FALSE.
-END IF
-
-IF (PRESENT(poissonRatio)) THEN
-  isNu = .TRUE.
-  Nu = poissonRatio
-ELSE
-  isNu = .FALSE.
-END IF
-
-IF (PRESENT(lambda)) THEN
-  isLam = .TRUE.
-  lam = lambda
-ELSE
-  isLam = .FALSE.
-END IF
-
-!1
-IF (isNu .AND. isE) THEN
-  lam = EE * nu / (1.0 + nu) / (1.0 - 2.0 * nu)
-  G = EE * 0.5_DFP / (1.0 + nu)
-  !2
-ELSE IF (isG .AND. isE) THEN
-  lam = G * (EE - 2.0 * G) / (3.0 * G - EE)
-  nu = (EE - 2.0 * G) * 0.5_DFP / G
-  !3
-ELSE IF (isNu .AND. isG) THEN
-  lam = 2.0 * G * nu / (1.0 - 2.0 * nu)
-  EE = 2.0 * G * (1.0 + nu)
-  !4
-ELSE IF (isLam .AND. isG) THEN
-  EE = G * (3.0 * lam + 2.0 * G) / (lam + G)
-  nu = lam * 0.5 / (lam + G)
-  !5
-ELSE IF (isE .AND. isLam) THEN
-  r = SQRT(EE * EE + 9.0 * lam * lam + 2.0 * EE * lam)
-  G = (EE - 3.0 * lam + r) / 4.0
-  nu = 2.0 * lam / (EE + lam + r)
-  !6
-ELSE IF (isNu .AND. isLam) THEN
-  EE = lam * (1.0 + nu) * (1.0 - 2.0 * nu) / nu
-  G = lam * (1.0 - 2.0 * nu) * 0.5_DFP / nu
-END IF
-END PROCEDURE GetElasticParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Get_PlaneStress_C_invC
-REAL(DFP) :: a
-C = 0.0_DFP
-invC = 0.0_DFP
-a = youngsModulus / (1.0 - nu * nu)
-C(1, 1) = a
-C(2, 2) = C(1, 1)
-C(3, 3) = a * (1.0 - nu) * 0.5_DFP
-C(1, 2) = a * nu
-C(2, 1) = C(1, 2)
-a = 1.0_DFP / youngsModulus
-invC(1, 1) = a
-invC(2, 2) = invC(1, 1)
-invC(3, 3) = a * 2.0_DFP * (1.0 + nu)
-invC(1, 2) = -nu * a
-invC(2, 1) = invC(1, 2)
-END PROCEDURE Get_PlaneStress_C_invC
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Get_PlaneStrain_C_invC
-REAL(DFP) :: a
-C = 0.0_DFP
-invC = 0.0_DFP
-a = youngsModulus / (1.0 - 2.0 * nu) / (1.0 + nu)
-C(1, 1) = a * (1.0 - nu)
-C(2, 2) = C(1, 1)
-C(3, 3) = a * (1.0 - 2.0 * nu) * 0.5_DFP
-C(1, 2) = a * nu
-C(2, 1) = C(1, 2)
-a = (1.0 + nu) / youngsModulus
-invC(1, 1) = a * (1.0 - nu)
-invC(2, 2) = invC(1, 1)
-invC(3, 3) = 2.0_DFP * a
-invC(1, 2) = -nu * a
-invC(2, 1) = invC(1, 2)
-END PROCEDURE Get_PlaneStrain_C_invC
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Get_3D_C_invC
-REAL(DFP) :: a
-C = 0.0_DFP
-invC = 0.0_DFP
-a = youngsModulus / (1.0 + nu) / (1.0 - 2.0 * nu)
-C(1, 1) = (1.0 - nu) * a
-C(2, 2) = C(1, 1)
-C(3, 3) = C(1, 1)
-C(4, 4) = a * 0.5 * (1.0 - 2.0 * nu)
-C(5, 5) = C(4, 4)
-C(6, 6) = C(4, 4)
-C(1, 2) = nu * a
-C(1, 3) = C(1, 2)
-C(2, 1) = C(1, 2)
-C(2, 3) = C(1, 2)
-C(3, 1) = C(1, 2)
-C(3, 2) = C(1, 2)
-a = 1.0_DFP / youngsModulus
-invC(1, 1) = a
-invC(2, 2) = invC(1, 1)
-invC(3, 3) = invC(1, 1)
-invC(4, 4) = a * 2.0 * (1.0 + nu)
-invC(5, 5) = invC(4, 4)
-invC(6, 6) = invC(4, 4)
-invC(1, 2) = -nu * a
-invC(1, 3) = invC(1, 2)
-invC(2, 1) = invC(1, 2)
-invC(2, 3) = invC(1, 2)
-invC(3, 1) = invC(1, 2)
-invC(3, 2) = invC(1, 2)
-END PROCEDURE Get_3D_C_invC
 
 !----------------------------------------------------------------------------
 !                                                            GetElasticParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElasticParam
-CALL obj%GetParam(nu=poissonRatio, G=shearModulus,  &
-  & youngsModulus=youngsModulus, lambda=lambda, C=C, invC=invC,  &
-  & stiffnessPower=stiffnessPower)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElasticParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetParam(nu=poissonRatio, G=shearModulus, &
+                  youngsModulus=youngsModulus, lambda=lambda, &
+                  C=C, invC=invC, &
+                  stiffnessPower=stiffnessPower)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetElasticParam
 
 !----------------------------------------------------------------------------
@@ -179,6 +50,15 @@ END PROCEDURE obj_GetElasticParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (PRESENT(elasticityType)) elasticityType = obj%elasticityType
 IF (PRESENT(nu)) nu = obj%nu
 IF (PRESENT(G)) G = obj%G
@@ -193,6 +73,11 @@ IF (PRESENT(invC)) THEN
 END IF
 
 IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
@@ -200,9 +85,23 @@ END PROCEDURE obj_GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetC()"
+#endif
 INTEGER(I4B) :: n
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 n = obj%nc
 C(1:n, 1:n) = obj%C(1:n, 1:n)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetC
 
 !----------------------------------------------------------------------------
@@ -210,9 +109,23 @@ END PROCEDURE obj_GetC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetinvC
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetinvC()"
+#endif
 INTEGER(I4B) :: n
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 n = obj%nc
 invC(1:n, 1:n) = obj%invC(1:n, 1:n)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetinvC
 
 !----------------------------------------------------------------------------
@@ -220,7 +133,21 @@ END PROCEDURE obj_GetinvC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElasticityType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElasticityType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%elasticityType
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetElasticityType
 
 !----------------------------------------------------------------------------
@@ -236,34 +163,38 @@ END PROCEDURE obj_GetPrefix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetDataSize
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 ans = 0
 SELECT CASE (obj%elasticityType)
-CASE (IsoLinearElasticModel)
+CASE (TypeElasticityOpt%isotropic)
   ans = 2
-CASE (AnisoLinearElasticModel)
+CASE (TypeElasticityOpt%anisotropic)
   ans = 21
-CASE (TransLinearElasticModel)
+CASE (TypeElasticityOpt%transIsotropic)
   ans = 5
-CASE (OrthoLinearElasticModel)
+CASE (TypeElasticityOpt%orthotropic)
   ans = 9
-CASE default
+
+#ifdef DEBUG_VER
+CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for elasticityType = '//  &
-    & tostring(obj%elasticityType))
-  RETURN
+          'No case found for elasticityType = '//ToString(obj%elasticityType))
+#endif
+
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetDataSize
 
 !----------------------------------------------------------------------------
@@ -271,32 +202,36 @@ END PROCEDURE obj_GetDataSize
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 SELECT CASE (obj%elasticityType)
-CASE (IsoLinearElasticModel)
+CASE (TypeElasticityOpt%isotropic)
   CALL LinearElasticModelGetData_Iso(obj, DATA)
-CASE (AnisoLinearElasticModel)
+CASE (TypeElasticityOpt%anisotropic)
   CALL LinearElasticModelGetData_Aniso(obj, DATA)
-CASE (TransLinearElasticModel)
+CASE (TypeElasticityOpt%transIsotropic)
   CALL LinearElasticModelGetData_Trans(obj, DATA)
-CASE (OrthoLinearElasticModel)
+CASE (TypeElasticityOpt%orthotropic)
   CALL LinearElasticModelGetData_Ortho(obj, DATA)
-CASE default
+
+#ifdef DEBUG_VER
+CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found for elasticityType = '//  &
-    & tostring(obj%elasticityType))
-  RETURN
+          'No case found for elasticityType = '//ToString(obj%elasticityType))
+#endif
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetData
 
 !----------------------------------------------------------------------------
@@ -304,20 +239,22 @@ END PROCEDURE obj_GetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelGetData_Iso
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Iso()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 DATA(1) = obj%lambda
 DATA(2) = obj%G
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelGetData_Iso
 
 !----------------------------------------------------------------------------
@@ -325,12 +262,15 @@ END PROCEDURE LinearElasticModelGetData_Iso
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelGetData_Aniso
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Aniso()"
+#endif
 INTEGER(I4B) :: ii, jj, kk
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 kk = 0
 DO jj = 1, 6
@@ -342,9 +282,8 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelGetData_Aniso
 
 !----------------------------------------------------------------------------
@@ -352,13 +291,15 @@ END PROCEDURE LinearElasticModelGetData_Aniso
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelGetData_Ortho
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Ortho()"
+#endif
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 DO ii = 1, 6
   DATA(ii) = obj%C(ii, ii)
@@ -369,9 +310,8 @@ DATA(9) = obj%C(1, 3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelGetData_Ortho
 
 !----------------------------------------------------------------------------
@@ -379,11 +319,14 @@ END PROCEDURE LinearElasticModelGetData_Ortho
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE LinearElasticModelGetData_Trans
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Trans()"
+#endif
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 DATA(1) = obj%C(1, 1)
 DATA(2) = obj%C(3, 3)
@@ -393,9 +336,8 @@ DATA(5) = obj%C(1, 3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE LinearElasticModelGetData_Trans
 
 END SUBMODULE GetMethods

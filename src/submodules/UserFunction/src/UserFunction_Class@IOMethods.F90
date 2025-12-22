@@ -28,9 +28,9 @@ MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 
 CALL Display(msg, unitNo=unitNo)
-CALL Display(obj%isInitiated, "isInitiated: ", unitNo=unitNo)
+CALL Display(obj%isInit, "isInit: ", unitNo=unitNo)
 
-IF (.NOT. obj%isInitiated) RETURN
+IF (.NOT. obj%isInit) RETURN
 
 CALL Display("name: "//obj%name, unitNo=unitNo)
 CALL Display(obj%isUserFunctionSet, "isUserFunctionSet: ", unitNo=unitNo)
