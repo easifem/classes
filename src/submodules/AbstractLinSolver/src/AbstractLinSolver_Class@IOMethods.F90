@@ -62,6 +62,10 @@ CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
 isok = ASSOCIATED(obj%amat)
 CALL Display(isok, "amat is ASSOCIATED: ", unitNo=unitno)
 
+IF (isok) THEN
+  CALL obj%amat%Display("amat: ", unitNo=unitno)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

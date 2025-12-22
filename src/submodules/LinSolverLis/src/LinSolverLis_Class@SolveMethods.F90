@@ -17,7 +17,6 @@
 
 SUBMODULE(LinSolverLis_Class) SolveMethods
 USE GlobalData, ONLY: stdout
-
 USE Display_Method, ONLY: EqualLine, Display, Blanklines, &
                           ToString
 
@@ -157,33 +156,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-
 isok = obj%isInitiated()
-
 CALL AssertError1(isok, myName, &
                   'LinSolverLis_::obj is not initiated, initiate first!')
+#endif
 
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(sol%lis_ptr, ierr)
-
 CALL CHKERR(ierr)
+#endif
 
-CALL AssertError1(sol%isInitiated(), myname, &
-                  'AbstractNodeField_::sol not initiated')
-
-isok = ierr .NE. LIS_TRUE
-
+#ifdef DEBUG_VER
+isok = sol%IsInitiated()
 CALL AssertError1(isok, myname, &
                   'AbstractNodeField_::sol not initiated')
+#endif
 
-CALL AssertError1(rhs%isInitiated(), myname, &
+#ifdef DEBUG_VER
+isok = ierr .NE. LIS_TRUE
+CALL AssertError1(isok, myname, &
+                  'AbstractNodeField_::sol not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = rhs%IsInitiated()
+CALL AssertError1(isok, myname, &
                   'AbstractNodeField_::rhs not initiated')
+#endif
 
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(rhs%lis_ptr, ierr)
 isok = ierr .NE. LIS_TRUE
 
 CALL AssertError1(isok, myname, &
                   'AbstractNodeField_::rhs not initiated')
-
 #endif
 
 amat => obj%GetMatrixPointer()
@@ -197,7 +203,7 @@ CALL AssertError1(isok, myname, &
 CALL lis_solve(amat%lis_ptr, rhs%lis_ptr, sol%lis_ptr, obj%lis_solver, ierr)
 
 #ifdef DEBUG_VER
-CALL chkerr(ierr)
+CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER

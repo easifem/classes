@@ -264,8 +264,8 @@ END INTERFACE InitiateScalarFields
 ! NOTE: This is a module routine not a Method to ScalarField_
 
 INTERFACE
-  MODULE SUBROUTINE ScalarField_Initiate2(obj, names, fieldType, engine, &
-                                          fedof, geofedof)
+  MODULE SUBROUTINE ScalarField_Initiate2( &
+    obj, names, fieldType, engine, fedof, geofedof)
     TYPE(ScalarFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to ScalarField or subclass
     !! NOTE: It should be allocated

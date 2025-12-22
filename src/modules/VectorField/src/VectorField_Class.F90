@@ -105,18 +105,12 @@ CONTAINS
   !! Set all values to the constant value
   !! WE call SetAll method here
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! obj@[ivar, idof] = value@[ivar, idof]
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! obj = value (we call copy method here)
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetFromSTVectorField => &
-    obj_SetFromSTVectorField
-  !! Set values from the STVectorField_
-  !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13
 
   ! GET:
   ! @GetMethods
@@ -137,12 +131,8 @@ CONTAINS
   !! Get value of vector field in the ScalarField or another VectorField
   !! value = obj@spaceCompo (if value is ScalarField_)
   !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
-  !! Copy  value=obj
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get9 => obj_Get9
-  !! value@[ivar, idof] = obj@[ivar, idof]
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
-    Get5, Get6, Get7, Get8, Get9
+    Get5, Get6, Get7
   !! Get the entries of Vector field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
@@ -502,8 +492,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field object
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -745,8 +735,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, islocal, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set7( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
@@ -785,8 +775,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution, storageFMT)
+  MODULE SUBROUTINE obj_Set8( &
+    obj, globalNode, islocal, VALUE, scale, addContribution, storageFMT)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -833,8 +823,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, spaceCompo, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set9( &
+    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be used in obj = value
@@ -865,8 +855,8 @@ END INTERFACE
 ! vector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, islocal, &
-                              spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set10( &
+    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set
@@ -892,8 +882,8 @@ END INTERFACE
 ! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, VALUE, globalNode, islocal, scale, &
-                              addContribution)
+  MODULE SUBROUTINE obj_Set11( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! FEVariable, space-nodal values of vector
@@ -934,16 +924,9 @@ END INTERFACE
 ! summary: Set values
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
+  MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    CLASS(VectorField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set13
 END INTERFACE
 
@@ -955,12 +938,19 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(VectorField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set13(&
+!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
+!     CLASS(VectorField_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_Set13
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             Set@SetMethods
@@ -970,16 +960,16 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_SetFromSTVectorField(obj, VALUE, timeCompo, &
-                                             scale, addContribution)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_SetFromSTVectorField
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_SetFromSTVectorField( &
+!     obj, VALUE, timeCompo, scale, addContribution)
+!     CLASS(VectorField_), INTENT(INOUT) :: obj
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: timeCompo
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_SetFromSTVectorField
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -992,8 +982,8 @@ END INTERFACE
 ! summary:  Set by user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction( &
+    obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
@@ -1073,8 +1063,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, storageFMT, &
-                             globalNode, islocal, force3D)
+  MODULE SUBROUTINE obj_Get3( &
+    obj, VALUE, nrow, ncol, storageFMT, globalNode, islocal, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! The number of columns in value is same as the
@@ -1106,7 +1096,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, spaceCompo)
+  MODULE SUBROUTINE obj_Get4( &
+    obj, VALUE, tsize, globalNode, islocal, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! the size of value should be same as globalNode
@@ -1171,16 +1162,9 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, spaceCompo)
+  MODULE SUBROUTINE obj_Get7(obj, VALUE)
     CLASS(VectorField_), INTENT(IN) :: obj
-    !! vector field object
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! abstract node field
-    !! It can be ScalarField_, VectorField_, ScalarFieldLis_, VectorFieldLis_
-    !! in case it is a vector field, then obj@spacecompo = value@spacecompo
-    !! otherwise obj@spacecompo = value
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
   END SUBROUTINE obj_Get7
 END INTERFACE
 
@@ -1192,12 +1176,19 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This routine return value in FEVariable
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, VALUE)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    CLASS(VectorField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE obj_Get8
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get7(obj, VALUE, spaceCompo)
+!     CLASS(VectorField_), INTENT(IN) :: obj
+!     !! vector field object
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     !! abstract node field
+!     !! It can be ScalarField_, VectorField_, ScalarFieldLis_, VectorFieldLis_
+!     !! in case it is a vector field, then obj@spacecompo = value@spacecompo
+!     !! otherwise obj@spacecompo = value
+!     INTEGER(I4B), INTENT(IN) :: spaceCompo
+!     !! space component
+!   END SUBROUTINE obj_Get7
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             Get@GetMethods
@@ -1207,19 +1198,19 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Get value
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in val
-    INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE obj_Get9
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
+!     CLASS(VectorField_), INTENT(IN) :: obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom in obj
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable in val
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!   END SUBROUTINE obj_Get9
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods

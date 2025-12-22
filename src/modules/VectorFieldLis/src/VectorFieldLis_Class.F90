@@ -71,11 +71,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the vector field
 
-  ! SET:
-  ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! obj@[ivar, idof] = value@[ivar, idof]
-
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
@@ -192,26 +187,26 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! Physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom of ivar
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    !! value
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! Physical variable in VALUE
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom of ivar in VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set13
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
+!                               idof_value, scale, addContribution)
+!     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! Physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom of ivar
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     !! value
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! Physical variable in VALUE
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     !! local degree of freedom of ivar in VALUE
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     !! scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!     !! add or set
+!   END SUBROUTINE obj_Set13
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -221,12 +216,12 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Set values
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(VectorField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set14(obj, VALUE)
+!     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+!     CLASS(VectorField_), INTENT(IN) :: VALUE
+!   END SUBROUTINE obj_Set14
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      GetPointer@GetMethods

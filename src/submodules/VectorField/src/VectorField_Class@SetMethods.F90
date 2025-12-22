@@ -265,8 +265,27 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-CALL obj%Set(ivar=1, idof=spaceCompo, VALUE=VALUE, ivar_value=1, &
-          idof_value=spaceCompo, scale=scale, addContribution=addContribution)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+! CALL obj%Set(ivar=1, idof=spaceCompo, VALUE=VALUE, ivar_value=1, &
+!           idof_value=spaceCompo, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -274,13 +293,27 @@ END PROCEDURE obj_Set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set7
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !$OMP PARALLEL DO PRIVATE(ii)
 DO ii = 1, SIZE(globalNode)
   CALL obj%Set(VALUE=VALUE, globalNode=globalNode(ii), islocal=islocal, &
                scale=scale, addContribution=addContribution)
 END DO
 !$OMP END PARALLEL DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
@@ -288,33 +321,51 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
+LOGICAL(LGT) :: isok, abool
+#endif
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(obj%isInitiated(), myName, &
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
                   'VectorField_::obj is not initiated')
+#endif
 
-CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
+#ifdef DEBUG_VER
+isok = obj%fieldType .NE. TypeFieldOpt%constant
+CALL AssertError1(isok, myName, &
                   'Not callable for constant vector field')
+#endif
 
-IF (storageFMT .EQ. TypeFieldOpt%storageFormatNodes) THEN
-  CALL AssertError2(SIZE(VALUE, 1), obj%spaceCompo, myName, &
-                    'a=SIZE(VALUE, 1), b=obj%spaceCompo')
+#ifdef DEBUG_VER
+abool = storageFMT .EQ. TypeFieldOpt%storageFormatNodes
 
-  CALL AssertError2(SIZE(VALUE, 2), SIZE(globalNode), myName, &
-                    'a=SIZE(VALUE, 2), b=size(globalNode)')
+IF (abool) THEN
+  isok = SIZE(VALUE, 1) .EQ. obj%spaceCompo
+  CALL AssertError1(isok, myName, &
+                    'SIZE(VALUE, 1) not same as obj%spaceCompo')
+
+  isok = SIZE(VALUE, 2) .EQ. SIZE(globalNode)
+  CALL AssertError1(isok, myName, &
+                    'SIZE(VALUE, 2) not same as size(globalNode)')
 
 ELSE
 
-  CALL AssertError2(SIZE(VALUE, 2), obj%spaceCompo, myName, &
-                    'a=SIZE(VALUE, 2), b=obj%spaceCompo')
+  isok = SIZE(VALUE, 2) .EQ. obj%spaceCompo
+  CALL AssertError1(isok, myName, &
+                    'SIZE(VALUE, 2) not same as obj%spaceCompo')
 
-  CALL AssertError2(SIZE(VALUE, 1), SIZE(globalNode), myName, &
-                    'a=SIZE(VALUE, 1), b=size(globalNode)')
+  isok = SIZE(VALUE, 1) .EQ. SIZE(globalNode)
+  CALL AssertError1(isok, myName, &
+                    'SIZE(VALUE, 1) not same as size(globalNode)')
 END IF
-
 #endif
 
 SELECT CASE (storageFMT)
@@ -402,12 +453,17 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set10
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
+#endif
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
-
+#ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
@@ -416,7 +472,6 @@ CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
 
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
-
 #endif
 
 #include "./localNodeError.F90"
@@ -426,6 +481,10 @@ indx = GetNodeLoc(obj=obj%dof, idof=spaceCompo, nodenum=globalNode)
 CALL obj%SetSingle(VALUE=VALUE, indx=indx, scale=scale, &
                    addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
@@ -433,16 +492,20 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set11
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+#endif
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
+#ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
-
 CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
-
 #endif
 
 SELECT CASE (VALUE%vartype)
@@ -465,6 +528,10 @@ CASE DEFAULT
   RETURN
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
@@ -472,99 +539,39 @@ END PROCEDURE obj_Set11
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set12
-CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
-END PROCEDURE obj_Set12
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set13
-CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
-INTEGER(I4B) :: s(3), p(3)
-REAL(DFP), POINTER :: realvec(:)
-
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
-                  'VectorField_::obj is not initiated')
-
-CALL AssertError1(VALUE%isInitiated(), myName, &
-                  'AbstractNodeField_::value is not initiated')
+CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
 #endif
 
-s = GetNodeLoc(obj=obj%dof, idof=idof)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-SELECT TYPE (VALUE)
+CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 
-TYPE IS (ScalarField_)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
-                       istart=s(1), iend=s(2), stride=s(3))
-  realvec => NULL()
-
-TYPE IS (STScalarField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
-                       istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (VectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
-                       istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (STVectorField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
-                       istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-TYPE IS (BlockNodeField_)
-
-  p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
-                       istart=s(1), iend=s(2), stride=s(3), &
-                       istart_value=p(1), iend_value=p(2), stride_value=p(3))
-  realvec => NULL()
-
-! TYPE IS (ScalarFieldLis_)
-
-! TYPE IS (STScalarFieldLis_)
-!
-! TYPE IS (VectorFieldLis_)
-
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for the type of value')
-  RETURN
-END SELECT
-
-END PROCEDURE obj_Set13
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Set14
-CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
+MODULE PROCEDURE obj_Set13
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+#endif
+
 INTEGER(I4B) :: tsize
 REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
@@ -572,69 +579,154 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #endif
 
 SELECT TYPE (VALUE)
-
 TYPE IS (VectorField_)
+
   realvec => VALUE%GetPointer()
   tsize = SIZE(realvec)
-  CALL obj%SetMultiple(VALUE=realvec, istart=1_I4B, iend=tsize, &
-                       stride=1_I4B)
+  CALL obj%SetMultiple( &
+    VALUE=realvec, istart=1_I4B, iend=tsize, stride=1_I4B)
   realvec => NULL()
 
 ! TYPE is (STScalarFieldLis_)
-!
 !   DO ierr = 1, obj%timeCompo
 !     CALL VALUE%Get(VALUE=obj, timeCompo=ierr)
 !   END DO
 
+#ifdef DEBUG_VER
 CLASS DEFAULT
-
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
   RETURN
-
+#endif
 END SELECT
 
-END PROCEDURE obj_Set14
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set13
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+! MODULE PROCEDURE obj_Set13
+! CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+! INTEGER(I4B) :: s(3), p(3)
+! REAL(DFP), POINTER :: realvec(:)
+!
+! #ifdef DEBUG_VER
+! CALL AssertError1(obj%isInitiated(), myName, &
+!                   'VectorField_::obj is not initiated')
+!
+! CALL AssertError1(VALUE%isInitiated(), myName, &
+!                   'AbstractNodeField_::value is not initiated')
+! #endif
+!
+! s = GetNodeLoc(obj=obj%dof, idof=idof)
+!
+! SELECT TYPE (VALUE)
+!
+! TYPE IS (ScalarField_)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3))
+!   realvec => NULL()
+!
+! TYPE IS (STScalarField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (VectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (STVectorField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! TYPE IS (BlockNodeField_)
+!
+!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
+!
+!   realvec => VALUE%GetPointer()
+!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, addContribution=addContribution, &
+!                        istart=s(1), iend=s(2), stride=s(3), &
+!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
+!   realvec => NULL()
+!
+! ! TYPE IS (ScalarFieldLis_)
+!
+! ! TYPE IS (STScalarFieldLis_)
+! !
+! ! TYPE IS (VectorFieldLis_)
+!
+! CLASS DEFAULT
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!                     '[INTERNAL ERROR] :: No case found for the type of value')
+!   RETURN
+! END SELECT
+!
+! END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                       SetFromSTVectorField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetFromSTVectorField
-CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTVectorField()"
-
-#ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
-                  'VectorField_::obj is not initiated')
-
-CALL AssertError1(VALUE%isInitiated(), myName, &
-                  'VectorField_::value is not initiated')
-
-CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
-                  'Not callable for constant vector field')
-
-#endif
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-
-! SELECT TYPE (VALUE); TYPE IS (STVectorField_)
+! MODULE PROCEDURE obj_SetFromSTVectorField
+! CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTVectorField()"
 !
-!   !$OMP PARALLEL DO PRIVATE(ii, jj)
-!   DO ii = 1, obj%spaceCompo
-!     jj = GetIDOF(spaceCompo=ii,spaceCompo=spaceCompo)
-!     CALL obj%Set(ivar=1_I4B, idof=ii, VALUE=VALUE, scale=scale, &
-!              addContribution=addContribution, ivar_value=1_I4B, idof_value=jj)
-!   END DO
-!   !$OMP END PARALLEL DO
-
-! CLASS DEFAULT
+! #ifdef DEBUG_VER
+! CALL AssertError1(obj%isInitiated(), myName, &
+!                   'VectorField_::obj is not initiated')
+!
+! CALL AssertError1(VALUE%isInitiated(), myName, &
+!                   'VectorField_::value is not initiated')
+!
+! CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
+!                   'Not callable for constant vector field')
+!
+! #endif
+!
 ! CALL e%RaiseError(modName//'::'//myName//' - '// &
-!           '[INTERNAL ERROR] :: Value should be an instance of STVectorField_')
-! RETURN
-! END SELECT
-
-END PROCEDURE obj_SetFromSTVectorField
+!                   '[WIP ERROR] :: This routine is under development')
+!
+! ! SELECT TYPE (VALUE); TYPE IS (STVectorField_)
+! !
+! !   !$OMP PARALLEL DO PRIVATE(ii, jj)
+! !   DO ii = 1, obj%spaceCompo
+! !     jj = GetIDOF(spaceCompo=ii,spaceCompo=spaceCompo)
+! !     CALL obj%Set(ivar=1_I4B, idof=ii, VALUE=VALUE, scale=scale, &
+! !              addContribution=addContribution, ivar_value=1_I4B, idof_value=jj)
+! !   END DO
+! !   !$OMP END PARALLEL DO
+!
+! ! CLASS DEFAULT
+! ! CALL e%RaiseError(modName//'::'//myName//' - '// &
+! !           '[INTERNAL ERROR] :: Value should be an instance of STVectorField_')
+! ! RETURN
+! ! END SELECT
+!
+! END PROCEDURE obj_SetFromSTVectorField
 
 !----------------------------------------------------------------------------
 !                                                                      Set
@@ -658,25 +750,28 @@ returnType = func%GetReturnType()
 
 SELECT CASE (returnType)
 CASE (TypeFEVariableOpt%scalar)
+
 #ifdef DEBUG_VER
   isok = PRESENT(spaceCompo)
   CALL AssertError1(isok, myName, &
                     "WIP: spaceCompo must be present for scalar function")
 #endif
+
   CALL Help_SetByScalarFunction(obj, func, times, spaceCompo)
 
 CASE (TypeFEVariableOpt%vector)
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'WIP :: Set by vector user function')
+                          'WIP :: Set by vector user function')
 #endif
 
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-    & 'start set by vector function')
+                    'start set by vector function')
 
   CALL Help_SetByVectorFunction(obj, func, times)
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & 'end set by vector function')
+                    'end set by vector function')
 
 END SELECT
 
@@ -684,7 +779,6 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetByFunction
 
 !----------------------------------------------------------------------------

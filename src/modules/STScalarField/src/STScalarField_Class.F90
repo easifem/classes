@@ -19,8 +19,7 @@
 ! summary: STScalar field data type is defined
 
 MODULE STScalarField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, &
-                      DOF_FMT, NodesToDOF, NODES_FMT
+USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NodesToDOF, NODES_FMT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE ScalarField_Class, ONLY: ScalarField_
@@ -121,12 +120,9 @@ CONTAINS
   !! Set all the value to a constant
   !! WE call setall method here
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! obj@[ivar, idof] = value@[ivar, idof]
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! Copy
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13, &
-    Set14
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13
   !! Generic Set Method
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
     SetByFunction => obj_SetByFunction
@@ -151,13 +147,7 @@ CONTAINS
   !! Get single entry; call GetSingle method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get value in FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
-  !! Get by copy, value is an instance of AbstractNodeField_
-  !! We call Get8
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
-  !! Get a single value of time component at a global/local node
-  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, &
-    Get7, Get8
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
   !! Generic Get method
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
@@ -211,35 +201,6 @@ END TYPE STScalarField_
 TYPE :: STScalarFieldPointer_
   CLASS(STScalarField_), POINTER :: ptr => NULL()
 END TYPE STScalarFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                  SetSTScalarFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Aug 2021
-! summary: This routine is used to for Setting space time scalar field
-
-! INTERFACE
-!   MODULE SUBROUTINE SetSTScalarFieldParam(param, name, timeCompo, &
-!                                    engine, fieldType, comm, global_n, local_n)
-!     TYPE(ParameterList_), INTENT(INOUT) :: param
-!     CHARACTER(*), INTENT(IN) :: name
-!     !! name of the variable
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!     !! time component
-!     CHARACTER(*), INTENT(IN) :: engine
-!     !! engine name
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-!     !! field type
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-!     !! communicator
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-!     !! global size
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-!     !! local size
-!   END SUBROUTINE SetSTScalarFieldParam
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -513,8 +474,8 @@ END INTERFACE STScalarFieldExport
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global or local node number
@@ -591,8 +552,7 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, VALUE, timeCompo, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set3(obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! obj@timeCompo = value
     REAL(DFP), INTENT(IN) :: VALUE
@@ -666,8 +626,7 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, VALUE, timeCompo, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be set obj = value
@@ -712,8 +671,7 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE, timeCompo, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! obj@timeCompo = value
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
@@ -755,8 +713,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, islocal, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set7( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -799,8 +757,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, &
-                             storageFMT, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8( &
+    obj, globalNode, islocal, VALUE, storageFMT, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -853,8 +811,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, timeCompo, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set9( &
+    obj, VALUE, globalNode, islocal, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(IN) :: VALUE(:)
@@ -888,8 +846,8 @@ END INTERFACE
 ! STScalar( timeCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, islocal, timeCompo, &
-                              scale, addContribution)
+  MODULE SUBROUTINE obj_Set10( &
+    obj, VALUE, globalNode, islocal, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(IN) :: VALUE
@@ -919,8 +877,8 @@ END INTERFACE
 ! Set entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11(obj, VALUE, globalNode, islocal, scale, &
-                              addContribution)
+  MODULE SUBROUTINE obj_Set11( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! value in FEVariable
@@ -959,28 +917,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set13
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -992,10 +928,10 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
+  MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(STScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
+  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1006,9 +942,31 @@ END INTERFACE
 ! date:  2023-03-29
 ! summary: Set the STScalarField
 
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
+!                               idof_value, scale, addContribution)
+!     CLASS(STScalarField_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_Set13
+! END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Set the STScalarField
+
 INTERFACE
-  MODULE SUBROUTINE obj_SetFromScalarField(obj, timeCompo, VALUE, &
-                                           scale, addContribution)
+  MODULE SUBROUTINE obj_SetFromScalarField( &
+    obj, timeCompo, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: timeCompo
     CLASS(ScalarField_), INTENT(IN) :: VALUE
@@ -1026,8 +984,8 @@ END INTERFACE
 ! summary: Set the STScalarField
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetToScalarField(obj, timeCompo, VALUE, &
-                                         scale, addContribution)
+  MODULE SUBROUTINE obj_SetToScalarField( &
+    obj, timeCompo, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: timeCompo
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
@@ -1045,8 +1003,8 @@ END INTERFACE
 ! summary:   Set By function
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction( &
+    obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
@@ -1137,8 +1095,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, globalNode, islocal, &
-                             storageFMT)
+  MODULE SUBROUTINE obj_Get3( &
+    obj, VALUE, nrow, ncol, globalNode, islocal, storageFMT)
     CLASS(STScalarField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -1166,8 +1124,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, tsize, islocal, &
-                             timeCompo)
+  MODULE SUBROUTINE obj_Get4( &
+    obj, VALUE, globalNode, tsize, islocal, timeCompo)
     CLASS(STScalarField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
@@ -1236,16 +1194,16 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This routine return value in FEVariable
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, timeCompo)
-    CLASS(STScalarField_), INTENT(IN) :: obj
-    !! space-time scalar field
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! returned value in AbstractNodeField format
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component, it should be less than obj%timeCompo
-  END SUBROUTINE obj_Get7
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get7(obj, VALUE, timeCompo)
+!     CLASS(STScalarField_), INTENT(IN) :: obj
+!     !! space-time scalar field
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     !! returned value in AbstractNodeField format
+!     INTEGER(I4B), INTENT(IN) :: timeCompo
+!     !! time component, it should be less than obj%timeCompo
+!   END SUBROUTINE obj_Get7
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             Get@GetMethods
@@ -1255,21 +1213,21 @@ END INTERFACE
 ! date:  2023-03-29
 ! summary: Get values
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, ivar, idof, VALUE, ivar_value, &
-                             idof_value)
-    CLASS(STScalarField_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in VALUE
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom in VALUE
-  END SUBROUTINE obj_Get8
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get8( &
+!     obj, ivar, idof, VALUE, ivar_value, idof_value)
+!     CLASS(STScalarField_), INTENT(IN) :: obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom in obj
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable in VALUE
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     !! local degree of freedom in VALUE
+!   END SUBROUTINE obj_Get8
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               GetTimeComponent@GetMethods
@@ -1279,11 +1237,15 @@ END INTERFACE
 ! date:  2023-10-29
 ! summary:  Get time components
 
-INTERFACE STScalarFieldGetTimeCompo
+INTERFACE
   MODULE FUNCTION obj_GetTimeCompo(obj) RESULT(ans)
     CLASS(STScalarField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTimeCompo
+END INTERFACE
+
+INTERFACE STScalarFieldGetTimeCompo
+  MODULE PROCEDURE obj_GetTimeCompo
 END INTERFACE STScalarFieldGetTimeCompo
 
 !----------------------------------------------------------------------------
@@ -1294,7 +1256,7 @@ END INTERFACE STScalarFieldGetTimeCompo
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE STScalarFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(STScalarField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1307,6 +1269,10 @@ INTERFACE STScalarFieldGetFEVariable
     !! This argument is not used
     !! Physical component
   END SUBROUTINE obj_GetFeVariable
+END INTERFACE
+
+INTERFACE STScalarFieldGetFEVariable
+  MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE STScalarFieldGetFEVariable
 
 !----------------------------------------------------------------------------

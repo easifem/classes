@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -15,52 +16,61 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(MatrixFieldLis_Class) IOMethods
-USE MatrixField_Class, ONLY: MatrixFieldDisplay
-USE Display_Method, ONLY: Display
+SUBMODULE(EngineFactoryUtility) Methods
+USE BaseType, ONLY: math => TypeMathOpt
+USE StringUtility, ONLY: UpperCase
+USE EngineOpt_Class, ONLY: TypeEngineOpt
+USE NativeSerialEngine_Class, ONLY: NativeSerialEngine_
+USE LisOmpEngine_Class, ONLY: LisOmpEngine_
 
 IMPLICIT NONE
-
-#include "lisf.h"
-
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  Display
+!                                                              EngineFactory
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Display
+MODULE PROCEDURE EngineFactory
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+CHARACTER(*), PARAMETER :: myName = "EngineFactory()"
 #endif
 
-LOGICAL(LGT) :: isok
+CHARACTER(:), ALLOCATABLE :: engine0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+engine0 = UpperCase(TRIM(engine))
 
-isok = ALLOCATED(obj%lis_ia)
-CALL Display(isok, "obj%lis_ia ALLOCATED:", unitNo=unitno)
-IF (isok) &
-  CALL Display(obj%lis_ia, "lis_ia:", unitno=unitno)
+SELECT CASE (engine0)
 
-isok = ALLOCATED(obj%lis_ja)
-CALL Display(isok, "obj%lis_ja ALLOCATED:", unitno=unitno)
-IF (isok) &
-  CALL Display(obj%lis_ja, "lis_ja:", unitno=unitno)
+CASE (TypeEngineOpt%native_serial)
+  ALLOCATE (NativeSerialEngine_ :: ans)
+
+CASE (TypeEngineOpt%lis_omp)
+  ALLOCATE (LisOmpEngine_ :: ans)
+
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(math%no, myName, &
+                    "No case found for engine "//engine0)
+#endif
+
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Display
+
+END PROCEDURE EngineFactory
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include errors
 !----------------------------------------------------------------------------
 
-END SUBMODULE IOMethods
+#include "../../include/errors.F90"
+
+END SUBMODULE Methods

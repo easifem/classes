@@ -17,7 +17,6 @@
 !
 
 MODULE EngineOpt_Class
-USE GlobalData, ONLY: I4B, Constant, Space, Time, SpaceTime
 IMPLICIT NONE
 
 PRIVATE

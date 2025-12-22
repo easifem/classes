@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -15,21 +16,73 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This module contains constructor method for [[MatrixField_]]
-
-SUBMODULE(MatrixField_Class) IOMethods
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
+SUBMODULE(LisOmpEngine_Class) Methods
+USE EngineOpt_Class, ONLY: TypeEngineOpt
 USE Display_Method, ONLY: Display
-USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
-USE CSRMatrix_Method, ONLY: CSRMatrix_Display => Display
-
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Display
+!                                                                    Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL lis_initialize(ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                                    Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL lis_finalize(ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
@@ -37,36 +90,13 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
-LOGICAL(LGT) :: isok
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-
-CALL Display(obj%isRectangle, "Is Rectangle: ", unitNo=unitNo)
-CALL Display(obj%isSubmatInit, "Is Submatrix Init: ", unitNo=unitNo)
-CALL Display(obj%tdbcPtrs, "tdbcPtrs: ", unitNo=unitNo)
-CALL Display(obj%tsubIndices, "tsubIndices: ", unitNo=unitNo)
-isok = ALLOCATED(obj%dbcPtrs)
-CALL Display(isok, "dbcPtrs Allocated: ", unitNo=unitNo)
-IF (isok) THEN
-  CALL Display(obj%dbcPtrs, "dbcPtrs: ", unitNo=unitNo)
-END IF
-
-isok = ALLOCATED(obj%subIndices)
-CALL Display(isok, "subIndices Allocated: ", unitNo=unitNo)
-IF (isok) THEN
-  CALL Display(obj%subIndices, "subIndices: ", unitNo=unitNo)
-END IF
-
-CALL CSRMatrix_Display(obj%mat, "CSRMatrix_::mat: ", unitNo=unitNo)
-
-IF (obj%isSubmatInit) THEN
-  CALL CSRMatrix_Display(obj%submat, "CSRMatrix_::submat: ", unitNo=unitNo)
-END IF
+CALL Display(msg, unitno=unitno)
+CALL Display(TypeEngineOpt%lis_omp, unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -75,31 +105,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                                      SPY
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SPY
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SPY()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL CSRMatrix_SPY(obj=obj%mat, filename=filename, ext=ext)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SPY
-
-!----------------------------------------------------------------------------
-!                                                              Include error
+!                                                            Include error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE IOMethods
+END SUBMODULE Methods

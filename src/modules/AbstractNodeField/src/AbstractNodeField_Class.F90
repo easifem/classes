@@ -105,7 +105,6 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of AbstractNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -121,7 +120,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! GetPointer to the fortran vector stored inside the realvec
   !! This function should be called for Native engine only
@@ -131,7 +129,6 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
-
   PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
   !! get many values from indices
   PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
@@ -625,10 +622,9 @@ END INTERFACE AbstractNodeFieldGetPointer
 ! summary:  Set parameters of AbstractNodeField_
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam(obj, dof_tPhysicalVars, &
-                                 dof_storageFMT, dof_spaceCompo, &
-                                 dof_timeCompo, dof_tNodes, &
-                                 dof_names_char, tSize)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, dof_tPhysicalVars, dof_storageFMT, dof_spaceCompo, dof_timeCompo, &
+    dof_tNodes, dof_names_char, tSize)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
     !! total number of physical variables
@@ -660,8 +656,7 @@ END INTERFACE AbstractNodeFieldSetParam
 ! summary: Set single entry
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, &
-    & addContribution)
+  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
@@ -703,7 +698,8 @@ END INTERFACE
 ! summary: Set multiple entries using indices
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple1( &
+    obj, indx, VALUE, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! index, size(indx) = size(value) = tsize
@@ -725,8 +721,8 @@ END INTERFACE
 ! summary: Get single entry
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple2(obj, istart, iend, stride, VALUE, &
-                                     scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple2( &
+    obj, istart, iend, stride, VALUE, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -748,8 +744,9 @@ END INTERFACE
 ! summary: Get multiple entries using trides
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple3(obj, istart, iend, stride, VALUE, &
-               istart_value, iend_value, stride_value, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple3( &
+    obj, istart, iend, stride, VALUE, istart_value, iend_value, &
+    stride_value, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -773,8 +770,8 @@ END INTERFACE
 ! summary: Get single entry
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple4(obj, istart, iend, stride, VALUE, &
-                                     scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple4( &
+    obj, istart, iend, stride, VALUE, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -836,8 +833,9 @@ END INTERFACE
 ! summary: Get multiple entries using trides
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
-                                istart_value, iend_value, stride_value, tsize)
+  MODULE SUBROUTINE obj_GetMultiple3( &
+    obj, istart, iend, stride, VALUE, istart_value, iend_value, &
+    stride_value, tsize)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -1228,7 +1226,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-12-17
-! summary:  y = y + s * x
+! summary:  obj = obj + s * x
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY1(obj, x, scale)
@@ -1244,7 +1242,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2023-12-29
-! summary:  y = y + a1 * x1 + a2 * x2
+! summary:  obj = obj + a1 * x1 + a2 * x2
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY2(obj, x1, x2, a1, a2)
@@ -1262,7 +1260,7 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2023-12-29
-! summary:  y = y + a1 * x1 + a2 * x2 + a3 * x3
+! summary:  obj = obj + a1 * x1 + a2 * x2 + a3 * x3
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY3(obj, x1, x2, x3, a1, a2, a3)

@@ -21,4 +21,5 @@ target_sources(
   PRIVATE ${src_path}/MatrixFieldLis_Class@ConstructorMethods.F90
           ${src_path}/MatrixFieldLis_Class@IOMethods.F90
           ${src_path}/MatrixFieldLis_Class@HDFMethods.F90
-          ${src_path}/MatrixFieldLis_Class@MatVecMethods.F90)
+          ${src_path}/MatrixFieldLis_Class@MatVecMethods.F90
+          ${src_path}/MatrixFieldLis_Class@DBCMethods.F90)

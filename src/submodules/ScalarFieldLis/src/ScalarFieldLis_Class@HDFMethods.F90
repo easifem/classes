@@ -17,10 +17,9 @@
 
 SUBMODULE(ScalarFieldLis_Class) HDFMethods
 USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldExport, &
-                                   AbstractNodeFieldImport
-
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 IMPLICIT NONE
 
 #include "lisf.h"

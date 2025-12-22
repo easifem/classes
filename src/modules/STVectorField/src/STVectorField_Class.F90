@@ -20,6 +20,7 @@
 
 MODULE STVectorField_Class
 USE AbstractField_Class, ONLY: AbstractField_
+USE VectorField_Class, ONLY: VectorField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: FEVariable_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
@@ -74,83 +75,58 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate by copy
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored
-
   FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the data from HDFFile
-
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the data to HDFfile
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry (Space-time nodal values)
   !! Space-time nodal values are in 2D array (spaceCompo, timeCompo)
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a contaant space-time nodal values
   !! Space-time nodal values are given in a 2D array (spaceCompo, timeCompo)
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values os space-time component to a given constant value
   !! obj@[spaceCompo, timeCompo] = value
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set all values by using a rank-3 fortran array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set all nodal values of a space-time component by using a rank-1 vector
   !! obj@[spaceCompo, timeCompo] = value(:)
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! Set space-time nodal values of selected nodes
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set space-time nodal values of selected nodes
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a STvector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set a single node value of  space-time component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set selected nodal values by using FEVariable
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set values to a STvector by using triplet
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! obj@[ivar, idof] = value@[ivar_value, idof_value]
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
   !! Set all nodal values of many space components and a given time component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
   !! Set values using an instance of AbstractNodeField_
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set15 => obj_Set15
-  !! Set all nodal values of many time components and a given space component
-
-  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
-
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14, Set15, Set16
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14 
 
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => obj_SetByFunction
-  !! Set by function
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
+    obj_SetByFunction
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetFromVectorField => &
     obj_SetFromVectorField
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetToVectorField => &
@@ -158,45 +134,29 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get space-time nodal values of a single node in 1D array
   !! Get all the nodal values of space-time component in 1D array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get all the values in a rank3 array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! Get space-time nodal value of many nodes in rank-3 array
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get nodal values of a space-time component at many nodes
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get a single nodal value of space-time component
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get space-time nodal values of a single node
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get space-time nodal value in fevariable
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get8 => obj_Get8
-  !! Get space-time nodal value in an instance of AbtractNodeField_
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get9 => obj_Get9
-  !! Get the space-time nodal value in an instance of AbstractNodeField_
-
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, &
-    Get6, Get7, Get8, Get9
-
+    Get6, Get7
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
   !! Get multiple values in FEVariable
 
   ! SET:
   ! @DirichletBCMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
   !! Appply dirichlet boundary condition
@@ -364,20 +324,28 @@ END INTERFACE STVectorFieldInitiate
 ! date: 25 June 2021
 ! summary: Deallocates the data stored inside the STVectorField_ obj
 
-INTERFACE STVectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE STVectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE STVectorFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE STVectorFieldDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE
+
+INTERFACE STVectorFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE STVectorFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -393,13 +361,17 @@ END INTERFACE STVectorFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE STVectorFieldSafeAllocate
+INTERFACE
   MODULE SUBROUTINE obj_STVectorFieldSafeAllocate1(obj, newsize)
     TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable STVector field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_STVectorFieldSafeAllocate1
+END INTERFACE
+
+INTERFACE STVectorFieldSafeAllocate
+  MODULE PROCEDURE obj_STVectorFieldSafeAllocate1
 END INTERFACE STVectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
@@ -420,12 +392,16 @@ END INTERFACE
 ! date: 26 June 2021
 ! summary: Display the content of [[STVectorField_]]
 
-INTERFACE STVectorFieldDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE STVectorFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE STVectorFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -461,12 +437,16 @@ END INTERFACE STVectorFieldImport
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE STVectorFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE STVectorFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE STVectorFieldExport
 
 !----------------------------------------------------------------------------
@@ -488,8 +468,8 @@ END INTERFACE STVectorFieldExport
 ! STvector( :, :, globalNode ) = value( :, : )
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set1( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global or local node number
@@ -548,8 +528,8 @@ END INTERFACE
 ! STvector( spaceCompo, timeCompo, i ) = value, for i = 1, tNodes
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, VALUE, spaceCompo, timeCompo, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set3( &
+    obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
@@ -610,8 +590,8 @@ END INTERFACE
 ! STvector( spaceCompo, timeCompo, : ) = value( : )
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5(obj, VALUE, spaceCompo, timeCompo, &
-                             scale, addContribution)
+  MODULE SUBROUTINE obj_Set5( &
+    obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! nodal values of space-time component
@@ -646,8 +626,8 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, : ), for entries in global nodes
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE, globalNode, islocal, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set6( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -684,8 +664,8 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, :, : )
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7(obj, globalNode, islocal, VALUE, scale, &
-                             addContribution)
+  MODULE SUBROUTINE obj_Set7( &
+    obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -717,8 +697,9 @@ END INTERFACE
 ! STvector( spaceCompo, globalNode ) = value( : )
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, VALUE, globalNode, islocal, spaceCompo, &
-                             timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set8( &
+    obj, VALUE, globalNode, islocal, spaceCompo, timeCompo, scale, &
+    addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! nodal values of space-time component
@@ -749,8 +730,9 @@ END INTERFACE
 ! STvector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, spaceCompo, &
-                             timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9( &
+    obj, VALUE, globalNode, islocal, spaceCompo, timeCompo, scale, &
+    addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
@@ -776,8 +758,8 @@ END INTERFACE
 ! summary: Set the STvector values using triplet
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, islocal, scale, &
-                              addContribution)
+  MODULE SUBROUTINE obj_Set10( &
+    obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! FE variable
@@ -831,8 +813,8 @@ END INTERFACE
 ! of `spaceCompo`
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set12(obj, VALUE, spaceCompo, timeCompo, &
-                              storageFMT, scale, addContribution)
+  MODULE SUBROUTINE obj_Set12( &
+    obj, VALUE, spaceCompo, timeCompo, storageFMT, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! If storage is NODES_FMT
@@ -864,8 +846,8 @@ END INTERFACE
 ! summary: Set values for several time components for a given spaceCompo
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, VALUE, spaceCompo, timeCompo, &
-                              storageFMT, scale, addContribution)
+  MODULE SUBROUTINE obj_Set13( &
+    obj, VALUE, spaceCompo, timeCompo, storageFMT, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! The numbe rows in value should be equal to the size of timeCompo
@@ -893,6 +875,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set14(obj, VALUE)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(STVectorField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: This routine Set all nodal values of a given space-time component
 !
@@ -906,41 +903,26 @@ END INTERFACE
 !
 ! STvector( spaceCompo, : ) = value
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE, spaceCompo, timeCompo, &
-                              scale, addContribution)
-    CLASS(STVectorField_), INTENT(INOUT) :: obj
-    !! obj@[spaceCompo, timeCompo] = value (value is scalar field)
-    !! obj@[spaceCompo, timeCompo] = value@timeCompo (value is st scalar)
-    !! obj@[spaceCompo, timeCompo] = value@[spaceCompo, timeCompo]
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    !! Instance of abstract node field which contains
-    !! the nodal values of space-time component
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space component of obj
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component in obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
-  END SUBROUTINE obj_Set14
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-29
-! summary: Set values
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set15(obj, VALUE)
-    CLASS(STVectorField_), INTENT(INOUT) :: obj
-    CLASS(STVectorField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set15
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set14( &
+!     obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
+!     CLASS(STVectorField_), INTENT(INOUT) :: obj
+!     !! obj@[spaceCompo, timeCompo] = value (value is scalar field)
+!     !! obj@[spaceCompo, timeCompo] = value@timeCompo (value is st scalar)
+!     !! obj@[spaceCompo, timeCompo] = value@[spaceCompo, timeCompo]
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     !! Instance of abstract node field which contains
+!     !! the nodal values of space-time component
+!     INTEGER(I4B), INTENT(IN) :: spaceCompo
+!     !! space component of obj
+!     INTEGER(I4B), INTENT(IN) :: timeCompo
+!     !! time component in obj
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     !! scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!     !! add or set
+!   END SUBROUTINE obj_Set14
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -961,24 +943,24 @@ END INTERFACE
 ! Then we call setMultiple method on obj to set the multiple values
 ! using the range.
 
-INTERFACE
-  MODULE SUBROUTINE obj_Set16(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(STVectorField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in obj
-    INTEGER(I4B), INTENT(IN) :: idof
-    !! local degree of freedom in obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    !! obj = value
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    !! physical variable in value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    !! local degree of freedom in value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set16
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Set16( &
+!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
+!     CLASS(STVectorField_), INTENT(INOUT) :: obj
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     !! physical variable in obj
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     !! local degree of freedom in obj
+!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+!     !! obj = value
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     !! physical variable in value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!     !! local degree of freedom in value
+!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+!   END SUBROUTINE obj_Set16
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -989,10 +971,10 @@ END INTERFACE
 ! summary: obj@timeCompo = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetFromVectorField(obj, VALUE, timeCompo, &
-                                           scale, addContribution)
+  MODULE SUBROUTINE obj_SetFromVectorField( &
+    obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    CLASS(VectorField_), INTENT(IN) :: VALUE
     !! It should be a child of VectorField_
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of vector field
@@ -1025,8 +1007,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
-                                      spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction( &
+    obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
@@ -1068,8 +1050,8 @@ END INTERFACE
 ! No-Node No-Space Time
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, spaceCompo, &
-                             timeCompo)
+  MODULE SUBROUTINE obj_Get1( &
+    obj, VALUE, tsize, globalNode, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! value = obj
@@ -1132,8 +1114,8 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3(obj, VALUE, storageFMT, globalNode, islocal, &
-                             dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Get3( &
+    obj, VALUE, storageFMT, globalNode, islocal, dim1, dim2, dim3)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :, :)
     !! returned value
@@ -1171,8 +1153,8 @@ END INTERFACE
 ! that the length of value should be equal to the size of globalNode vector.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, &
-                             spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_Get4( &
+    obj, VALUE, tsize, globalNode, islocal, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! nodal values of space-time component
@@ -1199,8 +1181,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, spaceCompo, &
-                             timeCompo)
+  MODULE SUBROUTINE obj_Get5( &
+    obj, VALUE, globalNode, islocal, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! nodal value of space-time component
@@ -1236,7 +1218,6 @@ INTERFACE
     !! global or local node
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then global node number are local node number
-
   END SUBROUTINE obj_Get6
 END INTERFACE
 
@@ -1296,18 +1277,18 @@ END INTERFACE
 !   value should be an instance of STVectorField_
 !   In this case; value = obj
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get8(obj, VALUE, spaceCompo, timeCompo)
-    CLASS(STVectorField_), INTENT(IN) :: obj
-    !! value=obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    !! value=obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-    !!  space component
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-    !! time component
-  END SUBROUTINE obj_Get8
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get8(obj, VALUE, spaceCompo, timeCompo)
+!     CLASS(STVectorField_), INTENT(IN) :: obj
+!     !! value=obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     !! value=obj
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+!     !!  space component
+!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+!     !! time component
+!   END SUBROUTINE obj_Get8
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Get@GetMethods
@@ -1317,17 +1298,17 @@ END INTERFACE
 ! date: 06 Jan 2022
 ! summary: REturns the value
 
-INTERFACE
-  MODULE SUBROUTINE obj_Get9(obj, ivar, idof, VALUE, ivar_value, &
-                             idof_value)
-    CLASS(STVectorField_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE obj_Get9
-END INTERFACE
+! INTERFACE
+!   MODULE SUBROUTINE obj_Get9( &
+!     obj, ivar, idof, VALUE, ivar_value, idof_value)
+!     CLASS(STVectorField_), INTENT(IN) :: obj
+!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+!     INTEGER(I4B), INTENT(IN) :: ivar
+!     INTEGER(I4B), INTENT(IN) :: idof
+!     INTEGER(I4B), INTENT(IN) :: ivar_value
+!     INTEGER(I4B), INTENT(IN) :: idof_value
+!   END SUBROUTINE obj_Get9
+! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
@@ -1337,7 +1318,7 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE STVectorFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(STVectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1349,6 +1330,10 @@ INTERFACE STVectorFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! physical variable
   END SUBROUTINE obj_GetFeVariable
+END INTERFACE
+
+INTERFACE STVectorFieldGetFEVariable
+  MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE STVectorFieldGetFEVariable
 
 !----------------------------------------------------------------------------

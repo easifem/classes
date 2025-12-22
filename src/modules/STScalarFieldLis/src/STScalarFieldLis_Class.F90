@@ -20,7 +20,6 @@
 
 MODULE STScalarFieldLis_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE STScalarField_Class, ONLY: STScalarField_
@@ -70,8 +69,6 @@ CONTAINS
   ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! Set values using FEVariable
-  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   !! Set values using FEVariable
 
   ! GET:
@@ -180,28 +177,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, ivar, idof, VALUE, ivar_value, &
-                              idof_value, scale, addContribution)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: idof
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar_value
-    INTEGER(I4B), INTENT(IN) :: idof_value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE obj_Set13
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -213,10 +188,10 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set14(obj, VALUE)
+  MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     CLASS(STScalarField_), INTENT(IN) :: VALUE
-  END SUBROUTINE obj_Set14
+  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
