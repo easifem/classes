@@ -1,7 +1,6 @@
 ! This program is a part of EASIFEM library
 ! Expandable And Scalable Infrastructure for Finite Element Methods
 ! htttps://www.easifem.com
-! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -15,7 +14,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(Gnuplot_Class) UtilityMethods
 IMPLICIT NONE
@@ -25,8 +23,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE process_axes_set
-CHARACTER(*), PARAMETER :: myName = 'process_axes_set()'
+MODULE PROCEDURE GetAxesSetting
+CHARACTER(*), PARAMETER :: myName = 'GetAxesSetting()'
+CHARACTER(*), PARAMETER :: prefix = ' axes '
 LOGICAL(LGT) :: isok
 CHARACTER(:), ALLOCATABLE :: astr
 
@@ -34,50 +33,42 @@ astr = LowerCase(TRIM(ADJUSTL(axes_set)))
 
 isok = LEN(astr) .EQ. 0
 IF (isok) THEN
-  axes = ''
+  axesSetting = ''
   RETURN
 END IF
 
 SELECT CASE (astr)
 CASE ('x1y1')
-  axes = 'x1y1'
+  axesSetting = prefix//'x1y1'
 CASE ('x1y2')
-  axes = 'x1y2'
+  axesSetting = prefix//'x1y2'
 CASE ('x2y1')
-  axes = 'x2y1'
+  axesSetting = prefix//'x2y1'
 CASE ('x2y2')
-  axes = 'x2y2'
+  axesSetting = prefix//'x2y2'
 CASE default
   ! wrong strings
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  CALL e%raiseWarning(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: wrong axes set is sent. &
     &    axes set can be on of: x1y1, x1y2, x2y1, x2y2')
-  axes = ''
+  axesSetting = ''
   RETURN
 END SELECT
 
-END PROCEDURE process_axes_set
+END PROCEDURE GetAxesSetting
 
 !----------------------------------------------------------------------------
-!                                                         process_linespec
+!                                                         GetPlotCommand
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE process_linespec
-!local variables
-CHARACTER(4) :: axes
+MODULE PROCEDURE GetPlotCommand
 CHARACTER(10) :: axes_setting
-LOGICAL(LGT) :: isok, abool, acase
+LOGICAL(LGT) :: acase
 
 !check the axes set
-axes_setting = ''
-isok = PRESENT(axes_set)
-IF (isok) THEN
-
-  CALL process_axes_set(axes_set, axes)
-  abool = LEN_TRIM(axes) > 0
-  IF (abool) axes_setting = ' axes '//axes
-
-END IF
+axes_setting = ""
+IF (PRESENT(axes_set)) &
+  CALL GetAxesSetting(axes_set, axes_setting)
 
 acase = PRESENT(lspec)
 
@@ -86,328 +77,180 @@ CASE (1)
 
   IF (acase) THEN
 
-    isok = hastitle(lspec)
-    IF (isok) THEN
-      lsstring = 'plot "-" '//TRIM(lspec)//axes_setting
-    ELSE
-      lsstring = 'plot "-" notitle '//TRIM(lspec)//axes_setting
-    END IF
+    plotCommand = 'plot "-" '//TRIM(lspec)//axes_setting
 
     RETURN
   END IF
 
-  lsstring = 'plot "-" notitle'//axes_setting
+  plotCommand = 'plot "-" '//axes_setting
 
-CASE default !e.g. 2, 3, 4, ...
+CASE DEFAULT
 
   IF (acase) THEN
 
-    isok = hastitle(lspec)
-    IF (isok) THEN
-      lsstring = ', "-" '//TRIM(lspec)//axes_setting
-    ELSE
-      lsstring = ', "-" notitle '//TRIM(lspec)//axes_setting
-    END IF
+    plotCommand = ', "-" '//TRIM(lspec)//axes_setting
 
     RETURN
   END IF
 
-  lsstring = ', "-" notitle'//axes_setting
+  plotCommand = ', "-" '//axes_setting
+
 END SELECT
-END PROCEDURE process_linespec
+
+END PROCEDURE GetPlotCommand
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE processcmd
-! write the plot style for data
-! obj is used only when 3D plots (splot, cplot) is used
-IF (ALLOCATED(obj%txtdatastyle)) THEN
-  CALL obj%pltfile%WRITE("set style data "//obj%txtdatastyle)
-  CALL obj%pltfile%WriteBlank()
-END IF
+MODULE PROCEDURE obj_WritePlotSetup
 
-! Write options
-IF (obj%hasoptions) THEN
+!----------------------------------
+!                      data style
+!----------------------------------
+
+CALL Help_WriteDataStyle()
+
+!----------------------------------
+!                         options
+!----------------------------------
+
+CALL Help_WriteOptions()
+
+!----------------------------------
+!                            title
+!----------------------------------
+
+CALL obj%pltfile%WRITE("# title")
+CALL Help_WriteLabelSetup(obj%title, isTitle=.TRUE.)
+
+!----------------------------------
+!                            labels
+!----------------------------------
+
+CALL obj%pltfile%WRITE("# labels")
+CALL Help_WriteLabelSetup(obj%xaxis%label, &
+                          direction="x", isTitle=.FALSE.)
+CALL Help_WriteLabelSetup(obj%yaxis%label, &
+                          direction="y", isTitle=.FALSE.)
+CALL Help_WriteLabelSetup(obj%zaxis%label, &
+                          direction="z", isTitle=.FALSE.)
+CALL Help_WriteLabelSetup(obj%x2axis%label, &
+                          direction="x2", isTitle=.FALSE.)
+CALL Help_WriteLabelSetup(obj%y2axis%label, &
+                          direction="y2", isTitle=.FALSE.)
+
+!----------------------------------
+!                  write Tick Setup
+!----------------------------------
+CALL obj%pltfile%WRITE("# ticks")
+!! primary axes
+CALL Help_WriteTickSetup(tick=obj%xaxis%tick, direction="x")
+CALL Help_WriteTickSetup(tick=obj%yaxis%tick, direction="y")
+CALL Help_WriteTickSetup(tick=obj%zaxis%tick, direction="z")
+
+!! secondary axes
+CALL Help_WriteTickSetup(tick=obj%x2axis%tick, direction="x2")
+CALL Help_WriteTickSetup(tick=obj%y2axis%tick, direction="y2")
+
+CONTAINS
+
+SUBROUTINE Help_WriteDataStyle()
+
+  IF (obj%datastyle%LEN() .GT. 0) THEN
+    CALL obj%pltfile%WRITE("# data style")
+    CALL obj%pltfile%WRITE("set style data "//obj%datastyle%chars())
+    CALL obj%pltfile%WriteBlank()
+  END IF
+
+END SUBROUTINE Help_WriteDataStyle
+
+SUBROUTINE Help_WriteOptions()
+  INTEGER(I4B) :: ii
+
+  IF (.NOT. ALLOCATED(obj%options)) RETURN
+
   CALL obj%pltfile%WRITE("# options")
-  CALL obj%pltfile%WRITE(obj%txtoptions)
+  DO ii = 1, SIZE(obj%options)
+    CALL obj%pltfile%WRITE(obj%options(ii)%chars())
+  END DO
   CALL obj%pltfile%WriteBlank()
-END IF
 
-! Check with plot scale: i.e linear, logx, logy, or log xy
-CALL obj%pltfile%WRITE("# plot scale")
-SELECT CASE (obj%plotscale)
-CASE ('semilogx')
-  CALL obj%pltfile%WRITE("set logscale  x")
-CASE ('semilogy')
-  CALL obj%pltfile%WRITE("set logscale  y")
-CASE ('loglog')
-  CALL obj%pltfile%WRITE("set logscale  xy")
-CASE default
-  ! do nothing
-END SELECT
+END SUBROUTINE Help_WriteOptions
 
-! write annotation
-CALL obj%pltfile%WRITE("# Annotation: title and labels")
-CALL write_label(obj, 'plot_title')
-CALL write_label(obj, 'xlabel')
-CALL write_label(obj, 'x2label')
-CALL write_label(obj, 'ylabel')
-CALL write_label(obj, 'y2label')
-CALL write_label(obj, 'zlabel')
+SUBROUTINE Help_WriteLabelSetup(label, direction, isTitle)
+  TYPE(Label_), INTENT(IN) :: label
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: direction
+  LOGICAL(LGT), INTENT(IN) :: isTitle
+  CHARACTER(:), ALLOCATABLE :: lblstring
 
-! axes range
-CALL obj%pltfile%WRITE("# axes setting")
-IF (obj%hasxrange) THEN
-  CALL obj%pltfile%WRITE("set xrange ["//tostring(obj%xrange(1))// &
-                         ":"//tostring(obj%xrange(2))//"]")
-END IF
-IF (obj%hasyrange) THEN
-  CALL obj%pltfile%WRITE("set yrange ["//tostring(obj%yrange(1))// &
-                         ":"//tostring(obj%yrange(2))//"]")
-END IF
-IF (obj%haszrange) THEN
-  CALL obj%pltfile%WRITE("set zrange ["//tostring(obj%zrange(1))// &
-                         ":"//tostring(obj%zrange(2))//"]")
-END IF
+  IF (.NOT. label%isConfigured) RETURN
 
-! secondary axes range
-IF (obj%hasx2range) THEN
-  CALL obj%pltfile%WRITE("set x2range ["//tostring(obj%x2range(1))// &
-                         ":"//tostring(obj%x2range(2))//"]")
-END IF
-IF (obj%hasy2range) THEN
-  CALL obj%pltfile%WRITE("set y2range ["//tostring(obj%y2range(1))// &
-                         ":"//tostring(obj%y2range(2))//"]")
-END IF
-! finish by new line
-CALL obj%pltfile%WriteBlank()
-
-END PROCEDURE processcmd
-
-!----------------------------------------------------------------------------
-!                                                                  hasTitle
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE hasTitle
-INTEGER :: idx1
-INTEGER :: idx2
-
-idx1 = INDEX(LowerCase(chars), 'title')
-!Check if title is passed
-idx2 = INDEX(' '//LowerCase(chars), ' t ')
-!Check if the abbreviated title 't' is passed. Extra space is added
-! at the beginning of chars to find starting 't'
-IF (idx1 /= 0 .OR. idx2 /= 0) THEN
-  hastitle = .TRUE.
-ELSE
-  hastitle = .FALSE.
-END IF
-
-END PROCEDURE hasTitle
-
-!----------------------------------------------------------------------------
-!                                                                write_label
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE write_label
-! local var
-CHARACTER(:), ALLOCATABLE :: lblstring
-CHARACTER(:), ALLOCATABLE :: lblset
-TYPE(Label_) :: label
-
-SELECT CASE (lblname)
-CASE ('xlabel')
-  IF (.NOT. (obj%tpxlabel%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set xlabel "'
-  label = obj%tpxlabel
-CASE ('x2label')
-  IF (.NOT. (obj%tpx2label%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set x2label "'
-  label = obj%tpx2label
-CASE ('ylabel')
-  IF (.NOT. (obj%tpylabel%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set ylabel "'
-  label = obj%tpylabel
-CASE ('y2label')
-  IF (.NOT. (obj%tpy2label%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set y2label "'
-  label = obj%tpy2label
-CASE ('zlabel')
-  IF (.NOT. (obj%tpzlabel%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set zlabel "'
-  label = obj%tpzlabel
-CASE ('plot_title')
-  IF (.NOT. (obj%tpplottitle%hasLabel)) THEN
-    RETURN ! there is no label
-  END IF
-  lblset = 'set title "'
-  label = obj%tpplottitle
-END SELECT
-
-lblstring = ''
-! if there is a label continue to set it
-lblstring = lblstring//lblset//TRIM(label%text)//'"'
-IF (ALLOCATED(label%color)) THEN
-  lblstring = lblstring//' tc "'//TRIM(label%color)//'"'
-END IF
-! set font and size
-IF (ALLOCATED(obj%tpxlabel%fontname)) THEN
-  lblstring = lblstring//' font "'//TRIM(label%fontname)//','
-  IF (label%fontsize /= NOT_INITIALIZED) THEN
-    lblstring = lblstring//tostring(label%fontsize)//'"'
+  lblstring = ''
+  IF (isTitle) THEN
+    lblstring = 'set title "'//TRIM(label%text)//'"'
   ELSE
-    lblstring = lblstring//'"'
+    lblstring = "set "//TRIM(direction)//'label "'// &
+                TRIM(label%text)//'"'
   END IF
-ELSE ! check if only font size has been given
-  IF (label%fontsize /= NOT_INITIALIZED) THEN
-    lblstring = lblstring//' font ",'//tostring(label%fontsize)//'"'
+
+  !! color
+  IF (ALLOCATED(label%color)) &
+    lblstring = lblstring//' tc "'//TRIM(label%color)//'"'
+
+  !! fontname and size
+  IF (ALLOCATED(label%fontname)) THEN
+    lblstring = lblstring//' font "'//TRIM(label%fontname)//','
+    IF (label%fontsize /= NOT_INITIALIZED) THEN
+      lblstring = lblstring//tostring(label%fontsize)//'"'
+    ELSE
+      lblstring = lblstring//'"'
+    END IF
+  ELSE ! check if only font size has been given
+    IF (label%fontsize /= NOT_INITIALIZED) THEN
+      lblstring = lblstring//' font ",'//tostring(label%fontsize)//'"'
+    END IF
   END IF
-END IF
-! set rotation
-IF (label%rotate /= NOT_INITIALIZED) THEN
-  lblstring = lblstring//' rotate by '//tostring(label%rotate)
-END IF
 
-IF (obj%pltfile%IsOpen()) THEN
-  CALL obj%pltfile%WRITE(lblstring)
-END IF
+  !! rotation
+  IF (label%rotate /= NOT_INITIALIZED) &
+    lblstring = lblstring//' rotate by '//tostring(label%rotate)
 
-END PROCEDURE write_label
+  IF (obj%pltfile%IsOpen()) CALL obj%pltfile%WRITE(lblstring)
+  CALL obj%pltfile%WriteBlank()
 
-!----------------------------------------------------------------------------
-!                                                                 splitstr
-!----------------------------------------------------------------------------
+END SUBROUTINE Help_WriteLabelSetup
 
-MODULE PROCEDURE splitstr
-! local variables
-CHARACTER, PARAMETER :: delimiter = ';'
-INTEGER :: n
-INTEGER :: m
-INTEGER :: k
+SUBROUTINE Help_WriteTickSetup(tick, direction)
+  TYPE(Tick_), INTENT(IN) :: tick
+  CHARACTER(*), INTENT(IN) :: direction
 
-k = LEN_TRIM(chars) !length with removed trailing blanks
-n = SCAN(chars, delimiter)
-IF (n == 0) THEN ! obj is a single statement
-  spstr = ADJUSTL(chars)//NEW_LINE(' ')
-  RETURN
-END IF
+  IF (.NOT. tick%isConfigured) RETURN
 
-! for two or more statements separated by ;
-spstr = ''
-m = 1
-DO WHILE (n /= 0 .AND. m < k)
-  IF (n /= 1) THEN
-    spstr = spstr//ADJUSTL(chars(m:m + n - 2))//NEW_LINE(' ')
-  END IF
-  m = n + m
-  n = SCAN(chars(m:k), delimiter)
-END DO
-IF (m < k) THEN !write the last statement
-  spstr = spstr//ADJUSTL(chars(m:k))//NEW_LINE(' ')
-END IF
-END PROCEDURE splitstr
+  SELECT CASE (tick%plotscale)
+  CASE (1) ! autoscale
+    CALL obj%pltfile%WRITE("set autoscale "//TRIM(direction))
+    RETURN
+  CASE (2) ! log scale
+    CALL obj%pltfile%WRITE("set logscale "//TRIM(direction) &
+                           //" "//tostring(tick%logbase))
+  CASE DEFAULT ! linear scale
+  END SELECT
 
-!----------------------------------------------------------------------------
-!                                                        splitstring2array
-!----------------------------------------------------------------------------
+  CALL obj%pltfile%WRITE("set "//TRIM(direction)//"range "// &
+                         "["//tostring(tick%lims(1))//":" &
+                         //tostring(tick%lims(2))//"]")
+  CALL obj%pltfile%WriteBlank()
 
-MODULE PROCEDURE splitstring2array
+END SUBROUTINE Help_WriteTickSetup
 
-! local variables
-INTEGER :: m, n
-INTEGER :: i, idx
-CHARACTER(LEN(chars)) :: strtmp
-CHARACTER(1) :: delimiter_
-
-! 0. check the existance of delimiter
-IF (PRESENT(delimiter)) THEN
-  delimiter_ = delimiter
-ELSE
-  delimiter_ = ';'
-END IF
-
-! 1. remove initial blanks if any
-strtmp = TRIM(ADJUSTL(chars))
-
-! 2. count the number substrings separated by delimiter
-n = COUNT([(strtmp(i:i) == delimiter_, i=1, LEN_TRIM(strtmp))])
-
-! 3. allocate the output string array
-ALLOCATE (strarray(n + 1))
-
-! 4. extract substrings and store in array one by one
-m = 1
-DO i = 1, n
-  idx = INDEX(strtmp(m:), delimiter_)
-  strarray(i) = ADJUSTL(strtmp(m:m + idx - 2))
-  m = m + idx
-END DO
-strarray(n + 1) = ADJUSTL(strtmp(m:))
-
-END PROCEDURE splitstring2array
-
-!----------------------------------------------------------------------------
-!                                                            preset_config
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE preset_gnuplot_config
-!..............................................................................
-! To write the preset configuration for gnuplot (ogpf customized settings)
-!..............................................................................
-
-CALL obj%pltfile%WriteBlank()
-CALL obj%pltfile%WRITE('# ogpf extra configuration')
-CALL obj%pltfile%WRITE(commentLineGnuplot)
-
-! color definition
-CALL obj%pltfile%WRITE('# color definitions')
-CALL obj%pltfile%WRITE('set style line 1 lc rgb "#800000" lt 1 lw 2')
-CALL obj%pltfile%WRITE('set style line 2 lc rgb "#ff0000" lt 1 lw 2')
-
-CALL obj%pltfile%WRITE('set style line 3 lc rgb "#ff4500" lt 1 lw 2')
-CALL obj%pltfile%WRITE('set style line 4 lc rgb "#ffa500" lt 1 lw 2')
-CALL obj%pltfile%WRITE('set style line 5 lc rgb "#006400" lt 1 lw 2')
-CALL obj%pltfile%WRITE('set style line 6 lc rgb "#0000ff" lt 1 lw 2')
-CALL obj%pltfile%WRITE('set style line 7 lc rgb "#9400d3" lt 1 lw 2')
-CALL obj%pltfile%WriteBlank()
-! axes setting
-CALL obj%pltfile%WRITE('# Axes')
-CALL obj%pltfile%WRITE('set border linewidth 1.15')
-CALL obj%pltfile%WRITE('set tics nomirror')
-CALL obj%pltfile%WriteBlank()
-
-CALL obj%pltfile%WRITE('# grid')
-CALL obj%pltfile%WRITE('# Add light grid to plot')
-CALL obj%pltfile%WRITE('set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
-CALL obj%pltfile%WRITE('set grid back ls 102')
-CALL obj%pltfile%WriteBlank()
-! set the plot style
-CALL obj%pltfile%WRITE('# plot style')
-CALL obj%pltfile%WRITE('set style data linespoints')
-CALL obj%pltfile%WriteBlank()
-
-CALL obj%pltfile%WRITE(commentLineGnuplot)
-CALL obj%pltfile%WriteBlank()
-
-END PROCEDURE preset_gnuplot_config
+END PROCEDURE obj_WritePlotSetup
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_writeData_xy
+MODULE PROCEDURE obj_WriteDataBlock_xy
 INTEGER(I4B) :: ii, ndata
 
 ndata = SIZE(x)
@@ -416,17 +259,16 @@ DO ii = 1, ndata
 END DO
 CALL obj%pltfile%WRITE("e")
 
-END PROCEDURE obj_writeData_xy
+END PROCEDURE obj_WriteDataBlock_xy
 
 !----------------------------------------------------------------------------
 !                                                            color_palettes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE color_palettes
-CHARACTER(1) :: strnumber
+MODULE PROCEDURE GetColorPaletteScript
 CHARACTER(11) :: strblank
-INTEGER :: j
-INTEGER :: maxcolors
+INTEGER(I4B) :: jj
+INTEGER(I4B) :: maxcolors
 
 CHARACTER(:), ALLOCATABLE :: pltname
 CHARACTER(7) :: palette(10) ! palettes with maximum 9 colors
@@ -440,48 +282,39 @@ palette = ''
 paletteScript = '# Define the '//pltname//' pallete'//NEW_LINE(' ')
 paletteScript = paletteScript//'set palette defined ( \'//NEW_LINE(' ')
 strblank = '           ' ! pad certain number of paces
-DO j = 1, maxcolors - 1
-  WRITE (unit=strnumber, fmt='(I1)') j - 1
-  paletteScript = paletteScript//strblank//strnumber// &
-                  ' "'//palette(j)//'",\'//NEW_LINE(' ')
+
+DO jj = 1, maxcolors - 1
+  paletteScript = paletteScript//strblank//tostring(jj - 1)// &
+                  ' "'//palette(jj)//'",\'//NEW_LINE(' ')
 END DO
 
-j = maxcolors - 1
-WRITE (strnumber, fmt='(I1)') j
-paletteScript = paletteScript//strblank//strnumber// &
-                ' "'//palette(j)//'" )'//NEW_LINE(' ')
+jj = maxcolors - 1
+paletteScript = paletteScript//strblank//tostring(jj)// &
+                ' "'//palette(jj)//'" )'//NEW_LINE(' ')
 
-END PROCEDURE color_palettes
-
-!----------------------------------------------------------------------------
-!                                                                 addscript
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_addscript
-
-IF (.NOT. ALLOCATED(obj%txtscript)) obj%txtscript = ''
-IF (LEN_TRIM(obj%txtscript) == 0) THEN
-  obj%txtscript = '' ! initialize string
-END IF
-IF (LEN_TRIM(scripts) > 0) THEN
-  obj%txtscript = obj%txtscript//splitstr(scripts)
-END IF
-
-END PROCEDURE obj_addscript
+END PROCEDURE GetColorPaletteScript
 
 !----------------------------------------------------------------------------
 !                                                                 runscript
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_runscript
+MODULE PROCEDURE obj_RunScript
+INTEGER(I4B) :: ii
 
 CALL obj%Initiate()
 
-CALL processcmd(obj)
-CALL obj%pltfile%WRITE(obj%txtscript)
+CALL obj%WritePlotSetup()
+
+DO ii = 1, SIZE(obj%scripts)
+  CALL obj%pltfile%WRITE(obj%scripts(ii)%chars())
+END DO
 
 CALL obj%DEALLOCATE()
 
-END PROCEDURE obj_runscript
+END PROCEDURE obj_RunScript
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE UtilityMethods

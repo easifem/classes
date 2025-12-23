@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,10 +14,10 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) PlotMethods
-USE InputUtility
+USE InputUtility, ONLY: Input
+USE GridPointUtility, ONLY: Linspace
 IMPLICIT NONE
 CONTAINS
 
@@ -47,32 +48,27 @@ doplot(1) = CheckInput(x1, y1)
 IF (.NOT. doplot(1)) CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[ERROR] :: x1 and y1 must be present for plot1')
 nplot = nplot + 1
-CALL process_linespec(1, pltstring(1), ls1, axes1)
+CALL GetPlotCommand(1, pltstring(1), ls1, axes1)
 
 doplot(2) = CheckInput(x2, y2)
 IF (doplot(2)) THEN
   nplot = nplot + 1
-  CALL process_linespec(nplot, pltstring(2), ls2, axes2)
+  CALL GetPlotCommand(nplot, pltstring(2), ls2, axes2)
 END IF
 doplot(3) = CheckInput(x3, y3)
 IF (doplot(3)) THEN
   nplot = nplot + 1
-  CALL process_linespec(nplot, pltstring(3), ls3, axes3)
+  CALL GetPlotCommand(nplot, pltstring(3), ls3, axes3)
 END IF
 doplot(4) = CheckInput(x4, y4)
 IF (doplot(4)) THEN
   nplot = nplot + 1
-  CALL process_linespec(nplot, pltstring(4), ls4, axes4)
+  CALL GetPlotCommand(nplot, pltstring(4), ls4, axes4)
 END IF
 
 CALL obj%Initiate()
 
-IF (PRESENT(logScale)) THEN
-  obj%plotscale = logScale
-ELSE
-  obj%plotscale = defaultPlotScale
-END IF
-CALL processcmd(obj)
+CALL obj%WritePlotSetup()
 
 isok = nplot .EQ. 1
 IF (isok) THEN
@@ -88,10 +84,10 @@ ELSE
   CALL obj%pltfile%WRITE("", advance="YES")
 END IF
 
-CALL obj%writeData(x1, y1)
-IF (doplot(2)) CALL obj%writeData(x2, y2)
-IF (doplot(3)) CALL obj%writeData(x3, y3)
-IF (doplot(4)) CALL obj%writeData(x4, y4)
+CALL obj%WriteDataBlock(x1, y1)
+IF (doplot(2)) CALL obj%WriteDataBlock(x2, y2)
+IF (doplot(3)) CALL obj%WriteDataBlock(x3, y3)
+IF (doplot(4)) CALL obj%WriteDataBlock(x4, y4)
 
 CALL obj%DEALLOCATE()
 
@@ -110,7 +106,8 @@ MODULE PROCEDURE obj_plot2
 CHARACTER(*), PARAMETER :: myName = "obj_plot2"
 
 INTEGER :: nx, ny, ns, number_of_curves, ii, jj, ierr
-CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
+CHARACTER(80), ALLOCATABLE :: pltstring(:)
+TYPE(String), ALLOCATABLE :: lspecs(:)
 
 nx = SIZE(xv)
 ny = SIZE(ymat, dim=1)
@@ -121,13 +118,7 @@ END IF
 
 CALL obj%Initiate()
 
-IF (PRESENT(logScale)) THEN
-  obj%plotscale = logScale
-END IF
-! Write plot title, axis labels and other annotations
-CALL processcmd(obj)
-
-obj%plotscale = defaultPlotScale
+CALL obj%WritePlotSetup()
 
 number_of_curves = SIZE(ymat, dim=2)
 ALLOCATE (pltstring(number_of_curves), stat=ierr)
@@ -140,33 +131,32 @@ pltstring(1:number_of_curves) = ''
 
 IF (PRESENT(lspec)) THEN
 
-  CALL splitstring2array(lspec, lst, ';')
-  ns = SIZE(lst, dim=1)
+  CALL lspec%Split(tokens=lspecs, sep=';')
+  ns = SIZE(lspecs)
 
-  IF (ns == number_of_curves) THEN
-    pltstring = lst
-  ELSEIF (ns < number_of_curves) THEN
+  IF (ns .LE. number_of_curves) THEN
     DO ii = 1, ns
-      pltstring(ii) = lst(ii)
+      pltstring(ii) = lspecs(ii)%chars()
     END DO
   ELSE
     DO ii = 1, number_of_curves
-      pltstring(ii) = lst(ii)
+      pltstring(ii) = lspecs(ii)%chars()
     END DO
   END IF
+
 END IF
 
 IF (PRESENT(lspec)) THEN
 
-  CALL process_linespec(1, pltstring(1), lst(1))
-  ns = SIZE(lst)
-  ! gpf will cylce through line specification, if number of specification passed
-  ! is less than number of plots
+  CALL GetPlotCommand(1, pltstring(1), lspecs(1)%chars())
+  ns = SIZE(lspecs)
+  ! cylce through line specification will happen,
+  ! when the number of lspces is less than number of curves
   DO ii = 1, number_of_curves
     jj = MOD(ii - 1, ns) + 1
-    CALL process_linespec(ii, pltstring(ii), lst(jj))
+    CALL GetPlotCommand(ii, pltstring(ii), lspecs(jj)%chars())
   END DO
-ELSE !No lspec is available
+ELSE
   pltstring(1) = ' plot "-" notitle,'
   pltstring(2:number_of_curves - 1) = '"-" notitle,'
   IF (number_of_curves .GT. 1) THEN
@@ -206,7 +196,8 @@ MODULE PROCEDURE obj_plot3
 CHARACTER(*), PARAMETER :: myName = "obj_plot3"
 INTEGER(I4B) :: mx, nx, my, ny, ns, number_of_curves, &
                 ii, jj, ierr
-CHARACTER(80), ALLOCATABLE :: pltstring(:), lst(:)
+CHARACTER(80), ALLOCATABLE :: pltstring(:)
+TYPE(String), ALLOCATABLE :: lspecs(:)
 
 mx = SIZE(xmat, dim=1)
 my = SIZE(ymat, dim=1)
@@ -224,13 +215,7 @@ END IF
 
 CALL obj%Initiate()
 
-IF (PRESENT(logScale)) THEN
-  obj%plotscale = logScale
-END IF
-! Write plot title, axis labels and other annotations
-CALL processcmd(obj)
-
-obj%plotscale = defaultPlotScale
+CALL obj%WritePlotSetup()
 
 number_of_curves = SIZE(ymat, dim=2)
 ALLOCATE (pltstring(number_of_curves), stat=ierr)
@@ -243,35 +228,31 @@ pltstring(1:number_of_curves) = ''
 
 IF (PRESENT(lspec)) THEN
 
-  CALL splitstring2array(lspec, lst, ';')
-  ns = SIZE(lst, dim=1)
+  CALL lspec%Split(tokens=lspecs, sep=';')
+  ns = SIZE(lspecs)
 
-  IF (ns == number_of_curves) THEN
-    ! there is a linespec for each curve
-    pltstring = lst
-  ELSEIF (ns < number_of_curves) THEN
-    ! not enough linespec
+  IF (ns .LE. number_of_curves) THEN
     DO ii = 1, ns
-      pltstring(ii) = lst(ii)
+      pltstring(ii) = lspecs(ii)%chars()
     END DO
-  ELSE ! ns > number_of curves
+  ELSE
     DO ii = 1, number_of_curves
-      pltstring(ii) = lst(ii)
+      pltstring(ii) = lspecs(ii)%chars()
     END DO
   END IF
+
 END IF
 
 IF (PRESENT(lspec)) THEN
 
-  CALL process_linespec(1, pltstring(1), lst(1))
-  ns = SIZE(lst)
-  ! GnuPlot_ will cylce through line specification, if number of specification passed
-  ! is less than number of plots
+  CALL GetPlotCommand(1, pltstring(1), lspecs(1)%chars())
+  ns = SIZE(lspecs)
+
   DO ii = 1, number_of_curves
     jj = MOD(ii - 1, ns) + 1
-    CALL process_linespec(ii, pltstring(ii), lst(jj))
+    CALL GetPlotCommand(ii, pltstring(ii), lspecs(jj)%chars())
   END DO
-ELSE !No lspec is available
+ELSE
   pltstring(1) = ' plot "-" notitle,'
   pltstring(2:number_of_curves - 1) = '"-" notitle,'
   IF (number_of_curves .GT. 1) THEN
@@ -326,7 +307,7 @@ END IF
 x = Linspace(xrange(1), xrange(2), np0)
 y = [(func(x(ii)), ii=1, np0)]
 
-CALL obj%plot(x, y, logScale=logScale)
+CALL obj%plot(x, y)
 
 ! cleanup memory
 IF (ALLOCATED(x)) DEALLOCATE (x)
@@ -342,10 +323,12 @@ MODULE PROCEDURE obj_plotData1
 
 CHARACTER(:), ALLOCATABLE :: xlabel0, ylabel0
 REAL(DFP) :: xlim0(2), ylim0(2), areal
+TYPE(String) :: astr
 
-CALL obj%filename(filename//'.plt')
-CALL obj%options('set terminal pngcairo; set output "' &
-                 //filename//'.png"')
+CALL obj%SetFilename(filename//'.plt')
+
+astr = 'set terminal pngcairo; set output "'//filename//'.png"'
+CALL obj%SetOptions(astr)
 
 IF (PRESENT(xlim)) THEN
   xlim0 = xlim
@@ -368,10 +351,10 @@ END IF
 xlabel0 = Input(default="x", option=xlabel)
 ylabel0 = Input(default="y", option=ylabel)
 
-CALL obj%xlim(xlim0)
-CALL obj%ylim(ylim0)
-CALL obj%xlabel(xlabel0)
-CALL obj%ylabel(ylabel0)
+CALL obj%SetXlim(xlim0)
+CALL obj%SetYlim(ylim0)
+CALL obj%SetXLabel(xlabel0)
+CALL obj%SetYLabel(ylabel0)
 CALL obj%plot(x1=xDATA(:), y1=yDATA(:), ls1="w l")
 CALL obj%reset()
 
@@ -400,5 +383,9 @@ FUNCTION CheckInput(xdata, ydata) RESULT(isok)
   END IF
 
 END FUNCTION CheckInput
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE PlotMethods

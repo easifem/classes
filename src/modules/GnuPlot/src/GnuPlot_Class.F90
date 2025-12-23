@@ -1,49 +1,69 @@
+! This program is a part of EASIFEM library
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
-! This module is based on ogpf library made by Mohammad Rahmani
-! Please check the LICENSE file for extra information
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
 !
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE GnuPlot_Class
-USE GlobalData, ONLY: I4B, DFP, sp => REAL32, dp => REAL64, &
-                      LGT
+USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseMethod, ONLY: TOSTRING
-USE GridPointUtility, ONLY: Linspace
-USE ParameterList, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: LowerCase
-USE TxtFile_Class
-USE AbstractPlot_Class
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: GnuPlot_
-PUBLIC :: process_linespec
-PUBLIC :: splitstring2array
+PUBLIC :: GnuPlotOpt_
 
 CHARACTER(*), PARAMETER :: modName = 'Gnuplot_Class'
-CHARACTER(*), PARAMETER :: md_name = 'ogpf libray'
-CHARACTER(*), PARAMETER :: md_rev = 'Rev. 0.22 of March 9th, 2018'
-CHARACTER(*), PARAMETER :: md_lic = 'Licence: MIT'
-CHARACTER(*), PARAMETER :: gnuplot_term_type = 'wxt'
-CHARACTER(*), PARAMETER :: gnuplot_term_font = 'Times New Roman,10'
-CHARACTER(*), PARAMETER :: gnuplot_term_size = '640,480'
-CHARACTER(*), PARAMETER :: gnuplot_output_filename = 'gnuplot_temp_script.plt'
-CHARACTER(*), PARAMETER :: defaultFmtGnuplot = '(a)'
-CHARACTER(*), PARAMETER :: commentLineGnuplot = &
-                           '# -------------------------------------------'
-CHARACTER(*), PARAMETER :: defaultPlotScale = "linear"
-CHARACTER(*), PARAMETER :: defaultCommandLine = "gnuplot --persist"
-REAL(dfp), PARAMETER :: defaultPause = 2.0_DFP
+INTEGER(I4B), PARAMETER :: NOT_INITIALIZED = -32000
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-! tplabel is a structure for gnuplot labels including
-! title, xlabel, x2label, ylabel, ...
-INTEGER, PARAMETER :: NOT_INITIALIZED = -32000
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary: Gnuplot Default Options
+
+TYPE GnuplotOpt_
+  CHARACTER(4) :: termType = 'wxt'
+  CHARACTER(15) :: termFont = 'Times New Roman'
+  INTEGER(I4B) :: termFontSize = 10
+  INTEGER(I4B) :: termSize(2) = [640, 480]
+  CHARACTER(18) :: filename = "gnuplot_script"
+  CHARACTER(11) :: dataStyle = "linespoints"
+  CHARACTER(45) :: commentLine = &
+                   '# -------------------------------------------'
+  CHARACTER(17) :: commandLine = "gnuplot --persist"
+  REAL(DFP) :: pauseSeconds = 2.0_DFP
+END TYPE GnuplotOpt_
+
+TYPE(GnuplotOpt_), PARAMETER :: defaultOpt = GnuplotOpt_()
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Label_ for title and axis labels
+
 TYPE :: Label_
-  LOGICAL(LGT) :: hasLabel = .FALSE.
+  LOGICAL(LGT) :: isConfigured = .FALSE.
   CHARACTER(:), ALLOCATABLE :: text
   CHARACTER(:), ALLOCATABLE :: color
   CHARACTER(:), ALLOCATABLE :: fontname
@@ -55,59 +75,88 @@ END TYPE Label_
 !
 !----------------------------------------------------------------------------
 
-! the gpf class implement the object for using gnuplot from fortran in a semi-interactive mode!
-! the fortran actually do the job and write out the commands and data in a single file and then
-! calls the gnuplot by shell command to plot the data
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Tick_ for axis ticks
 
-TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
+TYPE :: Tick_
+  LOGICAL(LGT) :: isConfigured = .FALSE.
+  INTEGER(I4B) :: plotscale = 0
+  INTEGER(I4B) :: logBase = 10
+  REAL(DFP) :: lims(2)
+  ! CHARACTER(:), ALLOCATABLE :: color
+  ! CHARACTER(:), ALLOCATABLE :: fontname
+  ! INTEGER(I4B) :: fontsize = NOT_INITIALIZED
+  ! INTEGER(I4B) :: rotate = NOT_INITIALIZED
+END TYPE Tick_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Axis_ type consist of label and tick
+
+TYPE :: Axis_
+  TYPE(String) :: name
+  TYPE(Label_) :: label
+  TYPE(Tick_) :: tick
+END TYPE Axis_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary: GnuPlot_ class
+
+TYPE :: GnuPlot_
   TYPE(TxtFile_) :: pltfile
-  LOGICAL(LGT) :: execute = .TRUE.
-  LOGICAL(LGT) :: PAUSE = .FALSE.
-  CHARACTER(:), ALLOCATABLE :: commandline
-  TYPE(Label_) :: tpplottitle
-  TYPE(Label_) :: tpxlabel
-  TYPE(Label_) :: tpx2label
-  TYPE(Label_) :: tpylabel
-  TYPE(Label_) :: tpy2label
-  TYPE(Label_) :: tpzlabel
-  CHARACTER(:), ALLOCATABLE :: txtoptions
-  ! a long string to store all type of gnuplot options
-  CHARACTER(:), ALLOCATABLE :: txtscript
-  ! a long string to store gnuplot script
-  CHARACTER(:), ALLOCATABLE :: txtdatastyle
-  ! lines, points, linepoints
-  LOGICAL(LGT) :: hasxrange = .FALSE.
-  LOGICAL(LGT) :: hasx2range = .FALSE.
-  LOGICAL(LGT) :: hasyrange = .FALSE.
-  LOGICAL(LGT) :: hasy2range = .FALSE.
-  LOGICAL(LGT) :: haszrange = .FALSE.
-  LOGICAL(LGT) :: hasoptions = .FALSE.
+
+  LOGICAL(LGT) :: runAfterWrite = .TRUE.
+
+  LOGICAL(LGT) :: pauseAfterDraw = .FALSE.
+
+  TYPE(Axis_) :: xaxis, yaxis, zaxis, x2axis, y2axis
+  TYPE(Label_) :: title
+
+  TYPE(String) :: filename
+  ! the name of physical file
+  ! to write the gnuplot script
+
+  TYPE(String) :: commandline
+
+  TYPE(String), ALLOCATABLE :: options(:)
+  ! vector of strings for gnuplot options
+  TYPE(String), ALLOCATABLE :: scripts(:)
+  ! vector of strings for gnuplot scripts
+  TYPE(String) :: dataStyle, termType, termFont
+  ! datastyle: lines, points, linespoints
+  ! termtype: wxt, qt, pngcairo, svg etc
+  ! termfont: Times New Roman etc
+  INTEGER(I4B) :: termFontSize
+  INTEGER(I4B) :: termSize(2)
+
   LOGICAL(LGT) :: hasanimation = .FALSE.
-  LOGICAL(LGT) :: hasfilename = .FALSE.
-  LOGICAL(LGT) :: hasfileopen = .FALSE.
-  REAL(DFP) :: xrange(2), yrange(2), zrange(2)
-  REAL(DFP) :: x2range(2), y2range(2)
-  CHARACTER(8) :: plotscale
+
   ! multiplot parameters
   LOGICAL(LGT) :: hasmultiplot = .FALSE.
   INTEGER :: multiplot_rows
   INTEGER :: multiplot_cols
   INTEGER :: multiplot_total_plots
   ! animation
-  REAL(dfp) :: pause_seconds = 0
+  REAL(DFP) :: pause_seconds = 0
   ! keep plot on screen for this value in seconds
-  INTEGER(i4b) :: frame_number
+  INTEGER(I4B) :: frame_number
   ! frame number in animation
   ! use for debugging and error handling
-  CHARACTER(:), ALLOCATABLE :: msg
-  !Message from plot procedures
-  INTEGER(i4b) :: status = 0
+  INTEGER(I4B) :: status = 0
   !Status from plot procedures
-  CHARACTER(:), ALLOCATABLE :: txtfilename
-  ! the name of physical file
-  ! to write the gnuplot script
-  ! ogpf preset configuration (kind of gnuplot initialization)
-  LOGICAL(LGT) :: preset_configuration = .TRUE.
+  LOGICAL(LGT) :: useDefaultTerm = .TRUE.
+  ! TODO: separate some configs
+  LOGICAL(LGT) :: useDefaultPreset = .TRUE.
 
   LOGICAL(LGT) :: hasCBRange = .FALSE.
   REAL(DFP) :: CBRange(2)
@@ -117,22 +166,14 @@ TYPE, EXTENDS(AbstractPlot_) :: GnuPlot_
 
 CONTAINS
   PRIVATE
-  !!
+
   !! @ConstructorMethods
-  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   FINAL :: obj_Finalize
 
-  !! set methods
-  PROCEDURE, PUBLIC, PASS(obj) :: cntrLevels => obj_setCntrLevels
-  PROCEDURE, PUBLIC, PASS(obj) :: cbTicks => obj_setCBTicks
-  PROCEDURE, PUBLIC, PASS(obj) :: pm3dOpts => obj_setPm3dOpts
-
-  PROCEDURE, PUBLIC, PASS(obj) :: cblim => obj_setCBLim
-
-  !! plot
+  !! plot lines
   PROCEDURE, PUBLIC, PASS(obj) :: multiplot => obj_multiplot
   PROCEDURE, PUBLIC, PASS(obj) :: plot1 => obj_plot1
   PROCEDURE, PUBLIC, PASS(obj) :: plot2 => obj_plot2
@@ -157,34 +198,63 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: contour3 => obj_contour3
   GENERIC, PUBLIC :: contour => contour1, contour2, contour3
 
-  ! TODO: make a interface for these subroutines
-  PROCEDURE, PASS(obj) :: preset_gnuplot_config
+  !! @SET methods
+  PROCEDURE, PUBLIC, PASS(obj) :: cntrLevels => obj_setCntrLevels
+  PROCEDURE, PUBLIC, PASS(obj) :: cbTicks => obj_setCBTicks
+  PROCEDURE, PUBLIC, PASS(obj) :: pm3dOpts => obj_setPm3dOpts
+  PROCEDURE, PUBLIC, PASS(obj) :: cblim => obj_setCBLim
 
-  PROCEDURE, PUBLIC, PASS(obj) :: processcmd
-  PROCEDURE, PASS(obj) :: set_label
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTerm => obj_SetTerm
 
-  PROCEDURE, PUBLIC, PASS(obj) :: options => set_options
-  PROCEDURE, PUBLIC, PASS(obj) :: title => set_plottitle
-  PROCEDURE, PUBLIC, PASS(obj) :: xlabel => set_xlabel
-  PROCEDURE, PUBLIC, PASS(obj) :: x2label => set_x2label
-  PROCEDURE, PUBLIC, PASS(obj) :: ylabel => set_ylabel
-  PROCEDURE, PUBLIC, PASS(obj) :: y2label => set_y2label
-  PROCEDURE, PUBLIC, PASS(obj) :: zlabel => set_zlabel
-  PROCEDURE, PUBLIC, PASS(obj) :: axis => set_axis
-  PROCEDURE, PUBLIC, PASS(obj) :: axis_sc => set_secondary_axis
-  PROCEDURE, PUBLIC, PASS(obj) :: xlim => set_xlim
-  PROCEDURE, PUBLIC, PASS(obj) :: ylim => set_ylim
-  PROCEDURE, PUBLIC, PASS(obj) :: zlim => set_zlim
-  PROCEDURE, PUBLIC, PASS(obj) :: filename => set_filename
-  PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => set_commandline
-  PROCEDURE, PUBLIC, PASS(obj) :: reset => reset_to_defaults
-  PROCEDURE, PUBLIC, PASS(obj) :: preset => use_preset_configuration
-  PROCEDURE, PUBLIC, PASS(obj) :: addScript => obj_addScript
-  PROCEDURE, PUBLIC, PASS(obj) :: runScript => obj_runScript
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTitle => obj_SetTitle
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAxisLabel => obj_SetAxisLabel
+  PROCEDURE, PUBLIC, PASS(obj) :: SetXLabel => obj_setxlabel
+  PROCEDURE, PUBLIC, PASS(obj) :: SetX2Label => obj_setx2label
+  PROCEDURE, PUBLIC, PASS(obj) :: Setylabel => obj_setylabel
+  PROCEDURE, PUBLIC, PASS(obj) :: SetY2Label => obj_sety2label
+  PROCEDURE, PUBLIC, PASS(obj) :: SetZLabel => obj_setzlabel
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAxisLim => obj_SetAxisLim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetXLim => obj_SetXLim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetX2Lim => obj_SetX2Lim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetYLim => obj_SetYLim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetY2Lim => obj_SetY2Lim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetZLim => obj_SetZLim
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetPlotScale => obj_SetPlotScale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetXScale => obj_SetXScale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetX2Scale => obj_SetX2Scale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetYScale => obj_SetYScale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetY2Scale => obj_SetY2Scale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetZScale => obj_SetZScale
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFilename => obj_SetFilename
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => obj_SetCommandLine
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOptions => obj_SetOptions
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScripts => obj_SetScripts
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Reset => obj_Reset
+  PROCEDURE, PUBLIC, PASS(obj) :: SetUseDefaultPreset => &
+    obj_SetUseDefaultPreset
+
+  ! @misc
+  PROCEDURE, PUBLIC, PASS(obj) :: RunScript => obj_RunScript
   PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
   PROCEDURE, PUBLIC, PASS(obj) :: animationShow => obj_animationShow
 
-  PROCEDURE, PUBLIC, PASS(obj) :: writeData => obj_writeData_xy
+  ! @Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WritePlotSetup => obj_WritePlotSetup
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataBlock => obj_writeDataBlock_xy
+
+  ! @TomlMethods
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
 
 END TYPE GnuPlot_
 
@@ -206,9 +276,8 @@ END TYPE GnuPlotPointer_
 ! summary:  Initialize the Gnuplot object
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -329,14 +398,12 @@ END INTERFACE
 ! date:   2024-06-08
 ! update : 2025-02-18
 ! summary:  Plot 1D data
-! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
   MODULE SUBROUTINE obj_plot1(obj, x1, y1, ls1, axes1, &
                               x2, y2, ls2, axes2, &
                               x3, y3, ls3, axes3, &
-                              x4, y4, ls4, axes4, &
-                              logScale)
+                              x4, y4, ls4, axes4)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: x1(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: y1(:)
@@ -354,8 +421,6 @@ INTERFACE
     REAL(DFP), INTENT(IN), DIMENSION(:), OPTIONAL :: y4
     CHARACTER(*), INTENT(IN), OPTIONAL :: ls4
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes4
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
-    !! default is no logscale
   END SUBROUTINE obj_plot1
 END INTERFACE
 
@@ -367,16 +432,13 @@ END INTERFACE
 ! date:   2024-06-08
 ! update: 2025-02-18
 ! summary:  Plot 2D data
-! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec, logScale)
+  MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: xv(:)
     REAL(DFP), INTENT(IN) :: ymat(:, :)
-    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
-    !! default is no logscale
+    TYPE(String), INTENT(IN), OPTIONAL :: lspec
   END SUBROUTINE obj_plot2
 END INTERFACE
 
@@ -388,16 +450,13 @@ END INTERFACE
 ! date:   2024-06-08
 ! update : 2025-02-18
 ! summary:  Plot 2D data
-! logScale option can be "semilogx", "semilogy" or "loglog"
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec, logScale)
+  MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: xmat(:, :)
     REAL(DFP), INTENT(IN) :: ymat(:, :)
-    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
-    !! default is no logscale
+    TYPE(String), INTENT(IN), OPTIONAL :: lspec
   END SUBROUTINE obj_plot3
 END INTERFACE
 
@@ -405,6 +464,7 @@ END INTERFACE
 !                                                           plot4@PlotMethods
 !----------------------------------------------------------------------------
 
+! TODO: Use with UserFunction class
 !> author: Shion Shimizu
 ! date:   2024-09-22
 ! summary:  plot with function
@@ -415,7 +475,7 @@ END INTERFACE
 !..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot4(obj, func, xrange, np, logScale)
+  MODULE SUBROUTINE obj_plot4(obj, func, xrange, np)
     CLASS(GnuPlot_) :: obj
     INTERFACE
       FUNCTION func(x_)
@@ -425,8 +485,7 @@ INTERFACE
       END FUNCTION func
     END INTERFACE
     REAL(DFP), INTENT(IN) :: xrange(2)
-    INTEGER, OPTIONAL, INTENT(IN) :: np
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: np
   END SUBROUTINE obj_plot4
 END INTERFACE
 
@@ -463,15 +522,13 @@ END INTERFACE
 !..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName, logScale)
+  MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: y(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: z(:)
     CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
     CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
-    !! default is no logscale
   END SUBROUTINE obj_plot3d_vvv
 END INTERFACE
 
@@ -489,15 +546,13 @@ END INTERFACE
 !..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName, logScale)
+  MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName)
     CLASS(GnuPlot_) :: obj
     REAL(DFP), INTENT(IN) :: x(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: y(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: z(:, :)
     CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
     CHARACTER(*), INTENT(IN), OPTIONAL :: paletteName
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: logScale
-  !! default is no logscale
   END SUBROUTINE obj_surf1
 END INTERFACE
 
@@ -578,10 +633,10 @@ END INTERFACE
 !obj file can be used later by gnuplot as an script file to reproduce the plot
 
 INTERFACE
-  MODULE SUBROUTINE set_filename(obj, chars)
+  MODULE SUBROUTINE obj_SetFilename(obj, name)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-  END SUBROUTINE set_filename
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetFilename
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -594,10 +649,10 @@ END INTERFACE
 !          if the length of chars is 0, then no command is executed
 
 INTERFACE
-  MODULE SUBROUTINE set_commandline(obj, chars)
+  MODULE SUBROUTINE obj_SetCommandLine(obj, chars)
     CLASS(GnuPlot_) :: obj
     CHARACTER(*), INTENT(IN) :: chars
-  END SUBROUTINE set_commandline
+  END SUBROUTINE obj_SetCommandLine
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -612,12 +667,50 @@ END INTERFACE
 !
 ! Set the plot options. obj is a very powerfull procedure accepts many types
 ! of gnuplot command and customization
+! If reset is false, then the new options are added to the existing options
 
 INTERFACE
-  MODULE SUBROUTINE set_options(obj, stropt)
+  MODULE SUBROUTINE obj_SetOptions(obj, optionStr, reset)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: stropt
-  END SUBROUTINE set_options
+    TYPE(String), INTENT(IN) :: optionStr
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: reset
+  END SUBROUTINE obj_SetOptions
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   set_options@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Set gnuplot scripts from a long string
+! string will be split by semicolon
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScripts(obj, scriptStr, reset)
+    CLASS(GnuPlot_) :: obj
+    TYPE(String), INTENT(IN) :: scriptStr
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: reset
+  END SUBROUTINE obj_SetScripts
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetTerm@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Set gnuplot terminal
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetTerm(obj, termType, termSize, &
+                                termFont, termFontSize)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: termType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: termSize(2)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: termFont
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: termFontSize
+  END SUBROUTINE obj_SetTerm
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -626,6 +719,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set x limit
 !
 !# Introduction
@@ -633,10 +728,29 @@ END INTERFACE
 !Set the x axis limits in form of [xmin, xmax]
 
 INTERFACE
-  MODULE SUBROUTINE set_xlim(obj, rng)
+  MODULE SUBROUTINE obj_SetXLim(obj, lims)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(IN) :: rng(2)
-  END SUBROUTINE set_xlim
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetXLim
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        set_ylim@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! data: 2025-12-22
+! summary:  set x2 limit
+!
+!# Introduction
+!
+!Set the y axis limits in form of [ymin, ymax]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetX2Lim(obj, lims)
+    CLASS(GnuPlot_) :: obj
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetX2Lim
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -645,6 +759,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set y limit
 !
 !# Introduction
@@ -652,10 +768,29 @@ END INTERFACE
 !Set the y axis limits in form of [ymin, ymax]
 
 INTERFACE
-  MODULE SUBROUTINE set_ylim(obj, rng)
+  MODULE SUBROUTINE obj_SetYLim(obj, lims)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(IN) :: rng(2)
-  END SUBROUTINE set_ylim
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetYLim
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        set_ylim@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! data: 2025-12-22
+! summary:  set y2 limit
+!
+!# Introduction
+!
+!Set the y axis limits in form of [ymin, ymax]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetY2Lim(obj, lims)
+    CLASS(GnuPlot_) :: obj
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetY2Lim
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -664,6 +799,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set z limit
 !
 !# Introduction
@@ -671,48 +808,103 @@ END INTERFACE
 !Set the z axis limits in form of [zmin, zmax]
 
 INTERFACE
-  MODULE SUBROUTINE set_zlim(obj, rng)
+  MODULE SUBROUTINE obj_SetZLim(obj, lims)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(IN) :: rng(2)
-  END SUBROUTINE set_zlim
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetZLim
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       set_axis@SetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  set axis
-!
-!# Introduction
-!
-!Set the axes limits in form of [xmin, xmax, ymin, ymax, zmin, zmax]
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary:  Set axis with specific direction
 
 INTERFACE
-  MODULE SUBROUTINE set_axis(obj, rng)
+  MODULE SUBROUTINE obj_SetAxisLim(obj, lims, direction)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(IN) :: rng(:)
-  END SUBROUTINE set_axis
+    REAL(DFP), INTENT(IN) :: lims(2)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: direction
+  END SUBROUTINE obj_SetAxisLim
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               set_secondary_axis@SetMethods
+!                                                        set_zlim@SetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  set secondary axis
-!
-!# Introduction
-!
-!Set the secondary axes limits in form of [x2min, x2max, y2min, y2max]
+!> author: Shion Shimizu
+! date: 2025-12-22
+! summary: Set plot scale
 
 INTERFACE
-  MODULE SUBROUTINE set_secondary_axis(obj, rng)
+  MODULE SUBROUTINE obj_SetPlotScale(obj, scaleChar, direction, logBase)
     CLASS(GnuPlot_) :: obj
-    REAL(DFP), INTENT(IN) :: rng(:)
-  END SUBROUTINE set_secondary_axis
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    CHARACTER(*), INTENT(IN) :: direction
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetPlotScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetXScale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetXScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetX2Scale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetX2Scale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetYScale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetYScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetY2Scale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetY2Scale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetZScale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetZScale
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -724,15 +916,15 @@ END INTERFACE
 ! summary:  set plot title
 
 INTERFACE
-  MODULE SUBROUTINE set_plottitle(obj, chars, textcolor, font_size, &
-                                  font_name, rotate)
+  MODULE SUBROUTINE obj_SetTitle(obj, title, color, fontSize, fontName, &
+                                 rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_plottitle
+    CHARACTER(*), INTENT(IN) :: title
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetTitle
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -741,18 +933,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set x label
 
 INTERFACE
-  MODULE SUBROUTINE set_xlabel(obj, chars, textcolor, font_size, &
-                               font_name, rotate)
+  MODULE SUBROUTINE obj_SetXLabel(obj, label, color, fontSize, fontName, &
+                                  rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_xlabel
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetXLabel
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -761,18 +955,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set x2 label
 
 INTERFACE
-  MODULE SUBROUTINE set_x2label(obj, chars, textcolor, font_size, &
-                                font_name, rotate)
+  MODULE SUBROUTINE obj_SetX2Label(obj, label, color, fontSize, fontName, &
+                                   rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_x2label
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetX2Label
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -781,18 +977,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set y label
 
 INTERFACE
-  MODULE SUBROUTINE set_ylabel(obj, chars, textcolor, font_size, &
-                               font_name, rotate)
+  MODULE SUBROUTINE obj_SetYLabel(obj, label, color, fontSize, fontName, &
+                                  rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_ylabel
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetYLabel
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -801,18 +999,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set y2 label
 
 INTERFACE
-  MODULE SUBROUTINE set_y2label(obj, chars, textcolor, font_size, &
-                                font_name, rotate)
+  MODULE SUBROUTINE obj_SetY2Label(obj, label, color, fontSize, fontName, &
+                                   rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_y2label
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetY2Label
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -821,18 +1021,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  set z label
 
 INTERFACE
-  MODULE SUBROUTINE set_zlabel(obj, chars, textcolor, font_size, &
-                               font_name, rotate)
+  MODULE SUBROUTINE obj_SetZLabel(obj, label, color, fontSize, fontName, &
+                                  rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(*), INTENT(IN), OPTIONAL :: textcolor
-    INTEGER, OPTIONAL :: font_size
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_zlabel
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetZLabel
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -841,6 +1043,9 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
+
 ! summary:  set label
 !
 !# Introduction
@@ -849,109 +1054,61 @@ END INTERFACE
 ! title, xlabel, x2label, ylabel, ....
 
 INTERFACE
-  MODULE SUBROUTINE set_label(obj, lblname, lbltext, lblcolor, font_size, &
-                              font_name, rotate)
+  MODULE SUBROUTINE obj_SetAxisLabel(obj, direction, label, color, &
+                                     fontSize, fontName, rotate)
     CLASS(GnuPlot_) :: obj
-    CHARACTER(*), INTENT(IN) :: lblname
-    CHARACTER(*), INTENT(IN) :: lbltext
-    CHARACTER(*), INTENT(IN), OPTIONAL :: lblcolor
-    CHARACTER(*), INTENT(IN), OPTIONAL :: font_name
-    INTEGER, OPTIONAL :: font_size
-    INTEGER, OPTIONAL :: rotate
-  END SUBROUTINE set_label
+    CHARACTER(*), INTENT(IN) :: direction
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetAxisLabel
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     splitstr@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  splitstr, separate a string using ";" delimiters
-
-INTERFACE
-  MODULE PURE FUNCTION splitstr(chars) RESULT(spstr)
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(:), ALLOCATABLE :: spstr
-  END FUNCTION splitstr
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           splitstring2array@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  splitstring2array, separate a string using ";" delimiters
-
-!..............................................................................
-! splitstring splits a string to an array of
-! substrings based on a selected delimiter
-! note:
-!    a. any facing space/blank in substrings will be removed
-!    b. two adjacent delimiter treats as an empty substring between them
-!    c. facing and trailing delimiter treats as empty substring at the fornt and end
-!..............................................................................
-
-INTERFACE
-  MODULE SUBROUTINE splitstring2array(chars, strarray, delimiter)
-    CHARACTER(*), INTENT(IN) :: chars
-    CHARACTER(80), ALLOCATABLE, INTENT(OUT) :: strarray(:)
-    CHARACTER(1), OPTIONAL, INTENT(IN) :: delimiter
-  END SUBROUTINE splitstring2array
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             process_linepec@UtilityMethods
+!                                             GetPlotCommand@UtilityMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 ! summary:  line specification
 !
-!# Introduction
-!
-! process_linespec accepts the line specification and interpret it into
-! a format to be sent to gnuplot
+! Get the command script for plot
 
 INTERFACE
-  MODULE SUBROUTINE process_linespec(order, lsstring, lspec, axes_set)
-    INTEGER, INTENT(IN) :: order
-    !1 for the first data series
-    CHARACTER(*), INTENT(OUT) :: lsstring
+  MODULE SUBROUTINE GetPlotCommand(order, plotCommand, lspec, axes_set)
+    INTEGER(I4B), INTENT(IN) :: order
     CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes_set
-  END SUBROUTINE process_linespec
+    CHARACTER(*), INTENT(OUT) :: plotCommand
+  END SUBROUTINE GetPlotCommand
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           process_axes_set@UtilityMethods
+!                                           GetAxesSetting@UtilityMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
-! summary:  process_axes_set
+! summary:  GetAxesSetting
 !
-!# Introduction
-!
-! process_axesspec accepts the axes set and interpret it into
-! a format to be sent to gnuplot.
-! the axes set can be one of the following set
-! x1y1, x1y2, x2y1, x2y2
 
 INTERFACE
-  MODULE SUBROUTINE process_axes_set(axes_set, axes)
+  MODULE SUBROUTINE GetAxesSetting(axes_set, axesSetting)
     CHARACTER(*), INTENT(IN) :: axes_set
-    CHARACTER(4), INTENT(OUT) :: axes
-  END SUBROUTINE process_axes_set
+    CHARACTER(*), INTENT(OUT) :: axesSetting
+  END SUBROUTINE GetAxesSetting
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 processcmd@UtilityMethods
+!                                               WritePlotSetup@UtilityMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
 ! summary:  process command
 !
 !# Introduction
@@ -960,9 +1117,9 @@ END INTERFACE
 !   to be read by gnuplot
 
 INTERFACE
-  MODULE SUBROUTINE processcmd(obj)
+  MODULE SUBROUTINE obj_WritePlotSetup(obj)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
-  END SUBROUTINE processcmd
+  END SUBROUTINE obj_WritePlotSetup
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -977,47 +1134,11 @@ END INTERFACE
 ! Writes set of xy data into a file
 
 INTERFACE
-  MODULE SUBROUTINE obj_writeData_xy(obj, x, y)
+  MODULE SUBROUTINE obj_WriteDataBlock_xy(obj, x, y)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
-  END SUBROUTINE obj_writeData_xy
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    hasTitle@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  check to see if the plot title (used as legend = key)
-
-INTERFACE
-  MODULE FUNCTION hasTitle(chars)
-    CHARACTER(*), INTENT(IN) :: chars
-    LOGICAL :: hastitle
-  END FUNCTION hasTitle
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               write_label@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  write label
-!
-!# Introduction
-!
-!   obj subroutine writes the labels into plot file
-!   to be read by gnuplot
-
-INTERFACE
-  MODULE SUBROUTINE write_label(obj, lblname)
-    ! write_label
-    CLASS(GnuPlot_) :: obj
-    CHARACTER(*) :: lblname
-  END SUBROUTINE write_label
+  END SUBROUTINE obj_WriteDataBlock_xy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1029,42 +1150,28 @@ END INTERFACE
 ! summary:  reset to defaults
 
 INTERFACE
-  MODULE SUBROUTINE reset_to_defaults(obj)
+  MODULE SUBROUTINE obj_Reset(obj)
     CLASS(GnuPlot_) :: obj
-  END SUBROUTINE reset_to_defaults
+  END SUBROUTINE obj_Reset
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                         use_preset_configuration@SetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:
-! summary:  use preset configuration
-
-INTERFACE
-  MODULE SUBROUTINE use_preset_configuration(obj, flag)
-    CLASS(GnuPlot_) :: obj
-    LOGICAL(LGT), INTENT(IN) :: flag
-  END SUBROUTINE use_preset_configuration
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       preset_gnuplot_config
-!----------------------------------------------------------------------------
-
 !> author: Shion Shimizu
-! date:   2024-09-22
-! summary:  preset gnuplot config
+! date: 2025-12-22
+! summary:  set useDefaultPreset
 
 INTERFACE
-  MODULE SUBROUTINE preset_gnuplot_config(obj)
+  MODULE SUBROUTINE obj_SetUseDefaultPreset(obj, abool)
     CLASS(GnuPlot_) :: obj
-  END SUBROUTINE preset_gnuplot_config
+    LOGICAL(LGT), INTENT(IN) :: abool
+  END SUBROUTINE obj_SetUseDefaultPreset
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             color_palettes
+!                                                             GetColorPalette
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -1078,31 +1185,10 @@ END INTERFACE
 !...............................................................................
 
 INTERFACE
-  MODULE FUNCTION color_palettes(paletteName) RESULT(paletteScript)
+  MODULE FUNCTION GetColorPaletteScript(paletteName) RESULT(paletteScript)
     CHARACTER(*), INTENT(IN) :: paletteName
     CHARACTER(:), ALLOCATABLE :: paletteScript
-  END FUNCTION color_palettes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        addScript
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary: create or eddit raw gnuplot script
-! stored in obj%txtscript
-
-!..............................................................................
-! addscript: accepts all type of gnuplot command as a string and store it
-! in global txtscript to be later sent to gnuplot
-!..............................................................................
-
-INTERFACE
-  MODULE SUBROUTINE obj_addScript(obj, scripts)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: scripts
-  END SUBROUTINE obj_addScript
+  END FUNCTION GetColorPaletteScript
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1118,9 +1204,9 @@ END INTERFACE
 !..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_runScript(obj)
+  MODULE SUBROUTINE obj_RunScript(obj)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_runScript
+  END SUBROUTINE obj_RunScript
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1158,6 +1244,40 @@ INTERFACE
   MODULE SUBROUTINE obj_animationShow(obj)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_animationShow
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-23
+! summary:  Import settings from toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-23
+! summary:  Import settings from toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------

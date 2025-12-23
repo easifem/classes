@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,9 +14,9 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) ContourMethods
+USE GlobalData, ONLY: CHAR_BSLASH
 IMPLICIT NONE
 CONTAINS
 
@@ -41,9 +42,9 @@ ELSE
   xyz_data = .FALSE.
 END IF
 
-obj%txtdatastyle = 'lines'
+obj%datastyle = 'lines'
 CALL obj%Initiate()
-CALL obj%processcmd()
+CALL obj%WritePlotSetup()
 
 ! Write xy data into file
 CALL obj%pltfile%WRITE('#data x y z')
@@ -95,7 +96,7 @@ CALL obj%pltfile%WRITE('unset surface')
 CALL obj%pltfile%WRITE('set view map')
 
 IF (PRESENT(paletteName)) THEN
-  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+  CALL obj%pltfile%WRITE(GetColorPaletteScript(paletteName))
 
   IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
     CALL obj%pltfile%WRITE(obj%pm3dOpts_stmt)
@@ -106,15 +107,9 @@ END IF
 
 CALL obj%pltfile%WriteBlank()
 
-IF (PRESENT(lspec)) THEN
-  IF (hasTitle(lspec)) THEN
-    pltstring = 'splot '//datablock//' '//TRIM(lspec)
-  ELSE
-    pltstring = 'splot '//datablock//' notitle '//TRIM(lspec)
-  END IF
-ELSE
-  pltstring = 'splot '//datablock//' notitle '
-END IF
+pltstring = 'splot '//datablock
+IF (PRESENT(lspec)) &
+  pltstring = pltstring//' '//TRIM(lspec)
 
 CALL obj%pltfile%WRITE(TRIM(pltstring))
 
@@ -170,9 +165,9 @@ ELSE
   xyz_data = .FALSE.
 END IF
 
-obj%txtdatastyle = 'lines'
+obj%datastyle = 'lines'
 CALL obj%Initiate()
-CALL obj%processcmd()
+CALL obj%WritePlotSetup()
 
 ! Write xy data into file
 CALL obj%pltfile%WRITE('#data x y z')
@@ -261,7 +256,7 @@ CALL obj%pltfile%WRITE('unset surface')
 CALL obj%pltfile%WRITE('set view map')
 
 IF (PRESENT(paletteName)) THEN
-  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+  CALL obj%pltfile%WRITE(GetColorPaletteScript(paletteName))
 
   IF (ALLOCATED(obj%pm3dOpts_stmt)) THEN
     CALL obj%pltfile%WRITE(obj%pm3dOpts_stmt)
@@ -272,28 +267,17 @@ END IF
 
 CALL obj%pltfile%WriteBlank()
 
-pltstring = ''
-IF (PRESENT(lspec1)) THEN
-  IF (hasTitle(lspec1)) THEN
-    pltstring = 'splot '//datablock//' '//TRIM(lspec1)//", \"
-  ELSE
-    pltstring = 'splot '//datablock//' notitle '//TRIM(lspec1)//", \"
-  END IF
-ELSE
-  pltstring = 'splot '//datablock//' notitle, \'
-END IF
+pltstring = 'splot '//datablock
+IF (PRESENT(lspec1)) &
+  pltstring = pltstring//' '//TRIM(lspec1)
+pltstring = pltstring//", "//CHAR_BSLASH
+
 CALL obj%pltfile%WRITE(TRIM(pltstring))
 
-pltstring = ""
-IF (PRESENT(lspec2)) THEN
-  IF (hasTitle(lspec2)) THEN
-    pltstring = '   '//datablock//'2 '//TRIM(lspec2)
-  ELSE
-    pltstring = '  '//datablock//'2  notitle '//TRIM(lspec2)
-  END IF
-ELSE
-  pltstring = '   '//datablock//'2 notitle '
-END IF
+pltstring = 'splot '//datablock//"2"
+IF (PRESENT(lspec2)) &
+  pltstring = pltstring//' '//TRIM(lspec2)
+pltstring = pltstring//", "//CHAR_BSLASH
 
 CALL obj%pltfile%WRITE(TRIM(pltstring))
 

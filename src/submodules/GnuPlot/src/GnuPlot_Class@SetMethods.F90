@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,9 +14,11 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) SetMethods
+USE String_Class, ONLY: StrJoin
+USE StringUtility, ONLY: UpperCase
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
 CONTAINS
 
@@ -23,310 +26,421 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setPm3dOpts
+MODULE PROCEDURE obj_SetPm3dOpts
 obj%pm3dOpts_stmt = "set pm3d "//TRIM(opts)
-END PROCEDURE obj_setPm3dOpts
+END PROCEDURE obj_SetPm3dOpts
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setCBTicks
+MODULE PROCEDURE obj_SetCBTicks
 obj%cbTicks_stmt = "set cbtics "//TRIM(opts)
-END PROCEDURE obj_setCBTicks
+END PROCEDURE obj_SetCBTicks
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setCntrLevels
+MODULE PROCEDURE obj_SetCntrLevels
 obj%cntrLevels_stmt = "set cntrparam levels "//TRIM(opts)
-END PROCEDURE obj_setCntrLevels
+END PROCEDURE obj_SetCntrLevels
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setCBLim
+MODULE PROCEDURE obj_SetCBLim
 obj%hasCBRange = .TRUE.
 obj%CBRange = avec
-END PROCEDURE obj_setCBLim
+END PROCEDURE obj_SetCBLim
 
 !----------------------------------------------------------------------------
 !                                                           set_filename
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_filename
-obj%txtfilename = TRIM(chars)
-obj%hasfilename = .TRUE.
-END PROCEDURE set_filename
+MODULE PROCEDURE obj_SetFilename
+obj%filename = TRIM(name)
+END PROCEDURE obj_SetFilename
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_commandline
+MODULE PROCEDURE obj_SetCommandline
 
 IF (LEN(chars) .EQ. 0) THEN
   obj%commandline = ""
-  obj%execute = .FALSE.
+  obj%runAfterWrite = .FALSE.
   RETURN
 END IF
 
 obj%commandline = TRIM(chars)
-obj%execute = .TRUE.
+obj%runAfterWrite = .TRUE.
 
-END PROCEDURE set_commandline
+END PROCEDURE obj_SetCommandline
 
 !----------------------------------------------------------------------------
 !                                                                set_options
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_options
-IF (.NOT. ALLOCATED(obj%txtoptions)) obj%txtoptions = ''
-IF (LEN_TRIM(obj%txtoptions) == 0) THEN
-  obj%txtoptions = '' ! initialize chars
-END IF
-IF (LEN_TRIM(stropt) > 0) THEN
-  obj%txtoptions = obj%txtoptions//splitstr(stropt)
+MODULE PROCEDURE obj_SetOptions
+TYPE(String) :: tmpStr
+LOGICAL(LGT) :: reset0
+
+IF (optionStr%LEN() .EQ. 0) RETURN
+
+reset0 = Input(default=.TRUE., option=.TRUE.)
+
+IF (reset) THEN
+  CALL optionStr%Split(tokens=obj%options, sep=";")
+ELSE
+  tmpStr = ""
+  IF (ALLOCATED(obj%options)) tmpStr = StrJoin(obj%options, sep=";")
+  tmpStr = tmpStr//";"//optionStr
+  CALL tmpStr%Split(tokens=obj%options, sep=";")
 END IF
 
-obj%hasoptions = .TRUE.
-END PROCEDURE set_options
+END PROCEDURE obj_SetOptions
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_xlim
-obj%hasxrange = .TRUE.
-obj%xrange = rng
-END PROCEDURE set_xlim
+MODULE PROCEDURE obj_SetScripts
+TYPE(String) :: tmpStr
+LOGICAL(LGT) :: reset0
+
+IF (scriptStr%LEN() .EQ. 0) RETURN
+
+reset0 = Input(default=.TRUE., option=.TRUE.)
+
+IF (reset) THEN
+  CALL scriptstr%Split(tokens=obj%scripts, sep=";")
+ELSE
+  tmpStr = ""
+  IF (ALLOCATED(obj%scripts)) tmpStr = StrJoin(obj%scripts, sep=";")
+  tmpStr = tmpStr//";"//scriptStr
+  CALL tmpStr%Split(tokens=obj%scripts, sep=";")
+END IF
+
+END PROCEDURE obj_SetScripts
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetTerm
+
+obj%useDefaultTerm = .FALSE.
+
+obj%termType = Input(default=defaultOpt%termType, option=termType)
+obj%termSize = Input(default=defaultOpt%termSize, option=termSize)
+obj%termFont = Input(default=defaultOpt%termFont, option=termFont)
+obj%termFontSize = Input(default=defaultOpt%termFontSize, &
+                         option=termFontSize)
+
+END PROCEDURE obj_SetTerm
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetXLim
+obj%xaxis%tick%isConfigured = .TRUE.
+obj%xaxis%tick%lims = lims
+END PROCEDURE obj_SetXLim
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetX2Lim
+obj%x2axis%tick%isConfigured = .TRUE.
+obj%x2axis%tick%lims = lims
+END PROCEDURE obj_SetX2Lim
 
 !----------------------------------------------------------------------------
 !                                                                   set_ylim
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_ylim
-obj%hasyrange = .TRUE.
-obj%yrange = rng
-END PROCEDURE set_ylim
+MODULE PROCEDURE obj_SetYLim
+obj%yaxis%tick%isConfigured = .TRUE.
+obj%yaxis%tick%lims = lims
+END PROCEDURE obj_SetYLim
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetY2Lim
+obj%y2axis%tick%isConfigured = .TRUE.
+obj%y2axis%tick%lims = lims
+END PROCEDURE obj_SetY2Lim
 
 !----------------------------------------------------------------------------
 !                                                                   set_zlim
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_zlim
-obj%haszrange = .TRUE.
-obj%zrange = rng
-END PROCEDURE set_zlim
+MODULE PROCEDURE obj_SetZLim
+obj%zaxis%tick%isConfigured = .TRUE.
+obj%zaxis%tick%lims = lims
+END PROCEDURE obj_SetZLim
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_axis
-CHARACTER(*), PARAMETER :: myName = "set_axis"
-INTEGER :: n
+MODULE PROCEDURE obj_SetAxisLim
+CHARACTER(*), PARAMETER :: myName = "obj_SetAxisLim"
 
-n = SIZE(rng, dim=1)
-
-SELECT CASE (n)
-CASE (2) !Only the range for x-axis has been sent
-  obj%hasxrange = .TRUE.
-  obj%xrange = rng(1:2)
-CASE (4)
-  obj%hasxrange = .TRUE.
-  obj%hasyrange = .TRUE.
-  obj%xrange = rng(1:2)
-  obj%yrange = rng(3:4)
-CASE (6)
-  obj%hasxrange = .TRUE.
-  obj%hasyrange = .TRUE.
-  obj%haszrange = .TRUE.
-  obj%xrange = rng(1:2)
-  obj%yrange = rng(3:4)
-  obj%zrange = rng(5:6)
-CASE default
-  CALL e%raiseWarning(modName//'::'//myName//' - '// &
-    & '[GNUPLOT] :: wrong axis range setting')
-  RETURN
-END SELECT
-
-END PROCEDURE set_axis
-
-!----------------------------------------------------------------------------
-!                                                        set_secondary_axis
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE set_secondary_axis
-CHARACTER(*), PARAMETER :: myName = "set_secondary_axis"
-INTEGER :: n
-
-n = SIZE(rng, dim=1)
-
-SELECT CASE (n)
-CASE (2) !Only the range for x2-axis has been sent
-  obj%hasx2range = .TRUE.
-  obj%x2range = rng(1:2)
-CASE (4)
-  obj%hasx2range = .TRUE.
-  obj%hasy2range = .TRUE.
-  obj%x2range = rng(1:2)
-  obj%y2range = rng(3:4)
-CASE default
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXLim(lims)
+CASE ("X2")
+  CALL obj%SetX2Lim(lims)
+CASE ("Y")
+  CALL obj%SetYLim(lims)
+CASE ("Y2")
+  CALL obj%SetY2Lim(lims)
+CASE ("Z")
+  CALL obj%SetZLim(lims)
+CASE DEFAULT
   CALL e%RaiseWarning(modName//'::'//myName//' - '// &
-    & '[GNUPLOT] :: wrong secondary axis range setting')
-  RETURN
+    & '[INTERNAL ERROR] :: unknown direction for label')
 END SELECT
 
-END PROCEDURE set_secondary_axis
+END PROCEDURE obj_SetAxisLim
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetXScale
+CALL Help_SetPlotScale(obj%xaxis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetXScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetX2Scale
+CALL Help_SetPlotScale(obj%x2axis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetX2Scale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetYScale
+CALL Help_SetPlotScale(obj%yaxis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetYScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetY2Scale
+CALL Help_SetPlotScale(obj%y2axis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetY2Scale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetZScale
+CALL Help_SetPlotScale(obj%zaxis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetZScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetPlotScale
+CHARACTER(*), PARAMETER :: myName = "obj_SetPlotScale"
+
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXScale(scaleChar, logBase)
+CASE ("X2")
+  CALL obj%SetX2Scale(scaleChar, logBase)
+CASE ("Y")
+  CALL obj%SetYScale(scaleChar, logBase)
+CASE ("Y2")
+  CALL obj%SetY2Scale(scaleChar, logBase)
+CASE ("Z")
+  CALL obj%SetZScale(scaleChar, logBase)
+CASE DEFAULT
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: unknown direction for plot scale')
+END SELECT
+
+END PROCEDURE obj_SetPlotScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_SetPlotScale(obj, scaleChar, logBase)
+  TYPE(Tick_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: scaleChar
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: logBase
+
+  SELECT CASE (UpperCase(scaleChar))
+  CASE ("AUTO", "A")
+    obj%isConfigured = .TRUE.
+    obj%plotscale = 1_I4B
+  CASE ("LOG", "L")
+    obj%isConfigured = .TRUE.
+    obj%plotscale = 2_I4B
+    obj%logBase = Input(default=10_I4B, option=logBase)
+  CASE DEFAULT
+    obj%plotscale = 0_I4B ! no scale
+  END SELECT
+
+END SUBROUTINE Help_SetPlotScale
 
 !----------------------------------------------------------------------------
 !                                                             set_plottitle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_plottitle
-CALL obj%set_label('plot_title', chars, textcolor, font_size, &
-                   font_name, rotate)
-END PROCEDURE set_plottitle
+MODULE PROCEDURE obj_SetTitle
+CALL Help_SetLabel(obj%title, title, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetTitle
 
 !----------------------------------------------------------------------------
 !                                                                 set_xlabel
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_xlabel
-CALL obj%set_label('xlabel', chars, textcolor, font_size, font_name, rotate)
-END PROCEDURE set_xlabel
+MODULE PROCEDURE obj_SetXLabel
+CALL Help_SetLabel(obj%xaxis%label, label, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetXLabel
 
 !----------------------------------------------------------------------------
 !                                                                set_x2label
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_x2label
-CALL obj%set_label('x2label', chars, textcolor, font_size, font_name, rotate)
-END PROCEDURE set_x2label
+MODULE PROCEDURE obj_SetX2Label
+CALL Help_SetLabel(obj%x2axis%label, label, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetX2Label
 
 !----------------------------------------------------------------------------
 !                                                                 set_ylabel
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_ylabel
-CALL obj%set_label('ylabel', chars, textcolor, font_size, font_name, rotate)
-END PROCEDURE set_ylabel
+MODULE PROCEDURE obj_SetYLabel
+CALL Help_SetLabel(obj%yaxis%label, label, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetYLabel
 
 !----------------------------------------------------------------------------
 !                                                                set_y2label
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_y2label
-CALL obj%set_label('y2label', chars, textcolor, font_size, font_name, rotate)
-END PROCEDURE set_y2label
+MODULE PROCEDURE obj_SetY2Label
+CALL Help_SetLabel(obj%y2axis%label, label, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetY2Label
 
 !----------------------------------------------------------------------------
 !                                                                 set_zlabel
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_zlabel
-CALL obj%set_label('zlabel', chars, textcolor, font_size, font_name, rotate)
-END PROCEDURE set_zlabel
+MODULE PROCEDURE obj_SetZLabel
+CALL Help_SetLabel(obj%zaxis%label, label, color, fontSize, fontName, rotate)
+END PROCEDURE obj_SetZLabel
 
 !----------------------------------------------------------------------------
 !                                                                 set_label
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE set_label
-! local variable
-TYPE(Label_) :: label
+MODULE PROCEDURE obj_SetAxisLabel
+CHARACTER(*), PARAMETER :: myName = "obj_SetLabel"
 
-label%hasLabel = .TRUE.
-label%text = TRIM(lbltext)
-
-IF (PRESENT(lblcolor)) THEN
-  label%color = lblcolor
-END IF
-
-IF (PRESENT(font_name)) THEN
-  label%fontname = font_name
-ELSE
-  IF (.NOT. ALLOCATED(label%fontname)) THEN
-    label%fontname = ''
-  END IF
-END IF
-
-IF (PRESENT(font_size)) THEN
-  label%fontsize = font_size
-END IF
-
-IF (PRESENT(rotate)) THEN
-  label%rotate = rotate
-END IF
-
-SELECT CASE (lblname)
-CASE ('xlabel')
-  obj%tpxlabel = label
-CASE ('x2label')
-  obj%tpx2label = label
-CASE ('ylabel')
-  obj%tpylabel = label
-CASE ('y2label')
-  obj%tpy2label = label
-CASE ('zlabel')
-  obj%tpzlabel = label
-CASE ('plot_title')
-  obj%tpplottitle = label
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXLabel(label, color, fontSize, fontName, rotate)
+CASE ("X2")
+  CALL obj%SetX2Label(label, color, fontSize, fontName, rotate)
+CASE ("Y")
+  CALL obj%SetYLabel(label, color, fontSize, fontName, rotate)
+CASE ("Y2")
+  CALL obj%SetY2Label(label, color, fontSize, fontName, rotate)
+CASE ("Z")
+  CALL obj%SetZLabel(label, color, fontSize, fontName, rotate)
+CASE default
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: unknown direction for label')
 END SELECT
 
-END PROCEDURE set_label
-
-!----------------------------------------------------------------------------
-!                                                       reset_to_defaults
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE reset_to_defaults
-obj%preset_configuration = .TRUE.
-obj%txtfilename = gnuplot_output_filename
-
-IF (ALLOCATED(obj%txtoptions)) DEALLOCATE (obj%txtoptions)
-IF (ALLOCATED(obj%txtscript)) DEALLOCATE (obj%txtscript)
-IF (ALLOCATED(obj%txtdatastyle)) DEALLOCATE (obj%txtdatastyle)
-IF (ALLOCATED(obj%msg)) DEALLOCATE (obj%msg)
-
-obj%hasoptions = .FALSE.
-
-obj%hasxrange = .FALSE.
-obj%hasx2range = .FALSE.
-obj%hasyrange = .FALSE.
-obj%hasy2range = .FALSE.
-obj%haszrange = .FALSE.
-
-obj%pause_seconds = 0.0
-obj%status = 0
-obj%hasanimation = .FALSE.
-obj%hasfileopen = .FALSE.
-obj%hasmultiplot = .FALSE.
-
-obj%plotscale = ''
-obj%tpplottitle%hasLabel = .FALSE.
-obj%tpxlabel%hasLabel = .FALSE.
-obj%tpx2label%hasLabel = .FALSE.
-obj%tpylabel%hasLabel = .FALSE.
-obj%tpy2label%hasLabel = .FALSE.
-obj%tpzlabel%hasLabel = .FALSE.
-
-obj%commandline = defaultCommandLine
-obj%execute = .TRUE.
-obj%PAUSE = .FALSE.
-
-END PROCEDURE reset_to_defaults
+END PROCEDURE obj_SetAxisLabel
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE use_preset_configuration
-! default is true
-obj%preset_configuration = flag
-END PROCEDURE use_preset_configuration
+SUBROUTINE Help_SetLabel(obj, label, color, fontSize, fontName, rotate)
+  TYPE(Label_) :: obj
+  CHARACTER(*), INTENT(IN) :: label
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+
+  IF (LEN_TRIM(label) .EQ. 0) RETURN
+
+  obj%isConfigured = .TRUE.
+  obj%text = TRIM(label)
+
+  IF (PRESENT(color)) obj%color = color
+
+  IF (PRESENT(fontName)) THEN
+    obj%fontname = fontName
+  ELSE
+    IF (.NOT. ALLOCATED(obj%fontname)) THEN
+      obj%fontname = ''
+    END IF
+  END IF
+
+  IF (PRESENT(fontSize)) obj%fontsize = fontSize
+
+  IF (PRESENT(rotate)) obj%rotate = rotate
+
+END SUBROUTINE Help_SetLabel
+
+!----------------------------------------------------------------------------
+!                                                       reset_to_defaults
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Reset
+
+obj%useDefaultTerm = .TRUE.
+obj%useDefaultPreset = .TRUE.
+obj%filename = defaultOpt%filename
+
+IF (ALLOCATED(obj%options)) DEALLOCATE (obj%options)
+IF (ALLOCATED(obj%scripts)) DEALLOCATE (obj%scripts)
+obj%dataStyle = ""
+
+obj%pause_seconds = 0.0_DFP
+obj%status = 0
+obj%hasanimation = .FALSE.
+obj%hasmultiplot = .FALSE.
+
+obj%commandline = defaultOpt%commandline
+obj%runAfterWrite = .TRUE.
+obj%pauseAfterDraw = .FALSE.
+
+END PROCEDURE obj_Reset
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetUseDefaultPreset
+obj%useDefaultPreset = abool
+END PROCEDURE obj_SetUseDefaultPreset
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE SetMethods

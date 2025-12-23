@@ -43,7 +43,7 @@ CASE ('vik')
                         "#EACEBD", "#D39774", "#BE6533", "#8B2706", "#590008"]
 
 CASE default
-  PRINT *, md_name//": color_palettes: wrong palette name"
+  PRINT *, modName//": color_palettes: wrong palette name"
   PRINT *, 'gnuplot default palette will be used!'
   paletteScript = ' ' ! empty palette is returned!
   RETURN

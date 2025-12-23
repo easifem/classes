@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,7 +14,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) Plot3DMethods
 
@@ -46,14 +46,10 @@ ELSE
   xyz_data = .FALSE.
 END IF
 
-obj%txtdatastyle = 'lines'
+obj%datastyle = 'lines'
 CALL obj%Initiate()
 
-IF (PRESENT(logScale)) THEN
-  obj%plotscale = logScale
-END IF
-CALL processcmd(obj)
-obj%plotscale = "linear"
+CALL obj%WritePlotSetup()
 
 CALL obj%pltfile%WRITE('#data x y z')
 
@@ -74,17 +70,13 @@ CALL obj%pltfile%WriteBlank()
 CALL obj%pltfile%WRITE('EOD')
 
 IF (PRESENT(paletteName)) THEN
-  CALL obj%pltfile%WRITE(color_palettes(paletteName))
+  CALL obj%pltfile%WRITE(GetColorPaletteScript(paletteName))
   CALL obj%pltfile%WRITE('set pm3d')
 END IF
 
 pltstring = "splot "//datablock//" "
 IF (.NOT. xyz_data) THEN
   pltstring = pltstring//"u 1:2:(0) "
-END IF
-
-IF (.NOT. hastitle(lspec)) THEN
-  pltstring = pltstring//"notitle "
 END IF
 
 IF (PRESENT(lspec)) THEN
