@@ -771,7 +771,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: idof, icompo
+INTEGER(I4B) :: idof, icompo, s(3), p(3)
+REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -790,22 +791,27 @@ CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
 #endif
 
-DO icompo = 1, obj%spaceCompo
-  idof = GetIDOF(spaceCompo=icompo, timeCompo=timeCompo, tspaceCompo=obj%spaceCompo)
-  CALL obj%Set(idof=idof, ivar=1, VALUE=VALUE, idof_value=icompo, &
-               ivar_value=1, scale=scale, addContribution=addContribution)
-END DO
+realvec => VALUE%GetPointer()
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, &
+                  'realvec obtained To value is not ASSOCIATED')
 #endif
 
-! DO ii = 1, obj%spaceCompo
-!   jj = GetIDOF(spaceCompo=ii, timeCompo=1, tspaceCompo=obj%spaceCompo)
-!   CALL obj%Set(idof=jj, ivar=1, VALUE=VALUE, idof_value=ii, &
-!                ivar_value=1, scale=scale, addContribution=addContribution)
-! END DO
+DO icompo = 1, obj%spaceCompo
+  s = GetNodeLoc(obj=VALUE%dof, idof=icompo)
+
+  idof = GetIDOF(spaceCompo=icompo, timeCompo=timeCompo, tspaceCompo=obj%spaceCompo)
+  p = GetNodeLoc(obj=obj%dof, idof=idof)
+
+  CALL obj%SetMultiple( &
+    VALUE=realvec, scale=scale, addContribution=addContribution, &
+    istart_value=s(1), iend_value=s(2), stride_value=s(3), &
+    istart=p(1), iend=p(2), stride=p(3))
+END DO
+
+realvec => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
